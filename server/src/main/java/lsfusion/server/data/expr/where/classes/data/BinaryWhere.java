@@ -25,6 +25,7 @@ import lsfusion.server.data.expr.value.StaticExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.StatType;
@@ -155,7 +156,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
     }
     
-    public static final String adjustSelectivity = "<<adj_sel>>";
+    public static final String adjustSelectivity = SQLSession.getParamName("adjSel");
     
     protected boolean adjustSelectivity(SQLSyntax syntax) {
         return false;

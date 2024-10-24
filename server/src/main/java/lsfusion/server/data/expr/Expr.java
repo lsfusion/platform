@@ -295,12 +295,12 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     
     public static <K> ImMap<K, ObjectValue> readObjectValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        MExclMap<K, ObjectValue> mMapValues = MapFact.mExclMap(mapExprs.size());
-        MExclMap<K, Expr> mMapExprValues = MapFact.mExclMap(mapExprs.size());
+        MExclMap<K, ObjectValue> mMapValues = MapFact.mExclMapMax(mapExprs.size());
+        MExclMap<K, Expr> mMapExprValues = MapFact.mExclMapMax(mapExprs.size());
         for(int i=0,size=mapExprs.size();i<size;i++) {
             Expr expr = mapExprs.getValue(i);
             ObjectValue objectValue = expr.getObjectValue(env);
-            if(objectValue!=null)
+            if(objectValue != null)
                 mMapValues.exclAdd(mapExprs.getKey(i), objectValue);
             else
                 mMapExprValues.exclAdd(mapExprs.getKey(i), expr);
@@ -308,10 +308,23 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         ImMap<K, ObjectValue> mapValues = mMapValues.immutable();
         ImMap<K, Expr> mapExprValues = mMapExprValues.immutable();
 
-        if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
+        if(mapExprValues.isEmpty())
             return mapValues;
         else
             return mapValues.addExcl(new Query<>(MapFact.EMPTYREV(), mapExprValues, Where.TRUE()).executeClasses(session, env, baseClass).singleValue());
+    }
+
+    public static <K> ImMap<K, ObjectValue> getObjectValues(ImMap<K,Expr> mapExprs, QueryEnvironment env) {
+        MExclMap<K, ObjectValue> mMapValues = MapFact.mExclMap(mapExprs.size());
+        for(int i=0,size=mapExprs.size();i<size;i++) {
+            Expr expr = mapExprs.getValue(i);
+            ObjectValue objectValue = expr.getObjectValue(env);
+            if(objectValue != null)
+                mMapValues.exclAdd(mapExprs.getKey(i), objectValue);
+            else
+                return null;
+        }
+        return mMapValues.immutable();
     }
 
     public abstract Where getBaseWhere();

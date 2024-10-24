@@ -3,6 +3,7 @@ package lsfusion.server.base.controller.remote.context;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.PendingRemoteObject;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
@@ -45,8 +46,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     protected Context context;
 
-    private static ScheduledExecutorService closeExecutor = ExecutorFactory.createCloseScheduledThreadService();
-    private void scheduleClose(long delay, Runnable run) {
+    protected static ScheduledExecutorService closeExecutor = ExecutorFactory.createCloseScheduledThreadService();
+    protected void scheduleClose(long delay, ERunnable run) {
         closeExecutor.schedule(() -> {
             ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
             ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);

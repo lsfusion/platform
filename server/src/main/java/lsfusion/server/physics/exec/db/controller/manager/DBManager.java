@@ -935,7 +935,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
                                      TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
         return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
-                LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics.getSessionEvents(), owner, null);
+                LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics, owner, null);
     }
 
 

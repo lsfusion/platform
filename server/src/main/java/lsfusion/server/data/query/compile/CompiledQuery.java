@@ -273,7 +273,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         keyNames = query.mapKeys.mapRevValues(new GenNameIndex("jkey", ""));
         propertyNames = query.properties.mapRevValues(new GenNameIndex("jprop",""));
-        params = SetFact.addExclSet(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex("qwer", "ffd"));
+        params = SetFact.addExclSet(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex(String.valueOf(SQLSession.paramPrefix), String.valueOf(SQLSession.paramPostfix)));
 
         MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv();
         Result<Cost> mBaseCost = new Result<>(Cost.MIN);
@@ -815,7 +815,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(Settings.get().isDisableCompiledSubQueries())
                     return query.getString();
 
-                String sqName = subcontext.wrapSiblingSubQuery("jdfkjsd" + mSubQueries.size() + "ref");
+                String sqName = SQLSession.getParamName(subcontext.wrapSiblingSubQuery("sq" + mSubQueries.size()));
                 mSubQueries.exclAdd(sqName, query);
                 return sqName;
             }

@@ -62,10 +62,6 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public final Expr expr;
     public final Where where;
 
-    public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues) {
-        return getMapExprs(mapKeys, mapValues, Where.TRUE());
-    }
-
     public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues, Where where) {
         final ImMap<BaseExpr, BaseExpr> exprValues = where.getExprValues();
         return DataObject.getMapExprs(mapValues).addExcl(mapKeys.mapValues(value -> {
