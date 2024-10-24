@@ -53,6 +53,7 @@ public class OverJDBField extends JDBField {
                     stringBuilder.setCharAt(getLength() - getDecimalCount() - 1, '.');
 
                     if (Settings.get().isExportDBFNumericMandatoryZeroes()) {
+                        stringBuilder.setCharAt(getLength() - getDecimalCount() - 2, '0');
                         for (int i = getLength() - getDecimalCount(); i < getLength(); i++) {
                             stringBuilder.setCharAt(i, '0');
                         }
