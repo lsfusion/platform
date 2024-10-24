@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.hexiong.jdbf.JDBFException;
 import com.hexiong.jdbf.JDBField;
+import lsfusion.server.physics.admin.Settings;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -50,6 +51,12 @@ public class OverJDBField extends JDBField {
                 }
                 if (getDecimalCount() > 0) {
                     stringBuilder.setCharAt(getLength() - getDecimalCount() - 1, '.');
+
+                    if (Settings.get().isExportDBFNumericMandatoryZeroes()) {
+                        for (int i = getLength() - getDecimalCount(); i < getLength(); i++) {
+                            stringBuilder.setCharAt(i, '0');
+                        }
+                    }
                 }
                 DecimalFormat decimalformat = new DecimalFormat(stringBuilder.toString());
                 DecimalFormatSymbols dfSymbols = decimalformat.getDecimalFormatSymbols();
