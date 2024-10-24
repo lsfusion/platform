@@ -52,10 +52,7 @@ public class YearCellEditor extends IntegralCellEditor {
         }
 
         inputElement.addEventListener('keydown', function (e) {
-            // stop Escape propagation because there is some magic inside the AirDatepicker when it is pressed, which prevents our logic from working properly (as if esc triggers 2 times).
-            // stop Enter propagation because when you press it, the wrong date is written to the inputElement because ActionOrPropertyValue.setValue is called before the library writes the new date to inputElement.
-            if (parent.picker.visible && ('Escape' === e.key || 'Enter' === e.key))
-                e.stopPropagation();
+            $wnd.handleDropdownKeyEvent(parent.picker.visible, e, true);
         });
 
         parent.picker = new $wnd.AirDatepicker(inputElement, {
