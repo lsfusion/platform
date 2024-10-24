@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.DBType;
@@ -98,13 +99,21 @@ public abstract class AStringClass extends TextBasedClass<String> {
         return syntax.getVarStringSQL();
     }
 
-    public boolean isSafeString(Object value) {
+    public static boolean isDBSafeString(Object value) {
         if(value == null)
             return false;
 
         assert value instanceof String;
         String string = value.toString();
-        return !string.contains("'") && !string.contains("\\");
+        return !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
+    }
+
+    public static String getDBString(Object value) {
+        return "'" + value + "'";
+    }
+
+    public boolean isSafeString(Object value) {
+        return isDBSafeString(value);
     }
 
     public String read(Object value) {
@@ -178,7 +187,7 @@ public abstract class AStringClass extends TextBasedClass<String> {
     }
 
     public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
+        return getDBString(value);
     }
 
     @Override

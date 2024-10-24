@@ -6,6 +6,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
 
@@ -69,10 +70,12 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
 
     @Override
     public boolean isSafeString(Object value) {
-        if(value == null)
-            return false;
-        assert value instanceof String;
-        return true;
+        return AStringClass.isDBSafeString(value);
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        return AStringClass.getDBString(value);
     }
 
     @Override
@@ -113,10 +116,5 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
     @Override
     public boolean isFlex() {
         return true;
-    }
-
-    @Override
-    public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
     }
 }
