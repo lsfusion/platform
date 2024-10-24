@@ -3430,4 +3430,14 @@ public class Settings implements Cloneable {
     public void setIgnoreBodyStructureSizeFix(boolean ignoreBodyStructureSizeFix) {
         this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
     }
+
+    public boolean exportDBFNumericMandatoryZeroes = false;
+
+    public boolean isExportDBFNumericMandatoryZeroes() {
+        return exportDBFNumericMandatoryZeroes;
+    }
+
+    public void setExportDBFNumericMandatoryZeroes(boolean exportDBFNumericMandatoryZeroes) {
+        this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
+    }
 }
