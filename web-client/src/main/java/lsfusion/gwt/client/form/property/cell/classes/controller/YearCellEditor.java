@@ -9,10 +9,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-import java.util.Date;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-
 public class YearCellEditor extends IntegralCellEditor {
 
     public YearCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -36,7 +32,7 @@ public class YearCellEditor extends IntegralCellEditor {
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         if (started)
-            destroyYearPicker(parent);
+            hideYearPicker(parent);
         super.stop(parent, cancel, blurred);
     }
 
@@ -54,6 +50,11 @@ public class YearCellEditor extends IntegralCellEditor {
             startDate = new Date();
             inputElement.value = startDate.getFullYear();
         }
+
+        inputElement.addEventListener('keydown', function (e) {
+            $wnd.handleDropdownKeyEvent(parent.picker.visible, e, true);
+        });
+
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
             minView: 'years', // The minimum possible representation of the calendar. It is used, for example, when you need to provide only a choice of the year.
@@ -62,14 +63,20 @@ public class YearCellEditor extends IntegralCellEditor {
             dateFormat: function (date) {
                 return date.getFullYear(); // to return a number, not a Date object
             },
-            onSelect: function(event) {
+            onSelect: function() {
                 thisObj.@YearCellEditor::pickerApply(*)(parent);
+                parent.picker.hide(); // to hide popup on Enter pressed
+            },
+            onHide: function (isFinished) {
+                if (isFinished)
+                    parent.picker.destroy();
             }
         });
     }-*/;
 
-    protected native void destroyYearPicker(Element parent)/*-{
-        parent.picker.destroy();
+    protected native void hideYearPicker(Element parent)/*-{
+        //If call destroy() here, we get an error, because destroy() can be called after the picker is completely closed. destroy() is called inside onHide
+        parent.picker.hide();
     }-*/;
 
     protected native Element getYearPickerContainer(Element parent)/*-{
