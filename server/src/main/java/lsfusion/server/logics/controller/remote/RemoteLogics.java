@@ -178,12 +178,16 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw Throwables.propagate(t);
         } finally {
             if(session != null) {
-                if (closeSession || sessionsPool.size() >= Settings.get().getFreeAPISessions())
-                    session.localClose();
-                else {
-                    session.clean();
-                    sessionsPool.add(session);
-                }
+                RemoteSession fSession = session;
+                boolean fCloseSession = closeSession;
+                scheduleClose(0, () -> {
+                    if (fCloseSession || sessionsPool.size() >= Settings.get().getFreeAPISessions())
+                        fSession.localClose();
+                    else {
+                        fSession.clean();
+                        sessionsPool.add(fSession);
+                    }
+                });
             }
         }
     }

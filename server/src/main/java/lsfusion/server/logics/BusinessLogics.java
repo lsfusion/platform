@@ -18,6 +18,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
@@ -149,7 +150,7 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
-public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean {
+public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean, SessionEvents {
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
@@ -526,10 +527,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 dbManager.addIndex(classProperty);
         }
     }
-
-    // временный хак для перехода на явную типизацию
-    public static boolean useReparse = false;
-    public static final ThreadLocal<ImMap<String, String>> reparse = new ThreadLocal<>();
 
     public <P extends PropertyInterface> void finishLogInit(Property<P> property) {
         if (property.isLoggable()) {
@@ -1503,8 +1500,53 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return BaseUtils.immutableCast(getCustomClasses().filterFn(property -> property instanceof ConcreteCustomClass));
     }
 
+    public ImMap<OldProperty, SessionEnvEvent> calcSessionEventOldDepends(FunctionSet<? extends Property> properties, ImOrderMap<Action, SessionEnvEvent> sessionEvents) {
+        MMap<OldProperty, SessionEnvEvent> mResult = MapFact.mMap(SessionEnvEvent.mergeSessionEnv());
+        for (int i = 0, size = sessionEvents.size(); i < size; i++) {
+            Action<?> action = sessionEvents.getKey(i);
+            SessionEnvEvent sessionEnv = sessionEvents.getValue(i);
+
+            for(OldProperty old : action.getSessionEventOldDepends())
+                if(Property.depends(old.property, (FunctionSet<Property>) properties))
+                    mResult.add(old, sessionEnv);
+        }
+        return mResult.immutable();
+    }
+
     @IdentityLazy
-    public ImOrderMap<Action, SessionEnvEvent> getSessionEvents() {
+    public ImMap<OldProperty, SessionEnvEvent> getCacheSessionEventOldDepends(ImSet<Property> properties) {
+        return calcSessionEventOldDepends(properties, getAllSessionEvents());
+    }
+
+    public ImMap<OldProperty, SessionEnvEvent> getSessionEventOldDepends(FunctionSet<? extends Property> properties) {
+        ImOrderMap<Action, SessionEnvEvent> sessionEvents = getAllSessionEvents();
+        if(properties instanceof ImSet && ((ImSet<Property>) properties).size() < (double) sessionEvents.size() * Settings.get().getCacheNextEventActionRatio())
+            return getCacheSessionEventOldDepends((ImSet<Property>) properties);
+        return calcSessionEventOldDepends(properties, sessionEvents);
+    }
+
+    private NextSession calcNextSessionEvent(int i, ImSet<Property> sessionEventChangedOld, ImOrderMap<Action, SessionEnvEvent> sessionEvents) {
+        for(int size=sessionEvents.size();i<size;i++) {
+            Action<?> action = sessionEvents.getKey(i);
+            if(sessionEventChangedOld.intersect(action.getSessionEventOldDepends()))
+                return new NextSession(action, sessionEvents.getValue(i), i, new StatusMessage("event", action, i, size));
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    private NextSession getCachedNextSessionEvent(int i, ImSet<Property> sessionEventChangedOld) {
+        return calcNextSessionEvent(i, sessionEventChangedOld, getAllSessionEvents());
+    }
+
+    public NextSession getNextSessionEvent(int i, ImSet<Property> sessionEventChangedOld, ImOrderMap<Action, SessionEnvEvent> sessionEvents) {
+        if(sessionEventChangedOld.size() < (double) sessionEvents.size() * Settings.get().getCacheNextEventActionRatio())
+            return getCachedNextSessionEvent(i, sessionEventChangedOld);
+        return calcNextSessionEvent(i, sessionEventChangedOld, sessionEvents);
+    }
+
+    @IdentityLazy
+    public ImOrderMap<Action, SessionEnvEvent> getAllSessionEvents() {
         ImOrderSet<ActionOrProperty> list = getPropertyList(ApplyFilter.SESSION);
         MOrderExclMap<Action, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         SessionEnvEvent sessionEnv;
@@ -1512,6 +1554,25 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             if (property instanceof Action && (sessionEnv = ((Action) property).getSessionEnv(SystemEvent.SESSION))!=null)
                 mResult.exclAdd((Action) property, sessionEnv);
         return mResult.immutableOrder();
+    }
+
+    // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
+    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) {
+        Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> orderMapSingleApplyDepends = getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations);
+
+        ImOrderMap<ApplySingleEvent, SessionEnvEvent> depends = orderMapSingleApplyDepends.first.get(event);
+        ImMap<ApplyUpdatePrevEvent, Integer> lastUsedEvents = orderMapSingleApplyDepends.second;
+
+        if(!Settings.get().isRemoveClassesFallback()) {
+            depends = depends.filterOrder(element -> {
+                if(element instanceof ApplyUpdatePrevEvent) {
+                    return lastUsedEvents.get((ApplyUpdatePrevEvent)element) >= session.executingApplyEvent;
+                }
+                return true;
+            });
+
+        }
+        return depends.filterOrderValues(sessionEnv -> sessionEnv.contains(session));
     }
 
     @IdentityLazy
@@ -1544,14 +1605,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutableOrder();
     }
 
-    public static class Next {
-        public final ApplyGlobalEvent event;
+    // optimization similar to Next
+    public static class NextSession {
+        public final Action action;
         public final SessionEnvEvent sessionEnv;
         public final int index;
         public final StatusMessage statusMessage;
 
-        public Next(ApplyGlobalEvent event, SessionEnvEvent sessionEnv, int index, StatusMessage statusMessage) {
-            this.event = event;
+        public NextSession(Action action, SessionEnvEvent sessionEnv, int index, StatusMessage statusMessage) {
+            this.action = action;
             this.sessionEnv = sessionEnv;
             this.index = index;
             this.statusMessage = statusMessage;
@@ -1663,23 +1725,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return new Pair<>(mMapDepends.immutable().mapValues(MOrderMap::immutableOrder), mLastUsed.immutable());
     }
 
-    // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) {
-        Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> orderMapSingleApplyDepends = getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations);
+    // optimization similar to NextSession
+    public static class Next {
+        public final ApplyGlobalEvent event;
+        public final SessionEnvEvent sessionEnv;
+        public final int index;
+        public final StatusMessage statusMessage;
 
-        ImOrderMap<ApplySingleEvent, SessionEnvEvent> depends = orderMapSingleApplyDepends.first.get(event);
-        ImMap<ApplyUpdatePrevEvent, Integer> lastUsedEvents = orderMapSingleApplyDepends.second;
-
-        if(!Settings.get().isRemoveClassesFallback()) {
-            depends = depends.filterOrder(element -> {
-                if(element instanceof ApplyUpdatePrevEvent) {
-                    return lastUsedEvents.get((ApplyUpdatePrevEvent)element) >= session.executingApplyEvent;
-                }
-                return true;
-            });
-
+        public Next(ApplyGlobalEvent event, SessionEnvEvent sessionEnv, int index, StatusMessage statusMessage) {
+            this.event = event;
+            this.sessionEnv = sessionEnv;
+            this.index = index;
+            this.statusMessage = statusMessage;
         }
-        return session.filterOrderEnv(depends);
     }
 
     @IdentityLazy

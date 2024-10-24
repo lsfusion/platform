@@ -1500,19 +1500,35 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, ChangesController changesController) throws SQLException, SQLHandledException {
-        return readLazyClasses(session, keys, modifier, false, changesController);
+    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, ChangesController changesController, QueryEnvironment env) throws SQLException, SQLHandledException {
+        return readLazyClasses(session, keys, modifier, false, changesController, env);
     }
-    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController) throws SQLException, SQLHandledException {
+    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController, QueryEnvironment env) throws SQLException, SQLHandledException {
         if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
             return changesController.readLazyValue(this, keys);
-        if (this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
-            return NullValue.instance;
+        if (this instanceof SessionDataProperty) {
+            // maybe can be done not only for all properties (not only SessionDataProperty)
+            ModifyChange<T> modify = modifier.getPropertyChanges().getModify(this);
+            if(modify != null) {
+                ImMap<T, Expr> mapExprs = modify.change.getMapExprs();
+                ImMap<T, ObjectValue> changeKeys; ObjectValue changeValue;
+                if (mapExprs.size() == keys.size() && (changeKeys = Expr.getObjectValues(mapExprs, env)) != null && keys.equals(changeKeys) && (changeValue = modify.change.expr.getObjectValue(env)) != null)
+                    return changeValue;
+            }
+
+            if (!hasChanges(modifier, prevChanges))
+                return NullValue.instance;
+        }
+        return null;
+    }
+    public ImMap<ImMap<T, DataObject>, DataObject> readAllLazyClasses(SQLSession session, Modifier modifier, ChangesController changesController) throws SQLException, SQLHandledException {
+        if (this instanceof SessionDataProperty && !hasChanges(modifier, false))
+            return MapFact.EMPTY();
         return null;
     }
 
     public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
-        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController);
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController, env);
         if(lazyValue != null)
             return new Pair<>(lazyValue, false);
 
@@ -1526,7 +1542,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ObjectValue readClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
-        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController);
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController, env);
         if(lazyValue != null)
             return lazyValue;
 
@@ -1541,7 +1557,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
-        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController);
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController, env);
         if(lazyValue != null)
             return lazyValue.getValue();
 
@@ -1551,7 +1567,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readQuery.execute(session, env).singleValue().get(readValue);
     }
 
-    public ImMap<ImMap<T, Object>, Object> readAll(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ImMap<ImMap<T, Object>, Object> readAll(SQLSession session, Modifier modifier, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
+        ImMap<ImMap<T, DataObject>, DataObject> lazyValues = readAllLazyClasses(session, modifier, changesController);
+        if(lazyValues != null)
+            return lazyValues.mapKeyValues(key -> key.mapValues(value -> value.getValue()), value -> value.getValue());
+
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
         Expr expr = getExpr(readQuery.getMapExprs(), modifier);
@@ -1560,7 +1580,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readQuery.execute(session, env).getMap().mapValues(ImMap::singleValue);
     }
 
-    public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(SQLSession session, Modifier modifier, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(SQLSession session, Modifier modifier, QueryEnvironment env, BaseClass baseClass, ChangesController changesController) throws SQLException, SQLHandledException {
+        ImMap<ImMap<T, DataObject>, DataObject> lazyValues = readAllLazyClasses(session, modifier, changesController);
+        if(lazyValues != null)
+            return lazyValues;
+
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
         Expr expr = getExpr(readQuery.getMapExprs(), modifier);
@@ -1597,10 +1621,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return readAll(env.getSession().sql, env.getModifier(), env.getQueryEnv());
+        DataSession session = env.getSession();
+        return readAll(session.sql, env.getModifier(), env.getQueryEnv(), session.changes);
     }
     public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return readAllClasses(env.getSession().sql, env.getModifier(), env.getQueryEnv(), env.getSession().baseClass);
+        DataSession session = env.getSession();
+        return readAllClasses(session.sql, env.getModifier(), env.getQueryEnv(), env.getSession().baseClass, session.changes);
     }
 
     // используется для оптимизации - если Stored то попытать использовать это значение

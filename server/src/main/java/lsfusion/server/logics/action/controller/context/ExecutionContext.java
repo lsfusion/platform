@@ -631,7 +631,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public void executeSessionEvents() throws SQLException, SQLHandledException {
-        getSession().executeSessionEvents(getSessionEventFormEnv(), stack);
+        getSession().executeSessionEvents(getBL(), getSessionEventFormEnv(), stack);
     }
 
     public void delayUserInteraction(ClientAction action) {

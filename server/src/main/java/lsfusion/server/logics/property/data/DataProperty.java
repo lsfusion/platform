@@ -209,9 +209,8 @@ public abstract class DataProperty extends AbstractDataProperty {
         PropertyChange<ClassPropertyInterface> result = null;
 
         PropertyChange<ClassPropertyInterface> eventChange = null; // до непосредственно вычисления, для хинтов
-        if(event!=null)
+        if(event != null)
             eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.EMPTY()).get(this);
-
 
         if(!noClasses()) {
             PropertyChanges prevPropChanges = getPrevPropChanges(calcType, changes);
