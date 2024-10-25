@@ -904,7 +904,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         ImMap<String, Reader<?>> propertyReaders = MapFact.singleton("indexname", StringClass.instance);
 
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> rs = executeSelect(queryString, OperationOwner.unknown,
-                StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>mExclMap().immutable(),0,
+                StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(),0,
                 MapFact.EMPTYREV(), MapFact.EMPTY(), propertyNames, propertyReaders);
 
         for (ImMap<String, ?> rsValue : rs.values()) {
@@ -2463,7 +2463,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if (value.isSafeString(syntax))
                 stringValue = value.getString(syntax);
             else {
-                stringValue = "qxprm" + i + "nx";
+                stringValue = SQLSession.getParamName("mr" + i);
                 mParams.exclAdd(stringValue, new TypeObject((DataObject) value, field, syntax));
             }
             command.proceed(field.getName(syntax), stringValue);

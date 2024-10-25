@@ -191,8 +191,8 @@ public abstract class ProcessDumpAction extends InternalAction {
         propertyReaders.exclAdd("start_time", DateTimeClass.instance);
         propertyReaders.immutable();
 
-        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
-                , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY()
+                , 0, keyNames.immutable().toRevMap(), keyReaders.immutable(), propertyNames.immutable().toRevMap(), propertyReaders.immutable());
 
         Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
@@ -273,8 +273,8 @@ public abstract class ProcessDumpAction extends InternalAction {
         propertyReaders.exclAdd("wait_event", StringClass.get(100));
         propertyReaders.immutable();
 
-        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(),
+                0, keyNames.immutable().toRevMap(), keyReaders.immutable(), propertyNames.immutable().toRevMap(), propertyReaders.immutable());
 
         if (logSqlProcesses) {
             ServerLoggers.exInfoLogger.info("sessionThreadMap");
@@ -386,8 +386,8 @@ public abstract class ProcessDumpAction extends InternalAction {
         propertyReaders.exclAdd("blocking_statement", StringClass.get(100));
         propertyReaders.immutable();
 
-        ImOrderMap rs = sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders, true);
+        ImOrderMap rs = sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(),
+                0, keyNames.immutable().toRevMap(), keyReaders.immutable(), propertyNames.immutable().toRevMap(), propertyReaders.immutable());
 
         Map<Integer, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
