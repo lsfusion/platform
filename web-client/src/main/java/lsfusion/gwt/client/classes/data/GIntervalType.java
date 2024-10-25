@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.text.ParseException;
-import java.util.Date;
 
 public abstract class GIntervalType extends GFormatType {
 
@@ -54,11 +53,11 @@ public abstract class GIntervalType extends GFormatType {
 
     protected Long parse(String date, String pattern) throws ParseException {
         GADateType timeSeriesType = getTimeSeriesType();
-        return fromDate(timeSeriesType.toDate(timeSeriesType.parseString(date, pattern)));
+        return fromJsDate(timeSeriesType.toJsDate(timeSeriesType.parseString(date, pattern)));
     }
     protected String format(Long epoch, String pattern) {
         GADateType timeSeriesType = getTimeSeriesType();
-        return timeSeriesType.formatString(timeSeriesType.fromDate(toDate(epoch)), pattern);
+        return timeSeriesType.formatString(timeSeriesType.fromJsDate(toJsDate(epoch)), pattern);
     }
     public DateTimeFormat getSingleFormat(String pattern) {
         return getTimeSeriesType().getFormat(pattern);
@@ -90,42 +89,37 @@ public abstract class GIntervalType extends GFormatType {
 
     public abstract String getIntervalType();
 
-    public Date toDate(PValue value, boolean from) {
+    public JsDate toJsDate(PValue value, boolean from) {
         if(value == null)
-            return new Date();
+            return GwtClientUtils.createJsDate();
 
-        return toDate(PValue.getIntervalValue(value, from));
+        return toJsDate(PValue.getIntervalValue(value, from));
     }
 
 //    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
-    protected Date toDate(long epoch) {
-        Date date = new Date(epoch);
+    protected JsDate toJsDate(long epoch) {
+        JsDate date = GwtClientUtils.createJsDate((double) epoch);
+
         boolean local = isSingleLocal();
-        if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
-//            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
-//            return format.parse(format.format(date, UTCZone));
-            JsDate jsDate = GwtClientUtils.toJsDate(date);
-            date = new Date(GwtClientUtils.getUTCYear(jsDate) - 1900, GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCDate(jsDate), GwtClientUtils.getUTCHours(jsDate), GwtClientUtils.getUTCMinutes(jsDate), GwtClientUtils.getUTCSeconds(jsDate));
-        }
+        if(local)
+            date = GwtClientUtils.createJsDate(GwtClientUtils.getUTCYear(date) - 1900, GwtClientUtils.getUTCMonth(date), GwtClientUtils.getUTCDate(date), GwtClientUtils.getUTCHours(date), GwtClientUtils.getUTCMinutes(date), GwtClientUtils.getUTCSeconds(date));
 
         return date;
     }
 
-    protected long fromDate(Date date) {
+    protected long fromJsDate(JsDate date) {
         boolean local = isSingleLocal();
-        if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
-//            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
-//            date = format.parse(format.format(date), UTCZone);
-            date = GwtClientUtils.fromJsDate(GwtClientUtils.getUTCDate(1900 + date.getYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
-        }
-        return date.getTime();
+        if(local)
+            date = GwtClientUtils.createJsUTCDate(1900 + date.getYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+
+        return (long) date.getTime();
     }
 
-    public PValue fromDate(Date from, Date to) {
+    public PValue fromDate(JsDate from, JsDate to) {
         if(from == null || to == null)
             return null;
 
-        return PValue.getPValue(fromDate(from), fromDate(to));
+        return PValue.getPValue(fromJsDate(from), fromJsDate(to));
     }
 
 }

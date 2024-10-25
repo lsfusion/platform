@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
@@ -14,8 +13,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeCellEdi
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-
-import java.util.Date;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
@@ -43,23 +40,13 @@ public class GDateTimeType extends GADateType {
     }
 
     @Override
-    public PValue fromDate(Date date) {
-        return PValue.getPValue(GDateTimeDTO.fromDate(date));
-    }
-
-    @Override
-    public Date toDate(PValue value) {
-        return PValue.getDateTimeValue(value).toDateTime();
-    }
-
-    @Override
     public JsDate toJsDate(PValue value) {
-        return GwtClientUtils.toJsDate(PValue.getDateTimeValue(value).toDateTime());
+        return PValue.getDateTimeValue(value).toJsDate();
     }
 
     @Override
-    public PValue fromJsDate(JavaScriptObject date) {
-        return PValue.getPValue(GDateTimeDTO.fromDate(GwtClientUtils.fromJsDate((JsDate)date)));
+    public PValue fromJsDate(JsDate date) {
+        return PValue.getPValue(GDateTimeDTO.fromJsDate(date));
     }
 
     @Override

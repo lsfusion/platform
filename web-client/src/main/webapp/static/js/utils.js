@@ -3,6 +3,22 @@ var createPlainObject = function () {
     return {};
 };
 
+function createPlainDate(millis) {
+    return new Date(millis);
+}
+function createPlainDateCurrent() {
+    return new Date();
+}
+function createPlainDateDate(year, month, date) {
+    return new Date(year, month, date);
+}
+function createPlainDateDateTime(year, month, date, hours, minutes, seconds) {
+    return new Date(year, month, date, hours, minutes, seconds);
+}
+function createPlainDateDateTimeUTC(year, month, date, hours, minutes, seconds) {
+    return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+}
+
 //this var is needed to localize daterangepicker, because GWT does not accept dynamic keys in arrays
 var getRanges = function (wnd, rangeIntervalToday, rangeIntervalYesterday, rangeLast7Days, rangeLast30Days, rangeThisMonth, rangeToMonthEnd,
                           rangePreviousMonth, rangeMonthStartToCurrentDate, rangeThisYear, rangeToYearEnd, clear, preDefinedDateRangesNames) {
@@ -458,8 +474,4 @@ function setGlobalClassName(set, className) {
         root.classList.add(className);
     else
         root.classList.remove(className);
-}
-
-function getPlainDate(date) {
-    return new Date(date);
 }

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -163,7 +164,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
         if (type instanceof GADateType)
-            return ((GADateType) type).fromJsDate(value);
+            return ((GADateType) type).fromJsDate((JsDate)value);
 
         return PValue.getPValue(toString(value));
     }
@@ -522,7 +523,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return objectsFieldName;
     }
 
-    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JavaScriptObject start, JavaScriptObject end, boolean isDateTimeFilter) {
+    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end, boolean isDateTimeFilter) {
 
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
         PValue rightBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(end) : GDateType.instance.fromJsDate(end);
