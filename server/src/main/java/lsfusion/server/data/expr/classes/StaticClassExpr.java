@@ -33,7 +33,7 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         ConcreteObjectClass staticClass = (ConcreteObjectClass) expr.getStaticClass();
         if(!IsClassExpr.inSet(staticClass, classTables))
             return Expr.NULL();
-        return getClassExpr(staticClass);
+        return getClassExpr(staticClass).and(((BaseExpr)expr).getWhere());
     }
     public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         return classExpr(this, classes, type);

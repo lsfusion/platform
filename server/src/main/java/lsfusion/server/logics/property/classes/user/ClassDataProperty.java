@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.SingleClassExpr;
+import lsfusion.server.data.expr.classes.StaticClassExpr;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.where.classes.IsClassWhere;
@@ -87,7 +88,11 @@ public class ClassDataProperty extends AbstractDataProperty implements ObjectCla
     }
 
     public BaseExpr getFollowExpr(BaseExpr joinExpr) {
-        return (BaseExpr) joinExpr.classExpr(this);
+        Expr classExpr = joinExpr.classExpr(this);
+        if(classExpr instanceof BaseExpr)
+            return (BaseExpr) classExpr;
+        assert joinExpr instanceof StaticClassExpr; // classExpr = staticValue IF joinExpr
+        return joinExpr;
     }
 
     public ObjectValueClassSet getObjectSet() {
