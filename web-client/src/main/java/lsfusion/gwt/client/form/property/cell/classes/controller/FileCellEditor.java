@@ -57,21 +57,21 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             newVersionUploader = createUploader(parent, popupOwnerWidget);
             newVersionUploader.addFilesToQueue(validFiles);
             newVersionUploader.startUpload();
-        }
 
-        // we can catch "File name too long" error only in UploadFileRequestHandler,
-        // but we need to handle it in this place,
-        // we use a hack: in UploadFileRequestHandler write 270 code in response when this error occurs,
-        // and in this place when 270 code (FILE_VALIDATION_FAILED) appears we know that it is an error related to "File name too long".
-        newVersionUploader.setUploadErrorHandler(uploadErrorEvent -> {
-            if (!uploadErrorEvent.getErrorCode().equals(UploadErrorEvent.ErrorCode.FILE_CANCELLED)) { // this check is necessary because loadingBox.hideLoadingBox() throws FILE_CANCELLED error
-                String errorMessage = uploadErrorEvent.getMessage().endsWith(String.valueOf(-UploadErrorEvent.ErrorCode.FILE_VALIDATION_FAILED.toInt())) ?
-                        ClientMessages.Instance.get().fileNameTooLong() : uploadErrorEvent.getMessage();
-                loadingBox.hideLoadingBox(true);
-                throw new RuntimeException(errorMessage);
-            }
-            return false;
-        });
+            // we can catch "File name too long" error only in UploadFileRequestHandler,
+            // but we need to handle it in this place,
+            // we use a hack: in UploadFileRequestHandler write 270 code in response when this error occurs,
+            // and in this place when 270 code (FILE_VALIDATION_FAILED) appears we know that it is an error related to "File name too long".
+            newVersionUploader.setUploadErrorHandler(uploadErrorEvent -> {
+                if (!uploadErrorEvent.getErrorCode().equals(UploadErrorEvent.ErrorCode.FILE_CANCELLED)) { // this check is necessary because loadingBox.hideLoadingBox() throws FILE_CANCELLED error
+                    String errorMessage = uploadErrorEvent.getMessage().endsWith(String.valueOf(-UploadErrorEvent.ErrorCode.FILE_VALIDATION_FAILED.toInt())) ?
+                            ClientMessages.Instance.get().fileNameTooLong() : uploadErrorEvent.getMessage();
+                    loadingBox.hideLoadingBox(true);
+                    throw new RuntimeException(errorMessage);
+                }
+                return false;
+            });
+        }
         return hasValidFiles;
     }
 
