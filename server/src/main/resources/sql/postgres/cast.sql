@@ -28,10 +28,10 @@ $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 --json (jsonb)
 
-CREATE OR REPLACE FUNCTION cast_json_to_static_file(json jsonb) RETURNS bytea AS
+CREATE OR REPLACE FUNCTION cast_json_to_static_file(param jsonb) RETURNS bytea AS
 $$
 BEGIN
-	RETURN convert_to(json::text,'UTF-8');
+RETURN convert_to(param::text,'UTF-8');
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
@@ -44,10 +44,10 @@ $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 --json string (json)
 
-CREATE OR REPLACE FUNCTION cast_json_text_to_static_file(json json) RETURNS bytea AS
+CREATE OR REPLACE FUNCTION cast_json_text_to_static_file(param json) RETURNS bytea AS
 $$
 BEGIN
-RETURN convert_to(json::text,'UTF-8');
+RETURN convert_to(param::text,'UTF-8');
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 

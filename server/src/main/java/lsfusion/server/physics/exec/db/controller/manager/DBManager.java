@@ -245,6 +245,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ImplementTable.reflectionStatProps(() -> {
                 SQLSession sql = getThreadLocalSql();
 
+                if(!isFirstStart(sql) && getOldDBStructure(sql).version < 40) {
+                    startLog("Migrating cast.sql functions");
+                    sql.executeDDL("DROP FUNCTION cast_json_to_static_file(jsonb)");
+                    sql.executeDDL("DROP FUNCTION cast_json_text_to_static_file(json)");
+                }
+
                 adapter.ensure(false);
 
                 if (!isFirstStart(sql)) {
@@ -3264,7 +3270,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 39;
+    public static int newDBStructureVersion = 40;
 
     private class OldDBStructure extends DBStructure<String> {
 
