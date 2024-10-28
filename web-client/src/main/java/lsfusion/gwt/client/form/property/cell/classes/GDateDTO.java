@@ -21,16 +21,16 @@ public class GDateDTO implements Serializable {
     }
 
     public static GDateDTO fromJsDate(JsDate date) {
-        return new GDateDTO(date.getYear() + 1900, date.getMonth() + 1, date.getDate());
+        return new GDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate());
     }
 
     public JsDate toJsDate() {
-        return GwtClientUtils.createJsDate(year - 1900, month - 1, day);
+        return GwtClientUtils.createJsDate(year, month - 1, day);
     }
     
     @Override
     public String toString() {
-        return new java.sql.Date(year - 1900, month - 1, day).toString(); //need sql format for GCalendar
+        return new java.sql.Date(year, month - 1, day).toString(); //need sql format for GCalendar
     }
 
     @Override

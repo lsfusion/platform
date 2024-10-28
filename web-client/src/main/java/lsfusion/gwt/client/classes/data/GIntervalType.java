@@ -102,7 +102,7 @@ public abstract class GIntervalType extends GFormatType {
 
         boolean local = isSingleLocal();
         if(local)
-            date = GwtClientUtils.createJsDate(GwtClientUtils.getUTCYear(date) - 1900, GwtClientUtils.getUTCMonth(date), GwtClientUtils.getUTCDate(date), GwtClientUtils.getUTCHours(date), GwtClientUtils.getUTCMinutes(date), GwtClientUtils.getUTCSeconds(date));
+            date = GwtClientUtils.createJsDate(GwtClientUtils.getUTCYear(date), GwtClientUtils.getUTCMonth(date), GwtClientUtils.getUTCDate(date), GwtClientUtils.getUTCHours(date), GwtClientUtils.getUTCMinutes(date), GwtClientUtils.getUTCSeconds(date));
 
         return date;
     }
@@ -110,7 +110,7 @@ public abstract class GIntervalType extends GFormatType {
     protected long fromJsDate(JsDate date) {
         boolean local = isSingleLocal();
         if(local)
-            date = GwtClientUtils.createJsUTCDate(1900 + date.getYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+            date = GwtClientUtils.createJsUTCDate(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
 
         return (long) date.getTime();
     }

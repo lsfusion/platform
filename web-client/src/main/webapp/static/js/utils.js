@@ -3,19 +3,16 @@ var createPlainObject = function () {
     return {};
 };
 
-function createPlainDate(millis) {
-    return new Date(millis);
-}
 function createPlainDateCurrent() {
     return new Date();
 }
-function createPlainDateDate(year, month, date) {
-    return new Date(year, month, date);
+function createPlainDate(date) {
+    return date.millis ? new Date(date.millis) : new Date(date.year, date.month, date.date);
 }
-function createPlainDateDateTime(year, month, date, hours, minutes, seconds) {
+function createPlainDateTime(year, month, date, hours, minutes, seconds) {
     return new Date(year, month, date, hours, minutes, seconds);
 }
-function createPlainDateDateTimeUTC(year, month, date, hours, minutes, seconds) {
+function createPlainDateTimeUTC(year, month, date, hours, minutes, seconds) {
     return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
 }
 

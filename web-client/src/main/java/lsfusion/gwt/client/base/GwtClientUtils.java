@@ -1615,7 +1615,7 @@ public class GwtClientUtils {
     }-*/;
 
     public static native JsDate createJsDate(double milliseconds)/*-{
-        return $wnd.createPlainDate(milliseconds);
+        return $wnd.createPlainDate({ millis: milliseconds });
     }-*/;
 
     public static native JsDate createJsDate()/*-{
@@ -1623,15 +1623,15 @@ public class GwtClientUtils {
     }-*/;
 
     public static native JsDate createJsDate(int year, int month, int date)/*-{
-        return $wnd.createPlainDateDate(year, month, date);
+        return $wnd.createPlainDate({year: year, month: month, date: date});
     }-*/;
 
     public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateDateTime(year, month, date, hours, minutes, seconds);
+        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds);
     }-*/;
 
     public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateDateTimeUTC(year, month, date, hours, minutes, seconds);
+        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds);
     }-*/;
     public static native int getUTCYear(JsDate date)/*-{
         return date.getUTCFullYear();

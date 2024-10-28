@@ -27,11 +27,11 @@ public class GDateTimeDTO implements Serializable {
     }
 
     public static GDateTimeDTO fromJsDate(JsDate date) {
-        return new GDateTimeDTO(date.getYear() + 1900, date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        return new GDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
     }
 
     public JsDate toJsDate() {
-        return GwtClientUtils.createJsDate(year - 1900, month - 1, day, hour, minute, second);
+        return GwtClientUtils.createJsDate(year, month - 1, day, hour, minute, second);
     }
 
     @Override
