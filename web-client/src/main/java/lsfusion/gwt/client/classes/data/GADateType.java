@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -21,31 +23,44 @@ public abstract class GADateType extends GFormatType {
         return GEditBindingMap.numberEventFilter;
     }
 
-    private static Date wideFormattableDateTime = null;
+    private static transient JsDate wideFormattableDateTime = null;
 
     @Override
     protected PValue getDefaultWidthValue() {
         if(wideFormattableDateTime == null)
-            wideFormattableDateTime = com.google.gwt.i18n.shared.DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").parse("1991-11-21 10:55:55");
-        return fromDate(wideFormattableDateTime);
+            wideFormattableDateTime = GwtClientUtils.createJsDate(1991,11,21,10,55,55);
+        return fromJsDate(wideFormattableDateTime);
     }
 
     @Override
     public PValue parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getFormats(pattern)));
+        return parseString(value, getFormats(pattern));
     }
 
     @Override
     public String formatString(PValue value, String pattern) {
-        return getFormat(pattern).format(toDate(value));
+        return formatString(value, getFormat(pattern));
     }
 
     public PValue parseISOString(String value) throws ParseException {
-        return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getISOFormat()));
+        return parseString(value, getISOFormat());
     }
 
     public String formatISOString(PValue value) {
-        return getISOFormat().format(toDate(value));
+        return formatString(value, getISOFormat());
+    }
+
+    private String formatString(PValue value, DateTimeFormat format) {
+        JsDate date = toJsDate(value);
+        return format.format(date == null ? null : new Date(Math.round(date.getTime())));
+    }
+
+    private PValue parseString(String value, DateTimeFormat... formats) throws ParseException {
+        if (value.isEmpty())
+            return null;
+
+        Date date = GDateType.parseDate(value, formats);
+        return fromJsDate(date != null ? GwtClientUtils.createJsDate(date.getTime()) : null);
     }
 
     // "extended" getFormat + some extra formates
@@ -56,7 +71,7 @@ public abstract class GADateType extends GFormatType {
     public abstract DateTimeFormat getFormat(String pattern);
     public abstract DateTimeFormat getISOFormat(); // format to be used in input date / datetime-local / time
 
-    public abstract PValue fromDate(Date date);
+    public abstract JsDate toJsDate(PValue value);
 
-    public abstract Date toDate(PValue value);
+    public abstract PValue fromJsDate(JsDate date);
 }

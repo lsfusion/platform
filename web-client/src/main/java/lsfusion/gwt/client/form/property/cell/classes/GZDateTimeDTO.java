@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
+import com.google.gwt.core.client.JsDate;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
 
 public class GZDateTimeDTO implements Serializable {
     public long instant;
@@ -16,16 +16,16 @@ public class GZDateTimeDTO implements Serializable {
         this.instant = instant;
     }
 
-    public static PValue fromDate(Date date) {
-        return PValue.getPValue(new GZDateTimeDTO(date.getTime()));
+    public static PValue fromJsDate(JsDate date) {
+        return PValue.getPValue(new GZDateTimeDTO((long) date.getTime()));
     }
 
-    public Timestamp toDateTime() {
-        return new Timestamp(instant);
+    public JsDate toJsDate() {
+        return GwtClientUtils.createJsDate(instant);
     }
 
     @Override
     public String toString() {
-        return toDateTime().toString();
+        return toJsDate().toString();
     }
 }

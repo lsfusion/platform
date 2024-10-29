@@ -1566,7 +1566,14 @@
 
         elementChanged: function() {
             if (!this.element.is('input')) return;
-            if (!this.element.val().length) return;
+            // when deleting a date from the keyboard, the picker is not updated because of this validation.
+            // when applying changes, we use the date from the picker in DateRangePickerBasedCellEditor.getPickerStartDate() and because date is not updated, the date cannot reset to null from the keyboard
+            if (!this.element.val().length) {
+                // PATCHED
+                this.setStartDate(null);
+                this.setEndDate(null);
+                return;
+            }
 
             var dateString = this.element.val().split(this.locale.separator),
                 start = null,

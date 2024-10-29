@@ -1,8 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
+import com.google.gwt.core.client.JsDate;
+import lsfusion.gwt.client.base.GwtClientUtils;
+
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Objects;
 
 public class GDateTimeDTO implements Serializable {
@@ -25,17 +26,17 @@ public class GDateTimeDTO implements Serializable {
         this.second = second;
     }
 
-    public static GDateTimeDTO fromDate(Date date) {
-        return new GDateTimeDTO(date.getYear() + 1900, date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+    public static GDateTimeDTO fromJsDate(JsDate date) {
+        return new GDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
     }
 
-    public Timestamp toDateTime() {
-        return new Timestamp(year - 1900, month - 1, day, hour, minute, second, 0);
+    public JsDate toJsDate() {
+        return GwtClientUtils.createJsDate(year, month - 1, day, hour, minute, second);
     }
 
     @Override
     public String toString() {
-        return toDateTime().toString();
+        return toJsDate().toString();
     }
 
     @Override

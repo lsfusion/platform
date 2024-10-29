@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntervalType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -52,17 +51,17 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
 
     @Override
     protected JsDate getStartDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue, true));
+        return type.toJsDate(oldValue, true);
     }
 
     @Override
     protected JsDate getEndDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue, false));
+        return type.toJsDate(oldValue, false);
     }
 
     @Override
     protected PValue getValue(JsDate startDate, JsDate endDate) {
-        return startDate != null ? type.fromDate(GwtClientUtils.fromJsDate(startDate), GwtClientUtils.fromJsDate(endDate)) : null;
+        return startDate != null ? type.fromDate(startDate, endDate) : null;
     }
 
 }

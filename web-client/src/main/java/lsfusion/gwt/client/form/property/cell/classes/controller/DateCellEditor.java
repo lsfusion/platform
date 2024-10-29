@@ -73,16 +73,16 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected JsDate getStartDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+        return type.toJsDate(oldValue);
     }
 
     @Override
     protected JsDate getEndDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+        return type.toJsDate(oldValue);
     }
 
     @Override
     protected PValue getValue(JsDate startDate, JsDate endDate) {
-        return startDate != null ? type.fromDate(GwtClientUtils.fromJsDate(startDate)) : null;
+        return startDate != null ? type.fromJsDate(startDate) : null;
     }
 }

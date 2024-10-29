@@ -1614,18 +1614,24 @@ public class GwtClientUtils {
         return obj;
     }-*/;
 
-    public static JsDate toJsDate(Date date) {
-        if(date == null)
-            return null;
-        return JsDate.create(date.getTime());
-    }
-    public static Date fromJsDate(JsDate date) {
-        if(date == null)
-            return null;
-        return new Date(Math.round(date.getTime()));
-    }
-    public static native JsDate getUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+    public static native JsDate createJsDate(double milliseconds)/*-{
+        return $wnd.createPlainDateMillis(milliseconds);
+    }-*/;
+
+    public static native JsDate createJsDate()/*-{
+        return $wnd.createPlainDateCurrent();
+    }-*/;
+
+    public static native JsDate createJsDate(int year, int month, int date)/*-{
+        return $wnd.createPlainDate(year,month, date);
+    }-*/;
+
+    public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
+        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds);
+    }-*/;
+
+    public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
+        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds);
     }-*/;
     public static native int getUTCYear(JsDate date)/*-{
         return date.getUTCFullYear();

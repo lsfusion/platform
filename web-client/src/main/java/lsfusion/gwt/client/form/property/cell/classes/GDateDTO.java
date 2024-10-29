@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
+import com.google.gwt.core.client.JsDate;
+import lsfusion.gwt.client.base.GwtClientUtils;
+
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Objects;
 
 public class GDateDTO implements Serializable {
@@ -18,17 +20,17 @@ public class GDateDTO implements Serializable {
         this.day = day;
     }
 
-    public static GDateDTO fromDate(Date date) {
-        return new GDateDTO(date.getYear() + 1900, date.getMonth() + 1, date.getDate());
+    public static GDateDTO fromJsDate(JsDate date) {
+        return new GDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate());
     }
 
-    public Date toDate() {
-        return new java.util.Date(year - 1900, month - 1, day);
+    public JsDate toJsDate() {
+        return GwtClientUtils.createJsDate(year, month - 1, day);
     }
     
     @Override
     public String toString() {
-        return new java.sql.Date(year - 1900, month - 1, day).toString(); //need sql format for GCalendar
+        return new java.sql.Date(year, month - 1, day).toString(); //need sql format for GCalendar
     }
 
     @Override
