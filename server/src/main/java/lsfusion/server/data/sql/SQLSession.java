@@ -332,18 +332,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public boolean inconsistent = false;
 
-    public final static String userParam = "adsadaweewuser";
-    public final static String authTokenParam = "vkljudfshldhfskjhdkjrraae";
-    public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
-    public final static String computerParam = "fjruwidskldsor";
-    public final static String formParam = "yfifybdfnenfykfqyth";
-    public final static String connectionParam = "ntreottgjlrkxtybt";
-    public final static String isDevParam = "dsiljdsiowee";
-    public final static String isLightStartParam = "lsiljdsiowee";
-    public final static String inTestModeParam = "gxRbJbuKPuF2ec88Fbio8RJFnxtlPNTgeasEhUX0";
-    public final static String projectLSFDirParam = "XiSupdIyJMMwJSY2AyDDzEOHi6W6TLta658BJHG0";
+    public final static char paramPrefix = '\uE000';
+    public final static char paramPostfix = '\u2063';
+    public final static String userParam = getParamName("user");
+    public final static String authTokenParam = getParamName("authtoken");
+    public final static String isServerRestartingParam = getParamName("isServerRestarting");
+    public final static String computerParam = getParamName("computer");
+    public final static String formParam = getParamName("form");
+    public final static String connectionParam = getParamName("connection");
+    public final static String isDevParam = getParamName("isDev");
+    public final static String isLightStartParam = getParamName("isLightStart");
+    public final static String inTestModeParam = getParamName("inTestMode");
+    public final static String projectLSFDirParam = getParamName("projectLSFDirParam");
+    public final static String limitParam = getParamName("limitParam");
 
-    public final static String limitParam = "sdsnjklirens";
+    public static String getParamName(String param) {
+        return paramPrefix + param + paramPostfix;
+    }
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
@@ -570,11 +575,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, new HashMap<>(), false, 0);
+    public void startTransaction(boolean serializable, OperationOwner owner) throws SQLException, SQLHandledException {
+        startTransaction(serializable, owner, new HashMap<>(), false, 0, false);
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+    public void startTransaction(boolean serializable, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -588,9 +593,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 transStartTime = System.currentTimeMillis();
 
                 needPrivate();
-                if(isolationLevel > 0) {
+                if(serializable) {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();
-                    privateConnection.sql.setTransactionIsolation(isolationLevel);
+                    privateConnection.sql.setTransactionIsolation(trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ);
                 }
                 setACID(privateConnection.sql, true, syntax);
 
@@ -899,7 +904,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         ImMap<String, Reader<?>> propertyReaders = MapFact.singleton("indexname", StringClass.instance);
 
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> rs = executeSelect(queryString, OperationOwner.unknown,
-                StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>mExclMap().immutable(),0,
+                StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(),0,
                 MapFact.EMPTYREV(), MapFact.EMPTY(), propertyNames, propertyReaders);
 
         for (ImMap<String, ?> rsValue : rs.values()) {
@@ -2458,7 +2463,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if (value.isSafeString(syntax))
                 stringValue = value.getString(syntax);
             else {
-                stringValue = "qxprm" + i + "nx";
+                stringValue = SQLSession.getParamName("mr" + i);
                 mParams.exclAdd(stringValue, new TypeObject((DataObject) value, field, syntax));
             }
             command.proceed(field.getName(syntax), stringValue);
@@ -2917,15 +2922,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         boolean poolPrepared = !env.isNoPrepare() && !Settings.get().isDisablePoolPreparedStatements() && command.getString().length() > Settings.get().getQueryPrepareLength();
 
         checkSessionTables(paramObjects);
-
-        ImMap<String, String> reparse;
-        if(BusinessLogics.useReparse && (reparse = BusinessLogics.reparse.get()) != null) { // временный хак
-            paramObjects = paramObjects.addExcl(reparse.mapValues((String value) -> new StringParseInterface() {
-                public String getString(SQLSyntax syntax1, StringBuilder envString, boolean usedRecursion) {
-                    return value;
-                }
-            }));
-        }
 
         final PreParsedStatement parse = command.preparseStatement(poolPrepared, paramObjects, syntax, isVolatileStats(), snapEnv.getMaterializedQueries(), env.hasRecursion());
 

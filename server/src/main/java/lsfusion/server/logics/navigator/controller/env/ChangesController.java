@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.controller.env;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -22,6 +23,12 @@ public abstract class ChangesController {
         if(dbManager != null)
             dbManager.registerChange(changes); // global changes (for async caches)
         regLocalChange(changes, session); // local changes (for form synchronization in one connection)
+    }
+
+    public void flushStrong(ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys) {
+        DBManager dbManager = getDbManager();
+        if(dbManager != null)
+            dbManager.flushStrong(changedPropKeys);
     }
 
     public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {

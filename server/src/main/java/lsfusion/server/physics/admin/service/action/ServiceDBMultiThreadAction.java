@@ -33,27 +33,16 @@ public class ServiceDBMultiThreadAction extends InternalAction {
 
         final ObjectValue threadCountObject = context.getKeyValue(threadCountInterface);
 
-        run(context, (session, isolatedTransaction) -> serviceLM.recalculateMultiThreadAction.execute(context, threadCountObject));
+        serviceLM.recalculateMultiThreadAction.execute(context, threadCountObject);
 
-        run(context, (session, isolatedTransaction) -> serviceLM.recalculateClassesMultiThreadAction.execute(context, threadCountObject));
+        serviceLM.recalculateClassesMultiThreadAction.execute(context, threadCountObject);
 
         context.getDbManager().analyzeDB(context.getSession().sql);
 
-        run(context, (session, isolatedTransaction) -> serviceLM.recalculateFollowsMultiThreadAction.execute(context, threadCountObject));
+        serviceLM.recalculateFollowsMultiThreadAction.execute(context, threadCountObject);
 
-        run(context, (session, isolatedTransaction) -> serviceLM.recalculateStatsMultiThreadAction.execute(context, threadCountObject));
+        serviceLM.recalculateStatsMultiThreadAction.execute(context, threadCountObject);
 
         context.messageSuccess(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
-    }
-
-    public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {
-        // транзакция в Service Action'ах не особо нужна, так как действия атомарные
-        final boolean singleTransaction = singleTransaction(context); 
-        SQLSession sql = context.getSession().sql;
-        DBManager.run(sql, singleTransaction, sql1 -> run.run(sql1, !singleTransaction));
-    }
-
-    public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
-        return context.getBL().serviceLM.singleTransaction.read(context)!=null;
     }
 }

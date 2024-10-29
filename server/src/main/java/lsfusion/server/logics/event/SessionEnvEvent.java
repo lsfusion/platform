@@ -39,17 +39,11 @@ public class SessionEnvEvent extends TwinImmutableObject {
 
     public boolean contains(DataSession element) {
         if(forms==null) { // вообще говоря не только оптимизация, так как activeForms может быть пустым
-            assert this==ALWAYS;
+            assert this == ALWAYS;
             return true;
         }
 
-        for(FormEntity form : element.getAllActiveForms())
-            if(forms.contains(form))
-                return true;
-        if(element.hasSessionEventActiveForms(forms))
-            return true;
-
-        return false;
+        return forms.intersect(element.getAllActiveForms());
     }
 
     public boolean isEmpty() {

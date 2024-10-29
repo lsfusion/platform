@@ -49,7 +49,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         ObjectValue changeValue;
         if(property.interfaces.size() == change.getMapValues().size() && (changeValue = change.expr.getObjectValue(getQueryEnv())) != null && !DBManager.RECALC_REUPDATE) {
             DataSession session = getSession();
-            ObjectValue lazyValue = property.readLazyClasses(session.sql, change.getMapValues(), session.getModifier(), session.changes);
+            ObjectValue lazyValue = property.readLazyClasses(session.sql, change.getMapValues(), session.getModifier(), session.changes, getQueryEnv());
             if(lazyValue != null && lazyValue.equals(changeValue))
                 return;
         }

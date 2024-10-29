@@ -17,7 +17,7 @@ public class CheckMaterializationsTask extends GroupPropertiesSingleTask<Aggrega
     @Override
     protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
-        String result = element.checkMaterialization(sql, getBL().LM.baseClass);
+        String result = element.checkMaterialization(sql, getBL().LM.baseClass, true);
         if (result != null && !result.isEmpty())
             addMessage(result);
     }

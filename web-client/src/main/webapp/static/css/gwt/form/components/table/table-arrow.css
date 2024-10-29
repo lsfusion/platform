@@ -31,6 +31,11 @@
     top: 0; /*Does not do anything. It is needed for symmetry with ".bottom-arrow .arrow"*/
 }
 
+/* we don't want arrows to overflow table-container when there is no scroll, since it will lead to the undesirable scrolls in the table-container when the table is too small / empty*/
+.table-container.no-vertical-scroll .arrow-container {
+    display: none;
+}
+
 .table:not(.was-scrolled-recently.scrolled-down) .top-arrow:not(:hover) .arrow-container, .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow:not(:hover) .arrow-container,
 .table:not(.scrolled-down) .top-arrow .arrow-container, .table:not(.scrolled-up) .bottom-arrow .arrow-container {
     opacity: 0;

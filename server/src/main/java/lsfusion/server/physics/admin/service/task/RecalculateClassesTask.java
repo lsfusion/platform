@@ -3,11 +3,9 @@ package lsfusion.server.physics.admin.service.task;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
@@ -43,11 +41,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected void runInnerTask(final Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
         if (element instanceof Integer) {
-            getDbManager().recalculateExclusiveness(sql, true);
+            getDbManager().recalculateClassesExclusiveness(sql, true);
         } else if (element instanceof ImplementTable) {
-            DBManager.run(sql, true, sql13 -> DataSession.recalculateTableClasses((ImplementTable) element, sql13, getBL().LM.baseClass));
+            DBManager.recalculateTableClasses((ImplementTable) element, sql, true, getBL().LM.baseClass);
 
-            DBManager.run(sql, true, sql12 -> sql12.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global));
+            DBManager.packTable(sql, (ImplementTable) element, true);
         } else if (element instanceof Property) {
             ((Property) element).recalculateClasses(sql, true, getBL().LM.baseClass);
         }

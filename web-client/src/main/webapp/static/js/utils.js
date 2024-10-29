@@ -475,3 +475,27 @@ function setGlobalClassName(set, className) {
     else
         root.classList.remove(className);
 }
+
+// input with drop down
+function handleInputKeyEvent(isOpen, controller, e, keyDown) {
+    if(isOpen) { // is editing
+        if(controller.isEditInputKeyEvent(e, true) || (keyDown && (e.key === 'Enter' || e.key === 'Escape')))
+            e.stopPropagation()
+    } else {
+        if(controller.isRenderInputKeyEvent(e, true))
+            e.stopPropagation();
+    }
+}
+function handleDropdownKeyEvent(isOpen, e, keyDown) {
+    if(isOpen) { // is editing
+        if(keyDown && (e.keyCode === 38 || e.keyCode === 40 || e.key === 'Enter' || e.key === 'Escape'))
+            e.stopPropagation()
+    }
+    if(e.keyCode === 32)
+        e.stopPropagation();
+}
+
+function handleOptionKeyEvent(isButton, e, keyDown, isInGrid) {
+    if (keyDown && e.shiftKey && isInGrid && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
+        e.stopPropagation();
+}

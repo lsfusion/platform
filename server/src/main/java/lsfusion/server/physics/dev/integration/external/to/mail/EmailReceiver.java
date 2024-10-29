@@ -105,6 +105,10 @@ public class EmailReceiver {
         mailProps.put("mail." + protocol + ".partialfetch", "true");
         mailProps.put("mail." + protocol + ".fetchsize", "819200");
 
+        if (Settings.get().isIgnoreBodyStructureSizeFix()) {
+            mailProps.put("mail." + protocol + ".ignorebodystructuresize", "true");
+        }
+
         return Session.getInstance(mailProps).getStore(protocol);
     }
 
@@ -128,7 +132,6 @@ public class EmailReceiver {
         }
         return skipEmails;
     }
-
     private static void importEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
@@ -251,7 +254,6 @@ public class EmailReceiver {
             int folderClosedCount = 0;
             while (count <= messageCount && (maxMessages == null || dataEmails.size() < maxMessages)) {
                 try {
-                    ServerLoggers.mailLogger.debug(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
                     Message message = messages[messageCount - count];
 
                     String uid = getMessageUID(emailFolder, message);
@@ -259,7 +261,8 @@ public class EmailReceiver {
                     LocalDateTime dateTimeSentEmail = emailData != null ? emailData.dateTimeSent : getSentDate(message);
                     boolean skip = emailData != null && emailData.skip;
 
-                    if (!skip && (minDateTime == null || dateTimeSentEmail == null || minDateTime.isBefore(dateTimeSentEmail))) {
+                    if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail)))  {
+                        ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessages, dateTimeSentEmail, count, messageCount));
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
 
@@ -284,6 +287,11 @@ public class EmailReceiver {
                             }
                         }
                     } else {
+                        ServerLoggers.mailLogger.info(String.format("Skipping email %s of %s, date %s", count, messageCount, dateTimeSentEmail));
+                        if(minDateTime != null && dateTimeSentEmail != null && minDateTime.minusDays(1).isAfter(dateTimeSentEmail)) {
+                            ServerLoggers.mailLogger.info("Breaking reading, all next emails will be older then minimum date");
+                            break;
+                        }
                         if (emailData == null) {
                             dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, null, null, user, null, null, null));
                         }
@@ -415,15 +423,22 @@ public class EmailReceiver {
                 File f = File.createTempFile("attachment", "");
                 try {
                     copyInputStreamToFile(bp.getInputStream(), f);
-                    if(bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
-                        attachments.putAll(extractWinMail(f).attachments);
-                    } else {
-                        attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
+                    RawFileData file = new RawFileData(f);
+
+                    byte[] bytes = file.getBytes();
+                    if(Settings.get().ignoreBodyStructureSizeFix && fileName.endsWith(".dbf") && bytes[bytes.length - 1] == 0x0d && bytes[bytes.length - 1] == 0x0a) {
+                        file = new RawFileData(Arrays.copyOfRange(bytes, 0, bytes.length - 2));
                     }
 
-                } catch (IOException ioe) {
+                    if (bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
+                        attachments.putAll(extractWinMail(f).attachments);
+                    } else {
+                        attachments.putAll(unpack(file, fileName, unpack));
+                    }
+
+                } catch (IOException e) {
                     ServerLoggers.mailLogger.error(prefix + "Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
-                    throw ioe;
+                    throw e;
                 } finally {
                     BaseUtils.safeDelete(f);
                 }

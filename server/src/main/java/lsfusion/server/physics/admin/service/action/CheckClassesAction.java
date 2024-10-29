@@ -8,6 +8,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 
@@ -22,7 +23,7 @@ public class CheckClassesAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         final Result<String> message = new Result<>();
-        ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkClasses(session)));
+        ServiceDBAction.run(context, DBManager.CHECK_CLASSES_TIL, (session, isolatedTransaction) -> message.set(context.getDbManager().checkClasses(session, isolatedTransaction)));
 
         boolean noErrors = isEmpty(message.result);
 

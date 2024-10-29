@@ -84,7 +84,7 @@ public class ThreadLocalContext {
         return context.get();
     }
     public static void assureContext(Context context) { // временно, должно уйти
-        assure(context, null);
+        //assure(context, null);
     }
 
     private static void set(Context c) {

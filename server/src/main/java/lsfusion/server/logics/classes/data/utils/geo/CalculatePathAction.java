@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+
 public class CalculatePathAction extends DistanceGeoAction {
 
 
@@ -138,10 +140,10 @@ public class CalculatePathAction extends DistanceGeoAction {
 
                     }
                 } else {
-                    context.messageError("Не все координаты проставлены", "Ошибка");
+                    context.messageError(localize("{geo.not.all.coordinates.set}"));
                 }
             } else {
-                context.messageError("Не задана начальная точка", "Ошибка");
+                context.messageError(localize("{geo.starting.point.not.set}"));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

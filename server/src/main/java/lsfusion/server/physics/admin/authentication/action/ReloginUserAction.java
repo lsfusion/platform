@@ -31,7 +31,7 @@ public class ReloginUserAction extends InternalAction {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
         } else {
-            context.messageError(localize("{logics.error.changing.current.user.different.roles}"), localize("{logics.error}"));
+            context.messageError(localize("{logics.error.changing.current.user.different.roles}"));
         }
     }
 }

@@ -3,6 +3,7 @@ package lsfusion.base.col.implementations.abs;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
@@ -71,9 +72,22 @@ public abstract class AMRevMap<K, V> extends ARevMap<K, V> implements MMap<K, V>
             exclAdd(map.getKey(i), map.getValue(i));
     }
 
+    @Override
+    public void exclAddAll(ImSet<? extends K> set, V value) {
+        for(int i=0,size=set.size();i<size;i++)
+            exclAdd(set.get(i), value);
+    }
+
     public boolean addAll(ImMap<? extends K, ? extends V> map) {
         for (int i = 0, size = map.size(); i < size; i++)
             if(!add(map.getKey(i), map.getValue(i)))
+                return false;
+        return true;
+    }
+
+    public boolean addAll(ImSet<? extends K> set, V value) {
+        for (int i = 0, size = set.size(); i < size; i++)
+            if(!add(set.get(i), value))
                 return false;
         return true;
     }

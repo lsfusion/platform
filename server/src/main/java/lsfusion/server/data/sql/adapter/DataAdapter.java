@@ -102,12 +102,19 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     public void ensureLogLevel() {
     }
 
+    public boolean checkBackupParams(ExecutionContext context) {
+        return false;
+    }
+
     public String getBackupFilePath(String dumpFileName) {
         return null;
     }
 
-    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
+    public String getBackupFileLogPath(String dumpFileName) {
         return null;
+    }
+
+    public void backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
     }
 
     public String customRestoreDB(String fileBackup, Set<String> tables, boolean isMultithread) throws IOException {

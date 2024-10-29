@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -109,18 +110,16 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         super(caption,interfaces);
     }
 
-    public String checkMaterialization(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return checkMaterialization(session, null, baseClass, null);
-    }
-
-    public String checkMaterialization(SQLSession session, BaseClass baseClass, ProgressBar progressBar) throws SQLException, SQLHandledException {
-        return checkMaterialization(session, null, baseClass, progressBar);
+    public String checkMaterialization(SQLSession session, BaseClass baseClass, boolean runInTransaction) throws SQLException, SQLHandledException {
+        return checkMaterialization(session, baseClass, null, runInTransaction);
     }
 
     // проверяет агрегацию для отладки
     @ThisMessage
     @StackProgress
-    public String checkMaterialization(SQLSession session, QueryEnvironment env, BaseClass baseClass, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
+    public String checkMaterialization(SQLSession session, BaseClass baseClass, @StackProgress ProgressBar progressBar, boolean runInTransaction) throws SQLException, SQLHandledException {
+        QueryEnvironment env = DataSession.emptyEnv(OperationOwner.unknown);
+
         session.pushVolatileStats(OperationOwner.unknown);
         
         try {
@@ -131,10 +130,13 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
             String checkClasses = "";
             if(useRecalculate)
-                checkClasses = env == null ? DataSession.checkClasses(this, session, baseClass) : DataSession.checkClasses(this, session, env, baseClass);
-    
-            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = env == null ? getCheckQuery(baseClass, !useRecalculate).execute(session, OperationOwner.unknown)
-                    : getCheckQuery(baseClass, !useRecalculate).execute(session, env);
+                checkClasses = checkClasses(session, runInTransaction, env, baseClass);
+
+            Query<T, String> checkQuery = getCheckQuery(baseClass, !useRecalculate);
+
+            Result<ImOrderMap<ImMap<T, Object>, ImMap<String, Object>>> rCheckResult = new Result<>();
+            DBManager.run(session, runInTransaction, DBManager.CHECK_MAT_TIL, sql -> rCheckResult.set(checkQuery.execute(sql, env)));
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = rCheckResult.result;
             if(!checkResult.isEmpty() || !checkClasses.isEmpty()) {
                 message += "---- Checking Materializations : " + this + "-----" + '\n';
                 message += checkClasses;
@@ -203,20 +205,20 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             if (useRecalculate)
                 recalculateClasses(sql, runInTransaction, env, baseClass);
 
-            boolean mixedSerializable = runInTransaction && !Settings.get().isServiceOperationsSerializable() && Settings.get().isRecalculateMaterializationsMixedSerializable();
+            boolean serializable = DBManager.RECALC_MAT_TIL;
+            boolean mixedSerializable = runInTransaction && !serializable && Settings.get().isRecalculateMaterializationsMixedSerializable();
 
-            boolean forceSerializable = false;
             Query<T, String> recalculateQuery = getRecalculateQuery(false, mixedSerializable, baseClass, !useRecalculate, where);
 
             if(mixedSerializable) {
                 table = createChangeTable("recmt");
                 table.writeRows(sql, recalculateQuery, baseClass, env, false);
                 recalculateQuery = getRecalculateQuery(false, false, baseClass, !useRecalculate, PropertyChangeTableUsage.getChange(table));
-                forceSerializable = true;
+                serializable = true;
             }
 
             ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, recalculateQuery.map(mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env, TableOwner.global);
-            DBManager.run(sql, runInTransaction, forceSerializable, session -> session.modifyRecords(modifyQuery));
+            DBManager.run(sql, runInTransaction, serializable, session -> session.modifyRecords(modifyQuery));
         } finally {
             if(table != null)
                 table.drop(sql, opOwner);

@@ -504,6 +504,11 @@ public class MapFact {
                 return true;
             }
 
+            public boolean addAll(ImSet<? extends K> set, V value) {
+                mExclMap.exclAddAll(set, value);
+                return true;
+            }
+
             public V get(K key) {
                 return mExclMap.get(key);
             }

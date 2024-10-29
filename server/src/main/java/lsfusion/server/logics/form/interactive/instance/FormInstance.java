@@ -2205,7 +2205,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         if (dataChanged) {
             if(forceLocalEvents || !entity.localAsync) {
-                session.executeSessionEvents(this, stack);
+                session.executeSessionEvents(BL, this, stack);
             } else {
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }

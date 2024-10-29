@@ -230,7 +230,7 @@ public class FocusUtils {
                 inputType.isSelectAll()) {
             InputElement inputElement = (InputElement) element;
             if(event != null) { // we don't want mouse up because it will drop the selection
-                assert reason == Reason.MOUSECHANGE;
+                assert reason == Reason.MOUSECHANGE || reason == Reason.NOTFOCUSABLE;
                 MainFrame.preventClickAfterDown(inputElement, event);
             }
             inputElement.select();

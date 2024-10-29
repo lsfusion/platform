@@ -2575,7 +2575,7 @@ public class Settings implements Cloneable {
         this.enableInteractiveAssertLog = enableInteractiveAssertLog;
     }
 
-    private double cacheNextEventActionRatio = 0.001; // if the percent of changes is lower that this percent of events - cache them
+    private double cacheNextEventActionRatio = 0.05; // if the percent of changes is lower that this percent of events - cache them
 
     public double getCacheNextEventActionRatio() {
         return cacheNextEventActionRatio;
@@ -2973,7 +2973,6 @@ public class Settings implements Cloneable {
     }
     
     private int trueSerializableAttempts = 0;
-    private boolean serviceOperationsSerializable = false;
     private boolean recalculateMaterializationsMixedSerializable = false; // when running not in transaction - first read in READ_COMMITED mismatched materialization, and then read + update in REPEATABLE_READ only mismatched
 
     public int getTrueSerializableAttempts() {
@@ -2982,14 +2981,6 @@ public class Settings implements Cloneable {
 
     public void setTrueSerializableAttempts(int trueSerializableAttempts) {
         this.trueSerializableAttempts = trueSerializableAttempts;
-    }
-
-    public boolean isServiceOperationsSerializable() {
-        return serviceOperationsSerializable;
-    }
-
-    public void setServiceOperationsSerializable(boolean serviceOperationsSerializable) {
-        this.serviceOperationsSerializable = serviceOperationsSerializable;
     }
 
     public boolean isRecalculateMaterializationsMixedSerializable() {
@@ -3426,5 +3417,27 @@ public class Settings implements Cloneable {
 
     public void setCssBackwardCompatibilityLevel(double cssBackwardCompatibilityLevel) {
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
+    }
+
+    //set ignoreBodyStructureSize true and cut last two bytes 0d0a if received
+    //https://javaee.github.io/javamail/docs/api/com/sun/mail/imap/package-summary.html
+    public boolean ignoreBodyStructureSizeFix = false;
+
+    public boolean isIgnoreBodyStructureSizeFix() {
+        return ignoreBodyStructureSizeFix;
+    }
+
+    public void setIgnoreBodyStructureSizeFix(boolean ignoreBodyStructureSizeFix) {
+        this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
+    }
+
+    public boolean exportDBFNumericMandatoryZeroes = false;
+
+    public boolean isExportDBFNumericMandatoryZeroes() {
+        return exportDBFNumericMandatoryZeroes;
+    }
+
+    public void setExportDBFNumericMandatoryZeroes(boolean exportDBFNumericMandatoryZeroes) {
+        this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
 }

@@ -73,6 +73,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+
 public class ExecutionContext<P extends PropertyInterface> implements UserInteraction, SessionCreator {
     private ImMap<P, ? extends ObjectValue> keys;
     private Stack<UpdateCurrentClasses> updateClasses;
@@ -364,6 +366,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         message(message, header, MessageClientType.WARN);
     }
 
+    public void messageError(String message) {
+        messageError(message, localize("{logics.error}"));
+    }
+
     public void messageError(String message, String header) {
         message(message, header, MessageClientType.ERROR);
     }
@@ -625,7 +631,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public void executeSessionEvents() throws SQLException, SQLHandledException {
-        getSession().executeSessionEvents(getSessionEventFormEnv(), stack);
+        getSession().executeSessionEvents(getBL(), getSessionEventFormEnv(), stack);
     }
 
     public void delayUserInteraction(ClientAction action) {

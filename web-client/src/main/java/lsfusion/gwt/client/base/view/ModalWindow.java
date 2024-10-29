@@ -159,8 +159,6 @@ public class ModalWindow extends ResizableComplexPanel {
         content.add(widget);
     }
 
-    public Widget getContentWidget() { return content; }
-
     private ResizableComplexPanel footer;
     public void addFooterWidget(Widget widget) {
         if (footer == null) {

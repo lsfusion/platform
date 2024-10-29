@@ -70,61 +70,68 @@ public class PreParsedStatement extends TwinImmutableObject { // вообще St
         ParsedString[] aSafeStrings = new ParsedString[paramArrays.length];
         Type[] aNotSafeTypes = new Type[paramArrays.length];
         int paramNum = 0;
+
+        boolean hasNoParamPrefix = false;
         for (int i=0,size= params.size();i<size;i++) {
             String param = params.get(i);
             paramArrays[paramNum] = param.toCharArray();
             aParams[paramNum] = param;
             aSafeStrings[paramNum] = safeStrings.get(param);
             aNotSafeTypes[paramNum++] = notSafeTypes.get(param);
+
+            hasNoParamPrefix = hasNoParamPrefix || param.charAt(0) != SQLSession.paramPrefix;
         }
+        assert !hasNoParamPrefix;
+
         // в общем случае неправильно использовать тот же механизм что и для параметров, но в текущей реализации будет работать
         paramArrays[paramNum] = BinaryWhere.adjustSelectivity.toCharArray();
 //      params[paramNum] = ;
         aSafeStrings[paramNum] = new ParsedString(volatileStats && Settings.get().isEnableAdjustSelectivity() ? " OR " + syntax.getAdjustSelectivityPredicate() : "");
         aNotSafeTypes[paramNum++] = null;
 
-        // те которые isString сразу транслируем
         char[] toparse = statement.toCharArray();
-        String parsedString = envString;
+        StringBuilder parsedString = new StringBuilder(envString);
         char[] parsed = new char[toparse.length + paramArrays.length * 100];
         int num = 0;
         for (int i = 0; i < toparse.length;) {
             int charParsed = 0;
-            for (int p = 0; p < paramArrays.length; p++) {
-                if (BaseUtils.startsWith(toparse, i, paramArrays[p])) { // нашли
-                    String valueString;
+            if(hasNoParamPrefix || toparse[i] == SQLSession.paramPrefix) { // optimization, later the same can be done with map and postfix
+                for (int p = 0; p < paramArrays.length; p++) {
+                    if (BaseUtils.startsWith(toparse, i, paramArrays[p])) { // нашли
+                        String valueString;
 
-                    Type notSafeType = aNotSafeTypes[p];
-                    ParsedString safeString = aSafeStrings[p];
-                    if (safeString !=null) { // если можно вручную пропарсить парсим
-                        valueString = safeString.getString();
-                        safeString.fillEnv(mPreparedParams);
-                    } else {
-                        if(notSafeType instanceof ConcatenateType)
-                            valueString = notSafeType.writeDeconc(syntax, ensureTypes);
-                        else
-                            valueString = "?";
-                        mPreparedParams.add(aParams[p]);
-                    }
-                    if (notSafeType !=null)
-                        valueString = notSafeType.getCast(valueString, syntax, ensureTypes);
+                        Type notSafeType = aNotSafeTypes[p];
+                        ParsedString safeString = aSafeStrings[p];
+                        if (safeString != null) { // если можно вручную пропарсить парсим
+                            valueString = safeString.getString();
+                            safeString.fillEnv(mPreparedParams);
+                        } else {
+                            if (notSafeType instanceof ConcatenateType)
+                                valueString = notSafeType.writeDeconc(syntax, ensureTypes);
+                            else
+                                valueString = "?";
+                            mPreparedParams.add(aParams[p]);
+                        }
+                        if (notSafeType != null)
+                            valueString = notSafeType.getCast(valueString, syntax, ensureTypes);
 
-                    char[] valueArray = valueString.toCharArray();
-                    if(num + valueArray.length >= parsed.length) {
-                        parsedString = parsedString + new String(parsed, 0, num);
-                        parsed = new char[BaseUtils.max(toparse.length - i + paramArrays.length * 100, valueArray.length + 100)];
-                        num = 0;
+                        char[] valueArray = valueString.toCharArray();
+                        if (num + valueArray.length >= parsed.length) {
+                            parsedString.append(parsed, 0, num);
+                            parsed = new char[BaseUtils.max(toparse.length - i + paramArrays.length * 100, valueArray.length + 100)];
+                            num = 0;
+                        }
+                        System.arraycopy(valueArray, 0, parsed, num, valueArray.length);
+                        num += valueArray.length;
+                        charParsed = paramArrays[p].length;
+                        assert charParsed != 0;
+                        break;
                     }
-                    System.arraycopy(valueArray, 0, parsed, num, valueArray.length);
-                    num += valueArray.length;
-                    charParsed = paramArrays[p].length;
-                    assert charParsed!=0;
-                    break;
                 }
             }
             if (charParsed == 0) {
                 if(num + 1 >= parsed.length) {
-                    parsedString = parsedString + new String(parsed, 0, num);
+                    parsedString.append(parsed, 0, num);
                     parsed = new char[toparse.length - i + paramArrays.length * 100 + 1];
                     num = 0;
                 }
@@ -133,9 +140,9 @@ public class PreParsedStatement extends TwinImmutableObject { // вообще St
             }
             i = i + charParsed;
         }
-        parsedString = parsedString + new String(parsed, 0, num);
+        parsedString.append(parsed, 0, num);
 
-        return new ParsedParamString(parsedString, mPreparedParams.immutableList());
+        return new ParsedParamString(parsedString.toString(), mPreparedParams.immutableList());
     }
 
     public ParsedStatement parseStatement(Connection connection, SQLSyntax syntax) throws SQLException {
