@@ -3,11 +3,14 @@ var createPlainObject = function () {
     return {};
 };
 
+function createPlainDateMillis(millis) {
+    return new Date(millis);
+}
 function createPlainDateCurrent() {
     return new Date();
 }
-function createPlainDate(date) {
-    return date.millis ? new Date(date.millis) : new Date(date.year, date.month, date.date);
+function createPlainDate(year, month, date) {
+    return new Date(year, month, date);
 }
 function createPlainDateTime(year, month, date, hours, minutes, seconds) {
     return new Date(year, month, date, hours, minutes, seconds);
