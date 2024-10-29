@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -13,8 +14,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCel
 import lsfusion.gwt.client.form.property.cell.classes.controller.TimeCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-
-import java.util.Date;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeFormat;
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeShortFormat;
@@ -43,13 +42,13 @@ public class GTimeType extends GADateType {
     }
 
     @Override
-    public PValue fromDate(Date date) {
-        return PValue.getPValue(GTimeDTO.fromDate(date));
+    public JsDate toJsDate(PValue value) {
+        return PValue.getTimeValue(value).toJsDate();
     }
 
     @Override
-    public Date toDate(PValue value) {
-        return PValue.getTimeValue(value).toTime();
+    public PValue fromJsDate(JsDate date) {
+        return PValue.getPValue(GTimeDTO.fromJsDate(date));
     }
 
     @Override

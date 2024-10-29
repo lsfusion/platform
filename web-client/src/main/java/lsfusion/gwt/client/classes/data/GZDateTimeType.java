@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JsDate;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -10,8 +11,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCel
 import lsfusion.gwt.client.form.property.cell.classes.controller.ZDateTimeCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-
-import java.util.Date;
 
 public class GZDateTimeType extends GDateTimeType {
     public static GZDateTimeType instance = new GZDateTimeType();
@@ -28,13 +27,13 @@ public class GZDateTimeType extends GDateTimeType {
     }
 
     @Override
-    public PValue fromDate(Date date) {
-        return GZDateTimeDTO.fromDate(date);
+    public PValue fromJsDate(JsDate date) {
+        return GZDateTimeDTO.fromJsDate(date);
     }
 
     @Override
-    public Date toDate(PValue value) {
-        return PValue.getZDateTimeValue(value).toDateTime();
+    public JsDate toJsDate(PValue value) {
+        return PValue.getZDateTimeValue(value).toJsDate();
     }
 
     @Override

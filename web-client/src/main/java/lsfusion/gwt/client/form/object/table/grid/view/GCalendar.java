@@ -68,7 +68,6 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
-            timeZone: 'UTC',
             locale: locale,
             firstDay: 1,
             initialDate: controller.getValue(calendarDateType),
@@ -93,10 +92,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 };
             },
             datesSet: function () {
-                var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
-                var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
-                controller.setDateIntervalViewFilter(calendarDateType, @GCalendar::getEndEventFieldName(*)(calendarDateType), 1000, filterLeftBorder.year, filterLeftBorder.month, filterLeftBorder.day, filterRightBorder.year,
-                    filterRightBorder.month, filterRightBorder.day, calendarDateType.toLowerCase().includes('time'));
+                controller.setDateIntervalViewFilter(calendarDateType, @GCalendar::getEndEventFieldName(*)(calendarDateType), 1000,
+                    calendar.view.activeStart, calendar.view.activeEnd, calendarDateType.toLowerCase().includes('time'));
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
@@ -120,41 +117,18 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 var startFieldName = currentEvent.extendedProps.startFieldName;
                 var endFieldName = currentEvent.extendedProps.endFieldName;
 
-                var startEventElement = parseCalendarDateElement(currentEventStart);
-                var endEventElement = null;
-                if(currentEventEnd != null) {
+                if(currentEventEnd != null && currentEvent.allDay)
                     currentEventEnd.setDate(currentEventEnd.getDate() - 1);
-                    endEventElement = parseCalendarDateElement(currentEventEnd);
-                }
-
-                var controllerFunction = startFieldName.includes('dateTime') ? 'changeDateTimeProperties' : 'changeDateProperties';
 
                 var object = info.event.extendedProps.object;
-                controller[controllerFunction](endEventElement != null ? [startFieldName, endFieldName] : [startFieldName], endEventElement != null ? [object, object] : [object],
-                    getChangeProperty(startEventElement, endEventElement, 'year'), getChangeProperty(startEventElement, endEventElement, 'month'),
-                    getChangeProperty(startEventElement, endEventElement, 'day'), getChangeProperty(startEventElement, endEventElement, 'hour'),
-                    getChangeProperty(startEventElement, endEventElement, 'minute'), getChangeProperty(startEventElement, endEventElement, 'second'));
+                controller.changeProperties(currentEventEnd != null ? [startFieldName, endFieldName] : [startFieldName], currentEventEnd != null ? [object, object] : [object],
+                    currentEventEnd != null ? [currentEventStart, currentEventEnd] : [currentEventStart]);
             }
-        }
-
-        function getChangeProperty(startEventElement, endEventElement, property) {
-            return endEventElement != null ? [startEventElement[property], endEventElement[property]] : [startEventElement[property]];
         }
 
         function getTime(eventTime) {
             //eventTime can be null due to property dateTo(dateTimeTo) can be null
             return eventTime != null ? eventTime.getTime() : null;
-        }
-
-        function parseCalendarDateElement(element) {
-            return {
-                year: element.getFullYear(),
-                month: element.getMonth() + 1,
-                day: element.getUTCDate(),
-                hour: element.getUTCHours(),
-                minute: element.getUTCMinutes(),
-                second: element.getUTCSeconds()
-            }
         }
     }-*/;
 
@@ -456,11 +430,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     protected native String getEnd(JavaScriptObject object, String endEventFieldName, boolean allDay)/*-{
         var end = object[endEventFieldName];
-        if (allDay) {
-            var endDate = new Date(end);
-            endDate.setDate(endDate.getDate() + 1);
-            end = endDate.toISOString().split('T')[0]; //adding time to Date causes that it will be impossible to change event on calendar-view even if "allDay" option is "true"
-        }
+        if (allDay)
+            end.setDate(end.getDate() + 1); //adding time to Date causes that it will be impossible to change event on calendar-view even if "allDay" option is "true"
+
         return end;
     }-*/;
 

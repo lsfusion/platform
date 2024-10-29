@@ -52,21 +52,7 @@ function gantt(options) {
                     }
 
                 element.gantt.options.on_date_change = function(task, start, end) {
-                    if (options.view_mode === "Quarter Day" || options.view_mode === "Half Day")
-                        controller.changeDateTimeProperties(['start', 'end'],
-                            [task, task],
-                            [start.getFullYear(), end.getFullYear()],
-                            [start.getMonth() + 1, end.getMonth() + 1],
-                            [start.getDate(), end.getDate()],
-                            [start.getHours(), end.getHours()],
-                            [start.getMinutes(), end.getMinutes()],
-                            [start.getSeconds(), end.getSeconds()]);
-                    else
-                        controller.changeDateProperties(['start', 'end'],
-                                                        [task, task],
-                                                        [start.getFullYear(), end.getFullYear()],
-                                                        [start.getMonth() + 1, end.getMonth() + 1],
-                                                        [start.getDate(), end.getDate()]);
+                    controller.changeProperties(['start', 'end'], [task, task], [start, end]);
                 }
                 element.gantt.options.on_progress_change = function(task, progress) {
                     controller.changeProperty('progress', task, progress);

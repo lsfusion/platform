@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -29,8 +30,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
@@ -164,9 +163,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return ((GIntegralType) type).convertDouble(toDouble(value));
         if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
+        if (type instanceof GADateType)
+            return ((GADateType) type).fromJsDate((JsDate)value);
 
         return PValue.getPValue(toString(value));
     }
+
     public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, boolean imageToHTML, PValue value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
@@ -192,6 +194,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return fromString(GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse(PValue.getCustomStringValue(value));
+        if (type instanceof GADateType)
+            return ((GADateType) type).toJsDate(value);
 
         return fromString(PValue.getCustomStringValue(value));
     }
@@ -519,35 +523,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return objectsFieldName;
     }
 
-    protected void changeDateTimeProperty(String property, JavaScriptObject object, int year, int month, int day, int hour, int minute, int second) {
-        changeProperty(property, object, PValue.getPValue(new GDateTimeDTO(year, month, day, hour, minute, second)));
-    }
+    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end, boolean isDateTimeFilter) {
 
-    protected void changeDateProperty(String property, JavaScriptObject object, int year, int month, int day) {
-        changeProperty(property, object, PValue.getPValue(new GDateDTO(year, month, day)));
-    }
-
-    protected void changeDateTimeProperties(String[] properties, JavaScriptObject[] objects, int[] years, int[] months, int[] days, int[] hours, int[] minutes, int[] seconds) {
-        int length = objects.length;
-        PValue[] gDateTimeDTOs = new PValue[length];
-        for (int i = 0; i < length; i++) {
-            gDateTimeDTOs[i] = PValue.getPValue(new GDateTimeDTO(years[i], months[i], days[i], hours[i], minutes[i], seconds[i]));
-        }
-        changeProperties(properties, objects, gDateTimeDTOs);
-    }
-
-    protected void changeDateProperties(String[] properties, JavaScriptObject[] objects, int[] years, int[] months, int[] days) {
-        int length = objects.length;
-        PValue[] gDateDTOs = new PValue[length];
-        for (int i = 0; i < length; i++) {
-            gDateDTOs[i] = PValue.getPValue(new GDateDTO(years[i], months[i], days[i]));
-        }
-        changeProperties(properties, objects, gDateDTOs);
-    }
-
-    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, boolean isDateTimeFilter) {
-        PValue leftBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(startYear, startMonth, startDay)) ;
-        PValue rightBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(endYear, endMonth, endDay));
+        PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
+        PValue rightBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(end) : GDateType.instance.fromJsDate(end);
 
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
@@ -782,20 +761,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
-            changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
-                return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
-            },
+            //todo deprecated. use changeProperty instead
             changeDateProperty: function (property, object, year, month, day) {
-                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
+                return changeProperty(property, object, new Date(year, month - 1, day))
             },
             changeProperties: function (properties, objects, newValues) {
                 return thisObj.@GSimpleStateTableView::changeJSProperties(*)(properties, objects, newValues);
-            },
-            changeDateTimeProperties: function (properties, objects, years, months, days, hours, minutes, seconds) {
-                return thisObj.@GSimpleStateTableView::changeDateTimeProperties(*)(properties, objects, years, months, days, hours, minutes, seconds);
-            },
-            changeDateProperties: function (properties, objects, years, months, days) {
-                return thisObj.@GSimpleStateTableView::changeDateProperties(*)(properties, objects, years, months, days);
             },
             isCurrent: function (object) {
                 return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
@@ -852,8 +823,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     elementClicked = null;
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
-            setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
-                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
+            setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, start, end, isDateTimeFilter) {
+                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, start, end, isDateTimeFilter);
             },
             setBooleanViewFilter: function (property, pageSize) {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
