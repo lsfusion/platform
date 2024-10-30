@@ -123,8 +123,8 @@ public class TryAction extends KeepContextAction {
                 catchResult = catchAction.execute(context);
             }
 
-            //ignore exception if finallyAction == null
-            if (finallyAction == null) {
+            //throw exception only if we have no catch and have finally
+            if (catchAction != null || finallyAction == null) {
                 result = catchResult;
             } else {
                 throw Throwables.propagate(e);
