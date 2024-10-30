@@ -16,7 +16,7 @@ The `TRY` operator creates an action that executes another action and handles ex
 
 An operator form without the `FINALLY` keyword creates an action that executes another action and intercepts errors that are thrown in it. In this case, the error is not passed anywhere.
 
-An operator form with the `FINALLY` keyword creates an action that executes another action, intercepts errors that occur, then, regardless of whether an error was thrown or not, executes the action specified in the `FINALLY` block, and then, if an error was thrown, passes this error to the top action in the stack.
+An operator form with the `FINALLY` keyword creates an action that executes another action, intercepts errors that occur, then, regardless of whether an error was thrown or not, executes the action specified in the `FINALLY` block, and then, if an error was thrown and there was no `CATCH` block, passes this error to the top action in the stack.
 
 ### Parameters
 
