@@ -373,7 +373,7 @@ public class ExternalUtils {
             List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
             for(NameValuePair param : params)
                 mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString()));
-        } else
+        } else if (mimeType != null || bytes.length > 0)
             mParamsList.add(getRequestParam(bytes, contentType, false));
 
         return mParamsList.immutableList();
