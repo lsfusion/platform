@@ -55,12 +55,12 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
         return "COALESCE(" + exprs + ")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
-        return "SELECT " + (distinct ? "DISTINCT " : "") + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, String offset, boolean distinct) {
+        return "SELECT " + (distinct ? "DISTINCT " : "") + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top) + BaseUtils.clause("OFFSET", offset);
     }
 
-    public String getUnionOrder(String union, String orderBy, String top) {
-        return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    public String getUnionOrder(String union, String orderBy, String top, String offset) {
+        return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top) + BaseUtils.clause("OFFSET", offset);
     }
 
     @Override

@@ -2181,7 +2181,7 @@ public abstract class LogicsModule {
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy), null), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

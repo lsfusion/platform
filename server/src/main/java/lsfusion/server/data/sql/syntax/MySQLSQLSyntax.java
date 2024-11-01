@@ -25,11 +25,11 @@ public class MySQLSQLSyntax extends DefaultSQLSyntax {
         return "IFNULL(" + exprs + ")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, String offset, boolean distinct) {
         return "SELECT " + (distinct ? "DISTINCT " : "") + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 
-    public String getUnionOrder(String union, String orderBy, String top) {
+    public String getUnionOrder(String union, String orderBy, String top, String offset) {
         return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 

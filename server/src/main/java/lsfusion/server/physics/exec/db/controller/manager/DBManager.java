@@ -93,6 +93,7 @@ import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
@@ -2027,7 +2028,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void initSystemUser(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
-        ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.EMPTYORDER(), 1).keyOrderSet();
+        ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.EMPTYORDER(), new LimitOffset(1)).keyOrderSet();
         if (rows.size() == 0) {
             systemUser = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
             apply(session);

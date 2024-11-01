@@ -110,15 +110,15 @@ public interface SQLSyntax {
     String getTSQuery();
 
     default String getSelect(String from, String exprs, String where) {
-        return getSelect(from, exprs, where, "", "", false);
+        return getSelect(from, exprs, where, "", "", "", false);
     }
-    default String getSelect(String from, String exprs, String where, String orderBy, String top, boolean distinct) {
-        return getSelect(from, exprs, where, orderBy, "", "", top, distinct);
+    default String getSelect(String from, String exprs, String where, String orderBy, String top, String offset, boolean distinct) {
+        return getSelect(from, exprs, where, orderBy, "", "", top, offset, distinct);
     }
-    String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct);
+    String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, String offset, boolean distinct);
 
     boolean nullUnionTrouble();
-    String getUnionOrder(String union,String orderBy, String top);
+    String getUnionOrder(String union,String orderBy, String top, String offset);
 
     // проблема что inline'ся query и идут duplicate subplan'ы
     boolean inlineTrouble();

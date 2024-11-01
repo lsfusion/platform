@@ -7,6 +7,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.form.stat.LimitOffset;
 
 public class CompileOptions<V> extends TwinImmutableObject {
 
@@ -61,8 +62,8 @@ public class CompileOptions<V> extends TwinImmutableObject {
     }
 
     // INSERT SELECT
-    public CompileOptions(SQLSyntax syntax, ImMap<V, Type> castTypes, int top) {
-        this(syntax, LimitOptions.get(top), SubQueryContext.EMPTY, false, false, castTypes, false);
+    public CompileOptions(SQLSyntax syntax, ImMap<V, Type> castTypes, LimitOffset limitOffset) {
+        this(syntax, LimitOptions.get(limitOffset), SubQueryContext.EMPTY, false, false, castTypes, false);
     }
 
     // OUT, READ
