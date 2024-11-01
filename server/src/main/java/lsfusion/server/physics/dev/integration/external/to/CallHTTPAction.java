@@ -261,7 +261,9 @@ public abstract class CallHTTPAction extends CallAction {
             ExternalRequest.Param param = null;
             // if there are not enough parameters - looking for some in the query
             String queryParamValue;
-            if(queryParams != null && paramName != null && interfacesSize - i > params.length - prmUsed && (queryParamValue = ExternalUtils.getParameterValue(queryParams, paramName)) != null)
+            if(queryParams != null && paramName != null
+                    && (Settings.get().isPrioritizeHTTPParameterNames() || (interfacesSize - i > params.length - prmUsed))
+                    && (queryParamValue = ExternalUtils.getParameterValue(queryParams, paramName)) != null)
                 param = ExternalRequest.getUrlParam(queryParamValue, queryParamsCharsetName);
 
             // if we have not found one - using the next in the list
