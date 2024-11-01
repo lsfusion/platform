@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.dbf;
 
+import lsfusion.base.DateConverter;
 import lsfusion.server.logics.classes.data.ParseException;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
@@ -12,7 +13,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class CustomDbfRecord {
 
@@ -22,7 +26,6 @@ public class CustomDbfRecord {
     private byte[] bytes;
     private DbfMetadata metadata;
     private CustomMemoReader memoReader;
-    private Charset stringCharset;
     private final int recordNumber;
 
     public CustomDbfRecord(byte[] source, DbfMetadata metadata, CustomMemoReader memoReader, int recordNumber) {
@@ -57,14 +60,6 @@ public class CustomDbfRecord {
         return this.bytes[0] == 0x2A;
     }
 
-    public Charset getStringCharset() {
-        return stringCharset;
-    }
-
-    public void setStringCharset(Charset stringCharset) {
-        this.stringCharset = stringCharset;
-    }
-
     public byte[] getBytes() {
         return bytes;
     }
@@ -74,11 +69,7 @@ public class CustomDbfRecord {
     }
 
     public String getString(String fieldName) {
-        Charset charset = this.stringCharset;
-        if (charset == null) {
-            charset = Charset.defaultCharset();
-        }
-        return getString(fieldName, charset);
+        return getString(fieldName, Charset.defaultCharset());
     }
 
     public String getString(String fieldName, String charsetName) {
@@ -109,25 +100,6 @@ public class CustomDbfRecord {
 
         //0x00 byte is incorrect in postgre, so we replace it for space
         return new String(bytes, actualOffset, actualLength, charset).replace((char) 0x00, ' ');
-
-		/*
-        byte[] b = new byte[actualLength];
-		System.arraycopy(bytes, actualOffset, b, 0, actualLength);
-		// check for empty strings
-		{
-			for (int i = b.length-1; i>=0; i--) {
-				if (b[i] == JdbfUtils.EMPTY) {
-					actualLength--;
-				} else {
-					break;
-				}
-			}
-			if (actualLength == 0) {
-				return null;
-			}
-		}
-		return new String(b, 0, actualLength, charset);
-		*/
     }
 
     public byte[] getMemoAsBytes(String fieldName) throws IOException, ParseException {
@@ -135,7 +107,7 @@ public class CustomDbfRecord {
         if (f.getType() != DbfFieldTypeEnum.Memo) {
             throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
         }
-        int offsetInBlocks = 0;
+        int offsetInBlocks;
         if (f.getLength() == 10) {
             offsetInBlocks = getBigDecimal(fieldName).intValueExact();
         } else {
@@ -152,7 +124,7 @@ public class CustomDbfRecord {
         if (f.getType() != DbfFieldTypeEnum.Memo) {
             throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
         }
-        int offsetInBlocks = 0;
+        int offsetInBlocks;
         if (f.getLength() == 10) {
             BigDecimal bd = getBigDecimal(fieldName);
             offsetInBlocks = bd != null ? bd.intValueExact() : 0;
@@ -166,32 +138,25 @@ public class CustomDbfRecord {
         return memoReader.read(offsetInBlocks).getValueAsString(charset);
     }
 
-    public String getMemoAsString(String fieldName) throws IOException, ParseException {
-        Charset charset = getStringCharset();
-        if (charset == null) {
-            charset = Charset.defaultCharset();
-        }
-        return getMemoAsString(fieldName, charset);
-    }
-
     public Date getDate(String fieldName) throws java.text.ParseException {
         String s = getString(fieldName);
         if (s == null) {
             return null;
         }
         try {
-            return JdbfUtils.parseDate(s);
-        } catch (java.text.ParseException e) {
+            LocalDateTime dateTime = DateConverter.smartParse(s);
+            return dateTime != null ? DateConverter.localDateTimeToSqlTimestamp(dateTime) : null;
+        } catch (Exception e) {
             try {
-                //Дата может присылаться в формате кол-ва дней от неизвестной даты 3 байтами в обратном порядке
+                //The date can be sent in a format representing the number of days from an unknown date, using 3 bytes in reverse order.
                 byte[] bytes = getBytes(fieldName);
                 int days = formatByte(bytes[2]) * 256 * 256 + formatByte(bytes[1]) * 256 + formatByte(bytes[0]);
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(0);
-                cal.add(Calendar.DATE, days - 2440588); //значение для 01.01.1970
+                cal.add(Calendar.DATE, days - 2440588); //value for 01.01.1970
                 return cal.getTime();
             } catch (Exception e1) {
-                //если не получилось, шлём первоначальный exception
+                //throw initial exception if failed
                 throw e;
             }
         }
@@ -216,7 +181,7 @@ public class CustomDbfRecord {
     public BigDecimal getBigDecimal(String fieldName) throws ParseException {
         String s = getString(fieldName);
 
-        if (s == null || s.trim().length() == 0) {
+        if (isRedundantString(s)) {
             return null;
         } else {
             s = s.trim();
@@ -312,74 +277,5 @@ public class CustomDbfRecord {
 
     public Collection<DbfField> getFields() {
         return metadata.getFields();
-    }
-
-    public String getStringRepresentation() throws Exception {
-        StringBuilder sb = new StringBuilder(bytes.length * 10);
-        for (DbfField f : getFields()) {
-            sb.append(f.getName()).append("=");
-            switch (f.getType()) {
-                case Character: {
-                    //String s = getString(f.getName(), "Cp866");
-                    String s = getString(f.getName());
-                    //System.out.println(f.getName()+"="+s);
-                    sb.append(s);
-                    break;
-                }
-                case Date: {
-                    Date d = getDate(f.getName());
-                    //System.out.println(f.getName()+"="+d);
-                    sb.append(d);
-                    break;
-                }
-                case Numeric: {
-                    BigDecimal bd = getBigDecimal(f.getName());
-                    //System.out.println(f.getName()+"="+(bd != null ? bd.toPlainString() : null));
-                    sb.append(bd);
-                    break;
-                }
-                case Logical: {
-                    Boolean b = getBoolean(f.getName());
-                    //System.out.println(f.getName()+"="+b);
-                    sb.append(b);
-                    break;
-                }
-            }
-            sb.append(", ");
-        }
-        return sb.toString();
-    }
-
-    public Map<String, Object> toMap() throws ParseException, java.text.ParseException {
-        Map<String, Object> map = new LinkedHashMap<>(getFields().size() * 2);
-
-        for (DbfField f : getFields()) {
-            String name = f.getName();
-
-            switch (f.getType()) {
-
-                case Character:
-                    map.put(name, getString(name));
-                    break;
-
-                case Date:
-                    map.put(name, getDate(name));
-                    break;
-
-                case Numeric:
-                    map.put(name, getBigDecimal(name));
-                    break;
-
-                case Logical:
-                    map.put(name, getBoolean(name));
-                    break;
-
-                case Integer:
-                    map.put(name, getInteger(name));
-                    break;
-            }
-        }
-
-        return map;
     }
 }
