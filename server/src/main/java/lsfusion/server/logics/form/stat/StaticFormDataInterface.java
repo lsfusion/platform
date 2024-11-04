@@ -63,7 +63,7 @@ public class StaticFormDataInterface extends AbstractFormDataInterface {
     }
 
     @Override
-    public Modifier getModifier() throws SQLException, SQLHandledException {
+    public Modifier getModifier() {
         return context.getModifier();
     }
 

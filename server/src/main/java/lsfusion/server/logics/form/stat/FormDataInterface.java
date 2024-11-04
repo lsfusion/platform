@@ -25,7 +25,7 @@ public interface FormDataInterface {
     BaseClass getBaseClass();
     QueryEnvironment getQueryEnv();
     DataSession getSession();
-    Modifier getModifier() throws SQLException, SQLHandledException;
+    Modifier getModifier();
 
     StaticDataGenerator.Hierarchy getHierarchy(boolean isReport);
     ImMap<ObjectEntity, ? extends ObjectValue> getObjectValues(ImSet<GroupObjectEntity> valueGroups);

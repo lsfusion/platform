@@ -137,7 +137,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> data = MapFact.mAddRemoveMap();
     
     private final ClassChanges classChanges = new ClassChanges();    
-    public Modifier getClassModifier() throws SQLException, SQLHandledException { // modifier который только к ClassProperty обращается (и к корреляциям при update'е классов)
+    public Modifier getClassModifier() { // modifier который только к ClassProperty обращается (и к корреляциям при update'е классов)
         return getModifier();
     }
 
@@ -258,14 +258,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void startTransaction(BusinessLogics BL, boolean serializable, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         ServerLoggers.assertLog(!isInSessionEvent(), "CANNOT START TRANSACTION IN SESSION EVENT");
         isInTransaction = true;
-        if(readApplyFilter() == ApplyFilter.ONLY_DATA)
+        applyFilter = readApplyFilter();
+        if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
         sql.startTransaction(serializable, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
     }
     
-    private void cleanOnlyDataModifier() throws SQLException, SQLHandledException {
+    private void cleanOnlyDataModifier() throws SQLException {
         if(onlyDataModifier != null) {
-            assert readApplyFilter() == ApplyFilter.ONLY_DATA;
+            assert applyFilter == ApplyFilter.ONLY_DATA;
             onlyDataModifier.clean(sql, getOwner());
             onlyDataModifier = null;
         }
@@ -300,7 +301,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //        checkSessionTableMap();
     }
 
-    private void endTransaction() throws SQLException, SQLHandledException {
+    private void endTransaction() throws SQLException {
         applyTransaction = null;
         isInTransaction = false;
 
@@ -1430,7 +1431,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(OldProperty oldProp : oldProps)
             updateApplyStartCurrentClasses(session, oldProp);
     }
-    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) throws SQLException, SQLHandledException {
+    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) {
         ImOrderSet<ApplySingleEvent> dependProps = BL.getSingleApplyDependFrom(event, this, !Settings.get().isDisableCorrelations());
 
         // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
@@ -1555,7 +1556,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private OverrideSessionModifier onlyDataModifier = null;
 
     @Override
-    public SessionModifier getModifier() throws SQLException, SQLHandledException {
+    public SessionModifier getModifier() {
         if(resolveModifier != null)
             return resolveModifier;
 
@@ -1564,7 +1565,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         if(isInTransaction()) {
             if(onlyDataModifier!=null) {
-                assert readApplyFilter() == ApplyFilter.ONLY_DATA;
+                assert applyFilter == ApplyFilter.ONLY_DATA;
                 return onlyDataModifier;
             }
             return applyModifier;
@@ -2052,9 +2053,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return false;
         
             BusinessLogics.Next next = null;
-            ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(readApplyFilter());
+            ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(applyFilter);
             while(true) {
-                next = BL.getNextApplyEvent(readApplyFilter(), next == null ? 0 : next.index + 1, getModifier().getPropertyChanges().getStruct(), applyEvents);
+                next = BL.getNextApplyEvent(applyFilter, next == null ? 0 : next.index + 1, getModifier().getPropertyChanges().getStruct(), applyEvents);
                 if(next == null)
                     break;
                 if(next.sessionEnv.contains(this)) {
@@ -2069,7 +2070,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             executingApplyEvent = null;
         }
 
-        if (readApplyFilter() == ApplyFilter.ONLYCHECK) {
+        if (applyFilter == ApplyFilter.ONLYCHECK) {
             cancel(stack);
             return true;
         }
