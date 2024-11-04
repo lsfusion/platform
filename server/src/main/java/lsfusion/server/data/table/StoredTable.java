@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.SerializedTable;
 
@@ -172,7 +173,7 @@ public abstract class StoredTable extends Table {
         return getQuery().executeClasses(session, baseClass, owner);
     }
     public void readData(SQLSession session, BaseClass baseClass, OperationOwner owner, boolean noFilesAndLogs, ResultHandler<KeyField, PropertyField> result) throws SQLException, SQLHandledException {
-        getQuery(noFilesAndLogs).executeSQL(session, MapFact.EMPTYORDER(), 0, false, DataSession.emptyEnv(owner), result);
+        getQuery(noFilesAndLogs).executeSQL(session, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT, false, DataSession.emptyEnv(owner), result);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

@@ -64,6 +64,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
@@ -442,7 +443,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session) throws SQLException, SQLHandledException {
-        return execute(session, MapFact.EMPTYORDER(), 0);
+        return execute(session, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -455,23 +456,23 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(FormInstance form) throws SQLException, SQLHandledException {
-        return execute(form, MapFact.EMPTYORDER(), 0);
+        return execute(form, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return execute(session, MapFact.EMPTYORDER(), 0, env);
+        return execute(session, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT, env);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return execute(context.getSession(), orders, selectTop);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return execute(context.getSession(), orders, limitOffset);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return execute(session.sql, orders,selectTop, session.env);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return execute(session.sql, orders, limitOffset, session.env);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(FormInstance form, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return execute(form.session.sql, orders, selectTop, form.getQueryEnv());
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(FormInstance form, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return execute(form.session.sql, orders, limitOffset, form.getQueryEnv());
     }
 
     private ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSingle(QueryEnvironment env) { // оптимизация
@@ -508,12 +509,12 @@ public class Query<K,V> extends IQuery<K,V> {
     private static <K, D extends ObjectValue> Function<ImMap<K, D>, ImMap<K, Object>> getMapDataObjectValues() {
         return BaseUtils.immutableCast(getMapDataObjectValues);
     }
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset, QueryEnvironment env) throws SQLException, SQLHandledException {
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(env); // оптимизация
         if(singleResult!=null)
             return singleResult.mapOrderKeyValues(Query.getMapDataObjectValues(), Query.getMapDataObjectValues());
 
-        return executeSQL(session, orders, selectTop, env);
+        return executeSQL(session, orders, limitOffset, env);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -524,20 +525,20 @@ public class Query<K,V> extends IQuery<K,V> {
         return executeClasses(session.sql, session.env, session.baseClass);
     }
 
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session, int selectTop) throws SQLException, SQLHandledException {
-        return executeClasses(session.sql, session.env, session.baseClass, selectTop);
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return executeClasses(session.sql, session.env, session.baseClass, limitOffset);
     }
 
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return executeClasses(session.sql, orders, selectTop, session.baseClass, session.env);
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session, ImOrderMap<? extends V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return executeClasses(session.sql, orders, limitOffset, session.baseClass, session.env);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return executeClasses(session, MapFact.EMPTYORDER(), 0, baseClass, env);
+        return executeClasses(session, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT, baseClass, env);
     }
 
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, int selectTop) throws SQLException, SQLHandledException {
-        return executeClasses(session, MapFact.EMPTYORDER(), selectTop, baseClass, env);
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return executeClasses(session, MapFact.EMPTYORDER(), limitOffset, baseClass, env);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, ImOrderMap<? extends Expr, Boolean> orders) throws SQLException, SQLHandledException {
@@ -549,7 +550,7 @@ public class Query<K,V> extends IQuery<K,V> {
         Query<K, Object> orderQuery = new Query<>(mapKeys, MapFact.addExcl(properties, orderObjects), where);
         ImOrderMap<Object, Boolean> orderProperties = ((ImOrderMap<Expr, Boolean>)orders).map(orderObjects.reverse());
 
-        return orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).mapOrderValues((ImMap<Object, ObjectValue> value) -> value.filterIncl(properties.keys()));
+        return orderQuery.executeClasses(session, orderProperties, LimitOffset.NOLIMIT, baseClass, env).mapOrderValues((ImMap<Object, ObjectValue> value) -> value.filterIncl(properties.keys()));
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionContext context) throws SQLException, SQLHandledException {
         return executeClasses(context, MapFact.EMPTYORDER());
@@ -562,26 +563,26 @@ public class Query<K,V> extends IQuery<K,V> {
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env, ImOrderMap<? extends V, Boolean> orders) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
-        return executeClasses(session.sql, orders, 0, session.baseClass, env.getQueryEnv());
+        return executeClasses(session.sql, orders, LimitOffset.NOLIMIT, session.baseClass, env.getQueryEnv());
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ImOrderMap<? extends Expr, Boolean> orders, ExecutionEnvironment env) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
         return executeClasses(session.sql, env.getQueryEnv(), session.baseClass, orders);
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return executeClasses(formInstance.session.sql, MapFact.EMPTYORDER(), 0, formInstance.session.baseClass, formInstance.getQueryEnv());
+        return executeClasses(formInstance.session.sql, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT, formInstance.session.baseClass, formInstance.getQueryEnv());
     }
 
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, LimitOffset limitOffset, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(env); // оптимизация
         if(singleResult!=null)
             return singleResult;
 
-        return executeSQLClasses(getClassQuery(baseClass), session, (ImOrderMap<Object, Boolean>) orders, selectTop, baseClass, env);
+        return executeSQLClasses(getClassQuery(baseClass), session, (ImOrderMap<Object, Boolean>) orders, limitOffset, baseClass, env);
     }
 
-    private static <K, V> ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSQLClasses(final Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> classQuery, SQLSession session, ImOrderMap<Object, Boolean> orders, int selectTop, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        ImOrderMap<ImMap<K, Object>, ImMap<Object, Object>> rows = classQuery.first.executeSQL(session, orders, selectTop, env);
+    private static <K, V> ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSQLClasses(final Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> classQuery, SQLSession session, ImOrderMap<Object, Boolean> orders, LimitOffset limitOffset, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        ImOrderMap<ImMap<K, Object>, ImMap<Object, Object>> rows = classQuery.first.executeSQL(session, orders, limitOffset, env);
 
         // перемаппим
         final KeyType keyType = classQuery.first.getWhere();

@@ -34,6 +34,7 @@ import lsfusion.server.logics.action.session.change.ModifyResult;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
@@ -117,9 +118,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 //    public String stack;
 
     public SessionTableUsage(String debugInfo, SQLSession sql, final Query<K, V> query, BaseClass baseClass, QueryEnvironment env,
-                             final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
+                             final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
         this(debugInfo, query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), keyTypes::get, propertyTypes::get);
-        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, orders, selectTop);
+        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, orders, limitOffset);
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
@@ -208,17 +209,17 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
-        writeRows(session, query, baseClass, env, updateClasses, MapFact.EMPTYORDER(), 0);
+        writeRows(session, query, baseClass, env, updateClasses, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
     
     protected IQuery<KeyField, PropertyField> fullMap(IQuery<K, V> query) {
         return query.map(mapKeys, mapProps);
     }
 
-    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         try {
             ImRevMap<V, PropertyField> reverseMapProps = mapProps.reverse();
-            table = table.rewrite(session, fullMap(query), baseClass, env, this, updateClasses, orders.mapOrderKeys(reverseMapProps::get), selectTop);
+            table = table.rewrite(session, fullMap(query), baseClass, env, this, updateClasses, orders.mapOrderKeys(reverseMapProps::get), limitOffset);
         } catch (Throwable t) {
             aspectException(session, env.getOpOwner());
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
@@ -260,11 +261,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImCol<ImMap<V, Object>> read(DataSession session, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
-        return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER(), 0).values();
+        return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER(), LimitOffset.NOLIMIT).values();
     }
 
     public ImCol<ImMap<V, Object>> read(SQLSession sql, QueryEnvironment env, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
-        return read(mapValues, sql, env, MapFact.<V, Boolean>EMPTYORDER(), 0).values();
+        return read(mapValues, sql, env, MapFact.<V, Boolean>EMPTYORDER(), LimitOffset.NOLIMIT).values();
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(DataSession session) throws SQLException, SQLHandledException {
@@ -272,15 +273,15 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders, 0);
+        return read(MapFact.EMPTY(), session, env, orders, LimitOffset.NOLIMIT);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders, selectTop);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return read(MapFact.EMPTY(), session, env, orders, limitOffset);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
-        return getQuery(mapValues).execute(session, orders, selectTop, env);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return getQuery(mapValues).execute(session, orders, limitOffset, env);
     }
 
     public Query<K, V> getQuery() {

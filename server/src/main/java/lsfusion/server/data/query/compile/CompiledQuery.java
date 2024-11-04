@@ -86,6 +86,7 @@ import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
@@ -323,13 +324,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             propertySelect = propertyNames.mapValues(addAlias);
             from = "(" + fromString + ") "+alias;
             whereSelect = SetFact.EMPTY();
-            String topString = limit.getString();
+            String limitString = limit.getLimit();
+            String offsetString = limit.getOffset();
             Result<Boolean> needSources = new Result<>();
             String orderBy = Query.stringOrder(resultPropertyOrder.result, query.mapKeys.size(), compileOrders, propertySelect, syntax, needSources);
             if(needSources.result)
-                select = syntax.getSelect(from, "*",  "", orderBy, topString, false);
+                select = syntax.getSelect(from, "*",  "", orderBy, limitString, offsetString, false);
             else
-                select = syntax.getUnionOrder(fromString, orderBy, topString);
+                select = syntax.getUnionOrder(fromString, orderBy, limitString, offsetString);
             areKeyValues = SetFact.EMPTY(); arePropValues = SetFact.EMPTY();
         } else {
             if(queryJoins.size()==0) { // "пустой" запрос
@@ -880,7 +882,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         orders.keys().merge(valueExpr).toMap(), where.and(valueWhere));
                 // непонятно надо ли использовать или нет, но пока методики проталкивания его нет query.ordersNotNull
 
-                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<>(source.syntax, LimitOptions.get(1), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<>(source.syntax, LimitOptions.get(new LimitOffset(1)), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
                 optAdjustLimit.set(optAdjustLimit.result || compiled.sql.optAdjustLimit);
                 final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
@@ -888,7 +890,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return (subQueryParams, mSubEnv, rSubQueries) -> {
                     final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
                     Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
-                    String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addExcl(subQueryParams), mSubEnv, 1, pushPrefix(debugInfoWriter, "EXPR LAST TOP", query)); // не rev, так как subQueryParams - идут expr'ы и они могут быть равны expression'ам
+                    String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addExcl(subQueryParams), mSubEnv, 1, 0, pushPrefix(debugInfoWriter, "EXPR LAST TOP", query)); // не rev, так как subQueryParams - идут expr'ы и они могут быть равны expression'ам
                     rSubQueries.set(rSubQueries.result.addExcl(gSubQueries.result));
                     return "(" + syntax.getSelect("(" + select+ ") " + alias, fromPropertyNames.result.get(valueExpr), "") + ")";
                 };
@@ -1179,9 +1181,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String, String>> propertySelect = new Result<>();
                 Result<ImCol<String>> whereSelect = new Result<>();
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries.mapValues(value -> value.expr), innerWhere).compile(new CompileOptions<>(syntax, LimitOptions.get(top), subcontext.pushSubQuery(), debugInfoWriter != null));
-                String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, top, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
-                return getSQLQuery("(" + SQLSession.getSelect(syntax, fromSelect, keySelect.result, propertySelect.result, whereSelect.result, top) + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
+                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries.mapValues(value -> value.expr), innerWhere).compile(new CompileOptions<>(syntax, LimitOptions.get(new LimitOffset(top)), subcontext.pushSubQuery(), debugInfoWriter != null));
+                String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, top, 0, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
+                return getSQLQuery("(" + SQLSession.getSelect(syntax, fromSelect, keySelect.result, propertySelect.result, whereSelect.result, top, 0) + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
             }
 
             protected Where getInnerWhere() {
@@ -1214,7 +1216,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
             } else
                 groupBy =  BaseUtils.evl((supportGroupNumbers ? ListFact.consecutiveList(keySelect.size()) : fixedKeySelect.values().toList()).toString(","), "3+2");
-            return syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", groupBy, havingSelect.toString(" AND "), "", false);
+            return syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", groupBy, havingSelect.toString(" AND "), "", "", false);
         }
         protected String getGroupSelect(String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect, ImSet<String> areKeyValues) {
             return getGroupSelect(fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect, havingSelect, areKeyValues);
@@ -1621,7 +1623,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         ImOrderMap<String, String> keyOrderedNames = SQLSession.mapNames(keySelect, keyNames, keyOrder); // need to fill keyOrder
         return syntax.getSelect(from, SQLSession.stringExpr(distinctValues ? MapFact.EMPTYORDER() : keyOrderedNames,
                 SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && !distinctValues && syntax.inlineTrouble()?",random()":""),
-                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()), limit.getString(), distinctValues);
+                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()), limit.getLimit(), limit.getOffset(), distinctValues);
     }
 
     private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
@@ -1844,14 +1846,21 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env) {
-        return getQueryParams(env, 0);
+        return getQueryParams(env, LimitOffset.NOLIMIT);
     }
-    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env, final int limit) {
+    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env, final LimitOffset limitOffset) {
         MExclMap<String, ParseInterface> mMapValues = MapFact.mExclMap();
-        if(limit > 0)
+        if (limitOffset.getLimit() > 0)
             mMapValues.exclAdd(SQLSession.limitParam, new StringParseInterface() {
                 public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-                    return String.valueOf(limit);
+                    return String.valueOf(limitOffset.getLimit());
+                }
+            });
+
+        if (limitOffset.getOffset() > 0)
+            mMapValues.exclAdd(SQLSession.offsetParam, new StringParseInterface() {
+                public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                    return String.valueOf(limitOffset.getOffset());
                 }
             });
 
@@ -1910,23 +1919,27 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     // для подзапросов
     public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        return fillSelect(fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, mapValues, 0, fillEnv, debugInfoWriter);
+        return fillSelect(fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, mapValues, 0, 0, fillEnv, debugInfoWriter);
     }
-    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, int top, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, int limit, int offset, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
         ImRevMap<String, String> translate = getTranslate(mapValues);
-        if(top > 0)
-            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(top));
+        if(limit > 0)
+            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(limit));
+        if(offset > 0)
+            translate = translate.addRevExcl(SQLSession.offsetParam, String.valueOf(offset));
         return fillSelect(translate, fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv, debugInfoWriter);
     }
-    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit, DebugInfoWriter debugInfoWriter) {
+    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit, int offset, DebugInfoWriter debugInfoWriter) {
         ImMap<String, String> translate = getTranslate(mapValues);
         if(limit > 0)
             translate = translate.addExcl(SQLSession.limitParam, String.valueOf(limit));
+        if(offset > 0)
+            translate = translate.addExcl(SQLSession.offsetParam, String.valueOf(offset));
         return getSelect(translate, fillPropertyNames, fillSubQueries, fillEnv, debugInfoWriter);
     }
 
-    public void execute(SQLSession session, QueryEnvironment queryEnv, int limit, ResultHandler<K, V> resultHandler) throws SQLException, SQLHandledException {
-        session.executeSelect(sql, getQueryExecEnv(session.contextProvider), queryEnv.getOpOwner(), getQueryParams(queryEnv, limit), queryEnv.getTransactTimeout(), keyNames, propertyNames, resultHandler);
+    public void execute(SQLSession session, QueryEnvironment queryEnv, LimitOffset limitOffset, ResultHandler<K, V> resultHandler) throws SQLException, SQLHandledException {
+        session.executeSelect(sql, getQueryExecEnv(session.contextProvider), queryEnv.getOpOwner(), getQueryParams(queryEnv, limitOffset), queryEnv.getTransactTimeout(), keyNames, propertyNames, resultHandler);
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env, boolean uniqueViolation) throws SQLException, SQLHandledException {

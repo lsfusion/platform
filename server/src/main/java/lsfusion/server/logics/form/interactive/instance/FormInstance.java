@@ -117,6 +117,7 @@ import lsfusion.server.logics.form.interactive.instance.property.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.property.*;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -1314,7 +1315,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             mProps.exclAdd("raw", listExpr);
 
         ImOrderMap<ImMap<Q, DataObject>, ImMap<String, ObjectValue>> result = new Query<>(groupListKeys, mProps.immutable(), listWhere).
-                executeClasses(sql, mOrders.immutableOrder(), neededCount, baseClass, env);
+                executeClasses(sql, mOrders.immutableOrder(), new LimitOffset(neededCount), baseClass, env);
 
         PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
         int count = 0;
@@ -1340,7 +1341,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public static <P extends PropertyInterface> ImMap<P, DataObject> getAsyncKey(InputListExpr<P> listExprKeys, SQLSession sql, QueryEnvironment env, BaseClass baseClass, ObjectValue value) throws SQLException, SQLHandledException {
         ImSet<ImMap<P, DataObject>> keys =
                 new Query<>(listExprKeys.mapKeys, listExprKeys.expr, "value", listExprKeys.expr.compare(value.getExpr(), Compare.EQUALS))
-                .executeClasses(sql, env, baseClass, 1)
+                .executeClasses(sql, env, baseClass, new LimitOffset(1))
                 .keys();
         if(keys.isEmpty())
             return null;
@@ -2634,7 +2635,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @Deprecated
     public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
-        return getFormData(getProperties(), getGroups(), orderTop);
+        return getFormData(getProperties(), getGroups(), new LimitOffset(orderTop));
     }
 
     public ImSet<PropertyDrawInstance<?>> getProperties() {
@@ -2643,7 +2644,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // считывает все данные с формы
     @Deprecated
-    public FormData getFormData(ImSet<PropertyDrawInstance<?>> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
+    public FormData getFormData(ImSet<PropertyDrawInstance<?>> propertyDraws, ImSet<GroupObjectInstance> classGroups, LimitOffset limitOffset) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();
 
@@ -2684,7 +2685,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (PropertyDrawInstance<?> property : propertyDraws)
             query.addProperty(property, property.getSumProperty().getExpr(query.getMapExprs(), getModifier()));
 
-        ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), orderTop);
+        ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), limitOffset);
 
         Set<Integer> notEmptyValues = new HashSet<>();
         LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> result = new LinkedHashMap<>();

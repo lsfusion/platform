@@ -23,6 +23,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
@@ -177,15 +178,15 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change) {
-        return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, MapFact.EMPTYORDER(), 0);
+        return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change, ImOrderMap<PropertyField, Boolean> ordersTop, int selectTop) {
-        CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop);
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change, ImOrderMap<PropertyField, Boolean> ordersTop, LimitOffset limitOffset) {
+        CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, limitOffset);
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(ordersTop, options);
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
-        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new SQLDebugInfo<>(query, options));
+        return new SQLExecute(dml, changeCompile.getQueryParams(env, limitOffset), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new SQLDebugInfo<>(query, options));
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionContextProvider userProvider) {

@@ -28,12 +28,12 @@ public class UnknownSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, String offset, boolean distinct) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String getUnionOrder(String union, String orderBy, String top) {
+    public String getUnionOrder(String union, String orderBy, String top, String offset) {
         throw new UnsupportedOperationException();
     }
 }

@@ -34,6 +34,7 @@ import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
@@ -148,7 +149,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return map.mapOrderKeys(value -> castTypes(value, typeGetter));
     }
 
-    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> ordersTop, final int selectTop) throws SQLException, SQLHandledException {
+    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> ordersTop, final LimitOffset limitOffset) throws SQLException, SQLHandledException {
 
         assert properties.equals(query.getProperties());
 
@@ -180,7 +181,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, null, null, new FillTemporaryTable() { // статистика обновится в readSingleValues / removeFields
             public Integer fill(String name) throws SQLException, SQLHandledException {
 //                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
-                return session.insertSessionSelect(name, insertQuery, env, owner, insertOrdersTop, selectTop);
+                return session.insertSessionSelect(name, insertQuery, env, owner, insertOrdersTop, limitOffset);
             }
         }, getQueryClasses(query), owner, opOwner);
 
@@ -220,16 +221,16 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
-       return rewrite(session, query, baseClass, env, owner, updateClasses, MapFact.EMPTYORDER(), 0);
+       return rewrite(session, query, baseClass, env, owner, updateClasses, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
-    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
         OperationOwner opOwner = env.getOpOwner();
         if(dropBefore)
             drop(session, owner, opOwner);
 
-        SessionData result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, orders, selectTop);
+        SessionData result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, orders, limitOffset);
 
         if(!dropBefore)
             drop(session, owner, opOwner);
