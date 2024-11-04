@@ -270,6 +270,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP count;
     public LP isPivot;
 
+    public LP staticNameApplyFilter;
+
     public Group privateGroup;
 
     public TableFactory tableFactory;
@@ -650,6 +652,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         listViewType = (ConcreteCustomClass) findClass("ListViewType");
         count = findProperty("count[]");
         isPivot = findProperty("isPivot[ListViewType]");
+
+        staticNameApplyFilter = findProperty("staticNameApplyFilter[]");
 
         initNavigators();
     }

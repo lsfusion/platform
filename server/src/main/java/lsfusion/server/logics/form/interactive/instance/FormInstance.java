@@ -2928,14 +2928,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private FormModifier createModifier() {
+    private FormModifier createModifier() throws SQLException, SQLHandledException {
         return new FormModifier(toString(), environmentIncrement, SetFact.EMPTY(), SetFact.EMPTY(), entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
 
     public Map<SessionModifier, FormModifier> modifiers = new HashMap<>();
 
     @ManualLazy
-    public FormModifier getModifier() {
+    public FormModifier getModifier() throws SQLException, SQLHandledException {
         SessionModifier sessionModifier = session.getModifier();
         FormModifier modifier = modifiers.get(sessionModifier);
         if (modifier == null) {

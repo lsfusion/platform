@@ -113,12 +113,6 @@ CLASS ListViewType {
 count '{form.grid.count}' = 1;
 isPivot(ListViewType t) = t == ListViewType.pivot;
 
-applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyWithoutRecalcAction' ();
-applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCalcAction' ();
-applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCheckAction' ();
-applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyDataAction' ();
-applyAll  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyAllAction' ();
-
 throwException  INTERNAL  'lsfusion.server.logics.action.flow.ThrowExceptionAction' (TEXT);
 
 setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>;
@@ -126,16 +120,6 @@ dropNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTran
 
 setNoEventsInTransaction()  INTERNAL  <{ context.getSession().setNoEventsInTransaction(true); }>;
 dropNoEventsInTransaction()  INTERNAL  <{ context.getSession().setNoEventsInTransaction(false); }>;
-
-check()  { 
-    applyOnlyCheck();
-    
-    TRY { 
-        apply();
-    } FINALLY {
-        applyAll();
-    }    
-}
 
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsAction' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
@@ -180,6 +164,29 @@ checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.Chec
 isServer = DATA LOCAL BOOLEAN ();
 
 lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
+
+CLASS ApplyFilter {
+    onlyCalc, onlyCheck, onlyData, session, withoutRecalc
+}
+applyFilter = DATA LOCAL ApplyFilter();
+staticNameApplyFilter = staticName(applyFilter());
+
+applyOnlyCalc() { applyFilter() <- ApplyFilter.onlyCalc; }
+applyOnlyCheck()  { applyFilter() <- ApplyFilter.onlyCheck; }
+applyOnlyData() { applyFilter() <- ApplyFilter.onlyData; }
+applySession() { applyFilter() <- ApplyFilter.session; }
+applyOnlyWithoutRecalc() { applyFilter() <- ApplyFilter.withoutRecalc; }
+applyAll() { applyFilter() <- NULL; }
+
+check()  {
+    applyOnlyCheck();
+
+    TRY {
+        apply();
+    } FINALLY {
+        applyAll();
+    }
+}
 
 // ----------------------------------- open files ----------------------------------- //
 

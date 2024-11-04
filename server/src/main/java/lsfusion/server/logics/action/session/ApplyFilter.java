@@ -15,17 +15,18 @@ public enum ApplyFilter {
     // GLOBAL (events with sessionEnv GLOBAL + materialized properties)
     WITHOUT_RECALC, ONLYCHECK, NO, ONLY_CALC, ONLY_DATA;
 
-/*    public String getSID() {
-        switch (this) {
-            case WITHOUT_RECALC:
-                return "enableOnlyWithoutRecalc";
-            case ONLYCHECK:
-                return "enableOnlyCheck";
-            case NO:
-                return "enableAll";
+    public static ApplyFilter get(String id) {
+        if(id != null) {
+            switch (id) {
+                case "onlyCalc": return ApplyFilter.ONLY_CALC;
+                case "onlyCheck": return ApplyFilter.ONLYCHECK;
+                case "onlyData": return ApplyFilter.ONLY_DATA;
+                case "session" : return ApplyFilter.SESSION;
+                case "withoutRecalc": return ApplyFilter.WITHOUT_RECALC;
+            }
         }
-        throw new UnsupportedOperationException();
-    }*/
+        return ApplyFilter.NO;
+    }
 
     public static boolean isCheck(ActionOrProperty property) {
         return property instanceof Action && ((Action) property).hasFlow(ChangeFlowType.CANCEL);

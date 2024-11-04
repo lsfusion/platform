@@ -503,7 +503,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return mapObjects != null && mapObjects.size() == 1 ? mapObjects.singleValue() : null;
     }
 
-    public Modifier getModifier() {
+    public Modifier getModifier() throws SQLException, SQLHandledException {
         return getEnv().getModifier();
     }
 

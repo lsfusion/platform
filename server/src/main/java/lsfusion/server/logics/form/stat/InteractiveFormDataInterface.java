@@ -66,7 +66,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
     }
 
     @Override
-    public Modifier getModifier() {
+    public Modifier getModifier() throws SQLException, SQLHandledException {
         return form.getModifier();
     }
 

@@ -76,7 +76,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public abstract DataSession getSession();
 
-    public abstract Modifier getModifier();
+    public abstract Modifier getModifier() throws SQLException, SQLHandledException;
 
     public abstract FormInstance getFormInstance();
 

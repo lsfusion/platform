@@ -1557,8 +1557,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) {
-        Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> orderMapSingleApplyDepends = getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations);
+    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) throws SQLException, SQLHandledException {
+        Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> orderMapSingleApplyDepends = getOrderMapSingleApplyDepends(session.readApplyFilter(), includeCorrelations);
 
         ImOrderMap<ApplySingleEvent, SessionEnvEvent> depends = orderMapSingleApplyDepends.first.get(event);
         ImMap<ApplyUpdatePrevEvent, Integer> lastUsedEvents = orderMapSingleApplyDepends.second;
