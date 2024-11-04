@@ -7,8 +7,8 @@ title: 'Оператор EXPORT'
 ## Синтаксис
 
 ```
-EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+EXPORT [exportFormat] [TOP n [OFFSET m]] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n [OFFSET m]] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
 ```
 
 `exportFormat` может задаваться одним из следующих вариантов:
@@ -114,9 +114,9 @@ TABLE
 
   [Идентификатор свойства](IDs.md#propertyid), значение которого применяется в качестве названия листа в выгружаемом файле. У свойства не должно быть параметров. Используется для форматов экспорта `XLS`, `XLSX`.
 
-- `TOP n`
+- `TOP n [OFFSET m]`
 
-    Экспортирует только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral).
+    Экспортирует только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral) со смещением `m`(Целочисленный литерал).
 
 ### Назначение экспорта
 

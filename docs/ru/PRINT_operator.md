@@ -17,7 +17,7 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType] [TOP n]
+MESSAGE [syncType] [TOP n [OFFSET m]]
 ```
 
 ### Описание
@@ -80,7 +80,7 @@ MESSAGE [syncType] [TOP n]
 
 - `TOP n`
 
-    Выводит только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral).
+    Выводит только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral) со смещением `m`(Целочисленный литерал).
 
 - `syncType`
 

@@ -17,7 +17,7 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType] [TOP n]
+MESSAGE [syncType] [TOP n [OFFSET m]]
 ```
 
 ### Description
@@ -78,9 +78,9 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 
     Keyword. If specified, the form displays data to the user in [message](In_a_print_view_PRINT.md#interactive) mode.
 
-- `TOP n`
+- `TOP n [OFFSET m]`
 
-    Displays only the first `n` entries. [Integer literal](Literals.md#intliteral).
+    Displays only the first `n` entries. [Integer literal](Literals.md#intliteral) with `m` offset (Integer literal).
 
 - `syncType`
 

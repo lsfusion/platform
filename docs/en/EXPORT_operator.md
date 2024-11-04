@@ -7,8 +7,8 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
 ## Syntax
 
 ```
-EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+EXPORT [exportFormat] [TOP n [OFFSET m]] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n [OFFSET m]] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
 ```
 
 `exportFormat` can be specified by one of the following options:
@@ -113,9 +113,9 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
   The [ID of the property](IDs.md#propertyid) whose value is used as the name of the sheet in the exported file. The property must not have parameters. It is used for `XLS` and `XLSX` export formats.
      
-- `TOP n`
+- `TOP n [OFFSET m]`
 
-    Exports only the first `n` records. [Integer literal](Literals.md#intliteral).
+    Exports only the first `n` records. [Integer literal](Literals.md#intliteral) with `m` offset (Integer literal).
 
 ### Export destination
 
