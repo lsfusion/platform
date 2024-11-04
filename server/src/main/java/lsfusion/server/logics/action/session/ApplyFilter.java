@@ -18,11 +18,11 @@ public enum ApplyFilter {
     public static ApplyFilter get(String id) {
         if(id != null) {
             switch (id) {
-                case "onlyCalc": return ApplyFilter.ONLY_CALC;
-                case "onlyCheck": return ApplyFilter.ONLYCHECK;
-                case "onlyData": return ApplyFilter.ONLY_DATA;
-                case "session" : return ApplyFilter.SESSION;
-                case "withoutRecalc": return ApplyFilter.WITHOUT_RECALC;
+                case "System_ApplyFilter.onlyCalc": return ApplyFilter.ONLY_CALC;
+                case "System_ApplyFilter.onlyCheck": return ApplyFilter.ONLYCHECK;
+                case "System_ApplyFilter.onlyData": return ApplyFilter.ONLY_DATA;
+                case "System_ApplyFilter.session" : return ApplyFilter.SESSION;
+                case "System_ApplyFilter.withoutRecalc": return ApplyFilter.WITHOUT_RECALC;
             }
         }
         return ApplyFilter.NO;

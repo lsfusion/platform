@@ -163,6 +163,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private LA watch;
 
     public LA sleep;
+    public LA applyOnlyCheck;
     public LA applyOnlyWithoutRecalc;
     public LA applyAll;
 
@@ -616,6 +617,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         openRawLink = findAction("open[RAWLINK]");
 
         sleep = findAction("sleep[LONG]");
+        applyOnlyCheck = findAction("applyOnlyCheck[]");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
         applyAll = findAction("applyAll[]");
 

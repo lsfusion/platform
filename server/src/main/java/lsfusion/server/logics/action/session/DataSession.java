@@ -121,6 +121,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getStack;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
@@ -303,6 +304,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void endTransaction() throws SQLException {
         applyTransaction = null;
+        applyFilter = ApplyFilter.NO;
         isInTransaction = false;
 
         showRecs.clear();
@@ -1210,12 +1212,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        setApplyFilter(ApplyFilter.ONLYCHECK);
+        BL.LM.applyOnlyCheck.execute(this, getStack());
 
-        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
-
-        setApplyFilter(ApplyFilter.NO);
-        return result;
+        return apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, PropertyChangeTableUsage<T> change) {
@@ -2030,11 +2029,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public ApplyFilter applyFilter = null;
-    public void setApplyFilter(ApplyFilter applyFilter) {
-        this.applyFilter = applyFilter;
-    }
     public ApplyFilter readApplyFilter() throws SQLException, SQLHandledException {
-        return applyFilter != null ? applyFilter : ApplyFilter.get((String) ThreadLocalContext.getBaseLM().staticNameApplyFilter.read(this));
+        return ApplyFilter.get((String) ThreadLocalContext.getBaseLM().staticNameApplyFilter.read(this));
     }
     
     private List<SQLRunnable> rollbackInfo = new ArrayList<>();
