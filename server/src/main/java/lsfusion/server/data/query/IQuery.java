@@ -29,6 +29,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
 
 import java.sql.SQLException;
@@ -63,27 +64,27 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
-    public ImOrderSet<ImMap<V, Object>> executeDistinctValues(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+    public ImOrderSet<ImMap<V, Object>> executeDistinctValues(DataSession session, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         ReadDistinctValuesHandler<K, V> result = new ReadDistinctValuesHandler<>();
-        executeSQL(session.sql, orders, selectTop, true, session.env, result);
+        executeSQL(session.sql, orders, limitOffset, true, session.env, result);
         return result.terminate();
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset, QueryEnvironment env) throws SQLException, SQLHandledException {
         ReadAllResultHandler<K, V> result = new ReadAllResultHandler<>();
-        executeSQL(session, orders, selectTop, false, env, result);
+        executeSQL(session, orders, limitOffset, false, env, result);
         return result.terminate();
     }
 
     @StackMessage("{message.query.execute}")
-    public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, boolean distinctValues, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
-        CompileOptions<V> options = new CompileOptions<>(session.syntax, LimitOptions.get(selectTop, distinctValues), SubQueryContext.EMPTY);
+    public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, LimitOffset limitOffset, boolean distinctValues, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
+        CompileOptions<V> options = new CompileOptions<>(session.syntax, LimitOptions.get(limitOffset, distinctValues), SubQueryContext.EMPTY);
         CompiledQuery<K, V> compile = compile(orders, options);
 
         SQLDebugInfo<K, V> debugInfo = new SQLDebugInfo<>(this, options);
         SQLDebugInfo prevDebugInfo = SQLDebugInfo.pushStack(debugInfo);
         try {
-            compile.execute(session, env, selectTop, result);
+            compile.execute(session, env, limitOffset, result);
         } finally {
             SQLDebugInfo.popStack(debugInfo, prevDebugInfo);
         }

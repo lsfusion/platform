@@ -75,11 +75,11 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         return "CREATE TABLE " + getSessionTableName(tableName) + " (" + declareString + ")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, boolean distinct) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top, String offset, boolean distinct) {
         return "SELECT" + (distinct ? "DISTINCT " : "") + BaseUtils.clause("TOP", top) + " " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
-    public String getUnionOrder(String union, String orderBy, String top) {
+    public String getUnionOrder(String union, String orderBy, String top, String offset) {
         if(top.length()==0)
             return union + BaseUtils.clause("ORDER BY", orderBy);
         return "SELECT" + BaseUtils.clause("TOP", top) + " * FROM (" + union + ") UALIAS" + BaseUtils.clause("ORDER BY", orderBy);

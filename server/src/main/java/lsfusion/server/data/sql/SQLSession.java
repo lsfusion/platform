@@ -70,6 +70,7 @@ import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
@@ -345,6 +346,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public final static String inTestModeParam = getParamName("inTestMode");
     public final static String projectLSFDirParam = getParamName("projectLSFDirParam");
     public final static String limitParam = getParamName("limitParam");
+    public final static String offsetParam = getParamName("offsetParam");
 
     public static String getParamName(String param) {
         return paramPrefix + param + paramPostfix;
@@ -2771,12 +2773,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
-        return insertSessionSelect(name, query, env, owner, MapFact.EMPTYORDER(), 0);
+        return insertSessionSelect(name, query, env, owner, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
-    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, ImOrderMap<PropertyField, Boolean> ordersTop, int selectTop) throws SQLException, SQLHandledException {
+    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, ImOrderMap<PropertyField, Boolean> ordersTop, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
-        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, register(name, owner, TableChange.INSERT), ordersTop, selectTop), () -> query.outSelect(SQLSession.this, env, true));
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, register(name, owner, TableChange.INSERT), ordersTop, limitOffset), () -> query.outSelect(SQLSession.this, env, true));
     }
 
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
@@ -2959,8 +2961,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private final static BiFunction<String, String, String> addFieldAliases = (key, value) -> value + " AS " + key;
     // вспомогательные методы
 
-    public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, int top) {
-        return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", top > 0 ? String.valueOf(top) : "", false);
+    public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, int top, int offset) {
+        return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", top > 0 ? String.valueOf(top) : "", offset > 0 ? String.valueOf(offset) : "", false);
     }
     public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect) {
         return getSelect(syntax, fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect);

@@ -76,6 +76,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -858,7 +859,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         Where groupWhere = GroupExpr.create(mapExprKeys, Where.TRUE(), mapKeys).getWhere();
 
         return castExecuteObjects(new Query<ObjectInstance, OrderInstance>(mapKeys, groupWhere).
-                executeClasses(session, env, baseClass, readSize));
+                executeClasses(session, env, baseClass, new LimitOffset(readSize)));
     }
 
     public ImMap<GroupColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -1639,7 +1640,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
 
             return castExecuteObjects(new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
-                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass, env));
+                        executeClasses(session, down ? orders : Query.reverseOrder(orders), new LimitOffset(readSize), baseClass, env));
         }
 
         // считывает одну запись

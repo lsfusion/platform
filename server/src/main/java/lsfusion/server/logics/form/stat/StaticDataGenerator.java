@@ -239,7 +239,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             QueryEnvironment queryEnv = formInterface.getQueryEnv();
             BaseClass baseClass = formInterface.getBaseClass();
             SQLSession sql = session.sql;
-            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, allOrders, selectTop.get(thisGroup));
+            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, allOrders, selectTop.getLimitOffset(thisGroup));
 
             try {
                 // column groups data
