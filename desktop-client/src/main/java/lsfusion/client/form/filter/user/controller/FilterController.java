@@ -201,7 +201,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 if (readSelectedValue) {
                     existingFilter.putSelectedValue();
                 }
-                SwingUtilities.invokeLater(() -> existingFilter.startEditing(keyEvent));
+                existingFilter.startEditing(keyEvent);
                 return true;
             }
         }
@@ -225,7 +225,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         logicsSupplier.getFormController().commitOrCancelCurrentEditing();
 
-        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, keyEvent, readSelectedValue);
+        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, readSelectedValue);
         conditionViews.put(condition, conditionView);
 
         addConditionView(condition, conditionView); 

@@ -26,7 +26,7 @@ public abstract class DataFilterValueView extends FlexPanel {
 
     private ClientGroupObjectValue columnKey;
 
-    public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
+    public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, boolean readSelectedValue) {
         this.filterValue = condition.value;
         logicsSupplier = ilogicsSupplier;
 
@@ -37,7 +37,7 @@ public abstract class DataFilterValueView extends FlexPanel {
 
         addFill(valueTable);
         
-        changeProperty(condition, keyEvent, readSelectedValue);
+        changeProperty(condition, readSelectedValue);
     }
 
     public boolean requestFocusInWindow() {
@@ -60,18 +60,15 @@ public abstract class DataFilterValueView extends FlexPanel {
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
-        changeProperty(condition, null, true);
+        changeProperty(condition, true);
     }
 
-    public void changeProperty(ClientPropertyFilter condition, EventObject keyEvent, boolean readSelectedValue) {
+    public void changeProperty(ClientPropertyFilter condition, boolean readSelectedValue) {
         valueTable.setProperty(condition.property);
-        // with quick filter first value of current cell is cleared and then key symbol is put - we have 2 server requests  
-        if (keyEvent == null || KeyStrokes.isChangeAppendKeyEvent(keyEvent)) {
-            if (readSelectedValue) {
-                filterValue.setValue(readSelectedValue(condition));
-            }
-            setValue(filterValue.value);
+        if (readSelectedValue) {
+            filterValue.setValue(readSelectedValue(condition));
         }
+        setValue(filterValue.value);
     }
 
     public void valueChanged(Object newValue) {
@@ -94,7 +91,7 @@ public abstract class DataFilterValueView extends FlexPanel {
     }
 
     public void putSelectedValue(ClientPropertyFilter condition) {
-        valueChanged(readSelectedValue(condition));
+        setValue(readSelectedValue(condition));
     }
 
     public void startEditing(EventObject initFilterKeyEvent) {
@@ -103,7 +100,7 @@ public abstract class DataFilterValueView extends FlexPanel {
             valueTable.editCellAt(0, 0, initFilterKeyEvent);
         } else {
             // to be able to apply on Enter
-            filterValue.value = valueTable.getValue();
+            filterValue.setValue(valueTable.getValue());
         }
         final Component editor = valueTable.getEditorComponent();
         if (editor != null) {
