@@ -168,7 +168,7 @@ lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
 CLASS ApplyFilter {
     onlyCalc, onlyCheck, onlyData, session, withoutRecalc
 }
-applyFilter = DATA LOCAL ApplyFilter();
+applyFilter = DATA LOCAL NESTED ApplyFilter();
 staticNameApplyFilter = staticName(applyFilter());
 
 applyOnlyCalc() { applyFilter() <- ApplyFilter.onlyCalc; }

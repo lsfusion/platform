@@ -1214,7 +1214,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         BL.LM.applyOnlyCheck.execute(this, getStack());
 
-        return apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
+        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
+
+        BL.LM.applyAll.execute(this, getStack());
+        return result;
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, PropertyChangeTableUsage<T> change) {
