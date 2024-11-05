@@ -4,6 +4,7 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
+import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -17,7 +18,6 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.query.exec.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.reader.CustomReader;
 import lsfusion.server.data.type.reader.PGObjectReader;
 import lsfusion.server.data.type.reader.Reader;
@@ -288,7 +288,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
-            HMap entry = (HMap) rsValue;
+            AMap entry = (AMap) rsValue;
 
             String query = trimToEmpty((String) entry.get("query"));
             String state = trimToEmpty((String) entry.get("state"));
@@ -391,7 +391,7 @@ public abstract class ProcessDumpAction extends InternalAction {
 
         Map<Integer, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
-            HMap entry = (HMap) rsValue;
+            AMap entry = (AMap) rsValue;
             Integer blocked_pid = (Integer) entry.get("blocked_pid");
             Integer blocking_pid = (Integer) entry.get("blocking_pid");
             String blocking_statement = trim((String) entry.get("blocking_statement"), 100);
