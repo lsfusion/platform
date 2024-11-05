@@ -304,7 +304,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void endTransaction() throws SQLException {
         applyTransaction = null;
-        applyFilter = ApplyFilter.NO;
         isInTransaction = false;
 
         showRecs.clear();
@@ -316,6 +315,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mRemovedClasses = null;
 
         cleanOnlyDataModifier();
+        applyFilter = ApplyFilter.NO;
     }
 /*    private void checkSessionTableMap() {
         checkSessionTableMap(add);
@@ -1213,11 +1213,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         BL.LM.applyOnlyCheck.execute(this, getStack());
-
-        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
-
-        BL.LM.applyAll.execute(this, getStack());
-        return result;
+        try {
+            return apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
+        } finally {
+            BL.LM.applyAll.execute(this, getStack());
+        }
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, PropertyChangeTableUsage<T> change) {
@@ -2033,7 +2033,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public ApplyFilter applyFilter = null;
     public ApplyFilter readApplyFilter() throws SQLException, SQLHandledException {
-        return ApplyFilter.get((String) ThreadLocalContext.getBaseLM().staticNameApplyFilter.read(this));
+        return ApplyFilter.get((String) ThreadLocalContext.getBaseLM().nameApplyFilter.read(this));
     }
     
     private List<SQLRunnable> rollbackInfo = new ArrayList<>();

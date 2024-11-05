@@ -169,7 +169,7 @@ CLASS ApplyFilter {
     onlyCalc, onlyCheck, onlyData, session, withoutRecalc
 }
 applyFilter = DATA LOCAL NESTED ApplyFilter();
-staticNameApplyFilter = staticName(applyFilter());
+nameApplyFilter = staticName(applyFilter());
 
 applyOnlyCalc() { applyFilter() <- ApplyFilter.onlyCalc; }
 applyOnlyCheck()  { applyFilter() <- ApplyFilter.onlyCheck; }

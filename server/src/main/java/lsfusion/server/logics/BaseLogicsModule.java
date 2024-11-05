@@ -271,7 +271,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP count;
     public LP isPivot;
 
-    public LP staticNameApplyFilter;
+    public LP nameApplyFilter;
 
     public Group privateGroup;
 
@@ -655,7 +655,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         count = findProperty("count[]");
         isPivot = findProperty("isPivot[ListViewType]");
 
-        staticNameApplyFilter = findProperty("staticNameApplyFilter[]");
+        nameApplyFilter = findProperty("nameApplyFilter[]");
 
         initNavigators();
     }
