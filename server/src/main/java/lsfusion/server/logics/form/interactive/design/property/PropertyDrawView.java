@@ -70,6 +70,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean changeOnSingleClick;
     public boolean hide;
+    public boolean remove;
     public Long maxValue;
     public Boolean echoSymbols;
     public boolean noSort;
@@ -682,6 +683,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);
+        outStream.writeBoolean(remove);
 
         //entity часть
         if(isProperty(pool.context)) {
@@ -916,6 +918,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
+        remove = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }

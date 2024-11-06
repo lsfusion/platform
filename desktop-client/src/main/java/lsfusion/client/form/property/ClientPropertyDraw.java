@@ -205,6 +205,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String eventID;
     public Boolean changeOnSingleClick;
     public boolean hide;
+    public boolean remove;
 
     public String customRenderFunction;
     public boolean customCanBeRenderedInTD;
@@ -597,6 +598,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
+        outStream.writeBoolean(remove);
 
         outStream.writeInt(ID);
     }
@@ -663,6 +665,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
+        remove = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if(inStream.readBoolean())
@@ -956,6 +959,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean isAction() {
         return baseType instanceof ClientActionClass;
+    }
+
+    public boolean hideOrRemove() {
+        return hide || remove;
     }
 
     public class CaptionReader implements ClientPropertyReader {

@@ -37,7 +37,7 @@ public class GTreeTableTree {
     public int updateProperty(GPropertyDraw property) {
         GGroupObject group = property.groupObject;
         ArrayList<GPropertyDraw> properties = groupProperties.computeIfAbsent(group, k -> new ArrayList<>());
-        if (!properties.contains(property) && !property.hide) {
+        if (!properties.contains(property) && !property.hideOrRemove()) {
             int gins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(gins, property);
             if (group.isLastGroupInTree())

@@ -533,7 +533,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             visibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
         }
         for (ClientPropertyDraw property : goController.getGroupObjectProperties()) {
-            if (!orderedVisibleProperties.contains(property)) {
+            if (!orderedVisibleProperties.contains(property) && !property.remove) {
                 invisibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
             }
         }
