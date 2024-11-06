@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.InlineComponentViewWidget;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -81,13 +82,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
             // display context menu when right-clicking on a label item. It is to allow to show context menu when checkboxes are displayed by buttons
             label.addDomHandler(event -> {
-                GwtClientUtils.setOriginalEventElement(valueElement, label.getElement());
                 GwtClientUtils.fireOnContextmenu(valueElement);
                 GwtClientUtils.stopPropagation(event.getNativeEvent());
             }, ContextMenuEvent.getType());
 
             label.addDomHandler(event -> {
-                if (event.getNativeButton() == 1) { // check that this is the left mouse button, because the top ContextMenuEvent should trigger on the right button.
+                if (GMouseStroke.isChangeEvent(event.getNativeEvent())) {// check that this is the left mouse button, because the top ContextMenuEvent should trigger on the right button.
                     GwtClientUtils.fireOnMouseDown(valueElement);
                     GwtClientUtils.stopPropagation(event.getNativeEvent()); // need this because otherwise default handler will lead to the blur event
                 }

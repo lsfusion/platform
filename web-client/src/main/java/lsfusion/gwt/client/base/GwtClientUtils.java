@@ -700,12 +700,12 @@ public class GwtClientUtils {
     }
 
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction) {
-        return showTippyPopup(popupOwner, popupWidget, onHideAction, null);
+        RootPanel.get().add(popupWidget);
+        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction);
     }
 
-    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction, Supplier<Element> referenceElementSupplier) {
-        RootPanel.get().add(popupWidget);
-        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction, referenceElementSupplier);
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction) {
+        return showTippyPopup(popupOwner, popupElement, onHideAction, null);
     }
 
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction, Supplier<Element> referenceElementSupplier) {
@@ -1745,14 +1745,6 @@ public class GwtClientUtils {
     public static native void consoleError(String error)/*-{
         console.error(error);
     }-*/;
-
-    public static void setOriginalEventElement(Element targetEventElement, Element originalEventElement) {
-        setField(targetEventElement, "originalEventElement", originalEventElement);
-    }
-
-    public static Element getOriginalEventElement(Element targetEventElement) {
-        return getField(targetEventElement, "originalEventElement").cast();
-    }
 
     public static void fireOnContextmenu(Element element) {
         fireMouseEvent(element, "contextmenu");
