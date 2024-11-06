@@ -348,7 +348,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                         result.add(property);
                     }
                 }
-            } else if (!property.hide) {
+            } else if (!property.hideOrRemove()) {
                 result.add(property);
             }
         }

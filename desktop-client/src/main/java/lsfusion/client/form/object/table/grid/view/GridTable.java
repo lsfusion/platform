@@ -546,7 +546,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                         result.add(property);
                     }
                 }
-            } else if (!property.hide) {
+            } else if (!property.hideOrRemove()) {
                 result.add(property);
             }
         }

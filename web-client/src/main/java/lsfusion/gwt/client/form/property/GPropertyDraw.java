@@ -448,6 +448,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public Boolean changeOnSingleClick;
 
     public boolean hide;
+    public boolean remove;
 
     private transient CellRenderer cellRenderer;
     private transient CellRenderer valueRenderer;
@@ -582,6 +583,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean isAction() {
         return getValueType() instanceof GActionType;
+    }
+
+    public boolean hideOrRemove() {
+        return hide || remove;
     }
 
     public boolean isPanelBoolean() {
