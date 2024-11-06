@@ -51,7 +51,7 @@ public class GPropertyContextMenuPopup {
             menuBar.addItem(menuItem);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(popupOwner, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(popupOwner, menuBar, null, () ->  GwtClientUtils.getOriginalEventElement(popupOwner.element));
     }
     
     private static String ensureMenuItemCaption(String caption) {

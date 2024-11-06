@@ -700,12 +700,12 @@ public class GwtClientUtils {
     }
 
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction) {
-        RootPanel.get().add(popupWidget);
-        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction);
+        return showTippyPopup(popupOwner, popupWidget, onHideAction, null);
     }
 
-    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction) {
-        return showTippyPopup(popupOwner, popupElement, onHideAction, null);
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction, Supplier<Element> referenceElementSupplier) {
+        RootPanel.get().add(popupWidget);
+        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction, referenceElementSupplier);
     }
 
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction, Supplier<Element> referenceElementSupplier) {
@@ -1746,8 +1746,24 @@ public class GwtClientUtils {
         console.error(error);
     }-*/;
 
-    public static native void fireOnMouseDown(Element element)/*-{
-        element.dispatchEvent(new MouseEvent("mousedown"));
+    public static void setOriginalEventElement(Element targetEventElement, Element originalEventElement) {
+        setField(targetEventElement, "originalEventElement", originalEventElement);
+    }
+
+    public static Element getOriginalEventElement(Element targetEventElement) {
+        return getField(targetEventElement, "originalEventElement").cast();
+    }
+
+    public static void fireOnContextmenu(Element element) {
+        fireMouseEvent(element, "contextmenu");
+    }
+
+    public static void fireOnMouseDown(Element element) {
+        fireMouseEvent(element, "mousedown");
+    }
+
+    public static native void fireMouseEvent(Element element, String event)/*-{
+        element.dispatchEvent(new MouseEvent(event));
     }-*/;
 
     public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{

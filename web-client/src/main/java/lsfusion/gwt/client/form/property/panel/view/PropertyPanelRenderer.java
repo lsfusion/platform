@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
@@ -76,9 +77,20 @@ public class PropertyPanelRenderer extends PanelRenderer {
             GwtClientUtils.addClassName(label, "panel-property-label");
 
             label.getElement().setAttribute("for", globalID);
+            Element valueElement = value.getElement();
+
+            // display context menu when right-clicking on a label item. It is to allow to show context menu when checkboxes are displayed by buttons
             label.addDomHandler(event -> {
-                GwtClientUtils.fireOnMouseDown(value.getElement());
-                GwtClientUtils.stopPropagation(event.getNativeEvent()); // need this because otherwise default handler will lead to the blur event
+                GwtClientUtils.setOriginalEventElement(valueElement, label.getElement());
+                GwtClientUtils.fireOnContextmenu(valueElement);
+                GwtClientUtils.stopPropagation(event.getNativeEvent());
+            }, ContextMenuEvent.getType());
+
+            label.addDomHandler(event -> {
+                if (event.getNativeButton() == 1) { // check that this is the left mouse button, because the top ContextMenuEvent should trigger on the right button.
+                    GwtClientUtils.fireOnMouseDown(valueElement);
+                    GwtClientUtils.stopPropagation(event.getNativeEvent()); // need this because otherwise default handler will lead to the blur event
+                }
             }, MouseDownEvent.getType());
 
             // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
