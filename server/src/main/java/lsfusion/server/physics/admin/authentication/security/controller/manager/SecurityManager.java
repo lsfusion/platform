@@ -168,13 +168,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return adminUser;
     }
 
-    private DataObject initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> groupNames, Map<String, String> attributes) throws SQLException, SQLHandledException {
+    private DataObject initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> roles, boolean rolesOnlyIfNew, Map<String, String> attributes) throws SQLException, SQLHandledException {
         DataObject userObject = readUser(userName, session);
 
         if (userObject == null)
             userObject = addUser(userName, password.get(), session);
+        else if(rolesOnlyIfNew)
+            roles = null;
 
-        setUserParameters(userObject, firstName, lastName, email, groupNames, attributes, session);
+        setUserParameters(userObject, firstName, lastName, email, roles, attributes, session);
         apply(session, stack);
 
         return userObject;
@@ -302,7 +304,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(userName, password);
 
                         if (ldapParameters.isConnected()) {
-                            userObject = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAttributes());
+                            userObject = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), false, ldapParameters.getAttributes());
                         } else {
                             throw new LoginException();
                         }
@@ -324,7 +326,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
 
                 // Because user data can change on the oauth2 provider side - we will update userParameters on each authentication.
-                userObject = initAndUpdateUser(session, stack, oauth2.getUserName(), () -> BaseUtils.generatePassword(20, false, true), oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), userObject == null ?  Collections.singletonList("selfRegister") : null, oauth2.getAttributes());
+                userObject = initAndUpdateUser(session, stack, oauth2.getUserName(), () -> BaseUtils.generatePassword(20, false, true), oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), Collections.singletonList("selfRegister"), true, oauth2.getAttributes());
             }
             if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
                 throw new LockedException();
