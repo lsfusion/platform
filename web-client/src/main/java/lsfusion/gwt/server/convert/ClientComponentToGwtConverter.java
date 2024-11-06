@@ -448,7 +448,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;
-        
+        propertyDraw.remove = clientPropertyDraw.remove;
+
         propertyDraw.notNull = clientPropertyDraw.notNull;
 
         propertyDraw.sticky = clientPropertyDraw.sticky;

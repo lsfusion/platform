@@ -406,7 +406,7 @@ public class GFormController implements EditManager {
             }
 
             GGroupObject groupObject = property.groupObject;
-            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
+            if(groupObject != null && property.isList && !property.hideOrRemove() && groupObject.columnCount < 10) {
                 GFont font = groupObject.grid.font;
                 // in theory property renderers padding should be included, but it's hard to do that (there will be problems with the memoization)
                 // plus usually there are no paddings for the property renderers in the table (td paddings are used, and they are included see the usages)

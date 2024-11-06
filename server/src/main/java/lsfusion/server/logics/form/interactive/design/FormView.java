@@ -818,6 +818,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     // the problem is that if removed components are not put somewhere they are not finalized
     public void removeComponent(ComponentView component, Version version) {
+        if(component instanceof PropertyDrawView) {
+            ((PropertyDrawView) component).remove = true;
+        }
         removedComponents.add(component);
         component.removeFromParent(version);
     }
