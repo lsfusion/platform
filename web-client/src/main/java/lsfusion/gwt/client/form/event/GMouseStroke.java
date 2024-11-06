@@ -16,11 +16,18 @@ public class GMouseStroke {
     public static boolean isChangeEvent(Event event) {
         return isDownEvent(event);
     }
+
+    public static boolean isChangeEvent(NativeEvent event) {
+        return isDownEvent(event);
+    }
     public static boolean isDoubleChangeEvent(Event event) {
         return isDblClickEvent(event);
     }
 
     public static boolean isDownEvent(Event event) {
+        return MOUSEDOWN.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
+    }
+    public static boolean isDownEvent(NativeEvent event) {
         return MOUSEDOWN.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
     public static boolean isUpEvent(Event event) {
