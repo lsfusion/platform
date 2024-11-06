@@ -121,6 +121,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getStack;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
@@ -258,6 +259,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void startTransaction(BusinessLogics BL, boolean serializable, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         ServerLoggers.assertLog(!isInSessionEvent(), "CANNOT START TRANSACTION IN SESSION EVENT");
         isInTransaction = true;
+        applyFilter = readApplyFilter();
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
         sql.startTransaction(serializable, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
@@ -313,6 +315,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mRemovedClasses = null;
 
         cleanOnlyDataModifier();
+        applyFilter = ApplyFilter.NO;
     }
 /*    private void checkSessionTableMap() {
         checkSessionTableMap(add);
@@ -1209,12 +1212,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        setApplyFilter(ApplyFilter.ONLYCHECK);
-
-        boolean result = apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
-
-        setApplyFilter(ApplyFilter.NO);
-        return result;
+        BL.LM.applyOnlyCheck.execute(this, getStack());
+        try {
+            return apply(BL, stack, interaction, SetFact.EMPTYORDER(), sessionEventFormEnv);
+        } finally {
+            BL.LM.applyAll.execute(this, getStack());
+        }
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, PropertyChangeTableUsage<T> change) {
@@ -2028,9 +2031,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.noEventsInTransaction = noEventsInTransaction;
     }
 
-    public ApplyFilter applyFilter = ApplyFilter.NO;
-    public void setApplyFilter(ApplyFilter applyFilter) {
-        this.applyFilter = applyFilter;
+    public ApplyFilter applyFilter = null;
+    public ApplyFilter readApplyFilter() throws SQLException, SQLHandledException {
+        return ApplyFilter.get((String) ThreadLocalContext.getBaseLM().nameApplyFilter.read(this));
     }
     
     private List<SQLRunnable> rollbackInfo = new ArrayList<>();
