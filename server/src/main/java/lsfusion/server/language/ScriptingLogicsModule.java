@@ -51,8 +51,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
-import lsfusion.server.logics.action.SystemAction;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
@@ -158,6 +156,7 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.janino.SimpleCompiler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.mail.Message;
 import javax.swing.*;
@@ -3176,7 +3175,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
+    @NotNull
+    private static GroupType getGroupType(GroupingType type) {
+        GroupType groupType;
+        if(type == GroupingType.LAST)
+            groupType = GroupType.LAST;
+        else if (type == GroupingType.CONCAT)
+            groupType = GroupType.CONCAT;
+        else if (type == GroupingType.SUM)
+            groupType = GroupType.SUM;
+        else if (type == GroupingType.MAX)
+            groupType = GroupType.MAX;
+        else if (type == GroupingType.MIN)
+            groupType = GroupType.MIN;
+        else {
+            CustomGroupingType customType = (CustomGroupingType) type;
+            groupType = GroupType.CUSTOM(customType.aggrFunc, customType.setOrdered, customType.dataClass, customType.valueNull);
+        }
+        return groupType;
+    }
+
+    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, int numWindows, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
@@ -3206,7 +3225,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert groupPropParamCount == explicitInnerClasses.size();
         LocalizedString emptyCaption = LocalizedString.NONAME;
         LP resultProp = null;
-        if (type == GroupingType.SUM) {
+        if ((type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) || numWindows > 0) {
+            resultProp = addOGProp(null, false, emptyCaption, getGroupType(type), whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, numWindows, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
@@ -3214,17 +3235,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, constraintData, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, false, emptyCaption, constraintData, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) {
-            GroupType groupType;
-            if(type == GroupingType.LAST)
-                groupType = GroupType.LAST;
-            else if (type == GroupingType.CONCAT)
-                groupType = GroupType.CONCAT;
-            else {
-                CustomGroupingType customType = (CustomGroupingType) type;
-                groupType = GroupType.CUSTOM(customType.aggrFunc, customType.setOrdered, customType.dataClass, customType.valueNull);
-            }
-            resultProp = addOGProp(null, false, emptyCaption, groupType, whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else
             throw new UnsupportedOperationException();
         return resultProp;
@@ -3259,8 +3269,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     // второй результат в паре использованные параметры из внешнего контекста (LP на выходе имеет сначала эти использованные параметры, потом группировки)
     public LPContextIndependent addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                    boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp));
+                                                    boolean ascending, LPWithParams whereProp, List<LPWithParams> windowProps, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp), windowProps);
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
         List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
@@ -3269,7 +3279,22 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
 
-        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, ascending, constraintCaption, whereProp, explicitInnerClasses);
+        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, windowProps.size(), ascending, constraintCaption, whereProp, explicitInnerClasses);
+
+        if(!windowProps.isEmpty()) { // optimization
+            List<LPWithParams> mapping = new ArrayList<>();
+            for(int resultInterface : resultInterfaces)
+                mapping.add(new LPWithParams(resultInterface));
+
+            for(LPWithParams windowProp : windowProps)
+                mapping.add(windowProp);
+
+            LPWithParams lgp = addScriptedJProp(gProp, mapping);
+
+            gProp = lgp.getLP();
+            resultInterfaces = lgp.usedParams;
+        }
+
         return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
     }
 
@@ -3282,10 +3307,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                                       boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+                                                                       boolean ascending, LPWithParams whereProp, List<LPWithParams> windowProps, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if(groupProps == null)
             groupProps = Collections.emptyList();
-        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext, debugPoint);
+        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, windowProps, newContext, debugPoint);
         if(groupProps.size() > 0)
             return new Pair<>(null, ci);
         else
@@ -3324,7 +3349,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        aggrObject (prim1Object, prim2Object) =
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
-        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), false,
+        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), 0, false,
                 () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
         ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 

@@ -1942,10 +1942,11 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 @init {
 	List<TypedParameter> groupContext = new ArrayList<>(context);
     DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
+    List<LPWithParams> windowProps = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext, debugPoint);
+		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, windowProps, groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -1953,6 +1954,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	:	'GROUP'
 	    gp=groupPropertyBodyDefinition[groupContext]
 	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
+        ('TOP' selectTop = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); } ('OFFSET' selectOffset = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); })? )?
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
@@ -1960,6 +1962,8 @@ groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType 
     	(
     	    gt=groupingType { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+            ('ORDER' ('DESC' { $ascending = false; } )?
+            orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
         |
             gt=groupingTypeOrder { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }

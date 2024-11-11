@@ -432,16 +432,16 @@ public class PropertyFact {
             return PropertyFact.<N, T>createAnyGProp(caption, notNull.property, notNull.mapping.filterInclValuesRev(groupInterfaces).keys()).map(notNull.mapping);
         }
         MaxGroupProperty<T> groupProperty = new MaxGroupProperty<>(caption, BaseUtils.<ImSet<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), prop, false);
-        return new PropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
+        return groupProperty.getPropertyMapImplement();
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createLastGProp(Property<T> where, PropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        return createGProp(GroupType.LAST, where.interfaces, groupInterfaces, ListFact.toList(where.getImplement(), last), orders, ordersNotNull);
+        return createGProp(GroupType.LAST, where.interfaces, groupInterfaces, ListFact.toList(where.getImplement(), last), orders, ordersNotNull, SetFact.EMPTYORDER());
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, null, null, type, orders, ordersNotNull);
-        return new PropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, ImOrderSet<T> windowInterfaces) {
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, null, null, type, orders, ordersNotNull, windowInterfaces);
+        return groupProperty.getPropertyMapImplement();
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, GroupProperty.Interface<T>> createSumGProp(ImSet<T> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<T>> groupInterfaces, PropertyInterfaceImplement<T> property) {
@@ -599,7 +599,7 @@ public class PropertyFact {
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerInterfaces, PropertyInterfaceImplement<T> property, ImSet<PropertyInterfaceImplement<T>> partitions, GroupType type) {
         GroupProperty<T> partitionGroup = type.createProperty(LocalizedString.NONAME, innerInterfaces.getSet(), property, partitions);
         partitionGroup.setExplicitInnerClasses(innerInterfaces, explicitInnerInterfaces);
-        return createJoin(new PropertyImplement<>(partitionGroup, partitionGroup.getMapInterfaces()));
+        return createJoin(partitionGroup.getPropertyImplement());
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(PropertyImplement<L, PropertyInterfaceImplement<T>> group, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
@@ -701,7 +701,7 @@ public class PropertyFact {
     private static <T extends PropertyInterface> PropertyImplement<?, PropertyInterfaceImplement<T>> createMaxProp(LocalizedString caption, ImOrderSet<T> interfaces, List<ResolveClassSet> explicitInnerClasses, PropertyInterfaceImplement<T> implement, ImCol<PropertyInterfaceImplement<T>> group, boolean min) {
         MaxGroupProperty<T> maxProperty = new MaxGroupProperty<>(caption, interfaces.getSet(), group, implement, min);
         maxProperty.setExplicitInnerClasses(interfaces, explicitInnerClasses);        
-        return new PropertyImplement<>(maxProperty, maxProperty.getMapInterfaces());
+        return maxProperty.getPropertyImplement();
     }
     
     public static <T extends PropertyInterface> ImList<PropertyImplement<?, PropertyInterfaceImplement<T>>> createMGProp(LocalizedString[] captions, ImOrderSet<T> interfaces, List<ResolveClassSet> explicitInnerClasses, BaseClass baseClass, ImList<PropertyInterfaceImplement<T>> props, ImCol<PropertyInterfaceImplement<T>> group, MSet<Property> persist, boolean min) {

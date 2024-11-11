@@ -24,6 +24,8 @@ import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.WindowExpr;
+import lsfusion.server.data.expr.WindowFormulaImpl;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.formula.ConcatenateExpr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
@@ -393,6 +395,360 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             result.add(lastQuery);
         }
         return result.immutable();
+    }
+
+    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, String limit, String offset, DebugInfoWriter debugInfoWriter) {
+        ImMap<String, String> translate = getTranslate(mapValues);
+        if(limit != null)
+            translate = translate.addExcl(SQLSession.limitParam, limit);
+        if(offset != null)
+            translate = translate.addExcl(SQLSession.offsetParam, offset);
+        return getSelect(translate, fillPropertyNames, fillSubQueries, fillEnv, debugInfoWriter);
+    }
+
+    public static RuntimeException getIncorrectOperationException() {
+        return new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
+    }
+
+    private static <V> ImMap<V, String> castProperties(ImMap<V, String> propertySelect, final ImMap<V, Type> castTypes, final SQLSyntax syntax, final TypeEnvironment typeEnv) { // проставим Cast'ы для null'ов
+        return propertySelect.mapValues((key, propertyString) -> {
+            Type castType;
+            // проблемы бывают когда NULL - автоматический cast к text'у, и когда результат blankPadded, а внутри могут быть нет
+            if ((castType = castTypes.get(key)) != null && (propertyString.equals(SQLSyntax.NULL) || (castType instanceof StringClass && ((StringClass)castType).blankPadded)))
+                propertyString = castType.getCast(propertyString, syntax, typeEnv);
+            return propertyString;
+        });
+    }
+
+    // castTypes параметр чисто для бага Postgre и может остальных
+    private static <K,V> String getInnerSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, ImRevMap<ParseValue, String> params, ImOrderMap<V, Boolean> orders, LimitOptions limit, SQLSyntax syntax, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, Result<ImOrderSet<K>> keyOrder, Result<ImOrderSet<V>> propertyOrder, ImMap<V, Type> castTypes, SubQueryContext subcontext, boolean noInline, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
+        compiledProps = innerSelect.getFullWhere().followTrue(compiledProps, !innerSelect.isComplex());
+
+        Result<ImMap<K,String>> andKeySelect = new Result<>(); Result<ImCol<String>> andWhereSelect = new Result<>(); Result<ImMap<V,String>> andPropertySelect = new Result<>();
+        String andFrom = fillInnerCastSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, limit, orders.keyOrderSet(), env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, null, null, debugInfoWriter, castTypes);
+
+        return getSelect(andFrom, andKeySelect.result, keyNames, keyOrder, andPropertySelect.result, propertyNames, propertyOrder, andWhereSelect.result, syntax, getPackedCompileOrders(compiledProps, innerSelect.getFullWhere(), orders), limit, noInline);
+    }
+
+    private static <K, V> String fillInnerCastSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, Result<ImMap<K, String>> andKeySelect, Result<ImMap<V, String>> andPropertySelect, Result<ImCol<String>> andWhereSelect, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, LimitOptions limit, ImOrderSet<V> orders, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, Result<ImSet<K>> resultKeyValues, Result<ImSet<V>> resultPropValues, DebugInfoWriter debugInfoWriter, ImMap<V, Type> castTypes) {
+        String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, limit, orders, env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, resultKeyValues, resultPropValues, debugInfoWriter);
+
+        if(castTypes!=null)
+            andPropertySelect.set(castProperties(andPropertySelect.result, castTypes, syntax, env));
+
+        return andFrom;
+    }
+
+    private static <K,V> String getSelect(String from, ImMap<K, String> keySelect, ImRevMap<K, String> keyNames, Result<ImOrderSet<K>> keyOrder, ImMap<V, String> propertySelect, ImRevMap<V, String> propertyNames, Result<ImOrderSet<V>> propertyOrder, ImCol<String> whereSelect, SQLSyntax syntax, ImOrderMap<V, CompileOrder> orders, LimitOptions limit, boolean noInline) {
+        boolean distinctValues = limit.isDistinctValues();
+        ImOrderMap<String, String> keyOrderedNames = SQLSession.mapNames(keySelect, keyNames, keyOrder); // need to fill keyOrder
+        return syntax.getSelect(from, SQLSession.stringExpr(distinctValues ? MapFact.EMPTYORDER() : keyOrderedNames,
+                SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && !distinctValues && syntax.inlineTrouble()?",random()":""),
+                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()), limit.getLimit(), limit.getOffset(), distinctValues);
+    }
+
+    private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
+        return fillFullSelect(mapKeys, SetFact.singleton(innerSelect), innerSelect.getFullWhere(), compiledProps, MapFact.EMPTYORDER(), LimitOptions.NOLIMIT, resultKey, resultProperty, params, syntax, subcontext, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, debugInfoWriter);
+
+/*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
+
+        MapWhere<FJData> joinDatas = new MapWhere<FJData>();
+        for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
+            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE());
+
+        String innerAlias = subcontext+"inalias";
+        Map<String, Expr> joinProps = new HashMap<String, Expr>();
+        // затем все данные по JoinSelect'ам по вариантам
+        for(FJData joinData : joinDatas.keys()) {
+            String joinName = "join_" + joinProps.size();
+            joinProps.put(joinName, joinData.getFJExpr());
+            FJSelect.joinData.put(joinData,joinData.getFJString(innerAlias +'.'+joinName));
+        }
+
+        Map<K, String> keyNames = new HashMap<K, String>();
+        for(K key : mapKeys.keySet()) {
+            String keyName = "jkey" + keyNames.size();
+            keyNames.put(key, keyName);
+            keySelect.put(key, innerAlias +"."+ keyName);
+            FJSelect.keySelect.put(mapKeys.get(key),innerAlias +"."+ keyName);
+        }
+
+        for(Map.Entry<AV, Expr> mapProp : compiledProps.entrySet())
+            propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
+
+        return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, subcontext, true) + ") " + innerAlias;*/
+    }
+    
+    private static <K> void fillAreValues(ImMap<K, Expr> exprs, Result<ImSet<K>> result) {
+        if(result != null) {
+            result.set(exprs.filterFnValues(AbstractOuterContext::isValue).keys());
+        }
+    }
+
+    private static <K,AV> String fillInnerSelect(ImRevMap<K, KeyExpr> mapKeys, final GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, Result<ImCol<String>> resultWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, LimitOptions limit, ImOrderSet<AV> orders, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, Result<ImSet<K>> resultKeyValues, Result<ImSet<AV>> resultPropValues, DebugInfoWriter debugInfoWriter) {
+
+        ImSet<KeyExpr> freeKeys = mapKeys.valuesSet().removeIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(innerSelect.keyEqual.keyExprs.keys()));
+        final InnerSelect compile = new InnerSelect(freeKeys, innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax, mSubQueries, env, params, subcontext);
+
+        ExprTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
+        compiledProps = keyEqualTranslator.translate(compiledProps);
+        ImMap<K, Expr> compiledKeys = keyEqualTranslator.translate(mapKeys);
+
+        MCol<String> mWhereSelect = ListFact.mCol();
+        compile.fillInnerJoins(mBaseCost, mOptAdjustLimit, mRows, mWhereSelect, limit, orders.mapList(compiledProps).toOrderSet(), pushPrefix(debugInfoWriter, "STATS"));
+        resultProperty.set(compiledProps.mapValues(compile.GETEXPRSOURCE()));
+        resultKey.set(compiledKeys.mapValues(compile.GETEXPRSOURCE()));
+
+        fillAreValues(compiledProps, resultPropValues);
+        fillAreValues(compiledKeys, resultKeyValues);
+
+        String from = compile.getFrom(innerSelect.where, mWhereSelect, pushPrefix(debugInfoWriter, "SUBQUERIES"));
+        resultWhere.set(mWhereSelect.immutableCol());
+        return from;
+    }
+    
+    private final static class AddAlias implements Function<String, String> {
+        private final String alias;
+        private AddAlias(String alias) {
+            this.alias = alias;
+        }
+
+        public String apply(String value) {
+            return alias + "." + value;
+        }
+    }
+    public final static class GenNameIndex implements IntFunction<String> {
+        private final String prefix;
+        private final String postfix;
+        public GenNameIndex(String prefix, String postfix) {
+            this.prefix = prefix;
+            this.postfix = postfix;
+        }
+
+        public String apply(int index) {
+            return prefix + index + postfix;
+        }
+    }
+    private final static Function<String, String> coalesceValue = value -> "COALESCE(" + value + ")";
+
+    private static <K,AV> String fillFullSelect(ImRevMap<K, KeyExpr> mapKeys, ImCol<GroupJoinsWhere> innerSelects, Where fullWhere, ImMap<AV, Expr> compiledProps, ImOrderMap<AV, Boolean> orders, LimitOptions limit, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, final SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
+        assert !limit.isDistinctValues(); // union check in CompiledQuery ensures that
+
+        // создаем And подзапросыs
+        final ImSet<CompileAndQuery> andProps = innerSelects.mapColSetValues((i, value) -> new CompileAndQuery(value, subcontext.wrapAlias("f" + i)));
+
+        MMap<FJData, Where> mJoinDataWheres = MapFact.mMap(AbstractWhere.addOr());
+        for(int i=0,size=compiledProps.size();i<size;i++)
+            if(!orders.containsKey(compiledProps.getKey(i)))
+                compiledProps.getValue(i).fillJoinWheres(mJoinDataWheres, Where.TRUE());
+        ImMap<FJData, Where> joinDataWheres = mJoinDataWheres.immutable();
+
+        // для JoinSelect'ов узнаем при каких условиях они нужны
+        MMap<Object, Where> mJoinWheres = MapFact.mMapMax(joinDataWheres.size(), AbstractWhere.addOr());
+        for(int i=0,size=joinDataWheres.size();i<size;i++)
+            mJoinWheres.add(joinDataWheres.getKey(i).getFJGroup(),joinDataWheres.getValue(i));
+        ImMap<Object, Where> joinWheres = mJoinWheres.immutable();
+
+        // сначала распихиваем JoinSelect по And'ам
+        ImMap<Object, ImSet<CompileAndQuery>> joinAnds = joinWheres.mapValues(value -> getWhereSubSet(andProps, value));
+
+        // затем все данные по JoinSelect'ам по вариантам
+        ImValueMap<FJData, String> mvJoinData = joinDataWheres.mapItValues(); // последействие есть
+        for(int i=0;i<joinDataWheres.size();i++) {
+            FJData joinData = joinDataWheres.getKey(i);
+            String joinName = "join_" + i;
+            Collection<CompileAndQuery> dataAnds = new ArrayList<>();
+            for(CompileAndQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
+                Expr joinExpr = joinData.getFJExpr();
+                if(!and.innerSelect.getFullWhere().means(joinExpr.getWhere().not())) { // проверим что не всегда null
+                    and.properties.exclAdd(joinName, joinExpr);
+                    dataAnds.add(and);
+                }
+            }
+            String joinSource = ""; // заполняем Source
+            if(dataAnds.size()==0)
+                throw new RuntimeException(ThreadLocalContext.localize("{data.query.should.not.be}"));
+            else
+            if(dataAnds.size()==1)
+                joinSource = dataAnds.iterator().next().alias +'.'+joinName;
+            else {
+                for(CompileAndQuery and : dataAnds)
+                    joinSource = (joinSource.length()==0?"":joinSource+",") + and.alias + '.' + joinName;
+                joinSource = "COALESCE(" + joinSource + ")";
+            }
+            mvJoinData.mapValue(i, joinData.getFJString(joinSource));
+        }
+        ImMap<FJData, String> joinData = mvJoinData.immutableValue();
+
+        // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
+        MOrderExclMap<String, Boolean> mOrderAnds = MapFact.mOrderExclMap(limit.hasLimit() ? orders.size() : 0);
+        ImValueMap<AV, String> mvPropertySelect = compiledProps.mapItValues(); // сложный цикл
+        for(int i=0,size=compiledProps.size();i<size;i++) {
+            AV prop = compiledProps.getKey(i);
+            Boolean dir = orders.get(prop);
+            if(dir!=null) {
+                String orderName = "order_" + i;
+                String orderFJ = "";
+                for(CompileAndQuery and : andProps) {
+                    and.properties.exclAdd(orderName, compiledProps.get(prop));
+                    orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
+                }
+                if(limit.hasLimit()) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает
+                    mOrderAnds.exclAdd(orderName, dir);
+                mvPropertySelect.mapValue(i, "COALESCE(" + orderFJ + ")");
+            }
+        }
+        ImOrderMap<String, Boolean> orderAnds = mOrderAnds.immutableOrder();
+
+        ImRevMap<K, String> keyNames = mapKeys.mapRevValues(new GenNameIndex("jkey",""));
+
+        // бежим по всем And'ам делаем JoinSelect запросы, потом объединяем их FULL'ами
+        String compileFrom = "";
+        boolean first = true; // для COALESCE'ов
+        ImMap<K, String> keySelect = null;
+        for(CompileAndQuery and : andProps) {
+            // закинем в And.Properties OrderBy, все равно какие порядки ключей и выражений
+            ImMap<String, Expr> andProperties = and.properties.immutable();
+            String andSelect = "(" + getInnerSelect(mapKeys, and.innerSelect, andProperties, params, orderAnds, limit, syntax, keyNames, andProperties.keys().toRevMap(), new Result<>(), new Result<>(), null, subcontext, innerSelects.size()==1, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, pushPrefix(debugInfoWriter, "FULL JOIN", and.innerSelect)) + ") " + and.alias;
+
+            final ImRevMap<K, String> andKeySources = keyNames.mapRevValues(new AddAlias(and.alias));
+
+            if(keySelect==null) {
+                compileFrom = andSelect;
+                keySelect = andKeySources;
+            } else {
+                String andJoin = andKeySources.crossJoin(first?keySelect:keySelect.mapValues(coalesceValue)).toString("=", " AND ");
+                keySelect = keySelect.mapValues((key, value) -> value + "," + andKeySources.get(key));
+                compileFrom = compileFrom + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
+                first = false;
+            }
+        }
+
+        // полученные KeySelect'ы в Data
+        if(innerSelects.size()>1)
+            keySelect = keySelect.mapValues(coalesceValue);
+
+        FullSelect FJSelect = new FullSelect(fullWhere, fullWhere, params, syntax, mEnv, mapKeys.crossJoin(keySelect), joinData); // для keyType'а берем первый where
+        // закидываем PropertySelect'ы
+        for(int i=0,size=compiledProps.size();i<size;i++) {
+            AV prop = compiledProps.getKey(i);
+            if(!orders.containsKey(prop)) // orders'ы уже обработаны
+                mvPropertySelect.mapValue(i, compiledProps.getValue(i).getSource(FJSelect));
+        }
+
+        resultKey.set(keySelect);
+        resultProperty.set(mvPropertySelect.immutableValue());
+        return compileFrom;
+    }
+
+    // нерекурсивное транслирование параметров
+    public static String translatePlainParam(String string,ImMap<String,String> paramValues) {
+        for(int i=0,size=paramValues.size();i<size;i++)
+            string = string.replace(paramValues.getKey(i), paramValues.getValue(i));
+        return string;
+    }
+
+    // key - какие есть, value - которые должны быть
+    public static String translateParam(String query,ImMap<String,String> paramValues) {
+        // генерируем промежуточные имена, перетранслируем на них
+        ImRevMap<String, String> preTranslate = paramValues.mapRevValues(new GenNameIndex("transp", "nt"));
+        for(int i=0,size=preTranslate.size();i<size;i++)
+            query = query.replace(preTranslate.getKey(i), preTranslate.getValue(i));
+
+        // транслируем на те что должны быть
+        ImMap<String, String> translateMap = preTranslate.crossJoin(paramValues);
+        for(int i=0,size=translateMap.size();i<size;i++)
+            query = query.replace(translateMap.getKey(i), translateMap.getValue(i));
+        return query;
+    }
+    
+    private static Function<ParseValue, ParseInterface> GETPARSE(final QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
+        return value -> value.getParseInterface(env, typeEnv);
+    }
+
+    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env) {
+        return getQueryParams(env, LimitOffset.NOLIMIT);
+    }
+    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env, final LimitOffset limitOffset) {
+        MExclMap<String, ParseInterface> mMapValues = MapFact.mExclMap();
+        if (limitOffset.getLimit() > 0)
+            mMapValues.exclAdd(SQLSession.limitParam, new StringParseInterface() {
+                public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                    return String.valueOf(limitOffset.getLimit());
+                }
+            });
+
+        if (limitOffset.getOffset() > 0)
+            mMapValues.exclAdd(SQLSession.offsetParam, new StringParseInterface() {
+                public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                    return String.valueOf(limitOffset.getOffset());
+                }
+            });
+
+        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
+
+        mMapValues.exclAddAll(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
+
+        return mMapValues.immutable();
+    }
+    public static ImMap<String, ValueParseInterface> getQueryPropParams(QueryEnvironment env) {
+        MExclMap<String, ValueParseInterface> mMapValues = MapFact.mExclMap();
+        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
+        return mMapValues.immutable();
+    }
+
+    public static void fillQueryPropParams(MExclMap<String, ValueParseInterface> mMapValues, QueryEnvironment env) {
+        mMapValues.exclAdd(SQLSession.userParam, env.getSQLUser());
+        mMapValues.exclAdd(SQLSession.authTokenParam, env.getSQLAuthToken());
+        mMapValues.exclAdd(SQLSession.computerParam, env.getSQLComputer());
+        mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
+        mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
+        mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
+        mMapValues.exclAdd(SQLSession.isDevParam, SystemProperties.inDevMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.isLightStartParam, SystemProperties.lightStart ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.inTestModeParam, SystemProperties.inTestMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.projectLSFDirParam, SystemProperties.projectLSFDir != null ? new TypeObject(SystemProperties.projectLSFDir, TextClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+    }
+
+    private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+        Function<String, String> transValue = value -> translateParam(value, params);
+
+        fillKeySelect.set(keySelect.mapValues(transValue));
+        fillPropertySelect.set(propertySelect.mapValues(transValue));
+        fillWhereSelect.set(whereSelect.mapColValues(transValue));
+        fillEnv.add(sql.getEnv());
+        fillSubQueries.set(SQLQuery.translate(sql.subQueries, value -> translateParam(value, params)));
+        if(debugInfoWriter != null)
+            debugInfoWriter.addLines(translateParam(debugInfo, params));
+        return translateParam(from, params);
+    }
+    private String getSelect(final ImMap<String, String> params, Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+        fillPropertyNames.set(propertyNames);
+        fillEnv.add(sql.getEnv());
+        fillSubQueries.set(SQLQuery.translate(sql.subQueries, value -> translateParam(value, params)));
+        if(debugInfoWriter != null)
+            debugInfoWriter.addLines(translateParam(debugInfo, params));
+        return translateParam(sql.getString(), params);
+    }
+
+    private ImRevMap<String, String> getTranslate(ImRevMap<ParseValue, String> mapValues) {
+        return params.crossJoin(mapValues);
+    }
+    private ImMap<String, String> getTranslate(ImMap<ParseValue, String> mapValues) {
+        return params.crossJoin(mapValues);
+    }
+
+    // для подзапросов
+    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+        return fillSelect(fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, mapValues, 0, 0, fillEnv, debugInfoWriter);
+    }
+    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, int limit, int offset, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
+        ImRevMap<String, String> translate = getTranslate(mapValues);
+        if(limit > 0)
+            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(limit));
+        if(offset > 0)
+            translate = translate.addRevExcl(SQLSession.offsetParam, String.valueOf(offset));
+        return fillSelect(translate, fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv, debugInfoWriter);
     }
 
     protected static class InnerSelect extends CompileSource {
@@ -812,7 +1168,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             public String getSource(DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals) {
                 SQLQuery query = getSQLQuery(debugInfoWriter);
-               
+
                 env.add(query.getEnv());
                 if(Settings.get().isDisableCompiledSubQueries())
                     return query.getString();
@@ -834,20 +1190,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             if(mapKeys.isEmpty()) {
                 if(costMax.equals(Cost.ONE))
                     return null;
-                if(costPerStat.lessEquals(costMax)) // здесь, как и в общем случае действуем пессимистично - если cost * stat = costMax проталкиваем 
+                if(costPerStat.lessEquals(costMax)) // здесь, как и в общем случае действуем пессимистично - если cost * stat = costMax проталкиваем
                     return Where.TRUE();
                 else {
                     assert false;
                     return null;
                 }
             }
-            
+
             ImCol<GroupExprJoinsWhere<KeyExpr>> groupJoinsWheres = groupWhere.getGroupExprJoinsWheres(mapKeys, StatType.GROUP_SPLIT, Settings.get().isGroupStatExprWhereJoins());// не уверен, что не просто false последний параметр
 
             Where result = Where.FALSE();
             for(GroupExprJoinsWhere<KeyExpr> groupJoinsWhere : groupJoinsWheres) {
-                LastJoin lastJoin = new LastJoin(costPerStat, costMax, groupJoinsWhere.mapExprs);  
-                
+                LastJoin lastJoin = new LastJoin(costPerStat, costMax, groupJoinsWhere.mapExprs);
+
                 GroupJoinsWhere joinsWhere = groupJoinsWhere.joinsWhere;
                 Where pushWhere = joinsWhere.getCostPushWhere(lastJoin, pushLargeDepth, StatType.PUSH_OUTER(), debugInfoWriter);
                 if(pushWhere == null)
@@ -865,34 +1221,58 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 super(groupJoin);
                 keys = BaseUtils.immutableCast(groupJoin.getInnerKeys());
             }
-            
-            public SubQueryExprSelect getLastExprSource(final GroupExpr.Query query, Where valueWhere, SubQueryContext subQueryContext, Result<Cost> rBaseCost, Result<Boolean> optAdjustLimit, final DebugInfoWriter debugInfoWriter) {
-                
+
+            public SubQueryExprSelect getLastExprSource(final GroupExpr.Query query, Where valueWhere, ImRevMap<Expr, Value> virtParams, SubQueryContext subQueryContext, Result<Cost> rBaseCost, Result<Boolean> optAdjustLimit, final DebugInfoWriter debugInfoWriter) {
+
                 final CompileSource source = InnerSelect.this;
-                
-                final Expr valueExpr = query.getMainExpr();
+
                 Where where = query.getWhere();
                 ImOrderMap<Expr, Boolean> orders = query.orders;
-                if(query.type.isMaxMin() && needValues.contains(query)) { // MAX = LAST f(a) ORDER f(a) WHERE f(a) (но он и так в query.getWhere есть), если не нужно значение то и порядок не нужен  
-                    assert orders.isEmpty();
-                    orders = MapFact.singletonOrder(valueExpr, query.type == GroupType.MIN); // MAX - ASC, MIN - DESC
+
+                boolean hasLimit = keys.contains(WindowExpr.instance);
+                Expr valueExpr;
+                if(hasLimit) {
+                    valueExpr = null;
+                } else { // last or max / min - reverting order and setting limit to 1
+                    valueExpr = query.getMainExpr();
+                    if (query.type.isMaxMin() && needValues.contains(query)) { // MAX = LAST f(a) ORDER f(a) WHERE f(a) (но он и так в query.getWhere есть), если не нужно значение то и порядок не нужен
+                        assert orders.isEmpty();
+                        orders = MapFact.singletonOrder(valueExpr, query.type == GroupType.MIN); // MAX - ASC, MIN - DESC
+                    }
+                    orders = Query.reverseOrder(orders);
                 }
 
-                Query<KeyExpr,Expr> subQuery = new Query<>(keys.toRevMap(),
-                        orders.keys().merge(valueExpr).toMap(), where.and(valueWhere));
-                // непонятно надо ли использовать или нет, но пока методики проталкивания его нет query.ordersNotNull
+                Query<KeyExpr,Expr> subQuery = new Query<>(keys.toRevMap(), query.getExprs().toMap(), where.and(valueWhere));
 
-                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<>(source.syntax, LimitOptions.get(new LimitOffset(1)), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(orders, new CompileOptions<>(source.syntax, LimitOptions.get(new LimitOffset(1)), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
                 optAdjustLimit.set(optAdjustLimit.result || compiled.sql.optAdjustLimit);
-                final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
+                final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку
 
                 return (subQueryParams, mSubEnv, rSubQueries) -> {
+                    String limit; String offset = null;
+                    if(hasLimit) {
+                        limit = subQueryParams.get(virtParams.get(WindowExpr.instance));
+
+                        String separator = WindowFormulaImpl.separator;
+                        int offsetIndex = limit.indexOf(separator);
+                        if(offsetIndex >= 0)
+                            offset = limit.substring(offsetIndex + separator.length());
+                    } else
+                        limit = "1";
+
                     final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
                     Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
-                    String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addExcl(subQueryParams), mSubEnv, 1, 0, pushPrefix(debugInfoWriter, "EXPR LAST TOP", query)); // не rev, так как subQueryParams - идут expr'ы и они могут быть равны expression'ам
+                    String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addExcl(subQueryParams), mSubEnv, limit, offset, pushPrefix(debugInfoWriter, "EXPR LAST TOP", query)); // не rev, так как subQueryParams - идут expr'ы и они могут быть равны expression'ам
                     rSubQueries.set(rSubQueries.result.addExcl(gSubQueries.result));
-                    return "(" + syntax.getSelect("(" + select+ ") " + alias, fromPropertyNames.result.get(valueExpr), "") + ")";
+
+                    ImMap<Expr, String> propertySources = fromPropertyNames.result.mapValues(value -> alias + "." + value);
+                    String propertySource;
+                    if(hasLimit)
+                        propertySource = query.getSource(propertySources, compiled.getMapPropertyReaders(), subQuery, syntax, mSubEnv, exprs.get(query).getType());
+                    else
+                        propertySource = propertySources.get(valueExpr);
+                    return "(" + syntax.getSelect("(" + select+ ") " + alias, propertySource, "") + ")";
                 };
             }
 
@@ -914,12 +1294,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                     subQueryContext = subQueryContext.pushSiblingSubQuery(); // чтобы не пересекались alias'ы при использовании subqueryexpr
 
-                    mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, subQueryContext, rBaseCost, optAdjustLimit, debugInfoWriter));
+                    mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, virtParams, subQueryContext, rBaseCost, optAdjustLimit, debugInfoWriter));
                 }
                 return mPropertySelect.immutableValueRev();
             }
 
-            private SQLQuery getLastTopQuery(Where topWhere, ImRevMap<Expr, KeyExpr> mapKeys, final Result<ImMap<String, SQLQuery>> rSubQueries, StaticValueNullableExpr.Level level, Cost lastBaseCosts, ImRevMap<Value, Expr> virtParams, ImRevMap<String, SubQueryExprSelect> propertySelect, Where groupWhere, Cost costMax, DebugInfoWriter debugInfoWriter) {
+            private SQLQuery getLastTopQuery(Where topWhere, ImRevMap<Expr, KeyExpr> mapKeys, StaticValueNullableExpr.Level level, Cost lastBaseCosts, ImRevMap<Value, Expr> virtParams, ImRevMap<String, SubQueryExprSelect> propertySelect, Where groupWhere, Cost costMax, DebugInfoWriter debugInfoWriter) {
                 final Query<Expr, Object> query = new Query<>(mapKeys, topWhere);
                 final CompiledQuery<Expr, Object> compiled = query.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
 
@@ -929,12 +1309,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final Result<ImMap<Expr, String>> resultKeys = new Result<>();
                 final Result<ImMap<Object,String>> fromPropertySelect = new Result<>();
                 final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
+                final Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
                 String fromSelect = compiled.fillSelect(resultKeys, fromPropertySelect, whereSelect, rSubQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP LAST TOP", innerJoin));
 
                 final ImRevMap<ParseValue, String> exParams = BaseUtils.immutableCast(virtParams.mapRevValues((Expr value) -> resultKeys.result.get(value)));
                 ImMap<String, String> propertySources = propertySelect.mapValues(value -> value.getSource(exParams, mSubEnv, rSubQueries));
                 mSubEnv.removeNotMaterializable(level);
-                
+
                 Cost baseCost = LastJoin.calcCost(compiled.sql.baseCost, compiled.rows, lastBaseCosts, costMax);
                 if(debugInfoWriter != null)
                     debugInfoWriter.addLines("CALC COST " + baseCost + " : cost top query - " + compiled.sql.baseCost + ", rows top query - " + compiled.rows + ", cost per row - " + lastBaseCosts + ", cost group - " + costMax);
@@ -955,8 +1336,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         return null;
                     mapKeys = KeyExpr.getMapKeys(group.valuesSet());
                 }
-                
-                final Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
 
                 final StaticValueNullableExpr.Level level = new StaticValueNullableExpr.Level(subcontext.getSubQueryExprs());
 
@@ -966,50 +1345,55 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(level, rVirtParams, mapKeys, keyClasses, rLastBaseCosts, optAdjustLimit, debugInfoWriter);
 
                 Where pushedOutWhere = null;
-                if(useGroupLastOpt != 1 && pushedInWhere == null) // || recheck 
+                if(useGroupLastOpt != 1 && pushedInWhere == null) // || recheck
                     pushedOutWhere = InnerSelect.pushWhere(mapKeys.reverse(), subcontext.getSubQueryDepth() == Depth.LARGE, groupWhere, rLastBaseCosts.result, baseExecCost, pushPrefix(debugInfoWriter, "PUSH LAST TOP", innerJoin));
-                
+
                 Where topWhere = pushedInWhere != null ? pushedInWhere : pushedOutWhere;
-                
+
                 SQLQuery lastTopQuery = null;
                 if(topWhere != null) {
-                    lastTopQuery  = getLastTopQuery(topWhere, mapKeys, rSubQueries, level, rLastBaseCosts.result, rVirtParams.result, propertySelect, groupWhere, baseExecCost, debugInfoWriter);
+                    lastTopQuery  = getLastTopQuery(topWhere, mapKeys, level, rLastBaseCosts.result, rVirtParams.result, propertySelect, groupWhere, baseExecCost, debugInfoWriter);
                     if(pushedInWhere != null && baseExecCost.lessEquals(lastTopQuery.baseCost)) { // для pushedOutWhere проверка идет в самом алгоритме
-                        pushedInWhere = null;
                         lastTopQuery = null;
                     }
-//                    if(recheck && !BaseUtils.nullEquals(pushedInWhere, pushedOutWhere))
-//                        pushedInWhere = pushedInWhere;
-                } 
+                }
                 return lastTopQuery;
             }
 
             public SQLQuery getSQLQuery(DebugInfoWriter debugInfoWriter) {
 
-                boolean isLastOpt = Settings.get().getUseGroupLastOpt() != 0; // если хоть одна не оптимизируется то и остальные тоже не оптимизируем (все равно "бежать по всем" для одного из значений)
-                
+                boolean hasLimit = group.containsValue(WindowExpr.instance);
+
+                boolean isLastOpt = !hasLimit && Settings.get().getUseGroupLastOpt() != 0; // если хоть одна не оптимизируется то и остальные тоже не оптимизируем (все равно "бежать по всем" для одного из значений)
+
                 Where exprWhere = Where.FALSE();
                 MSet<Expr> mQueryExprs = SetFact.mSet(); // так как может одновременно и SUM и MAX нужен
-                for(GroupExpr.Query query : queries.valueIt()) {
+                for (GroupExpr.Query query : queries.valueIt()) {
                     mQueryExprs.addAll(query.getExprs());
                     exprWhere = exprWhere.or(query.getWhere());
 
                     isLastOpt = isLastOpt && query.isLastOpt(needValues.contains(query)); // или можно применять last opt или не нужно значение
                 }
-                ImSet<Expr> queryExprs = group.values().toSet().merge(mQueryExprs.immutable());
+                ImSet<Expr> queryExprs = group.valuesSet().merge(mQueryExprs.immutable());
 
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
-                
+
                 Result<Pair<ImRevMap<Expr, KeyExpr>, Where>> pushGroupWhere = null;
-                int useGroupLastOpt = 0;
-                if(isLastOpt) {
-                    useGroupLastOpt = Settings.get().getUseGroupLastOpt();
-                    assert useGroupLastOpt != 0; 
-                    if(useGroupLastOpt != 3) {
-                        pushGroupWhere = new Result<>();
-                        if (group.isEmpty())
-                            pushGroupWhere.set(new Pair<>(MapFact.EMPTYREV(), Where.TRUE()));
+                int useGroupLastOpt;
+                if (hasLimit) {
+                    useGroupLastOpt = 2;
+                } else {
+                    useGroupLastOpt = 0;
+                    if (isLastOpt) {
+                        useGroupLastOpt = Settings.get().getUseGroupLastOpt();
+                        assert useGroupLastOpt != 0;
                     }
+                }
+
+                if (useGroupLastOpt != 3) {
+                    pushGroupWhere = new Result<>();
+                    if (group.isEmpty())
+                        pushGroupWhere.set(new Pair<>(MapFact.EMPTYREV(), Where.TRUE()));
                 }
 
                 Result<SQLQuery> empty = new Result<>();
@@ -1017,12 +1401,37 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(groupWhere==null)
                     return empty.result;
 
+                if(hasLimit) {
+                    SQLQuery lastSQLQuery = getLastSQLQuery(useGroupLastOpt, pushGroupWhere.result, groupWhere, Cost.ALOT, new Result<>(false), debugInfoWriter);
+                    if(lastSQLQuery == null)
+                        throw getIncorrectOperationException();
+                    return lastSQLQuery;
+                } else {
+                    SQLQuery result = getSQLQuery(queryExprs, groupWhere, debugInfoWriter);
+
+                    if (isLastOpt) {
+                        Result<Boolean> optAdjustLimit = new Result<>(false);
+                        SQLQuery lastSQLQuery = getLastSQLQuery(useGroupLastOpt, pushGroupWhere != null ? pushGroupWhere.result : null, groupWhere, result.baseCost, optAdjustLimit, debugInfoWriter);
+                        if (lastSQLQuery != null) {
+                            if (optAdjustLimit.result && !Settings.get().isDisablePessQueries())
+                                lastSQLQuery.pessQuery = result;
+                            return lastSQLQuery;
+                        }
+                    }
+
+                    return result;
+                }
+            }
+
+            private SQLQuery getSQLQuery(ImSet<Expr> queryExprs, Where groupWhere, DebugInfoWriter debugInfoWriter) {
+                final Query<KeyExpr, Expr> query = new Query<>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
+
+                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+
                 final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
                 final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
                 final Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-                final Query<KeyExpr, Expr> query = new Query<>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
-                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
 
                 String fromSelect = compiled.fillSelect(new Result<>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP", innerJoin));
 
@@ -1030,19 +1439,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImMap<String, String> propertySelect = queries.mapValues(value -> value.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), query, syntax, mSubEnv, exprs.get(value).getType()));
                 ImSet<String> areKeyValues = group.filterValues(compiled.arePropValues).keys();
 
-                SQLQuery result = getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, SetFact.EMPTY(), areKeyValues) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
-
-                if(isLastOpt) {
-                    Result<Boolean> optAdjustLimit = new Result<>(false); 
-                    SQLQuery lastSQLQuery = getLastSQLQuery(useGroupLastOpt, pushGroupWhere != null ? pushGroupWhere.result : null, groupWhere, compiled.sql.baseCost, optAdjustLimit, debugInfoWriter);
-                    if(lastSQLQuery != null) {
-                        if(optAdjustLimit.result && !Settings.get().isDisablePessQueries())
-                            lastSQLQuery.pessQuery = result;
-                        return lastSQLQuery;
-                    }
-                }
-                
-                return result;
+                return getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, SetFact.EMPTY(), areKeyValues) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
             }
 
             protected Where getInnerWhere() {
@@ -1127,7 +1524,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                             mNext.add(token);
                     }
                     ImSet<PartitionToken> next = mNext.immutable();
-                    
+
                     if(last)
                         return getSQLQuery(fromSelect, compiledSubQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
 
@@ -1249,7 +1646,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 ImOrderMap<String, String> orderKeySelect = SQLSession.mapNames(keySelect.result.filterIncl(keys.keys()), keyOrder);
                 ImOrderMap<String, String> orderPropertySelect = SQLSession.mapNames(propertySelect.result, propOrder);
-                
+
                 ImSet<String> areKeyValues = compiledQuery.areKeyValues.filter(keys.keys());
                 if(useRecursionFunction) {
                     orderPropertySelect = orderPropertySelect.mapOrderValues((key, value) -> {
@@ -1268,7 +1665,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 else
                     return SQLSession.getSelect(syntax, fromSelect, orderKeySelect, orderPropertySelect, whereSelect.result);
             }
-            
+
             public SQLQuery getParamSource(final boolean useRecursionFunction, final boolean wrapStep, DebugInfoWriter debugInfoWriter) {
                 ImRevMap<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
@@ -1348,7 +1745,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
                 pushContext = pushContext.pushSubQuery();
-                
+
                 Result<ImOrderSet<String>> keyOrder = new Result<>(); Result<ImOrderSet<String>> propOrder = new Result<>();
                 Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
                 Result<Cost> baseCost = new Result<>();
@@ -1583,359 +1980,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             usedJoin(select);
             return select;
         }
-    }
-
-    public static RuntimeException getIncorrectOperationException() {
-        return new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
-    }
-
-    private static <V> ImMap<V, String> castProperties(ImMap<V, String> propertySelect, final ImMap<V, Type> castTypes, final SQLSyntax syntax, final TypeEnvironment typeEnv) { // проставим Cast'ы для null'ов
-        return propertySelect.mapValues((key, propertyString) -> {
-            Type castType;
-            // проблемы бывают когда NULL - автоматический cast к text'у, и когда результат blankPadded, а внутри могут быть нет
-            if ((castType = castTypes.get(key)) != null && (propertyString.equals(SQLSyntax.NULL) || (castType instanceof StringClass && ((StringClass)castType).blankPadded)))
-                propertyString = castType.getCast(propertyString, syntax, typeEnv);
-            return propertyString;
-        });
-    }
-
-    // castTypes параметр чисто для бага Postgre и может остальных
-    private static <K,V> String getInnerSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, ImRevMap<ParseValue, String> params, ImOrderMap<V, Boolean> orders, LimitOptions limit, SQLSyntax syntax, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, Result<ImOrderSet<K>> keyOrder, Result<ImOrderSet<V>> propertyOrder, ImMap<V, Type> castTypes, SubQueryContext subcontext, boolean noInline, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
-        compiledProps = innerSelect.getFullWhere().followTrue(compiledProps, !innerSelect.isComplex());
-
-        Result<ImMap<K,String>> andKeySelect = new Result<>(); Result<ImCol<String>> andWhereSelect = new Result<>(); Result<ImMap<V,String>> andPropertySelect = new Result<>();
-        String andFrom = fillInnerCastSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, limit, orders.keyOrderSet(), env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, null, null, debugInfoWriter, castTypes);
-
-        return getSelect(andFrom, andKeySelect.result, keyNames, keyOrder, andPropertySelect.result, propertyNames, propertyOrder, andWhereSelect.result, syntax, getPackedCompileOrders(compiledProps, innerSelect.getFullWhere(), orders), limit, noInline);
-    }
-
-    private static <K, V> String fillInnerCastSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, Result<ImMap<K, String>> andKeySelect, Result<ImMap<V, String>> andPropertySelect, Result<ImCol<String>> andWhereSelect, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, LimitOptions limit, ImOrderSet<V> orders, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, Result<ImSet<K>> resultKeyValues, Result<ImSet<V>> resultPropValues, DebugInfoWriter debugInfoWriter, ImMap<V, Type> castTypes) {
-        String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, limit, orders, env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, resultKeyValues, resultPropValues, debugInfoWriter);
-
-        if(castTypes!=null)
-            andPropertySelect.set(castProperties(andPropertySelect.result, castTypes, syntax, env));
-
-        return andFrom;
-    }
-
-    private static <K,V> String getSelect(String from, ImMap<K, String> keySelect, ImRevMap<K, String> keyNames, Result<ImOrderSet<K>> keyOrder, ImMap<V, String> propertySelect, ImRevMap<V, String> propertyNames, Result<ImOrderSet<V>> propertyOrder, ImCol<String> whereSelect, SQLSyntax syntax, ImOrderMap<V, CompileOrder> orders, LimitOptions limit, boolean noInline) {
-        boolean distinctValues = limit.isDistinctValues();
-        ImOrderMap<String, String> keyOrderedNames = SQLSession.mapNames(keySelect, keyNames, keyOrder); // need to fill keyOrder
-        return syntax.getSelect(from, SQLSession.stringExpr(distinctValues ? MapFact.EMPTYORDER() : keyOrderedNames,
-                SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && !distinctValues && syntax.inlineTrouble()?",random()":""),
-                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()), limit.getLimit(), limit.getOffset(), distinctValues);
-    }
-
-    private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
-        return fillFullSelect(mapKeys, SetFact.singleton(innerSelect), innerSelect.getFullWhere(), compiledProps, MapFact.EMPTYORDER(), LimitOptions.NOLIMIT, resultKey, resultProperty, params, syntax, subcontext, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, debugInfoWriter);
-
-/*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
-
-        MapWhere<FJData> joinDatas = new MapWhere<FJData>();
-        for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
-            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE());
-
-        String innerAlias = subcontext+"inalias";
-        Map<String, Expr> joinProps = new HashMap<String, Expr>();
-        // затем все данные по JoinSelect'ам по вариантам
-        for(FJData joinData : joinDatas.keys()) {
-            String joinName = "join_" + joinProps.size();
-            joinProps.put(joinName, joinData.getFJExpr());
-            FJSelect.joinData.put(joinData,joinData.getFJString(innerAlias +'.'+joinName));
-        }
-
-        Map<K, String> keyNames = new HashMap<K, String>();
-        for(K key : mapKeys.keySet()) {
-            String keyName = "jkey" + keyNames.size();
-            keyNames.put(key, keyName);
-            keySelect.put(key, innerAlias +"."+ keyName);
-            FJSelect.keySelect.put(mapKeys.get(key),innerAlias +"."+ keyName);
-        }
-
-        for(Map.Entry<AV, Expr> mapProp : compiledProps.entrySet())
-            propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
-
-        return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, subcontext, true) + ") " + innerAlias;*/
-    }
-    
-    private static <K> void fillAreValues(ImMap<K, Expr> exprs, Result<ImSet<K>> result) {
-        if(result != null) {
-            result.set(exprs.filterFnValues(AbstractOuterContext::isValue).keys());
-        }
-    }
-
-    private static <K,AV> String fillInnerSelect(ImRevMap<K, KeyExpr> mapKeys, final GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, Result<ImCol<String>> resultWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, LimitOptions limit, ImOrderSet<AV> orders, MStaticExecuteEnvironment env, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, Result<ImSet<K>> resultKeyValues, Result<ImSet<AV>> resultPropValues, DebugInfoWriter debugInfoWriter) {
-
-        ImSet<KeyExpr> freeKeys = mapKeys.valuesSet().removeIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(innerSelect.keyEqual.keyExprs.keys()));
-        final InnerSelect compile = new InnerSelect(freeKeys, innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax, mSubQueries, env, params, subcontext);
-
-        ExprTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
-        compiledProps = keyEqualTranslator.translate(compiledProps);
-        ImMap<K, Expr> compiledKeys = keyEqualTranslator.translate(mapKeys);
-
-        MCol<String> mWhereSelect = ListFact.mCol();
-        compile.fillInnerJoins(mBaseCost, mOptAdjustLimit, mRows, mWhereSelect, limit, orders.mapList(compiledProps).toOrderSet(), pushPrefix(debugInfoWriter, "STATS"));
-        resultProperty.set(compiledProps.mapValues(compile.GETEXPRSOURCE()));
-        resultKey.set(compiledKeys.mapValues(compile.GETEXPRSOURCE()));
-
-        fillAreValues(compiledProps, resultPropValues);
-        fillAreValues(compiledKeys, resultKeyValues);
-
-        String from = compile.getFrom(innerSelect.where, mWhereSelect, pushPrefix(debugInfoWriter, "SUBQUERIES"));
-        resultWhere.set(mWhereSelect.immutableCol());
-        return from;
-    }
-    
-    private final static class AddAlias implements Function<String, String> {
-        private final String alias;
-        private AddAlias(String alias) {
-            this.alias = alias;
-        }
-
-        public String apply(String value) {
-            return alias + "." + value;
-        }
-    }
-    public final static class GenNameIndex implements IntFunction<String> {
-        private final String prefix;
-        private final String postfix;
-        public GenNameIndex(String prefix, String postfix) {
-            this.prefix = prefix;
-            this.postfix = postfix;
-        }
-
-        public String apply(int index) {
-            return prefix + index + postfix;
-        }
-    }
-    private final static Function<String, String> coalesceValue = value -> "COALESCE(" + value + ")";
-
-    private static <K,AV> String fillFullSelect(ImRevMap<K, KeyExpr> mapKeys, ImCol<GroupJoinsWhere> innerSelects, Where fullWhere, ImMap<AV, Expr> compiledProps, ImOrderMap<AV, Boolean> orders, LimitOptions limit, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, final SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
-        assert !limit.isDistinctValues(); // union check in CompiledQuery ensures that
-
-        // создаем And подзапросыs
-        final ImSet<CompileAndQuery> andProps = innerSelects.mapColSetValues((i, value) -> new CompileAndQuery(value, subcontext.wrapAlias("f" + i)));
-
-        MMap<FJData, Where> mJoinDataWheres = MapFact.mMap(AbstractWhere.addOr());
-        for(int i=0,size=compiledProps.size();i<size;i++)
-            if(!orders.containsKey(compiledProps.getKey(i)))
-                compiledProps.getValue(i).fillJoinWheres(mJoinDataWheres, Where.TRUE());
-        ImMap<FJData, Where> joinDataWheres = mJoinDataWheres.immutable();
-
-        // для JoinSelect'ов узнаем при каких условиях они нужны
-        MMap<Object, Where> mJoinWheres = MapFact.mMapMax(joinDataWheres.size(), AbstractWhere.addOr());
-        for(int i=0,size=joinDataWheres.size();i<size;i++)
-            mJoinWheres.add(joinDataWheres.getKey(i).getFJGroup(),joinDataWheres.getValue(i));
-        ImMap<Object, Where> joinWheres = mJoinWheres.immutable();
-
-        // сначала распихиваем JoinSelect по And'ам
-        ImMap<Object, ImSet<CompileAndQuery>> joinAnds = joinWheres.mapValues(value -> getWhereSubSet(andProps, value));
-
-        // затем все данные по JoinSelect'ам по вариантам
-        ImValueMap<FJData, String> mvJoinData = joinDataWheres.mapItValues(); // последействие есть
-        for(int i=0;i<joinDataWheres.size();i++) {
-            FJData joinData = joinDataWheres.getKey(i);
-            String joinName = "join_" + i;
-            Collection<CompileAndQuery> dataAnds = new ArrayList<>();
-            for(CompileAndQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
-                Expr joinExpr = joinData.getFJExpr();
-                if(!and.innerSelect.getFullWhere().means(joinExpr.getWhere().not())) { // проверим что не всегда null
-                    and.properties.exclAdd(joinName, joinExpr);
-                    dataAnds.add(and);
-                }
-            }
-            String joinSource = ""; // заполняем Source
-            if(dataAnds.size()==0)
-                throw new RuntimeException(ThreadLocalContext.localize("{data.query.should.not.be}"));
-            else
-            if(dataAnds.size()==1)
-                joinSource = dataAnds.iterator().next().alias +'.'+joinName;
-            else {
-                for(CompileAndQuery and : dataAnds)
-                    joinSource = (joinSource.length()==0?"":joinSource+",") + and.alias + '.' + joinName;
-                joinSource = "COALESCE(" + joinSource + ")";
-            }
-            mvJoinData.mapValue(i, joinData.getFJString(joinSource));
-        }
-        ImMap<FJData, String> joinData = mvJoinData.immutableValue();
-
-        // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
-        MOrderExclMap<String, Boolean> mOrderAnds = MapFact.mOrderExclMap(limit.hasLimit() ? orders.size() : 0);
-        ImValueMap<AV, String> mvPropertySelect = compiledProps.mapItValues(); // сложный цикл
-        for(int i=0,size=compiledProps.size();i<size;i++) {
-            AV prop = compiledProps.getKey(i);
-            Boolean dir = orders.get(prop);
-            if(dir!=null) {
-                String orderName = "order_" + i;
-                String orderFJ = "";
-                for(CompileAndQuery and : andProps) {
-                    and.properties.exclAdd(orderName, compiledProps.get(prop));
-                    orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
-                }
-                if(limit.hasLimit()) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает
-                    mOrderAnds.exclAdd(orderName, dir);
-                mvPropertySelect.mapValue(i, "COALESCE(" + orderFJ + ")");
-            }
-        }
-        ImOrderMap<String, Boolean> orderAnds = mOrderAnds.immutableOrder();
-
-        ImRevMap<K, String> keyNames = mapKeys.mapRevValues(new GenNameIndex("jkey",""));
-
-        // бежим по всем And'ам делаем JoinSelect запросы, потом объединяем их FULL'ами
-        String compileFrom = "";
-        boolean first = true; // для COALESCE'ов
-        ImMap<K, String> keySelect = null;
-        for(CompileAndQuery and : andProps) {
-            // закинем в And.Properties OrderBy, все равно какие порядки ключей и выражений
-            ImMap<String, Expr> andProperties = and.properties.immutable();
-            String andSelect = "(" + getInnerSelect(mapKeys, and.innerSelect, andProperties, params, orderAnds, limit, syntax, keyNames, andProperties.keys().toRevMap(), new Result<>(), new Result<>(), null, subcontext, innerSelects.size()==1, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, pushPrefix(debugInfoWriter, "FULL JOIN", and.innerSelect)) + ") " + and.alias;
-
-            final ImRevMap<K, String> andKeySources = keyNames.mapRevValues(new AddAlias(and.alias));
-
-            if(keySelect==null) {
-                compileFrom = andSelect;
-                keySelect = andKeySources;
-            } else {
-                String andJoin = andKeySources.crossJoin(first?keySelect:keySelect.mapValues(coalesceValue)).toString("=", " AND ");
-                keySelect = keySelect.mapValues((key, value) -> value + "," + andKeySources.get(key));
-                compileFrom = compileFrom + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
-                first = false;
-            }
-        }
-
-        // полученные KeySelect'ы в Data
-        if(innerSelects.size()>1)
-            keySelect = keySelect.mapValues(coalesceValue);
-
-        FullSelect FJSelect = new FullSelect(fullWhere, fullWhere, params, syntax, mEnv, mapKeys.crossJoin(keySelect), joinData); // для keyType'а берем первый where
-        // закидываем PropertySelect'ы
-        for(int i=0,size=compiledProps.size();i<size;i++) {
-            AV prop = compiledProps.getKey(i);
-            if(!orders.containsKey(prop)) // orders'ы уже обработаны
-                mvPropertySelect.mapValue(i, compiledProps.getValue(i).getSource(FJSelect));
-        }
-
-        resultKey.set(keySelect);
-        resultProperty.set(mvPropertySelect.immutableValue());
-        return compileFrom;
-    }
-
-    // нерекурсивное транслирование параметров
-    public static String translatePlainParam(String string,ImMap<String,String> paramValues) {
-        for(int i=0,size=paramValues.size();i<size;i++)
-            string = string.replace(paramValues.getKey(i), paramValues.getValue(i));
-        return string;
-    }
-
-    // key - какие есть, value - которые должны быть
-    public static String translateParam(String query,ImMap<String,String> paramValues) {
-        // генерируем промежуточные имена, перетранслируем на них
-        ImRevMap<String, String> preTranslate = paramValues.mapRevValues(new GenNameIndex("transp", "nt"));
-        for(int i=0,size=preTranslate.size();i<size;i++)
-            query = query.replace(preTranslate.getKey(i), preTranslate.getValue(i));
-
-        // транслируем на те что должны быть
-        ImMap<String, String> translateMap = preTranslate.crossJoin(paramValues);
-        for(int i=0,size=translateMap.size();i<size;i++)
-            query = query.replace(translateMap.getKey(i), translateMap.getValue(i));
-        return query;
-    }
-    
-    private static Function<ParseValue, ParseInterface> GETPARSE(final QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
-        return value -> value.getParseInterface(env, typeEnv);
-    }
-
-    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env) {
-        return getQueryParams(env, LimitOffset.NOLIMIT);
-    }
-    public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env, final LimitOffset limitOffset) {
-        MExclMap<String, ParseInterface> mMapValues = MapFact.mExclMap();
-        if (limitOffset.getLimit() > 0)
-            mMapValues.exclAdd(SQLSession.limitParam, new StringParseInterface() {
-                public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-                    return String.valueOf(limitOffset.getLimit());
-                }
-            });
-
-        if (limitOffset.getOffset() > 0)
-            mMapValues.exclAdd(SQLSession.offsetParam, new StringParseInterface() {
-                public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-                    return String.valueOf(limitOffset.getOffset());
-                }
-            });
-
-        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
-
-        mMapValues.exclAddAll(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
-
-        return mMapValues.immutable();
-    }
-    public static ImMap<String, ValueParseInterface> getQueryPropParams(QueryEnvironment env) {
-        MExclMap<String, ValueParseInterface> mMapValues = MapFact.mExclMap();
-        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
-        return mMapValues.immutable();
-    }
-
-    public static void fillQueryPropParams(MExclMap<String, ValueParseInterface> mMapValues, QueryEnvironment env) {
-        mMapValues.exclAdd(SQLSession.userParam, env.getSQLUser());
-        mMapValues.exclAdd(SQLSession.authTokenParam, env.getSQLAuthToken());
-        mMapValues.exclAdd(SQLSession.computerParam, env.getSQLComputer());
-        mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
-        mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
-        mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
-        mMapValues.exclAdd(SQLSession.isDevParam, SystemProperties.inDevMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
-        mMapValues.exclAdd(SQLSession.isLightStartParam, SystemProperties.lightStart ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
-        mMapValues.exclAdd(SQLSession.inTestModeParam, SystemProperties.inTestMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
-        mMapValues.exclAdd(SQLSession.projectLSFDirParam, SystemProperties.projectLSFDir != null ? new TypeObject(SystemProperties.projectLSFDir, TextClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
-    }
-
-    private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        Function<String, String> transValue = value -> translateParam(value, params);
-
-        fillKeySelect.set(keySelect.mapValues(transValue));
-        fillPropertySelect.set(propertySelect.mapValues(transValue));
-        fillWhereSelect.set(whereSelect.mapColValues(transValue));
-        fillEnv.add(sql.getEnv());
-        fillSubQueries.set(SQLQuery.translate(sql.subQueries, value -> translateParam(value, params)));
-        if(debugInfoWriter != null)
-            debugInfoWriter.addLines(translateParam(debugInfo, params));
-        return translateParam(from, params);
-    }
-    private String getSelect(final ImMap<String, String> params, Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        fillPropertyNames.set(propertyNames);
-        fillEnv.add(sql.getEnv());
-        fillSubQueries.set(SQLQuery.translate(sql.subQueries, value -> translateParam(value, params)));
-        if(debugInfoWriter != null)
-            debugInfoWriter.addLines(translateParam(debugInfo, params));
-        return translateParam(sql.getString(), params);
-    }
-
-    private ImRevMap<String, String> getTranslate(ImRevMap<ParseValue, String> mapValues) {
-        return params.crossJoin(mapValues);
-    }
-    private ImMap<String, String> getTranslate(ImMap<ParseValue, String> mapValues) {
-        return params.crossJoin(mapValues);
-    }
-
-    // для подзапросов
-    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        return fillSelect(fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, mapValues, 0, 0, fillEnv, debugInfoWriter);
-    }
-    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, int limit, int offset, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
-        ImRevMap<String, String> translate = getTranslate(mapValues);
-        if(limit > 0)
-            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(limit));
-        if(offset > 0)
-            translate = translate.addRevExcl(SQLSession.offsetParam, String.valueOf(offset));
-        return fillSelect(translate, fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv, debugInfoWriter);
-    }
-    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit, int offset, DebugInfoWriter debugInfoWriter) {
-        ImMap<String, String> translate = getTranslate(mapValues);
-        if(limit > 0)
-            translate = translate.addExcl(SQLSession.limitParam, String.valueOf(limit));
-        if(offset > 0)
-            translate = translate.addExcl(SQLSession.offsetParam, String.valueOf(offset));
-        return getSelect(translate, fillPropertyNames, fillSubQueries, fillEnv, debugInfoWriter);
     }
 
     public void execute(SQLSession session, QueryEnvironment queryEnv, LimitOffset limitOffset, ResultHandler<K, V> resultHandler) throws SQLException, SQLHandledException {

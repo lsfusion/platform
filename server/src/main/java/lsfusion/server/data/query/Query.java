@@ -250,8 +250,7 @@ public class Query<K,V> extends IQuery<K,V> {
             } else
                 return ((Integer) (sourcesOrder.indexOf(key) + offset + 1)).toString();
         });
-        ImOrderMap<String, CompileOrder> orderSources = orders.map(orderNumbers);
-        return stringOrder(orderSources, syntax);
+        return stringOrder(orders.map(orderNumbers), syntax);
     }
 
     private static ImOrderMap<String, CompileOrder> compileOrders(ImOrderMap<String,CompileOrder> orders) {

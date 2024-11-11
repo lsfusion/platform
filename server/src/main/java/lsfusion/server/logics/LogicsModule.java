@@ -58,6 +58,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.OutFormSelector;
@@ -1347,7 +1348,7 @@ public abstract class LogicsModule {
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
-        return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
+        return mapLGProp(group, persistent, property.getPropertyImplement(), listImplements);
     }
 
     // ------------------- Order property ----------------- //
@@ -1503,12 +1504,13 @@ public abstract class LogicsModule {
 
     // ------------------- Override property ----------------- //
 
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, int numWindows, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addOGProp(group, persist, caption, type, hasWhere, numExprs, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
+        ImOrderSet<PropertyInterface> windowInterfaces = genInterfaces(numWindows);
+        return addOGProp(group, persist, caption, type, hasWhere, numExprs, numOrders, ordersNotNull, windowInterfaces, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        assert type == GroupType.CONCAT || type == GroupType.LAST || type instanceof GroupType.Custom;
+    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, ImOrderSet<T> windowInterfaces, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+//        assert type == GroupType.CONCAT || type == GroupType.LAST || type instanceof GroupType.Custom;
         ImList<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         PropertyInterfaceImplement<T> where = null;
         if(hasWhere) {
@@ -1519,7 +1521,12 @@ public abstract class LogicsModule {
         ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
         ImList<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
 
-        OrderGroupProperty<T> property = OrderGroupProperty.create(caption, innerInterfaces.getSet(), groups.getCol(), props, where, type, orders, ordersNotNull);
+        innerInterfaces = innerInterfaces.addOrderExcl(windowInterfaces);
+        groups = ListFact.add(groups, BaseUtils.immutableCast(windowInterfaces));
+        for(int i = 0, size = windowInterfaces.size(); i < size; i++)
+           explicitInnerClasses = BaseUtils.add(explicitInnerClasses, LongClass.instance);
+
+        OrderGroupProperty<T> property = OrderGroupProperty.create(caption, innerInterfaces.getSet(), groups.getCol(), props, where, type, orders, ordersNotNull, windowInterfaces);
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         return mapLGProp(group, persist, property, groups);

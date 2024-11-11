@@ -22,7 +22,9 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.GroupDrillDownFormEntity;
@@ -56,7 +58,23 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     protected GroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImList<? extends PropertyInterfaceImplement<I>> groupInterfaces) {
         this(caption, getTempInterfaces(groupInterfaces), innerInterfaces);
     }
-    
+
+    public PropertyMapImplement<Interface<I>, I> getPropertyMapImplement() {
+        return new PropertyMapImplement<>(this, BaseUtils.immutableCast(getRevMapInterfaces()));
+    }
+
+    public PropertyImplement<Interface<I>, PropertyInterfaceImplement<I>> getPropertyImplement() {
+        return new PropertyImplement<>(this, getMapInterfaces());
+    }
+
+    public ImRevMap<Interface<I>, PropertyInterfaceImplement<I>> getRevMapInterfaces() {
+        return getMapInterfaces().toRevExclMap();
+    }
+
+    public ImRevMap<PropertyInterfaceImplement<I>, Interface<I>> getMapRevInterfaces() {
+        return getRevMapInterfaces().reverse();
+    }
+
     public ImMap<Interface<I>, PropertyInterfaceImplement<I>> getMapInterfaces() {
         return interfaces.mapValues((Function<Interface<I>, PropertyInterfaceImplement<I>>) value -> value.implement);
     }
@@ -88,8 +106,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         if(innerInferred == null)
             return Inferred.FALSE();
 
-        ImMap<Interface<I>, PropertyInterfaceImplement<I>> mapInterfaces = getMapInterfaces();
-        return new Inferred<>(mapInterfaces.mapValues(value -> ExClassSet.toNotNull(value.mapInferValueClass(innerInferred, inferType))));
+        return new Inferred<>(getMapInterfaces().mapValues(value -> ExClassSet.toNotNull(value.mapInferValueClass(innerInferred, inferType))));
     }
 
     protected ImMap<I, ResolveClassSet> explicitInnerClasses; // без nulls
@@ -154,7 +171,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
     protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
-        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapInterfaces().toRevExclMap().reverse().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
+        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
         return MapFact.override(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
 
