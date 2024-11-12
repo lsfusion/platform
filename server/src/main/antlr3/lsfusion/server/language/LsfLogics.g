@@ -1954,7 +1954,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	:	'GROUP'
 	    gp=groupPropertyBodyDefinition[groupContext]
 	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
-        ('TOP' selectTop = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); } ('OFFSET' selectOffset = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); })? )?
+        ('TOP' selectTop = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); } ('OFFSET' selectOffset = propertyExpression[context, dynamic] { windowProps.add($selectOffset.property); })? )?
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]

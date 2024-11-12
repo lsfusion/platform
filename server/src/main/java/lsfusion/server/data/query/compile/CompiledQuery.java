@@ -1256,8 +1256,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                         String separator = WindowFormulaImpl.separator;
                         int offsetIndex = limit.indexOf(separator);
-                        if(offsetIndex >= 0)
+                        if(offsetIndex >= 0) {
                             offset = limit.substring(offsetIndex + separator.length());
+                            limit = limit.substring(0, offsetIndex);
+                        }
                     } else
                         limit = "1";
 
