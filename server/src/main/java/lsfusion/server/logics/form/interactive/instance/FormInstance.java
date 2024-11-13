@@ -67,6 +67,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -738,7 +739,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
                 } else {
-                    throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.error.object.not.found", entry.getKey(), entity.getCanonicalName()));
                 }
             }
             DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
@@ -1592,7 +1593,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         try (DataSession dataSession = session.createSession()) {
             ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
             if (!(groupObjectObjectValue instanceof DataObject)) {
-                throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");
+                throw new RuntimeException(ServerResourceBundle.getString("logics.error.object.not.found", grouping.groupObjectSID, entity.getCanonicalName()));
             }
             DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
             ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
@@ -1625,7 +1626,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
                     BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
                 } else {
-                    throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.error.property.not.found", propGrouping.propertySID, entity.getCanonicalName()));
                 }
             }
             dataSession.applyException(BL, stack);
