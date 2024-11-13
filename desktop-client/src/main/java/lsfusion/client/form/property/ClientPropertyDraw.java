@@ -521,7 +521,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, valueAlignment);
         
         pool.writeObject(outStream, changeOnSingleClick);
-        outStream.writeBoolean(hide);
 
         outStream.writeInt(ID);
     }

@@ -622,7 +622,6 @@ public class PropertyDrawView extends BaseComponentView {
         valueAlignment = pool.readObject(inStream);
 
         changeOnSingleClick = pool.readObject(inStream);
-        entity.hide = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }
