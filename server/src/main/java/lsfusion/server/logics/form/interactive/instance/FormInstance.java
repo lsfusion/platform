@@ -393,6 +393,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
+        this.userPrefsHiddenProperties = entity.getUserPrefsHiddenProperties().mapSetValues(instanceFactory::getInstance);
+
         this.session.registerForm(this);
         
         boolean adjNoCancel, adjManageSession;
@@ -430,8 +432,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         processComponent(entity.getRichDesign().getMainContainer());
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
-
-        this.userPrefsHiddenProperties = properties.filterList(property -> property.entity.hide).toOrderSet().getSet();
 
         fireOnInit(stack);
 

@@ -258,6 +258,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> getPivotMeasureProps() {
         return getPivotMeasuresList().toOrderSet().getSet().group(key -> key.getToDraw(this));
     }
+    @IdentityLazy
+    public ImSet<PropertyDrawEntity> getUserPrefsHiddenProperties() {
+        return getPropertyDrawsList().getSet().filterFn(property -> property.hide);
+    }
 
     public ModalityType modalityType = ModalityType.DOCKED;
     public boolean localAsync = false;
