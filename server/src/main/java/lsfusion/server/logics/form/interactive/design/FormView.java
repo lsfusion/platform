@@ -632,7 +632,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void setPropertyDrawViewHide(PropertyDrawEntity property, boolean hide) {
-        getProperty(property).hide = hide;
+        getProperty(property).entity.hide = hide;
     }
 
     protected void setComponentSID(ComponentView component, String sid, Version version) {
