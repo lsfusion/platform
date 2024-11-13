@@ -20,6 +20,8 @@ public interface ImCol<T> extends Iterable<T> {
     ImSet<T> toSet();
     ImList<T> toList();
 
+    boolean contains(T element);
+
     ImCol<T> mergeCol(ImCol<T> col);
     ImCol<T> addCol(T element);
 

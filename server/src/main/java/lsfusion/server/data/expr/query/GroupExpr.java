@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -228,7 +229,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         ImList<Pair<Expr, Expr>> equals = groupMap(innerOuter, outerExprValues, outerInner);
         query = query.and(getEqualsWhere(equals));
         // assert что EqualsWhere - это Collection<BaseExpr,BaseExpr>
-        if(query.type.hasAdd() && !innerOuter.containsKey(WindowExpr.instance)) {
+        if(query.type.hasAdd() && !WindowExpr.has(innerOuter.keys())) {
             if(query.type.splitInnerCases()) { // можно использовать
                 KeyEqual keyEqual = KeyEqual.EMPTY;
                 for(Pair<Expr, Expr> equal : equals)
@@ -408,7 +409,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                     exprValue = outerExpr.first;
                 else
                     exprValue = exprValues.getObject(outerExpr.first); // ищем EXPRVALUE
-                if(exprValue != null && !outerExpr.second.equals(WindowExpr.instance))
+                if(exprValue != null && !WindowExpr.is(outerExpr.second))
                     mEquals.add(new Pair<>(exprValue, outerExpr.second));
                 else
                     mGrouped.exclAdd(outerExpr.first, outerExpr.second);
@@ -427,7 +428,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     private static Expr createInnerCases(ImMap<BaseExpr, ? extends Expr> outerInner, final Query query, final boolean pack) {
-        if(query.type.hasAdd() && !((ImMap<BaseExpr, Expr>)outerInner).containsValue(WindowExpr.instance) && query.type.splitInnerCases()) {
+        if(query.type.hasAdd() && !WindowExpr.has(((ImMap<BaseExpr, Expr>)outerInner).values())) {
             return new ExclPullWheres<Expr, BaseExpr, Query>() {
                 protected Expr initEmpty() {
                     return Expr.NULL();
@@ -496,7 +497,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     private static Expr createInnerExprCases(final ImMap<BaseExpr, Expr> outerInner, final Query query, final boolean pack) {
-        if (query.type.hasAdd() && !outerInner.containsValue(WindowExpr.instance) && query.type.splitExprCases()) { // тут по идее можно assert'ить что query - simple, и обрабатывать как и было
+        if (query.type.hasAdd() && !WindowExpr.has(outerInner.values()) && query.type.splitExprCases()) { // тут по идее можно assert'ить что query - simple, и обрабатывать как и было
             assert query.orders.isEmpty();
             return new ExclExprPullWheres<Expr>() {
                 protected Expr initEmpty() {
@@ -516,7 +517,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
     private static Expr createInnerSplit(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack) {
 
-        if(query.type.hasAdd() && !outerInner.containsValue(WindowExpr.instance)) {
+        if(query.type.hasAdd() && !WindowExpr.has(outerInner.values())) {
             Expr result = Expr.NULL();
             ImCol<Pair<KeyEqual, Where>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner,
                                             query.type.isMaxMin() && !Settings.get().isSplitGroupStatMaxMinObjectType() && getType(outerInner, query) instanceof ObjectType);
@@ -584,7 +585,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         Where freeWhere = Where.TRUE();
         ImRevMap<Expr, BaseExpr> group = innerOuter;
 
-        if(!innerOuter.containsKey(WindowExpr.instance)) { // maybe should be checked for no group if the expr is always larger than zero
+        if(!WindowExpr.has(innerOuter.keys())) { // maybe should be checked for no group if the expr is always larger than zero
             // NOGROUP - check if all keys are grouped, then it is not grouping at all
             Result<ImRevMap<Expr, BaseExpr>> compares = new Result<>();
             ImSet<KeyExpr> keys = getKeys(query, innerOuter);
@@ -655,7 +656,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
         ImSet<KeyExpr> innerKeys = getInner().getQueryKeys();
 
-        boolean hasLimitOffset = group.containsKey(WindowExpr.instance);
+        boolean hasLimitOffset = WindowExpr.has(group.keys());
 
         Where groupWhere;
         if(query.type.nullsNotAllowed() || hasLimitOffset) {

@@ -233,7 +233,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public ImRevMap<String, KeyExpr> genKeyNames() {
-        return group.keys().mapRevKeys(new CompiledQuery.GenNameIndex("rk", ""));
+        return group.keys().mapRevKeys(new CompiledQuery.GenFieldNameIndex("rk", ""));
     }
 
     private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {

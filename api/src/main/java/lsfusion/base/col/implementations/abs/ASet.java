@@ -355,13 +355,6 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return result;
     }
 
-    public boolean contains(K element) {
-        for(int i=0,size=size();i<size;i++)
-            if(BaseUtils.hashEquals(get(i), element))
-                return true;
-        return false;
-    }
-
     @Override
     public K getIdentIncl(K element) {
         for(int i=0,size=size();i<size;i++) {

@@ -164,24 +164,25 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, calcType, propChanges, changedGroupWhere);
         ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, calcType, propChanges, changedGroupWhere);
 
-        ImList<? extends Expr> windowExprs = windowInterfaces.mapList(joinImplement);
-        groups = groups.remove(windowInterfaces.getSet());
-        joinImplement = joinImplement.remove(windowInterfaces.getSet());
+        if(!windowInterfaces.isEmpty()) {
+            groups = groups.mapValues((anInterface, expr) -> {
+                int i = windowInterfaces.indexOf(anInterface);
+                return (i >= 0 ? (i == 1 ? WindowExpr.offset : WindowExpr.limit) : expr);
+            });
+            // we do this to make map in all group maps reversable
+            joinImplement = joinImplement.mapValues((anInterface, expr) -> {
+                int i = windowInterfaces.indexOf(anInterface);
+                return (i >= 0 ? FormulaExpr.create((i == 1 ? WindowFormulaImpl.offset : WindowFormulaImpl.limit), ListFact.singleton(expr)) : expr);
+            });
+        }
 
         GroupType groupType = getGroupType();
         if(changedWhere!=null) {
             assert calcType.isExpr();
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groupType, groups, exprs, orders, joinImplement));
             PropertyChanges prevChanges = getPrevPropChanges(calcType, propChanges);
-            changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groupType, getGroupImplements(mapKeys, prevChanges).remove(windowInterfaces.getSet()),
+            changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groupType, getGroupImplements(mapKeys, prevChanges),
                     getExprImplements(mapKeys, prevChanges), getOrderImplements(mapKeys, prevChanges), joinImplement));
-        }
-
-        // we do this to make map in all group maps reversable
-        if(!windowInterfaces.isEmpty()) {
-            Interface<I> anInterface = windowInterfaces.get(0);
-            groups = MapFact.addExcl(groups, anInterface, WindowExpr.instance);
-            joinImplement = MapFact.addExcl(joinImplement, anInterface, FormulaExpr.create(WindowFormulaImpl.instance, windowExprs));
         }
 
         return GroupExpr.create(groups, exprs, orders, ordersNotNull, groupType, joinImplement, calcType instanceof CalcClassType);
@@ -192,6 +193,6 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
     protected Where getPartitionWhere(Where where, GroupType groupType, ImMap<Interface<I>, Expr> groups, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<Interface<I>, ? extends Expr> joinImplement) {
-        return GroupExpr.create(groups, where.and(groupType.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement).getWhere();
+        return GroupExpr.create(groups.remove(windowInterfaces.getSet()), where.and(groupType.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement.remove(windowInterfaces.getSet())).getWhere();
     }
 }
