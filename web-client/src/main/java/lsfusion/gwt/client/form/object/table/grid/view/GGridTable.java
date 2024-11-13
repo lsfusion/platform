@@ -1122,9 +1122,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return result.toArray(new String[result.size()]);
     }
     
-    public void refreshUPHiddenProps(List<String> propSids) {
+    public void refreshUPHiddenProps(String[] propSids) {
         assert groupObject != null; // при null нету таблицы, а значит и настроек
-        form.refreshUPHiddenProps(groupObject.getSID(), propSids.toArray(new String[0]));
+        form.refreshUPHiddenProps(groupObject.getSID(), propSids);
     }
 
     public GGridUserPreferences getCurrentPreferences() {

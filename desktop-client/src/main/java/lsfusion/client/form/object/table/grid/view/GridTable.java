@@ -1690,9 +1690,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return result.toArray(new String[result.size()]);
     }
 
-    public void refreshUPHiddenProps(List<String> propSids) {
+    public void refreshUPHiddenProps(String[] propSids) {
         assert groupObject != null; // при null нету таблицы, а значит и настроек
-        form.refreshUPHiddenProperties(groupObject.getSID(), propSids.toArray(new String[0]));
+        form.refreshUPHiddenProperties(groupObject.getSID(), propSids);
     }
 
     public GridUserPreferences getCurrentPreferences() {
