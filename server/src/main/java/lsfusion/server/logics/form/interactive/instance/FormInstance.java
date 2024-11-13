@@ -1557,9 +1557,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
 
             for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
-                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
-                        new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
+                        dataSession, new DataObject(entity.getCanonicalName(), StringClass.get(100)), new DataObject(propGrouping.propertySID, StringClass.get(100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
