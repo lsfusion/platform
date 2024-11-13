@@ -715,9 +715,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             DataObject userObject = (!forAllUsers && !completeOverride) ? (DataObject) BL.authenticationLM.currentUser.readClasses(dataSession) : null;
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
-                        dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
-                        new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
+                        dataSession, new DataObject(entity.getCanonicalName(), StringClass.get(100)), new DataObject(entry.getKey(), StringClass.get(100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     ColumnUserPreferences columnPreferences = entry.getValue();
