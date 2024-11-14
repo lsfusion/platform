@@ -69,7 +69,6 @@ public class PropertyDrawView extends BaseComponentView {
     public PropertyDrawEntity<?> entity;
 
     public Boolean changeOnSingleClick;
-    public boolean hide;
     public boolean remove;
     public Long maxValue;
     public Boolean echoSymbols;
@@ -682,7 +681,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
-        outStream.writeBoolean(hide);
+        outStream.writeBoolean(entity.hide);
         outStream.writeBoolean(remove);
 
         //entity часть
@@ -917,8 +916,6 @@ public class PropertyDrawView extends BaseComponentView {
         valueShrinkVert = pool.readBoolean(inStream);
 
         changeOnSingleClick = pool.readObject(inStream);
-        hide = inStream.readBoolean();
-        remove = inStream.readBoolean();
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }
