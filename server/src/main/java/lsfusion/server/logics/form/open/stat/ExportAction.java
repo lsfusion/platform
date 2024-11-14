@@ -26,15 +26,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
-    private final SelectTop<ClassPropertyInterface> selectTopInterfaces;
-
     protected String charset;
     
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
                         ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
+
         this.charset = charset;
-        this.selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), extraParams.length);
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;

@@ -116,7 +116,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         }
     }
 
-    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(SelectTop selectTop) throws SQLException, SQLHandledException {
+    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(SelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, StaticKeyData> keySources = new HashMap<>();
         StaticPropertyData<SDP> propSources = new StaticPropertyData<>();
         iterateChildGroup(hierarchy.getRoot(),  SetFact.EMPTYORDER(), MapFact.EMPTYORDER(), null, selectTop, keySources, propSources, hierarchy.getValueGroups());
@@ -168,7 +168,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, SelectTop selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
+    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, SelectTop<Integer> selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
 
         ImSet<SDP> queryProperties = getQueryProperties(hierarchy.getProperties(thisGroup).getSet());
         
@@ -239,7 +239,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             QueryEnvironment queryEnv = formInterface.getQueryEnv();
             BaseClass baseClass = formInterface.getBaseClass();
             SQLSession sql = session.sql;
-            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, allOrders, selectTop.getLimitOffset(thisGroup));
+            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, allOrders, SelectTop.getLimitOffset(selectTop, thisGroup));
 
             try {
                 // column groups data

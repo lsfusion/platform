@@ -18,7 +18,10 @@ import java.util.function.Supplier;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class SelectTop<T> {
-    public static SelectTop NULL = new SelectTop(null, null);
+    private static SelectTop NULL = new SelectTop(null, null);
+    public static <T> SelectTop<T> NULL() {
+        return NULL;
+    }
 
     public final T selectTop;
     public final T selectOffset;
@@ -78,6 +81,11 @@ public class SelectTop<T> {
                 i -> (T) context.getKeyObject((ClassPropertyInterface) selectOffsets.getValue(i)));
     }
 
+    public static LimitOffset getLimitOffset(SelectTop<Integer> st, GroupObjectEntity group) {
+        return new LimitOffset(nvl(st.selectTops != null && group != null ? nvl(st.selectTops.get(group), st.selectTop) : st.selectTop, 0),
+                nvl(st.selectOffsets != null && group != null ? nvl(st.selectOffsets.get(group), st.selectOffset) : st.selectOffset, 0));
+    }
+
     public SelectTop mapValues(Supplier<T> selectTopSupplier, Supplier<T> selectOffsetSupplier, Function<Integer, T> selectTopsSupplier, Function<Integer, T> selectOffsetsSupplier) {
         if (selectTop != null) {
             return new SelectTop(selectTopSupplier.get(), selectOffset != null ? selectOffsetSupplier.get() : null);
@@ -94,12 +102,7 @@ public class SelectTop<T> {
             }
             return new SelectTop(null, null, mSelectTops.immutableOrder(), mSelectOffsets.immutableOrder());
         } else {
-            return NULL;
+            return NULL();
         }
-    }
-
-    public LimitOffset getLimitOffset(GroupObjectEntity group) {
-        return new LimitOffset((int) nvl(selectTops != null && group != null ? nvl(selectTops.get(group), selectTop) : selectTop, 0),
-                (int) nvl(selectOffsets != null && group != null ? nvl(selectOffsets.get(group), selectOffset) : selectOffset, 0));
     }
 }

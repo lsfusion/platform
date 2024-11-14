@@ -37,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, FormPrintType> {
-    private final SelectTop<ClassPropertyInterface> selectTopInterfaces;
-
     private final ClassPropertyInterface printerInterface;
     private final ClassPropertyInterface sheetNameInterface;
     private final ClassPropertyInterface passwordInterface;
@@ -87,8 +85,6 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
         this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
 
-        this.selectTopInterfaces = selectTop.mapValues(orderInterfaces, extraParams.length);
-
         this.formPageCount = formPageCount;
 
         this.syncType = syncType;
@@ -103,9 +99,10 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
 
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
+        SelectTop<Integer> selectTop = selectTopInterfaces.mapValues(context);
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTopInterfaces.mapValues(context), removeNullsAndDuplicates);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
             MessageClientType type = messageType;
             if(context.getSession().isNoCancelInTransaction())

@@ -23,8 +23,8 @@ import java.sql.SQLException;
 public abstract class FormStaticAction<O extends ObjectSelector, T extends FormStaticType> extends FormAction<O> {
 
     protected final T staticType;
-    
-    protected SelectTop<ValueClass> selectTop;
+
+    protected final SelectTop<ClassPropertyInterface> selectTopInterfaces;
 
     public FormStaticAction(LocalizedString caption,
                             FormSelector<O> form,
@@ -38,7 +38,8 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses);
 
         this.staticType = staticType;
-        this.selectTop = selectTop;
+
+        this.selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), extraValueClasses.length);
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {
