@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat.struct.export.hierarchy.json;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -19,11 +20,13 @@ public class FormPropertyDataInterface<P extends PropertyInterface> {
     private final ImSet<GroupObjectEntity> valueGroups;
 
     private final ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters; // with values shouldn't be cached
+    private final SelectTop<P> selectTop;
 
-    public FormPropertyDataInterface(FormEntity form, ImSet<GroupObjectEntity> valueGroups, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters) {
+    public FormPropertyDataInterface(FormEntity form, ImSet<GroupObjectEntity> valueGroups, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, SelectTop<P> selectTop) {
         this.form = form;
         this.valueGroups = valueGroups;
         this.contextFilters = contextFilters;
+        this.selectTop = selectTop;
     }
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getWhere(GroupObjectEntity groupObject, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
@@ -37,8 +40,8 @@ public class FormPropertyDataInterface<P extends PropertyInterface> {
         return groupObject.getWhereProperty(filters, contextGroupFilters, mapValues, mapObjects);
     }
 
-    public ImList<PropertyMapImplement<?, PropertyInterface>> getTopOffsetProperties() {
-        return form.getTopOffsetProperties();
+    public <T extends PropertyInterface> ImOrderSet<T> getWindowInterfaces(GroupObjectEntity groupObject, ImRevMap<P, T> mapValues) {
+        return selectTop.mapValues(mapValues).getWindowInterfaces(groupObject);
     }
 
     public <T extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<T>, Boolean> getOrders(GroupObjectEntity group, ImRevMap<ObjectEntity, T> mapObjects) {

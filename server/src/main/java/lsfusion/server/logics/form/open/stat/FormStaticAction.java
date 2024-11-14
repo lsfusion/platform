@@ -35,7 +35,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             T staticType,
                             SelectTop<ValueClass> selectTop,
                             ValueClass... extraValueClasses) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses);
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses); adding extraParams for selectTop move here from top stack
 
         this.staticType = staticType;
 
