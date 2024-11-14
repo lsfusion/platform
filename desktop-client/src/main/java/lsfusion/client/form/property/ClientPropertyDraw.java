@@ -35,7 +35,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
 import java.util.List;
@@ -541,64 +540,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
         return null;
-    }
-
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        pool.writeString(outStream, caption);
-        pool.writeLong(outStream, maxValue);
-        outStream.writeBoolean(echoSymbols);
-        outStream.writeBoolean(noSort);
-        defaultCompare.serialize(outStream);
-
-        outStream.writeInt(charHeight);
-        outStream.writeInt(charWidth);
-        
-        outStream.writeInt(valueWidth);
-        outStream.writeInt(valueHeight);
-
-        outStream.writeInt(captionWidth);
-        outStream.writeInt(captionHeight);
-
-        pool.writeObject(outStream, changeKey);
-        pool.writeInt(outStream, changeKeyPriority);
-        outStream.writeBoolean(showChangeKey);
-        pool.writeObject(outStream, changeMouse);
-        pool.writeInt(outStream, changeMousePriority);
-        outStream.writeBoolean(showChangeMouse);
-
-        pool.writeObject(outStream, focusable);
-
-        outStream.writeBoolean(captionVertical);
-        pool.writeObject(outStream, captionLast);
-        pool.writeObject(outStream, captionAlignmentHorz);
-        pool.writeObject(outStream, captionAlignmentVert);
-
-        outStream.writeBoolean(panelColumnVertical);
-
-        pool.writeObject(outStream, valueAlignmentHorz);
-        pool.writeObject(outStream, valueAlignmentVert);
-
-        pool.writeString(outStream, valueOverflowHorz);
-        pool.writeString(outStream, valueOverflowVert);
-
-        pool.writeBoolean(outStream, valueShrinkHorz);
-        pool.writeBoolean(outStream, valueShrinkVert);
-
-        pool.writeString(outStream, comment);
-
-        pool.writeString(outStream, placeholder);
-        pool.writeString(outStream, pattern);
-        pool.writeString(outStream, regexp);
-        pool.writeString(outStream, regexpMessage);
-
-        pool.writeString(outStream, tooltip);
-        pool.writeString(outStream, valueTooltip);
-
-        pool.writeObject(outStream, changeOnSingleClick);
-
-        outStream.writeInt(ID);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

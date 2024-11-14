@@ -51,7 +51,6 @@ import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -873,50 +872,6 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         return null;
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        boxed = inStream.readBoolean();
-
-        caption = LocalizedString.create(pool.readString(inStream));
-        maxValue = pool.readLong(inStream);
-        echoSymbols = inStream.readBoolean();
-        noSort = inStream.readBoolean();
-        defaultCompare = Compare.deserialize(inStream);
-
-        setCharHeight(inStream.readInt());
-        setCharWidth(inStream.readInt());
-        setValueSize(pool.readObject(inStream));
-
-        setCaptionWidth(inStream.readInt());
-        setCaptionHeight(inStream.readInt());
-
-        changeKey = pool.readObject(inStream);
-        changeKeyPriority = pool.readInt(inStream);
-        showChangeKey = inStream.readBoolean();
-        changeMouse = pool.readObject(inStream);
-        changeMousePriority = pool.readInt(inStream);
-        showChangeMouse = inStream.readBoolean();
-
-        focusable = pool.readObject(inStream);
-
-        panelColumnVertical = inStream.readBoolean();
-
-        valueAlignmentHorz = pool.readObject(inStream);
-        valueAlignmentVert = pool.readObject(inStream);
-
-        valueOverflowHorz = pool.readString(inStream);
-        valueOverflowVert = pool.readString(inStream);
-
-        valueShrinkHorz = pool.readBoolean(inStream);
-        valueShrinkVert = pool.readBoolean(inStream);
-
-        changeOnSingleClick = pool.readObject(inStream);
-
-        entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }
 
     @Override
