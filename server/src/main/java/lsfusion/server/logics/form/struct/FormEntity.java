@@ -268,7 +268,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     @IdentityLazy
     public ImSet<PropertyDrawEntity> getUserPrefsHiddenProperties() {
-        return getPropertyDrawsList().getSet().filterFn(property -> property.hide);
+        return getPropertyDrawsList().getSet().filterFn(property -> property.hide || property.remove);
     }
 
     public boolean localAsync = false;
