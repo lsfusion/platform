@@ -76,6 +76,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private final ActionOrPropertyObjectEntity<P, ?> propertyObject;
     
     public GroupObjectEntity toDraw;
+    public boolean hide;
 
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;

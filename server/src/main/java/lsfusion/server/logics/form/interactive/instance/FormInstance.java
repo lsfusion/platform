@@ -222,6 +222,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
+    private ImSet<PropertyDrawInstance<?>> userPrefsHiddenProperties;
+
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
@@ -390,6 +392,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 wasOrder.add(toDraw);
             }
         }
+
+        this.userPrefsHiddenProperties = entity.getUserPrefsHiddenProperties().mapSetValues(instanceFactory::getInstance);
 
         this.session.registerForm(this);
         
@@ -598,13 +602,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new FormUserPreferences(goGeneralPreferences, goUserPreferences);
     }
     
-    private ImSet<PropertyDrawInstance> userPrefsHiddenProperties = SetFact.EMPTY();
-    
     public void refreshUPHiddenProperties(String groupObjectSID, String[] hiddenSids) {
         GroupObjectInstance go = getGroupObjectInstance(groupObjectSID);
         List<String> hiddenSidsList = new ArrayList<>(Arrays.asList(hiddenSids));
         
-        Set<PropertyDrawInstance> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
+        Set<PropertyDrawInstance<?>> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
             if (property.toDraw == go) {
