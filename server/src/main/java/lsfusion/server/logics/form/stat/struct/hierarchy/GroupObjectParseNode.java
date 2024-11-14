@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.query.GroupType;
@@ -21,6 +20,8 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
+
+import static lsfusion.server.logics.action.flow.FlowAction.genInterfaces;
 
 public class GroupObjectParseNode extends GroupParseNode implements ChildParseNode {
     private final GroupObjectEntity group;
@@ -119,11 +120,22 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
         PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects, true, returnString), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
 
+        ImList<PropertyMapImplement<?, PropertyInterface>> topOffsetProperties = form.getTopOffsetProperties();
+
+        ImOrderSet<PropertyInterface> windowInterfaces = genInterfaces(topOffsetProperties.size());
+
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = form.getOrders(this.group, mapInnerObjects);
 
-        ImSet<PropertyInterface> usedInnerInterfaces = PropertyFact.getUsedInterfaces(group).merge(PropertyFact.getUsedInterfaces(orders.keys()));
+        ImSet<PropertyInterface> usedInnerInterfaces = PropertyFact.getUsedInterfaces(group).merge(PropertyFact.getUsedInterfaces(orders.keys())).merge(windowInterfaces.getSet());
+
+        outerInterfaces = outerInterfaces.merge(windowInterfaces.getSet());
+
+        MList<PropertyInterfaceImplement<PropertyInterface>> properties = ListFact.mList();
+        properties.add(group);
+        properties.addAll(topOffsetProperties);
 
         // actually outerInterfaces are X interfaces, so in the end there will be only X interfaces
-        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), ListFact.singleton(group), orders, false, SetFact.EMPTYORDER());
+
+        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), properties.immutableList(), orders, false, windowInterfaces);
     }
 }

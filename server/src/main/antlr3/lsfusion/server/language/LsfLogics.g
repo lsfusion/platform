@@ -2318,11 +2318,12 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
     List<LPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
     boolean returnString = false;
+    List<LPWithParams> windowProps = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
-		 $whereExpr.property, orderProperties, orderDirections, returnString);
+		 $whereExpr.property, windowProps, orderProperties, orderDirections, returnString);
 	}
 }
 	:	('JSON' | 'JSONTEXT' { returnString = true; })
@@ -2331,6 +2332,7 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
         )?
+        ('TOP' selectTop = propertyExpression[context, dynamic] { windowProps.add($selectTop.property); } ('OFFSET' selectOffset = propertyExpression[context, dynamic] { windowProps.add($selectOffset.property); })? )?
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

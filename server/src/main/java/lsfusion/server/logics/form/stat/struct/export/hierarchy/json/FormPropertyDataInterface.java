@@ -1,30 +1,17 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy.json;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.data.where.Where;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-
-import java.sql.SQLException;
 
 public class FormPropertyDataInterface<P extends PropertyInterface> {
 
@@ -48,6 +35,10 @@ public class FormPropertyDataInterface<P extends PropertyInterface> {
             contextGroupFilters = SetFact.EMPTY();
 
         return groupObject.getWhereProperty(filters, contextGroupFilters, mapValues, mapObjects);
+    }
+
+    public ImList<PropertyMapImplement<?, PropertyInterface>> getTopOffsetProperties() {
+        return form.getTopOffsetProperties();
     }
 
     public <T extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<T>, Boolean> getOrders(GroupObjectEntity group, ImRevMap<ObjectEntity, T> mapObjects) {

@@ -740,7 +740,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) {
         try {
-            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where);
+            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, null, null);
             addAutoFormEntityFinalized(integrationForm.form);
             return integrationForm;
         } catch (FormEntity.AlreadyDefined e) {

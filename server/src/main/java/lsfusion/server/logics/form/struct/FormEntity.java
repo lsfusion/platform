@@ -588,6 +588,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new Pair<>(inputFilter, inputOrders);
     }
 
+    public ImList<PropertyMapImplement<?, PropertyInterface>> getTopOffsetProperties() {
+        return ListFact.EMPTY();
+    }
+
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph
 //    @IdentityLazy
 //    public ImSet<GroupObjectEntity> getGroupToColumns() {

@@ -4550,7 +4550,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
-                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty,
+                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages,
+                                                LPWithParams whereProperty, List<LPWithParams> windowProps,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections, boolean returnString)
             throws ScriptingErrorLog.SemanticErrorException {
 
@@ -4582,6 +4583,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> props = exExprs;
         if(whereProperty != null)
             props = BaseUtils.add(exExprs, whereProperty);
+        for(LPWithParams windowProp : windowProps) {
+            props = BaseUtils.add(props, windowProp);
+        }
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
         List<LPWithParams> mapping = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -4594,13 +4598,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
+        paramsList.addAll(windowProps);
 //        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
         List<Object> resultParams = getParamsPlainList(paramsList);
 
         LP result = null;
         try {
             result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
-                    whereProperty != null, returnString, resultParams.toArray());
+                    whereProperty != null, windowProps.size(), returnString, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
