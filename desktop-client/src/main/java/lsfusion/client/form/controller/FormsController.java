@@ -20,18 +20,23 @@ import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.navigator.ClientNavigatorAction;
+import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.FormClientData;
+import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class FormsController implements ColorThemeChangeListener {
@@ -73,12 +78,50 @@ public class FormsController implements ColorThemeChangeListener {
                     if(page instanceof ClientFormDockable) {
                         ((ClientFormDockable) page).directProcessKeyEvent(e);
                     }
+                    processBinding(new KeyInputEvent(KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiersEx())), e);
                 } else if(activeWindow instanceof ClientModalForm) {
                     ((ClientModalForm) activeWindow).directProcessKeyEvent(e);
                 }
             }
             return false;
         });
+    }
+
+    private final Map<InputEvent, List<ClientFormController.Binding>> bindings = new HashMap<>();
+    private final List<ClientFormController.Binding> keySetBindings = new ArrayList<>();
+
+    public void addBindings(ClientNavigatorElement element, InputEvent inputEvent, Integer priority) {
+        if (inputEvent != null) {
+            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, priority) {
+                @Override
+                public boolean pressed(java.awt.event.InputEvent ke) {
+                    if (element instanceof ClientNavigatorAction) {
+                        KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                        Window activeWindow = fm.getActiveWindow();
+                        if (activeWindow instanceof DockableMainFrame) {
+                            DockableMainFrame f = (DockableMainFrame) activeWindow;
+                            f.executeNavigatorAction((ClientNavigatorAction) element, (ke.getModifiers() & java.awt.event.InputEvent.CTRL_MASK) != 0, true);
+                        }
+                    }
+                    return true;
+                }
+
+                @Override
+                public boolean showing() {
+                    return true;
+                }
+            }));
+        }
+    }
+
+    public void processBinding(InputEvent ks, java.awt.event.InputEvent ke) {
+        ProcessBinding.processBinding(ks, false, ke, () -> null, false, (groupObject, binding) -> true,
+                bindings, keySetBindings, (binding, preview) -> true, binding -> true, (groupObject, binding) -> true,
+                (binding, event) -> true, binding -> true, (binding, panel) -> true, () -> {});
+    }
+
+    public boolean isDialog() {
+        return false;
     }
     
     public void clean() {

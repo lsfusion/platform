@@ -28,6 +28,7 @@ import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
@@ -39,6 +40,7 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
@@ -49,13 +51,11 @@ import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.function.Supplier;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAltEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 
@@ -177,6 +177,33 @@ public abstract class FormsController {
         GwtClientUtils.addClassName(container, "forms-container-window");
 
         initEditModeTimer();
+    }
+
+    private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
+    private final ArrayList<GFormController.Binding> bindings = new ArrayList<>();
+
+    public void addBindings(GNavigatorElement element, ArrayList<GInputBindingEvent> inputBindingEvents) {
+        for(GInputBindingEvent inputBindingEvent : inputBindingEvents) {
+            bindingEvents.add(new GBindingEvent(event -> inputBindingEvent.inputEvent.isEvent(event), new GBindingEnv()));
+            bindings.add(new GFormController.Binding(null) {
+                @Override
+                public boolean showing() {
+                    return true;
+                }
+                @Override
+                public void exec(Event event) {
+                    executeNavigatorAction(element.canonicalName, event, true);
+                }
+            });
+        }
+    }
+
+    public void processBinding(EventHandler handler) {
+        ProcessBinding.processBinding(handler, false, false, false, bindingEvents, bindings,
+                eventTarget -> null,
+                (binding, preview) -> true, binding -> true, (bindingEvent, groupObject, equalGroup) -> true,
+                (binding, event) -> true, (binding, showing) -> true, (binding, isMouse, panel) -> true,
+                (binding, isMouse, isCell) -> true, () -> {});
     }
 
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
@@ -395,7 +422,7 @@ public abstract class FormsController {
     }
 
     public void initRoot() {
-        GFormController.initKeyEventHandler(RootPanel.get(), this, () -> {
+        GFormController.initMouseKeyEventHandler(RootPanel.get(), this, () -> {
             FormContainer currentForm = MainFrame.getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
