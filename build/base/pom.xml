@@ -29,7 +29,8 @@
 
         <!-- assemble properties -->
         <assemble.finalName>base</assemble.finalName>
-        <assemble.jar>${project.build.directory}/${assemble.finalName}.${project.packaging}</assemble.jar>
+        <assemble.file.name>${assemble.finalName}.${project.packaging}</assemble.file.name>
+        <assemble.jar>${project.build.directory}/${assemble.file.name}</assemble.jar>
         <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
 
         <!-- DEPENDENCY VERSIONS -->
