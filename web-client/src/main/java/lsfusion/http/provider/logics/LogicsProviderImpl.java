@@ -42,17 +42,34 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     @Autowired
     private ServletContext servletContext;
 
+    private String getSystemProperty(String propertyName) {
+        String property = System.getProperty(propertyName);
+        if (property == null)
+            property = System.getenv(propertyName.toUpperCase().replaceAll("\\.", "_"));
+        return property;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         String host = servletContext.getInitParameter(hostKey);
-        String port = servletContext.getInitParameter(portKey);
-        String exportName = servletContext.getInitParameter(exportNameKey);
-        if (host == null || port == null || exportName == null) {
-            throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
-        }
+        String hostProperty = getSystemProperty("app.registry.server");
+        if (hostProperty != null)
+            host = hostProperty;
 
-        String appPath = servletContext.getRealPath("");
-        FileUtils.APP_CONTEXT_FOLDER_PATH = appPath;
+        String port = servletContext.getInitParameter(portKey);
+        String portProperty = getSystemProperty("app.registry.port");
+        if (portProperty != null)
+            port = portProperty;
+
+        String exportName = servletContext.getInitParameter(exportNameKey);
+        String exportNameProperty = getSystemProperty("app.export.name");
+        if (exportNameProperty != null)
+            exportName = exportNameProperty;
+
+        if (host == null || port == null || exportName == null)
+            throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
+
+        FileUtils.APP_CONTEXT_FOLDER_PATH = servletContext.getRealPath("");
         String tempDir = ((File) servletContext.getAttribute(ServletContext.TEMPDIR)).getPath(); // appPath + "/WEB-INF/temp";
         FileUtils.APP_DOWNLOAD_FOLDER_PATH = tempDir;
         FileUtils.APP_UPLOAD_FOLDER_PATH = tempDir;

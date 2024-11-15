@@ -15,9 +15,66 @@
     <properties>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+        <maven.build.timestamp.format>yyyy-MM-dd.HH-mm</maven.build.timestamp.format>
+        <docker.repo.name>local</docker.repo.name>
     </properties>
 
     <profiles>
+        <profile>
+            <id>docker-build-image</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-build-timestamp</id>
+                                <configuration>
+                                    <name>build.timestamp</name>
+                                    <regex>.*</regex>
+                                    <replacement>${maven.build.timestamp}</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>docker-build</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <!-- execution phase-->
+                                <phase>package</phase>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>--progress=plain</argument>
+                                        <argument>--build-arg</argument>
+                                        <argument>FILENAME=target/${assemble.file.name}</argument>
+
+                                        <argument>-t</argument>
+                                        <!--repoName/imageName:tag-->
+                                        <argument>${docker.repo.name}/${project.artifactId}:${build.timestamp}</argument>
+                                        <!--Dockerfile location-->
+                                        <argument>${project.basedir}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>exec-client</id>
             <build>
