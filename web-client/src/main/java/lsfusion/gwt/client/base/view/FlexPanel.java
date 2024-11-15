@@ -222,13 +222,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setHeight(element, size);
     }
 
-    // everything pref sizing (auto dialog size) related
-    public static void setPrefWidth(Element element, GSize size) {
-        setWidth(element, size);
-    }
-    public static void setPrefHeight(Element element, GSize size) {
-        setHeight(element, size);
-    }
     public static void setMaxPrefWidth(Element element, GSize size) {
         setMaxWidth(element, size);
     }

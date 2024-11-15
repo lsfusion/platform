@@ -6,10 +6,8 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ResizableComplexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
-    protected Widget main;
 
     public ResizableComplexPanel() {
         this(Document.get().createDivElement());
@@ -46,13 +44,6 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
 
     public void insert(Widget w, int beforeIndex) {
         super.insert(w, getElement(), beforeIndex, true);
-    }
-
-    public void setPercentMain(Widget main) {
-        this.main = main;
-
-        add(main);
-        GwtClientUtils.setupPercentParent(main.getElement());
     }
 
     @Override
