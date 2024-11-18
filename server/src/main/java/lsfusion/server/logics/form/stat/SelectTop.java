@@ -100,7 +100,7 @@ public class SelectTop<T> {
             if (selectOffset != null) {
                 windowInterfaces.add(selectOffset);
             }
-        } else {
+        } else if (selectTops != null) {
             windowInterfaces.add(selectTops.get(group));
             T offset = (T) selectOffsets.get(group);
             if (offset != null) {
