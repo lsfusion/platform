@@ -643,9 +643,9 @@ public abstract class LogicsModule {
                 staticType, server, syncType, messageType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                            boolean returnString) {
-        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, returnString);
+                                                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
+                                                            SelectTop<ValueClass> selectTop, boolean returnString) {
+        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, selectTop, returnString);
 
         return addProperty(group, new LP<>(property));
     }
@@ -771,33 +771,28 @@ public abstract class LogicsModule {
     }
 
     private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                               boolean hasWhere, int numWindows, Object[] params) throws FormEntity.AlreadyDefined {
+                                               boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
 
-        int extraParamsCount = (hasWhere ? 1 : 0) + numWindows;
-
-        final ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - extraParamsCount);
+        final ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (hasWhere ? 1 : 0));
         ImOrderSet<PropertyInterface> mapInterfaces = BaseUtils.immutableCast(readImplements.subList(0, resInterfaces).toOrderExclSet());
 
         // determining where
-        PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - extraParamsCount) : null;
+        PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - 1) : null;
         where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs);
 
-        PropertyInterfaceImplement<PropertyInterface> top = numWindows >= 1 ? readImplements.get(readImplements.size() - numWindows) : null;
-        PropertyInterfaceImplement<PropertyInterface> offset = numWindows == 2 ? readImplements.get(readImplements.size() - 1) : null;
-
-        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, null, mapInterfaces, exprs, propUsages, orders, where, top, offset);
+        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, null, mapInterfaces, exprs, propUsages, orders, where);
         addAutoFormEntityNotFinalized(integrationForm.form);
 
         return integrationForm;
     }
 
     protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                                                                  PropertyInterfaceImplement<I> where, PropertyInterfaceImplement<I> top, PropertyInterfaceImplement<I> offset) throws FormEntity.AlreadyDefined {
+                                                                                  PropertyInterfaceImplement<I> where) throws FormEntity.AlreadyDefined {
         // creating integration form
         IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, innerClasses, mapInterfaces, properties, propUsages,
-                where, top, offset, orders, false, version);
+                where, orders, false, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
@@ -806,23 +801,23 @@ public abstract class LogicsModule {
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                             boolean hasWhere, int numWindows, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
-        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, numWindows, params);
+                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
 
-        return addJSONFormProp(caption, integrationForm, returnString);
+        return addJSONFormProp(caption, integrationForm, selectTop, returnString);
     }
 
-    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm, boolean returnString) {
+    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm, SelectTop<ValueClass> selectTop, boolean returnString) {
         // creating action
         return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls,
-                SetFact.EMPTYORDER(), SetFact.EMPTY(), returnString);
+                SetFact.EMPTYORDER(), SetFact.EMPTY(), selectTop, returnString);
     }
 
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
                                         Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
-        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, 0, params);
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
         ImMap<GroupObjectEntity, LP> exportFiles = MapFact.EMPTY();
@@ -844,7 +839,7 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1 && whereLCP != null ? whereLCP.getImplement(innerInterfaces.single()) : null;
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), exprs, propUsages, where, null, null, MapFact.EMPTYORDER(), attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), exprs, propUsages, where, MapFact.EMPTYORDER(), attr, version);
         addAutoFormEntityNotFinalized(form);
         
         // create action

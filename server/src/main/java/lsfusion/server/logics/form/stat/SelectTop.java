@@ -1,10 +1,12 @@
 package lsfusion.server.logics.form.stat;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -83,7 +85,7 @@ public class SelectTop<T> {
     }
 
     public <P> SelectTop<P> mapValues(ImRevMap<T, P> mapValues) {
-        return
+        return NULL(); //todo
     }
 
     public static LimitOffset getLimitOffset(SelectTop<Integer> st, GroupObjectEntity group) {
@@ -92,7 +94,20 @@ public class SelectTop<T> {
     }
 
     public <T> ImOrderSet<T> getWindowInterfaces(GroupObjectEntity group) {
-        ...
+        MOrderSet windowInterfaces = SetFact.mOrderSet();
+        if (selectTop != null) {
+            windowInterfaces.add(selectTop);
+            if (selectOffset != null) {
+                windowInterfaces.add(selectOffset);
+            }
+        } else {
+            windowInterfaces.add(selectTops.get(group));
+            T offset = (T) selectOffsets.get(group);
+            if (offset != null) {
+                windowInterfaces.add(offset);
+            }
+        }
+        return windowInterfaces.immutableOrder();
     }
 
     public SelectTop mapValues(Supplier<T> selectTopSupplier, Supplier<T> selectOffsetSupplier, Function<Integer, T> selectTopsSupplier, Function<Integer, T> selectOffsetsSupplier) {

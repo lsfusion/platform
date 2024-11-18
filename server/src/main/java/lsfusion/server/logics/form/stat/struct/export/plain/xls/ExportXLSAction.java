@@ -28,7 +28,7 @@ public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction
     private ClassPropertyInterface sheetNameInterface;
 
     private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass sheetName) {
-        List<ValueClass> params = selectTop.getParams();
+        List<ValueClass> params = new ArrayList<>();//selectTop.getParams();
         if (sheetName != null)
             params.add(sheetName);
         return params.toArray(new ValueClass[0]);

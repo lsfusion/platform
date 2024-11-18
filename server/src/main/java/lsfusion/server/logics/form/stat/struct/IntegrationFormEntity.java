@@ -1,10 +1,8 @@
 package lsfusion.server.logics.form.stat.struct;
 
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -32,12 +30,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
 
-    private PropertyMapImplement topProperty;
-    private PropertyMapImplement offsetProperty;
-
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
-                                                               PropertyInterfaceImplement<P> where, PropertyInterfaceImplement<P> top, PropertyInterfaceImplement<P> offset,
-                                                               ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+                                                               PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super(LocalizedString.NONAME, version);
 
         ImMap<P, ValueClass> interfaceClasses;
@@ -47,16 +41,6 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
             } else 
                 interfaceClasses = MapFact.EMPTY();
-
-            if (top instanceof PropertyMapImplement) {
-                this.topProperty = (PropertyMapImplement<M, P>) top;
-                interfaceClasses = interfaceClasses.addExcl(this.topProperty.mapInterfaceClasses(ClassType.formPolicy));
-            }
-
-            if (offset instanceof PropertyMapImplement) {
-                this.offsetProperty = (PropertyMapImplement<M, P>) offset;
-                interfaceClasses = interfaceClasses.addExcl(this.offsetProperty.mapInterfaceClasses(ClassType.formPolicy));
-            }
 
         } else
             interfaceClasses = innerInterfaces.mapList(innerClasses);
@@ -162,18 +146,6 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
             ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
             formView.removeComponent(toolbarBoxContainer, version);
         }
-    }
-
-    @Override
-    public ImList<PropertyMapImplement<?, PropertyInterface>> getTopOffsetProperties() {
-        MList<PropertyMapImplement<?, PropertyInterface>> topOffsetProperties = ListFact.mList();
-        if(topProperty != null) {
-            topOffsetProperties.add(topProperty);
-            if(offsetProperty != null) {
-                topOffsetProperties.add(offsetProperty);
-            }
-        }
-        return topOffsetProperties.immutableList();
     }
 
     @Override

@@ -13,6 +13,7 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -103,13 +104,13 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     @Override
     public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type,
                                                                        List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending,
-                                                                       LPWithParams whereProp, List<LPWithParams> windowProps, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+                                                                       LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.AGGR) {
             emitEvalError("GROUP operator's AGGR type");            
         } else if (type == GroupingType.EQUAL) {
             emitEvalError("GROUP operator's EQUAL type");
         }
-        return super.addScriptedCDGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, windowProps, newContext, debugPoint);
+        return super.addScriptedCDGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, selectTop, newContext, debugPoint);
     }    
     
     @Override

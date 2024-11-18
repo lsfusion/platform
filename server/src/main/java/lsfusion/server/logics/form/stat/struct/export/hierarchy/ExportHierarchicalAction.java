@@ -28,6 +28,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ExportHierarchicalAction<T extends Node<T>, O extends ObjectSelector> extends ExportAction<O> {
@@ -38,7 +39,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
     protected final LP<?> exportFile; // nullable
 
     private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass root, ValueClass tag) {
-        List<ValueClass> params = selectTop.getParams();
+        List<ValueClass> params = new ArrayList<>();//selectTop.getParams();
         if (root != null)
             params.add(root);
         if (tag != null)
