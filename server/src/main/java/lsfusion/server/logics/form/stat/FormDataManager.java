@@ -120,7 +120,7 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
-        return getExportData(SelectTop.NULL());
+        return getExportData(SingleSelectTop.NULL());
     }
 
     public static class ExportResult {

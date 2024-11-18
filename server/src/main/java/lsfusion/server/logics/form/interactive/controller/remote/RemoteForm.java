@@ -70,7 +70,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.interactive.property.Async;
 import lsfusion.server.logics.form.stat.FormDataManager;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.SingleSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
@@ -146,7 +146,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
                 FormDataManager.ExportResult exportData = formReportManager.getExportData();
                 RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(),
-                        FormIntegrationType.CSV, null, SelectTop.NULL(), null, false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                        FormIntegrationType.CSV, null, SingleSelectTop.NULL(), null, false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
                 return new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())); //add bom bytes
 
             } else {

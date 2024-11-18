@@ -98,6 +98,7 @@ import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.SingleSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
@@ -3349,7 +3350,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        aggrObject (prim1Object, prim2Object) =
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
-        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), SelectTop.NULL(), false,
+        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), SingleSelectTop.NULL(), false,
                 () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
         ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 

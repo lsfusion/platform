@@ -100,7 +100,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     public ReportGenerationData getReportData(FormPrintType printType) throws SQLException, SQLHandledException {
-        return getReportData(printType, SelectTop.NULL());
+        return getReportData(printType, SingleSelectTop.NULL());
     }
 
     // backward compatibility

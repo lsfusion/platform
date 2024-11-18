@@ -86,6 +86,7 @@ import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.SingleSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.ExportJSONAction;
@@ -2192,7 +2193,7 @@ public abstract class LogicsModule {
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy), null), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SingleSelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy), null), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

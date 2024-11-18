@@ -60,7 +60,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.SingleSelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -750,7 +750,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
-        LP jsonFormProp = addJSONFormProp(caption, integrationForm, SelectTop.NULL(), false);
+        LP jsonFormProp = addJSONFormProp(caption, integrationForm, SingleSelectTop.NULL(), false);
 //        jsonFormProp.property.finalizeInit();
         ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
         return jsonFormProp;

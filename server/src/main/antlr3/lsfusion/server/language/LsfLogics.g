@@ -75,7 +75,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
-    import lsfusion.server.logics.form.stat.SelectTop;
+    import lsfusion.server.logics.form.stat.GroupSelectTop;
+    import lsfusion.server.logics.form.stat.SingleSelectTop;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -1945,7 +1946,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, new SelectTop($topOffsetExpr.top, $topOffsetExpr.offset), groupContext, debugPoint);
+		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -2300,9 +2301,9 @@ jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context,
-	    new SelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset,
-        $topOffsetsExpr.tops != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.tops) : null,
-        $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null), returnString);
+	    $topOffsetsExpr.tops != null ?
+	        new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
+	    :   new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset), returnString);
 	}
 }
 	:   ('JSON' | 'JSONTEXT' { returnString = true; }) '(' mf=mappedForm[context, null, dynamic] {
@@ -2324,7 +2325,7 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
-		 $whereExpr.property, orderProperties, orderDirections, new SelectTop($topOffsetExpr.top, $topOffsetExpr.offset), returnString, newContext);
+		 $whereExpr.property, orderProperties, orderDirections, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), returnString, newContext);
 	}
 }
 	:	('JSON' | 'JSONTEXT' { returnString = true; })
@@ -2619,7 +2620,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, $pUsage.propUsage,
-			                                                 sheetName, root, tag, separator, hasHeader, noEscape, new SelectTop($topOffsetExpr.top, $topOffsetExpr.offset), charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, hasHeader, noEscape, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
@@ -3588,9 +3589,9 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 @after {
 	if (inMainParseState()) {
         $action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, messageType,
-            new SelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset,
-            $topOffsetsExpr.tops != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.tops) : null,
-            $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null),
+            $topOffsetsExpr.tops != null ?
+                new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
+            :   new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset),
             printerProperty, sheetNameProperty, passwordProperty, objectsContext, contextFilters, context);
 	}
 }
@@ -3652,9 +3653,9 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape,
-		                                       new SelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset,
-                                               $topOffsetsExpr.tops != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.tops) : null,
-                                               $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null),
+		                                       $topOffsetsExpr.tops != null ?
+		                                            new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
+                                               :    new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset),
 		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
