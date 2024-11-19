@@ -1246,7 +1246,7 @@ changeEventDeclaration returns [Object type]
     ;
 
 formContainerEventDeclaration returns [String sid, boolean collapse = false]
-    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND')
+    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND' | 'TAB')
         (   obj=ID { $sid = $obj.text; }
         |   comp=formContainersComponentSelector { $sid = $comp.sid; }
         )
