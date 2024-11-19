@@ -235,18 +235,9 @@ public class GFormController implements EditManager {
             GFormController form = currentForm.get();
             if (form != null)
                 checkFormEvent(eventHandler, (handler, preview) -> form.checkKeyEvent(handler, preview, false, false));
-            checkNavigatorEvent(eventHandler, formsController);
+            if (!eventHandler.consumed && !MainFrame.isModalPopup()) //ignore if modal window
+                formsController.processBinding(eventHandler);
         }
-    }
-    private static void checkGlobalMouseEvent(DomEvent event, FormsController formsController) {
-        NativeEvent nativeEvent = event.getNativeEvent();
-        if (nativeEvent instanceof Event) { // just in case
-            checkNavigatorEvent(new EventHandler((Event) nativeEvent), formsController);
-        }
-    }
-    private static void checkNavigatorEvent(EventHandler eventHandler, FormsController formsController) {
-        if (!eventHandler.consumed && !MainFrame.isModalPopup()) //ignore if modal window
-            formsController.processBinding(eventHandler);
     }
     public void checkMouseKeyEvent(EventHandler handler, boolean preview, boolean isCell, boolean panel, boolean customRenderer) {
         if(MainFrame.isModalPopup())
@@ -268,15 +259,14 @@ public class GFormController implements EditManager {
         }
     }
 
-    // will handle mouse/key events in upper container which will be better from UX point of view
-    public static void initMouseKeyEventHandler(Widget widget, FormsController formsController, Supplier<GFormController> currentForm) {
+    // will handle key events in upper container which will be better from UX point of view
+    public static void initKeyEventHandler(Widget widget, FormsController formsController, Supplier<GFormController> currentForm) {
         widget.addDomHandler(event -> {
             checkGlobalKeyEvent(event, formsController, currentForm);
             checkKeyEvents(event, formsController);
         }, KeyDownEvent.getType());
         widget.addDomHandler(event -> checkGlobalKeyEvent(event, formsController, currentForm), KeyPressEvent.getType());
         widget.addDomHandler(event -> checkKeyEvents(event, formsController), KeyUpEvent.getType());
-        widget.addDomHandler(event -> checkGlobalMouseEvent(event, formsController), MouseDownEvent.getType());
     }
 
     public GFormLayout getFormLayout() {

@@ -422,7 +422,7 @@ public abstract class FormsController {
     }
 
     public void initRoot() {
-        GFormController.initMouseKeyEventHandler(RootPanel.get(), this, () -> {
+        GFormController.initKeyEventHandler(RootPanel.get(), this, () -> {
             FormContainer currentForm = MainFrame.getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
