@@ -229,6 +229,7 @@ To access design components, you can use their names or address property compone
 |`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Show the XLS export button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showManualUpdate`|Show the manual update button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`enableManualUpdate`|Enables the manual update mode by default|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 
 ### Grid properties
 

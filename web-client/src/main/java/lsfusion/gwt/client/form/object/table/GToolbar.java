@@ -11,4 +11,5 @@ public class GToolbar extends GComponent {
     public boolean showCalculateSum;
     public boolean showPrintGroupXls;
     public boolean showManualUpdate;
+    public boolean enableManualUpdate;
 }

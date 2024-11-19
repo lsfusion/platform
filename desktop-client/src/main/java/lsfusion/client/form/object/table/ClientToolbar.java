@@ -19,6 +19,7 @@ public class ClientToolbar extends ClientComponent {
     public boolean showCalculateSum = true;
     public boolean showPrintGroupXls = true;
     public boolean showManualUpdate = true;
+    public boolean enableManualUpdate;
 
     public ClientToolbar() {
     }
@@ -36,6 +37,7 @@ public class ClientToolbar extends ClientComponent {
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showPrintGroupXls);
         outStream.writeBoolean(showManualUpdate);
+        outStream.writeBoolean(enableManualUpdate);
     }
 
     @Override
@@ -51,6 +53,7 @@ public class ClientToolbar extends ClientComponent {
         showCalculateSum = inStream.readBoolean();
         showPrintGroupXls = inStream.readBoolean();
         showManualUpdate = inStream.readBoolean();
+        enableManualUpdate = inStream.readBoolean();
     }
 
     @Override

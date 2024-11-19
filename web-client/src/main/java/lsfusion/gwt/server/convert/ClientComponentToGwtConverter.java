@@ -217,6 +217,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         toolbar.showCalculateSum = clientToolbar.showCalculateSum;
         toolbar.showPrintGroupXls = clientToolbar.showPrintGroupXls;
         toolbar.showManualUpdate = clientToolbar.showManualUpdate;
+        toolbar.enableManualUpdate = clientToolbar.enableManualUpdate;
         return toolbar;
     }
 
