@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -523,6 +524,8 @@ public class MainFrame implements EntryPoint {
 
         navigatorController.setRoot(result.root);
 
+        addBindings(formsController, result.root);
+
         GwtClientUtils.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
         GwtClientUtils.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
         GwtClientUtils.setGlobalClassName(true, "size-" + size);
@@ -586,6 +589,13 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.requestPushNotificationPermissions();
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+    }
+
+    private void addBindings(FormsController formsController, GNavigatorElement element) {
+        formsController.addBindings(element, element.bindingEvents);
+        for(GNavigatorElement child : element.children) {
+            addBindings(formsController, child);
+        }
     }
 
     public static String subscription;
