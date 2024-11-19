@@ -1,10 +1,7 @@
 package lsfusion.gwt.server.convert;
 
-import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
@@ -13,11 +10,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
-import lsfusion.interop.form.event.BindingMode;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -26,6 +19,7 @@ public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
+    private final ClientBindingToGwtConverter bindingConverter = ClientBindingToGwtConverter.getInstance();
 
     public ClientAsyncToGwtConverter(MainDispatchServlet servlet, FormSessionObject formSessionObject) {
         super(servlet, formSessionObject);
@@ -55,39 +49,9 @@ public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
         return new GInputListAction(createImage(clientInputListAction.action, false), clientInputListAction.id, convertOrCast(clientInputListAction.asyncExec),
-                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode),
+                clientInputListAction.keyStroke != null ? bindingConverter.convertKeyStroke(clientInputListAction.keyStroke) : null,
+                clientInputListAction.editingBindingMode != null ? bindingConverter.convertBindingMode(clientInputListAction.editingBindingMode) : null,
                 quickAccessList, clientInputListAction.index);
-    }
-
-    @Converter(from = KeyStroke.class)
-    public GKeyStroke convertKeyStroke(KeyStroke keyStroke) {
-        int modifiers = keyStroke.getModifiers();
-        boolean isAltPressed = (modifiers & InputEvent.ALT_MASK) != 0;
-        boolean isCtrlPressed = (modifiers & InputEvent.CTRL_MASK) != 0;
-        boolean isShiftPressed = (modifiers & InputEvent.SHIFT_MASK) != 0;
-        int keyCode = convertKeyCode(keyStroke.getKeyCode());
-
-        return new GKeyStroke(keyCode, isAltPressed, isCtrlPressed, isShiftPressed);
-    }
-
-    @Converter(from = BindingMode.class)
-    public GBindingMode convertBindingMode(BindingMode bindingMode) {
-        return  GBindingMode.valueOf(bindingMode.name());
-    }
-
-    private int convertKeyCode(int keyCode) {
-        switch (keyCode) {
-            case KeyEvent.VK_DELETE:
-                return KeyCodes.KEY_DELETE;
-            case KeyEvent.VK_ESCAPE:
-                return KeyCodes.KEY_ESCAPE;
-            case KeyEvent.VK_ENTER:
-                return KeyCodes.KEY_ENTER;
-            case KeyEvent.VK_INSERT:
-                return GKeyStroke.KEY_INSERT;
-            default:
-                return keyCode;
-        }
     }
 
     @Converter(from = ClientQuickAccess.class)
