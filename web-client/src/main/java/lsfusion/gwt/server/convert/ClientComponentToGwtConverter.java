@@ -338,7 +338,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
 
-        propertyDraw.editBindingMap = bindingConverter.convertBindingMap(clientPropertyDraw.editBindingMap);
+        propertyDraw.editBindingMap = clientPropertyDraw.editBindingMap != null ? bindingConverter.convertBindingMap(clientPropertyDraw.editBindingMap) : null;
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
         propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
