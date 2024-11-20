@@ -217,7 +217,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         toolbar.showCalculateSum = clientToolbar.showCalculateSum;
         toolbar.showPrintGroupXls = clientToolbar.showPrintGroupXls;
         toolbar.showManualUpdate = clientToolbar.showManualUpdate;
-        toolbar.enableManualUpdate = clientToolbar.enableManualUpdate;
         return toolbar;
     }
 
@@ -680,6 +679,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         groupObject.hasHeaders = clientGroupObject.hasHeaders;
         groupObject.hasFooters = clientGroupObject.hasFooters;
+
+        groupObject.enableManualUpdate = clientGroupObject.enableManualUpdate;
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {
             GGroupObject upGroup = convertOrCast(clientUpGroup);

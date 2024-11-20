@@ -53,9 +53,4 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
         target.showManualUpdate = showManualUpdate;
     }
 
-    @SuppressWarnings("unused")
-    public void setEnableManualUpdate(boolean enableManualUpdate) {
-        target.enableManualUpdate = enableManualUpdate;
-    }
-
 }

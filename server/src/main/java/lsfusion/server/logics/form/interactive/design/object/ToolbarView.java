@@ -19,7 +19,6 @@ public class ToolbarView extends BaseComponentView {
     public boolean showCalculateSum = true;
     public boolean showPrintGroupXls = true;
     public boolean showManualUpdate = true;
-    public boolean enableManualUpdate = false;
 
     public ToolbarView(int ID) {
         super(ID);
@@ -38,7 +37,6 @@ public class ToolbarView extends BaseComponentView {
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showPrintGroupXls);
         outStream.writeBoolean(showManualUpdate);
-        outStream.writeBoolean(enableManualUpdate);
     }
 
     @Override
@@ -54,7 +52,6 @@ public class ToolbarView extends BaseComponentView {
         showCalculateSum = inStream.readBoolean();
         showPrintGroupXls = inStream.readBoolean();
         showManualUpdate = inStream.readBoolean();
-        enableManualUpdate = inStream.readBoolean();
     }
 
     @Override

@@ -229,7 +229,6 @@ TREE treeSelector
 |`showCalculateSum`|Показывать кнопку подсчета суммы по колонке|Дополненный логический литерал|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Показывать кнопку экспорта таблицы в xls-формат|Дополненный логический литерал|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showManualUpdate`|Показывать кнопку ручного обновления|Дополненный логический литерал|`TRUE`|`TRUE`<br/>`FALSE`|
-|`enableManualUpdate`|Включить режим ручного обновления по умолчанию|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 
 ### Свойства таблицы
 
@@ -244,6 +243,7 @@ TREE treeSelector
 |`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Целочисленный литерал|NULL|`60`|
 |`lineHeight`|todo|Целочисленный литерал|NULL|`60`|
+|`enableManualUpdate`|Включить режим ручного обновления по умолчанию|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 
 ### Другие свойства
 

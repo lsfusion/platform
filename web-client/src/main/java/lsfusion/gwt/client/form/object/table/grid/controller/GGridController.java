@@ -364,18 +364,8 @@ public class GGridController extends GAbstractTableController {
 
             addToToolbar(updateButtonGroup);
 
-            if (groupObject.toolbar.enableManualUpdate) {
-                setUpdateMode(true);
-                changeMode(GUpdateMode.MANUAL);
-            } else {
-                setUpdateMode(false);
-            }
+            setUpdateMode(groupObject.enableManualUpdate);
         }
-    }
-
-    private void setManualUpdate(boolean manual) {
-        setUpdateMode(manual);
-        changeMode(manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
     }
 
     private void changeMode(GUpdateMode updateMode) {
