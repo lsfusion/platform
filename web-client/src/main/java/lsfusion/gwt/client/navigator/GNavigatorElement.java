@@ -70,7 +70,7 @@ public abstract class GNavigatorElement implements Serializable, HasNativeSID {
     public String getCaption() {
         String eventCaption = getEventCaption(showChangeKey && hasKeyBinding() ? getKeyBindingText() : null,
                 showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null);
-        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
+        return caption != null ? (caption + (eventCaption != null ? " (" + eventCaption + ")" : "")) : null;
     }
 
     private boolean hasKeyBinding() {
