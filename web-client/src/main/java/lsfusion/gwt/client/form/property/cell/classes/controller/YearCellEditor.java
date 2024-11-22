@@ -22,9 +22,6 @@ public class YearCellEditor extends IntegralCellEditor {
         if (started) {
             openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue));
 
-            if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
-                inputElement.select();
-
             GwtClientUtils.addDropDownPartner(parent, getYearPickerContainer(parent));
         }
     }
@@ -46,20 +43,17 @@ public class YearCellEditor extends IntegralCellEditor {
         var startDate;
         if(initYear != null)
             startDate = new Date().setFullYear(initYear);
-        else { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
-            startDate = new Date();
-            inputElement.value = startDate.getFullYear();
-        }
-
-        inputElement.addEventListener('keydown', function (e) {
-            $wnd.handleDropdownKeyEvent(parent.picker.visible, e, true);
-        });
+//        else { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
+//            startDate = new Date();
+//            inputElement.value = startDate.getFullYear();
+//        }
 
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
             minView: 'years', // The minimum possible representation of the calendar. It is used, for example, when you need to provide only a choice of the year.
             visible: true, // Shows the calendar immediately after initialization.
             startDate: startDate,
+            keyboardNav: false,
             dateFormat: function (date) {
                 return date.getFullYear(); // to return a number, not a Date object
             },
