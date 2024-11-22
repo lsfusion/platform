@@ -29,8 +29,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             openPicker(); // date range picker is opened only on click
 
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
-
-            enableAutoUpdate();
         }
     }
 
@@ -96,10 +94,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected native Element getPickerContainer()/*-{
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
-    }-*/;
-
-    protected native void enableAutoUpdate()/*-{
-        this.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
@@ -168,6 +162,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             options.endDate = endDate;
         }
         editElement.daterangepicker(options);
+
+//       return autoUpdateInput after opening the picker and starting editing
+        thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
 
         //show only time picker
         if (time) {

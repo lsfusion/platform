@@ -43,6 +43,10 @@ public class YearCellEditor extends IntegralCellEditor {
         var startDate;
         if(initYear != null)
             startDate = new Date().setFullYear(initYear);
+//        else { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
+//            startDate = new Date();
+//            inputElement.value = startDate.getFullYear();
+//        }
 
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
