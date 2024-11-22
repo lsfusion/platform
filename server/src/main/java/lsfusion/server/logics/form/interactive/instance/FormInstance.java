@@ -625,7 +625,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Set<PropertyDrawInstance<?>> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
-            if (property.toDraw == go) {
+            if (property.toDraw == go && !property.getEntity().remove) {
                 if (!hiddenSidsList.contains(property.getSID())) {
                     hiddenProps.remove(property);        
                 } else {
