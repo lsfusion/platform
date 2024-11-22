@@ -1373,7 +1373,7 @@
                 this.setStartDate(date.clone());
 
                 // PATCHED: added this.updateElement();
-                this.updateElement();
+                this.updateElement(true);
             } else if (!this.endDate && date.isBefore(this.startDate)) {
                 //special case: clicking the same date for start/end,
                 //but the time of the end date is before the start date
@@ -1398,7 +1398,7 @@
                 this.setEndDate(date.clone());
 
                 // PATCHED: added this.updateElement();
-                this.updateElement();
+                this.updateElement(true);
 
                 if (this.autoApply) {
                   this.calculateChosenLabel();
@@ -1561,7 +1561,7 @@
             this.renderTimePicker('left');
             this.renderTimePicker('right');
 
-            this.updateElement();
+            this.updateElement(true);
         },
 
         elementChanged: function() {
@@ -1614,8 +1614,9 @@
             this.onKeydown(e);
         },
 
-        updateElement: function() {
-            if (this.element.is('input') && this.autoUpdateInput) {
+        // PATCHED: added forceAutoUpdate to update input on mouse click on the date or when select time
+        updateElement: function(forceAutoUpdate) {
+            if (this.element.is('input') && (this.autoUpdateInput || forceAutoUpdate)) {
                 var newValue = this.startDate.format(this.locale.format);
                 if (!this.singleDatePicker) {
                     // PATCHED: added this.endDate != null to use oldEndDate because now updateElement can be called from clickDate function

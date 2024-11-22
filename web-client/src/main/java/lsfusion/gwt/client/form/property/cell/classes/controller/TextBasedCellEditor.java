@@ -303,9 +303,14 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         int cursorPosition = textBoxImpl.getCursorPos(inputElement);
         int selectionLength = textBoxImpl.getSelectionLength(inputElement);
         String currentValue = getTextInputValue();
-        String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
-        String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
 
+//        When opening the form and moving by keyboard to the date field and entering any digit from the keyboard
+//        get an error: IndexOutOfBoundsException. E.g. because currentValue != null, but just an empty string, and cursorPosition + selectionLength = 10
+//        this error occurs only when running through the idea! If you build .war and run on tomcat, this error is not present at all.
+//        that's why added the extra checks
+        String firstPart = currentValue != null && cursorPosition <= currentValue.length() ? currentValue.substring(0, cursorPosition) : "";
+        int beginIndex = cursorPosition + selectionLength;
+        String secondPart = currentValue != null && beginIndex <= currentValue.length() ? currentValue.substring(beginIndex) : "";
         return isStringValid(firstPart + stringToAdd + secondPart);
     }
 
