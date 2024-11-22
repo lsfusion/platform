@@ -29,6 +29,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             openPicker(); // date range picker is opened only on click
 
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
+
+            enableAutoUpdate();
         }
     }
 
@@ -46,7 +48,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected void pickerCancel() {
         cancel();
     }
-
 
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
@@ -95,6 +96,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected native Element getPickerContainer()/*-{
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
+    }-*/;
+
+    protected native void enableAutoUpdate()/*-{
+        this.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
