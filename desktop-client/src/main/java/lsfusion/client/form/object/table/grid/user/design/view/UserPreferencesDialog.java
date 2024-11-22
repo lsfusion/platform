@@ -22,6 +22,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -396,17 +397,22 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private void okButtonPressed() {
+        List<String> hiddenPropSids = new ArrayList<>();
+
         for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
-            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.indexOf(propertyItem), false);
+            //hack for 5.2: you can't show property 'hide' in design
+            boolean userHide = propertyItem.property.hide;
+            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.indexOf(propertyItem), userHide);
+            if(userHide && (propertyItem.inGrid == null || propertyItem.inGrid))
+                hiddenPropSids.add(propertyItem.property.getPropertyFormName());
         }
-        
-        String[] hiddenPropSids = new String[invisibleListModel.size()];
+
         UserPreferencesPropertyListItem[] invisibleItems = invisibleListModel.toArray();
         for (int i = 0; i < invisibleItems.length; i++) {
             UserPreferencesPropertyListItem propertyItem = invisibleItems[i];
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.getSize() + i, true);
             if (propertyItem.inGrid == null || propertyItem.inGrid) {
-                hiddenPropSids[i] = propertyItem.property.getPropertyFormName();
+                hiddenPropSids.add(propertyItem.property.getPropertyFormName());
             }
         }
 
@@ -446,7 +452,9 @@ public abstract class UserPreferencesDialog extends JDialog {
                 }
 
                 for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
-                    savePropertyUserPreferences(propertyItem, false, visibleListModel.indexOf(propertyItem), sortDirections.get(propertyItem.property));
+                    //hack for 5.2: you can't show property 'hide' in design
+                    boolean userHide = propertyItem.property.hide;
+                    savePropertyUserPreferences(propertyItem, userHide, visibleListModel.indexOf(propertyItem), sortDirections.get(propertyItem.property));
                 }
 
                 for (UserPreferencesPropertyListItem propertyItem : invisibleListModel.toArray()) {
