@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,20 +248,26 @@ public abstract class GUserPreferencesDialog extends WindowBox {
     }
 
     private void okPressed() {
+        List<String> hiddenPropSids = new ArrayList<>();
+
         for (Widget label : columnsDualListBox.getVisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
+            //hack for 5.2: you can't show property 'hide' in design
+            boolean userHide = property.property.hide;
             grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(),
-                    columnsDualListBox.getVisibleIndex(label), false);
+                    columnsDualListBox.getVisibleIndex(label), userHide);
+            if(userHide && (property.inGrid == null || property.inGrid))
+                hiddenPropSids.add(property.property.propertyFormName);
         }
 
-        String[] hiddenPropSids = new String[columnsDualListBox.getInvisibleWidgets().size()];
+
         for (int i = 0; i < columnsDualListBox.getInvisibleWidgets().size(); i++) {
             Widget label = columnsDualListBox.getInvisibleWidgets().get(i);
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
             grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(),
                     columnsDualListBox.getVisibleCount() + i, true);
             if (property.inGrid == null || property.inGrid) {
-                hiddenPropSids[i] = property.property.propertyFormName;
+                hiddenPropSids.add(property.property.propertyFormName);
             }
         }
 
@@ -359,7 +366,9 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         
                 for (Widget w : columnsDualListBox.getVisibleWidgets()) {
                     PropertyListItem property = ((PropertyLabel) w).getPropertyItem();
-                    refreshPropertyUserPreferences(property, false, columnsDualListBox.getVisibleIndex(w), userSortDirections.get(property.property));
+                    //hack for 5.2: you can't show property 'hide' in design
+                    boolean userHide = property.property.hide;
+                    refreshPropertyUserPreferences(property, userHide, columnsDualListBox.getVisibleIndex(w), userSortDirections.get(property.property));
                 }
         
                 for (Widget w : columnsDualListBox.getInvisibleWidgets()) {
