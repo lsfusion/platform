@@ -71,7 +71,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, oldValue != null ? oldValue.mapInner(mapping) : null);
     }
 
     @Override
