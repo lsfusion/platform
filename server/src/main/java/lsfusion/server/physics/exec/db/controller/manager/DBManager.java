@@ -248,8 +248,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 if(!isFirstStart(sql) && getOldDBStructure(sql).version < 40) {
                     startLog("Migrating cast.sql functions");
-                    sql.executeDDL("DROP FUNCTION cast_json_to_static_file(jsonb)");
-                    sql.executeDDL("DROP FUNCTION cast_json_text_to_static_file(json)");
+                    sql.executeDDL("DROP FUNCTION IF EXISTS cast_json_to_static_file(jsonb)");
+                    sql.executeDDL("DROP FUNCTION IF EXISTS cast_json_text_to_static_file(json)");
                 }
 
                 adapter.ensure(false);
