@@ -205,7 +205,8 @@ FORM mail '{email.form.mail}'
     OBJECTS e=Email LAST
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
                            dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID
-    PROPERTIES READONLY message '' = HTML(HTMLFILE(message(e))) PANEL
+    PROPERTIES SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
+    PROPERTIES(e) SHOWIF isDesktop() '' = message PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
     FILTERS account(e) = a, dateTimeReceived(e)
@@ -235,6 +236,7 @@ DESIGN mail {
                 MOVE PROPERTY(message) {
                     fill = 1;
                 }
+                MOVE PROPERTY(message(e)) { fill = 1; }
             }
             NEW attachments {
                 fill = 1;
