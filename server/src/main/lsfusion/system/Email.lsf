@@ -241,7 +241,7 @@ FORM mail '{email.form.mail}'
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, ccAddress, bccAddress, dateTimeSent, 
                            dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID
     PROPERTIES SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
-    PROPERTIES(e) SHOWIF isDesktop() '' = message PANEL
+    PROPERTIES(e) SHOWIF isNative() '' = message PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
     FILTERS folder(e) == f, dateTimeReceived(e)
