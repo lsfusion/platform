@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.value.DataObject;
@@ -65,14 +64,14 @@ public class ReceiveEMLAction extends EmailAction {
                     return;
                 }
 
-                boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
+                boolean ignoreExceptions = emailLM.ignoreExceptionsAccount.read(context, accountObject) != null;
 
                 Set<Long> skipEmails = getSkipEmails(context, nameAccount);
 
                 Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, startTLS, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount, insecureSSLAccount);
                 for (Map.Entry<Long, FileData> entry : emlMap.entrySet()) {
                     DataObject entryObject = new DataObject(entry.getKey());
-                    LM.findProperty("emlFile[LONG]").change(entry.getValue(), context, entryObject);
+                    emailLM.emlFile.change(entry.getValue(), context, entryObject);
                 }
 
             } catch (Exception e) {
@@ -91,8 +90,8 @@ public class ReceiveEMLAction extends EmailAction {
             ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
-            emailQuery.addProperty("uid", LM.findProperty("uid[Email]").getExpr(emailExpr));
-            emailQuery.and(LM.findProperty("uid[Email]").getExpr(emailExpr).getWhere());
+            emailQuery.addProperty("uid", emailLM.uidEmail.getExpr(emailExpr));
+            emailQuery.and(emailLM.uidEmail.getExpr(emailExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             for (ImMap<Object, Object> entry : emailResult.values()) {
