@@ -8,6 +8,11 @@ public class SyncFormsTask extends SyncTask {
     }
 
     @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
+    @Override
     public void runSync() {
         getReflectionManager().synchronizeForms();
     }

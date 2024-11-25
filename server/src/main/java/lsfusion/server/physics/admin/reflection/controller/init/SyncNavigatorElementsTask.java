@@ -8,6 +8,11 @@ public class SyncNavigatorElementsTask extends SyncTask {
     }
 
     @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
+    @Override
     public void runSync() {
         getReflectionManager().synchronizeNavigatorElements();
     }

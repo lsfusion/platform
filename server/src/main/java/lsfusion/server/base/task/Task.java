@@ -11,7 +11,6 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -36,7 +35,7 @@ public abstract class Task {
         return false;
     }
 
-    public boolean isLoggable() {
+    public boolean isStartLoggable() {
         return true;
     }
 
@@ -145,7 +144,7 @@ public abstract class Task {
 
     public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, final Logger logger,
                         TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
-        if (isLoggable()) {
+        if (isStartLoggable()) {
             String caption = getCaption();
             if(caption != null)
                 logger.info(caption);

@@ -14,7 +14,7 @@ public abstract class GroupProgramTask extends PublicTask {
             return PublicTask.getAllDependencies(GroupProgramTask.this);
         }
 
-        public boolean isLoggable() {
+        public boolean isStartLoggable() {
             return GroupProgramTask.this.isPreLoggable();
         }
 
@@ -50,7 +50,7 @@ public abstract class GroupProgramTask extends PublicTask {
     }
 
     @Override
-    public boolean isLoggable() {
+    public boolean isStartLoggable() {
         return false;
     }
 
