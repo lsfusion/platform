@@ -1,11 +1,11 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
-
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
+import com.sun.mail.imap.DefaultFolder;
 import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.pop3.POP3Folder;
@@ -19,7 +19,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
@@ -30,10 +29,10 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;
@@ -53,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static lsfusion.base.BaseUtils.nullEmpty;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.physics.dev.integration.external.to.mail.AccountType.*;
@@ -62,17 +62,18 @@ public class EmailReceiver {
 
     public static void receiveEmail(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, String receiveHost, Integer receivePort,
                                     String user, String password, AccountType accountType, boolean startTLS, boolean deleteMessages, Integer lastDays,
-                                    Integer maxMessages, boolean insecureSSL) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
+                                    Integer maxMessages, boolean insecureSSL, boolean readAllFolders) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
-        boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
-        boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
+        boolean unpack = LM.unpackAccount.read(context, accountObject) != null;
+        boolean ignoreExceptions = LM.ignoreExceptionsAccount.read(context, accountObject) != null;
         LocalDateTime minDateTime = lastDays != null ? LocalDateTime.now().minusDays(lastDays) : null;
 
         List<List<List<Object>>> data = downloadEmailList(context, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, maxMessages,
-                getSkipEmails(context, LM, accountObject, minDateTime), minDateTime, unpack, ignoreExceptions, insecureSSL);
+                getSkipEmails(context, LM, accountObject, minDateTime), minDateTime, unpack, ignoreExceptions, insecureSSL, readAllFolders);
 
-        importEmails(context, LM, accountObject, data.get(0));
-        importAttachments(context, LM, data.get(1), accountObject);
+        importFolders(context, LM, accountObject, data.get(0), data.get(1));
+        importEmails(context, LM, accountObject, data.get(2));
+        importAttachments(context, LM, data.get(3), accountObject);
 
         LM.findAction("formRefresh[]").execute(context);
     }
@@ -98,7 +99,7 @@ public class EmailReceiver {
         mailProps.setProperty("mail.store.protocol", protocol);
         mailProps.setProperty("mail." + protocol + ".timeout", String.valueOf(Settings.get().getMailReceiveTimeout()));
 
-        if(startTLS) {
+        if (startTLS) {
             mailProps.setProperty("mail." + protocol + ".starttls.enable", "true");
         }
         //options to increase downloading big attachments
@@ -112,19 +113,19 @@ public class EmailReceiver {
         return Session.getInstance(mailProps).getStore(protocol);
     }
 
-    private static Map<String, EmailData> getSkipEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, LocalDateTime minDateTime) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private static Map<String, EmailData> getSkipEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, LocalDateTime minDateTime) throws SQLException, SQLHandledException {
         Map<String, EmailData> skipEmails = new HashMap<>();
 
-        ObjectValue minDateObject = minDateTime != null ?  new DataObject(minDateTime, DateTimeClass.instance) : NullValue.instance;
+        ObjectValue minDateObject = minDateTime != null ? new DataObject(minDateTime, DateTimeClass.instance) : NullValue.instance;
 
         KeyExpr emailExpr = new KeyExpr("email");
         ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
         QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
-        emailQuery.addProperty("id", LM.findProperty("id[Email]").getExpr(emailExpr));
-        emailQuery.addProperty("dateTimeSent", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
-        emailQuery.addProperty("skip", LM.findProperty("skipFilter[Email,Account,DATETIME]").getExpr(emailExpr, accountObject.getExpr(), minDateObject.getExpr()));
-        emailQuery.and(LM.findProperty("account[Email]").getExpr(emailExpr).compare(accountObject.getExpr(), Compare.EQUALS));
+        emailQuery.addProperty("id", LM.idEmail.getExpr(emailExpr));
+        emailQuery.addProperty("dateTimeSent", LM.dateTimeSentEmail.getExpr(emailExpr));
+        emailQuery.addProperty("skip", LM.skipFilter.getExpr(emailExpr, accountObject.getExpr(), minDateObject.getExpr()));
+        emailQuery.and(LM.accountEmail.getExpr(emailExpr).compare(accountObject.getExpr(), Compare.EQUALS));
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
         for (ImMap<Object, Object> entry : emailResult.values()) {
@@ -132,102 +133,143 @@ public class EmailReceiver {
         }
         return skipEmails;
     }
-    private static void importEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
-        List<ImportProperty<?>> props = new ArrayList<>();
-        List<ImportField> fields = new ArrayList<>();
-        List<ImportKey<?>> keys = new ArrayList<>();
-
-        ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
-        ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[Account,STRING]").getMapping(accountObject,idEmailField));
-        keys.add(emailKey);
-        props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
-        props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));
-        fields.add(idEmailField);
-
-        ImportField dateTimeSentEmailField = new ImportField(LM.findProperty("dateTimeSent[Email]"));
-        props.add(new ImportProperty(dateTimeSentEmailField, LM.findProperty("dateTimeSent[Email]").getMapping(emailKey), true));
-        fields.add(dateTimeSentEmailField);
-
-        ImportField dateTimeReceivedEmailField = new ImportField(LM.findProperty("dateTimeReceived[Email]"));
-        props.add(new ImportProperty(dateTimeReceivedEmailField, LM.findProperty("dateTimeReceived[Email]").getMapping(emailKey), true));
-        fields.add(dateTimeReceivedEmailField);
-
-        ImportField fromAddressEmailField = new ImportField(LM.findProperty("fromAddress[Email]"));
-        props.add(new ImportProperty(fromAddressEmailField, LM.findProperty("fromAddress[Email]").getMapping(emailKey), true));
-        fields.add(fromAddressEmailField);
-
-        ImportField toAddressEmailField = new ImportField(LM.findProperty("toAddress[Email]"));
-        props.add(new ImportProperty(toAddressEmailField, LM.findProperty("toAddress[Email]").getMapping(emailKey), true));
-        fields.add(toAddressEmailField);
-
-        ImportField subjectEmailField = new ImportField(LM.findProperty("subject[Email]"));
-        props.add(new ImportProperty(subjectEmailField, LM.findProperty("subject[Email]").getMapping(emailKey), true));
-        fields.add(subjectEmailField);
-
-        ImportField messageEmailField = new ImportField(LM.findProperty("message[Email]"));
-        props.add(new ImportProperty(messageEmailField, LM.findProperty("message[Email]").getMapping(emailKey), true));
-        fields.add(messageEmailField);
-
-        ImportField emlFileEmailField = new ImportField(LM.findProperty("emlFile[Email]"));
-        props.add(new ImportProperty(emlFileEmailField, LM.findProperty("emlFile[Email]").getMapping(emailKey), true));
-        fields.add(emlFileEmailField);
-
-        ImportTable table = new ImportTable(fields, data);
-
-        try (ExecutionContext.NewSession newContext = context.newSession()) {
-            IntegrationService service = new IntegrationService(newContext, table, keys, props);
-            service.synchronize(true, false);
-            newContext.apply();
-        }
+    private static void importFolders(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> dataFolderElements, List<List<Object>> dataFolderParents) throws SQLException, SQLHandledException {
+        importFoldersElements(context, LM, accountObject, dataFolderElements);
+        importFolderParents(context, LM, accountObject, dataFolderParents);
     }
 
-    private static void importAttachments(ExecutionContext context, EmailLogicsModule LM, List<List<Object>> data, DataObject accountObject) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-
+    private static void importFoldersElements(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws SQLException, SQLHandledException {
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();
         List<ImportKey<?>> keys = new ArrayList<>();
 
-        ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
-        ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[Account,STRING]").getMapping(accountObject,idEmailField));
+        ImportField idFolderField = new ImportField(LM.idFolder);
+        ImportKey<?> folderKey = new ImportKey(LM.folder, LM.folderAccountId.getMapping(accountObject, idFolderField));
+        keys.add(folderKey);
+        props.add(new ImportProperty(idFolderField, LM.idFolder.getMapping(folderKey)));
+        props.add(new ImportProperty(accountObject, LM.accountFolder.getMapping(folderKey)));
+        fields.add(idFolderField);
+
+        runIntegrationService(context, props, fields, keys, data);
+    }
+
+    private static void importFolderParents(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws SQLException, SQLHandledException {
+        List<ImportProperty<?>> props = new ArrayList<>();
+        List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
+
+        ImportField idFolderField = new ImportField(LM.idFolder);
+        ImportField idParentFolderField = new ImportField(LM.idFolder);
+
+        ImportKey<?> keyElement = new ImportKey(LM.folder, LM.folderAccountId.getMapping(accountObject, idFolderField));
+        keys.add(keyElement);
+        ImportKey<?> keyParent = new ImportKey(LM.folder, LM.folderAccountId.getMapping(accountObject, idParentFolderField));
+        keys.add(keyParent);
+        props.add(new ImportProperty(idParentFolderField, LM.parentFolder.getMapping(keyElement), LM.object(LM.folder).getMapping(keyParent)));
+        fields.add(idFolderField);
+        fields.add(idParentFolderField);
+
+        runIntegrationService(context, props, fields, keys, data);
+    }
+
+    private static void importEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws SQLException, SQLHandledException {
+        List<ImportProperty<?>> props = new ArrayList<>();
+        List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
+
+        ImportField idEmailField = new ImportField(LM.idEmail);
+        ImportKey<?> emailKey = new ImportKey(LM.email, LM.emailId.getMapping(accountObject, idEmailField));
+        keys.add(emailKey);
+        props.add(new ImportProperty(idEmailField, LM.idEmail.getMapping(emailKey)));
+        props.add(new ImportProperty(accountObject, LM.accountEmail.getMapping(emailKey)));
+        fields.add(idEmailField);
+
+        ImportField idFolderField = new ImportField(LM.idFolder);
+        ImportKey<?> folderKey = new ImportKey(LM.email, LM.folderAccountId.getMapping(accountObject, idFolderField));
+        keys.add(folderKey);
+        props.add(new ImportProperty(idFolderField, LM.folderEmail.getMapping(emailKey), LM.object(LM.folder).getMapping(folderKey)));
+
+        fields.add(idFolderField);
+
+        ImportField dateTimeSentEmailField = new ImportField(LM.dateTimeSentEmail);
+        props.add(new ImportProperty(dateTimeSentEmailField, LM.dateTimeSentEmail.getMapping(emailKey), true));
+        fields.add(dateTimeSentEmailField);
+
+        ImportField dateTimeReceivedEmailField = new ImportField(LM.dateTimeReceivedEmail);
+        props.add(new ImportProperty(dateTimeReceivedEmailField, LM.dateTimeReceivedEmail.getMapping(emailKey), true));
+        fields.add(dateTimeReceivedEmailField);
+
+        ImportField fromAddressEmailField = new ImportField(LM.fromAddressEmail);
+        props.add(new ImportProperty(fromAddressEmailField, LM.fromAddressEmail.getMapping(emailKey), true));
+        fields.add(fromAddressEmailField);
+
+        ImportField toAddressEmailField = new ImportField(LM.toAddressEmail);
+        props.add(new ImportProperty(toAddressEmailField, LM.toAddressEmail.getMapping(emailKey), true));
+        fields.add(toAddressEmailField);
+
+        ImportField ccAddressEmailField = new ImportField(LM.ccAddressEmail);
+        props.add(new ImportProperty(ccAddressEmailField, LM.ccAddressEmail.getMapping(emailKey), true));
+        fields.add(ccAddressEmailField);
+
+        ImportField bccAddressEmailField = new ImportField(LM.bccAddressEmail);
+        props.add(new ImportProperty(bccAddressEmailField, LM.bccAddressEmail.getMapping(emailKey), true));
+        fields.add(bccAddressEmailField);
+
+        ImportField subjectEmailField = new ImportField(LM.subjectEmail);
+        props.add(new ImportProperty(subjectEmailField, LM.subjectEmail.getMapping(emailKey), true));
+        fields.add(subjectEmailField);
+
+        ImportField messageEmailField = new ImportField(LM.messageEmail);
+        props.add(new ImportProperty(messageEmailField, LM.messageEmail.getMapping(emailKey), true));
+        fields.add(messageEmailField);
+
+        ImportField emlFileEmailField = new ImportField(LM.emlFileEmail);
+        props.add(new ImportProperty(emlFileEmailField, LM.emlFileEmail.getMapping(emailKey), true));
+        fields.add(emlFileEmailField);
+
+        runIntegrationService(context, props, fields, keys, data);
+    }
+
+    private static void importAttachments(ExecutionContext context, EmailLogicsModule LM, List<List<Object>> data, DataObject accountObject) throws SQLException, SQLHandledException {
+        List<ImportProperty<?>> props = new ArrayList<>();
+        List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
+
+        ImportField idEmailField = new ImportField(LM.idEmail);
+        ImportKey<?> emailKey = new ImportKey(LM.email, LM.emailId.getMapping(accountObject, idEmailField));
         emailKey.skipKey = true;
         keys.add(emailKey);
         fields.add(idEmailField);
 
-        ImportField idAttachmentEmailField = new ImportField(LM.findProperty("id[AttachmentEmail]"));
-        ImportKey<?> attachmentEmailKey = new ImportKey((ConcreteCustomClass) LM.findClass("AttachmentEmail"),
-                LM.findProperty("attachmentEmail[STRING[100],STRING[100]]").getMapping(idAttachmentEmailField, idEmailField));
+        ImportField idAttachmentEmailField = new ImportField(LM.idAttachmentEmail);
+        ImportKey<?> attachmentEmailKey = new ImportKey(LM.attachmentEmail, LM.attachmentEmailIdEmail.getMapping(idAttachmentEmailField, idEmailField));
         keys.add(attachmentEmailKey);
-        props.add(new ImportProperty(idAttachmentEmailField, LM.findProperty("id[AttachmentEmail]").getMapping(attachmentEmailKey)));
-        props.add(new ImportProperty(idEmailField, LM.findProperty("email[AttachmentEmail]").getMapping(attachmentEmailKey),
-                LM.object(LM.findClass("Email")).getMapping(emailKey)));
+        props.add(new ImportProperty(idAttachmentEmailField, LM.idAttachmentEmail.getMapping(attachmentEmailKey)));
+        props.add(new ImportProperty(idEmailField, LM.emailAttachmentEmail.getMapping(attachmentEmailKey),
+                LM.object(LM.email).getMapping(emailKey)));
         fields.add(idAttachmentEmailField);
 
-        ImportField nameAttachmentEmailField = new ImportField(LM.findProperty("name[AttachmentEmail]"));
-        props.add(new ImportProperty(nameAttachmentEmailField, LM.findProperty("name[AttachmentEmail]").getMapping(attachmentEmailKey)));
+        ImportField nameAttachmentEmailField = new ImportField(LM.nameAttachmentEmail);
+        props.add(new ImportProperty(nameAttachmentEmailField, LM.nameAttachmentEmail.getMapping(attachmentEmailKey)));
         fields.add(nameAttachmentEmailField);
 
-        ImportField fileAttachmentEmailField = new ImportField(LM.findProperty("file[AttachmentEmail]"));
-        props.add(new ImportProperty(fileAttachmentEmailField, LM.findProperty("file[AttachmentEmail]").getMapping(attachmentEmailKey)));
+        ImportField fileAttachmentEmailField = new ImportField(LM.fileAttachmentEmail);
+        props.add(new ImportProperty(fileAttachmentEmailField, LM.fileAttachmentEmail.getMapping(attachmentEmailKey)));
         fields.add(fileAttachmentEmailField);
 
-        ImportTable table = new ImportTable(fields, data);
-
-        try (ExecutionContext.NewSession newContext = context.newSession()) {
-            IntegrationService service = new IntegrationService(newContext, table, keys, props);
-            service.synchronize(true, false);
-            newContext.apply();
-        }
+        runIntegrationService(context, props, fields, keys, data);
     }
 
     private static List<List<List<Object>>> downloadEmailList(ExecutionContext context, String receiveHost, Integer receivePort, String user, String password,
                                                               AccountType accountType, boolean startTLS, boolean deleteMessages, Integer maxMessages,
                                                               Map<String, EmailData> skipEmails, LocalDateTime minDateTime,
-                                                              boolean unpack, boolean ignoreExceptions, boolean insecureSSL)
+                                                              boolean unpack, boolean ignoreExceptions, boolean insecureSSL,
+                                                              boolean readAllFolders)
             throws MessagingException, IOException, GeneralSecurityException {
 
+        List<List<Object>> dataFolderElements = new ArrayList<>();
+        List<List<Object>> dataFolderParents = new ArrayList<>();
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
@@ -238,11 +280,16 @@ public class EmailReceiver {
         else
             emailStore.connect(receiveHost, user, password);
 
-        List<Folder> folders = getSubFolders(emailStore.getFolder("INBOX"));
+        List<Folder> folders = getSubFolders(readAllFolders ? emailStore.getDefaultFolder() : emailStore.getFolder("INBOX"));
 
         for (Folder emailFolder : folders) {
 
             emailFolder.open(Folder.READ_WRITE);
+            String idFolder = emailFolder.getName();
+            String parentFolder = nullEmpty(emailFolder.getParent().getName());
+
+            dataFolderElements.add(Collections.singletonList(idFolder));
+            dataFolderParents.add(Arrays.asList(idFolder, parentFolder));
 
             LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
 
@@ -261,12 +308,15 @@ public class EmailReceiver {
                     LocalDateTime dateTimeSentEmail = emailData != null ? emailData.dateTimeSent : getSentDate(message);
                     boolean skip = emailData != null && emailData.skip;
 
-                    if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail)))  {
+                    if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail))) {
                         ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessages, dateTimeSentEmail, count, messageCount));
-                        String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                        String from = joinAddresses(message.getFrom());
+                        String to = joinAddresses(message.getRecipients(Message.RecipientType.TO));
+                        String cc = joinAddresses(message.getRecipients(Message.RecipientType.CC));
+                        String bcc = joinAddresses(message.getRecipients(Message.RecipientType.BCC));
                         String subjectEmail = message.getSubject();
 
-                        String idEmail = getEmailId(localDateTimeToSqlTimestamp(dateTimeSentEmail), fromAddressEmail, subjectEmail, usedEmails);
+                        String idEmail = getEmailId(localDateTimeToSqlTimestamp(dateTimeSentEmail), from, subjectEmail, usedEmails);
                         ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
 
@@ -278,7 +328,7 @@ public class EmailReceiver {
                             ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                         }
                         FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                        dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, user, subjectEmail, messageEmail.message, emlFileEmail));
+                        dataEmails.add(Arrays.asList(uid, idFolder, dateTimeSentEmail, dateTimeReceivedEmail, from, to, cc, bcc, subjectEmail, messageEmail.message, emlFileEmail));
                         int counter = 1;
                         if (messageEmail.attachments != null) {
                             for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
@@ -288,12 +338,12 @@ public class EmailReceiver {
                         }
                     } else {
                         ServerLoggers.mailLogger.info(String.format("Skipping email %s of %s, date %s", count, messageCount, dateTimeSentEmail));
-                        if(minDateTime != null && dateTimeSentEmail != null && minDateTime.minusDays(1).isAfter(dateTimeSentEmail)) {
+                        if (minDateTime != null && dateTimeSentEmail != null && minDateTime.minusDays(1).isAfter(dateTimeSentEmail)) {
                             ServerLoggers.mailLogger.info("Breaking reading, all next emails will be older then minimum date");
                             break;
                         }
                         if (emailData == null) {
-                            dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, null, null, user, null, null, null));
+                            dataEmails.add(Arrays.asList(uid, idFolder, emailFolder.getName(), dateTimeSentEmail, null, null, user, null, null, null));
                         }
                     }
 
@@ -324,7 +374,20 @@ public class EmailReceiver {
         }
         emailStore.close();
 
-        return Arrays.asList(dataEmails, dataAttachments);
+        return Arrays.asList(dataFolderElements, dataFolderParents, dataEmails, dataAttachments);
+    }
+
+    private static String joinAddresses(Address[] addresses) {
+        List<String> result = new ArrayList<>();
+        if(addresses != null) {
+            for (int i = 0; i < addresses.length; i++) {
+                Address address = addresses[i];
+                if (address instanceof InternetAddress) {
+                    result.add(((InternetAddress) address).getAddress());
+                }
+            }
+        }
+        return result.isEmpty() ? null : StringUtils.join(result, ", ");
     }
 
     private static String getMessageUID(Folder folder, Message message) throws MessagingException {
@@ -337,9 +400,10 @@ public class EmailReceiver {
 
     private static List<Folder> getSubFolders(Folder folder) throws MessagingException {
         List<Folder> folders = new ArrayList<>();
-        folders.add(folder);
+        if (!(folder instanceof DefaultFolder))
+            folders.add(folder);
         //pop3 doesn't allow subfolders
-        if(!(folder instanceof POP3Folder)) {
+        if (!(folder instanceof POP3Folder)) {
             for (Folder f : folder.list()) {
                 folders.addAll(getSubFolders(f));
             }
@@ -693,6 +757,13 @@ public class EmailReceiver {
 
     private static String getFileName(String name, int count, String extension) {
         return name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
+    }
+
+    private static void runIntegrationService(ExecutionContext context, List<ImportProperty<?>> props, List<ImportField> fields, List<ImportKey<?>> keys, List<List<Object>> data) throws SQLException, SQLHandledException {
+        try (ExecutionContext.NewSession newContext = context.newSession()) {
+            new IntegrationService(newContext, new ImportTable(fields, data), keys, props).synchronize(true, false);
+            newContext.apply();
+        }
     }
 
     private static class EmailData {

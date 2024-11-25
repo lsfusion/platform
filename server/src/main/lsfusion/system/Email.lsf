@@ -75,13 +75,14 @@ lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX
 maxMessages '{email.max.messages.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;
 unpack '{email.unpack.account}' = DATA BOOLEAN (Account);
 ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
+readAllFolders '{email.read.all.folders}' = DATA BOOLEAN (Account);
 
 FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, disable, insecureSSL
     PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
     PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, startTLS,
-                  deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions
+                  deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions, readAllFolders
                    
     EDIT Account OBJECT a
 ;
@@ -117,6 +118,7 @@ DESIGN account {
                 MOVE PROPERTY(maxMessages(a));
                 MOVE PROPERTY(unpack(a));
                 MOVE PROPERTY(ignoreExceptions(a));
+                MOVE PROPERTY(readAllFolders(a));
             } 
         }        
     }
@@ -131,22 +133,51 @@ FORM accounts '{email.form.accounts}'
     LIST Account OBJECT a
 ;
 
+// -------------- Folder ----------------- //
+
+CLASS Folder '{email.folder}';
+TABLE folder (Folder);
+account = DATA Account (Folder) NONULL DELETE;
+id '{email.folder}' = DATA STRING (Folder);
+folder = GROUP AGGR Folder folder BY account(folder), id(folder);
+parent = DATA Folder (Folder);
+
 // -------------- Email ----------------- //
 
 // Email
 CLASS Email '{email.email}';
 TABLE email(Email);
 
+folder = DATA Folder(Email);
 id = DATA STRING (Email);  
-account = DATA Account (Email) NONULL DELETE;
+//todo: replace after migration
+//account(Email e) = account(folder(e));
+account(Email e) = DATA Account (Email) NONULL DELETE;
 emailId = GROUP AGGR Email email BY account(email), id (email);
+
+//todo: remove after upgrading to 6.0
+migrated = DATA BOOLEAN();
+onStarted() + {
+    IF NOT migrated() THEN {
+        FOR name(Account a) DO {
+            NEW f = Folder {
+                account(f) <- a;
+                id(f) <- 'INBOX';
+                folder(Email e) <- f WHERE account(e) == a;
+            }
+        }
+        migrated() <- TRUE;
+    }
+}
 
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
 
 subject '{email.subject.email}' = DATA STRING (Email) CHARWIDTH 50;
-fromAddress '{email.from.address.email}' = DATA STRING[100] (Email);
-toAddress '{email.to.address.email}' = DATA STRING[100] (Email);
+fromAddress '{email.from.address.email}' = DATA STRING (Email);
+toAddress '{email.to.address.email}' = DATA STRING (Email);
+ccAddress '{email.cc.address.email}' = DATA STRING (Email);
+bccAddress '{email.bcc.address.email}' = DATA STRING (Email);
 dateTimeSent '{email.date.time.sent.email}' = DATA DATETIME (Email);
 dateSent '{email.date.sent.email}' = DATE(dateTimeSent(Email e));
 dateTimeReceived '{email.date.time.received.email}' = DATA DATETIME (Email);
@@ -201,15 +232,19 @@ FORM mail '{email.form.mail}'
     OBJECTS a=Account
     PROPERTIES(a) READONLY name, disable
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    TREE folderTree f = Folder PARENT parent(f)
+    PROPERTIES(f) id
+    FILTERS account(f) = a
     
     OBJECTS e=Email LAST
-    PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
+    PROPERTIES(e) READONLY subject, fromAddress, toAddress, ccAddress, bccAddress, dateTimeSent, 
                            dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID
     PROPERTIES SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
     PROPERTIES(e) SHOWIF isDesktop() '' = message PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
-    FILTERS account(e) = a, dateTimeReceived(e)
+    FILTERS folder(e) == f, dateTimeReceived(e)
                     
     OBJECTS ae = AttachmentEmail
     PROPERTIES(ae) READONLY imported, importError, filename, lastError PANEL
@@ -222,7 +257,12 @@ DESIGN mail {
         NEW top {
             fill = 1;
             horizontal = TRUE;
-            MOVE BOX(a) { width = 300; }
+            NEW accountFolder {
+                width = 300;
+                fill = 1;
+                MOVE BOX(a);
+                MOVE BOX(TREE folderTree);
+            }
             MOVE BOX(e) { fill = 3; }
         }
         NEW content {
