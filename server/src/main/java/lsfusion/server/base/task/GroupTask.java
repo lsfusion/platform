@@ -10,7 +10,7 @@ public class GroupTask extends PublicTask {
         return "Group task";
     }
 
-    public boolean isLoggable() {
+    public boolean isStartLoggable() {
         return false;
     }
 

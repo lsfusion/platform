@@ -35,7 +35,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
                 }
 
                 @Override
-                public boolean isLoggable() {
+                public boolean isStartLoggable() {
                     return GroupSplitTask.this.isGroupLoggable();
                 }
 
