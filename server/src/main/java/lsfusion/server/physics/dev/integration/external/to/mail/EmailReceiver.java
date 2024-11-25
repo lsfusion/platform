@@ -32,6 +32,7 @@ import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;
@@ -207,6 +208,14 @@ public class EmailReceiver {
         props.add(new ImportProperty(toAddressEmailField, LM.toAddressEmail.getMapping(emailKey), true));
         fields.add(toAddressEmailField);
 
+        ImportField ccAddressEmailField = new ImportField(LM.ccAddressEmail);
+        props.add(new ImportProperty(ccAddressEmailField, LM.ccAddressEmail.getMapping(emailKey), true));
+        fields.add(ccAddressEmailField);
+
+        ImportField bccAddressEmailField = new ImportField(LM.bccAddressEmail);
+        props.add(new ImportProperty(bccAddressEmailField, LM.bccAddressEmail.getMapping(emailKey), true));
+        fields.add(bccAddressEmailField);
+
         ImportField subjectEmailField = new ImportField(LM.subjectEmail);
         props.add(new ImportProperty(subjectEmailField, LM.subjectEmail.getMapping(emailKey), true));
         fields.add(subjectEmailField);
@@ -301,10 +310,13 @@ public class EmailReceiver {
 
                     if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail))) {
                         ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessages, dateTimeSentEmail, count, messageCount));
-                        String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                        String from = joinAddresses(message.getFrom());
+                        String to = joinAddresses(message.getRecipients(Message.RecipientType.TO));
+                        String cc = joinAddresses(message.getRecipients(Message.RecipientType.CC));
+                        String bcc = joinAddresses(message.getRecipients(Message.RecipientType.BCC));
                         String subjectEmail = message.getSubject();
 
-                        String idEmail = getEmailId(localDateTimeToSqlTimestamp(dateTimeSentEmail), fromAddressEmail, subjectEmail, usedEmails);
+                        String idEmail = getEmailId(localDateTimeToSqlTimestamp(dateTimeSentEmail), from, subjectEmail, usedEmails);
                         ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
 
@@ -316,7 +328,7 @@ public class EmailReceiver {
                             ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                         }
                         FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                        dataEmails.add(Arrays.asList(uid, idFolder, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, user, subjectEmail, messageEmail.message, emlFileEmail));
+                        dataEmails.add(Arrays.asList(uid, idFolder, dateTimeSentEmail, dateTimeReceivedEmail, from, to, cc, bcc, subjectEmail, messageEmail.message, emlFileEmail));
                         int counter = 1;
                         if (messageEmail.attachments != null) {
                             for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
@@ -363,6 +375,19 @@ public class EmailReceiver {
         emailStore.close();
 
         return Arrays.asList(dataFolderElements, dataFolderParents, dataEmails, dataAttachments);
+    }
+
+    private static String joinAddresses(Address[] addresses) {
+        List<String> result = new ArrayList<>();
+        if(addresses != null) {
+            for (int i = 0; i < addresses.length; i++) {
+                Address address = addresses[i];
+                if (address instanceof InternetAddress) {
+                    result.add(((InternetAddress) address).getAddress());
+                }
+            }
+        }
+        return result.isEmpty() ? null : StringUtils.join(result, ", ");
     }
 
     private static String getMessageUID(Folder folder, Message message) throws MessagingException {

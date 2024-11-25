@@ -60,6 +60,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP dateTimeReceivedEmail;
     public LP fromAddressEmail;
     public LP toAddressEmail;
+    public LP ccAddressEmail;
+    public LP bccAddressEmail;
     public LP subjectEmail;
     public LP messageEmail;
     public LP emlFileEmail;
@@ -134,6 +136,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         dateTimeReceivedEmail = findProperty("dateTimeReceived[Email]");
         fromAddressEmail = findProperty("fromAddress[Email]");
         toAddressEmail = findProperty("toAddress[Email]");
+        ccAddressEmail = findProperty("ccAddress[Email]");
+        bccAddressEmail = findProperty("bccAddress[Email]");
         subjectEmail = findProperty("subject[Email]");
         messageEmail = findProperty("message[Email]");
         emlFileEmail = findProperty("emlFile[Email]");
