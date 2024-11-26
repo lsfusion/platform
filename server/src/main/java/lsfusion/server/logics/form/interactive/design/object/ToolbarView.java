@@ -5,7 +5,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -37,21 +36,6 @@ public class ToolbarView extends BaseComponentView {
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showPrintGroupXls);
         outStream.writeBoolean(showManualUpdate);
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        visible = inStream.readBoolean();
-
-        showViews = inStream.readBoolean();
-        showFilters = inStream.readBoolean();
-        showSettings = inStream.readBoolean();
-        showCountQuantity = inStream.readBoolean();
-        showCalculateSum = inStream.readBoolean();
-        showPrintGroupXls = inStream.readBoolean();
-        showManualUpdate = inStream.readBoolean();
     }
 
     @Override
