@@ -40,6 +40,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isRecursive;
     public int pageSize = -1;
     public boolean needVerticalScroll;
+    public boolean enableManualUpdate;
 
     public boolean isMap;
     public boolean isCalendarDate;
@@ -165,6 +166,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         pool.serializeCollection(outStream, filters);
         pool.serializeObject(outStream, calculations);
         outStream.writeBoolean(needVerticalScroll);
+        outStream.writeBoolean(enableManualUpdate);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -201,6 +203,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             pageSize = ps;
         }
         needVerticalScroll = inStream.readBoolean();
+        enableManualUpdate = inStream.readBoolean();
         sID = inStream.readUTF();
     }
 

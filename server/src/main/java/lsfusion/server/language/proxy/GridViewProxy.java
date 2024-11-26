@@ -50,4 +50,8 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
     public void setLineHeight(int lineHeight) {
         target.lineHeight = lineHeight;
     }
+
+    public void setEnableManualUpdate(boolean enableManualUpdate) {
+        target.groupObject.entity.enableManualUpdate = enableManualUpdate;
+    }
 }
