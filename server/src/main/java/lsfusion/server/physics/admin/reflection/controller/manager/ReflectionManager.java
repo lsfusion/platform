@@ -307,7 +307,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
     
     
-    public void synchronizeParents() {
+    public void synchronizeNavigatorElementParents() {
         runWithStartLog(()-> {
             ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
             ImportField parentNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
@@ -332,7 +332,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "Synchronizing navigator elements parents");
+        }, "Synchronizing navigator element parents");
     }
 
     private Set<String> getElementWithChildren(NavigatorElement element) {
@@ -620,8 +620,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyParents() {
-        runWithStartLog(()-> synchronizePropertyParents(true), "Synchronizing actions parents");
-        runWithStartLog(()-> synchronizePropertyParents(false), "Synchronizing properties parents");
+        runWithStartLog(()-> synchronizePropertyParents(true), "Synchronizing action parents");
+        runWithStartLog(()-> synchronizePropertyParents(false), "Synchronizing property parents");
     }
     public void synchronizePropertyParents(boolean actions) {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);

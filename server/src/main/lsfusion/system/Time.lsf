@@ -64,6 +64,7 @@ subtract(DATE date, LONG days) = [ FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd
 
 sumSeconds(TIME time, LONG secs) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
 sumMinutes(TIME time, LONG mins) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
+subtractSeconds(TIME timeFrom, TIME timeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](timeTo AS TIME, timeFrom AS TIME);
 
 sumDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
 subtractDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);

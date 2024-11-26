@@ -789,8 +789,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = getCaptionOrEmpty();
         }
 
-        String eventCaption = getEventCaption(showChangeKey && changeKey != null ? getChangeKeyCaption() : null,
-                showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
@@ -862,7 +861,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(tooltip) ? tooltip : caption);
 
-        String eventCaption = getEventCaption(changeKey != null ? getChangeKeyCaption() : null, changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         String bindingText = eventCaption != null ? String.format(EDIT_KEY_TOOL_TIP_FORMAT, eventCaption) : "";
 
         if (!MainController.showDetailedInfo) {

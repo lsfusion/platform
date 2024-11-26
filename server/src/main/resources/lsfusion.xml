@@ -796,7 +796,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncParentsTask">
+    <bean id="syncNavigatorElementParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncNavigatorElementParentsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
@@ -846,7 +846,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="syncPropertyParentsTask"/>
-                <ref bean="syncParentsTask"/>
+                <ref bean="syncNavigatorElementParentsTask"/>
             </set>
         </property>
         <property name="securityManager" ref="securityManager"/>
@@ -885,7 +885,7 @@
                 <ref bean="syncPropertyParentsTask"/>
                 <ref bean="syncPropertyEntitiesTask"/>
                 <ref bean="syncPropertyDrawsTask"/>
-                <ref bean="syncParentsTask"/>
+                <ref bean="syncNavigatorElementParentsTask"/>
                 <ref bean="syncNavigatorElementsTask"/>
                 <ref bean="syncGroupPropertiesTask"/>
                 <ref bean="syncGroupObjectsTask"/>

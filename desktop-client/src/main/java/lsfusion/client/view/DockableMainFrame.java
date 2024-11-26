@@ -42,6 +42,7 @@ import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
+import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.navigator.controller.NavigatorController;
@@ -207,6 +208,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         formsController = new FormsController(mainControl, mainNavigator);
 
+        addBindings(formsController, navigatorData.root);
+
         initDockStations(navigatorData);
 
         mainNavigator.applyNavigatorChanges(navigatorData.navigatorChanges, navigatorController);
@@ -214,7 +217,15 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         bindUIHandlers();
     }
 
-    private long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
+    private void addBindings(FormsController formsController, ClientNavigatorElement element) {
+        formsController.addBindings(element, element.changeKey, element.changeKeyPriority);
+        formsController.addBindings(element, element.changeMouse, element.changeMousePriority);
+        for(ClientNavigatorElement child : element.children) {
+            addBindings(formsController, child);
+        }
+    }
+
+    public long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
         return executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, sync);
     }
 
