@@ -76,6 +76,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public LP emlFile;
 
+    public LP saveSentEmailToDirectoryAccount;
+
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Email.lsf");
     }
@@ -151,6 +153,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         fileAttachmentEmail = findProperty("file[AttachmentEmail]");
 
         emlFile = findProperty("emlFile[LONG]");
+
+        saveSentEmailToDirectoryAccount = findProperty("saveSentEmailToDirectory[Account]");
     }
 
     public LA<PropertyInterface> addEAProp(Group group, LocalizedString caption, int paramsCount, boolean syncType) {
