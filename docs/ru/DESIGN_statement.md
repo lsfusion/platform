@@ -243,6 +243,7 @@ TREE treeSelector
 |`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Целочисленный литерал|NULL|`60`|
 |`lineHeight`|todo|Целочисленный литерал|NULL|`60`|
+|`enableManualUpdate`|Включить режим ручного обновления по умолчанию|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 
 ### Другие свойства
 

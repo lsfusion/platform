@@ -291,6 +291,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 // should correspond RemoteForm.changeMode in general
                 ListViewType listViewType = groupEntity.listViewType;
 
+                if (groupObject.entity.enableManualUpdate)
+                    groupObject.setUpdateMode(UpdateMode.MANUAL);
+
                 if(listViewType != ListViewType.GRID) {
                     if (listViewType == ListViewType.PIVOT) {
                         if(groupEntity.asyncInit) // will wait for first changeGroupMode
