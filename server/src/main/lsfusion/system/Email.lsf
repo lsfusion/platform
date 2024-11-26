@@ -77,10 +77,20 @@ unpack '{email.unpack.account}' = DATA BOOLEAN (Account);
 ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
 readAllFolders '{email.read.all.folders}' = DATA BOOLEAN (Account);
 
+CLASS Folder '{email.folder}';
+TABLE folder (Folder);
+account = DATA Account (Folder) NONULL DELETE;
+id '{email.folder}' = DATA STRING (Folder);
+folder = GROUP AGGR Folder folder BY account(folder), id(folder);
+parent = DATA Folder (Folder);
+
+saveSentEmailToDirectory = DATA Folder (Account);
+idSaveSentEmailToDirectory '{email.save.sent.emails.to.directory}' (Account account) = id(saveSentEmailToDirectory(account));
+
 FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, disable, insecureSSL
-    PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
+    PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, idSaveSentEmailToDirectory, isDefaultInbox 
     PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, startTLS,
                   deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions, readAllFolders
                    
@@ -105,6 +115,7 @@ DESIGN account {
                 MOVE PROPERTY(smtpPort(a));
                 MOVE PROPERTY(nameEncryptedConnectionType(a));
                 MOVE PROPERTY(fromAddress(a));
+                MOVE PROPERTY(idSaveSentEmailToDirectory(a));
                 MOVE PROPERTY(isDefaultInbox(a));
             }
             NEW receiving {
@@ -133,14 +144,15 @@ FORM accounts '{email.form.accounts}'
     LIST Account OBJECT a
 ;
 
-// -------------- Folder ----------------- //
+FORM folders '{email.folder}'
+    OBJECTS a = Account
+    PROPERTIES(a) name
 
-CLASS Folder '{email.folder}';
-TABLE folder (Folder);
-account = DATA Account (Folder) NONULL DELETE;
-id '{email.folder}' = DATA STRING (Folder);
-folder = GROUP AGGR Folder folder BY account(folder), id(folder);
-parent = DATA Folder (Folder);
+    TREE folderTree f = Folder PARENT parent(f)
+    PROPERTIES(f) id READONLY
+    FILTERS account(f) == a
+    LIST Folder OBJECT f
+;
 
 // -------------- Email ----------------- //
 
@@ -234,7 +246,7 @@ FORM mail '{email.form.mail}'
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
 
     TREE folderTree f = Folder PARENT parent(f)
-    PROPERTIES(f) id
+    PROPERTIES(f) id READONLY
     FILTERS account(f) = a
     
     OBJECTS e=Email LAST
