@@ -144,7 +144,7 @@ public class SendEmailAction extends SystemAction {
 
                 EmailSender.sendMail(context, fromAddress, recipients, subject, inlineFiles, attachFiles, smtpHost, smtpPort, encryptedConnectionType, user, password, syncType, insecureSSL);
 
-                ObjectValue folder = emailLM.saveSentEmailToDirectoryAccount.readClasses(context, account);
+                ObjectValue folder = emailLM.sentFolder.readClasses(context, account);
                 if (folder instanceof DataObject) {
                     try (ExecutionContext.NewSession newContext = context.newSession()) {
 
