@@ -289,6 +289,9 @@ onWebClientInit() + {
     onWebClientInit('input.js') <- 32;
     onWebClientInit('air-datepicker.js') <- 33;
     onWebClientInit('air-datepicker.css') <- 34;
+
+    onWebClientInit('clusterize.js') <- 35;
+    onWebClientInit('clusterize.css') <- 36;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();

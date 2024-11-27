@@ -610,6 +610,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             checkPadding(true);
             restoreScrollLeft();
             setSticky();
+            clusterize();
         });
     }
 
@@ -629,6 +630,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
     private Element getTableDataScroller() {
         return getElement(rendererElement, ".scrolldiv");
+    }
+    private Element getTableDataContent() {
+        return getElement(rendererElement, ".bodytable");
     }
     private Element getHeaderTableElement() {
         return getElement(rendererElement, ".headertable.pvtTable");
@@ -1879,6 +1883,21 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             left += cell.getOffsetWidth();
         }
     }
+
+    private void clusterize() {
+        Element scrollDiv = getTableDataScroller();
+        Element contentDiv = getTableDataContent();
+        if(scrollDiv != null && contentDiv != null) {
+            clusterize(scrollDiv, contentDiv);
+        }
+    }
+
+    private native void clusterize(Element scrollDiv, Element contentDiv) /*-{
+        var clusterize = new $wnd.Clusterize({
+            scrollElem: scrollDiv,
+            contentElem: contentDiv
+        });
+    }-*/;
 
     public native void resizePlotlyChart() /*-{
         var plotlyElement = this.@GPivot::getPlotlyChartElement()();
