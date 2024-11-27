@@ -77,20 +77,10 @@ unpack '{email.unpack.account}' = DATA BOOLEAN (Account);
 ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
 readAllFolders '{email.read.all.folders}' = DATA BOOLEAN (Account);
 
-CLASS Folder '{email.folder}';
-TABLE folder (Folder);
-account = DATA Account (Folder) NONULL DELETE;
-id '{email.folder}' = DATA STRING (Folder);
-folder = GROUP AGGR Folder folder BY account(folder), id(folder);
-parent = DATA Folder (Folder);
-
-saveSentEmailToDirectory = DATA Folder (Account);
-idSaveSentEmailToDirectory '{email.save.sent.emails.to.directory}' (Account account) = id(saveSentEmailToDirectory(account));
-
 FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, disable, insecureSSL
-    PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, idSaveSentEmailToDirectory, isDefaultInbox 
+    PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
     PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, startTLS,
                   deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions, readAllFolders
                    
@@ -115,7 +105,6 @@ DESIGN account {
                 MOVE PROPERTY(smtpPort(a));
                 MOVE PROPERTY(nameEncryptedConnectionType(a));
                 MOVE PROPERTY(fromAddress(a));
-                MOVE PROPERTY(idSaveSentEmailToDirectory(a));
                 MOVE PROPERTY(isDefaultInbox(a));
             }
             NEW receiving {
@@ -144,14 +133,48 @@ FORM accounts '{email.form.accounts}'
     LIST Account OBJECT a
 ;
 
-FORM folders '{email.folder}'
-    OBJECTS a = Account
-    PROPERTIES(a) name
+// --- Folders -----
 
+CLASS Folder '{email.folder}';
+TABLE folder (Folder);
+
+account = DATA Account (Folder) NONULL DELETE;
+id '{email.folder}' = DATA STRING (Folder) IN id;
+folder = GROUP AGGR Folder folder BY account(folder), id(folder);
+parent = DATA Folder (Folder);
+
+EXTEND FORM account
     TREE folderTree f = Folder PARENT parent(f)
-    PROPERTIES(f) id READONLY
+    PROPERTIES(f) id, NEW
     FILTERS account(f) == a
-    LIST Folder OBJECT f
+;
+
+DESIGN account {
+    OBJECTS {
+        MOVE BOX(TREE folderTree) { caption = ''; }
+    }
+}
+
+newFolder '{logics.add}' (Folder parent) {
+    NEW f = Folder {
+        account(f) <- account(parent);
+        parent(f) <- parent;
+        EXPAND DOWN account.f OBJECTS f = parent; 
+        SEEK account.f = f;
+        ACTIVATE PROPERTY account.id(f);
+    }
+}
+
+EXTEND FORM account PROPERTIES(f) newFolder GRID, DELETE GRID;
+
+// sent
+sentFolder = DATA Folder (Account);
+isSent '{email.save.sent.emails.to.directory}' (Folder f) = sentFolder(account(f)) = f CHARWIDTH 15;
+
+EXTEND FORM account
+    PROPERTIES(f) isSent ON CHANGE {
+        INPUT b = isSent(f) DO { sentFolder(account(f)) <- f IF b; }
+    }
 ;
 
 // -------------- Email ----------------- //
@@ -160,8 +183,11 @@ FORM folders '{email.folder}'
 CLASS Email '{email.email}';
 TABLE email(Email);
 
-folder = DATA Folder(Email);
+folder = DATA Folder (Email);
+idFolder '{email.folder}' (Email e) = id(folder(e)); 
+
 id = DATA STRING (Email);  
+
 //todo: replace after migration
 //account(Email e) = account(folder(e));
 account(Email e) = DATA Account (Email) NONULL DELETE;
@@ -185,7 +211,7 @@ onStarted() + {
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
 
-subject '{email.subject.email}' = DATA STRING (Email) CHARWIDTH 50;
+subject '{email.subject.email}' = DATA STRING (Email) CHARWIDTH 30;
 fromAddress '{email.from.address.email}' = DATA STRING (Email);
 toAddress '{email.to.address.email}' = DATA STRING (Email);
 ccAddress '{email.cc.address.email}' = DATA STRING (Email);
@@ -204,25 +230,18 @@ CLASS AttachmentEmail '{email.attachment.email}';
 TABLE attachmentEmail(AttachmentEmail);
 
 id = DATA STRING[100] (AttachmentEmail);  
-imported '{email.imported.attachment.email}' = DATA BOOLEAN (AttachmentEmail);  
-markImported '{email.mark.imported.attachment.email}' (AttachmentEmail ae)  { 
-    IF NOT imported(ae) THEN imported(ae) <- TRUE;
-}
-importError '{email.import.error.attachment.email}' = DATA BOOLEAN (AttachmentEmail);  
-showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR importError(attachmentEmail)
-                                                            AND attachmentEmail IS AttachmentEmail;
-notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
-                                                            AND attachmentEmail IS AttachmentEmail;
+
 email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment));
- 
+
+index (AttachmentEmail ae) = PARTITION SUM 1 IF ae IS AttachmentEmail ORDER ae BY email(ae);
+attachment0 (Email e, INTEGER i) = GROUP MAX AttachmentEmail ae IF index(ae)-1 = i AND email(ae) = e;
+
 name '{email.name.attachment.email}' = DATA STRING[255] (AttachmentEmail);
 file '{email.file.attachment.email}' = DATA FILE (AttachmentEmail);
-filename '{email.name.attachment.email}' (AttachmentEmail ae) = CONCAT '.', name(ae), extension(file(ae)); 
+filename '{email.name.attachment.email}' (AttachmentEmail ae) = CONCAT '.', name(ae), STRING[20](extension(file(ae))); 
 openFile '{email.open.file.attachment.email}' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
 saveFile '{email.save.file.attachment.email}' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG file(attachmentEmail) TO name(attachmentEmail);}
-lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);
-importErrors '{email.import.errors}' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 
 // Receive actions
 receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEmailAction' ();
@@ -242,75 +261,275 @@ receiveMail '{email.receive.mail}' (Account account) {
 
 FORM mail '{email.form.mail}' 
     OBJECTS a=Account
-    PROPERTIES(a) READONLY name, disable
-    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(a) READONLY '' = name
+    PROPERTIES(a) receiveEmailAction TOOLBAR
+    PROPERTIES(a) NEWSESSION '' = NEW, '' = EDIT, '' = DELETE
 
     TREE folderTree f = Folder PARENT parent(f)
     PROPERTIES(f) id READONLY
     FILTERS account(f) = a
     
-    OBJECTS e=Email LAST
-    PROPERTIES(e) READONLY subject, fromAddress, toAddress, ccAddress, bccAddress, dateTimeSent, 
-                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID
-    PROPERTIES SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
-    PROPERTIES(e) SHOWIF isNative() '' = message PANEL
-    PROPERTIES(e) NEWSESSION DELETE
-    PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
-    FILTERS folder(e) == f, dateTimeReceived(e)
+    OBJECTS e = Email FIRST
+    PROPERTIES(e) READONLY subject, fromAddress, dateTimeSent
+    PROPERTIES(e) READONLY PANEL toAddress, ccAddress, bccAddress, dateTimeReceived
+    PROPERTIES(e)          openEMLFile
+    ORDERS dateTimeSent(e) DESC
+    
+    PROPERTIES READONLY SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
+    PROPERTIES(e) READONLY SHOWIF isNative() '' = message PANEL
+    PROPERTIES(e) NEWSESSION deleteEmail = DELETE
+    FILTERS folder(e) = f
                     
     OBJECTS ae = AttachmentEmail
-    PROPERTIES(ae) READONLY imported, importError, filename, lastError PANEL
-    PROPERTIES(ae) GRID openFile, saveFile, markImported
+    PROPERTIES(ae) READONLY filename
+    PROPERTIES(ae) GRID     openFile, saveFile
     FILTERS email(ae) = e
 ;
 
 DESIGN mail {
     OBJECTS {
-        NEW top {
+        NEW pane {
             fill = 1;
             horizontal = TRUE;
             NEW accountFolder {
-                width = 300;
-                fill = 1;
-                MOVE BOX(a);
-                MOVE BOX(TREE folderTree);
-            }
-            MOVE BOX(e) { fill = 3; }
-        }
-        NEW content {
-            fill = 1;
-            height = 300;
-            tabbed = TRUE;
-            NEW message {
-                height = 200;
-                fill = 1;
-                caption = '{email.form.mail.caption.message}';
-                MOVE PROPERTY(message) {
-                    fill = 1;
+                alignment = STRETCH;
+                MOVE PROPERTY(receiveEmailAction(a)) { alignment = STRETCH; }
+                MOVE BOX(a) {
+                    caption = '';
+                    GRID(a) { width = 200; }
+                    REMOVE TOOLBARLEFT(a);
                 }
-                MOVE PROPERTY(message(e)) { fill = 1; }
-            }
-            NEW attachments {
-                fill = 1;
-                caption = '{email.form.mail.caption.attachments}';
-                horizontal = TRUE;
-                MOVE BOX(ae) {
-                    PROPERTY(filename(ae)) { autoSize = TRUE; }
-                    GRID(ae) {
-                        height = 100;
+                MOVE BOX(TREE folderTree) {
+                    fill = 3;
+                    caption = '';
+                    GRID(TREE folderTree) {
+                        width = 200;
                     }
                 }
-                MOVE PROPERTY (lastError(ae)){ 
-                    panelCaptionVertical = TRUE;
-                    fill = 0.3;
+                MOVE PROPERTY(formRefresh()) { alignment = STRETCH; }
+            }
+            MOVE BOX(e) { 
+                fill = 3; 
+                caption = '';
+            }
+            NEW content {
+                fill = 5;
+                NEW messageHeader {
+                    alignment = STRETCH;
+                    horizontal = TRUE;
+                    NEW messageHeaderLeft {
+                        fill = 1;
+                        MOVE PROPERTY(toAddress(e));
+                        MOVE PROPERTY(ccAddress(e));
+                        MOVE PROPERTY(bccAddress(e));
+                    }
+                    NEW messageHeaderRight {
+                        NEW messageHeaderActions {
+                            horizontal = TRUE;
+                            MOVE PROPERTY(deleteEmail);
+                            MOVE PROPERTY(openEMLFile(e));
+                        }
+                        MOVE PROPERTY(dateTimeReceived(e)) { alignment = END; }
+                    }
+                }
+                NEW message {
+                    height = 200;
+                    fill = 1;
+                    caption = '{email.form.mail.caption.message}';
+                    MOVE PROPERTY(message) {
+                        fill = 1;
+                    }
+                    MOVE PROPERTY(message(e)) { fill = 1; }
+                }
+                NEW attachments {
+                    alignment = STRETCH;
+                    horizontal = TRUE;
+//                    caption = '{email.form.mail.caption.attachments}';
+                    MOVE BOX(ae) {
+                        caption = '';
+                        GRID(ae) {
+                            flex = 0;
+                            height = -1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    REMOVE TOOLBARBOX;
+}
+
+NAVIGATOR {
+    notification {
+        NEW mail;
+    }
+}
+
+// Reply
+
+send (Email e) {
+    LOCAL attachments = FILE (INTEGER);
+    attachments(INTEGER i) <- file(attachment0(e, i)); 
+
+    LOCAL attachmentsName = STRING (INTEGER);
+    attachmentsName(INTEGER i) <- name(attachment0(e, i));
+
+    EMAIL FROM fromAddress(e)
+        SUBJECT subject(e)
+        TO toAddress(e)
+        CC ccAddress(e)
+        BCC bccAddress(e)
+        BODY message(e)
+        ATTACH LIST attachments NAME attachmentsName;
+}
+
+messageText = DATA LOCAL RICHTEXT ();
+messageReply = DATA LOCAL HTMLTEXT ();
+
+FORM writeMessage '{email.write.message}'
+    OBJECTS e = Email PANEL
+    PROPERTIES(e) fromAddress, toAddress, ccAddress, bccAddress
+
+    PROPERTIES(e) subject
+
+    PROPERTIES() '' = messageText, '' = messageReply SHOWIF messageReply()
+
+    OBJECTS ae = AttachmentEmail
+    PROPERTIES(ae) '' = filename, '' = openFile GRID, '' = DELETE GRID
+    FILTERS email(ae) = e
+
+    PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
+        INPUT f = JSON DO
+            IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO
+                NEW nae = AttachmentEmail {
+                    email(nae) <- e;
+                    file(nae) <- file(decode(data, 'base64'), extension);
+                    name(nae) <- STRING[255](name);
+                }
+    }
+;
+
+DESIGN writeMessage {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            horizontal = TRUE;
+            NEW left {
+                fill = 1;
+                NEW header {
+                    MOVE PROPERTY(fromAddress(e));
+                    MOVE PROPERTY(toAddress(e));
+                    MOVE PROPERTY(ccAddress(e));
+                    MOVE PROPERTY(bccAddress(e));
+                    MOVE PROPERTY(subject(e));
+                }
+                MOVE PROPERTY(messageText()) {
+                    valueClass = 'form-control ql-editor-html';
+                    fill = 1;
+                }
+                MOVE GRID(ae) {
+                    flex = 0;
+                    height = -1;
+                }
+                REMOVE BOX(ae);
+                MOVE PROPERTY(inputFile);
+            }
+            NEW right {
+                fill = 1;
+                NEW reply {
+                    caption = '{email.reply}';
+                    fill = 1;
+                    height = 100;
+                    MOVE PROPERTY(messageReply()) {
+                        fill = 1;
+                        valueHeight = -1;
+                    }
                 }
             }
         }
     }
 }
 
-NAVIGATOR {
-    notification {
-        NEW mail;
+writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, STRING replyMessage, STRING replyHeader) {
+    NEWSESSION {
+        NEW e = Email {
+            fromAddress(e) <- from;
+            toAddress(e) <- to;
+            ccAddress(e) <- cc;
+            bccAddress(e) <- bcc;
+            subject(e) <- subject;
+            messageReply() <- replyMessage;
+            DIALOG writeMessage OBJECTS e = e DOCKED NOMANAGESESSION DO {
+                message(e) <- CONCAT '', HTMLTEXT(messageText()),
+                    '<div>' + (replyHeader + ' : <br>' +
+                        '<blockqoute>' +
+                        messageReply() +
+                        '</blockquote>') +
+                        '</div>';
+                send(e);
+            }
+        }
+    }
+}
+
+writeMessage '{email.write.message}' (Account a) {
+    writeMessage((OVERRIDE fromAddress(a), name(a)), NULL, NULL, NULL, NULL, NULL, NULL);
+}
+
+reply '{email.reply}' (Email re) {
+    writeMessage(toAddress(re), fromAddress(re), ccAddress(re), bccAddress(re),
+                 (CONCAT ' ', 'Re:', subject(re)), message(re), dateTimeSent(re) + ', ' +  fromAddress(re));           
+}
+
+EXTEND FORM mail
+    PROPERTIES(a) writeMessage PANEL
+    PROPERTIES(e) reply
+;
+
+DESIGN mail {
+    accountFolder {
+        MOVE PROPERTY(writeMessage(a)) FIRST { alignment = STRETCH; };
+    }
+    messageHeaderActions {
+        MOVE PROPERTY(reply(e));
+    }
+}
+
+// deprecated import : to delete
+
+imported '{email.imported.attachment.email}' = DATA BOOLEAN (AttachmentEmail);
+markImported '{email.mark.imported.attachment.email}' (AttachmentEmail ae)  {
+    NEWSESSION {
+        IF NOT imported(ae) THEN imported(ae) <- TRUE;
+        APPLY;
+    }
+} CHARWIDTH 15;
+importError '{email.import.error.attachment.email}' = DATA BOOLEAN (AttachmentEmail);
+showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR importError(attachmentEmail)
+    AND attachmentEmail IS AttachmentEmail;
+notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
+    AND attachmentEmail IS AttachmentEmail;
+
+lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);
+importErrors '{email.import.errors}' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
+
+EXTEND FORM mail
+    PROPERTIES(e)  READONLY importErrors
+    PROPERTIES(ae) READONLY imported, importError, lastError SHOWIF lastError(ae) PANEL
+    PROPERTIES(ae)          markImported
+;
+
+DESIGN mail {
+    PROPERTY(importErrors(e)) { hide = TRUE; }
+
+    PROPERTY(imported(ae)) { hide = TRUE; }
+    PROPERTY(importError(ae)) { hide = TRUE; }
+    PROPERTY(markImported(ae)) { hide = TRUE; }
+    
+    attachments {
+        MOVE PROPERTY (lastError(ae)){
+            panelCaptionVertical = TRUE;
+            fill = 0.3;
+        }
     }
 }
