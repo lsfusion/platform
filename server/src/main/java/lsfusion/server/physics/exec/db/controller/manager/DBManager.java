@@ -1915,8 +1915,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 if (oldClass.sID.equals(newClass.sID)) {
-                    if (!(oldClass.sDataPropID.equals(newClass.sDataPropID))) // надо пометить перенос, и удаление
-                        mToCopy.add(newClass.sDataPropID, MapFact.singleton(oldClass.sDataPropID, SetFact.singleton(oldClass.ID)));
+                    if (!(oldClass.dataPropCN.equals(newClass.dataPropCN))) // надо пометить перенос, и удаление
+                        mToCopy.add(newClass.dataPropCN, MapFact.singleton(oldClass.dataPropCN, SetFact.singleton(oldClass.ID)));
                     break;
                 }
             }
@@ -2358,12 +2358,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
-        if (!oldName.equals(newName)) {
+        if (!oldName.equalsIgnoreCase(newName)) {
             startLog("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
             sql.renameColumn(oldProperty.getTableName(getSyntax()), oldName, newName);
-            PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
-            field.setName(newName);
         }
+        PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
+        field.setName(newName);
     }
     
     private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
@@ -2407,8 +2407,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             String tableDBName = table.getName();
             if (tableRenames.containsKey(tableDBName)) {
                 String newDBName = tableRenames.get(tableDBName);
-                startLog("Renaming table from " + tableDBName + " to " + newDBName);
-                sql.renameTable(table, newDBName);
+                if (!tableDBName.equalsIgnoreCase(newDBName)) {
+                    startLog("Renaming table from " + tableDBName + " to " + newDBName);
+                    sql.renameTable(table, newDBName);
+                }
                 table.setName(newDBName);
             }
         }
@@ -2465,32 +2467,32 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // Изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
         Map<String, String> tableNewClassProps = new HashMap<>();
         for (DBConcreteClass cls : newData.concreteClasses) {
-            DBStoredProperty classProp = newData.getProperty(cls.sDataPropID);
+            DBStoredProperty classProp = newData.getProperty(cls.dataPropCN);
             assert classProp != null;
             String tableName = classProp.getTable().getName();
             if (tableNewClassProps.containsKey(tableName)) {
-                assert cls.sDataPropID.equals(tableNewClassProps.get(tableName));
+                assert cls.dataPropCN.equals(tableNewClassProps.get(tableName));
             } else {
-                tableNewClassProps.put(tableName, cls.sDataPropID);
+                tableNewClassProps.put(tableName, cls.dataPropCN);
             }
         }
         
         Map<String, String> nameRenames = new HashMap<>();
         for (DBConcreteClass cls : oldData.concreteClasses) {
-            if (!nameRenames.containsKey(cls.sDataPropID)) {
-                DBStoredProperty oldClassProp = oldData.getProperty(cls.sDataPropID);
+            if (!nameRenames.containsKey(cls.dataPropCN)) {
+                DBStoredProperty oldClassProp = oldData.getProperty(cls.dataPropCN);
                 assert oldClassProp != null;
                 String tableName = oldClassProp.tableName;
                 if (tableNewClassProps.containsKey(tableName)) {
                     String newName = tableNewClassProps.get(tableName);
-                    nameRenames.put(cls.sDataPropID, newName);
+                    nameRenames.put(cls.dataPropCN, newName);
                     String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(newName);
                     renameColumn(sql, oldData, oldClassProp, newDBName);
                     oldClassProp.migrateNames(newName);
-                    cls.sDataPropID = newName;
+                    cls.dataPropCN = newName;
                 }
             } else {
-                cls.sDataPropID = nameRenames.get(cls.sDataPropID);
+                cls.dataPropCN = nameRenames.get(cls.dataPropCN);
             }
         }
     } 
@@ -2971,25 +2973,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private class DBConcreteClass {
         public String sID;
-        public String sDataPropID; // в каком ClassDataProperty хранился
+        public String dataPropCN; // в каком ClassDataProperty хранился
 
         @Override
         public String toString() {
-            return sID + ' ' + sDataPropID;
+            return sID + ' ' + dataPropCN;
         }
 
         public Long ID = null; // только для старых
         public ConcreteCustomClass customClass = null; // только для новых
 
-        private DBConcreteClass(String sID, String sDataPropID, Long ID) {
+        private DBConcreteClass(String sID, String dataPropCN, Long ID) {
             this.sID = sID;
-            this.sDataPropID = sDataPropID;
+            this.dataPropCN = dataPropCN;
             this.ID = ID;
         }
 
         private DBConcreteClass(ConcreteCustomClass customClass) {
             sID = customClass.getSID();
-            sDataPropID = customClass.dataProperty.getCanonicalName();
+            dataPropCN = customClass.dataProperty.getCanonicalName();
 
             this.customClass = customClass;
         }
@@ -3007,7 +3009,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             outDB.writeInt(concreteClasses.size());
             for (DBConcreteClass concreteClass : concreteClasses) {
                 outDB.writeUTF(concreteClass.sID);
-                outDB.writeUTF(concreteClass.sDataPropID);
+                outDB.writeUTF(concreteClass.dataPropCN);
                 outDB.writeLong(concreteClass.ID);
             }
         }
