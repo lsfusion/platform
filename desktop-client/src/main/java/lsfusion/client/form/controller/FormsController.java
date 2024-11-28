@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class FormsController implements ColorThemeChangeListener {
     private CControl control;
 
@@ -92,7 +94,7 @@ public class FormsController implements ColorThemeChangeListener {
 
     public void addBindings(ClientNavigatorElement element, InputEvent inputEvent, Integer priority) {
         if (inputEvent != null) {
-            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, priority) {
+            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, nvl(priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     if (element instanceof ClientNavigatorAction) {

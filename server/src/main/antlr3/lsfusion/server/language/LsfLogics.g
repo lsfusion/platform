@@ -5192,7 +5192,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	)*
 	;
 
-changeKeyNavigatorElement returns [String changeKey, Boolean show]
+changeKeyNavigatorElement returns [String changeKey, boolean show = false]
 	:	'CHANGEKEY' key = stringLiteral {$changeKey = $key.val;}
 		(	('SHOW' { $show = true; })
 		|	('HIDE' { $show = false; })
