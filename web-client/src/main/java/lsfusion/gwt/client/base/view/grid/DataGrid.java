@@ -1231,7 +1231,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 Element cell = tr.getCells().getItem(stickyColumns.get(i));
                 double borderLeftWidth = GwtClientUtils.getDoubleBorderLeftWidth(cell);
                 double borderRightWidth = GwtClientUtils.getDoubleBorderRightWidth(cell);
-                double cellWidth = GwtClientUtils.getDoubleOffsetWidth(cell) - borderLeftWidth - borderRightWidth;
+                double cellWidth = GwtClientUtils.getDoubleOffsetWidth(cell);
                 //protect from too much sticky columns
                 double nextLeft = left + cellWidth;
                 // assert that nextLeft is Fixed PX, so the resize size is not null
