@@ -172,6 +172,6 @@ public abstract class ClientNavigatorElement {
 
     private String getCaption() {
         String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
-        return caption != null ? (caption + (eventCaption != null ? ("(" + eventCaption + ")") : "")) : null;
+        return caption != null ? (caption + (eventCaption != null ? (" (" + eventCaption + ")") : "")) : null;
     }
 }
