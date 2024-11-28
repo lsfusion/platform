@@ -174,6 +174,7 @@ public class SendEmailAction extends SystemAction {
                             emailLM.fileAttachmentEmail.change(new FileData(attachFile.file, attachFile.extension), newContext, attachmentObject);
                         }
                         newContext.apply();
+                        emailLM.lastSentEmail.change(new DataObject(emailObject.getValue(), emailLM.email), context);
                     }
                 }
             } else {
