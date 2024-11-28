@@ -4,19 +4,15 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.OpenFileClientAction;
-import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FilenameUtils;
 
-import java.net.URI;
 import java.util.Iterator;
 
 public class OpenAction extends InternalAction {
@@ -52,6 +48,11 @@ public class OpenAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return false;
     }
 
     @Override

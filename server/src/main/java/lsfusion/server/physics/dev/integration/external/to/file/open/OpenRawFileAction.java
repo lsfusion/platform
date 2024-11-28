@@ -8,6 +8,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -50,6 +51,11 @@ public class OpenRawFileAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return false;
     }
 
     @Override
