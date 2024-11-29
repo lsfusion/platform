@@ -2,7 +2,7 @@
  * Change it to suit your needs. The rest is recommended to leave as is.
  */
 .clusterize-scroll{
-  max-height: 200px;
+  /*max-height: 200px;*/
   overflow: auto;
 }
 

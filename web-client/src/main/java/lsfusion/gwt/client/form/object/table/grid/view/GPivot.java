@@ -604,13 +604,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void afterRefresh() {
+        clusterize();
         // we don't want to do force-layout, so we'll just emulate UpdateDOMCommand behaviour
         Scheduler.get().scheduleFinally(() -> {
             // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
             checkPadding(true);
             restoreScrollLeft();
             setSticky();
-            clusterize();
         });
     }
 
