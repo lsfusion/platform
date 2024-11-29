@@ -631,7 +631,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private Element getTableDataScroller() {
         return getElement(rendererElement, ".scrolldiv");
     }
-    private Element getTableDataContent() {
+    private Element getTableDataBody() {
         return getElement(rendererElement, ".bodytable");
     }
     private Element getHeaderTableElement() {
@@ -1886,9 +1886,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void clusterize() {
         Element scrollDiv = getTableDataScroller();
-        Element contentDiv = getTableDataContent();
-        if(scrollDiv != null && contentDiv != null) {
+        Element bodyDiv = getTableDataBody();
+        if(scrollDiv != null && bodyDiv != null) {
+            scrollDiv.getParentElement().addClassName("clusterize");
             scrollDiv.addClassName("clusterize-scroll");
+            Element contentDiv = bodyDiv.getElementsByTagName("tbody").getItem(0);
             contentDiv.addClassName("clusterize-content");
             clusterize(scrollDiv, contentDiv);
         }
