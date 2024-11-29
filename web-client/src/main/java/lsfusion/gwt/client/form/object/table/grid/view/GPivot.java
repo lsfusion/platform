@@ -1888,6 +1888,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         Element scrollDiv = getTableDataScroller();
         Element contentDiv = getTableDataContent();
         if(scrollDiv != null && contentDiv != null) {
+            scrollDiv.addClassName("clusterize-scroll");
+            contentDiv.addClassName("clusterize-content");
             clusterize(scrollDiv, contentDiv);
         }
     }
