@@ -2358,7 +2358,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
-        if (!oldName.equalsIgnoreCase(newName)) {
+        if (!oldName.equals(newName)) {
             startLog("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
             sql.renameColumn(oldProperty.getTableName(getSyntax()), oldName, newName);
         }
@@ -2407,7 +2407,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             String oldDBName = oldTable.getName();
             if (tableRenames.containsKey(oldDBName)) {
                 String newDBName = tableRenames.get(oldDBName);
-                if (!oldDBName.equalsIgnoreCase(newDBName)) {
+                if (!oldDBName.equals(newDBName)) {
                     startLog("Renaming table from " + oldDBName + " to " + newDBName);
                     sql.renameTable(oldTable, newDBName);
                 }
@@ -3288,7 +3288,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // - Version format: "Nxx", where N represents the major platform version,
     //   followed by two digits (xx) indicating the specific version within that major version.
     // Example: "702" corresponds to major version 7, database structure version 2.
-    public static int newDBStructureVersion = 700;
+    public static int newDBStructureVersion = 701;
 
     private class OldDBStructure extends DBStructure<String> {
 
@@ -3314,11 +3314,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     } else {
                         prevTable = deserializeTable(inputDB, LM.baseClass);
                     }
+                    
+                    if (needToLowerCase()) {
+                        lowerCaseTableData(prevTable);
+                    }
+                    
                     List<IndexData<String>> indexes = new ArrayList<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
                         List<String> index = new ArrayList<>();
                         for (int k = inputDB.readInt(); k > 0; k--) {
-                            index.add(inputDB.readUTF());
+                            index.add(adjustCase(inputDB.readUTF()));
                         }
                         if (version < 32) {
                             indexes.add(new IndexData<>(index, new IndexOptions(inputDB.readBoolean())));
@@ -3327,7 +3332,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         } else {
                             indexes.add(new IndexData<>(index, IndexOptions.deserialize(inputDB)));
                         }
-
                     }
                     tables.put(prevTable, indexes);
                 }
@@ -3335,10 +3339,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
                     String canonicalName = inputDB.readUTF();
-                    String dbName = inputDB.readUTF();
+                    String dbName = adjustCase(inputDB.readUTF());
                     boolean isDataProperty = inputDB.readBoolean();
                     
-                    String tableName = inputDB.readUTF();
+                    String tableName = adjustCase(inputDB.readUTF());
                     DBTable prevTable = getTable(tableName);
                     MExclMap<Integer, KeyField> mMapKeys = MapFact.mExclMap(prevTable.getTableKeys().size());
                     for (int j = 0; j < prevTable.getTableKeys().size(); j++) {
@@ -3361,7 +3365,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
             return new SerializedTable(dbName, canonicalName, inStream, baseClass);
         }
+        
+        private void lowerCaseTableData(SerializedTable table) {
+            table.setName(table.getName().toLowerCase());
+            for (PropertyField field : table.properties) {
+                field.setName(field.getName().toLowerCase());
+            }
+        }
     
+        private String adjustCase(String str) {
+            return needToLowerCase() ? str.toLowerCase() : str;
+        }
+        
+        private boolean needToLowerCase() {
+            return version < 701;
+        }
+        
         boolean isEmpty() {
             return version < 0;
         }

@@ -7,13 +7,19 @@ import java.util.List;
 
 public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     private final int maxIDLength;
-    private final String autoTablesPrefix; 
+    private final String autoTablesPrefix;
+    private final boolean toLower;
 
     public FixedSizeUnderscoreDBNamingPolicy(int maxIDLength, String autoTablesPrefix) {
-        this.maxIDLength = maxIDLength;
-        this.autoTablesPrefix = autoTablesPrefix;
+        this(maxIDLength, autoTablesPrefix, true);
     }
 
+    public FixedSizeUnderscoreDBNamingPolicy(int maxIDLength, String autoTablesPrefix, boolean toLower) {
+        this.maxIDLength = maxIDLength;
+        this.autoTablesPrefix = autoTablesPrefix;
+        this.toLower = toLower;
+    }
+    
     @Override
     public String createActionOrPropertyDBName(String namespaceName, String name, List<ResolveClassSet> signature) {
         String canonicalName = PropertyCanonicalNameUtils.createName(namespaceName, name, signature);
@@ -33,7 +39,7 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
             builder.append('_');
             builder.append(valueClass.getSID());
         }
-        return cutToMaxLength(builder.toString());
+        return cutToMaxLength(adjustCase(builder.toString()));
     }
 
     // Заменяет знаки '?' на 'null', затем все спец символы заменяет на '_', и удаляет подчеркивания в конце 
@@ -41,7 +47,7 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     public String transformActionOrPropertyCNToDBName(String canonicalName) {
         String dbName = replaceUnknownClassesWithNull(canonicalName);
         dbName = transformToIDSymbolsOnlyFormat(dbName);
-        return cutToMaxLength(dbName);
+        return cutToMaxLength(adjustCase(dbName));
     }
 
     protected String transformToIDSymbolsOnlyFormat(String name) {
@@ -63,7 +69,7 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     
     @Override
     public String transformTableCNToDBName(String canonicalName) {
-        return cutToMaxLength(canonicalName.replace(CanonicalNameUtils.DELIMITER, '_'));
+        return cutToMaxLength(adjustCase(canonicalName.replace(CanonicalNameUtils.DELIMITER, '_')));
     }
 
     protected String cutToMaxLength(String s) {
@@ -71,5 +77,9 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
             s = s.substring(0, maxIDLength);
         }
         return s;
+    }
+    
+    protected String adjustCase(String dbName) {
+        return toLower ? dbName.toLowerCase() : dbName;
     }
 }

@@ -13,7 +13,7 @@ public class FullDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
         // отдельно обрабатываем канонические имена class data properties из-за того, что они получаются слишком длинными, 
         // а сигнатура в них необязательна для уникальности
         if (canonicalName.startsWith("System." + PropertyCanonicalNameUtils.classDataPropPrefix)) {
-            return cutToMaxLength(nameWithoutSignature(canonicalName, signaturePos).replace(CompoundNameUtils.DELIMITER, '_'));
+            return cutToMaxLength(adjustCase(nameWithoutSignature(canonicalName, signaturePos).replace(CompoundNameUtils.DELIMITER, '_')));
         }
         
         String signatureStr = canonicalName.substring(signaturePos);
