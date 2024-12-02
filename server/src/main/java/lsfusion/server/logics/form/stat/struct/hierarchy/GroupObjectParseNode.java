@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -122,14 +123,15 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
         ImSet<PropertyInterface> usedInnerInterfaces = PropertyFact.getUsedInterfaces(group).merge(PropertyFact.getUsedInterfaces(orders.keys()));
 
-        ImOrderSet<PropertyInterface> windowInterfaces = form.getWindowInterfaces(this.group, outerValues);
-        if(!windowInterfaces.isEmpty()) {
-            usedInnerInterfaces = usedInnerInterfaces.addExcl(windowInterfaces.getSet());
-            outerInterfaces = outerInterfaces.addExcl(windowInterfaces.getSet());
+        SelectTop<PropertyInterface> selectTop = form.getSelectTop(this.group, outerValues);
+        if(!selectTop.isEmpty()) {
+            ImSet<PropertyInterface> selectTopParams = selectTop.getParamsSet();
+            usedInnerInterfaces = usedInnerInterfaces.addExcl(selectTopParams);
+            assert outerInterfaces.containsAll(selectTopParams);
         }
 
         // actually outerInterfaces are X interfaces, so in the end there will be only X interfaces
 
-        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), ListFact.singleton(group), orders, false, windowInterfaces);
+        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), ListFact.singleton(group), orders, false, selectTop);
     }
 }

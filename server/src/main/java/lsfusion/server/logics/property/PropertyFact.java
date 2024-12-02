@@ -51,6 +51,7 @@ import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAc
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -435,13 +436,11 @@ public class PropertyFact {
         return groupProperty.getPropertyMapImplement();
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createLastGProp(Property<T> where, PropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        return createGProp(GroupType.LAST, where.interfaces, groupInterfaces, ListFact.toList(where.getImplement(), last), orders, ordersNotNull, SetFact.EMPTYORDER());
+    public PropertyFact() {
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, ImOrderSet<T> windowInterfaces) {
-        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, null, null, type, orders, ordersNotNull, windowInterfaces);
-        return groupProperty.getPropertyMapImplement();
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createLastGProp(Property<T> where, PropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        return createGProp(GroupType.LAST, where.interfaces, groupInterfaces, ListFact.toList(where.getImplement(), last), orders, ordersNotNull, SelectTop.NULL());
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, GroupProperty.Interface<T>> createSumGProp(ImSet<T> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<T>> groupInterfaces, PropertyInterfaceImplement<T> property) {
@@ -553,37 +552,13 @@ public class PropertyFact {
                 new PropertyImplement<>(andPrevious, mapImplement));
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createOProp(LocalizedString.NONAME, PartitionType.sum(), property, partitions, orders, includeLast);
-    }
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(LocalizedString caption, PartitionType partitionType, Property<T> property, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
-        if(true) {
-            ImList<PropertyInterfaceImplement<T>> propList = ListFact.singleton(property.getImplement());
-            return createOProp(caption, partitionType, property.interfaces, propList, partitions, orders, Settings.get().isDefaultOrdersNotNull(), includeLast);
-        }
-
-        throw new UnsupportedOperationException();
- /*       assert orders.size()>0;
-        
-        if(orders.size()==1) return createSOProp(sID, caption, property, partitions, orders.singleKey(), orders.singleValue(), includeLast);
-        // итеративно делаем Union, перекидывая order'ы в partition'ы
-        ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(property.interfaces.size());
-        ImRevMap<T,UnionProperty.Interface> mapInterfaces = property.interfaces.toRevMap(listInterfaces);
-
-        ImMap<PropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = new HashMap<PropertyInterfaceImplement<UnionProperty.Interface>, Integer>();
-        Iterator<ImMap.Entry<PropertyInterfaceImplement<T>,Boolean>> it = orders.entrySet().iterator();
-        while(it.hasNext()) {
-            ImMap.Entry<PropertyInterfaceImplement<T>,Boolean> order = it.next();
-            operands.put(createSOProp(property, partitions, order.getKey(), order.getValue(), it.hasNext() && includeLast).map(mapInterfaces),1);
-            partitions = new ArrayList<PropertyInterfaceImplement<T>>(partitions);
-            partitions.add(order.getKey());
-        }
-
-        return new PropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));*/
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, SelectTop<T> selectTop) {
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, null, null, type, orders, ordersNotNull, selectTop);
+        return groupProperty.getPropertyMapImplement();
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(LocalizedString caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
-        PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, partitionType, innerInterfaces, props, partitions, orders, ordersNotNull, includeLast);
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(LocalizedString caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, SelectTop<T> selectTop) {
+        PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, partitionType, innerInterfaces, props, partitions, orders, ordersNotNull, selectTop);
         return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
     }
 
@@ -612,7 +587,7 @@ public class PropertyFact {
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, over ? PartitionType.distrRestrictOver() : PartitionType.distrRestrict(), innerInterfaces, ListFact.toList(restriction, distribute), partitions, orders, ordersNotNull, true);
+            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, over ? PartitionType.distrRestrictOver() : PartitionType.distrRestrict(), innerInterfaces, ListFact.toList(restriction, distribute), partitions, orders, ordersNotNull, SelectTop.NULL());
             return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
         }
 
@@ -663,7 +638,7 @@ public class PropertyFact {
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(roundfirst) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, PartitionType.distrCumProportion(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
+            PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, PartitionType.distrCumProportion(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, SelectTop.NULL());
             return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
         }
 
@@ -877,7 +852,15 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
-        ForAction<L> forAction = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
+        return createForAction(innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, SelectTop.NULL(), action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
+    }
+
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, SelectTop<L> selectTop, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(innerInterfaces, context.toOrderSet(), forProp, orders, ordersNotNull, selectTop, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
+    }
+
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, SelectTop<L> selectTop, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        ForAction<L> forAction = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, selectTop, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
         return forAction.getMapImplement();
     }
 
@@ -896,6 +879,13 @@ public class PropertyFact {
         return createSetAction(innerInterfaces, mapContext.valuesSet(), writeToProp, writeFromProp).map(mapContext.reverse());
     }
 
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet, SelectTop<L> selectTop) {
+        if(!selectTop.isEmpty()) { // optimization
+            ImSet<PropertyInterfaceImplement<L>> partitions = BaseUtils.immutableCast(context);
+            whereProp = createOProp(LocalizedString.NONAME, PartitionType.select(), innerInterfaces, ListFact.singleton(whereProp), partitions, orders, ordersNotNull, selectTop);
+        }
+        return createAddAction(cls, innerInterfaces, context, whereProp, resultProp, orders, ordersNotNull, autoSet);
+    }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
         return createAddAction(cls, innerInterfaces, context.toOrderSet(), whereProp, resultProp, orders, ordersNotNull, autoSet);
     }
@@ -968,12 +958,20 @@ public class PropertyFact {
         return aggAction.getImplement(listInterfaces);
     }
 
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createSetAction(ImSet<I> innerInterfaces, ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, SelectTop<I> selectTop) {
+        if(!selectTop.isEmpty()) { // optimization
+            ImSet<PropertyInterfaceImplement<I>> partitions = BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(context);
+            writeFrom = createOProp(LocalizedString.NONAME, PartitionType.select(), innerInterfaces, ListFact.singleton(writeFrom), partitions, orders, ordersNotNull, selectTop);
+        }
+        return createSetAction(innerInterfaces, context, null, writeTo, writeFrom);
+    }
+
     // расширенный интерфейс создания SetAction, который умеет группировать, если что
 //        FOR F(a,c,d,x) --- внеш. (e,x) + внутр. [a,c,d]
 //            SET f(a,b) <- g(a,b,c,e)   --- внеш. (a,c,e) + внутр. [b]
 //
 //        SET f(a,b) <- [GROUP LAST F(a,c,d,x), g(a,b,c,e) ORDER O(a,c,d) BY a,b,c,e,x](a,b,c,e,x) WHERE [GROUP ANY F(a,c,d,x) BY a,c,x](a,c,x) --- внеш. (e,x) + внутр. [a,b,c]
-    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createSetAction(ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, PropertyMapImplement<W, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createSetAction(ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, PropertyMapImplement<W, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ImOrderSet<I> windowInterfaces) {
         ImSet<I> innerInterfaces = writeTo.mapping.valuesSet().merge(context);
         ImSet<I> whereInterfaces = where.mapping.valuesSet();
         assert innerInterfaces.merge(whereInterfaces).containsAll(getUsedInterfaces(writeFrom));
@@ -1006,7 +1004,8 @@ public class PropertyFact {
                 }
             }
 
-            ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces); ImRevMap<I, W> mapWhere = where.mapping.reverse();
+            ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces);
+            ImRevMap<I, W> mapWhere = where.mapping.reverse();
             writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keys(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);
             where = (PropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys()).map(mapPushInterfaces);
         }

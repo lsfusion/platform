@@ -26,6 +26,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.exec.*;
 import lsfusion.server.data.query.exec.materialize.PureTime;
 import lsfusion.server.data.query.exec.materialize.PureTimeInterface;
@@ -2965,10 +2966,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", top > 0 ? String.valueOf(top) : "", offset > 0 ? String.valueOf(offset) : "", false);
     }
     public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect) {
-        return getSelect(syntax, fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect);
+        return getSelect(syntax, fromSelect, keySelect, propertySelect, whereSelect, MapFact.EMPTYORDER(), "", "");
+    }
+    public static String getSelect(SQLSyntax syntax, String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, ImOrderMap<String, CompileOrder> orders, String limit, String offset) {
+        return getSelect(syntax, fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect, orders, limit, offset);
     }
     public static String getSelect(SQLSyntax syntax, String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect) {
-        return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "));
+        return getSelect(syntax, fromSelect, keySelect, propertySelect, whereSelect, MapFact.EMPTYORDER(), "", "");
+    }
+    public static String getSelect(SQLSyntax syntax, String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect, ImOrderMap<String, CompileOrder> orders, String limit, String offset) {
+        return syntax.getSelect(fromSelect, stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), Query.stringOrder(orders, syntax), limit, offset, false);
     }
     public static String stringExpr(ImMap<String, String> keySelect, ImMap<String, String> propertySelect) {
         return stringExpr(keySelect.toOrderMap(), propertySelect.toOrderMap());

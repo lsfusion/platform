@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
@@ -167,12 +168,6 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     protected ImList<Expr> getExprImplements(final ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges changes, final WhereBuilder changedWhere) {
         return getProps().mapItListValues(value -> value.mapExpr(joinImplement, calcType, changes, changedWhere));
-    }
-
-    // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
-    protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
-        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
-        return MapFact.override(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
 
     @Override

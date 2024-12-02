@@ -75,8 +75,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
-    import lsfusion.server.logics.form.stat.GroupSelectTop;
-    import lsfusion.server.logics.form.stat.SingleSelectTop;
+    import lsfusion.server.logics.form.stat.FormSelectTop;
+    import lsfusion.server.logics.form.stat.SelectTop;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -1946,7 +1946,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), groupContext, debugPoint);
+		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, $to.result, groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -1954,7 +1954,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	:	'GROUP'
 	    gp=groupPropertyBodyDefinition[groupContext]
 	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
-	    (topOffsetExpr = topOffset[context, dynamic])?
+	    (to = topOffset[context, dynamic])?
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
@@ -2018,17 +2018,17 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	boolean strict = false;
 	int precision = 0;
 	boolean ascending = true;
-	boolean useLast = true;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, exprCnt, groupExprCnt, paramProps, context);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, $to.result, exprCnt, groupExprCnt, paramProps, context);
 	}
 }
 	:	'PARTITION' (
             (
                 (	'SUM'	{ type = PartitionType.sum(); }
                 |	'PREV'	{ type = PartitionType.previous(); }
+                |   'LAST'  { type = PartitionType.select(); }
                 )
             |	'UNGROUP'
                 ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
@@ -2055,11 +2055,11 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
                 orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); }
             )
         )
-		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll(0, $exprList.props); }
     		{ groupExprCnt = $exprList.props.size(); }
 		)?
+		(to = topOffset[context, dynamic])?
 	;
 
 
@@ -2300,10 +2300,7 @@ jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context,
-	    $topOffsetsExpr.tops != null ?
-	        new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
-	    :   new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset), returnString);
+	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context, $fts.result, returnString);
 	}
 }
 	:   ('JSON' | 'JSONTEXT' { returnString = true; }) '(' mf=mappedForm[context, null, dynamic] {
@@ -2311,7 +2308,7 @@ jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] return
                     objectsContext = self.getTypedObjectsNames($mf.mapped);
             }
             (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
-            (topOffsetsExpr = topOffsets[$mf.form, context, dynamic])?
+            (fts = formTopOffset[$mf.form, context, dynamic])?
         ')'
 	;
 
@@ -2325,7 +2322,7 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
-		 $whereExpr.property, orderProperties, orderDirections, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), returnString, newContext);
+		 $whereExpr.property, orderProperties, orderDirections, $to.result, returnString, newContext);
 	}
 }
 	:	('JSON' | 'JSONTEXT' { returnString = true; })
@@ -2334,7 +2331,7 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
         )?
-        (topOffsetExpr = topOffset[newContext, true])?
+        (to = topOffset[newContext, true])?
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2620,18 +2617,18 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, $pUsage.propUsage,
-			                                                 sheetName, root, tag, separator, hasHeader, noEscape, new SingleSelectTop($topOffsetExpr.top, $topOffsetExpr.offset), charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, hasHeader, noEscape, $to.result, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
 	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
 	                                                    sheetName = $type.sheetName; charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-		(topOffsetExpr = topOffset[context, dynamic])?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
         )?
+		(to = topOffset[context, dynamic])?
 		('TO' pUsage=propertyUsage)?
 	;
 
@@ -3589,10 +3586,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 @after {
 	if (inMainParseState()) {
         $action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, messageType,
-            $topOffsetsExpr.tops != null ?
-                new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
-            :   new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset),
-            printerProperty, sheetNameProperty, passwordProperty, objectsContext, contextFilters, context);
+            $fts.result, printerProperty, sheetNameProperty, passwordProperty, objectsContext, contextFilters, context);
 	}
 }
 	:	'PRINT' ('CLIENT' | 'SERVER' { server = true; })?
@@ -3608,8 +3602,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
                     sync = syncTypeLiteral { syncType = $sync.val; }
                 |   mt = messageTypeLiteral { messageType = $mt.val; }
                 )*
-                (topOffsetsExpr = topOffsets[$mf.form, context, dynamic])?
-
+                (fts = formTopOffset[$mf.form, context, dynamic])?
             )
             |
             ( // static - interactive
@@ -3653,10 +3646,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape,
-		                                       $topOffsetsExpr.tops != null ?
-		                                            new GroupSelectTop(MapFact.fromJavaOrderMap($topOffsetsExpr.tops), $topOffsetsExpr.offsets != null ? MapFact.fromJavaOrderMap($topOffsetsExpr.offsets) : null)
-                                               :    new SingleSelectTop($topOffsetsExpr.top, $topOffsetsExpr.offset),
-		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
+		                                       $fts.result, charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
@@ -3667,19 +3657,29 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; sheetName = $type.sheetName; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-        (topOffsetsExpr = topOffsets[$mf.form, context, dynamic])?
+        (fts = formTopOffset[$mf.form, context, dynamic])?
 
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
 
-topOffset[List<TypedParameter> context, boolean dynamic] returns [LPWithParams top, LPWithParams offset]
-    :  'TOP' selectTop = propertyExpression[context, dynamic] { $top = $selectTop.property; } ('OFFSET' selectOffset = propertyExpression[context, dynamic] { $offset = $selectOffset.property; })?
+topOffset[List<TypedParameter> context, boolean dynamic] returns [SelectTop<LPWithParams> result]
+@after {
+    $result = new SelectTop($selectTop.property, $selectOffset.property);
+}
+    :  'TOP' selectTop = propertyExpression[context, dynamic]
+       ('OFFSET' selectOffset = propertyExpression[context, dynamic])?
+       |
+       'OFFSET' selectOffset = propertyExpression[context, dynamic]
     ;
 
-topOffsets[FormEntity form, List<TypedParameter> context, boolean dynamic] returns [LPWithParams top, LPWithParams offset, OrderedMap<GroupObjectEntity, LPWithParams> tops, OrderedMap<GroupObjectEntity, LPWithParams> offsets]
-    :  'TOP' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectTops=groupObjectTopOffsetMap[form, context, dynamic] { $tops = $selectTops.result; } | selectTop = propertyExpression[context, dynamic] { $top = $selectTop.property; })
-       ('OFFSET' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectOffsets=groupObjectTopOffsetMap[form, context, dynamic] {$offsets = $selectOffsets.result; } | selectOffset = propertyExpression[context, dynamic] { $offset = $selectOffset.property; }))?
-
+formTopOffset[FormEntity form, List<TypedParameter> context, boolean dynamic] returns [FormSelectTop<LPWithParams> result]
+@after {
+    $result = new FormSelectTop($selectTop.property, $selectOffset.property, $selectTops.result, $selectOffsets.result);
+}
+    :  'TOP' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectTops=groupObjectTopOffsetMap[form, context, dynamic] | selectTop = propertyExpression[context, dynamic] )
+       ('OFFSET' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectOffsets=groupObjectTopOffsetMap[form, context, dynamic] | selectOffset = propertyExpression[context, dynamic] ) )?
+       |
+       ('OFFSET' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectOffsets=groupObjectTopOffsetMap[form, context, dynamic] | selectOffset = propertyExpression[context, dynamic] ) )
     ;
 
 contextFiltersClause[List<TypedParameter> oldContext, List<TypedParameter> objectsContext] returns [List<LPWithParams> contextFilters = new ArrayList<>()]
@@ -4628,7 +4628,7 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedForAProp(context, $expr.property, orders, $actDB.action, $elseActDB.action, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
+		$action = self.addScriptedForAProp(context, $expr.property, orders, $to.result, $actDB.action, $elseActDB.action, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
 	}	
 }
 	:	(	'FOR' 
@@ -4641,6 +4641,7 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 		)?
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
+		(to = topOffset[context, false])?
 		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false, false]
 		( {!recursive}?=> 'ELSE' elseActDB=keepContextFlowActionDefinitionBody[context, false])?
 	;

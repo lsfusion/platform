@@ -38,7 +38,7 @@ import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.AbstractFormDataInterface;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.hierarchy.*;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
@@ -76,16 +76,16 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     protected final ImSet<ContextFilterSelector<ClassPropertyInterface, O>> contextFilters;
 
-    protected final SelectTop<ClassPropertyInterface> selectTopInterfaces;
+    protected final FormSelectTop<ClassPropertyInterface> selectTop;
 
     private boolean returnString;
 
     public JSONProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
                         ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                        SelectTop<ValueClass> selectTop,
-                        boolean returnString) { //todo same as in FormStatic action, adding to valueClasses
-        super(caption, FormAction.getValueClasses(form, objectsToSet, orderContextInterfaces.size(), selectTop.getParams().toArray(new ValueClass[0])));
+                        FormSelectTop<ValueClass> selectTop,
+                        boolean returnString) {
+        super(caption, FormAction.getValueClasses(form, objectsToSet, orderContextInterfaces.size(), new ValueClass[0], selectTop));
 
         this.form = form;
 
@@ -99,8 +99,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
 
-        //todo same as in FormStatic action get from orderInterfaces
-        selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), selectTop.getParams().size());
+        this.selectTop = FormAction.getSelectTop(selectTop, orderInterfaces);
 
         this.returnString = returnString;
     }
@@ -126,10 +125,9 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         ParseNode parseNode = staticHierarchy.getIntegrationHierarchy();
 
-        FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())), selectTopInterfaces);
+        FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())), selectTop);
 
-        //todo (contextInterfaces + selectTopInterfaces.getParams()).toRevMap()
-        ImRevMap<ClassPropertyInterface, ClassPropertyInterface> mapValues = contextInterfaces.toRevMap();//.addExcl((ClassPropertyInterface) selectTopInterfaces.getWindowInterfaces(null).getSet()).toRevMap();
+        ImRevMap<ClassPropertyInterface, ClassPropertyInterface> mapValues = contextInterfaces.addExcl(SetFact.fromJavaSet(selectTop.getParams())).toRevMap();
 
         return parseNode.getJSONProperty(formInterface, mapValues, mappedObjects, returnString);
     }

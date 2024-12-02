@@ -1058,7 +1058,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Result<Where> pushExtraWhere = new Result<>(); // для partition
         ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
         ImMap<Z, Expr> translatedPush = translator.translate(queryJoins.filterIncl(pushedKeys));
-        ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, true, pushExtraWhere);
+        ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, pushExtraWhere);
         if(pushExtraWhere.result != null)
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
 
@@ -1966,7 +1966,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     // limitHeur, indexNotNulls
-    public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, Result<Boolean> mOptAdjustLimit, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
+    public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, Result<Boolean> mOptAdjustLimit, ImSet<KeyExpr> keys, KeyStat keyStat, boolean hasLimit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
         Result<CompileInfo> compileInfo = new Result<>(); 
         StatType statType = StatType.COMPILE;
         StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);// newNotNull
@@ -1979,7 +1979,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // хитрая эвристика - если есть limit и он маленький, докидываем маленькую статистику по порядкам
         // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
         // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
-        if(limit.hasLimit() && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
+        if(hasLimit && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
             WhereJoins whereJoins = this;
 
             Cost limitCost = baseCost;

@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.StaticFormDataManager;
 import lsfusion.server.logics.form.stat.print.PrintMessageData;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
@@ -52,16 +52,6 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean server;
     private final boolean autoPrint;
 
-    public static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        List<ValueClass> params = new ArrayList<>();//selectTop.getParams();
-        if (printer != null)
-            params.add(printer);
-        if (sheetName != null)
-            params.add(sheetName);
-        if (password != null)
-            params.add(password);
-        return params.toArray(new ValueClass[0]);
-    }
     public PrintAction(LocalizedString caption,
                        FormSelector<O> form,
                        final ImList<O> objectsToSet,
@@ -75,7 +65,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        boolean autoPrint,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
-                       SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password,
+                       FormSelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password,
                        ValueClass[] extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
 
@@ -89,17 +79,28 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
 
         this.syncType = syncType;
         this.messageType = messageType;
-        
+
         this.removeNullsAndDuplicates = removeNullsAndDuplicates;
-        
+
         this.exportFile = exportFile;
         this.server = server;
         this.autoPrint = autoPrint;
     }
 
+    public static ValueClass[] getExtraParams(ValueClass printer, ValueClass sheetName, ValueClass password) {
+        List<ValueClass> params = new ArrayList<>();//selectTop.getParams();
+        if (printer != null)
+            params.add(printer);
+        if (sheetName != null)
+            params.add(sheetName);
+        if (password != null)
+            params.add(password);
+        return params.toArray(new ValueClass[0]);
+    }
+
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
-        SelectTop<Integer> selectTop = selectTopInterfaces.mapValues(context);
+        FormSelectTop<Integer> selectTop = selectTopInterfaces.mapValues(context);
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
             PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);

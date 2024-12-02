@@ -8,14 +8,17 @@ public class LimitOptions {
     public final static LimitOptions HASLIMITDISTINCTVALUES = new LimitOptions();
     public final static LimitOptions HASLIMIT = new LimitOptions();
     public final static LimitOptions HASLIMITOFFSET = new LimitOptions();
+    public final static LimitOptions HASOFFSET = new LimitOptions();
     public final static LimitOptions NOLIMIT = new LimitOptions();
 
     public static LimitOptions get(LimitOffset limitOffset, boolean distinctValues) {
+        boolean hasLimit = limitOffset.getLimit() > 0;
+        boolean hasOffset = limitOffset.getOffset() > 0;
         if (distinctValues) {
-            assert limitOffset.getLimit() > 0;
+            assert hasLimit && !hasOffset;
             return HASLIMITDISTINCTVALUES;
         }
-        return limitOffset.getLimit() > 0 ? (limitOffset.getOffset() > 0 ? HASLIMITOFFSET : HASLIMIT) : NOLIMIT;
+        return hasLimit ? (hasOffset ? HASLIMITOFFSET : HASLIMIT) : (hasOffset ? HASOFFSET : NOLIMIT);
     }
 
     public static LimitOptions get(LimitOffset limitOffset) {
@@ -27,7 +30,7 @@ public class LimitOptions {
     }
 
     public boolean hasOffset() {
-        return this == HASLIMITOFFSET;
+        return this == HASLIMITOFFSET || this == HASOFFSET;
     }
 
     public boolean isDistinctValues() {

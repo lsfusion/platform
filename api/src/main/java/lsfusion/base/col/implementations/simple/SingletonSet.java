@@ -584,6 +584,13 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return this;
     }
 
+    @Override
+    public ImSet<K> removeFn(FunctionSet<K> filter) {
+        if(filter.contains(key))
+            return SetFact.EMPTY();
+        return this;
+    }
+
     public ImSet<K> removeIncl(ImSet<? extends K> remove) {
         if(remove.isEmpty())
             return this;

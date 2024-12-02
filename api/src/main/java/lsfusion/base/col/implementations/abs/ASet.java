@@ -84,6 +84,11 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return filterFn(new NotFunctionSet<>((FunctionSet<K>) remove));
     }
 
+    @Override
+    public ImSet<K> removeFn(FunctionSet<K> filter) {
+        return filterFn(new NotFunctionSet<>(filter));
+    }
+
     public ImSet<K> removeIncl(final ImSet<? extends K> remove) {  // как правило внутренние, поэтому на disjoint нет смысла проверять
         return remove(remove);
     }

@@ -16,8 +16,8 @@ public class WindowExpr extends KeyExpr {
         return expr.equals(WindowExpr.limit) || expr.equals(WindowExpr.offset);
     }
 
-    public static boolean has(ImCol<Expr> group) {
-        return group.contains(WindowExpr.limit); // we are assuming that offset only when there is limit
+    public static boolean has(ImCol<? extends Expr> group) {
+        return ((ImCol<Expr>)group).contains(WindowExpr.limit); // we are assuming that offset only when there is limit
     }
 
     public static <T> boolean has(T limit, T offset) {

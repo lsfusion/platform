@@ -97,8 +97,8 @@ import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.SelectTop;
-import lsfusion.server.logics.form.stat.SingleSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
@@ -1054,23 +1054,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramName.startsWith("$");
     }
 
-    public static abstract class LAPWithParams {
-        private final LAP<?, ?> property; // nullable
-        public final List<Integer> usedParams; // immutable zero-based set always ordered by value 
-
-        public LAPWithParams(LAP<?, ?> property, List<Integer> usedParams) {
-            this.property = property;
-            this.usedParams = Collections.unmodifiableList(new ArrayList<>(usedParams));
-        }
-
-        @Override
-        public String toString() {
-            return String.format("[%s, %s]", property, usedParams);
-        }
-
-        public LAP<?, ?> getLP() {
-            return property;
-        }
+    public LAWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LAWithParams action, LAWithParams elseAction, Integer addNum, String addClassName, Boolean autoSet, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedForAProp(oldContext, condition, orders, null, action, elseAction, addNum, addClassName, autoSet, recursive, descending, noInline, forceInline);
     }
 
     public static class LAWithParams extends LAPWithParams {
@@ -3063,7 +3048,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedForAProp(oldContext, null, new ArrayList<>(), action, null, addNum, addClassName, autoSet, false, false, new ArrayList<>(), false);
     }
 
-    public LAWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LAWithParams action, LAWithParams elseAction, Integer addNum, String addClassName, Boolean autoSet, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, SelectTop<LPWithParams> selectTop, LAWithParams action, LAWithParams elseAction, Integer addNum, String addClassName, Boolean autoSet, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
+        if(selectTop == null)
+            selectTop = SelectTop.NULL();
+
         boolean ordersNotNull = (condition != null ? doesExtendContext(oldContext.size(), singletonList(condition), orders) : !orders.isEmpty());
 
         List<LAPWithParams> creationParams = new ArrayList<>();
@@ -3110,10 +3098,69 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(noInline);
 
-        LA result = addForAProp(LocalizedString.NONAME, !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
+        LA result = addForAProp(LocalizedString.NONAME, !descending, ordersNotNull, selectTop.CONST(), recursive, elseAction != null, usedParams.size(),
                                 addClassName != null ? (CustomClass) findClass(addClassName) : null, autoSet != null ? autoSet : false, condition != null, noInline.size(), forceInline,
                                 getParamsPlainList(allCreationParams).toArray());
+
+        if(!selectTop.isEmpty()) { // optimization
+            List<LPWithParams> mapping = new ArrayList<>();
+            for(int resultInterface : usedParams)
+                mapping.add(new LPWithParams(resultInterface));
+
+            mapping.addAll(selectTop.getParams());
+
+            LAWithParams lgp = addScriptedJoinAProp(result, mapping);
+
+            result = lgp.getLP();
+            usedParams = lgp.usedParams;
+        }
+
         return new LAWithParams(result, usedParams);
+    }
+
+    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, SelectTop<Integer> selectTop, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkGPropAggrConstraints(type, mainProps, groupProps);
+        checks.checkGPropAggregateConsistence(type, mainProps);
+        checks.checkGPropWhereConsistence(type, whereProp);
+        checks.checkGPropSumConstraints(type, mainProps.isEmpty() ? null : mainProps.get(0));
+
+        List<LPWithParams> whereProps = new ArrayList<>();
+        if (type == GroupingType.AGGR || type == GroupingType.NAGGR || (type == GroupingType.CONCAT && whereProp != null)) {
+            if (whereProp != null) {
+                whereProps.add(whereProp);
+            } else {
+                whereProps.add(new LPWithParams(mainProps.get(0).usedParams.get(0)));
+            }
+        }
+        if (type == GroupingType.LAST) {
+            if (whereProp != null) {
+                mainProps.add(0, whereProp);
+            } else {
+                mainProps.add(mainProps.get(0));
+            }
+            whereProp = null;
+        }
+        List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
+
+        boolean ordersNotNull = doesExtendContext(0, mergeLists(mainProps, groupProps, whereProps), orderProps);
+
+        int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps, whereProps)).size();
+        assert groupPropParamCount == explicitInnerClasses.size();
+        LocalizedString emptyCaption = LocalizedString.NONAME;
+        LP resultProp;
+        if ((type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) || !selectTop.isEmpty()) {
+            resultProp = addOGProp(null, false, emptyCaption, getGroupType(type), whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, selectTop, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else if (type == GroupingType.SUM) {
+            resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
+            resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
+            resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, constraintData, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else if (type == GroupingType.EQUAL) {
+            resultProp = addCGProp(null, false, false, emptyCaption, constraintData, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else
+            throw new UnsupportedOperationException();
+        return resultProp;
     }
 
     public LAWithParams getTerminalFlowAction(ChangeFlowActionType type) {
@@ -3196,50 +3243,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         return groupType;
     }
 
-    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, SelectTop<LPWithParams> selectTop, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkGPropAggrConstraints(type, mainProps, groupProps);
-        checks.checkGPropAggregateConsistence(type, mainProps);
-        checks.checkGPropWhereConsistence(type, whereProp);
-        checks.checkGPropSumConstraints(type, mainProps.isEmpty() ? null : mainProps.get(0));
+    // второй результат в паре использованные параметры из внешнего контекста (LP на выходе имеет сначала эти использованные параметры, потом группировки)
+    public LPContextIndependent addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
+                                                    boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp));
+        List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
-        List<LPWithParams> whereProps = new ArrayList<>();
-        if (type == GroupingType.AGGR || type == GroupingType.NAGGR || (type == GroupingType.CONCAT && whereProp != null)) {
-            if (whereProp != null) {
-                whereProps.add(whereProp);
-            } else {
-                whereProps.add(new LPWithParams(mainProps.get(0).usedParams.get(0)));
-            }
+        List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
+
+        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
+
+        Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
+
+        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, selectTop.CONST(), ascending, constraintCaption, whereProp, explicitInnerClasses);
+
+        if(!selectTop.isEmpty()) { // optimization
+            List<LPWithParams> mapping = new ArrayList<>();
+            for(int resultInterface : resultInterfaces)
+                mapping.add(new LPWithParams(resultInterface));
+
+            mapping.addAll(selectTop.getParams());
+
+            LPWithParams lgp = addScriptedJProp(gProp, mapping);
+
+            gProp = lgp.getLP();
+            resultInterfaces = lgp.usedParams;
         }
-        if (type == GroupingType.LAST) {
-            if (whereProp != null) {
-                mainProps.add(0, whereProp);
-            } else {
-                mainProps.add(mainProps.get(0));
-            }
-            whereProp = null;
-        }
-        List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
-        boolean ordersNotNull = doesExtendContext(0, mergeLists(mainProps, groupProps, whereProps), orderProps);
-
-        int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps, whereProps)).size();
-        assert groupPropParamCount == explicitInnerClasses.size();
-        LocalizedString emptyCaption = LocalizedString.NONAME;
-        LP resultProp = null;
-        int numWindows = selectTop.getParams().size();
-        if ((type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) || numWindows > 0) {
-            resultProp = addOGProp(null, false, emptyCaption, getGroupType(type), whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, numWindows, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.SUM) {
-            resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
-            resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
-            resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, constraintData, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.EQUAL) {
-            resultProp = addCGProp(null, false, false, emptyCaption, constraintData, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else
-            throw new UnsupportedOperationException();
-        return resultProp;
+        return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
     }
 
     // ci - надо в дырки вставлять, от использованных, если не ci то в конце
@@ -3269,34 +3300,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return allGroupProps;
     }
 
-    // второй результат в паре использованные параметры из внешнего контекста (LP на выходе имеет сначала эти использованные параметры, потом группировки)
-    public LPContextIndependent addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                    boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp), selectTop.getParams());
-        List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
-
-        List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
-
-        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
-
-        Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
-
-        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, selectTop, ascending, constraintCaption, whereProp, explicitInnerClasses);
-
-        if(!selectTop.getParams().isEmpty()) { // optimization
-            List<LPWithParams> mapping = new ArrayList<>();
-            for(int resultInterface : resultInterfaces)
-                mapping.add(new LPWithParams(resultInterface));
-
-            mapping.addAll(selectTop.getParams());
-
-            LPWithParams lgp = addScriptedJProp(gProp, mapping);
-
-            gProp = lgp.getLP();
-            resultInterfaces = lgp.usedParams;
-        }
-
-        return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
+    public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
+                                                                       boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        if(selectTop == null)
+            selectTop = SelectTop.NULL();
+        if(groupProps == null)
+            groupProps = Collections.emptyList();
+        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, selectTop, newContext, debugPoint);
+        if(groupProps.size() > 0)
+            return new Pair<>(null, ci);
+        else
+            return new Pair<>(new LPWithParams(ci.property, ci.usedContext), null);
     }
 
     public List<ResolveClassSet> getClassesFromTypedParams(int oldContextSize, List<Integer> resultInterfaces, List<TypedParameter> newContext) {
@@ -3305,17 +3319,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             usedInnerInterfaces.add(newContext.get(resI));
         usedInnerInterfaces.addAll(newContext.subList(oldContextSize, newContext.size()));
         return getClassesFromTypedParams(usedInnerInterfaces);
-    }
-
-    public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                                       boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        if(groupProps == null)
-            groupProps = Collections.emptyList();
-        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, selectTop, newContext, debugPoint);
-        if(groupProps.size() > 0)
-            return new Pair<>(null, ci);
-        else
-            return new Pair<>(new LPWithParams(ci.property, ci.usedContext), null);
     }
 
     public <T extends PropertyInterface> LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, Event aggrEvent, DebugInfo.DebugPoint aggrDebugPoint, Event newEvent, DebugInfo.DebugPoint newDebugPoint, Event deleteEvent, DebugInfo.DebugPoint deleteDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
@@ -3350,7 +3353,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        aggrObject (prim1Object, prim2Object) =
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
-        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), SingleSelectTop.NULL(), false,
+        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), SelectTop.NULL(), false,
                 () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
         ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 
@@ -3373,6 +3376,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.delete}", aggClass, whereLP, aggrDebugPoint).noUseDebugPoint());
 
         return new LPContextIndependent(aggrObjectLP, resultSignature, Collections.emptyList());
+    }
+
+    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending, SelectTop<LPWithParams> selectTop,
+                                                 int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+//        checks.checkPartitionWindowConsistence(partitionType, useLast);
+        if(selectTop == null)
+            selectTop = SelectTop.NULL();
+
+        LP ungroupProp = ungroupPropUsage != null ? findLPByPropertyUsage(ungroupPropUsage, paramProps.subList(0, groupPropsCnt), context) : null;
+        checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
+
+        Pair<LP, List<Integer>> result = addScriptedPartitionProp(partitionType, strict, precision, isAscending, selectTop.CONST(), exprCnt, groupPropsCnt, paramProps, context, ungroupProp);
+
+        if(!selectTop.isEmpty()) { // optimization
+            List<LPWithParams> mapping = new ArrayList<>();
+            for(int resultInterface : result.second)
+                mapping.add(new LPWithParams(resultInterface));
+
+            mapping.addAll(selectTop.getParams());
+
+            return addScriptedJProp(result.first, mapping);
+        }
+
+        return new LPWithParams(result.first, result.second);
     }
 
     public static boolean useOptResolve = true;
@@ -3400,19 +3427,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
-    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
-                                                 boolean useLast, int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkPartitionWindowConsistence(partitionType, useLast);
-        LP ungroupProp = ungroupPropUsage != null ? findLPByPropertyUsage(ungroupPropUsage, paramProps.subList(0, groupPropsCnt), context) : null;
-        checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
-
+    @NotNull
+    private Pair<LP, List<Integer>> addScriptedPartitionProp(PartitionType partitionType, boolean strict, int precision, boolean isAscending, SelectTop<Integer> selectTop, int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context, LP ungroupProp) {
         boolean ordersNotNull = doesExtendContext(0, paramProps.subList(0, groupPropsCnt + exprCnt), paramProps.subList(groupPropsCnt + exprCnt, paramProps.size()));
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
-        if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous() || partitionType instanceof PartitionType.Custom) {
-            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, useLast, exprCnt, groupPropsCnt, resultParams.toArray());
+        if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous() || partitionType == PartitionType.select() || partitionType instanceof PartitionType.Custom) {
+            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, selectTop, exprCnt, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.distrCumProportion()) {
             assert exprCnt == 1;
             List<ResolveClassSet> contextClasses = getClassesFromTypedParams(context);// для не script - временный хак
@@ -3425,7 +3448,70 @@ public class ScriptingLogicsModule extends LogicsModule {
             assert exprCnt == 1;
             prop = addUGProp(null, false, strict, LocalizedString.NONAME, usedParams.size(), isAscending, ordersNotNull, ungroupProp, resultParams.toArray());
         }
-        return new LPWithParams(prop, usedParams);
+        return new Pair<>(prop, usedParams);
+    }
+
+    public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
+                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType,
+                                                                          MessageClientType messageType, FormSelectTop<LPWithParams> selectTop,
+                                                                          LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
+                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        assert printType != null;
+
+        if(selectTop == null)
+            selectTop = FormSelectTop.NULL();
+
+        ImList<O> mappedObjects = mapped.objects;
+        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
+
+        List<LPWithParams> mapping = new ArrayList<>();
+        MList<Boolean> mNulls = ListFact.mList(mappedObjects.size());
+
+        for (int i = 0; i < mappedObjects.size(); i++) {
+            FormActionProps objectProp = allObjectProps.get(i);
+            assert objectProp.in != null;
+            mapping.add(objectProp.in);
+            mNulls.add(objectProp.inNull);
+            assert !objectProp.out && !objectProp.constraintFilter;
+        }
+
+        if(syncType == null)
+            syncType = false;
+
+        LP<?> targetProp = null;
+        if(propUsage != null)
+            targetProp = findLPNoParamsByPropertyUsage(propUsage);
+
+        ValueClass printer = printerProperty != null ? getValueClassByParamProperty(printerProperty, params) : null;
+        ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
+        ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
+
+        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
+
+        LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
+                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
+                messageType, targetProp, false, selectTop.mapValues(this, params), printer, sheetName, password);
+
+        for (int usedParam : contextEntities.usedParams) {
+            mapping.add(new LPWithParams(usedParam));
+        }
+
+        mapping.addAll(selectTop.getParams());
+        if(printerProperty != null) {
+            mapping.add(printerProperty);
+        }
+        if(sheetNameProperty != null) {
+            mapping.add(sheetNameProperty);
+        }
+        if(passwordProperty != null) {
+            mapping.add(passwordProperty);
+        }
+
+        if (mapping.size() > 0)  {
+            return addScriptedJoinAProp(action, mapping);
+        } else {
+            return new LAWithParams(action, Collections.emptyList());
+        }
     }
 
     public LPWithParams addScriptedCCProp(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
@@ -4184,69 +4270,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return doAction;
     }
 
-    public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
-                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType,
-                                                                          MessageClientType messageType, SelectTop<LPWithParams> selectTop,
-                                                                          LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
-                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        assert printType != null;
-
-        ImList<O> mappedObjects = mapped.objects;
-        ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
-
-        List<LPWithParams> mapping = new ArrayList<>();
-        MList<Boolean> mNulls = ListFact.mList(mappedObjects.size());
-
-        for (int i = 0; i < mappedObjects.size(); i++) {
-            FormActionProps objectProp = allObjectProps.get(i);
-            assert objectProp.in != null;
-            mapping.add(objectProp.in);
-            mNulls.add(objectProp.inNull);
-            assert !objectProp.out && !objectProp.constraintFilter;
-        }
-
-        if(syncType == null)
-            syncType = false;
-
-        LP<?> targetProp = null;
-        if(propUsage != null)
-            targetProp = findLPNoParamsByPropertyUsage(propUsage);
-
-        ValueClass printer = printerProperty != null ? getValueClassByParamProperty(printerProperty, params) : null;
-        ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
-        ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
-
-        CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
-
-        LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
-                messageType, targetProp, false, selectTop.mapValues(this, params), printer, sheetName, password);
-
-        for (int usedParam : contextEntities.usedParams) {
-            mapping.add(new LPWithParams(usedParam));
-        }
-
-        mapping.addAll(selectTop.getParams());
-        if(printerProperty != null) {
-            mapping.add(printerProperty);
-        }
-        if(sheetNameProperty != null) {
-            mapping.add(sheetNameProperty);
-        }
-        if(passwordProperty != null) {
-            mapping.add(passwordProperty);
-        }
-
-        if (mapping.size() > 0)  {
-            return addScriptedJoinAProp(action, mapping);
-        } else {
-            return new LAWithParams(action, Collections.emptyList());
-        }
-    }
-
     public <O extends ObjectSelector> LPWithParams addScriptedJSONFormProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params,
-                                                                           SelectTop<LPWithParams> selectTop, boolean returnString) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           FormSelectTop<LPWithParams> selectTop, boolean returnString) throws ScriptingErrorLog.SemanticErrorException {
+
+        if(selectTop == null)
+            selectTop = FormSelectTop.NULL();
 
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
@@ -4280,9 +4309,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, Boolean hasHeader,
-                                                                           String separator, boolean noEscape, SelectTop<LPWithParams> selectTop, String charset, NamedPropertyUsage propUsage,
+                                                                           String separator, boolean noEscape, FormSelectTop<LPWithParams> selectTop, String charset, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+
+        if(selectTop == null)
+            selectTop = FormSelectTop.NULL();
+
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
@@ -4363,6 +4396,83 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return new LAWithParams(action, Collections.emptyList());
         }
+    }
+
+    public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
+                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages,
+                                                LPWithParams whereProperty,
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, SelectTop<LPWithParams> selectTop, boolean returnString,
+                                                List<TypedParameter> params)
+            throws ScriptingErrorLog.SemanticErrorException {
+
+        if(selectTop == null)
+            selectTop = SelectTop.NULL();
+
+        List<LPWithParams> exExprs = new ArrayList<>(exprs);
+        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
+        for (int i = 0, size = exprs.size(); i < size; i++) {
+            Pair<ActionOrProperty, List<String>> exPropUsage = null;
+            LPTrivialLA propUsage = propUsages.get(i);
+            if (propUsage != null) { // we need property to get the correct integrationSID
+                FormActionOrPropertyUsage<?> pDrawUsage = propUsage.action;
+                LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
+                exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
+            }
+            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+        }
+
+        MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
+        for (int i = 0, size = orderProperties.size(); i < size; i++) {
+            LPWithParams orderProperty = orderProperties.get(i);
+            exExprs.add(orderProperty);
+            String orderId = "order" + mExPropUsages.size();
+            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
+            mOrders.exclAdd(orderId, orderDirections.get(i));
+        }
+        ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
+
+        // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
+        List<LPWithParams> props = exExprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(exExprs, whereProperty);
+        /*for(LPWithParams windowProp : selectTop.getParams()) {
+            props = BaseUtils.add(props, windowProp);
+        }*/
+        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
+
+        List<LAPWithParams> paramsList = new ArrayList<>();
+        for (int resI : resultInterfaces)
+            paramsList.add(new LPWithParams(resI));
+        paramsList.addAll(exExprs);
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+        //paramsList.addAll(selectTop.getParams());
+//        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
+        List<Object> resultParams = getParamsPlainList(paramsList);
+
+        LP result = null;
+        try {
+            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
+                    whereProperty != null, selectTop.mapValues(this, params), returnString, resultParams.toArray());
+        } catch (FormEntity.AlreadyDefined alreadyDefined) {
+            throwAlreadyDefinePropertyDraw(alreadyDefined);
+        }
+
+        if(!selectTop.isEmpty()) { // optimization
+            List<LPWithParams> mapping = new ArrayList<>();
+            for (int resI : resultInterfaces)
+                mapping.add(new LPWithParams(resI));
+
+            mapping.addAll(selectTop.getParams());
+
+            LPWithParams lgp = addScriptedJProp(result, mapping);
+            result = lgp.getLP();
+            resultInterfaces = lgp.usedParams;
+        }
+
+        return new LPWithParams(result, resultInterfaces);
     }
 
     public GroupObjectEntity findGroupObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
@@ -4551,92 +4661,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
-                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages,
-                                                LPWithParams whereProperty,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, SelectTop<LPWithParams> selectTop, boolean returnString,
-                                                List<TypedParameter> params)
-            throws ScriptingErrorLog.SemanticErrorException {
-
-        List<LPWithParams> exExprs = new ArrayList<>(exprs);
-        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
-        for (int i = 0, size = exprs.size(); i < size; i++) {
-            Pair<ActionOrProperty, List<String>> exPropUsage = null;
-            LPTrivialLA propUsage = propUsages.get(i);
-            if (propUsage != null) { // we need property to get the correct integrationSID
-                FormActionOrPropertyUsage<?> pDrawUsage = propUsage.action;
-                LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
-                exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
-            }
-            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
-        }
-
-        MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
-        for (int i = 0, size = orderProperties.size(); i < size; i++) {
-            LPWithParams orderProperty = orderProperties.get(i);
-            exExprs.add(orderProperty);
-            String orderId = "order" + mExPropUsages.size();
-            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
-            mOrders.exclAdd(orderId, orderDirections.get(i));
-        }
-        ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
-        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
-
-        // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
-        List<LPWithParams> props = exExprs;
-        if(whereProperty != null)
-            props = BaseUtils.add(exExprs, whereProperty);
-        /*for(LPWithParams windowProp : selectTop.getParams()) {
-            props = BaseUtils.add(props, windowProp);
-        }*/
-        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
-        List<LPWithParams> mapping = new ArrayList<>();
-        for (int resI : resultInterfaces) {
-            mapping.add(new LPWithParams(resI));
-        }
-
-        List<LAPWithParams> paramsList = new ArrayList<>();
-        paramsList.addAll(mapping);
-        paramsList.addAll(exExprs);
-        if (whereProperty != null) {
-            paramsList.add(whereProperty);
-        }
-        //paramsList.addAll(selectTop.getParams());
-//        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
-        List<Object> resultParams = getParamsPlainList(paramsList);
-
-        LP result = null;
-        try {
-            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
-                    whereProperty != null, selectTop.mapValues(this, params), returnString, resultParams.toArray());
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
-
-        if(mapping.size() > resultInterfaces.size()) { // optimization
-            return addScriptedJProp(result, mapping);
-        } else
-            return new LPWithParams(result, resultInterfaces);
-    }
-
-    private FormIntegrationType adjustExportFormatFromFileType(FormIntegrationType format, LP fileProp, Collection<LP> fileProps) {
-        if (format == null) {
-            if (fileProps != null && !fileProps.isEmpty())
-                fileProp = fileProps.iterator().next();
-            Type type = fileProp.property.getType();
-            if (type instanceof StaticFormatFileClass)
-                return ((StaticFormatFileClass) type).getIntegrationType();
-            else
-                return FormIntegrationType.JSON;
-        }
-        return format;
-    }
-
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
                                                 String separator, Boolean hasHeader, boolean noEscape, SelectTop<LPWithParams> selectTop, String charset, boolean attr,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+
+        if(selectTop == null)
+            selectTop = SelectTop.NULL();
 
         LP<?> targetProp = fileProp != null ? findLPNoParamsByPropertyUsage(fileProp) : null;
         if(targetProp == null)
@@ -4710,11 +4742,44 @@ public class ScriptingLogicsModule extends LogicsModule {
             mapping.add(rootProperty);
         if(tagProperty != null)
             mapping.add(tagProperty);
-        
+
         if(mapping.size() > resultInterfaces.size()) { // optimization
             return addScriptedJoinAProp(result, mapping);
         } else
             return new LAWithParams(result, resultInterfaces);
+    }
+
+    private FormIntegrationType adjustExportFormatFromFileType(FormIntegrationType format, LP fileProp, Collection<LP> fileProps) {
+        if (format == null) {
+            if (fileProps != null && !fileProps.isEmpty())
+                fileProp = fileProps.iterator().next();
+            Type type = fileProp.property.getType();
+            if (type instanceof StaticFormatFileClass)
+                return ((StaticFormatFileClass) type).getIntegrationType();
+            else
+                return FormIntegrationType.JSON;
+        }
+        return format;
+    }
+
+    public static abstract class LAPWithParams {
+        private final LAP<?, ?> property; // nullable
+        public final List<Integer> usedParams; // immutable zero-based set always ordered by value
+
+        public LAPWithParams(LAP<?, ?> property, List<Integer> usedParams) {
+            this.property = property;
+            this.usedParams = Collections.unmodifiableList(new ArrayList<>(usedParams));
+            assert property == null || usedParams.isEmpty() || property.listInterfaces.size() == usedParams.size();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s, %s]", property, usedParams);
+        }
+
+        public LAP<?, ?> getLP() {
+            return property;
+        }
     }
 
     // always from LAPWithParams where usedParams is ordered set

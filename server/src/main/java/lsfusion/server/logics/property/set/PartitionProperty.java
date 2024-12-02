@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.AggrExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -15,6 +16,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
@@ -36,9 +38,10 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     protected final ImOrderMap<PropertyInterfaceImplement<T>,Boolean> orders;
     protected final boolean ordersNotNull;
     protected final ImSet<PropertyInterfaceImplement<T>> partitions;
-    protected boolean includeLast;
 
-    public PartitionProperty(LocalizedString caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
+    private final SelectTop<T> selectTop; // partitions should (and only them) contain window interfaces
+
+    public PartitionProperty(LocalizedString caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImSet<PropertyInterfaceImplement<T>> partitions, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, SelectTop<T> selectTop) {
         super(caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
@@ -46,7 +49,8 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         this.ordersNotNull = ordersNotNull;
         this.partitionType = partitionType;
         this.partitions = partitions;
-        this.includeLast = includeLast;
+
+        this.selectTop = selectTop;
 
         finalizeInit();
    }
@@ -77,7 +81,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
 
     // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации
     protected ImMap<T, Expr> getGroupKeys(ImMap<Interface<T>, ? extends Expr> joinImplement, Result<ImMap<KeyExpr, Expr>> mapExprs) {
-        ImRevMap<T, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
+        ImRevMap<T, KeyExpr> mapKeys = OrderGroupProperty.getMapKeys(innerInterfaces, selectTop);
 
         ImMap<T, ? extends Expr> innerJoinImplement = getMapInterfaces().crossJoin(joinImplement);
         ImValueMap<T, Expr> mvResult = innerJoinImplement.mapItValues(); // есть последействие
@@ -86,7 +90,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         for(int i=0,size=innerJoinImplement.size();i<size;i++) {
             T key = innerJoinImplement.getKey(i);
             Expr expr = innerJoinImplement.getValue(i);
-            if(expr.isValue() && partitions.contains(key)) {
+            if(expr.isValue() && partitions.contains(key) && !selectTop.contains(key)) {
                 mvResult.mapValue(i, expr);
             } else {
                 KeyExpr keyExpr = mapKeys.get(key);
@@ -140,6 +144,10 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     private Where getPartitionWhere(Where where, ImMap<PropertyInterfaceImplement<T>,Expr> partitionImplements, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<KeyExpr, Expr> mapExprs) {
+        if(!selectTop.isEmpty()) {
+            partitionImplements = partitionImplements.remove((ImSet<? extends PropertyInterfaceImplement<T>>) selectTop.getParamsSet());
+            mapExprs = mapExprs.removeFn(WindowExpr::is);
+        }
         return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(AggrExpr.getOrderWhere(orders, ordersNotNull)), partitionImplements).getWhere().mapWhere(mapExprs);
     }
 

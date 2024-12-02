@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.open.stat;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -13,21 +12,19 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 public abstract class FormStaticAction<O extends ObjectSelector, T extends FormStaticType> extends FormAction<O> {
 
     protected final T staticType;
 
-    protected final SelectTop<ClassPropertyInterface> selectTopInterfaces;
+    protected final FormSelectTop<ClassPropertyInterface> selectTopInterfaces;
 
     public FormStaticAction(LocalizedString caption,
                             FormSelector<O> form,
@@ -36,20 +33,13 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
                             ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                             T staticType,
-                            SelectTop<ValueClass> selectTop,
+                            FormSelectTop<ValueClass> selectTop,
                             ValueClass... extraValueClasses) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, getExtraValueClasses(selectTop, extraValueClasses));
-        //todo adding extraParams for selectTop move here from top stack
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, selectTop, extraValueClasses);
 
         this.staticType = staticType;
 
-        this.selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), selectTop.getParams().size());
-    }
-
-    private static ValueClass[] getExtraValueClasses(SelectTop<ValueClass> selectTop, ValueClass... extraValueClasses) {
-        List<ValueClass> valueClasses = selectTop.getParams();
-        valueClasses.addAll(Arrays.asList(extraValueClasses));
-        return valueClasses.toArray(new ValueClass[0]);
+        this.selectTopInterfaces = FormAction.getSelectTop(selectTop, getOrderInterfaces());
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {

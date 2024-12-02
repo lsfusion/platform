@@ -561,8 +561,11 @@ public class Query<K,V> extends IQuery<K,V> {
         return executeClasses(env, MapFact.EMPTYORDER());
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env, ImOrderMap<? extends V, Boolean> orders) throws SQLException, SQLHandledException {
+        return executeClasses(env, orders, LimitOffset.NOLIMIT);
+    }
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env, ImOrderMap<? extends V, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
-        return executeClasses(session.sql, orders, LimitOffset.NOLIMIT, session.baseClass, env.getQueryEnv());
+        return executeClasses(session.sql, orders, limitOffset, session.baseClass, env.getQueryEnv());
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ImOrderMap<? extends Expr, Boolean> orders, ExecutionEnvironment env) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();

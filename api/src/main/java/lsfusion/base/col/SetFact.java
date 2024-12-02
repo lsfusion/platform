@@ -137,7 +137,7 @@ public class SetFact {
         return ((ImSet<T>)set1).addExcl(set2);
     }
 
-    public static <T> ImSet<T> filter(ImSet<? extends T> set, ImSet<? extends T> filter) {
+    public static <F, T extends F> ImSet<T> filter(ImSet<F> set, ImSet<T> filter) {
         return ((ImSet<T>)set).filter(filter);
     }
 
@@ -149,10 +149,6 @@ public class SetFact {
     }
     public static <F, T extends F> ImOrderSet<T> filterOrderFn(ImOrderSet<T> set, ImSet<F> filter) {
         return BaseUtils.immutableCast(BaseUtils.<ImOrderSet<F>>immutableCast(set).filterOrder(filter));
-    }
-    
-    public static <T> ImSet<T> nullFilter(ImSet<? extends T> set, ImSet<? extends T> filter) {
-        return set == null ? null : filter(set, filter);
     }
 
     public static <T> ImSet<T> remove(ImSet<? extends T> set, ImSet<? extends T> remove) {

@@ -116,7 +116,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         }
     }
 
-    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(SelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
+    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(FormSelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, StaticKeyData> keySources = new HashMap<>();
         StaticPropertyData<SDP> propSources = new StaticPropertyData<>();
         iterateChildGroup(hierarchy.getRoot(),  SetFact.EMPTYORDER(), MapFact.EMPTYORDER(), null, selectTop, keySources, propSources, hierarchy.getValueGroups());
@@ -161,14 +161,14 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         return mOrders.immutableOrder();
     }
 
-    private void iterateChildGroups(ImOrderSet<GroupObjectEntity> children, ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, SelectTop selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
+    private void iterateChildGroups(ImOrderSet<GroupObjectEntity> children, ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, FormSelectTop<Integer> selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
         for (GroupObjectEntity node : children) {
             iterateChildGroup(node, parentGroups, parentOrders, parentTable, selectTop, keySources, propSources, valueGroups);
         }
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, SelectTop<Integer> selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
+    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, FormSelectTop<Integer> selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
 
         ImSet<SDP> queryProperties = getQueryProperties(hierarchy.getProperties(thisGroup).getSet());
         
