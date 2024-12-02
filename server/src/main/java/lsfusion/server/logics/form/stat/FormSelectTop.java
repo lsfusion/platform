@@ -93,7 +93,7 @@ public class FormSelectTop<T> {
     }
 
     public SelectTop<T> getSelectTop(GroupObjectEntity group) {
-        return new SelectTop<>(BaseUtils.nvl(selectTops != null ? selectTops.get(group) : null, selectTop), BaseUtils.nvl(selectOffsets != null ? selectOffsets.get(group) : null, selectOffset));
+        return new SelectTop<>(BaseUtils.nvl(selectTops != null && group != null ? selectTops.get(group) : null, selectTop), BaseUtils.nvl(selectOffsets != null && group != null ? selectOffsets.get(group) : null, selectOffset));
     }
 
     private <X> FormSelectTop<X> mapValues(Function<T, X> map) {

@@ -760,7 +760,7 @@ public class BaseUtils {
     }
 
     public static String clause(String clause, String data) {
-        return (data.length() == 0 ? "" : " " + clause + " " + data);
+        return isRedundantString(data) ? "" : (" " + clause + " " + data);
     }
 
     public static <T> boolean replaceListElements(List<T> list, ImMap<T, T> to) {
