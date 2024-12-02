@@ -1339,10 +1339,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
                 dataValue = NumberFormat.getDecimalFormat().format(PValue.getNumberValue(value)).replace(
                         numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
-                BigDecimal numericValue = new BigDecimal(dataValue);
+                double doubleValue = new Double(dataValue);
                 int fractDigits = 0;
-                while (numericValue.longValue() - numericValue.doubleValue() != 0) {
-                    numericValue = numericValue.multiply(BigDecimal.TEN);
+                while ((long) doubleValue - doubleValue != 0) {
+                    doubleValue = doubleValue * 10;
                     fractDigits++;
                 }
                 if (fractDigits > 0) {
