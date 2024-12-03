@@ -1659,7 +1659,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     });
 
                     // in theory it would be better to use "common" orders scheme (that is used in the CompiledQuery), but it requires add extra propertySelect, etc.
-                    fromSelect = "(" + SQLSession.getSelect(syntax, fromSelect + (i>1?" q":""), keySelect.result, propertySelect, (i>1?SetFact.EMPTY():whereSelect.result),i>1?MapFact.EMPTYORDER():orders, i>1?"":limit,i>1?"":offset) + ")";
+                    fromSelect = "(" + SQLSession.getSelect(syntax, fromSelect + (i>1?" q":""), keySelect.result, propertySelect, (i>1?SetFact.EMPTY():whereSelect.result),i>1?MapFact.EMPTYORDER():orders, i>1 || limit==null?"":limit,i>1 || offset==null?"":offset) + ")";
                     keySelect.set(keySelect.result.keys().toMap()); // ключи просто превращаем в имена
                     tokens = nextTokens;
                 }

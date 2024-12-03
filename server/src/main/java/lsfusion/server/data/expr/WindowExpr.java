@@ -17,10 +17,10 @@ public class WindowExpr extends KeyExpr {
     }
 
     public static boolean has(ImCol<? extends Expr> group) {
-        return ((ImCol<Expr>)group).contains(WindowExpr.limit); // we are assuming that offset only when there is limit
+        return ((ImCol<Expr>)group).contains(WindowExpr.limit) || ((ImCol<Expr>)group).contains(WindowExpr.offset); // we are assuming that offset only when there is limit
     }
 
     public static <T> boolean has(T limit, T offset) {
-        return limit != null; // we are assuming that offset only when there is limit
+        return limit != null || offset != null; // we are assuming that offset only when there is limit
     }
 }
