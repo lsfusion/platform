@@ -354,7 +354,7 @@ public class GGridController extends GAbstractTableController {
             };
             updateButtonGroup.add(manualUpdateTableButton);
 
-            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
+            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> changeMode(GUpdateMode.FORCE);
