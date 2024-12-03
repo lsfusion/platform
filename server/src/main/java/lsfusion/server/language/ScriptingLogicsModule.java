@@ -4300,6 +4300,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             mapping.add(new LPWithParams(usedParam));
         }
 
+        mapping.addAll(selectTop.getParams());
+
         if (mapping.size() > 0) {
             return addScriptedJProp(property, mapping);
         } else {
