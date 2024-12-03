@@ -7,15 +7,13 @@ import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.Iterator;
 
-public class OpenAction extends InternalAction {
+public class OpenAction extends AOpenAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
     private final ClassPropertyInterface noWaitInterface;
@@ -48,15 +46,5 @@ public class OpenAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        return false;
-    }
-
-    @Override
-    protected boolean allowNulls() {
-        return true;
     }
 }

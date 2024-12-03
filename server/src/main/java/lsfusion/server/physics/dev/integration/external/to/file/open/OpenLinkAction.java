@@ -4,16 +4,14 @@ import com.google.common.base.Throwables;
 import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-public class OpenLinkAction extends InternalAction {
+public class OpenLinkAction extends AOpenAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface noWaitInterface;
     private final ClassPropertyInterface noEncodeInterface;
@@ -47,15 +45,5 @@ public class OpenLinkAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        return false;
-    }
-
-    @Override
-    protected boolean allowNulls() {
-        return true;
     }
 }
