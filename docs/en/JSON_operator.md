@@ -7,8 +7,12 @@ The `JSON` operator is property that creates JSON from [specified properties](Da
 ## Syntax
 
 ```
-JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
+JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr] )
 JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))] )
 ```
 
 ## Description
@@ -52,6 +56,16 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 - `DESC`
 
     Keyword. Specifies reverse sort order. By default, ascending sort is used.
+
+- `TOP topExpr`
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Export only first `n` records, where `n` is value of expression `topExpr` or `topPropertyExprT` for group object `topGroupIdT`.
+
+- `OFFSET offsetExpr`
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Export only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
 
 ## Examples
 

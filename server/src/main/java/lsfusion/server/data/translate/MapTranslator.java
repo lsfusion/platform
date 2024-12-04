@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.PullExpr;
+import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.value.Value;
 
@@ -22,7 +23,7 @@ public class MapTranslator extends AbstractMapTranslator {
     public ParamExpr translate(ParamExpr key) {
         ParamExpr transExpr = keys.get(key);
         if(transExpr==null) {
-            assert key instanceof PullExpr; // не должно быть
+            assert key instanceof PullExpr || WindowExpr.is(key); // window expr can be in caching (when where.getPushStatKeys don't use the WindowExpr key, but it is in groups)
             return key;
         } else
             return transExpr;

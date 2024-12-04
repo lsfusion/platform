@@ -7,8 +7,13 @@ title: 'Оператор EXPORT'
 ## Синтаксис
 
 ```
-EXPORT [exportFormat] [TOP n [OFFSET m]] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n [OFFSET m]] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] 
+  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
+  [TO (propertyId | (groupId1 = propertyId1, ..., groupIdM = propertyIdM))]
 ```
 
 `exportFormat` может задаваться одним из следующих вариантов:
@@ -80,6 +85,16 @@ TABLE
 
     Ключевое слово. Указывает на обратный порядок сортировки. По умолчанию используется сортировка по возрастанию.
 
+- `TOP topExpr`
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Экспорт только первых `n` записей, где `n` - значение выражения `topExpr` или `topPropertyExprT` для группы объектов `topGroupIdT`.
+
+- `OFFSET offsetExpr`
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Экспорт только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
+
 ### Формат экспорта
 
 - `ATTR`
@@ -113,10 +128,6 @@ TABLE
 - `sheetProperty`
 
   [Идентификатор свойства](IDs.md#propertyid), значение которого применяется в качестве названия листа в выгружаемом файле. У свойства не должно быть параметров. Используется для форматов экспорта `XLS`, `XLSX`.
-
-- `TOP n [OFFSET m]`
-
-    Экспортирует только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral) со смещением `m`(Целочисленный литерал).
 
 ### Назначение экспорта
 

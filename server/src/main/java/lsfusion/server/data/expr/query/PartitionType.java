@@ -31,6 +31,8 @@ public abstract class PartitionType implements AggrType {
         return SUM;
     }
 
+    public final static String SELECT_FUNC = "SELECT";
+
     public static PartitionType previous() {
         return PREVIOUS;
     }
@@ -52,6 +54,15 @@ public abstract class PartitionType implements AggrType {
             return new PartitionCalc(new PartitionCalc.Aggr("SUM", exprs, orders, partitions));
         }
     };
+    private final static PartitionType SELECT = new PartitionType() {
+        protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
+            return new PartitionCalc(new PartitionCalc.Aggr(SELECT_FUNC, exprs, orders, partitions));
+        }
+    };
+
+    public static PartitionType select() {
+        return SELECT;
+    }
 
     public final static PartitionType PREVIOUS = new PartitionType() {
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {

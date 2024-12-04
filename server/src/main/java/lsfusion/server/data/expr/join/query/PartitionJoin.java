@@ -4,12 +4,12 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -25,40 +25,8 @@ import lsfusion.server.data.where.Where;
 
 public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, PartitionJoin, PartitionJoin.QueryOuterContext> {
 
-    public static class Query extends QueryJoin.Query<KeyExpr, Query> {
-        private final Where where;
-        private final ImSet<Expr> partitions;
-
-        public Query(InnerExprFollows<KeyExpr> follows, Where where, ImSet<Expr> partitions) {
-            super(follows);
-            this.where = where;
-            this.partitions = partitions;
-        }
-
-        public Query(Query query, MapTranslate translate) {
-            super(query, translate);
-            where = query.where.translateOuter(translate);
-            partitions = translate.translate(query.partitions);
-        }
-
-        public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
-        }
-
-        protected boolean isComplex() {
-            return true;
-        }
-        public int hash(HashContext hashContext) {
-            return (31 * super.hash(hashContext) + hashOuter(partitions, hashContext)) * 31 + where.hashOuter(hashContext);
-        }
-
-        protected Query translate(MapTranslate translator) {
-            return new Query(this, translator);
-        }
-
-        public ImSet<OuterContext> calculateOuterDepends() {
-            return super.calculateOuterDepends().merge(SetFact.<OuterContext>merge(partitions, where));
-        }
+    public PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, InnerExprFollows<KeyExpr> innerFollows, Where inner, ImSet<Expr> partitions, ImMap<KeyExpr, BaseExpr> group, ImOrderMap<Expr, Boolean> limitOrders) {
+        super(keys, values, new Query(innerFollows, inner, partitions, limitOrders), group);
     }
     
     @IdentityLazy
@@ -66,8 +34,8 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
         return query.where.mapWhere(group);
     }
 
-    public PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, InnerExprFollows<KeyExpr> innerFollows, Where inner, ImSet<Expr> partitions, ImMap<KeyExpr, BaseExpr> group) {
-        super(keys, values, new Query(innerFollows, inner, partitions), group);
+    public static StatKeys<KeyExpr> getStatKeys(Where where, ImSet<KeyExpr> keys, StatType type, StatKeys<KeyExpr> pushStatKeys) {
+        return where.getPushedStatKeys(keys, type, pushStatKeys);
     }
 
     private PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
@@ -112,13 +80,43 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
             GroupExprWhereJoins<Expr> groupWhereJoins = getGroupWhereJoins(type, usedPartitions.result); // так как в partitions expr'ы, а нужны baseExpr'ы
             return groupWhereJoins.getPartitionStatKeys(query.where, type, pushStatKeys, useWhere.result, keys);
         } else
-            return query.where.getPushedStatKeys(keys, type, pushStatKeys);
+            return getStatKeys(query.where, keys, type, pushStatKeys); // maybe makes sense to make where.getOuterKeys in the getStatKey
 
         // через self join не правильно, так как на самом деле через группировку проталкивается (смотри )
 //        Pair<Where, ImRevMap<KeyExpr, KeyExpr>> selfJoin = getSelfJoin(pushStatKeys.getKeys());
 //
 //        StatKeys<KeyExpr> mappedStatKeys = pushStatKeys.mapBack(selfJoin.second.reverse());// mapp'им
 //        return selfJoin.first.getStatKeys(this.keys, type, mappedStatKeys); // не full так как статистика по key' не интересует
+    }
+
+    private ImSet<KeyExpr> filterFullKeys(ImSet<KeyExpr> keys, Result<ImSet<Expr>> usedPartitions, Result<Boolean> useWhere, boolean assertFull) {
+        MSet<KeyExpr> mAllPartitionKeys = SetFact.mSet();
+        MExclSet<Expr> mUsedPartitions = usedPartitions == null ? null : SetFact.mExclSet();
+        ImSet<Expr> partitions = getPartitions();
+        for(Expr partition : partitions) {
+            ImSet<KeyExpr> partitionKeys = BaseUtils.immutableCast(partition.getOuterKeys());
+            if(keys.containsAll(partitionKeys)) {
+                mAllPartitionKeys.addAll(partitionKeys);
+                if(mUsedPartitions != null)
+                    mUsedPartitions.exclAdd(partition);
+            } else {
+                if(keys.intersect(partitionKeys) && usePartitionPushWhere) { // докидываем where и возвращаем все partitions
+                    if(usedPartitions != null)
+                        usedPartitions.set(partitions);
+                    if(useWhere != null)
+                        useWhere.set(true);
+                    return keys;
+                } // иначе просто выкидываем
+            }
+        }
+
+        if(usedPartitions != null)
+            usedPartitions.set(mUsedPartitions.immutable());
+        if(useWhere != null)
+            useWhere.set(false);
+        ImSet<KeyExpr> result = mAllPartitionKeys.immutable();
+        assert !assertFull || BaseUtils.hashEquals(result, keys); // выкинули уже в getPushKeys
+        return result; // не берем ключи, которые не входят ни в один partition (хотя это и не критично)
     }
 
 //    @IdentityLazy // результат map старые на новые
@@ -147,54 +145,24 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
 //    если полностью принадлежит - берем
 //    если смешано или добавляем where и все partition'ы или тоже выкидываем
 
-    private ImSet<KeyExpr> filterFullKeys(ImSet<KeyExpr> keys, Result<ImSet<Expr>> usedPartitions, Result<Boolean> useWhere, boolean assertFull) {
-        MSet<KeyExpr> mAllPartitionKeys = SetFact.mSet();
-        MExclSet<Expr> mUsedPartitions = usedPartitions == null ? null : SetFact.mExclSet();
-        for(Expr partition : getPartitions()) {
-            ImSet<KeyExpr> partitionKeys = BaseUtils.immutableCast(partition.getOuterKeys());
-            if(keys.containsAll(partitionKeys)) { // пересекается
-                mAllPartitionKeys.addAll(partitionKeys);
-                if(mUsedPartitions != null)
-                    mUsedPartitions.exclAdd(partition);
-            } else {
-                if(keys.intersect(partitionKeys) && usePartitionPushWhere) { // докидываем where и возвращаем все partitions
-                    if(usedPartitions != null)
-                        usedPartitions.set(getPartitions());
-                    if(useWhere != null)
-                        useWhere.set(true);
-                    return keys;
-                } // иначе просто выкидываем
-            }
-        }
-
-        if(usedPartitions != null)
-            usedPartitions.set(mUsedPartitions.immutable());
-        if(useWhere != null)
-            useWhere.set(false);
-        ImSet<KeyExpr> result = mAllPartitionKeys.immutable();
-        assert !assertFull || BaseUtils.hashEquals(result, keys); // выкинули уже в getPushKeys
-        return result; // не берем ключи, которые не входят ни в один partition (хотя это и не критично)
-    }
-
     @Override
-    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<KeyExpr, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
+    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<KeyExpr, ? extends Expr> group, Result<Where> pushExtraWhere) {
         ImSet<Expr> usedPartitions;
+        Result<ImSet<Expr>> rUsedPartitions = new Result<>(); Result<Boolean> rUseWhere = new Result<>();
+        filterFullKeys(group.keys(), rUsedPartitions, rUseWhere, true);
+        usedPartitions = rUsedPartitions.result;
         Where extraWhere = Where.TRUE();
-        if (newPush) {
-            Result<ImSet<Expr>> rUsedPartitions = new Result<>(); Result<Boolean> rUseWhere = new Result<>();
-            filterFullKeys(group.keys(), rUsedPartitions, rUseWhere, true);
-            usedPartitions = rUsedPartitions.result;
-            if(rUseWhere.result)
-                extraWhere = getWhere();
-        } else {
-            usedPartitions = getPartitions();
-            group = getJoins().filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterSetKeys(usedPartitions))); // берем все ключи, хотя формально можно было бы брать только смежные от переданных, но эта ветка все равно уйдет
-        }
+        if(rUseWhere.result)
+            extraWhere = getWhere();
 
         KeyExprTranslator translator = new KeyExprTranslator(group);
         if(pushExtraWhere != null)
             pushExtraWhere.set(extraWhere.translateExpr(translator));
         return translator.translate(usedPartitions.toMap());
+    }
+
+    public ImOrderMap<Expr, Boolean> getOrders() {
+        return query.orders;
     }
 
     @Override
@@ -211,5 +179,44 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
 
     public ImSet<Expr> getPartitions() {
         return query.partitions;
+    }
+
+    public static class Query extends QueryJoin.Query<KeyExpr, Query> {
+        private final Where where;
+        private final ImOrderMap<Expr, Boolean> orders;
+        private final ImSet<Expr> partitions;
+
+        public Query(InnerExprFollows<KeyExpr> follows, Where where, ImSet<Expr> partitions, ImOrderMap<Expr, Boolean> limitOrders) {
+            super(follows);
+            this.where = where;
+            this.partitions = partitions;
+            this.orders = limitOrders;
+        }
+
+        public Query(Query query, MapTranslate translate) {
+            super(query, translate);
+            where = query.where.translateOuter(translate);
+            partitions = translate.translate(query.partitions);
+            orders = translate.translate(query.orders);
+        }
+
+        public boolean calcTwins(TwinImmutableObject o) {
+            return super.calcTwins(o) && partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where) && orders.equals(((Query) o).orders);
+        }
+
+        protected boolean isComplex() {
+            return true;
+        }
+        public int hash(HashContext hashContext) {
+            return 31 * ((31 * super.hash(hashContext) + hashOuter(partitions, hashContext)) * 31 + where.hashOuter(hashContext)) + hashOuter(orders, hashContext);
+        }
+
+        protected Query translate(MapTranslate translator) {
+            return new Query(this, translator);
+        }
+
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return super.calculateOuterDepends().merge(SetFact.<OuterContext>merge(partitions, where)).merge(orders.keys());
+        }
     }
 }

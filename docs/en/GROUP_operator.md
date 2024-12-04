@@ -12,6 +12,7 @@ type expr1, ..., exprN
 [ORDER [DESC] orderExpr1, ..., orderExprK]
 [WHERE whereExpr]
 [BY groupExpr1, ..., groupExprM]
+[TOP topExpr] [OFFSET offsetExpr]
 ```
 
 ### Description
@@ -58,6 +59,14 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 - `whereExpr`
 
     Filtering expression. Only object groups for which the value of the filtering expression is not `NULL` will participate in the grouping.
+
+- `TOP topExpr`
+
+    Only first `n` records will participate in the grouping, where `n` is value of expression `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
 
 ### Examples
 

@@ -52,7 +52,7 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<I, ? extends ObjectValue> innerValues = mapInterfaces.crossJoin(context.getKeys());
-        ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces.remove(innerValues.keys()));
+        ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(getExtendInterfaces());
         ImMap<I, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(innerValues));
 
         FlowResult result = executeExtend(context, innerKeys, innerValues, innerExprs);

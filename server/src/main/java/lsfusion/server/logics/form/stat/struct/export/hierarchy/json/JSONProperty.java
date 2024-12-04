@@ -38,6 +38,7 @@ import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.AbstractFormDataInterface;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.hierarchy.*;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
@@ -75,12 +76,16 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     protected final ImSet<ContextFilterSelector<ClassPropertyInterface, O>> contextFilters;
 
+    protected final FormSelectTop<ClassPropertyInterface> selectTop;
+
     private boolean returnString;
 
     public JSONProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
-                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, boolean returnString) {
-        super(caption, FormAction.getValueClasses(form, objectsToSet, orderContextInterfaces.size(), new ValueClass[0]));
+                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
+                        FormSelectTop<ValueClass> selectTop,
+                        boolean returnString) {
+        super(caption, FormAction.getValueClasses(form, objectsToSet, orderContextInterfaces.size(), new ValueClass[0], selectTop));
 
         this.form = form;
 
@@ -93,6 +98,8 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         ImRevMap<PropertyInterface, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
+
+        this.selectTop = FormAction.getSelectTop(selectTop, orderInterfaces);
 
         this.returnString = returnString;
     }
@@ -118,9 +125,11 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         ParseNode parseNode = staticHierarchy.getIntegrationHierarchy();
 
-        FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())));
+        FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())), selectTop);
 
-        return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), mappedObjects, returnString);
+        ImRevMap<ClassPropertyInterface, ClassPropertyInterface> mapValues = contextInterfaces.addExcl(SetFact.fromJavaSet(selectTop.getParams())).toRevMap();
+
+        return parseNode.getJSONProperty(formInterface, mapValues, mappedObjects, returnString);
     }
 
     private static ObjectValue fromJSON(ValueClass valueClass, Object jsonValue, DataSession session) throws SQLException, SQLHandledException {

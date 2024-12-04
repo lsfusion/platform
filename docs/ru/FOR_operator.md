@@ -9,6 +9,7 @@ title: 'Оператор FOR'
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
 [NEW [alias =] className]
+[TOP topExpr] [OFFSET offsetExpr]
 DO action
 [ELSE alternativeAction]
 ```
@@ -51,6 +52,14 @@ action
 - `className`
 
     Имя класса создаваемого объекта. Задается [идентификатором класса](IDs.md#classid).
+
+- `TOP topExpr`
+
+  В цикле будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
+
+- `OFFSET offsetExpr`
+
+  В цикле будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
 
 - `action`
 
