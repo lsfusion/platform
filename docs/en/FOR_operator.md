@@ -9,6 +9,7 @@ The `FOR` operator creates an [action](Actions.md) that implements [loop](Loop_F
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
 [NEW [alias =] className]
+[TOP topExpr] [OFFSET offsetExpr]
 DO action
 [ELSE alternativeAction]
 ```
@@ -51,6 +52,14 @@ In the case when the operator contains a `NEW` block, and no condition is specif
 - `className`
 
     The name of the class of the object to create. Defined by a [class ID](IDs.md#classid).
+
+- `TOP topExpr`
+
+    Only first `n` records will participate in the iteration, where `n` is value of expression `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    Only records with offset `m` will participate in the iteration, where `m` is value of expression `offsetExpr`.
 
 - `action`
 

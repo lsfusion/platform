@@ -1,8 +1,10 @@
 package lsfusion.server.data.expr.query;
 
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -47,6 +49,9 @@ public interface AggrType {
     // may return null if the expression itself is not null
     default boolean canBeNull() {
         return false;
+    }
+    static boolean canBeNull(AggrType type, ImCol<? extends Expr> group) {
+        return type.canBeNull() || WindowExpr.has(group);
     }
 
     // there is an assertion that first expr is in where, see (PartitionExpr / GroupExpr).Query.and

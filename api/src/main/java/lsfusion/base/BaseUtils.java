@@ -56,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 312;
+        return 313;
     }
 
     public static String getPlatformVersion() {
@@ -760,7 +760,7 @@ public class BaseUtils {
     }
 
     public static String clause(String clause, String data) {
-        return (data.length() == 0 ? "" : " " + clause + " " + data);
+        return data.isEmpty() ? "" : (" " + clause + " " + data);
     }
 
     public static <T> boolean replaceListElements(List<T> list, ImMap<T, T> to) {

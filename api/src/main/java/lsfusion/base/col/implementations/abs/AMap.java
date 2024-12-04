@@ -385,6 +385,14 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return filterFn(new NotFunctionSet<>((FunctionSet<K>) keys));
     }
 
+    @Override
+    public ImMap<K, V> removeFn(FunctionSet<K> remove) {
+        if(remove.isEmpty())
+            return this;
+
+        return filterFn(new NotFunctionSet<>(remove));
+    }
+
     public <EV extends V> ImMap<K, EV> filterValues(ImSet<EV> values) {
         return BaseUtils.immutableCast(filterFnValues(BaseUtils.<FunctionSet<V>>immutableCast(values)));
     }

@@ -12,6 +12,7 @@ type expr1, ..., exprN
 [ORDER [DESC] orderExpr1, ..., orderExprK]
 [WHERE whereExpr]
 [BY groupExpr1, ..., groupExprM]
+[TOP topExpr] [OFFSET offsetExpr]
 ```
 
 ### Описание
@@ -58,6 +59,14 @@ type expr1, ..., exprN
 - `whereExpr`
 
     Фильтрующее выражение. В группировке будут участвовать только те наборы объектов, для которых значение фильтрующего выражения не равно `NULL`.
+
+- `TOP topExpr`
+
+    В группировке будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    В группировке будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
 
 ### Примеры
 

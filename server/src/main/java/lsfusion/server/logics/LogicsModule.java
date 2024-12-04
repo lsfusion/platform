@@ -58,6 +58,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.OutFormSelector;
@@ -84,6 +85,7 @@ import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.open.stat.PrintAction;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
@@ -637,21 +639,21 @@ public abstract class LogicsModule {
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType,
                                                           MessageClientType messageType, LP targetProp, boolean removeNullsAndDuplicates,
-                                                          SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
+                                                          FormSelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, messageType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
+                staticType, server, syncType, messageType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                            boolean returnString) {
-        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, returnString);
+                                                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
+                                                            FormSelectTop<ValueClass> selectTop, boolean returnString) {
+        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, selectTop, returnString);
 
         return addProperty(group, new LP<>(property));
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                        FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape,
-                                                       SelectTop<ValueClass> selectTop, String charset,
+                                                       FormSelectTop<ValueClass> selectTop, String charset,
                                                        LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass sheetName, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
@@ -698,7 +700,7 @@ public abstract class LogicsModule {
                     directLI(addImportFAProp(importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, isPlain)))); // IMPORT type form...
             }        
         
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
+        return addForAProp(LocalizedString.create("{logics.add}"), false, false, SelectTop.NULL(), false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
                         new Object[] {addJProp(baseLM.equals2, 1, baseLM.extension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
@@ -769,9 +771,11 @@ public abstract class LogicsModule {
         }
     }
 
-    private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
+    private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+                                               boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
+
         final ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (hasWhere ? 1 : 0));
         ImOrderSet<PropertyInterface> mapInterfaces = BaseUtils.immutableCast(readImplements.subList(0, resInterfaces).toOrderExclSet());
 
@@ -785,9 +789,11 @@ public abstract class LogicsModule {
         return integrationForm;
     }
 
-    protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) throws FormEntity.AlreadyDefined {
+    protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+                                                                                  PropertyInterfaceImplement<I> where) throws FormEntity.AlreadyDefined {
         // creating integration form
-        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, where, orders, false, version);
+        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, innerClasses, mapInterfaces, properties, propUsages,
+                where, orders, false, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
@@ -796,16 +802,16 @@ public abstract class LogicsModule {
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                             boolean hasWhere, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
+                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
 
-        return addJSONFormProp(caption, integrationForm, returnString);
+        return addJSONFormProp(caption, integrationForm, selectTop, returnString);
     }
 
-    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm, boolean returnString) {
+    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm, SelectTop<ValueClass> selectTop, boolean returnString) {
         // creating action
         return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls,
-                SetFact.EMPTYORDER(), SetFact.EMPTY(), returnString);
+                SetFact.EMPTYORDER(), SetFact.EMPTY(), selectTop.getFormSelectTop(), returnString);
     }
 
     // ------------------- Export property action ----------------- //
@@ -822,7 +828,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, sheetName, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop.getFormSelectTop(), charset, singleExportFile, exportFiles, sheetName, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
@@ -967,7 +973,7 @@ public abstract class LogicsModule {
 
     // ------------------- For action ----------------- //
 
-    protected LA addForAProp(LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
+    protected LA addForAProp(LocalizedString caption, boolean ascending, boolean ordersNotNull, SelectTop<Integer> selectTop, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(innerInterfaces, params);
 
@@ -990,8 +996,13 @@ public abstract class LogicsModule {
 
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
+        SelectTop<PropertyInterface> selectTopInterfaces = selectTop.genInterfaces();
+        ImOrderSet<PropertyInterface> selectOrderInterfaces = selectTopInterfaces.getParamsOrderSet();
+        innerInterfaces = innerInterfaces.addOrderExcl(selectOrderInterfaces);
+        mapInterfaces = SetFact.addOrderExcl(mapInterfaces, selectOrderInterfaces);
+
         return addAction(null, new LA<>(
-                new ForAction<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
+                new ForAction<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, selectTopInterfaces, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
         );
     }
 
@@ -1347,12 +1358,12 @@ public abstract class LogicsModule {
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
-        return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
+        return mapLGProp(group, persistent, property.getPropertyImplement(), listImplements);
     }
 
     // ------------------- Order property ----------------- //
 
-    protected <P extends PropertyInterface> LP addOProp(Group group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, boolean includeLast, int exprCnt, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(Group group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, SelectTop<Integer> selectTop, int exprCnt, int partNum, Object... params) {
         ImOrderSet<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(interfaces, params);
 
@@ -1360,7 +1371,12 @@ public abstract class LogicsModule {
         ImList<PropertyInterfaceImplement<PropertyInterface>> propsList = listImplements.subList(partNum, partNum + exprCnt);
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + exprCnt, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
-        return mapLProp(group, persistent, PropertyFact.createOProp(caption, partitionType, interfaces.getSet(), propsList, partitions, orders, ordersNotNull, includeLast), interfaces);
+        SelectTop<PropertyInterface> selectTopInterfaces = selectTop.genInterfaces();
+        ImOrderSet<PropertyInterface> selectOrderInterfaces = selectTopInterfaces.getParamsOrderSet();
+        interfaces = interfaces.addOrderExcl(selectOrderInterfaces);
+        partitions = SetFact.addExclSet(partitions, BaseUtils.immutableCast(selectOrderInterfaces.getSet()));
+
+        return mapLProp(group, persistent, PropertyFact.createOProp(caption, partitionType, interfaces.getSet(), propsList, partitions, orders, ordersNotNull, selectTopInterfaces), interfaces);
     }
 
     protected <P extends PropertyInterface> LP addRProp(Group group, boolean persistent, LocalizedString caption, Cycle cycle, DebugInfo.DebugPoint debugPoint, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
@@ -1503,12 +1519,12 @@ public abstract class LogicsModule {
 
     // ------------------- Override property ----------------- //
 
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
-        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addOGProp(group, persist, caption, type, hasWhere, numExprs, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
-    }
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        assert type == GroupType.CONCAT || type == GroupType.LAST || type instanceof GroupType.Custom;
+    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numExprs, int numOrders, boolean ordersNotNull, SelectTop<Integer> selectTop, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+        ImOrderSet<T> innerInterfaces = (ImOrderSet<T>) genInterfaces(interfaces);
+
+        ImList<PropertyInterfaceImplement<T>> listImplements = readCalcImplements(innerInterfaces, params);
+
+//        assert type == GroupType.CONCAT || type == GroupType.LAST || type instanceof GroupType.Custom;
         ImList<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         PropertyInterfaceImplement<T> where = null;
         if(hasWhere) {
@@ -1519,7 +1535,14 @@ public abstract class LogicsModule {
         ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
         ImList<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
 
-        OrderGroupProperty<T> property = OrderGroupProperty.create(caption, innerInterfaces.getSet(), groups.getCol(), props, where, type, orders, ordersNotNull);
+        SelectTop<T> selectTopInterfaces = selectTop.genInterfaces();
+        ImOrderSet<T> selectOrderInterfaces = selectTopInterfaces.getParamsOrderSet();
+        innerInterfaces = innerInterfaces.addOrderExcl(selectOrderInterfaces);
+        groups = ListFact.add(groups, BaseUtils.immutableCast(selectOrderInterfaces));
+        for(int i = 0, size = selectOrderInterfaces.size(); i < size; i++)
+           explicitInnerClasses = BaseUtils.add(explicitInnerClasses, LongClass.instance);
+
+        OrderGroupProperty<T> property = OrderGroupProperty.create(caption, innerInterfaces.getSet(), groups.getCol(), props, where, type, orders, ordersNotNull, selectTopInterfaces);
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         return mapLGProp(group, persist, property, groups);
@@ -1949,7 +1972,7 @@ public abstract class LogicsModule {
                 new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
         );
 
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
+        return addForAProp(LocalizedString.create("{logics.add}"), false, false, SelectTop.NULL(), false, false, contextParams, cls, true, false, 0, false,
                 BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
     }
 
@@ -2181,7 +2204,7 @@ public abstract class LogicsModule {
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy), null), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy), null).getFormSelectTop(), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

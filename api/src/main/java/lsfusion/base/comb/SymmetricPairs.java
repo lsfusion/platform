@@ -10,7 +10,7 @@ public class SymmetricPairs<T> extends Pairs<T,T> {
         super(from, to);
     }
 
-    public static <T> SymmetricPairs<T> create(ImSet<? extends T> from, ImSet<? extends T> to) {
+    public static <T> SymmetricPairs<T> create(ImSet<T> from, ImSet<T> to) {
         ImSet<T> sameList = SetFact.filter(from, to);
         ImSet<T> diffFrom = SetFact.remove(from, sameList);
         ImSet<T> diffTo = SetFact.remove(to, sameList);

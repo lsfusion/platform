@@ -8,9 +8,9 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -110,20 +110,28 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
     @Override
     public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects, boolean returnString) {
-        ImRevMap<ObjectEntity, PropertyInterface> mapGroupObjects = group.getObjects().mapRevValues(() -> new PropertyInterface());
 
         // we could generate new interfaces here, but not sure that it makes sense, so we'll use the existing ones
         ImSet<PropertyInterface> outerInterfaces = (ImSet<PropertyInterface>) mapValues.valuesSet().addExcl(mapObjects.valuesSet());
+        ImRevMap<P, PropertyInterface> outerValues = BaseUtils.immutableCast(mapValues);
 
-        ImRevMap<ObjectEntity, PropertyInterface> mapInnerObjects = MapFact.addRevExcl(mapObjects, mapGroupObjects);
+        ImRevMap<ObjectEntity, PropertyInterface> mapInnerObjects = MapFact.addRevExcl(mapObjects, group.getObjects().mapRevValues(() -> new PropertyInterface()));
 
-        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects, true, returnString), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
+        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, outerValues, mapInnerObjects, true, returnString), form.getWhere(this.group, outerValues, mapInnerObjects));
 
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = form.getOrders(this.group, mapInnerObjects);
 
         ImSet<PropertyInterface> usedInnerInterfaces = PropertyFact.getUsedInterfaces(group).merge(PropertyFact.getUsedInterfaces(orders.keys()));
 
+        SelectTop<PropertyInterface> selectTop = form.getSelectTop(this.group, outerValues);
+        if(!selectTop.isEmpty()) {
+            ImSet<PropertyInterface> selectTopParams = selectTop.getParamsSet();
+            usedInnerInterfaces = usedInnerInterfaces.addExcl(selectTopParams);
+            assert outerInterfaces.containsAll(selectTopParams);
+        }
+
         // actually outerInterfaces are X interfaces, so in the end there will be only X interfaces
-        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), ListFact.singleton(group), orders, false);
+
+        return (PropertyMapImplement<?, X>) PropertyFact.createGProp(GroupType.JSON_CONCAT, usedInnerInterfaces, outerInterfaces.filter(usedInnerInterfaces), ListFact.singleton(group), orders, false, selectTop);
     }
 }

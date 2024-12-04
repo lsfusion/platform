@@ -94,6 +94,14 @@ The `ORDER` block defines the order in which the aggregate function will be calc
 
     A list of expressions that define the order in which object collections will be iterated when calculating the aggregate function or during distribution. To determine the order, first the value of the first expression is used; then, if equal, the value of the second is used, etc. 
 
+- `TOP topExpr`
+
+    Only first `n` records will participate in the grouping, where `n` is value of expression `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
+
 ### Examples
 
 ```lsf
