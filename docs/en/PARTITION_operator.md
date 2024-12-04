@@ -12,6 +12,7 @@ There are two different types of `PARTITION` operator. The first implements part
 PARTITION 
 type expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 
@@ -21,6 +22,7 @@ The second implements simple distribution:
 PARTITION 
 UNGROUP propertyId distributionType expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 

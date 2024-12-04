@@ -1946,7 +1946,8 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, $to.result, groupContext, debugPoint);
+		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type,
+		    $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, $gp.selectTop, groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -1954,10 +1955,10 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	:	'GROUP'
 	    gp=groupPropertyBodyDefinition[groupContext]
 	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
-	    (to = topOffset[context, dynamic])?
 	;
 	
-groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
+groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(),
+    List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null, SelectTop<LPWithParams> selectTop = null]
 	:
     	(
     	    gt=groupingType { $type = $gt.type; }
@@ -1982,6 +1983,7 @@ groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType 
             )
             { $type = new CustomGroupingType($gct.func, setOrdered, $gct.cls, $gct.valueNull); }
         )
+        (to = topOffset[context, true] { $selectTop = $to.result; })?
         ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
@@ -2055,11 +2057,11 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
                 orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); }
             )
         )
+        (to = topOffset[context, dynamic])?
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll(0, $exprList.props); }
     		{ groupExprCnt = $exprList.props.size(); }
 		)?
-		(to = topOffset[context, dynamic])?
 	;
 
 
@@ -4639,9 +4641,9 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 			('DESC' { descending = true; } )? 
 			ordExprs=nonEmptyPropertyExpressionList[newContext, true] { orders = $ordExprs.props; }
 		)?
+		(to = topOffset[context, false])?
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
-		(to = topOffset[context, false])?
 		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false, false]
 		( {!recursive}?=> 'ELSE' elseActDB=keepContextFlowActionDefinitionBody[context, false])?
 	;

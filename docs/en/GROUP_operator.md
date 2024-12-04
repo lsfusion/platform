@@ -10,9 +10,9 @@ The `GROUP` operator creates a [property](Properties.md) implementing [grouping]
 GROUP 
 type expr1, ..., exprN
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [WHERE whereExpr]
 [BY groupExpr1, ..., groupExprM]
-[TOP topExpr] [OFFSET offsetExpr]
 ```
 
 ### Description
@@ -56,17 +56,17 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 
     A list of expressions that define the order in which object collections will be iterated over when calculating the aggregate function. To determine the order, first the value of the first expression is used; then, if equal, the value of the second is used, etc. 
 
-- `whereExpr`
-
-    Filtering expression. Only object groups for which the value of the filtering expression is not `NULL` will participate in the grouping.
-
 - `TOP topExpr`
 
-    Only first `n` records will participate in the grouping, where `n` is value of expression `topExpr`.
+  Only first `n` records will participate in the grouping, where `n` is value of expression `topExpr`.
 
 - `OFFSET offsetExpr`
 
-    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
+  Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
+
+- `whereExpr`
+
+    Filtering expression. Only object groups for which the value of the filtering expression is not `NULL` will participate in the grouping.
 
 ### Examples
 
@@ -86,5 +86,5 @@ CLASS Tag;
 name = DATA STRING[100] (Tag);
 in = DATA BOOLEAN (Book, Tag);
 
-tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t;
+tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t TOP 100 OFFSET 0;
 ```
