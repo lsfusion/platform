@@ -6,6 +6,11 @@ public class SyncPropertyEntitiesTask extends SyncTask {
         return "Synchronizing property entities";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizePropertyEntities();
     }

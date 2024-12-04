@@ -6,13 +6,11 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.text.ParseException;
 
@@ -24,22 +22,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-//        if(!hasOldValue && oldValue == null)
-//            oldValue = getDefaultNullValue();
-
         super.start(handler, parent, renderContext, notFocusable, oldValue);
 
         if (started && !isNative()) {
-//            assert oldValue != null;
             createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
             openPicker(); // date range picker is opened only on click
 
-            if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
-                inputElement.select();
-
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
-
-//            getInputElement().click();
         }
     }
 
@@ -54,10 +43,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         commit(parent);
     }
 
-    protected void pickerCancel(Element parent) {
+    protected void pickerCancel() {
         cancel();
     }
-
 
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
@@ -108,10 +96,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
     }-*/;
 
-    private GFlexAlignment getHorzTextAlignment() {
-        return property.getHorzTextAlignment(); // should be taken from RenderContext, but for now this would do
-    }
-
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
@@ -149,7 +133,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 "firstDay": 1,
                 format: $wnd.moment().toMomentFormatString(pattern)
             },
-//            parentEl: parent,
             timePicker: !date,
             timePicker24Hour: true,
             showDropdowns: true,
@@ -167,6 +150,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 messages.@lsfusion.gwt.client.ClientMessages::clear()(), @lsfusion.gwt.client.view.MainFrame::preDefinedDateRangesNames) : undefined,
             singleDatePicker: singleDatePicker,
             drops: 'auto',
+
+//          to make the behaviour when editing a cell with date and a cell with text the same,
+//          disable autoUpdateInput so that the field is not filled in automatically when editing starts
+            autoUpdateInput: false,
             opens: 'left', // thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()()
             alwaysShowCalendars: true
         };
@@ -175,6 +162,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             options.endDate = endDate;
         }
         editElement.daterangepicker(options);
+
+//       return autoUpdateInput after opening the picker and starting editing
+        thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
 
         //show only time picker
         if (time) {
@@ -198,7 +188,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         }
 
         editElement.on('cancel.daterangepicker', function () {
-            thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent);
+            thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)();
         });
 
         editElement.on('apply.daterangepicker', function () {

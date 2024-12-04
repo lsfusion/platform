@@ -183,6 +183,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         }
         pool.writeInt(outStream, entity.pageSize);
         outStream.writeBoolean(needVScroll);
+        outStream.writeBoolean(entity.enableManualUpdate);
         outStream.writeUTF(getSID());
     }
 

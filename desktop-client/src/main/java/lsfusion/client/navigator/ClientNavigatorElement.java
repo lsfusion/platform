@@ -1,5 +1,6 @@
 package lsfusion.client.navigator;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.client.base.view.ClientImages;
@@ -7,6 +8,8 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import javax.swing.*;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.SwingUtils.getEventCaption;
 
 public abstract class ClientNavigatorElement {
 
@@ -27,6 +31,13 @@ public abstract class ClientNavigatorElement {
     public String path;
     public String caption;
     public boolean hide;
+
+    public KeyInputEvent changeKey;
+    public Integer changeKeyPriority;
+    public boolean showChangeKey;
+    public MouseInputEvent changeMouse;
+    public Integer changeMousePriority;
+    public boolean showChangeMouse;
 
     public String elementClass;
 
@@ -63,6 +74,13 @@ public abstract class ClientNavigatorElement {
             parentWindow = inStream.readBoolean();
         }
 
+        changeKey = BaseUtils.readObject(inStream);
+        changeKeyPriority = SerializationUtil.readInt(inStream);
+        showChangeKey = inStream.readBoolean();
+        changeMouse = BaseUtils.readObject(inStream);
+        changeMousePriority = SerializationUtil.readInt(inStream);
+        showChangeMouse = inStream.readBoolean();
+
         appImage = IOUtils.readAppImage(inStream);
 
         asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
@@ -91,7 +109,7 @@ public abstract class ClientNavigatorElement {
     }
 
     public String toString() {
-        return caption;
+        return getCaption();
     }
 
     public ClientNavigatorElement findElementByCanonicalName(String canonicalName) {
@@ -148,7 +166,12 @@ public abstract class ClientNavigatorElement {
                 String.format("<html>%s" +
                         "<b>sID:</b> %s<br/>" +
                         "<b>" + getString("logics.scriptpath") + ":</b> %s<br/>" +
-                        "</html>", caption != null ? ("<b>" + caption + "</b><br/><hr>") : "",
-                        canonicalName, creationPath) : caption;
+                        "</html>", caption != null ? ("<b>" + getCaption() + "</b><br/><hr>") : "",
+                        canonicalName, creationPath) : getCaption();
+    }
+
+    private String getCaption() {
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
+        return caption != null ? (caption + (eventCaption != null ? (" (" + eventCaption + ")") : "")) : null;
     }
 }

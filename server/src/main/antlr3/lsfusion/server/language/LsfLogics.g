@@ -1247,7 +1247,7 @@ changeEventDeclaration returns [Object type]
     ;
 
 formContainerEventDeclaration returns [String sid, boolean collapse = false]
-    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND')
+    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND' | 'TAB')
         (   obj=ID { $sid = $obj.text; }
         |   comp=formContainersComponentSelector { $sid = $comp.sid; }
         )
@@ -5201,7 +5201,23 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
 	|   'SHOWIF' showIfExpr = propertyExpression[null, false] { $options.showIfProperty = $showIfExpr.property; }
+	|   changeKey = changeKeyNavigatorElement { $options.setChangeKey($changeKey.changeKey, $changeKey.show); }
+	|   changeMouse = changeMouseNavigatorElement { $options.setChangeMouse($changeMouse.changeMouse, $changeMouse.show); }
 	)*
+	;
+
+changeKeyNavigatorElement returns [String changeKey, boolean show = false]
+	:	'CHANGEKEY' key = stringLiteral {$changeKey = $key.val;}
+		(	('SHOW' { $show = true; })
+		|	('HIDE' { $show = false; })
+		)?
+	;
+
+changeMouseNavigatorElement returns [String changeMouse, Boolean show]
+	:	'CHANGEMOUSE' key = stringLiteral {$changeMouse = $key.val;}
+		(	('SHOW' { $show = true; })
+		|	('HIDE' { $show = false; })
+		)?
 	;
 
 editNavigatorElementStatement[NavigatorElement parentElement]

@@ -243,6 +243,7 @@ To access design components, you can use their names or address property compone
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Integer literal|NULL|`60`|
 |`lineHeight`|todo|Integer literal|NULL|`60`|
+|`enableManualUpdate`|Enables the manual update mode by default|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 
 ### Other properties
 

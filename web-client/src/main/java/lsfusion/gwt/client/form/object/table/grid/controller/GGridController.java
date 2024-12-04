@@ -98,7 +98,6 @@ public class GGridController extends GAbstractTableController {
 
             this.userPreferences = userPreferences;
 
-            setUpdateMode(false);
             switch (groupObject.listViewType) { // we don't have to do changeListViewType, since it's a first start and it should be set on server
                 case PIVOT:
                     setPivotTableView();
@@ -349,22 +348,28 @@ public class GGridController extends GAbstractTableController {
                 public ClickHandler getClickHandler() {
                     return event -> {
                         setUpdateMode(!manual);
-                        formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO, null);
+                        changeMode(manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
                     };
                 }
             };
             updateButtonGroup.add(manualUpdateTableButton);
 
-            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
+            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate()) {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
+                    return event -> changeMode(GUpdateMode.FORCE);
                 }
             };
             updateButtonGroup.add(forceUpdateTableButton);
 
             addToToolbar(updateButtonGroup);
+
+            setUpdateMode(groupObject.enableManualUpdate);
         }
+    }
+
+    private void changeMode(GUpdateMode updateMode) {
+        formController.changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 
     public void showRecordQuantity(int quantity) {

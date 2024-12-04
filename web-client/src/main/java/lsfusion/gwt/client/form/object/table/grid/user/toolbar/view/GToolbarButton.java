@@ -11,10 +11,10 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
     }
 
     public GToolbarButton(BaseStaticImage image, String tooltipText) {
-        this(null, image, tooltipText, true);
+        this(null, image, tooltipText);
     }
 
-    public GToolbarButton(String caption, BaseStaticImage image, String tooltipText, boolean compact) {
+    public GToolbarButton(String caption, BaseStaticImage image, String tooltipText) {
         super(caption, image);
 
         setTitle(tooltipText);

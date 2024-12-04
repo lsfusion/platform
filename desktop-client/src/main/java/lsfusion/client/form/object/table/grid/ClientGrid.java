@@ -34,26 +34,6 @@ public class ClientGrid extends ClientGridProperty {
     }
 
     @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        outStream.writeBoolean(boxed != null);
-        if(boxed != null)
-            outStream.writeBoolean(boxed);
-
-        outStream.writeBoolean(tabVertical);
-        outStream.writeBoolean(quickSearch);
-        outStream.writeInt(captionHeight);
-
-        outStream.writeInt(lineWidth);
-        outStream.writeInt(lineHeight);
-
-        pool.serializeObject(outStream, record);
-
-        pool.serializeObject(outStream, groupObject);
-    }
-
-    @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 

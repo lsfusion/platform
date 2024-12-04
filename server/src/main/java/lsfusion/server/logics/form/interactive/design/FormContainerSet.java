@@ -68,8 +68,10 @@ public class FormContainerSet {
 
         set.mainContainer = mainContainer;
         set.mainContainer.setFlex(1);
+        set.mainContainer.setShrink(true);
         set.mainContainer.setAlignment(FlexAlignment.STRETCH);
-        
+        set.mainContainer.setAlignShrink(true);
+
         set.objectsContainer = contFactory.createContainer();
         set.objectsContainer.setSID(DefaultFormView.getObjectsContainerSID());
         set.objectsContainer.setFlex(1);

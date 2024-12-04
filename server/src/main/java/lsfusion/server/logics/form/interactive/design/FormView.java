@@ -643,16 +643,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.changeMouse = new MouseInputEvent(mouseStroke);
     }
 
-    public void setPropertyDrawViewHide(boolean hide, PropertyDrawEntity... properties) {
-        for (PropertyDrawEntity property : properties) {
-            setPropertyDrawViewHide(property, hide);
-        }
-    }
-
-    public void setPropertyDrawViewHide(PropertyDrawEntity property, boolean hide) {
-        getProperty(property).hide = hide;
-    }
-
     protected void setComponentSID(ContainerView container, String sid, Version version) {
         setComponentSID((ComponentView) container, sid, version);
     }
@@ -818,6 +808,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     // the problem is that if removed components are not put somewhere they are not finalized
     public void removeComponent(ComponentView component, Version version) {
+        if(component instanceof PropertyDrawView) {
+            ((PropertyDrawView) component).entity.remove = true;
+        }
         removedComponents.add(component);
         component.removeFromParent(version);
     }

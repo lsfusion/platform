@@ -338,20 +338,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         List<GPropertyDraw> result = new ArrayList<>();
 
         for (GPropertyDraw property : propertiesList) {
-            if (!property.hide) {
-                if (hasUserPreferences()) {
-                    Boolean userHide = getUserHide(property);
-                    if (userHide == null || !userHide) {
-                        if (getUserOrder(property) == null) {
-                            setUserHide(property, true);
-                            setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
-                        } else {
-                            result.add(property);
-                        }
+            if (hasUserPreferences()) {
+                Boolean userHide = getUserHide(property);
+                if (userHide == null || !userHide) {
+                    if (getUserOrder(property) == null) {
+                        setUserHide(property, true);
+                        setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
+                    } else {
+                        result.add(property);
                     }
-                } else {
-                    result.add(property);
                 }
+            } else if (!property.hideOrRemove()) {
+                result.add(property);
             }
         }
 

@@ -35,7 +35,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.*;
 import java.util.List;
@@ -205,6 +204,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String eventID;
     public Boolean changeOnSingleClick;
     public boolean hide;
+    public boolean remove;
 
     public String customRenderFunction;
     public boolean customCanBeRenderedInTD;
@@ -542,65 +542,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return null;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        pool.writeString(outStream, caption);
-        pool.writeLong(outStream, maxValue);
-        outStream.writeBoolean(echoSymbols);
-        outStream.writeBoolean(noSort);
-        defaultCompare.serialize(outStream);
-
-        outStream.writeInt(charHeight);
-        outStream.writeInt(charWidth);
-        
-        outStream.writeInt(valueWidth);
-        outStream.writeInt(valueHeight);
-
-        outStream.writeInt(captionWidth);
-        outStream.writeInt(captionHeight);
-
-        pool.writeObject(outStream, changeKey);
-        pool.writeInt(outStream, changeKeyPriority);
-        outStream.writeBoolean(showChangeKey);
-        pool.writeObject(outStream, changeMouse);
-        pool.writeInt(outStream, changeMousePriority);
-        outStream.writeBoolean(showChangeMouse);
-
-        pool.writeObject(outStream, focusable);
-
-        outStream.writeBoolean(captionVertical);
-        pool.writeObject(outStream, captionLast);
-        pool.writeObject(outStream, captionAlignmentHorz);
-        pool.writeObject(outStream, captionAlignmentVert);
-
-        outStream.writeBoolean(panelColumnVertical);
-
-        pool.writeObject(outStream, valueAlignmentHorz);
-        pool.writeObject(outStream, valueAlignmentVert);
-
-        pool.writeString(outStream, valueOverflowHorz);
-        pool.writeString(outStream, valueOverflowVert);
-
-        pool.writeBoolean(outStream, valueShrinkHorz);
-        pool.writeBoolean(outStream, valueShrinkVert);
-
-        pool.writeString(outStream, comment);
-
-        pool.writeString(outStream, placeholder);
-        pool.writeString(outStream, pattern);
-        pool.writeString(outStream, regexp);
-        pool.writeString(outStream, regexpMessage);
-
-        pool.writeString(outStream, tooltip);
-        pool.writeString(outStream, valueTooltip);
-
-        pool.writeObject(outStream, changeOnSingleClick);
-        outStream.writeBoolean(hide);
-
-        outStream.writeInt(ID);
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
@@ -663,6 +604,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
+        remove = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if(inStream.readBoolean())
@@ -847,8 +789,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = getCaptionOrEmpty();
         }
 
-        String eventCaption = getEventCaption(showChangeKey && changeKey != null ? getChangeKeyCaption() : null,
-                showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
@@ -920,7 +861,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(tooltip) ? tooltip : caption);
 
-        String eventCaption = getEventCaption(changeKey != null ? getChangeKeyCaption() : null, changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         String bindingText = eventCaption != null ? String.format(EDIT_KEY_TOOL_TIP_FORMAT, eventCaption) : "";
 
         if (!MainController.showDetailedInfo) {
@@ -956,6 +897,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean isAction() {
         return baseType instanceof ClientActionClass;
+    }
+
+    public boolean hideOrRemove() {
+        return hide || remove;
     }
 
     public class CaptionReader implements ClientPropertyReader {

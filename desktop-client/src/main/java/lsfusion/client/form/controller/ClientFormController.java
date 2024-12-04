@@ -38,13 +38,11 @@ import lsfusion.client.form.filter.ClientRegularFilterWrapper;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
-import lsfusion.client.form.filter.user.view.FilterConditionView;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -341,7 +339,7 @@ public class ClientFormController implements AsyncListener {
             }
 
             ClientGroupObject groupObject = property.groupObject;
-            if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
+            if(groupObject != null && property.isList && !property.hideOrRemove() && groupObject.columnCount < 10) {
                 groupObject.columnSumWidth += property.getValueWidthWithPadding(formLayout);
                 groupObject.columnCount++;
                 groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(formLayout));
@@ -2031,30 +2029,9 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public boolean processBinding(InputEvent ks, boolean preview, java.awt.event.InputEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
-        List<Binding> keyBinding = bindings.getOrDefault(ks, ks instanceof MouseInputEvent ? null : keySetBindings);
-        if(keyBinding != null && !keyBinding.isEmpty()) { // optimization
-            TreeMap<Integer, Binding> orderedBindings = new TreeMap<>();
-
-            // increasing priority for group object
-            ClientGroupObject groupObject = groupObjectSupplier.get();
-            for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
-                        && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding, panel))
-                        orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
-
-            if(!orderedBindings.isEmpty())
-                commitOrCancelCurrentEditing();
-
-            for(Binding binding : orderedBindings.values()) {
-                if (binding.pressed(ke)) {
-                    ke.consume();
-
-                    return true;
-                }
-            }
-        }
-        return false;
+    public void processBinding(InputEvent ks, boolean preview, java.awt.event.InputEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
+        ProcessBinding.processBinding(ks, preview, ke, groupObjectSupplier, panel, this::equalGroup, bindings, keySetBindings,
+                this::bindPreview, this::bindDialog, this::bindGroup, this::bindEditing, this::bindShowing, this::bindPanel, this::commitOrCancelCurrentEditing);
     }
 
     private boolean bindPreview(Binding binding, boolean preview) {

@@ -37,7 +37,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setHide(boolean hide) {
-        target.hide = hide;
+        target.entity.hide = hide;
     }
 
     public void setMaxValue(long maxValue) {

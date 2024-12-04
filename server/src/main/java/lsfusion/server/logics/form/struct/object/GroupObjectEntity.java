@@ -72,6 +72,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     private Pair<Integer, Integer> scriptIndex;
 
+    public boolean enableManualUpdate;
+
     private String integrationSID;
     private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
 

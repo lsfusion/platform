@@ -399,7 +399,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.indexOf(propertyItem), false);
         }
-        
+
         String[] hiddenPropSids = new String[invisibleListModel.size()];
         UserPreferencesPropertyListItem[] invisibleItems = invisibleListModel.toArray();
         for (int i = 0; i < invisibleItems.length; i++) {
@@ -533,7 +533,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             visibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
         }
         for (ClientPropertyDraw property : goController.getGroupObjectProperties()) {
-            if (!orderedVisibleProperties.contains(property)) {
+            if (!orderedVisibleProperties.contains(property) && !property.remove) {
                 invisibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
             }
         }

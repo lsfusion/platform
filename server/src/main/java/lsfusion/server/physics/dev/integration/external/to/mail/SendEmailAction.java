@@ -23,23 +23,26 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static javax.mail.Message.RecipientType.TO;
+import static javax.mail.Message.RecipientType.*;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -140,6 +143,40 @@ public class SendEmailAction extends SystemAction {
                 proceedFiles(context, attachFiles, inlineFiles);
 
                 EmailSender.sendMail(context, fromAddress, recipients, subject, inlineFiles, attachFiles, smtpHost, smtpPort, encryptedConnectionType, user, password, syncType, insecureSSL);
+
+                ObjectValue folder = emailLM.sentFolder.readClasses(context, account);
+                if (folder instanceof DataObject) {
+                    try (ExecutionContext.NewSession newContext = context.newSession()) {
+
+                        DataObject emailObject = newContext.addObject(emailLM.email);
+
+                        long id = System.currentTimeMillis();
+                        emailLM.idEmail.change(String.valueOf(id), newContext, emailObject);
+                        emailLM.uidEmail.change(id, newContext, emailObject);
+                        emailLM.accountEmail.change(account, newContext, emailObject);
+                        emailLM.folderEmail.change(folder, newContext, emailObject);
+                        emailLM.subjectEmail.change(subject, newContext, emailObject);
+                        emailLM.fromAddressEmail.change(fromAddress, newContext, emailObject);
+                        emailLM.toAddressEmail.change(getRecipients(recipients, TO), newContext, emailObject);
+                        emailLM.ccAddressEmail.change(getRecipients(recipients, CC), newContext, emailObject);
+                        emailLM.bccAddressEmail.change(getRecipients(recipients, BCC), newContext, emailObject);
+                        DataObject dateTime = new DataObject(LocalDateTime.now(), DateTimeClass.instance);
+                        emailLM.dateTimeSentEmail.change(dateTime, newContext, emailObject);
+                        emailLM.dateTimeReceivedEmail.change(dateTime, newContext, emailObject);
+                        emailLM.messageEmail.change(StringUtils.join(inlineFiles, "\n"), newContext, emailObject);
+
+                        int counter = 1;
+                        for (EmailSender.AttachmentFile attachFile : attachFiles) {
+                            DataObject attachmentObject = newContext.addObject(emailLM.attachmentEmail);
+                            emailLM.emailAttachmentEmail.change(emailObject, newContext, attachmentObject);
+                            emailLM.idAttachmentEmail.change(String.valueOf(counter++), newContext, attachmentObject);
+                            emailLM.nameAttachmentEmail.change(attachFile.attachmentName, newContext, attachmentObject);
+                            emailLM.fileAttachmentEmail.change(new FileData(attachFile.file, attachFile.extension), newContext, attachmentObject);
+                        }
+                        newContext.apply();
+                        emailLM.lastSentEmail.change(new DataObject(emailObject.getValue(), emailLM.email), context);
+                    }
+                }
             } else {
                 throw new RuntimeException(localize("{mail.failed.email.not.configured}"));
             }
@@ -148,6 +185,10 @@ public class SendEmailAction extends SystemAction {
         }
 
         return FlowResult.FINISH;
+    }
+
+    private String getRecipients(Map<String, Message.RecipientType> recipients, Message.RecipientType rType) {
+        return trimToNull(StringUtils.join(MapFact.fromJavaMap(recipients).filterFn((s, type) -> type == rType).keys().toJavaSet(), ", "));
     }
 
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -238,7 +279,7 @@ public class SendEmailAction extends SystemAction {
         else
             file = (FileData) fileValue;
         String extension = file.getExtension();
-        return new EmailSender.AttachmentFile(file.getRawFile(), name + "." + extension, extension);
+        return new EmailSender.AttachmentFile(file.getRawFile(), name, extension);
     }
 
     private void logErrorAndShowMessage(ExecutionContext context, String errorMessage) {

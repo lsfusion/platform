@@ -1746,8 +1746,16 @@ public class GwtClientUtils {
         console.error(error);
     }-*/;
 
-    public static native void fireOnMouseDown(Element element)/*-{
-        element.dispatchEvent(new MouseEvent("mousedown"));
+    public static void fireOnContextmenu(Element element) {
+        fireMouseEvent(element, "contextmenu");
+    }
+
+    public static void fireOnMouseDown(Element element) {
+        fireMouseEvent(element, "mousedown");
+    }
+
+    public static native void fireMouseEvent(Element element, String event)/*-{
+        element.dispatchEvent(new MouseEvent(event));
     }-*/;
 
     public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{

@@ -67,6 +67,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -230,6 +231,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
+    private ImSet<PropertyDrawInstance<?>> userPrefsHiddenProperties;
+
     // init form instance + some rare / deprecated branches
     public final FormInstanceContext context;
 
@@ -287,6 +290,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if(groupObject.viewType.isList()) {
                 // should correspond RemoteForm.changeMode in general
                 ListViewType listViewType = groupEntity.listViewType;
+
+                if (groupObject.entity.enableManualUpdate)
+                    groupObject.setUpdateMode(UpdateMode.MANUAL);
 
                 if(listViewType != ListViewType.GRID) {
                     if (listViewType == ListViewType.PIVOT) {
@@ -403,6 +409,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 wasOrder.add(toDraw);
             }
         }
+
+        this.userPrefsHiddenProperties = entity.getUserPrefsHiddenProperties().mapSetValues(instanceFactory::getInstance);
 
         this.session.registerForm(this);
         
@@ -612,17 +620,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         return new FormUserPreferences(goGeneralPreferences, goUserPreferences);
     }
-    
-    private ImSet<PropertyDrawInstance> userPrefsHiddenProperties = SetFact.EMPTY();
-    
+
     public void refreshUPHiddenProperties(String groupObjectSID, String[] hiddenSids) {
         GroupObjectInstance go = getGroupObjectInstance(groupObjectSID);
         List<String> hiddenSidsList = new ArrayList<>(Arrays.asList(hiddenSids));
         
-        Set<PropertyDrawInstance> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
+        Set<PropertyDrawInstance<?>> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
-            if (property.toDraw == go) {
+            if (property.toDraw == go && !property.getEntity().remove) {
                 if (!hiddenSidsList.contains(property.getSID())) {
                     hiddenProps.remove(property);        
                 } else {
@@ -715,9 +721,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             DataObject userObject = (!forAllUsers && !completeOverride) ? (DataObject) BL.authenticationLM.currentUser.readClasses(dataSession) : null;
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
-                        dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
-                        new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
+                        dataSession, new DataObject(entity.getCanonicalName(), StringClass.get(100)), new DataObject(entry.getKey(), StringClass.get(100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     ColumnUserPreferences columnPreferences = entry.getValue();
@@ -740,7 +744,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
                 } else {
-                    throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.error.object.not.found", entry.getKey(), entity.getCanonicalName()));
                 }
             }
             DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
@@ -1594,7 +1598,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         try (DataSession dataSession = session.createSession()) {
             ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(100)), new DataObject(entity.getCanonicalName(), StringClass.get(100)));
             if (!(groupObjectObjectValue instanceof DataObject)) {
-                throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");
+                throw new RuntimeException(ServerResourceBundle.getString("logics.error.object.not.found", grouping.groupObjectSID, entity.getCanonicalName()));
             }
             DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
             ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
@@ -1617,9 +1621,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
 
             for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
-                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(dataSession,
-                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 100)),
-                        new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
+                        dataSession, new DataObject(entity.getCanonicalName(), StringClass.get(100)), new DataObject(propGrouping.propertySID, StringClass.get(100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
@@ -1627,7 +1630,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
                     BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
                 } else {
-                    throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.error.property.not.found", propGrouping.propertySID, entity.getCanonicalName()));
                 }
             }
             dataSession.applyException(BL, stack);

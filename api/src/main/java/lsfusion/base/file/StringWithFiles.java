@@ -35,4 +35,10 @@ public class StringWithFiles implements Serializable {
         this.files = files;
         this.rawString = rawString;
     }
+
+    @Override
+    public String toString() {
+        //string with files is supported only in web-client
+        return rawString;
+    }
 }

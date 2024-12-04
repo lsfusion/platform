@@ -337,7 +337,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
                     currentPreferences.getUserPattern(property), getPropertyState(property)));
         }
         for (GPropertyDraw property : groupController.getGroupObjectProperties()) {
-            if (!orderedVisibleProperties.contains(property)) {
+            if (!orderedVisibleProperties.contains(property) && !property.remove) {
                 columnsDualListBox.addInvisible(new PropertyListItem(property, currentPreferences.getUserCaption(property),
                         currentPreferences.getUserPattern(property), getPropertyState(property)));
             }

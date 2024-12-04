@@ -201,7 +201,7 @@ changeScript(ScheduledTaskDetail std) {
         stringToFile(s);
         LOCAL text = TEXT();
         IMPORT JSON FROM resultFile() TO() text;
-        script(std) <- text();
+        script(std) <- IF length(text()) == 0 THEN NULL ELSE text();
     }
 }
 

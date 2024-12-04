@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -61,6 +62,18 @@ public abstract class GAbstractContainerView {
         addImpl(index);
     }
 
+    public static void setupOverflow(GComponent component, Widget view, boolean vertical, boolean fixFlexBasis, GSize width, GSize height) {
+        boolean shrink = component.isShrink();
+        boolean alignShrink = component.isAlignShrink();
+
+        if((width != null || component.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            GwtClientUtils.setupOverflowHorz(view.getElement(), component.getOverflowHorz());
+        }
+        if((height != null || component.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            GwtClientUtils.setupOverflowVert(view.getElement(), component.getOverflowVert());
+        }
+    }
+
     private Widget wrapAndOverflowView(int index, Widget view, ResizableComplexPanel attachContainer, boolean fixFlexBasis) {
         // border should be used by linear container (just like tab does)
 
@@ -111,15 +124,7 @@ public abstract class GAbstractContainerView {
         //      overflow: auto
 
         GComponent child = children.get(index);
-        boolean shrink = child.isShrink();
-        boolean alignShrink = child.isAlignShrink();
-
-        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)) {
-            GwtClientUtils.setupOverflowHorz(view.getElement(), child.getOverflowHorz());
-        }
-        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)) {
-            GwtClientUtils.setupOverflowVert(view.getElement(), child.getOverflowVert());
-        }
+        setupOverflow(child, view, vertical, fixFlexBasis, null, null);
 
         if(child instanceof GContainer)
             GFormLayout.updateComponentClass(((GContainer) child).valueClass, view, "value");

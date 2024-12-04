@@ -164,6 +164,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private LA watch;
 
     public LA sleep;
+    public LA applyOnlyCheck;
     public LA applyOnlyWithoutRecalc;
     public LA applyAll;
 
@@ -270,6 +271,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass listViewType;
     public LP count;
     public LP isPivot;
+
+    public LP nameApplyFilter;
 
     public Group privateGroup;
 
@@ -615,6 +618,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         openRawLink = findAction("open[RAWLINK]");
 
         sleep = findAction("sleep[LONG]");
+        applyOnlyCheck = findAction("applyOnlyCheck[]");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
         applyAll = findAction("applyAll[]");
 
@@ -651,6 +655,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         listViewType = (ConcreteCustomClass) findClass("ListViewType");
         count = findProperty("count[]");
         isPivot = findProperty("isPivot[ListViewType]");
+
+        nameApplyFilter = findProperty("nameApplyFilter[]");
 
         initNavigators();
     }

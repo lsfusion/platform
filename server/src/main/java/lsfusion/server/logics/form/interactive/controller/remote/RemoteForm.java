@@ -53,6 +53,7 @@ import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
@@ -704,8 +705,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if (logger.isDebugEnabled()) {
                 logger.debug("setTabVisible Action");
             }
-            
-            form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(childId));
+
+            ComponentView tab = richDesign.findById(childId);
+            form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), tab);
+            form.fireEvent(stack, new FormContainerEvent(tab.getSID(), false), null);
         });
     }
 

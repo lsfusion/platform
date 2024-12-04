@@ -184,7 +184,8 @@ public class PropertyPanelController {
     }
 
     public void update(Color rowBackground, Color rowForeground) {
-        if (!property.hide || property.changeKey != null) {
+        boolean hide = property.hide;
+        if (!hide || property.changeKey != null) {
 
             List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
             Pair<List<ClientGroupObjectValue>, List<ClientGroupObjectValue>> pair = getDiff(columnKeys);
@@ -194,7 +195,7 @@ public class PropertyPanelController {
             // removing old renderers
             optionsToRemove.forEach(columnKey -> {
                 PanelView view = views.remove(columnKey);
-                if (!property.hide) {
+                if (!hide) {
                     renderersPanel.remove(view.getWidget());
                 }
             });

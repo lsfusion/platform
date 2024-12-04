@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.client.form.ClientForm;
@@ -18,7 +17,6 @@ import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
@@ -28,7 +26,6 @@ import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -42,7 +39,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -52,9 +48,6 @@ import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.*;
 
@@ -64,6 +57,7 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private final ClientBindingToGwtConverter bindingConverter = ClientBindingToGwtConverter.getInstance();
     private final ClientAsyncToGwtConverter asyncConverter;
     private GForm form;
 
@@ -196,10 +190,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
         if (clientFilter.keyInputEvent != null)
-            filter.bindingEvents.add(convertBinding(clientFilter.keyInputEvent, clientFilter.keyPriority));
+            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.keyInputEvent, clientFilter.keyPriority));
         filter.showKey = clientFilter.showKey;
         if (clientFilter.mouseInputEvent != null)
-            filter.bindingEvents.add(convertBinding(clientFilter.mouseInputEvent, clientFilter.mousePriority));
+            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.mouseInputEvent, clientFilter.mousePriority));
         filter.showMouse = clientFilter.showMouse;
         return filter;
     }
@@ -344,7 +338,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
 
-        propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
+        propertyDraw.editBindingMap = clientPropertyDraw.editBindingMap != null ? bindingConverter.convertBindingMap(clientPropertyDraw.editBindingMap) : null;
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
         propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
@@ -358,10 +352,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
             propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
         if(clientPropertyDraw.changeKey != null)
-            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority));
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority));
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
         if(clientPropertyDraw.changeMouse != null)
-            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
         propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
 
         propertyDraw.inline = clientPropertyDraw.inline;
@@ -448,7 +442,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;
-        
+        propertyDraw.remove = clientPropertyDraw.remove;
+
         propertyDraw.notNull = clientPropertyDraw.notNull;
 
         propertyDraw.sticky = clientPropertyDraw.sticky;
@@ -458,80 +453,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 //        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
 
         return propertyDraw;
-    }
-
-    public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority) {
-        Map<String, BindingMode> bindingModes = event != null ? event.bindingModes : null;
-        return new GInputBindingEvent(convertOrCast(event),
-                        new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
-                        convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("panel") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("cell") : null)
-                        ));
-    }
-
-    @Converter(from = EditBindingMap.class)
-    public GEditBindingMap convertBindingMap(EditBindingMap editBindingMap) {
-        HashMap<GKeyStroke, String> keyBindingMap = null;
-        if (editBindingMap.getKeyBindingMap() != null) {
-            keyBindingMap = new HashMap<>();
-            for (Map.Entry<KeyStroke, String> e : editBindingMap.getKeyBindingMap().entrySet()) {
-                GKeyStroke key = convertOrCast(e.getKey());
-                keyBindingMap.put(key, e.getValue());
-            }
-        }
-
-        LinkedHashMap<String, String> contextMenuBindingMap = editBindingMap.getContextMenuItems() != null
-                                                              ? new LinkedHashMap<>(editBindingMap.getContextMenuItems())
-                                                              : null;
-        String mouseBinding = editBindingMap.getMouseAction();
-
-        return new GEditBindingMap(keyBindingMap, contextMenuBindingMap, mouseBinding);
-    }
-
-    @Converter(from = KeyStroke.class)
-    public GKeyStroke convertKeyStroke(KeyStroke keyStroke) {
-        int modifiers = keyStroke.getModifiers();
-        boolean isAltPressed = (modifiers & InputEvent.ALT_MASK) != 0;
-        boolean isCtrlPressed = (modifiers & InputEvent.CTRL_MASK) != 0;
-        boolean isShiftPressed = (modifiers & InputEvent.SHIFT_MASK) != 0;
-        int keyCode = convertKeyCode(keyStroke.getKeyCode());
-
-        return new GKeyStroke(keyCode, isAltPressed, isCtrlPressed, isShiftPressed);
-    }
-
-    @Converter(from = KeyInputEvent.class)
-    public GKeyInputEvent convertKeyInputEvent(KeyInputEvent keyInputEvent) {
-        return new GKeyInputEvent(convertOrCast(keyInputEvent.keyStroke));
-    }
-
-    @Converter(from = MouseInputEvent.class)
-    public GMouseInputEvent convertMouseInputEvent(MouseInputEvent mouseInputEvent) {
-        return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent));
-    }
-
-    @Converter(from = BindingMode.class)
-    public GBindingMode convertBindingMode(BindingMode bindingMode) {
-        return  GBindingMode.valueOf(bindingMode.name());
-    }
-
-    private int convertKeyCode(int keyCode) {
-        switch (keyCode) {
-            case KeyEvent.VK_DELETE:
-                return KeyCodes.KEY_DELETE;
-            case KeyEvent.VK_ESCAPE:
-                return KeyCodes.KEY_ESCAPE;
-            case KeyEvent.VK_ENTER:
-                return KeyCodes.KEY_ENTER;
-            case KeyEvent.VK_INSERT:
-                return GKeyStroke.KEY_INSERT;
-            default:
-                return keyCode;
-        }
     }
 
     public GCaptionReader convertCaptionReader(ClientPropertyDraw.CaptionReader reader) {
@@ -678,6 +599,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         groupObject.hasHeaders = clientGroupObject.hasHeaders;
         groupObject.hasFooters = clientGroupObject.hasFooters;
+
+        groupObject.enableManualUpdate = clientGroupObject.enableManualUpdate;
 
         for (ClientGroupObject clientUpGroup : clientGroupObject.upTreeGroups) {
             GGroupObject upGroup = convertOrCast(clientUpGroup);
