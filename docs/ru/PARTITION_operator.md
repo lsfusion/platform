@@ -12,8 +12,8 @@ title: 'Оператор PARTITION'
 PARTITION 
 type expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
-[BY groupExpr1, ..., groupExprM]
 [TOP topExpr] [OFFSET offsetExpr]
+[BY groupExpr1, ..., groupExprM]
 ```
 
 Второй реализует простое распределение:
@@ -22,6 +22,7 @@ type expr
 PARTITION 
 UNGROUP propertyId distributionType expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 

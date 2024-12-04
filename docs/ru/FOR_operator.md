@@ -8,8 +8,8 @@ title: 'Оператор FOR'
 
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
-[NEW [alias =] className]
 [TOP topExpr] [OFFSET offsetExpr]
+[NEW [alias =] className]
 DO action
 [ELSE alternativeAction]
 ```
@@ -45,6 +45,14 @@ action
 
     Список выражений, определяющих порядок, в котором будут перебираться наборы объектов. Для определения порядка сначала используется значение первого выражения, затем при равенстве используется значение второго и т.д. Если список не задан, то перебор происходит в произвольном порядке.
 
+- `TOP topExpr`
+
+    В цикле будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    В цикле будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
+
 - `alias`
 
     Имя локального параметра, которое будет соответствовать создаваемому объекту. [Простой идентификатор](IDs.md#id).
@@ -52,14 +60,6 @@ action
 - `className`
 
     Имя класса создаваемого объекта. Задается [идентификатором класса](IDs.md#classid).
-
-- `TOP topExpr`
-
-  В цикле будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
-
-- `OFFSET offsetExpr`
-
-  В цикле будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
 
 - `action`
 
@@ -107,7 +107,7 @@ copy (Sku old)  {
 }
 
 createDetails (Order o)  {
-    FOR in(Sku s) NEW d = OrderDetail DO {
+    FOR in(Sku s) NEW d = OrderDetail TOP 100 DO {
         order(d) <- o;
         sku(d) <- s;
     }
