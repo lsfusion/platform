@@ -2510,6 +2510,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
         )?
+        ('TOP' selectTop = intLiteral)? //compatibility with version 6
 		('TO' pUsage=propertyUsage)?
 	;
 
