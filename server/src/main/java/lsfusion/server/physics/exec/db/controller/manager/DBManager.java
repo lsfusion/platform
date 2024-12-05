@@ -2403,15 +2403,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        for (DBTable table : oldData.tables.keySet()) {
-            String tableDBName = table.getName();
-            if (tableRenames.containsKey(tableDBName)) {
-                String newDBName = tableRenames.get(tableDBName);
-                if (!tableDBName.equalsIgnoreCase(newDBName)) {
-                    startLog("Renaming table from " + tableDBName + " to " + newDBName);
-                    sql.renameTable(table, newDBName);
+        for (DBTable oldTable : oldData.tables.keySet()) {
+            String oldDBName = oldTable.getName();
+            if (tableRenames.containsKey(oldDBName)) {
+                String newDBName = tableRenames.get(oldDBName);
+                if (!oldDBName.equalsIgnoreCase(newDBName)) {
+                    startLog("Renaming table from " + oldDBName + " to " + newDBName);
+                    sql.renameTable(oldTable, newDBName);
                 }
-                table.setName(newDBName);
+                oldTable.setName(newDBName);
             }
         }
     }
@@ -2895,11 +2895,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         RawFileData struct = (RawFileData) sql.readRecord(structTable, MapFact.EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
             inputDB = new DataInputStream(struct.getInputStream());
-            //noinspection ResultOfMethodCallIgnored
-            inputDB.read();
+            readOldDBVersion(inputDB);
             migrationVersion = new MigrationVersion(inputDB.readUTF());
         }
         return migrationVersion;
+    }
+    
+    public int readOldDBVersion(DataInputStream input) throws IOException {
+        int version = input.read() - 'v'; // for backward compatibility
+        if (version == 0) {
+            version = input.readInt();
+        }
+        return version;
     }
 
     public Map<String, String> getPropertyCNChanges(SQLSession sql) {
@@ -3224,7 +3231,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public void write(DataOutputStream outDB) throws IOException {
-            outDB.write('v' + version);  //для поддержки обратной совместимости
+            outDB.write('v'); // for backward compatibility
+            outDB.writeInt(version);
             outDB.writeUTF(migrationVersion.toString());
 
             //записываем список подключенных модулей
@@ -3273,7 +3281,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 40;
+
+    // Updated database structure versioning scheme introduced in lsFusion 7:
+    // - Enables earlier platform versions to increment their database structure version
+    //   without conflicting with newer platform versions.
+    // - Version format: "Nxx", where N represents the major platform version,
+    //   followed by two digits (xx) indicating the specific version within that major version.
+    // Example: "702" corresponds to major version 7, database structure version 2.
+    public static int newDBStructureVersion = 700;
 
     private class OldDBStructure extends DBStructure<String> {
 
@@ -3282,7 +3297,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (inputDB == null) {
                 version = -2;
             } else {
-                version = inputDB.read() - 'v';
+                version = readOldDBVersion(inputDB); // for backward compatibility
                 oldDBStructureVersion = version;
                 migrationVersion = new MigrationVersion(inputDB.readUTF());
 
