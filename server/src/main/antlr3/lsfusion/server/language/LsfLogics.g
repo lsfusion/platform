@@ -2473,7 +2473,7 @@ objectPropertyDefinition returns [LPWithParams property]
 	:	'VALUE'
 		gobj=formObjectID
 	;
-	
+
 reflectionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	ReflectionPropertyType type = null;
@@ -5859,7 +5859,7 @@ localizedStringLiteralNoID returns [LocalizedString val]
 	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
 	|   rs=rawMultilineStringLiteral { $val = self.getRawLocalizedStringLiteralText($rs.text); }
 	;
-	
+
 stringLiteralNoID returns [String val]
 	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.text); }
 	|   rs=rawMultilineStringLiteral { $val = self.getRawStringLiteralText($rs.text); }
@@ -6033,7 +6033,7 @@ RAW_STRING_LITERAL:		('r'|'R') '\'' SIMPLE_RAW_STR_LITERAL_CHAR* '\''
 	                    )
 				  ;
 COMMENTS		:	'//' ~('\n')* ('\n' | EOF) { $channel=HIDDEN; };
-MULTILINE_COMMENTS	:	'/*' .* '*/' { $channel=HIDDEN; };	 
+MULTILINE_COMMENTS	:	'/*' .* '*/' { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
 UDOUBLE_LITERAL	:	DIGITS '.' EDIGITS('d'|'D');
