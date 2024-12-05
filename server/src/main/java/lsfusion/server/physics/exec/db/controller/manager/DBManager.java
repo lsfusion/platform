@@ -2895,13 +2895,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
         RawFileData struct = (RawFileData) sql.readRecord(structTable, MapFact.EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
             inputDB = new DataInputStream(struct.getInputStream());
-            //noinspection ResultOfMethodCallIgnored
-            inputDB.read();
+            readOldDBVersion(inputDB);
             migrationVersion = new MigrationVersion(inputDB.readUTF());
         }
         return migrationVersion;
     }
-
+    
+    public int readOldDBVersion(DataInputStream input) throws IOException {
+        int version = input.read() - 'v'; // for backward compatibility
+        if (version == 0) {
+            version = input.readInt();
+        }
+        return version;
+    }
+    
     public Map<String, String> getPropertyCNChanges(SQLSession sql) {
         runMigrationScript();
         try {
@@ -3282,7 +3289,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (inputDB == null) {
                 version = -2;
             } else {
-                version = inputDB.read() - 'v';
+                version = readOldDBVersion(inputDB);
                 oldDBStructureVersion = version;
                 migrationVersion = new MigrationVersion(inputDB.readUTF());
 
