@@ -240,6 +240,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
+    public String formatConnectionString(T object) {
+        return formatNullableString(object, true);
+    }
+
+    @Override
     public String formatMessage(T object) {
         return formatString(object, true);
     }
