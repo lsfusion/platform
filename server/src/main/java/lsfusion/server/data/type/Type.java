@@ -142,6 +142,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String getJSONType();
     String formatCSV(T object);
     String formatXML(T object);
+    String formatConnectionString(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
     Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
     RawFileData formatFile(T value, String charset);
