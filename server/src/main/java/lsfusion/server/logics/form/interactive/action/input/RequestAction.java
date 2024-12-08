@@ -98,7 +98,7 @@ public class RequestAction extends KeepContextAction {
     public FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         if (!context.isRequestPushed()) {
             FlowResult result = requestAction.execute(!context.hasMoreSessionUsages && hasDoOrElseAction() ? context.override(true) : context);
-            if (result != FlowResult.FINISH)
+            if (!result.isFinish())
                 return result;
         }
 

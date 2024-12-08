@@ -87,7 +87,7 @@ public class ListAction extends ListCaseAction {
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
         for (int i=0,size=actions.size();i<size;i++) {
             FlowResult actionResult = actions.get(i).execute(i < lastHasSessionUsages ? context.override(true) : context);
-            if (actionResult != FlowResult.FINISH) {
+            if (!actionResult.isFinish()) {
                 result =  actionResult;
                 break;
             }

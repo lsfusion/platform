@@ -1282,7 +1282,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
-        assert isStored();
+        assert isMarkedStored();
 
         ImList<Field> indexFields = index.mapListValues((PropertyObjectInterfaceImplement<String> indexField) -> {
             if (indexField instanceof PropertyObjectImplement) {
