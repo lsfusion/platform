@@ -1239,6 +1239,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
+    public void unmarkStored() {
+        markedStored = false;
+    }
+
     public String mapDbName;
 
     public String getDBName() {
@@ -1259,6 +1263,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         mapTable.table.addField(field, fieldClassWhere);
 
         this.field = field;
+    }
+
+    public void destroyStored(DBNamingPolicy policy) {
+        if(mapTable != null) {
+            String dbName = mapDbName != null ? mapDbName : policy.transformActionOrPropertyCNToDBName(this.canonicalName);
+
+            PropertyField field = new PropertyField(dbName, getType());
+            fieldClassWhere = getClassWhere(mapTable, field);
+            mapTable.table.removeField(field);
+
+            mapTable = null;
+            fieldClassWhere = null;
+            this.field = null;
+        }
     }
 
     public static class DuplicateFieldNameException extends RuntimeException {

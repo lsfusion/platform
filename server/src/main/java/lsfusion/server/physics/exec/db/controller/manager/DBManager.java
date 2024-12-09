@@ -260,6 +260,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
 
+                    startLog("Setting user materialized for properties");
+                    setUserMaterializedProperties(sql);
+
                     startLog("Setting user not null constraints for properties");
                     setNotNullProperties(sql);
 
@@ -934,6 +937,33 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
                     lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
+                }
+            }
+        }
+    }
+
+    private void setUserMaterializedProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("materialized", reflectionLM.userMaterializedProperty.getExpr(key));
+        query.and(reflectionLM.userMaterializedProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if(prop != null) {
+                Boolean materialized = (Boolean) values.get("materialized");
+                if (materialized) {
+                    if (!prop.property.isMarkedStored()) {
+                        prop.property.markStored(null);
+                        prop.property.initStored(LM.tableFactory, namingPolicy);
+                    }
+                } else {
+                    if (prop.property.isMarkedStored()) {
+                        prop.property.unmarkStored();
+                        prop.property.destroyStored(namingPolicy);
+                    }
                 }
             }
         }
