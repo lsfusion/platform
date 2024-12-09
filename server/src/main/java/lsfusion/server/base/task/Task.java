@@ -149,27 +149,12 @@ public abstract class Task {
             if(caption != null)
                 logger.info(caption);
         }
-        if(propertyTimeout == null) {
-            run(logger);
-        } else {
-            ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context));
-            final Result<Thread> thread = new Result<>();
-            Future future = service.submit(() -> {
-                thread.set(Thread.currentThread());
-                try {
-                    Task.this.run(logger);
-                } finally {
-                    thread.set(null);
-                }
-            });
-            service.shutdown();
 
-            try {
-                future.get(propertyTimeout, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                ThreadUtils.interruptThread(BL.getDbManager(), thread.result, future);
-            }
-        }
+        ExecutorFactory.executeWithTimeout(BL, () -> {
+            run(logger);
+            return true;
+        }, propertyTimeout,
+            () -> ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context)));
 
         if(isEndLoggable())
             logger.info(getEndCaption());

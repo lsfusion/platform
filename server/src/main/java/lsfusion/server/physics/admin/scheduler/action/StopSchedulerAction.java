@@ -20,7 +20,7 @@ public class StopSchedulerAction extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
+        context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks(context);
         try {
             findProperty("isStartedScheduler[]").change((Boolean) null, context);
             findProperty("onlySystemTasks[]").change((Boolean) null, context);

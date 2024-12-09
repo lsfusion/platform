@@ -56,7 +56,7 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
         ImMap<I, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(innerValues));
 
         FlowResult result = executeExtend(context, innerKeys, innerValues, innerExprs);
-        if(result == FlowResult.THROWS)
+        if(result.isThrows())
             throw new RuntimeException("Thread has been interrupted");
         return result;
     }

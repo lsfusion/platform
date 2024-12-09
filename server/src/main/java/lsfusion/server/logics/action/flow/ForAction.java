@@ -194,8 +194,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
                     FlowResult actionResult = executeFor(overrideMoreSessionUsages && (recursive || i < size - 1) // is not last
                                                         ? context.override(true): context, newValues);
-                    if (actionResult != FlowResult.FINISH && actionResult != FlowResult.CONTINUE) {
-                        if (actionResult != FlowResult.BREAK) {
+                    if (!actionResult.isFinish() && !actionResult.isContinue()) {
+                        if (!actionResult.isBreak()) {
                             result = actionResult;
                         }
                         break RECURSIVE;

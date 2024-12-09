@@ -42,7 +42,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -2072,25 +2075,35 @@ public class BaseUtils {
 
     public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
-    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+    public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Throwable> onFailedOrInterrupted) {
         if (timeout != null) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            final Future<Object> future = executor.submit(callable);
+            ExecutorService executor = serviceSupplier.get();
+            final Future<T> future = executor.submit(callable);
             executor.shutdown();
 
             try {
                 return future.get(timeout, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            } catch (Throwable e) {
                 future.cancel(true);
+
+                if(onFailedOrInterrupted != null)
+                    onFailedOrInterrupted.accept(e);
+
                 throw Throwables.propagate(e);
             }
         } else {
             try {
                 return callable.call();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if(onFailedOrInterrupted != null)
+                    onFailedOrInterrupted.accept(e);
+
                 throw Throwables.propagate(e);
             }
         }
+    };
+    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+        return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, null);
     }
 
     public static void writeObject(DataOutputStream outStream, Object object) throws IOException {
