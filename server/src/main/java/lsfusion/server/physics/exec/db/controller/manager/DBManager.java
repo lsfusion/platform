@@ -956,13 +956,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 Boolean materialized = (Boolean) values.get("materialized");
                 if (materialized) {
                     if (!prop.property.isMarkedStored()) {
-                        prop.property.markStored(null);
-                        prop.property.initStored(LM.tableFactory, namingPolicy);
+                        LM.materialize(prop, namingPolicy);
                     }
                 } else {
                     if (prop.property.isMarkedStored()) {
-                        prop.property.unmarkStored();
-                        prop.property.destroyStored(namingPolicy);
+                        LM.dematerialize(prop, namingPolicy);
                     }
                 }
             }
