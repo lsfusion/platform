@@ -26,10 +26,7 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.view.*;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -749,8 +746,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return editType == GPropertyEditType.EDITABLE ? null : editType == GPropertyEditType.DISABLE;
     }
 
+    public boolean isEditableNotNull(RenderContext renderContext) {
+        return isEditableNotNull(renderContext.isPropertyReadOnly());
+    }
+
+    public boolean isEditableNotNull(UpdateContext updateContext) {
+        return isEditableNotNull(updateContext.isPropertyReadOnly());
+    }
+
     public boolean isEditableNotNull() {
-        return notNull && isReadOnly() == null;
+        return isEditableNotNull(false);
+    }
+
+    private boolean isEditableNotNull(Boolean isPropertyReadonly) {
+        return notNull && isReadOnly() == null && (isPropertyReadonly == null || !isPropertyReadonly);
     }
 
     public boolean isTagInput() {
