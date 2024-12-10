@@ -32,13 +32,13 @@ title: 'Для разработки'
 
 ### Установка десктоп-клиента
 
--   После старта сервера, в логе старта одной из последних строк будет строка с ссылкой на jnlp-файл (например https://download.lsfusion.org/java/lsfusion-client-6.0-beta0.jnlp), запустив который клиент автоматически установится при помощи технологии Java Web Start.
+-   После старта сервера, в логе старта одной из последних строк будет строка с ссылкой на jnlp-файл (например https://download.lsfusion.org/java/lsfusion-client-6.0-beta1.jnlp), запустив который клиент автоматически установится при помощи технологии Java Web Start.
 
 ### Установка веб-клиента
 
 -   Установить [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) 9й версии.
 -   Добавить `--add-opens=java.base/java.util=ALL-UNNAMED` в параметры запуска Apache Tomcat, если используется версия Java выше 17. 
--   Скачать [веб-клиента](https://download.lsfusion.org/java/lsfusion-client-6.0-beta0.war) платформы lsFusion.
+-   Скачать [веб-клиента](https://download.lsfusion.org/java/lsfusion-client-6.0-beta1.war) платформы lsFusion.
 -   Поместить war-файл в папку webapps Apache Tomcat, например, с именем lsfusion.war.
 -   Веб-клиент будет доступен по адресу http://localhost:8080/lsfusion.
 
@@ -46,7 +46,7 @@ title: 'Для разработки'
 
 ### Установка сервера приложений через IDE {#existingide}
 
--   Скачать файл `lsfusion-server-<version>.jar` нужной версии (например `lsfusion-server-6.0-beta0.jar`) с [центрального сервера](https://download.lsfusion.org/java/) в папку нужного модуля проекта (далее будем называть эту папку `$FUSION_DIR$`).
+-   Скачать файл `lsfusion-server-<version>.jar` нужной версии (например `lsfusion-server-6.0-beta1.jar`) с [центрального сервера](https://download.lsfusion.org/java/) в папку нужного модуля проекта (далее будем называть эту папку `$FUSION_DIR$`).
 -   Если сервер БД находится на другом компьютере, а также если на сервере БД включена авторизация (например, для Postgres, по методу md5 и пароль postgres не пустой), задать [параметры подключения к серверу БД](Launch_parameters.md#connectdb) (например, создав [файл настроек](Launch_parameters.md#filesettings) запуска в папке проекта)
 -   Добавить скачанный файл в качестве зависимости нужного модуля проекта (`File > Project Structure > Modules > имя модуля > вкладка Dependencies > +`) 
 -   Создать [конфигурацию запуска](IDE.md#configuration) (при создании нового lsFusion проекта этот и верхние два пункта выполняются автоматически). Если платформа подключается в качестве библиотеки, вместо создания конфигурации можно использовать Spring bean c идентификатором `logicsInstance` из конфигурационного файл `lsfusion.xml`, и его методы `start()` и `stop()` отвечающий за старт и остановку сервера приложений соответственно.
@@ -71,7 +71,7 @@ title: 'Для разработки'
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>logics</artifactId>
-        <version>6.0-beta0</version>
+        <version>6.0-beta1</version>
     </parent>
     ```
     Первый вариант (с parent) хорош тем, что:
