@@ -2288,10 +2288,10 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConcatProp($separator.val, $list.props);
+		$property = self.addScriptedConcatProp($separator.property, $list.props);
 	}
 }
-	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
+	:   'CONCAT' separator=propertyExpression[context, dynamic] ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]

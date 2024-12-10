@@ -23,14 +23,18 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
 
     @Override
     public Type getType(ExprType source) {
-        int separatorLength = separator.length();
+
+        //if separator == null, then it's first param
+        boolean staticSeparator = separator != null;
+
+        int separatorLength = staticSeparator ? separator.length() : source.getType(0) != null ? ((StringClass)source.getType(0)).length.getValue() : 0;
 
         ExtInt length = ExtInt.ZERO;
         boolean caseInsensitive = false;
         boolean blankPadded = true;
         boolean isText = false;
         String sid = null;
-        for (int i = 0, size = source.getExprCount(); i < size; i++) {
+        for (int i = staticSeparator ? 0 : 1, size = source.getExprCount(); i < size; i++) {
             Type exprType = source.getType(i);
 
             length = length.sum(exprType != null ? exprType.getCharLength() : ExtInt.ZERO);
@@ -79,17 +83,21 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
         StringClass type = (StringClass) getType(source);
         SQLSyntax syntax = source.getSyntax();
 
-        String result = getExprSource(source, type, 0);
+        boolean staticSeparator = separator != null;
 
-        for (int i = 1; i < exprCount; i++) {
+        String separatorSource = staticSeparator ? ("'" + separator + "'") : getExprSource(source, type, 0);
+
+        String result = getExprSource(source, type, staticSeparator ? 0 : 1);
+
+        for (int i = staticSeparator ? 1 : 2; i < exprCount; i++) {
             String exprSource = getExprSource(source, type, i);
 
             if (Settings.get().isUseSafeStringAgg()) {
                 result = "CASE WHEN " + result + " IS NOT NULL" +
-                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
+                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN " + separatorSource + " " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
                         " ELSE " + exprSource + " END";
             } else {
-                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
+                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + "," + separatorSource + ")";
             }
         }
         return type.getCast("(" + result + ")", syntax, source.getMEnv());

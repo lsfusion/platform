@@ -1608,10 +1608,6 @@ public abstract class LogicsModule {
     // ------------------- UNION ----------------- //
 
     protected LP addUProp(Group group, LocalizedString caption, Union unionType, int[] coeffs, Object... params) {
-        return addUProp(group, caption, unionType, null, coeffs, params);
-    }
-
-    protected LP addUProp(Group group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
 
         assert (unionType==Union.SUM)==(coeffs!=null);
 
@@ -1647,7 +1643,7 @@ public abstract class LogicsModule {
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
             case CONCAT:
-                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, new StringConcatenateFormulaImpl(separator));
+                property = new FormulaUnionProperty(caption, listInterfaces, listOperands, new StringConcatenateFormulaImpl(null));
                 break;
         }
 
@@ -1778,8 +1774,8 @@ public abstract class LogicsModule {
 
     // ------------------- CONCAT ----------------- //
 
-    protected LP addSFUProp(String separator, int intNum) {
-        return addUProp(null, LocalizedString.create("{logics.join}"), Union.CONCAT, separator, null, getUParams(intNum));
+    protected LP addSFUProp(int intNum) {
+        return addUProp(null, LocalizedString.create("{logics.join}"), Union.CONCAT, null, getUParams(intNum));
     }
 
     // ------------------- ACTION ----------------- //
