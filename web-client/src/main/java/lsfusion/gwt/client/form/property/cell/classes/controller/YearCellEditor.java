@@ -16,14 +16,16 @@ public class YearCellEditor extends IntegralCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-        super.start(handler, parent, renderContext, notFocusable, oldValue);
+    public boolean startText(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+        boolean explicitValue = super.startText(handler, parent, renderContext, oldValue);
 
         if (started) {
-            openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue));
+            openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue), !explicitValue && oldValue == null);
 
             GwtClientUtils.addDropDownPartner(parent, getYearPickerContainer(parent));
         }
+
+        return explicitValue;
     }
 
     @Override
@@ -37,16 +39,16 @@ public class YearCellEditor extends IntegralCellEditor {
         commit(parent);
     }
 
-    protected native void openYearPicker(Element inputElement, Element parent, Integer initYear)/*-{
+    protected native void openYearPicker(Element inputElement, Element parent, Integer initYear, boolean updateInput)/*-{
         var thisObj = this;
 
         var startDate;
         if(initYear != null)
             startDate = new Date().setFullYear(initYear);
-//        else { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
-//            startDate = new Date();
-//            inputElement.value = startDate.getFullYear();
-//        }
+        else if (updateInput) { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
+            startDate = new Date();
+            inputElement.value = startDate.getFullYear();
+        }
 
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
@@ -66,6 +68,8 @@ public class YearCellEditor extends IntegralCellEditor {
                     parent.picker.destroy();
             }
         });
+
+        thisObj.@InputBasedCellEditor::selectInputElement(*)(updateInput);
     }-*/;
 
     protected native void hideYearPicker(Element parent)/*-{

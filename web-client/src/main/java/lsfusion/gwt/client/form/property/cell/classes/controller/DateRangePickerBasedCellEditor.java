@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
@@ -22,17 +21,18 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-        super.start(handler, parent, renderContext, notFocusable, oldValue);
-
+    public boolean startText(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+        boolean explicitValue = super.startText(handler, parent, renderContext, oldValue);
         if (started && !isNative()) {
             createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null,
                     getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor(),
-                    GMouseStroke.isChangeEvent(handler.event));
+                    !explicitValue && oldValue == null);
             openPicker(); // date range picker is opened only on click
 
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
         }
+
+        return explicitValue;
     }
 
     @Override
@@ -156,8 +156,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             drops: 'auto',
 
 //          to make the behaviour when editing a cell with date and a cell with text the same,
-//          autoUpdateInput is disabled at the start editing from keyboard, so that the field is not filled automatically.
-//          autoUpdateInput will be enabled when starting editing on mouse event to set current date when picker opening with null-date
+//          disable autoUpdateInput so that the field is not filled in automatically when editing starts
             autoUpdateInput: autoUpdateInput,
             opens: 'left', // thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()()
             alwaysShowCalendars: true
@@ -168,9 +167,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         }
         editElement.daterangepicker(options);
 
-//       return autoUpdateInput after opening the picker and starting editing
+        thisObj.@InputBasedCellEditor::selectInputElement(*)(autoUpdateInput);
         if (!autoUpdateInput)
-            thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
+            thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true; // return autoUpdateInput after opening the picker and starting editing
 
         //show only time picker
         if (time) {
