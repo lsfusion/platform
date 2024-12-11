@@ -109,10 +109,11 @@ public abstract class ImportAction extends SystemAction {
             MExclMap<ImMap<ObjectEntity, DataObject>, MMap<PropertyObjectEntity, ObjectValue>> mRows = MapFact.mExclMap();
             for(PropertyObjectEntity prop : props) {
                 ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop).immutable();
+                DataClass type = (DataClass) prop.getType();
                 for(int j=0,sizeJ=propValues.size();j<sizeJ;j++) {
                     // convert to DataObject / ObjectValue
                     ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues((key, value) -> new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass));
-                    ObjectValue value = ObjectValue.getValue(propValues.getValue(j), (DataClass)prop.getType());
+                    ObjectValue value = ObjectValue.getValue(propValues.getValue(j), type);
 
                     MMap<PropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
                     if(mProps == null) {
