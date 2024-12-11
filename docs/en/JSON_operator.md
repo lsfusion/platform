@@ -23,8 +23,6 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
 ## Parameters
 
-### Source of export
-
 - `formName`
 
     The name of the form from which you want to export data. [Composite ID](IDs.md#cid).

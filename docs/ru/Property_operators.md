@@ -21,6 +21,7 @@ title: 'Операторы-свойства'
 -   [Оператор `IF`](IF_operator.md)
 -   [Оператор `IF ... THEN`](IF_..._THEN_operator.md)
 -   [Оператор `ISCLASS`](ISCLASS_operator.md)
+-   [Оператор `JSON`](JSON_operator.md)
 -   [Оператор `JOIN`](JOIN_operator.md)
 -   [Оператор `JSON`](JSON_operator.md)
 -   [Оператор `LIKE`](LIKE_operator.md)
