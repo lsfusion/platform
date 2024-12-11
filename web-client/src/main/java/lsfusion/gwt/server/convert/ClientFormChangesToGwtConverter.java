@@ -31,6 +31,7 @@ import javax.servlet.ServletContext;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -306,6 +307,11 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     @Converter(from = Instant.class)
     public GZDateTimeDTO convertDateTime(Instant dateTime) {
         return new GZDateTimeDTO(dateTime.toEpochMilli());
+    }
+
+    @Converter(from = BigDecimal.class)
+    public GNumericDTO convertBigDecimal(BigDecimal bigDecimal) {
+        return new GNumericDTO(bigDecimal.toString());
     }
 
     @Converter(from = ClientAsync.class)

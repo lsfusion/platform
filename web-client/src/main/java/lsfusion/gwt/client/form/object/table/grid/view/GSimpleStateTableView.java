@@ -179,8 +179,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         }
         if(value == null)
             return null;
-        if(type instanceof GIntegralType)
-            return fromDouble((PValue.getNumberValue(value)).doubleValue());
+        if(type instanceof GIntegralType) {
+            if(type instanceof GNumericType)
+                return fromString(PValue.getStringValue(value));
+            else
+                return fromDouble((PValue.getNumberValue(value)).doubleValue());
+        }
         if(property != null && property.isPredefinedImage()) {
             AppBaseImage imageValue = PValue.getImageValue(value);
             if(imageToHTML)

@@ -44,6 +44,7 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,6 +92,11 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GZDateTimeDTO.class)
     public Instant convertDateTime(GZDateTimeDTO dto) {
         return Instant.ofEpochMilli(dto.instant);
+    }
+
+    @Converter(from = GNumericDTO.class)
+    public BigDecimal convertBigDecimal(GNumericDTO dto) {
+        return new BigDecimal(dto.value);
     }
 
     @Converter(from = GFont.class)

@@ -130,6 +130,11 @@ public interface PValue {
         return getValue(value);
     }
 
+    static Number getNumericValue(PValue value) {
+        String strValue = PValue.getStringValue(value);
+        return strValue != null ? new BigDecimal(strValue) : null;
+    }
+
     static ColorDTO getColorValue(PValue value) {
         return getValue(value);
     }

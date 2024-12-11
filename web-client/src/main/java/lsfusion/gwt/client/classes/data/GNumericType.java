@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.countMatches;
@@ -40,6 +41,11 @@ public class GNumericType extends GDoubleType {
     protected int getPrecision() {
         //as in server Settings
         return precision.isUnlimited() ? 127 : precision.value;
+    }
+
+    @Override
+    public String formatString(PValue value, String pattern) {
+        return getFormat(pattern).format(PValue.getNumericValue(value));
     }
 
     protected int getScale() {
