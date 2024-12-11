@@ -7,9 +7,9 @@ title: 'Оператор JSON'
 ## Синтаксис
 
 ```
-JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+JSON FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
   [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
-  [TOP topExpr] [OFFSET offsetExpr] )
+  [TOP topExpr] [OFFSET offsetExpr]
 JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] 
   [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
   [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))] )
