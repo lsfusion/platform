@@ -1342,6 +1342,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return type.getInterfaceClasses(this, valueClasses);
     }
 
+    @IdentityLazy
     public Type getType() {
         ValueClass valueClass = getValueClass(ClassType.typePolicy);
         return valueClass != null ? valueClass.getType() : null;
