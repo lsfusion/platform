@@ -7,8 +7,8 @@ title: 'Оператор JSON'
 ## Синтаксис
 
 ```
-JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
-JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+JSON FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] )
 ```
  
 ## Описание
@@ -18,8 +18,6 @@ JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
 При экспорте формы в блоке `OBJECTS` можно объектам формы добавлять дополнительные фильтры на равенство этих объектов [переданным значениям](Open_form.md#params). Также эти объекты [не будут участвовать](Structured_view.md#objects) в построении иерархии групп объектов.
 
 ## Параметры
-
-### Источник экспорта
 
 - `formName`
 

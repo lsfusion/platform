@@ -7,8 +7,8 @@ The `JSON` operator is property that creates JSON from [specified properties](Da
 ## Syntax
 
 ```
-JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
-JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+JSON FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] )
 ```
 
 ## Description
@@ -18,8 +18,6 @@ The `JSON` operator is property that creates JSON from the specified properties 
 When exporting a form in an `OBJECTS` block, it is possible to add extra filters to check for the equality of the objects on the form with [the values passed](Open_form.md#params). These objects [will not participate](Structured_view.md#objects) in building the object group hierarchy.
 
 ## Parameters
-
-### Source of export
 
 - `formName`
 
