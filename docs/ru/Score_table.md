@@ -171,8 +171,9 @@ CONSTRAINT ((hostGoals(Game game) (-) guestGoals(game)) < 2 AND (hostGoals(game)
 -   количество игр, выигранных в основное время, в овертайме и в дополнительное время  
       
     ```lsf
-    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
-    
+    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                      0 IF team IS Team AND type IS GameResult MATERIALIZED;    
+
     gamesWon 'В' (Team team) = gamesWonBy(team, GameResult.win);
     gamesWonOT 'ВО' (Team team) = gamesWonBy(team, GameResult.winOT);
     gamesWonSO 'ВБ' (Team team) = gamesWonBy(team, GameResult.winSO);
@@ -185,7 +186,8 @@ CONSTRAINT ((hostGoals(Game game) (-) guestGoals(game)) < 2 AND (hostGoals(game)
 -   количество игр, проигранных в основное время, в овертайме и в дополнительное время (определяем по аналогии с выше заданными свойствами количества побед)  
       
     ```lsf
-    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 
+                                                       0 IF team IS Team AND type IS GameResult MATERIALIZED;
     
     gamesLost 'П' (Team team) = gamesLostBy(team, GameResult.win);
     gamesLostOT 'ПО' (Team team) = gamesLostBy(team, GameResult.winOT);
@@ -336,13 +338,15 @@ hostGamesPlayed = GROUP SUM 1 BY hostTeam(Game game);
 guestGamesPlayed = GROUP SUM 1 BY guestTeam(Game game);
 gamesPlayed 'И' (Team team) = hostGamesPlayed(team) (+) guestGamesPlayed(team);
 
-gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
+gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                  0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesWon 'В' (Team team) = gamesWonBy(team, GameResult.win);
 gamesWonOT 'ВО' (Team team) = gamesWonBy(team, GameResult.winOT);
 gamesWonSO 'ВБ' (Team team) = gamesWonBy(team, GameResult.winSO);
 
-gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+                                                   0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesLost 'П' (Team team) = gamesLostBy(team, GameResult.win);
 gamesLostOT 'ПО' (Team team) = gamesLostBy(team, GameResult.winOT);

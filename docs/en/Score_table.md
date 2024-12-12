@@ -169,7 +169,8 @@ To determine the number of games played by the team at home and away, the [`GROU
 -   number of games won in regular time, in overtime, and in extra time  
       
     ```lsf
-    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
+    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                      0 IF team IS Team AND type IS GameResult MATERIALIZED;
     
     gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
     gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
@@ -183,7 +184,8 @@ The total result of the `gamesWonByResult` property will be the number of wins o
 -   number of games played in regular time, in overtime and in extra time (determined by analogy with the above-specified properties of the number of wins)  
       
     ```lsf
-    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+                                                       0 IF team IS Team AND type IS GameResult MATERIALIZED;;
     
     gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
     gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
@@ -334,13 +336,15 @@ hostGamesPlayed = GROUP SUM 1 BY hostTeam(Game game);
 guestGamesPlayed = GROUP SUM 1 BY guestTeam(Game game);
 gamesPlayed 'G' (Team team) = hostGamesPlayed(team) (+) guestGamesPlayed(team);
 
-gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
+gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                  0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
 gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
 gamesWonSO 'WB' (Team team) = gamesWonBy(team, GameResult.winSO);
 
-gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+                                                   0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
 gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
