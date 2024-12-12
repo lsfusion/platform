@@ -428,7 +428,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     private static Expr createInnerCases(ImMap<BaseExpr, ? extends Expr> outerInner, final Query query, final boolean pack) {
-        if(query.type.hasAdd() && !WindowExpr.has(((ImMap<BaseExpr, Expr>)outerInner).values())) {
+        if(query.type.hasAdd() && !WindowExpr.has(((ImMap<BaseExpr, Expr>)outerInner).values()) && query.type.splitInnerCases()) {
             return new ExclPullWheres<Expr, BaseExpr, Query>() {
                 protected Expr initEmpty() {
                     return Expr.NULL();
