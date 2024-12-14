@@ -2077,9 +2077,14 @@ public class BaseUtils {
 
     public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Throwable> onFailedOrInterrupted) {
         if (timeout != null) {
+            Future<T> future;
+
             ExecutorService executor = serviceSupplier.get();
-            final Future<T> future = executor.submit(callable);
-            executor.shutdown();
+            try {
+                future = executor.submit(callable);
+            } finally {
+                executor.shutdown();
+            }
 
             try {
                 return future.get(timeout, TimeUnit.MILLISECONDS);
