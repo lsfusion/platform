@@ -67,7 +67,13 @@ public class NewExecutorAction extends AroundAspectAction {
             nThreads = TaskRunner.availableProcessors();
         try {
             executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
-            FlowResult result = proceed(context.override(executor));
+            FlowResult result;
+
+            try {
+                result = proceed(context.override(executor));
+            } finally {
+                executor.shutdown();
+            }
 
             if(sync && result.isFinish())
                 executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -77,9 +83,6 @@ public class NewExecutorAction extends AroundAspectAction {
             ThreadUtils.interruptThreadExecutor(executor, context);
 
             throw Throwables.propagate(e);
-        }finally {
-            if(executor != null)
-                executor.shutdown();
         }
     }
 
