@@ -22,6 +22,7 @@ import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.classes.data.GNumericType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -1337,11 +1338,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             type = "n";
             String pattern;
             if(value != null) {
-                NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
-                Number numberValue = propType instanceof GNumericType ? PValue.getNumericValue(value) : PValue.getNumberValue(value);
-                dataValue = NumberFormat.getDecimalFormat().format(numberValue).replace(
-                        numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
-                double doubleValue = new Double(dataValue);
+                double doubleValue = (propType instanceof GObjectType ? GLongType.instance : (GIntegralType) propType).getDoubleValue(value);
                 int fractDigits = 0;
                 while ((long) doubleValue - doubleValue != 0) {
                     doubleValue = doubleValue * 10;

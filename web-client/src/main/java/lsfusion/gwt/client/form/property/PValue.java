@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -126,13 +125,17 @@ public interface PValue {
         return getValue(value);
     }
 
-    static Number getNumberValue(PValue value) {
+    static double getDoubleValue(PValue value) {
         return getValue(value);
     }
-
-    static Number getNumericValue(PValue value) {
-        String strValue = PValue.getStringValue(value);
-        return strValue != null ? new BigDecimal(strValue) : null;
+    static int getIntValue(PValue value) {
+        return getValue(value);
+    }
+    static int getLongValue(PValue value) {
+        return getValue(value);
+    }
+    static GNumericDTO getNumericValue(PValue value) {
+        return getValue(value);
     }
 
     static ColorDTO getColorValue(PValue value) {
@@ -206,7 +209,16 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static PValue getPValue(Number value) {
+    static PValue getPValue(double value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(int value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(long value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(GNumericDTO value) {
         return toPValue(value);
     }
 
@@ -222,12 +234,8 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static PValue getPValue(BigDecimal value) {
-        return toPValue(value);
-    }
-
     static PValue getPValue(Long from, Long to) {
-        return getPValue(new BigDecimal(from + "." + to));
+        return toPValue(new BigDecimal(from + "." + to));
     }
 
     static PValue getPValue(Boolean value) { // 3state boolean

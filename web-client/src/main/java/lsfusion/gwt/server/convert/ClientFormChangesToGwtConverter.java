@@ -311,7 +311,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = BigDecimal.class)
     public GNumericDTO convertBigDecimal(BigDecimal bigDecimal) {
-        return new GNumericDTO(bigDecimal.toString());
+        return new GNumericDTO(bigDecimal.doubleValue());
     }
 
     @Converter(from = ClientAsync.class)
