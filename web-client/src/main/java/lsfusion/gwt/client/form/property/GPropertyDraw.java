@@ -754,12 +754,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return isEditableNotNull(updateContext.isPropertyReadOnly());
     }
 
-    public boolean isEditableNotNull() {
-        return isEditableNotNull(false);
-    }
-
     private boolean isEditableNotNull(Boolean isPropertyReadonly) {
-        return notNull && isReadOnly() == null && (isPropertyReadonly == null || !isPropertyReadonly);
+        return notNull && isPropertyReadonly == null;
     }
 
     public boolean isTagInput() {

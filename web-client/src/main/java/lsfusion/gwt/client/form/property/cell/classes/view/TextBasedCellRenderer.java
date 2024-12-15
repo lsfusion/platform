@@ -93,14 +93,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         // TEXT PART
         clearTextPadding(getSizeElement(element));
 
-        if (property.isEditableNotNull(renderContext))
-            GwtClientUtils.removeClassName(element, "text-based-value-required");
-
         GwtClientUtils.removeClassName(element, "text-based-value-null");
         GwtClientUtils.removeClassName(element, "text-based-value-empty");
 
         Element inputElement = getInputElement(element);
+
         if(property.isEditableNotNull(renderContext)) {
+            GwtClientUtils.removeClassName(element, "text-based-value-required");
+
             if(inputElement != null) {
                 GwtClientUtils.removeClassName(inputElement, "is-invalid");
             }
