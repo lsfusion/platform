@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.cell.classes.*;
@@ -83,26 +85,34 @@ public interface PValue {
 
     // temporary usage in pivot
 
-    static Object getPivotValue(PValue value) {
+    static Object getPivotValue(GType renderType, PValue value) {
         if(!useUnsafeCast) { // for pivoting we need actual numbers to sum them up (that's the idea of pivoting)
+            if(value instanceof DisplayString)
+                return value; // however we can return displayString here and remove from getPivotPValue
+
             // this way we can add "no toString" check (plus there might be some problems with ordering because of toString, but somewhy I haven't found them)
-            if (value instanceof SerializableValue)
-                return ((SerializableValue) value).value;
+            if (value != null && renderType instanceof GIntegralType)
+                return ((GIntegralType) renderType).getDoubleValue(value);
+
+            return getValue(value);
+
 //            if (value instanceof SerializableValue && ((SerializableValue) value).value instanceof Number)
 //                return getNumberValue(value);
         }
         return value;
     }
-    static PValue getPivotPValue(Object value) {
+    static PValue getPivotPValue(GType renderType, Object value) {
         if(useUnsafeCast)
             return (PValue) value;
         else {
-            if(value instanceof DisplayString) {
-                return toPValue(((DisplayString) value).displayString);
-            } else {
-                // this way we can add "no toString" check
-                return toPValue((Serializable) value);
-            }
+            if(value instanceof DisplayString)
+                return (PValue) value; //; toPValue(((DisplayString) value).displayString);
+
+            if (value != null && renderType instanceof GIntegralType)
+                return ((GIntegralType) renderType).fromDoubleValue((Double) value);
+
+            // this way we can add "no toString" check
+            return toPValue((Serializable) value);
 //            if(value instanceof Number) // for pivoting we need actual numbers to sum them up (that's the idea of pivoting)
 //                return getPValue((Number)value);
 //            return (PValue) value;
@@ -125,13 +135,13 @@ public interface PValue {
         return getValue(value);
     }
 
-    static double getDoubleValue(PValue value) {
+    static Double getDoubleValue(PValue value) {
         return getValue(value);
     }
-    static int getIntValue(PValue value) {
+    static Integer getIntValue(PValue value) {
         return getValue(value);
     }
-    static int getLongValue(PValue value) {
+    static Long getLongValue(PValue value) {
         return getValue(value);
     }
     static GNumericDTO getNumericValue(PValue value) {

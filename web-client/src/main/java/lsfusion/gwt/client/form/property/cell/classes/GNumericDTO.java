@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class GNumericDTO implements Serializable {
     // in theory in formatString and formatISOString we could support something like BigDecimal (not limited double), but in all other places - not, so for now we'll use double

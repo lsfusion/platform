@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.math.BigDecimal;
 import java.text.ParseException;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.countMatches;
