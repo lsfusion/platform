@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -29,6 +30,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -344,5 +346,27 @@ public abstract class CallHTTPAction extends CallAction {
         if(rNotUsedParams != null)
             rNotUsedParams.set(mNotUsedParams.immutableOrder());
         return urlProcessor.finish(context);
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        MSet<Property> mProps = SetFact.mSet();
+        if(headersToProperty != null)
+            mProps.add(headersToProperty.property);
+        if(cookiesToProperty != null)
+            mProps.add(cookiesToProperty.property);
+        return super.aspectChangeExtProps().merge(getChangeProps(mProps.immutable()), addValue);
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> calculateUsedExtProps() {
+        MSet<Property> mUsedProps = SetFact.mSet();
+        for(LP headerProperty : bodyParamHeadersPropertyList)
+            mUsedProps.add(headerProperty.property);
+        if(headersProperty != null)
+            mUsedProps.add(headersProperty.property);
+        if(cookiesProperty != null)
+            mUsedProps.add(cookiesProperty.property);
+        return super.calculateUsedExtProps().merge(mUsedProps.immutable().toMap(false), addValue);
     }
 }
