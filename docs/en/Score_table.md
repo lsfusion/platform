@@ -304,7 +304,7 @@ NAVIGATOR {
 
 The process of creating an information system is completed.
 
-## The complete source code (on [GitHub](https://github.com/lsfusion/samples/tree/master/hockeystats))
+## The complete source code
 
 ```lsf
 MODULE HockeyStats;
