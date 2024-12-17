@@ -1,15 +1,8 @@
 package lsfusion.server.data.sql.syntax;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.expr.formula.SumFormulaImpl;
-import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.type.ConcatenateType;
@@ -17,10 +10,7 @@ import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.type.reader.ClassReader;
-import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
-import lsfusion.server.logics.classes.data.file.JSONTextClass;
 
 import java.sql.*;
 
@@ -31,7 +21,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     private static SQLSyntax[] getSyntaxes() {
         if(syntaxes == null) 
             syntaxes = new SQLSyntax[] {OracleSQLSyntax.instance, MSSQLSQLSyntax.instance, MySQLSQLSyntax.instance,
-                    PostgreSQLSyntax.instance, InformixSQLSyntax.instance};
+                    PostgreSQLSyntax.instance, InformixSQLSyntax.instance, FirebirdSQLSyntax.instance};
         return syntaxes;
     }
 
@@ -425,6 +415,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
     public String getFieldName(String name) {
         return name;
+    }
+
+    protected String escapeID(String ID) {
+        return '"' + ID + '"';
     }
 
     public String getTableName(String name) {
