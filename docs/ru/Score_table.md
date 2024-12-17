@@ -46,6 +46,31 @@ name 'Название команды' = DATA STRING[30] (Team) IN base;
 
 Таким образом, название команды является [первичным](Data_properties_DATA.md) (вводимым пользователем) свойством строчного типа. Опцией `IN` созданное свойство добавляется в предопределенную [группу свойств](Groups_of_properties_and_actions.md) `base`. Свойства объекта, относящиеся к группе `base`, будут автоматически отображаться на диалоговой форме для выбора объекта класса `Team`.
 
+:::info
+Опционально можно создать формы для редактирования и просмотра команд.
+
+```lsf
+FORM team 'Команда'
+    OBJECTS t = Team PANEL
+    PROPERTIES(t) name
+
+    EDIT Team OBJECT t
+;
+
+FORM teams 'Команды'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Team OBJECT t
+;
+
+NAVIGATOR {
+    NEW teams;
+}
+```
+:::
+
 ### Определение игры
 
 Вводим понятие игры и ее атрибуты: дата, участники игры (команда хозяев и команда гостей) и их названия.
@@ -235,7 +260,7 @@ place 'Место' (Team team) = PARTITION SUM 1 ORDER DESC points(team), gamesW
 Объявляем форму с наименованием и подписью. Добавляем на форму блок объектов класса `Game` со всеми заданными в системе свойствами. Также выносим на форму кнопки добавления новой игры и ее удаления (эти кнопки автоматически определены для всех объектов в системе).
 
 ```lsf
-FORM MainForm 'Турнирная таблица'
+FORM scoreTable 'Турнирная таблица'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 ;
@@ -248,7 +273,7 @@ FORM MainForm 'Турнирная таблица'
 Расширяем форму добавлением в нее блока турнирной таблицы. Турнирная таблица будет представлять список команд (объектов класса `Team`) с их статистическими показателями, отсортированных с помощью оператора `ORDERS` по рейтинговому месту.
 
 ```lsf
-EXTEND FORM MainForm
+EXTEND FORM scoreTable
     OBJECTS team = Team
     PROPERTIES(team) place, name, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
                      gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points, NEW, DELETE
@@ -260,7 +285,7 @@ EXTEND FORM MainForm
 Указанную форму можно задать и одним блоком кода без использования конструкции `EXTEND`.
 
 ```lsf
-FORM MainFormSingle 'Турнирная таблица'
+FORM scoreTable 'Турнирная таблица'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 
@@ -271,11 +296,11 @@ FORM MainFormSingle 'Турнирная таблица'
 ;
 ```
 :::
-Выносим созданную форму на основное меню программы - предопределенную папку `root` навигатора, причем указываем, чтобы она располагалась самым первым элементом перед системным пунктом меню `'Администрирование'`.
+Выносим созданную форму на основное меню программы.
 
 ```lsf
 NAVIGATOR {
-    NEW MainForm FIRST;
+    NEW scoreTable;
 }
 ```
 
@@ -291,6 +316,25 @@ REQUIRE System;
 CLASS Team 'Команда';
 
 name 'Название команды' = DATA STRING[30] (Team) IN base;
+
+FORM team 'Команда'
+    OBJECTS t = Team PANEL
+    PROPERTIES(t) name
+
+    EDIT Team OBJECT t
+;
+
+FORM teams 'Команды'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Team OBJECT t
+;
+
+NAVIGATOR {
+    NEW teams;
+}
 
 CLASS Game 'Игра';
 
@@ -365,19 +409,7 @@ goalsConceded 'Кол-во пропущенных голов' (Team team) = OVER
 place 'Место' (Team team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
                                                (OVERRIDE goalsScored(team) (-) goalsConceded(team), 0), goalsScored(team);
 
-FORM MainForm 'Турнирная таблица'
-    OBJECTS game = Game
-    PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
-;
-
-EXTEND FORM MainForm
-    OBJECTS team = Team
-    PROPERTIES(team) place, name, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
-                     gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points, NEW, DELETE
-    ORDERS place(team)
-;
-
-FORM MainFormSingle 'Турнирная таблица'
+FORM scoreTable 'Турнирная таблица'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 
@@ -388,6 +420,6 @@ FORM MainFormSingle 'Турнирная таблица'
 ;
 
 NAVIGATOR {
-    NEW MainForm FIRST;
+    NEW scoreTable;
 }
 ```
