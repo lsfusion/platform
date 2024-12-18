@@ -43,6 +43,7 @@ insertPosition
 imageSetting
 CLASS classExpr
 HEADER headerExpr
+SHOWIF showIfExpr
 ```
 
 ### Description
@@ -151,6 +152,14 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
     - `headerExpr`
 
         Expression whose value determines the dynamic header of the navigator element.
+        
+- `SHOWIF showIfExpr`
+
+    Specifying a property that determines visibility of the navigator element. If the return value of this navigator element is `NULL`, then navigator element will not be displayed.
+
+    - `showIfExpr`
+
+        Expression whose value determines visibility of the navigator element.
 
 ### Examples
 
