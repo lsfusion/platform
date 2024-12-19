@@ -265,8 +265,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
 
-                    startLog("Setting user materialized for properties");
-                    setUserMaterializedProperties(sql);
+                    if(getOldDBStructure(sql).version >= 41) {
+                        startLog("Setting user materialized for properties");
+                        setUserMaterializedProperties(sql);
+                    }
 
                     startLog("Setting user not null constraints for properties");
                     setNotNullProperties(sql);
@@ -3313,7 +3315,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 40;
+    public static int newDBStructureVersion = 41;
 
     private class OldDBStructure extends DBStructure<String> {
 
