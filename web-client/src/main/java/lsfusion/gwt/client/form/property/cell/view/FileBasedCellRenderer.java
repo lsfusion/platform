@@ -22,7 +22,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.setInnerText(null); // remove all
 
         Element img = null;
-        if (value == null && property.isEditableNotNull()) {
+        if (value == null && property.isEditableNotNull(updateContext)) {
             setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();

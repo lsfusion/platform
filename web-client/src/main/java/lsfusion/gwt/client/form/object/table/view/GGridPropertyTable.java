@@ -861,6 +861,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public Boolean isPropertyReadOnly() {
+                return GGridPropertyTable.this.isReadOnly(cell);
+            }
+
+            @Override
             public GFont getFont() {
                 return GGridPropertyTable.this.getFont();
             }
