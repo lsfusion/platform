@@ -167,8 +167,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         }
         editElement.daterangepicker(options);
 
-        thisObj.@InputBasedCellEditor::selectInputElement(*)(autoUpdateInput);
-        if (!autoUpdateInput)
+        if (autoUpdateInput)
+            editElement.select();
+        else
             thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true; // return autoUpdateInput after opening the picker and starting editing
 
         //show only time picker

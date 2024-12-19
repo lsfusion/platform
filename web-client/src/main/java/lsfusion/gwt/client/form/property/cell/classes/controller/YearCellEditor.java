@@ -69,7 +69,8 @@ public class YearCellEditor extends IntegralCellEditor {
             }
         });
 
-        thisObj.@InputBasedCellEditor::selectInputElement(*)(updateInput);
+        if (updateInput)
+            inputElement.select()
     }-*/;
 
     protected native void hideYearPicker(Element parent)/*-{
