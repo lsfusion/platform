@@ -128,7 +128,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected void ensureSqlFuncs() throws IOException, SQLException {
+    public void ensureSqlFuncs() throws IOException, SQLException {
         super.ensureSqlFuncs();
 
         recursionString = readResource("/sql/postgres/recursion.tsql");
