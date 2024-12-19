@@ -116,20 +116,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected String pattern;
     protected JavaScriptObject mask;
 
-    @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-
-        if(GMouseStroke.isChangeEvent(handler.event)) {
-            Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
-            if (dialogInputActionIndex != null) {
-                commitFinish(oldValue, dialogInputActionIndex, CommitReason.FORCED);
-                return;
-            }
-        }
-        started = true;
-
-        super.start(handler, parent, renderContext, notFocusable, oldValue);
-
+    protected boolean startText(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         if(!isNative()) {
             pattern = renderContext.getPattern();
             mask = getMaskFromPattern();
@@ -144,7 +131,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         boolean allSuggestions = true;
         boolean selectAll = false;
         String value = null;
-
+        boolean explicitValue = false;
         boolean needReplace = needReplace(parent);
         if(needReplace) {
             selectAll = !GKeyStroke.isChangeAppendKeyEvent(handler.event);
@@ -155,6 +142,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if(value != null) {
             allSuggestions = false;
             selectAll = false;
+            explicitValue = true;
         } else {
             value = (property.clearText ? "" : tryFormatInputText(oldValue));
 
@@ -192,6 +180,25 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if (regexpMessage != null) {
             updateRegexpMessage(inputElement, regexpMessage);
         }
+
+        return explicitValue;
+    }
+
+    @Override
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
+
+        if(GMouseStroke.isChangeEvent(handler.event)) {
+            Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+            if (dialogInputActionIndex != null) {
+                commitFinish(oldValue, dialogInputActionIndex, CommitReason.FORCED);
+                return;
+            }
+        }
+        started = true;
+
+        super.start(handler, parent, renderContext, notFocusable, oldValue);
+
+        startText(handler, parent, renderContext, oldValue);
     }
 
     protected JavaScriptObject getMaskFromPattern() {
