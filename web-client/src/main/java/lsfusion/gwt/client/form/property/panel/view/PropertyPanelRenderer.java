@@ -18,6 +18,7 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -32,7 +33,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         SizedWidget valueWidget = value.getSizedWidget(false);
 
-        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
+        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull((RenderContext) value), property.hasChangeAction);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
 
