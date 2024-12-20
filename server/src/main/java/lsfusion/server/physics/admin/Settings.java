@@ -3324,6 +3324,16 @@ public class Settings implements Cloneable {
         this.contentWordWrap = contentWordWrap;
     }
 
+    private boolean highlightDuplicateValue = false;
+
+    public boolean isHighlightDuplicateValue() {
+        return highlightDuplicateValue;
+    }
+
+    public void setHighlightDuplicateValue(boolean highlightDuplicateValue) {
+        this.highlightDuplicateValue = highlightDuplicateValue;
+    }
+
     private int maxColumnsInPlainImportExport = 256;
 
     public int getMaxColumnsInPlainImportExport() {

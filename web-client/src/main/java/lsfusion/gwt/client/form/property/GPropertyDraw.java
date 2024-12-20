@@ -419,6 +419,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment valueAlignmentHorz;
     public GFlexAlignment valueAlignmentVert;
 
+    public boolean highlightDuplicateValue;
+
     public String valueOverflowHorz;
     public String valueOverflowVert;
 
@@ -1029,6 +1031,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(focusable != null)
             return focusable;
         return !hasKeyBinding();
+    }
+
+    public boolean highlightDuplicateValue() {
+        return highlightDuplicateValue;
     }
 
     @Override

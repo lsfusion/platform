@@ -35,6 +35,10 @@
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
 }
 
+:not(.first-visible-row):not(.table-active) > .duplicate-cell {
+    color: rgba(0, 0, 0, 0.3);
+}
+
 .dropdown-menu {
     list-style-type: none; /* Remove bullets */
     padding: 0; /* Remove padding */

@@ -23,6 +23,8 @@ public interface UpdateContext {
 
     default boolean isNavigateInput() { return false; }
 
+    default boolean highlightDuplicateValue(PValue value) { return false; }
+
     boolean globalCaptionIsDrawn();
 
     PValue getValue();

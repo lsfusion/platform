@@ -201,6 +201,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             latestHorizontalScrollPosition = horizontalScrollPosition;
         }
     }
+    private int renderedFirstVisibleRow = -1;
     private void updateScrolledStateVertical() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         if (verticalScrollPosition > MainFrame.mobileAdjustment)
@@ -211,6 +212,23 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             GwtClientUtils.addClassName(tableWidget, "scrolled-up");
         else
             GwtClientUtils.removeClassName(tableWidget, "scrolled-up");
+
+        if(highlightDuplicateValue()) {
+            int firstVisibleRow = getFirstVisibleRow(verticalScrollPosition + getHeaderHeight() + 1, null, 0);
+            if (firstVisibleRow != renderedFirstVisibleRow) {
+                if (firstVisibleRow != -1)
+                    GwtClientUtils.addClassName(getChildElement(firstVisibleRow), "first-visible-row");
+
+                if (renderedFirstVisibleRow != -1)
+                    GwtClientUtils.removeClassName(getChildElement(renderedFirstVisibleRow), "first-visible-row");
+
+                renderedFirstVisibleRow = firstVisibleRow;
+            }
+        }
+    }
+
+    protected boolean highlightDuplicateValue() {
+        return false;
     }
     
     private void updateStickyColumnsState(int horizontalScrollPosition) {

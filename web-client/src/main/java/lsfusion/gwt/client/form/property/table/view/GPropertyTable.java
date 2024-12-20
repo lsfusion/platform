@@ -43,6 +43,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public abstract Boolean isReadOnly(Cell cell);
+    public abstract boolean highlightDuplicateValue(Cell cell, PValue value);
 
     public abstract GPropertyDraw getSelectedProperty();
     public abstract GGroupObjectValue getSelectedColumnKey();

@@ -65,7 +65,7 @@ public class PrereadIconsTask extends GroupSplitTask<String> {
             boolean[] contexts;
             if(SystemProperties.lightStart) { // maybe inDevMode should be used, as well as in ExportRmiObject
                 try(DataSession session = createSession()) {
-                    contexts = new boolean[] {BL.systemEventsLM.useBootstrap.read(session, getSecurityManager().getDefaultLoginUser()) != null};
+                    contexts = new boolean[] {BL.systemEventsLM.useBootstrap.read(session) != null};
                 } catch (SQLException | SQLHandledException e) {
                     throw Throwables.propagate(e);
                 }
@@ -74,7 +74,7 @@ public class PrereadIconsTask extends GroupSplitTask<String> {
             }
 
             for(boolean useBootstrap : contexts) {
-                ConnectionContext context = new ConnectionContext(useBootstrap, false);
+                ConnectionContext context = new ConnectionContext(useBootstrap, false, false);
                 for (FormEntity form : BL.getAllForms()) // actually only interactive forms are needed, but there is no way to get them
                     form.prereadAutoIcons(context);
 

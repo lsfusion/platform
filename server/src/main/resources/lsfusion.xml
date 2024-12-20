@@ -152,6 +152,7 @@
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
+                <entry key="highlightDuplicateValue" value="${settings.highlightDuplicateValue:}"/>
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
                 <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
             </map>

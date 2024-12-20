@@ -323,25 +323,8 @@ public abstract class CellRenderer {
         return property.toolbar;
     }
 
-    // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
-    private static class RenderedState {
-        public PValue value;
-        public Object extraValue;
-        public GColorTheme colorTheme; // for action and color cell renderer
-
-        public GFont font;
-        public String foreground;
-        public String background;
-
-        public Boolean readonly;
-
-        public String valueElementClass;
-
-        public String valueTooltip;
-
-        public boolean rerender;
-
-        public ToolbarState toolbar;
+    private static boolean equalsHighlightDuplicateValueState(RenderedState state, boolean highlightDuplicateValue) {
+        return state.highlightDuplicateValue == highlightDuplicateValue;
     }
     private static boolean equalsDynamicState(RenderedState state, PValue value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
@@ -355,31 +338,13 @@ public abstract class CellRenderer {
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
     }
-    private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
-        return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
-    }
 
-    private static final String RENDERED = "rendered";
-
-    protected String getBackground(UpdateContext updateContext) {
-        return ColorUtils.getThemedColor(updateContext.getBackground());
-    }
-
-    protected static void rerenderState(Element element, boolean set) {
-        RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
-        if(renderedState != null) // since element can be already dead
-            renderedState.rerender = set;
-    }
-    
     public void update(Element element, UpdateContext updateContext) {
         boolean selected = updateContext.isSelectedLink();
         if(selected)
             renderEditSelected(element, property);
         else
             clearEditSelected(element, property);
-
-        PValue value = updateContext.getValue();
-        Object extraValue = getExtraValue(updateContext); // in action we also use isLoading and getImage
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
@@ -432,6 +397,8 @@ public abstract class CellRenderer {
         }
 
         boolean cleared = false;
+        PValue value = updateContext.getValue();
+        Object extraValue = getExtraValue(updateContext); // in action we also use isLoading and getImage
         if(isNew || !equalsDynamicState(renderedState, value, extraValue, MainFrame.colorTheme)) {
             // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method
             // setting value earlier breaks the recursion
@@ -443,8 +410,53 @@ public abstract class CellRenderer {
             cleared = updateContent(element, value, extraValue, updateContext);
         }
 
+        boolean highlightDuplicateValue = updateContext.highlightDuplicateValue(value);
+        if(isNew || !equalsHighlightDuplicateValueState(renderedState, highlightDuplicateValue)) {
+            renderedState.highlightDuplicateValue = highlightDuplicateValue;
+
+            BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element), highlightDuplicateValue ? "duplicate-cell" : null, "duplicate");
+        }
+
         if(needToRenderToolbarContent())
             renderToolbarContent(element, updateContext, renderedState, cleared);
+    }
+    private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
+        return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
+    }
+
+    private static final String RENDERED = "rendered";
+
+    protected String getBackground(UpdateContext updateContext) {
+        return ColorUtils.getThemedColor(updateContext.getBackground());
+    }
+
+    protected static void rerenderState(Element element, boolean set) {
+        RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+        if(renderedState != null) // since element can be already dead
+            renderedState.rerender = set;
+    }
+    
+    // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
+    private static class RenderedState {
+        public PValue value;
+        public Object extraValue;
+        public GColorTheme colorTheme; // for action and color cell renderer
+
+        public GFont font;
+        public String foreground;
+        public String background;
+
+        public Boolean readonly;
+
+        public String valueElementClass;
+
+        public boolean highlightDuplicateValue;
+
+        public String valueTooltip;
+
+        public boolean rerender;
+
+        public ToolbarState toolbar;
     }
 
     private void updateReadonly(Element element, Boolean readonly) {
