@@ -1073,7 +1073,11 @@ public class PropertyDrawView extends BaseComponentView {
         return FlexAlignment.CENTER;
     }
 
+    public Boolean highlightDuplicate = null;
     public boolean highlightDuplicateValue(FormInstanceContext context) {
+        if(highlightDuplicate != null)
+            return highlightDuplicate;
+
         return context.highlightDuplicateValue;
     }
 
