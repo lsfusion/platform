@@ -1095,6 +1095,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    public boolean highlightDuplicateValue(Cell cell, PValue value) {
+        return false;
+    }
+
+    @Override
     public GGroupObjectValue getRowKey(Cell editCell) {
         return getTreeGridRow(editCell).getKey();
     }

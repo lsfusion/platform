@@ -844,6 +844,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public boolean highlightDuplicateValue(Cell cell, PValue value) {
+        GPropertyDraw property = getProperty(cell);
+        if  (property != null && property.highlightDuplicateValue()) {
+            int prevRowIndex = cell.getRowIndex() - 1;
+            if (prevRowIndex >= 0)
+                return GwtClientUtils.nullEquals(value, getValueAt(prevRowIndex, cell.getColumnIndex()));
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean highlightDuplicateValue() {
+        return groupObject.highlightDuplicateValue;
+    }
+
+    @Override
     public GGroupObjectValue getRowKey(Cell editCell) {
         return getGridRow(editCell).getKey();
     }

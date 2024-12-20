@@ -107,6 +107,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private boolean useBootstrap;
     private boolean contentWordWrap;
+    private boolean highlightDuplicateValue;
     private boolean isNative;
     private boolean isMobile;
 
@@ -132,7 +133,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
-        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap());
+        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
 
@@ -150,20 +151,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private void saveNavigatorUserContext(String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         if(clientColorTheme != null) {
-            DataObject designEnv = readDesignEnv(session);
+            DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
             businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, designEnv);
             session.applyException(businessLogics, stack);
         }
     }
 
-    private DataObject readDesignEnv(DataSession session) throws SQLException, SQLHandledException {
-        return businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
-    }
-
     private void initNavigatorUserContext(DataSession session) throws SQLException, SQLHandledException {
-        DataObject designEnv = readDesignEnv(session);
-        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
-        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session, designEnv) != null;
+        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
+        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session) != null;
+        highlightDuplicateValue = businessLogics.systemEventsLM.highlightDuplicateValue.read(session) != null;
         securityPolicy = securityManager.getSecurityPolicy(session, user);
     }
 
@@ -215,6 +212,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isContentWordWrap() {
         return contentWordWrap;
+    }
+
+    @Override
+    public boolean highlightDuplicateValue() {
+        return highlightDuplicateValue;
     }
 
     public boolean isNative() {

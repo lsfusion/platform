@@ -908,6 +908,7 @@ inTestMode = NATIVE BOOLEAN ();
 projectLSFDir = NATIVE STRING();
 
 contentWordWrap() += IF contentWordWrap(currentDesignEnv()) THEN (IF contentWordWrap(currentDesignEnv()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
+highlightDuplicateValue() += IF highlightDuplicateValue(currentDesignEnv()) THEN (IF highlightDuplicateValue(currentDesignEnv()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('highlightDuplicateValue');
 
 getInitSettings(User user) ABSTRACT CASE;
 getInitSettings(User user) + WHEN user IS User THEN {

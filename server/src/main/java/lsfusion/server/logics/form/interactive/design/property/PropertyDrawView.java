@@ -658,6 +658,8 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
         pool.writeObject(outStream, getValueAlignmentVert(pool.context));
 
+        pool.writeBoolean(outStream, highlightDuplicateValue(pool.context));
+
         pool.writeString(outStream, getValueOverflowHorz(pool.context));
         pool.writeString(outStream, getValueOverflowVert(pool.context));
 
@@ -1069,6 +1071,10 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         return FlexAlignment.CENTER;
+    }
+
+    public boolean highlightDuplicateValue(FormInstanceContext context) {
+        return context.highlightDuplicateValue;
     }
 
     public String getValueOverflowHorz(FormInstanceContext context) {

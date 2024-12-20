@@ -61,6 +61,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP useBootstrap;
     public LP contentWordWrap;
+    public LP highlightDuplicateValue;
     public LP serverTheme;
     public LP serverSize;
     public LP serverNavbar;
@@ -177,8 +178,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         initCurrentSize = findAction("initCurrentSize[]");
 
-        useBootstrap = findProperty("useBootstrap[DesignEnv]");
-        contentWordWrap = findProperty("contentWordWrap[DesignEnv]");
+        useBootstrap = findProperty("useBootstrap[]");
+        contentWordWrap = findProperty("contentWordWrap[]");
+        highlightDuplicateValue = findProperty("highlightDuplicateValue[]");
         serverTheme = findProperty("serverTheme[]");
         serverSize = findProperty("serverSize[]");
         serverNavbar = findProperty("serverNavbar[]");

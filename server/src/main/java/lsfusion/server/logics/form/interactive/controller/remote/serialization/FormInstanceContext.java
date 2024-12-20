@@ -33,8 +33,8 @@ public class FormInstanceContext extends ConnectionContext {
     public final DBManager dbManager;
     public final QueryEnvironment env;
 
-    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean contentWordWrap, boolean isNative, boolean isMobile, DBManager dbManager, QueryEnvironment env) {
-        super(useBootstrap, contentWordWrap);
+    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean contentWordWrap, boolean highlightDuplicateValue, boolean isNative, boolean isMobile, DBManager dbManager, QueryEnvironment env) {
+        super(useBootstrap, contentWordWrap, highlightDuplicateValue);
 
         this.entity = entity;
         this.view = view;

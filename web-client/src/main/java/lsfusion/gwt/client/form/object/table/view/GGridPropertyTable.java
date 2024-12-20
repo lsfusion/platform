@@ -939,6 +939,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public boolean highlightDuplicateValue(PValue value) {
+                return GGridPropertyTable.this.highlightDuplicateValue(cell, value);
+            }
+
+            @Override
             public boolean isLoading() {
                 return column.isLoading(property, (T) cell.getRow());
             }

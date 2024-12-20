@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.object;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -12,7 +11,6 @@ import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 
 import java.io.Serializable;
@@ -74,6 +72,8 @@ public class GGroupObject implements Serializable, HasNativeSID {
     }
 
     public transient int columnCount;
+
+    public transient boolean highlightDuplicateValue;
 
     private transient GSize rowMaxHeight;
     public GSize getRowMaxHeight() {

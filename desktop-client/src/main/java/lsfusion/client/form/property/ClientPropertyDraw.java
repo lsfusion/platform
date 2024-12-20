@@ -141,6 +141,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public FlexAlignment valueAlignmentHorz;
     public FlexAlignment valueAlignmentVert;
 
+    public boolean highlightDuplicateValue;
+
     public String valueOverflowHorz;
     public String valueOverflowVert;
 
@@ -581,6 +583,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         valueAlignmentHorz = pool.readObject(inStream);
         valueAlignmentVert = pool.readObject(inStream);
+
+        highlightDuplicateValue = pool.readBoolean(inStream);
 
         valueOverflowHorz = pool.readString(inStream);
         valueOverflowVert = pool.readString(inStream);
