@@ -328,6 +328,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.wrap = wrap;
     }
 
+    public void setHighlightDuplicate(boolean highlightDuplicate) {
+        target.highlightDuplicate = highlightDuplicate;
+    }
+
     public void setWrapWordBreak(boolean wrapWordBreak) {
         target.wrapWordBreak = wrapWordBreak;
     }
