@@ -106,7 +106,7 @@ public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBTyp
     }
 
     @Override
-    public String formatString(RawFileData value, boolean ui) {
+    public String formatString(RawFileData value) {
         return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 

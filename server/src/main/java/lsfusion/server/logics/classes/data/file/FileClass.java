@@ -89,7 +89,7 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
         outStream.writeBoolean(storeName);
     }
 
-    public String formatString(T value, boolean ui) {
+    public String formatString(T value) {
         return value != null ? Base64.encodeBase64StringUnChunked(getRawFileData(value).getBytes()) : null;
     }
 
@@ -114,7 +114,7 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     }
 
     @Override
-    public String formatMessage(T object) {
+    public String formatUI(T object) {
         if(object == null)
             return null;
         return getRawFileData(object).convertString();

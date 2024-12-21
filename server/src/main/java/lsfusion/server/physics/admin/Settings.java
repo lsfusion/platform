@@ -961,6 +961,16 @@ public class Settings implements Cloneable {
         this.autoAnalyzeTempStats = autoAnalyzeTempStats;
     }
 
+    private boolean useISOTimeFormatsInIntegration = true;
+
+    public boolean isUseISOTimeFormatsInIntegration() {
+        return useISOTimeFormatsInIntegration;
+    }
+
+    public void setUseISOTimeFormatsInIntegration(boolean useISOTimeFormatsInIntegration) {
+        this.useISOTimeFormatsInIntegration = useISOTimeFormatsInIntegration;
+    }
+
     public boolean isUseGreaterEquals() {
         return useGreaterEquals;
     }
