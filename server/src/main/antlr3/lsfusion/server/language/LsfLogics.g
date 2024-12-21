@@ -4501,13 +4501,15 @@ recalculateActionDefinitionBody[List<TypedParameter> context] returns [LAWithPar
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	LPWithParams condition = null;
+	Boolean classes = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedRecalculatePropertyAProp(context, $propUsage.propUsage, $params.props, condition, newContext);
+		$action = self.addScriptedRecalculatePropertyAProp(context, $propUsage.propUsage, $params.props, condition, classes, newContext);
 	}
 }
 	:	'RECALCULATE'
+	    ('CLASSES' { classes = true; } | 'NOCLASSES' { classes = false; } )?
 		propUsage=propertyUsage
 		'(' params=propertyExpressionList[newContext, true] ')'
 		('WHERE'

@@ -98,7 +98,9 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.AlgType;
+import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -2296,11 +2298,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        runMaterializationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
+        runMaterializationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, null);
     }
 
-    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, Boolean recalculateClasses) throws SQLException, SQLHandledException {
         aggregateProperty.recalculateMaterialization(businessLogics, dataSession, session, LM.baseClass, where, recalculateClasses, isolatedTransaction);
+    }
+
+    public <P extends PropertyInterface> void runRecalculateClasses(SQLSession session, final AbstractDataProperty abstractDataProperty, PropertyChange<ClassPropertyInterface> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        abstractDataProperty.recalculateClasses(session, isolatedTransaction, LM.baseClass, where);
     }
 
     public void recalculateMaterializationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
@@ -2698,7 +2704,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             message += checkTableClasses(implementTable, session, isolatedTransaction, LM.baseClass, false); // так как снизу есть проверка классов
         }
-        ImOrderSet<Property> storedDataProperties;
+        ImOrderSet<AbstractDataProperty> storedDataProperties;
         try(DataSession dataSession = createRecalculateSession(session)) {
             storedDataProperties = businessLogics.getStoredDataProperties(dataSession);
         }
@@ -2855,7 +2861,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         try(DataSession dataSession = createRecalculateSession(session)) {
-            for (final Property property : businessLogics.getStoredDataProperties(dataSession)) {
+            for (final AbstractDataProperty property : businessLogics.getStoredDataProperties(dataSession)) {
                 long start = System.currentTimeMillis();
                 property.recalculateClasses(session, isolatedTransactions, LM.baseClass);
                 long time = System.currentTimeMillis() - start;
