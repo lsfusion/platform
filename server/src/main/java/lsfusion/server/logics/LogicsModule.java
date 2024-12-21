@@ -860,12 +860,12 @@ public abstract class LogicsModule {
                 (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 
-    protected <C extends PropertyInterface, W extends PropertyInterface> LA addRecalculatePropertyAProp(int resInterfaces, boolean hasWhere, Object... params) {
+    protected <C extends PropertyInterface, W extends PropertyInterface> LA addRecalculatePropertyAProp(int resInterfaces, boolean hasWhere, Boolean classes, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         PropertyMapImplement<W, PropertyInterface> where = hasWhere ? (PropertyMapImplement<W, PropertyInterface>) (readImplements.get(resInterfaces + 1)) : null;
         return addAction(null, new LA<>(new RecalculatePropertyAction<C, PropertyInterface>(LocalizedString.NONAME, innerInterfaces.getSet(),
-                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), where)));
+                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), where, classes)));
     }
 
     // ------------------- List action ----------------- //

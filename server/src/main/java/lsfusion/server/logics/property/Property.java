@@ -2566,18 +2566,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getComplexity(false);
     }
 
-    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateClasses(sql, runInTransaction, DataSession.emptyEnv(OperationOwner.unknown), baseClass);
-    }
-
     @StackMessage("{logics.recalculating.data.classes}")
-    public void recalculateClasses(SQLSession sql, boolean runInTransaction, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass, PropertyChange<T> where) throws SQLException, SQLHandledException {
         assert isStored();
-        
+
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
-        Where where = getIncorrectWhere(baseClass, mapTable.mapKeys.join(mapKeys));
-        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, where);
-        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, env, TableOwner.global);
+        ImRevMap<T, KeyExpr> mapExprs = mapTable.mapKeys.join(mapKeys);
+        Where incorrectWhere = getIncorrectWhere(baseClass, mapExprs);
+
+        if(where != null)
+            incorrectWhere = incorrectWhere.and(where.getWhere(mapExprs));
+
+        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, incorrectWhere);
+
+        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global);
         DBManager.run(sql, runInTransaction, DBManager.RECALC_CLASSES_TIL, sql1 -> sql1.updateRecords(modifyQuery));
     }
 

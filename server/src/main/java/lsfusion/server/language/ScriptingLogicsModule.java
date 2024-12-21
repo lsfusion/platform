@@ -2778,9 +2778,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedChangeAProp(context, fromProperty, identityChange.second, identityChange.first);
     }
 
-    public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, Boolean classes, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         Pair<LPWithParams, LPWithParams> identityRecalc = getIdentityLPPropertyUsageWithWhere(context, propertyUsage, propertyMapping, whereProperty, newContext);
-        return addScriptedRecalculateAProp(context, identityRecalc.first, identityRecalc.second);
+        return addScriptedRecalculateAProp(context, identityRecalc.first, identityRecalc.second, classes);
     }
 
     public Pair<LPWithParams, LPWithParams> getIdentityLPPropertyUsageWithWhere(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -2845,7 +2845,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // the same as change but without from
-    public LAWithParams addScriptedRecalculateAProp(List<TypedParameter> context, LPWithParams recalcProperty, LPWithParams whereProperty) {
+    public LAWithParams addScriptedRecalculateAProp(List<TypedParameter> context, LPWithParams recalcProperty, LPWithParams whereProperty, Boolean classes) {
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), recalcProperty, whereProperty);
 
         List<LAPWithParams> paramsList = new ArrayList<>();
@@ -2857,7 +2857,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramsList.add(whereProperty);
         }
 
-        LA result = addRecalculatePropertyAProp(resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
+        LA result = addRecalculatePropertyAProp(resultInterfaces.size(), whereProperty != null, classes, getParamsPlainList(paramsList).toArray());
         return new LAWithParams(result, resultInterfaces);
     }
 

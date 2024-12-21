@@ -84,6 +84,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
+import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
@@ -1475,7 +1476,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    public ImOrderSet<Property> getStoredDataProperties(final DataSession dataSession) {
+    public ImOrderSet<AbstractDataProperty> getStoredDataProperties(final DataSession dataSession) {
         return BaseUtils.immutableCast(getStoredProperties().filterOrder(property -> {
             boolean recalculate;
             try {
