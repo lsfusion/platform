@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 public class ListFact {
@@ -73,6 +74,10 @@ public class ListFact {
 
     public static <T, X extends T, V> ImList<V> mapList(ImList<X> list, ImMap<T, V> map) {
         return ((ImList<T>)list).mapList(map);
+    }
+
+    public static <T, V> ImList<V> mapList(List<T> list, Function<T, V> map) {
+        return toList(list.size(), index -> map.apply(list.get(index)));
     }
 
     public static <T> ImCol<T> fromJavaCol(Collection<T> col) {

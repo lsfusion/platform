@@ -14,6 +14,12 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.RequestContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.hc.client5.http.entity.mime.*;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -175,45 +181,45 @@ public class ExternalUtils {
     public static ExternalResponse processRequest(ExecInterface remoteExec, Function<ExternalRequest, ConvertFileValue> convertFileValue, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
-                                                  String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
+                                                  String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException, FileUploadException {
         Charset urlCharset = ExternalUtils.defaultUrlCharset;
         String urlCharsetName = urlCharset.toString();
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, urlCharset);
+        List<NameValuePair> parsedQueryParams = URLEncodedUtils.parse(query, urlCharset);
 
-        ImList<String> queryActionParams = getParameterValues(queryParams, PARAMS_PARAM);
+        ImList<ExternalRequest.Param> queryParams = ListFact.mapList(parsedQueryParams, queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharsetName, queryParam.getName()));
         byte[] body = IOUtils.readBytesFromStream(is);
-        ImList<ExternalRequest.Param> bodyActionParams = getListFromInputStream(body, requestContentType);
-        ImList<ExternalRequest.Param> paramsList = ListFact.add(queryActionParams.mapListValues(value -> ExternalRequest.getUrlParam(value, urlCharsetName)), bodyActionParams);
-        
-        ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
+        ImList<ExternalRequest.Param> bodyParams = getListFromInputStream(body, requestContentType);
 
-        String signature = getParameterValue(queryParams, SIGNATURE_PARAM);
+        ImList<ExternalRequest.Param> params = ListFact.add(queryParams, bodyParams);
+
+        ImList<String> returns = getParameterValues(parsedQueryParams, RETURN_PARAM);
+        String returnMultiType = getParameterValue(parsedQueryParams, RETURNMULTITYPE_PARAM);
+
+        String signature = getParameterValue(parsedQueryParams, SIGNATURE_PARAM);
 
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new ExternalRequest.Param[paramsList.size()]),
-                queryParams, urlCharsetName, headerNames, headerValues, cookieNames,
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), params.toArray(new ExternalRequest.Param[params.size()]),
+                headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, needNotificationId);
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, returnMultiType, needNotificationId);
 
         lsfusion.interop.session.ExternalResponse execResult = null;
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");
         if (path.endsWith("/eval") || isEvalAction) {
-            ExternalRequest.Param paramScript = null;
-            String script = getParameterValue(queryParams, SCRIPT_PARAM);
-            if (script == null) { // if we don't have script param, we consider the first body param as script
-                int scriptParam = queryActionParams.size();
-                if(scriptParam < paramsList.size()) {
-                    paramScript = paramsList.get(scriptParam);
-                    paramsList = paramsList.remove(scriptParam);
-                    request.params = paramsList.toArray(new ExternalRequest.Param[paramsList.size()]);
+            ExternalRequest.Param paramScript = getParameterValue(params, SCRIPT_PARAM);
+            if (paramScript == null) { // if we don't have script param, we consider the first body param as script
+                int scriptParam = queryParams.size();
+                if(scriptParam < params.size()) {
+                    paramScript = params.get(scriptParam);
+                    params = params.remove(scriptParam);
+                    request.params = params.toArray(new ExternalRequest.Param[params.size()]);;
                 }
-            } else
-                paramScript = ExternalRequest.getUrlParam(script, urlCharsetName);
+            }
             execResult = remoteExec.eval(isEvalAction, paramScript, request);
         } else if (path.endsWith("/exec")) {
-            String action = getParameterValue(queryParams, ACTION_CN_PARAM);
+            String action = getParameterValue(parsedQueryParams, ACTION_CN_PARAM);
             execResult = remoteExec.exec(action, request);
         } else {
             Pattern p = Pattern.compile(".*/exec/(.*)");
@@ -224,14 +230,14 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue.apply(request));
+        return getExternalResponse(execResult, returnMultiType, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue.apply(request));
     }
 
-    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName, ConvertFileValue convertFileValue) {
+    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, String returnMultiType, String singleFileName, ConvertFileValue convertFileValue) {
         if(execResult instanceof lsfusion.interop.session.ResultExternalResponse) {
             lsfusion.interop.session.ResultExternalResponse resultExecResult = (lsfusion.interop.session.ResultExternalResponse) execResult;
             Result<String> singleFileExtension = singleFileName != null ? new Result<>() : null;
-            HttpEntity entity = getInputStreamFromList(resultExecResult, convertFileValue, queryParams, singleFileExtension);
+            HttpEntity entity = getInputStreamFromList(resultExecResult, convertFileValue, returnMultiType, singleFileExtension);
 
             String contentDisposition = null;
             if (singleFileName != null && singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
@@ -296,6 +302,24 @@ public class ExternalUtils {
         return mValues.immutableList();
     }
 
+    public static ExternalRequest.Param getParameterValue(ImList<ExternalRequest.Param> queryParams, String key) {
+        for(int i = 0, size = queryParams.size(); i < size; i++) {
+            ExternalRequest.Param queryParam = queryParams.get(i);
+            if(queryParam.name.equalsIgnoreCase(key))
+                return queryParam;
+        }
+        return null;
+    }
+
+    public static ExternalRequest.Param getParameterValue(ExternalRequest.Param[] queryParams, String key) {
+        for(int i = 0, size = queryParams.length; i < size; i++) {
+            ExternalRequest.Param queryParam = queryParams[i];
+            if(queryParam.name.equalsIgnoreCase(key))
+                return queryParam;
+        }
+        return null;
+    }
+
     private static String getHeaderValue(String[] headerNames, String[] headerValues, String header) {
         for(int i = 0; i < headerNames.length; i++) {
             if(headerNames[i].equalsIgnoreCase(header))
@@ -304,7 +328,7 @@ public class ExternalUtils {
         return null;
     }
 
-    private static ExternalRequest.Param getRequestParam(Object object, ContentType contentType, boolean convertedToString) {
+    private static ExternalRequest.Param getRequestParam(String paramName, Object object, ContentType contentType, boolean convertedToString) {
         assert object instanceof byte[] || (object instanceof String && convertedToString);
         Charset charset = getBodyCharset(contentType);
 
@@ -322,7 +346,7 @@ public class ExternalUtils {
                 object = new String((byte[]) object, charset);
             value = object;
         }
-        return ExternalRequest.getBodyParam(value, charset.toString());
+        return ExternalRequest.getBodyParam(value, charset.toString(), paramName);
     }
 
     public static Charset getLoggingCharsetFromContentType(String contentType) {
@@ -351,30 +375,53 @@ public class ExternalUtils {
         return defaultBodyCharset;
     }
 
+    // body
+    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException, FileUploadException {
+        return getListFromInputStream(ExternalRequest.SINGLEBODYPARAMNAME, bytes, contentType);
+    }
+
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
-    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
+    public static ImList<ExternalRequest.Param> getListFromInputStream(String paramName, byte[] bytes, ContentType contentType) throws IOException, MessagingException, FileUploadException {
         MList<ExternalRequest.Param> mParamsList = ListFact.mList();
 
         String mimeType = contentType != null ? contentType.getMimeType() : null;
 
         if (mimeType != null && mimeType.startsWith("multipart/")) {
-            MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
-            for (int i = 0; i < multipart.getCount(); i++) {
-                BodyPart bodyPart = multipart.getBodyPart(i);
-                Object param = bodyPart.getContent();
-                ContentType partContentType = parseContentType(bodyPart.getContentType());
-                if(param instanceof InputStream)
-                    mParamsList.addAll(getListFromInputStream(IOUtils.readBytesFromStream((InputStream) param), partContentType));
-                else
-                    mParamsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
+            if(mimeType.startsWith(FileUploadBase.MULTIPART_FORM_DATA)) { // using Apache Commons FileUpload to get the param names
+                DiskFileItemFactory factory = new DiskFileItemFactory();
+                ServletFileUpload upload = new ServletFileUpload(factory);
+
+                RequestContext requestContext = new ByteArrayRequestContext(bytes, contentType);
+
+                List<FileItem> fileItems = upload.parseRequest(requestContext);
+                for (int i = 0, size = fileItems.size(); i < size; i++) {
+                    FileItem fileItem = fileItems.get(i);
+                    String fieldName = fileItem.getFieldName();
+                    ContentType partContentType = parseContentType(fileItem.getContentType());
+                    if (!fileItem.isFormField()) // actually it seems that simple true can be here (but apparently it doesn't matter)
+                        mParamsList.addAll(getListFromInputStream(fieldName, fileItem.get(), partContentType));
+                    else
+                        mParamsList.add(getRequestParam(fieldName, fileItem.getString(), partContentType, true)); // multipart автоматически text/* возвращает как String
+                }
+            } else { // using javax.mail
+                MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
+                for (int i = 0; i < multipart.getCount(); i++) {
+                    BodyPart bodyPart = multipart.getBodyPart(i);
+                    Object param = bodyPart.getContent();
+                    ContentType partContentType = parseContentType(bodyPart.getContentType());
+                    if (param instanceof InputStream)
+                        mParamsList.addAll(getListFromInputStream(paramName, IOUtils.readBytesFromStream((InputStream) param), partContentType));
+                    else
+                        mParamsList.add(getRequestParam(paramName, param, partContentType, true)); // multipart автоматически text/* возвращает как String
+                }
             }
         } else if(mimeType != null && mimeType.equalsIgnoreCase(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())) {
             Charset charset = getBodyUrlCharset(contentType);
             List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
             for(NameValuePair param : params)
-                mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString()));
+                mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString(), param.getName()));
         } else if (mimeType != null || bytes.length > 0)
-            mParamsList.add(getRequestParam(bytes, contentType, false));
+            mParamsList.add(getRequestParam(paramName, bytes, contentType, false));
 
         return mParamsList.immutableList();
     }
@@ -391,23 +438,19 @@ public class ExternalUtils {
         }
     }
 
-    public static ResponseType getResponseType(List<NameValuePair> queryParams, String[] headerNames, String[] headerValues) {
+    public static ResponseType getResponseType(String returnMultiType, String[] headerNames, String[] headerValues) {
         ContentType forceContentType = parseContentType(getHeaderValue(headerNames, headerValues, "Content-Type"));
 
-        boolean returnBodyUrl = false;
-        if(queryParams != null) {
-            String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
-            returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        }
+        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
 
         Charset charset = returnBodyUrl ? getBodyUrlCharset(forceContentType) : getBodyCharset(forceContentType);
         return new ResponseType(forceContentType, returnBodyUrl, charset);
     }
 
-    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, ConvertFileValue convertFileValue, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
+    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, ConvertFileValue convertFileValue, String returnMultiType, Result<String> singleFileExtension) {
         Object[] results = convertFileValue(convertFileValue, response.results);
 
-        ResponseType responseType = getResponseType(queryParams, response.headerNames, response.headerValues);
+        ResponseType responseType = getResponseType(returnMultiType, response.headerNames, response.headerValues);
         return getInputStreamFromList(results, getBodyUrl(results, responseType.returnBodyUrl, responseType.charset), null, new ArrayList<>(), singleFileExtension, responseType.forceContentType, responseType.charset);
     }
 
