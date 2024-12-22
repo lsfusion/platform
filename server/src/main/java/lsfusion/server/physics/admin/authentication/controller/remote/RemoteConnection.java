@@ -47,7 +47,6 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hc.core5.http.NameValuePair;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -426,7 +425,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                     runnable.run(dataSession, getStack(), null);
 
-                    return readResult(request.returnNames, request.queryParams, property.action, dataSession);
+                    return readResult(request.returnNames, request.returnMultiType, property.action, dataSession);
                 }
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
@@ -437,7 +436,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         writeRequestInfo(env, property.action, request, actionPathInfo);
 
-        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams, request.queryParamsCharsetName));
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params));
     }
 
     protected AuthenticationException authException;
@@ -451,7 +450,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             forceAPI = annotation.equals("api");
         }
 
-        if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getParamValues()), request.signature))
+        if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getImplicitParamValues()), request.signature))
             return;
 
         if(authException != null)
@@ -484,12 +483,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
         }
-        if (request.queryParams != null && action.uses(businessLogics.LM.params.property)) {
+        if (action.uses(businessLogics.LM.params.property)) {
             MExclMap<ImList<Object>, String> mParams = MapFact.mExclMap();
             Map<String, Integer> paramIndexes = new HashMap<>();
-            for (NameValuePair param : request.queryParams) {
-                String paramName = param.getName();
-                String paramValue = param.getValue();
+            for (ExternalRequest.Param param : request.params) {
+                String paramName = param.name;
+                String paramValue = param.value.toString(); // ??? should be separated to fileParams and fileNames should be added ???
 
                 Integer paramIndex = paramIndexes.get(paramName);
                 if(paramIndex == null)
@@ -542,7 +541,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, List<NameValuePair> queryParams, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
 
         ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
@@ -553,7 +552,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
 
-        ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(queryParams, headerNames, headerValues);
+        ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(returnMultiType, headerNames, headerValues);
         Charset charset = responseType.charset;
 
         List<Object> returns = new ArrayList<>();
@@ -598,8 +597,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
-                List<NameValuePair> queryParams = request.queryParams;
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, null, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;

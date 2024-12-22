@@ -3460,14 +3460,4 @@ public class Settings implements Cloneable {
     public void setExportDBFNumericMandatoryZeroes(boolean exportDBFNumericMandatoryZeroes) {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
-
-    public boolean prioritizeHTTPParameterNames = false;
-
-    public boolean isPrioritizeHTTPParameterNames() {
-        return prioritizeHTTPParameterNames;
-    }
-
-    public void setPrioritizeHTTPParameterNames(boolean prioritizeHTTPParameterNames) {
-        this.prioritizeHTTPParameterNames = prioritizeHTTPParameterNames;
-    }
 }

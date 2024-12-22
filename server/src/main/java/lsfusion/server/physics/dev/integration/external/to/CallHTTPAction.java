@@ -10,7 +10,9 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
@@ -45,7 +47,6 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.NameValuePair;
 
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -249,28 +250,47 @@ public abstract class CallHTTPAction extends CallAction {
         return connectionString.isEmpty() || connectionString.startsWith("/");
     }
 
-    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params, List<NameValuePair> queryParams, String queryParamsCharsetName) throws ParseException, SQLException, SQLHandledException {
+    private static ImRevMap<String, ExternalRequest.Param> getExplicitParams(ExternalRequest.Param[] params, ImOrderSet<String> names) {
+        MRevMap<String, ExternalRequest.Param> mExplicitParams = MapFact.mRevMapMax(names.size());
+        for (int i = 0, size = names.size(); i < size; i++) {
+            String paramName = names.get(i);
+            if(paramName != null) {
+                ExternalRequest.Param paramValue = ExternalUtils.getParameterValue(params, paramName);
+                if (paramValue != null)
+                    mExplicitParams.revAdd(paramName, paramValue);
+            }
+        }
+        return mExplicitParams.immutableRev();
+    }
+
+    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params) throws ParseException, SQLException, SQLHandledException {
         ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
-        String[] names = property.getInterfaceNames();
+        ImOrderSet<String> names = property.getInterfaceNames();
         ObjectValue[] values = new ObjectValue[classes.length];
+
+        ImRevMap<String, ExternalRequest.Param> explicitParams = getExplicitParams(params, names);
 
         int interfacesSize = classes.length;
         int prmUsed = 0;
         for (int i = 0; i < interfacesSize; i++) {
             ValueClass valueClass = classes[i];
-            String paramName = names[i];
+            String paramName = names.get(i);
 
             ExternalRequest.Param param = null;
-            // if there are not enough parameters - looking for some in the query
-            String queryParamValue;
-            if(queryParams != null && paramName != null
-                    && (Settings.get().isPrioritizeHTTPParameterNames() || (interfacesSize - i > params.length - prmUsed))
-                    && (queryParamValue = ExternalUtils.getParameterValue(queryParams, paramName)) != null)
-                param = ExternalRequest.getUrlParam(queryParamValue, queryParamsCharsetName);
+            // looking some explicitly named param
+            if(paramName != null)
+                param = explicitParams.get(paramName);
 
-            // if we have not found one - using the next in the list
-            if(param == null && prmUsed < params.length)
-                param = params[prmUsed++];
+            // if we have not found one - using the next in the list, not used
+            if(param == null) {
+                while(prmUsed < params.length) {
+                    ExternalRequest.Param paramUsed = params[prmUsed++];
+                    if(paramUsed.isImplicitParam() && !explicitParams.containsValue(paramUsed)) { // found
+                        param = paramUsed;
+                        break;
+                    }
+                }
+            }
 
             Object value = null;
             if (param != null) // all incorrect params will consider to be nulls
@@ -289,7 +309,7 @@ public abstract class CallHTTPAction extends CallAction {
             LP<?> targetProp = targetPropList.get(i);
 
             ExternalRequest.Param value = null;
-            if (i < results.size()) // для недостающих записываем null
+            if (i < results.size()) // for missing writing null
                 value = results.get(i);
 
             targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value), context);
