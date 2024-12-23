@@ -21,9 +21,18 @@ public class PrereadSecurityPoliciesTask extends SimpleBLTask {
         return "Prereading security policies";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return isEnabled();
+    }
+
     public void run(Logger logger) {
-        if (!SystemProperties.lightStart && !Settings.get().isDisablePrereadSecurityPolicies()) {
+        if (isEnabled()) {
             getSecurityManager().prereadSecurityPolicies();
         }
+    }
+
+    private static boolean isEnabled() {
+        return !SystemProperties.lightStart && !Settings.get().isDisablePrereadSecurityPolicies();
     }
 }

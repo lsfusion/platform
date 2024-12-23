@@ -6,6 +6,11 @@ public class SyncNavigatorElementParentsTask extends SyncTask {
         return "Synchronizing navigator element parents";
     }
 
+    @Override
+    public boolean isEndLoggable() {
+        return true;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizeNavigatorElementParents();
     }

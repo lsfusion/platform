@@ -45,10 +45,6 @@ public abstract class Task {
         return false;
     }
 
-    public String getEndCaption() {
-        return getCaption() + " ended";
-    }
-
     protected long getBaseComplexity() {
         return 1;
     }
@@ -144,10 +140,11 @@ public abstract class Task {
 
     public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, final Logger logger,
                         TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
+        long start = System.currentTimeMillis();
         if (isStartLoggable()) {
             String caption = getCaption();
             if(caption != null)
-                logger.info(caption);
+                logger.info(caption + (isEndLoggable() ? " started" : ""));
         }
 
         ExecutorFactory.executeWithTimeout(BL, () -> {
@@ -156,8 +153,11 @@ public abstract class Task {
         }, propertyTimeout,
             () -> ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context)));
 
-        if(isEndLoggable())
-            logger.info(getEndCaption());
+        if (isEndLoggable()) {
+            String caption = getCaption();
+            if (caption != null)
+                logger.info(getCaption() + " finished, " + (System.currentTimeMillis() - start) + "ms");
+        }
 
         for (Task from : dependsFrom.keySet()) {
             from.dependProceeded(BL, executor, context, monitor, taskCount, logger, this, taskQueue, throwableConsumer, propertyTimeout);
