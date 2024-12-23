@@ -7,7 +7,6 @@ public class ChangeFlowType {
     public static final ChangeFlowType CONTINUE = new ChangeFlowType();
     public static final ChangeFlowType RETURN = new ChangeFlowType();
     public static final ChangeFlowType SYNC = new ChangeFlowType();
-    public static final ChangeFlowType NEWSESSION = new ChangeFlowType();
 
     public static final ChangeFlowType PRIMARY = new ChangeFlowType(); // primary design button classes, usually NEW, which means the main cases
     public static final ChangeFlowType INPUT = new ChangeFlowType(); // has input inside
@@ -21,6 +20,14 @@ public class ChangeFlowType {
     public static final ChangeFlowType INTERNALASYNC = new ChangeFlowType(); // checks if InternalClientAction is async
     ;
     public boolean isChange() {
-        return this instanceof FormChangeFlowType || this == READONLYCHANGE;
-    }    
+        return this == READONLYCHANGE || this instanceof FormChangeFlowType || this == ANYEFFECT;
+    }
+
+    public boolean isManageSession() {
+        return this == READONLYCHANGE || this == HASSESSIONUSAGES || this == ANYEFFECT;
+    }
+
+    public boolean isSession() {
+        return isChange() || isManageSession();
+    }
 }

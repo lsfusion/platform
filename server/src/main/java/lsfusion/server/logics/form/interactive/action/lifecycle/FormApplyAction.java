@@ -40,9 +40,7 @@ public class FormApplyAction extends FormFlowAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.READONLYCHANGE)  
-            return true;
-        if (type == ChangeFlowType.HASSESSIONUSAGES)
+        if (type.isManageSession())
             return true;
         if(type == ChangeFlowType.PRIMARY)
             return true;

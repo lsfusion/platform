@@ -28,9 +28,7 @@ public class CancelAction extends SystemExplicitAction {
     public boolean hasFlow(ChangeFlowType type) {
         if(type == ChangeFlowType.CANCEL)
             return true;
-        if (type == ChangeFlowType.READONLYCHANGE)
-            return true;
-        if (type == ChangeFlowType.HASSESSIONUSAGES)
+        if (type.isManageSession())
             return true;
         return super.hasFlow(type);
     }

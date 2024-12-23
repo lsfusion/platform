@@ -125,4 +125,11 @@ public class NewThreadAction extends AroundAspectAction {
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
         return PropertyFact.createNewThreadAction(interfaces, action, periodProp, delayProp, connectionProp, targetProp);
     }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(!type.isSession())
+            return false;
+        return super.hasFlow(type);
+    }
 }
