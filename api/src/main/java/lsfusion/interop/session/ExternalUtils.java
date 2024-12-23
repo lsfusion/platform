@@ -397,6 +397,8 @@ public class ExternalUtils {
                 for (int i = 0, size = fileItems.size(); i < size; i++) {
                     FileItem fileItem = fileItems.get(i);
                     String fieldName = fileItem.getFieldName();
+                    if(fieldName == null)
+                        fieldName = paramName;
                     ContentType partContentType = parseContentType(fileItem.getContentType());
                     if (!fileItem.isFormField()) // actually it seems that simple true can be here (but apparently it doesn't matter)
                         mParamsList.addAll(getListFromInputStream(fieldName, fileItem.get(), partContentType));
