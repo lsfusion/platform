@@ -113,9 +113,14 @@ public abstract class InternalAction extends ExplicitAction {
         return false;
     }
 
+    protected boolean hasNoChange() {
+        return false;
+    }
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type.isChange()) // неизвестно что поэтому считаем что изменяет
+        if(type.isSession() && !hasNoChange())
+            return true;
+        if(type == ChangeFlowType.ANYEFFECT)
             return true;
         return super.hasFlow(type);
     }
