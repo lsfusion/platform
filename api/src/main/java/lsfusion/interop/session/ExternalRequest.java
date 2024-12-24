@@ -1,10 +1,14 @@
 package lsfusion.interop.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.function.Function;
 
 public class ExternalRequest implements Serializable {
 
@@ -57,8 +61,12 @@ public class ExternalRequest implements Serializable {
         return new Param(value, true, charsetName, name);
     }
 
-    public static Param getBodyParam(Object value, String charsetName, String name) {
-        return new Param(value, false, charsetName, name);
+    public static Param getBodyParam(Object value, String charsetName, String name, String fileName) {
+        return new Param(value, false, charsetName, name, fileName);
+    }
+
+    public static NamedFileData getNamedFile(FileData fileData, String fileName) {
+        return new NamedFileData(fileData, BaseUtils.getFileName(fileName != null ? fileName : "file"));
     }
 
     public Param[] params;
@@ -101,17 +109,52 @@ public class ExternalRequest implements Serializable {
                 .toArray();
     }
 
-    public static class Param implements Serializable {
+    public static class Result implements Serializable {
         public final Object value;
-        public final boolean url;
-        public final String name;
+
+        public final String name; // nullable
+        public final String fileName;
+
+        public Result(Object value) {
+            this(value, null);
+        }
+
+        public Result(Object value, String fileName) {
+            this(value, null, fileName);
+        }
+
+        public Result(Object value, String name, String fileName) {
+            this.value = value;
+            this.name = name;
+            this.fileName = fileName;
+        }
+
+        public Result convertFileValue(Function<Object, Object> valueConverter) {
+            return new Result(valueConverter.apply(value), name, fileName);
+        }
+
+        public Result convertFileValue(String name, Function<Object, Object> valueConverter) {
+            return new Result(valueConverter.apply(value), this.name != null ? this.name : name, fileName);
+        }
+    }
+    public static class Param implements Serializable {
+        public final Object value; // String or FileData
         public final String charsetName;
 
+        public final boolean url;
+
+        public final String name;
+        public final String fileName;
+
         public Param(Object value, boolean url, String charsetName, String name) {
+            this(value, url, charsetName, name, null);
+        }
+        public Param(Object value, boolean url, String charsetName, String name, String fileName) {
             this.value = value;
             this.url = url;
             this.charsetName = charsetName;
             this.name = name;
+            this.fileName = fileName;
         }
 
         public boolean isImplicitParam() {

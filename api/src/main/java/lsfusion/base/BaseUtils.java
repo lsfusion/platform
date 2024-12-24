@@ -59,7 +59,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 315;
+        return 316;
     }
 
     public static String getPlatformVersion() {
@@ -1412,6 +1412,10 @@ public class BaseUtils {
         Desktop.getDesktop().open(file);
     }
 
+    public static String getContentFileName(String name, String extension) {
+        //comma is not allowed in Content-Disposition filename*
+        return getFileName(name, extension).replace(",", "");
+    }
     public static String getFileName(String name, String extension) {
         return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
     }

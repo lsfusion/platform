@@ -206,6 +206,6 @@ public class LogicsSessionObject {
     }
 
     private static String getStringResult(ExternalResponse result) {
-        return ((FileData) ((ResultExternalResponse)result).results[0]).getRawFile().getString(ExternalUtils.defaultBodyCharset); // because we don't send any charset and thus defaultBodyCharset will be used in the result
+        return ((FileData) ((ResultExternalResponse)result).results[0].value).getRawFile().getString(ExternalUtils.defaultBodyCharset); // because we don't send any charset and thus defaultBodyCharset will be used in the result
     }
 }
