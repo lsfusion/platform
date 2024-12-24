@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
@@ -130,12 +131,12 @@ public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBTyp
     }
 
     @Override
-    protected RawFileData parseHTTPNotNull(FileData b, String charsetName) {
+    protected RawFileData parseHTTPNotNull(FileData b, String charsetName, String fileName) {
         return b.getRawFile();
     }
 
     @Override
-    protected FileData formatHTTPNotNull(RawFileData value, Charset charset) {
+    protected FileData formatHTTPNotNull(RawFileData value, Charset charset, Result<String> fileName) {
         return new FileData(value, "bytea");
     }
 }

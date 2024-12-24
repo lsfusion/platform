@@ -401,7 +401,7 @@ public class ExternalHttpServer extends MonitorServer {
                         response.getResponseHeaders().add("Content-Type", headerValues[i]);
                     } else
                         response.getResponseHeaders().add(headerName, headerValues[i]);
-                    hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+                    hasContentDisposition = hasContentDisposition || headerName.equals(ExternalUtils.CONTENT_DISPOSITION_HEADER);
                 }
             }
 
@@ -418,7 +418,7 @@ public class ExternalHttpServer extends MonitorServer {
             if (contentType != null && !hasContentType)
                 response.getResponseHeaders().add("Content-Type", contentType);
             if(contentDisposition != null && !hasContentDisposition)
-                response.getResponseHeaders().add("Content-Disposition", contentDisposition);
+                response.getResponseHeaders().add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
             response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());

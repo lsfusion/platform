@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;

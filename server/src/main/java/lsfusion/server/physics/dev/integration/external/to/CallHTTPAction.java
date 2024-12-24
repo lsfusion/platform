@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
 public abstract class CallHTTPAction extends CallAction {
     boolean clientAction;
@@ -123,127 +124,8 @@ public abstract class CallHTTPAction extends CallAction {
         return transformedText;
     }
 
-    @Override
-    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-        Charset defaultUrlCharset = ExternalUtils.defaultUrlCharset;
-        String connectionString = getTransformedEncodedText(context, queryInterface, defaultUrlCharset);
-        if(connectionString == null)
-            throw new RuntimeException("connectionString not specified");
-
-        boolean noExec = isNoExec(connectionString);
-
-        String requestLogMessage = !noExec && Settings.get().isLogToExternalSystemRequests() ? RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
-        boolean successfulResponse = false;
-        try {
-            Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            connectionString = replaceParams(context, createUrlProcessor(connectionString, noExec), rNotUsedParams, defaultUrlCharset);
-
-            if(noExec)
-                targetPropList.single().change(connectionString, context);
-            else {
-                String bodyUrl = null;
-
-                Map<String, String> headers = new HashMap<>();
-                if (headersProperty != null) {
-                    MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
-                }
-                Map<String, String> cookies = new HashMap<>();
-                if (cookiesProperty != null) {
-                    MapFact.addJavaAll(cookies, readPropertyValues(context.getEnv(), cookiesProperty));
-                }
-
-                CookieStore cookieStore = new BasicCookieStore();
-
-                byte[] body = null;
-                if (method.hasBody()) {
-                    ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
-
-                    Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
-                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
-                    if(bodyUrl != null) {
-                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
-                        if (!rNotUsedParams.result.isEmpty()) {
-                            throw new RuntimeException("All params should be used in BODYURL");
-                        }
-                    }
-
-                    Charset bodyCharset = ExternalUtils.getBodyCharset(forceContentType);
-                    Object[] paramList = new Object[rNotUsedParams.result.size()];
-                    for (int i = 0, size = rNotUsedParams.result.size(); i < size; i++)
-                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i), bodyCharset);
-
-                    ImList<String> bodyParamNames = bodyParamNamesInterfaces.mapListValues(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface));
-                    List<Map<String, String>> bodyParamHeadersList = new ArrayList<>();
-                    for (LP bodyParamHeadersProperty : bodyParamHeadersPropertyList) {
-                        Map<String, String> bodyParamHeaders = new HashMap<>();
-                        MapFact.addJavaAll(bodyParamHeaders, readPropertyValues(context.getEnv(), bodyParamHeadersProperty));
-                        bodyParamHeadersList.add(bodyParamHeaders);
-                    }
-
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType, bodyCharset);
-                    if (entity != null) {
-                        body = IOUtils.readBytesFromHttpEntity(entity);
-                        headers.put("Content-Type", entity.getContentType());
-                    }
-                }
-
-                Integer timeout = nvl((Integer) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
-                boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
-
-                ExternalHttpResponse response;
-                if (clientAction) {
-                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore));
-                } else {
-                    response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore);
-                }
-
-                byte[] responseBytes = response.responseBytes;
-                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType)) : ListFact.EMPTY();
-                fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
-
-                Map<String, List<String>> responseHeaders = response.responseHeaders;
-                String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
-                String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
-                if (headersToProperty != null) {
-                    writePropertyValues(context, headersToProperty, headerNames, headerValues);
-                }
-                Map<String, String> responseCookies = getResponseCookies(cookieStore);
-                if (cookiesToProperty != null) {
-                    String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
-                    String[] cookieValues = responseCookies.values().toArray(new String[0]);
-                    writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
-                }
-                int statusCode = response.statusCode;
-                context.getBL().LM.statusHttp.change(statusCode, context);
-
-                // LOGGING
-                String responseEntity = responseBytes != null ? new String(responseBytes, ExternalUtils.getLoggingCharsetFromContentType(response.contentType)) : null;
-                String responseStatus = statusCode + " " + response.statusText;
-                successfulResponse = RemoteConnection.successfulResponse(statusCode);
-
-                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
-                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
-                            cookies,
-                            null,
-                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
-                            BaseUtils.toStringMap(headerNames, headerValues),
-                            responseCookies,
-                            responseStatus,
-                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
-                }
-                if (!successfulResponse)
-                    throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
-            }
-        } catch (Exception e) {
-            if (requestLogMessage != null)
-                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
-
-            throw Throwables.propagate(e);
-        } finally {
-            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
-        }
-
-        return FlowResult.FINISH;
+    public static <P extends PropertyInterface, V> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
+        property.changeList(session, env, params);
     }
 
     private static boolean isNoExec(String connectionString) {
@@ -327,8 +209,134 @@ public abstract class CallHTTPAction extends CallAction {
         property.change(session, env, MapFact.toMap(names, values));
     }
 
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, String> params) throws SQLException, SQLHandledException {
-        property.changeList(session, env, params);
+    @Override
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+        Charset defaultUrlCharset = ExternalUtils.defaultUrlCharset;
+        String connectionString = getTransformedEncodedText(context, queryInterface, defaultUrlCharset);
+        if(connectionString == null)
+            throw new RuntimeException("connectionString not specified");
+
+        boolean noExec = isNoExec(connectionString);
+
+        String requestLogMessage = !noExec && Settings.get().isLogToExternalSystemRequests() ? RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
+        boolean successfulResponse = false;
+        try {
+            Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
+            connectionString = replaceParams(context, createUrlProcessor(connectionString, noExec), rNotUsedParams, defaultUrlCharset);
+
+            if(noExec)
+                targetPropList.single().change(connectionString, context);
+            else {
+                String bodyUrl = null;
+
+                Map<String, String> headers = new HashMap<>();
+                if (headersProperty != null) {
+                    MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
+                }
+                Map<String, String> cookies = new HashMap<>();
+                if (cookiesProperty != null) {
+                    MapFact.addJavaAll(cookies, readPropertyValues(context.getEnv(), cookiesProperty));
+                }
+
+                CookieStore cookieStore = new BasicCookieStore();
+
+                byte[] body = null;
+                if (method.hasBody()) {
+                    ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
+
+                    Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
+                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
+                    if(bodyUrl != null) {
+                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
+                        if (!rNotUsedParams.result.isEmpty()) {
+                            throw new RuntimeException("All params should be used in BODYURL");
+                        }
+                    }
+
+                    Charset bodyCharset = ExternalUtils.getBodyCharset(forceContentType);
+                    ExternalRequest.Result[] paramList = new ExternalRequest.Result[rNotUsedParams.result.size()];
+                    for (int i = 0, size = rNotUsedParams.result.size(); i < size; i++)
+                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i), bodyCharset, i < bodyParamNamesInterfaces.size() ? (String) context.getKeyObject(bodyParamNamesInterfaces.get(i)) : null);
+
+                    List<Map<String, String>> bodyParamHeadersList = new ArrayList<>();
+                    for (LP bodyParamHeadersProperty : bodyParamHeadersPropertyList) {
+                        Map<String, String> bodyParamHeaders = new HashMap<>();
+                        MapFact.addJavaAll(bodyParamHeaders, readPropertyValues(context.getEnv(), bodyParamHeadersProperty));
+                        bodyParamHeadersList.add(bodyParamHeaders);
+                    }
+
+                    if(forceContentType == null && !bodyParamNamesInterfaces.isEmpty()) // if there are BODYPARAMNAMES we force the Content-Type to be multipart
+                        forceContentType = getMultipartContentType(bodyCharset);
+
+                    Result<String> contentDisposition = new Result<>();
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamHeadersList, contentDisposition, forceContentType, bodyCharset);
+                    if (entity != null) { // no body
+                        body = IOUtils.readBytesFromHttpEntity(entity);
+                        headers.put("Content-Type", entity.getContentType());
+
+                        if(contentDisposition.result != null && !headers.containsKey(ExternalUtils.CONTENT_DISPOSITION_HEADER))
+                            headers.put(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition.result);
+                    }
+                }
+
+                Integer timeout = nvl((Integer) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
+                boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
+
+                ExternalHttpResponse response;
+                if (clientAction) {
+                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore));
+                } else {
+                    response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore);
+                }
+
+                Map<String, List<String>> responseHeaders = response.responseHeaders;
+                String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
+                String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
+                if (headersToProperty != null) {
+                    writePropertyValues(context, headersToProperty, headerNames, headerValues);
+                }
+                Map<String, String> responseCookies = getResponseCookies(cookieStore);
+                if (cookiesToProperty != null) {
+                    String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
+                    String[] cookieValues = responseCookies.values().toArray(new String[0]);
+                    writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
+                }
+
+                byte[] responseBytes = response.responseBytes;
+                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues) : ListFact.EMPTY();
+                fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+
+                int statusCode = response.statusCode;
+                context.getBL().LM.statusHttp.change(statusCode, context);
+
+                // LOGGING
+                String responseEntity = responseBytes != null ? new String(responseBytes, ExternalUtils.getLoggingCharsetFromContentType(response.contentType)) : null;
+                String responseStatus = statusCode + " " + response.statusText;
+                successfulResponse = RemoteConnection.successfulResponse(statusCode);
+
+                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
+                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
+                            cookies,
+                            null,
+                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
+                            BaseUtils.toStringMap(headerNames, headerValues),
+                            responseCookies,
+                            responseStatus,
+                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
+                }
+                if (!successfulResponse)
+                    throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
+            }
+        } catch (Exception e) {
+            if (requestLogMessage != null)
+                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
+
+            throw Throwables.propagate(e);
+        } finally {
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+        }
+
+        return FlowResult.FINISH;
     }
 
     protected Integer getDefaultTimeout() {
@@ -346,9 +354,9 @@ public abstract class CallHTTPAction extends CallAction {
         return new ActionImplement<>(this, paramInterfaces.mapList(params).addExcl(queryInterface, query));
     }
 
-    protected Object formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset) {
+    protected ExternalRequest.Result formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset, String paramName) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return context.convertFileValue(getParamType(paramInterface, value).formatHTTP(value.getValue(), charset));
+        return getParamType(paramInterface, value).formatHTTP(value.getValue(), charset).convertFileValue(paramName, context::convertFileValue);
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, CallHTTPAction.UrlProcessor urlProcessor, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlCharset) {
@@ -356,9 +364,9 @@ public abstract class CallHTTPAction extends CallAction {
         MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             PropertyInterface paramInterface = orderInterfaces.get(i);
-            Object value = formatHTTP(context, paramInterface, urlCharset);
+            ExternalRequest.Result value = formatHTTP(context, paramInterface, urlCharset, null);
 
-            if (!urlProcessor.proceed(i, value, ExternalUtils.encodeUrlParam(urlCharset, value))) {
+            if (!urlProcessor.proceed(i, value.value, ExternalUtils.encodeUrlParam(urlCharset, value))) {
                 if(mNotUsedParams != null)
                     mNotUsedParams.exclAdd(paramInterface);
             }

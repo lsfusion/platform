@@ -48,7 +48,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         Charset charset = ExternalUtils.downloadCharset;
         response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
         //inline = open in browser, attachment = download
-        response.addHeader("Content-Disposition", "inline; filename*=" + charset.name() + "''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
+        response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, "inline; filename*=" + charset.name() + "''" + URIUtil.encodeQuery(BaseUtils.getContentFileName(displayName, extension)));
         // expiration will be set in urlRewrite.xml /file (just to have it at one place)
 
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
@@ -57,10 +57,5 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, true, inStream -> {
             ByteStreams.copy(inStream, response.getOutputStream());
         });
-    }
-
-    private String getFileName(String name, String extension) {
-        //comma is not allowed in Content-Disposition filename*
-        return BaseUtils.getFileName(name, extension).replace(",", "");
     }
 }
