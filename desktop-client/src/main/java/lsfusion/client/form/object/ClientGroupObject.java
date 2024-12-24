@@ -54,7 +54,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public ListViewType listViewType;
     public PivotOptions pivotOptions;
     public String customRenderFunction;
-    public String mapTileProvider;
 
     public boolean asyncInit;
 
@@ -70,6 +69,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
     public CustomOptionsReader customOptionsReader = new CustomOptionsReader();
+    public MapTileProviderReader mapTileProviderReader = new MapTileProviderReader();
 
     // transient
     public int columnSumWidth;
@@ -174,7 +174,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         listViewType = pool.readObject(inStream);
         pivotOptions = pool.readObject(inStream);
         customRenderFunction = pool.readString(inStream);
-        mapTileProvider = pool.readString(inStream);
 
         asyncInit = pool.readBoolean(inStream);
 
@@ -303,6 +302,24 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         public byte getType() {
             return PropertyReadType.CUSTOM_OPTIONS;
+        }
+    }
+
+    public class MapTileProviderReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientGroupObject.this;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            //do nothing in desktop
+        }
+
+        public int getID() {
+            return ClientGroupObject.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.MAP_TILE_PROVIDER;
         }
     }
 }

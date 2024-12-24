@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -103,6 +104,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return result;
     }
 
+    private String tileProvider;
+    @Override
+    public void updateMapTileProviderValues(NativeHashMap<GGroupObjectValue, PValue> values) {
+        tileProvider = PValue.getStringValue(values.firstValue());
+    }
+
     private JavaScriptObject map;
     private JavaScriptObject markerClusters;
     private Map<GGroupObjectValue, JavaScriptObject> markers = new HashMap<>();
@@ -112,7 +119,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
+            map = createMap(renderElement, markerClusters, tileProvider);
         }
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
@@ -222,7 +229,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         if (tileProvider === 'google') {
             L.gridLayer
                 .googleMutant({
-                    type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+                    type: "roadmap", // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+                    styles: [] //is necessary to prevent "Map styles must be an array, but was passed {}" errors in the web browser console when rendering map
                 }).addTo(map);
         } else if (tileProvider === 'yandex') {
             L.yandex().addTo(map);

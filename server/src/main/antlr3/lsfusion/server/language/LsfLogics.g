@@ -619,13 +619,13 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
+formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
 	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options;
 	                                        $customRenderFunction = $viewType.customRenderFunction; $customOptions = $viewType.customOptions;
 	                                        $mapTileProvider = $viewType.mapTileProvider;}
 	;
 
-groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
+groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	|   'POPUP' {$type = ClassViewType.POPUP;}
@@ -659,9 +659,9 @@ propertyEditCustomView returns [String customEditorFunction]
         ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
     ;
 
-listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
+listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} opt = pivotOptions {$options = $opt.options; }
-	|   'MAP' (tileProvider = stringLiteral)? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.val;}
+	|   'MAP' (tileProvider = propertyExpression[null, false])? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.property;}
 	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} ('HEADER' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;

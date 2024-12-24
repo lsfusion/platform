@@ -184,6 +184,8 @@ public class ClientFormChanges {
                 return ((ClientGridProperty)clientForm.findComponentByID(inStream.readInt())).valueElementClassReader;
             case PropertyReadType.CUSTOM_OPTIONS:
                 return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
+            case PropertyReadType.MAP_TILE_PROVIDER:
+                return clientForm.getGroupObject(inStream.readInt()).mapTileProviderReader;
             case PropertyReadType.COMMENT:
                 return clientForm.getProperty(inStream.readInt()).commentReader;
             case PropertyReadType.COMMENTELEMENTCLASS:

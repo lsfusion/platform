@@ -509,6 +509,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         return reader == null ? null : new GCustomOptionsReader(reader.getID());
     }
 
+    public GMapTileProviderReader convertMapTileProviderReader(ClientGroupObject.MapTileProviderReader reader) {
+        return reader == null ? null : new GMapTileProviderReader(reader.getID());
+    }
+
     public GExtraPropReader convertExtraPropReader(ClientPropertyDraw.ExtraPropReader reader) {
         return reader == null ? null : new GExtraPropReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType());
     }
@@ -588,7 +592,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());
         groupObject.pivotOptions = convertOrCast(clientGroupObject.pivotOptions);
         groupObject.customRenderFunction = clientGroupObject.customRenderFunction;
-        groupObject.mapTileProvider = clientGroupObject.mapTileProvider;
 
         groupObject.asyncInit = clientGroupObject.asyncInit;
 
@@ -612,6 +615,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
         groupObject.customOptionsReader = convertCustomOptionsReader(clientGroupObject.customOptionsReader);
+        groupObject.mapTileProviderReader = convertMapTileProviderReader(clientGroupObject.mapTileProviderReader);
 
         return groupObject;
     }

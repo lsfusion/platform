@@ -18,7 +18,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -45,7 +44,6 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -183,7 +181,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public PivotOptions pivotOptions;
     public String customRenderFunction;
     public PropertyObjectEntity<?> propertyCustomOptions;
-    public String mapTileProvider;
+    public PropertyObjectEntity<?> mapTileProvider;
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
     public boolean asyncInit = true; // so far supported only for pivot
@@ -259,7 +257,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.propertyCustomOptions = propertyCustomOptions;
     }
 
-    public void setMapTileProvider(String mapTileProvider) {
+    public void setMapTileProvider(PropertyObjectEntity<?> mapTileProvider) {
         this.mapTileProvider = mapTileProvider;
     }
 
