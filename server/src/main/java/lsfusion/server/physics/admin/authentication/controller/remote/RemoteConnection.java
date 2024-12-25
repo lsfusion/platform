@@ -590,11 +590,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returnProps[i] = returnProperty;
             }
             for (LP<?> returnProp : returnProps)
-                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset));
+                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset, returnProps.length > 1 ? returnProp.property.getName() : null));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>();
             ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
-            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset));
+            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset, null));
         }
 
         return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
@@ -603,8 +603,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
         return type.formatHTTP(returnValue, charset).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, getContext().getConnectionContext()));
     }
-    private ExternalRequest.Result formatReturnValue(Object returnValue, Property returnProperty, Charset charset) {
-        return formatReturnValue(returnValue, returnProperty.getType(), charset, returnProperty.getName());
+    private ExternalRequest.Result formatReturnValue(Object returnValue, Property returnProperty, Charset charset, String paramName) {
+        return formatReturnValue(returnValue, returnProperty.getType(), charset, paramName);
     }
 
     protected abstract ExecSession getExecSession() throws SQLException;

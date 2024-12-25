@@ -515,11 +515,11 @@ public class ExternalUtils {
             entity = builder.build();
         } else if(paramCount == 1) {
             ExternalRequest.Result result = single(results);
-//            if(contentDisposition != null) { // it doesn't make sense to specify name for non multipart type
-//                String paramName = result.name;
-//                if(paramName != null)
-//                    contentDisposition.set("name=\"" + paramName + "\"");
-//            }
+            if(contentDisposition != null) {
+                String paramName = result.name;
+                if(paramName != null)
+                    contentDisposition.set("name=\"" + paramName + "\"");
+            }
             Object value = result.value;
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
