@@ -57,10 +57,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.ColorClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
@@ -3518,8 +3515,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addCCProp(params.size()), params);
     }
 
-    public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(addSFUProp(separator, params.size()), params);
+    public LPWithParams addScriptedConcatProp(String separatorValue, LPWithParams separatorProperty, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        if(separatorValue != null) {
+            return addScriptedJProp(addSFUProp(separatorValue, params.size()), params);
+        } else {
+            ImOrderSet<String> replaceParams = SetFact.toOrderExclSet(CallAction.getParamName("1"), CallAction.getParamName("2"), CallAction.getParamName("3"));
+            ImList<DataClass> replaceClasses = ListFact.toList(StringClass.instance, StringClass.instance, StringClass.instance);
+            LP replaceProp = addSFProp(new CustomFormulaSyntax("replace(" + replaceParams.toString() + ")", replaceParams.getSet()),
+                    StringClass.instance, null, replaceClasses, replaceParams, false, false);
+
+            List<LPWithParams> resultParams = new ArrayList<>();
+            resultParams.add(addScriptedJProp(addSFUProp(BaseUtils.impossibleString, params.size()), params));
+            resultParams.add(new LPWithParams(addCProp(StringClass.instance, LocalizedString.create(BaseUtils.impossibleString))));
+            resultParams.add(separatorProperty);
+            return addScriptedJProp(replaceProp, resultParams);
+        }
     }
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
