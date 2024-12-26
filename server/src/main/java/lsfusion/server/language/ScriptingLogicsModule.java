@@ -3518,11 +3518,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addCCProp(params.size()), params);
     }
 
-    public LPWithParams addScriptedConcatProp(LPWithParams separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> resultParams = new ArrayList<>();
-        resultParams.add(separator);
-        resultParams.addAll(params);
-        return addScriptedJProp(addSFUProp(resultParams.size()), resultParams);
+    public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(addSFUProp(separator, params.size()), params);
     }
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
