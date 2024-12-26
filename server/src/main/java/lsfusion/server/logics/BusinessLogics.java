@@ -2141,10 +2141,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
-        if(isServer) {
-            result.add(getChangeCurrentDateTask(scheduler));
-            result.add(getChangeDataCurrentDateTimeTask(scheduler));
-        }
+        result.add(getChangeCurrentDateTask(scheduler));
+        result.add(getChangeDataCurrentDateTimeTask(scheduler));
         result.add(getFlushAsyncValuesCachesTask(scheduler));
         result.add(resetResourcesCacheTasks(scheduler));
 
