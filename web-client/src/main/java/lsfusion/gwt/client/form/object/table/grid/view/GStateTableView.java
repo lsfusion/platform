@@ -111,6 +111,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         StaticImageButton showAllButton = new StaticImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll(), null);
         showAllButton.addClickHandler(event -> {
+            updateRendererState(true);
             pageSize = Integer.MAX_VALUE / 10; // /10 to prevent Integer overflow because in GroupObjectInstance we use "pageSize * 2"
             this.grid.changePageSize(pageSize);
         });
