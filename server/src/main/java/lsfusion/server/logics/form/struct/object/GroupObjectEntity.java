@@ -181,7 +181,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public PivotOptions pivotOptions;
     public String customRenderFunction;
     public PropertyObjectEntity<?> propertyCustomOptions;
-    public PropertyObjectEntity<?> mapTileProvider;
+    public String mapTileProvider;
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
     public boolean asyncInit = true; // so far supported only for pivot
@@ -257,7 +257,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.propertyCustomOptions = propertyCustomOptions;
     }
 
-    public void setMapTileProvider(PropertyObjectEntity<?> mapTileProvider) {
+    public void setMapTileProvider(String mapTileProvider) {
         this.mapTileProvider = mapTileProvider;
     }
 

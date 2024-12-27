@@ -37,6 +37,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GListViewType listViewType;
     public GPivotOptions pivotOptions;
     public String customRenderFunction;
+    public String mapTileProvider;
 
     public boolean asyncInit;
 
@@ -57,7 +58,6 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
     public GCustomOptionsReader customOptionsReader;
-    public GMapTileProviderReader mapTileProviderReader;
 
     // transient
     private transient GSize columnSumWidth;

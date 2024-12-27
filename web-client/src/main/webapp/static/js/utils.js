@@ -499,3 +499,7 @@ function handleOptionKeyEvent(isButton, e, keyDown, isInGrid) {
     if (keyDown && e.shiftKey && isInGrid && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
         e.stopPropagation();
 }
+
+function mergeObjects(defaultObj, obj) {
+        return {...defaultObj, ...obj};
+}

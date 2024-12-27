@@ -46,10 +46,6 @@ public interface GTableView extends TableComponent {
         //implemented only in GCustom
     }
 
-    default void updateMapTileProviderValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        //implemented only in GMap
-    }
-
     // columns
     void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);

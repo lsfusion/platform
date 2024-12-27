@@ -72,6 +72,10 @@ public class GGridController extends GAbstractTableController {
         return groupObject.pivotOptions;
     }
 
+    public String getMapTileProvider() {
+        return groupObject.mapTileProvider;
+    }
+
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
@@ -514,11 +518,6 @@ public class GGridController extends GAbstractTableController {
         if (isList()) {
             table.updateCustomOptionsValues(values);
         }
-    }
-
-    @Override
-    public void updateMapTileProviderValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        table.updateMapTileProviderValues(values);
     }
 
     public GGroupObjectValue getSelectedKey() {

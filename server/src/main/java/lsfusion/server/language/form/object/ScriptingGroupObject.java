@@ -41,7 +41,7 @@ public class ScriptingGroupObject {
 
     public String customRenderFunction;
     public ScriptingLogicsModule.FormLPUsage customOptions;
-    public ScriptingLogicsModule.LPWithParams mapTileProvider;
+    public String mapTileProvider;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
@@ -75,7 +75,7 @@ public class ScriptingGroupObject {
         this.customOptions = customOptions;
     }
 
-    public void setMapTileProvider(ScriptingLogicsModule.LPWithParams mapTileProvider) {
+    public void setMapTileProvider(String mapTileProvider) {
         this.mapTileProvider = mapTileProvider;
     }
 

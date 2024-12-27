@@ -149,8 +149,6 @@ public class GFormChanges {
                 return ((GGridProperty)form.findComponentByID(readerId)).valueElementClassReader;
             case GPropertyReadType.CUSTOM_OPTIONS:
                 return form.getGroupObject(readerId).customOptionsReader;
-            case GPropertyReadType.MAP_TILE_PROVIDER:
-                return form.getGroupObject(readerId).mapTileProviderReader;
             case GPropertyReadType.COMMENT:
                 return form.getProperty(readerId).commentReader;
             case GPropertyReadType.COMMENTELEMENTCLASS:
@@ -212,6 +210,5 @@ public class GFormChanges {
         public final static byte CONTAINER_CAPTIONCLASS = 28;
         public final static byte CONTAINER_VALUECLASS = 29;
         public final static byte GRID_VALUECLASS = 30;
-        public final static byte MAP_TILE_PROVIDER = 31;
     }
 }

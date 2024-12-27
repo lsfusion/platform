@@ -62,6 +62,4 @@ public class PropertyReadType {
     public final static byte CONTAINER_VALUECLASS = 29;
 
     public final static byte GRID_VALUECLASS = 30;
-
-    public final static byte MAP_TILE_PROVIDER = 31;
 }

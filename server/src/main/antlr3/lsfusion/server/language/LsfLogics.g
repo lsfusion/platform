@@ -619,20 +619,18 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	;
 
-formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
+formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options;
-	                                        $customRenderFunction = $viewType.customRenderFunction; $customOptions = $viewType.customOptions;
-	                                        $mapTileProvider = $viewType.mapTileProvider;}
+	                                        $customRenderFunction = $viewType.customRenderFunction; $mapTileProvider = $viewType.mapTileProvider;}
+        ('OPTIONS' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	;
 
-groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
+groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, String mapTileProvider]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	|   'POPUP' {$type = ClassViewType.POPUP;}
 	|   'GRID' {$type = ClassViewType.LIST;}
-    |	lType=listViewType { $listType = $lType.type; $options = $lType.options;
-                                          $customRenderFunction = $lType.customRenderFunction; $customOptions = $lType.customOptions;
-                                          $mapTileProvider = $lType.mapTileProvider;}
+    |	lType=listViewType { $listType = $lType.type; $options = $lType.options; $customRenderFunction = $lType.customRenderFunction; $mapTileProvider = $lType.mapTileProvider;}
 	;
 
 propertyClassViewType returns [ClassViewType type]
@@ -659,10 +657,11 @@ propertyEditCustomView returns [String customEditorFunction]
         ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
     ;
 
-listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, LPWithParams mapTileProvider]
+listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, String mapTileProvider]
+
 	:   'PIVOT' {$type = ListViewType.PIVOT;} opt = pivotOptions {$options = $opt.options; }
-	|   'MAP' (tileProvider = propertyExpression[null, false])? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.property;}
-	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} ('HEADER' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
+	|   'MAP' (tileProvider = stringLiteral)? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.val;}
+	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;}
 	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;
 
