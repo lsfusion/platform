@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -41,6 +42,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.AnyValuePropertyHolder;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
@@ -100,6 +102,7 @@ import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
+import lsfusion.server.physics.dev.integration.external.to.CallAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
@@ -158,6 +161,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP vnull;
 
     public LP static30;
+
+    public LP impossibleString;
+    public LP replace;
 
     public LP minus;
 
@@ -537,6 +543,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         static30 = addCProp(IntegerClass.instance, 30);
 
+        impossibleString = addCProp(StringClass.instance, LocalizedString.create(BaseUtils.impossibleString));
+        replace = addReplaceProp();
+
         if(ActionDebugger.getInstance().isEnabled()) {
             watch = addAction(null, new LA<>(WatchAction.instance));
             makeActionPublic(watch, "watch");
@@ -883,6 +892,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     protected LP addRoundProp(boolean hasScale) {
         return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("round"), hasScale ? 2 : 1, RoundFormulaImpl.instance)));
+    }
+
+    private LP addReplaceProp() {
+        ImOrderSet<String> replaceParams = SetFact.toOrderExclSet(CallAction.getParamName("1"), CallAction.getParamName("2"), CallAction.getParamName("3"));
+        ImList<DataClass> replaceClasses = ListFact.toList(StringClass.instance, StringClass.instance, StringClass.instance);
+        return addSFProp(new CustomFormulaSyntax("replace(" + replaceParams.toString() + ")", replaceParams.getSet()),
+                StringClass.instance, null, replaceClasses, replaceParams, false, false);
     }
 
     @Override
