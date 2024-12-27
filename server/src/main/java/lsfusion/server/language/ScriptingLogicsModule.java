@@ -3519,16 +3519,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(separatorValue != null) {
             return addScriptedJProp(addSFUProp(separatorValue, params.size()), params);
         } else {
-            ImOrderSet<String> replaceParams = SetFact.toOrderExclSet(CallAction.getParamName("1"), CallAction.getParamName("2"), CallAction.getParamName("3"));
-            ImList<DataClass> replaceClasses = ListFact.toList(StringClass.instance, StringClass.instance, StringClass.instance);
-            LP replaceProp = addSFProp(new CustomFormulaSyntax("replace(" + replaceParams.toString() + ")", replaceParams.getSet()),
-                    StringClass.instance, null, replaceClasses, replaceParams, false, false);
-
             List<LPWithParams> resultParams = new ArrayList<>();
             resultParams.add(addScriptedJProp(addSFUProp(BaseUtils.impossibleString, params.size()), params));
-            resultParams.add(new LPWithParams(addCProp(StringClass.instance, LocalizedString.create(BaseUtils.impossibleString))));
+            resultParams.add(new LPWithParams(baseLM.impossibleString));
             resultParams.add(separatorProperty);
-            return addScriptedJProp(replaceProp, resultParams);
+            return addScriptedJProp(baseLM.replace, resultParams);
         }
     }
 
