@@ -2942,6 +2942,17 @@ public class Settings implements Cloneable {
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
     }
 
+    //minimum row count in pivot to enable clusterize.js; -1 - disable
+    private int pivotClusterizeMinRowCount = 200;
+
+    public int getPivotClusterizeMinRowCount() {
+        return pivotClusterizeMinRowCount;
+    }
+
+    public void setPivotClusterizeMinRowCount(int pivotClusterizeMinRowCount) {
+        this.pivotClusterizeMinRowCount = pivotClusterizeMinRowCount;
+    }
+
     private int sessionConfigTimeout = 0; //in seconds; 0 = no timeout
 
     public int getSessionConfigTimeout() {

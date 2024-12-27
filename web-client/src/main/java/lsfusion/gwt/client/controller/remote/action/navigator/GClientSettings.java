@@ -17,6 +17,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public boolean suppressOnFocusChange;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
+    public int pivotClusterizeMinRowCount;
     public String matchSearchSeparator;
     public GColorTheme colorTheme;
     public boolean useBootstrap;
@@ -49,7 +50,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     }
 
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
-                           boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
+                           boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn, int pivotClusterizeMinRowCount,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String size, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String language, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
@@ -64,6 +65,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.suppressOnFocusChange = suppressOnFocusChange;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
+        this.pivotClusterizeMinRowCount = pivotClusterizeMinRowCount;
         this.matchSearchSeparator = matchSearchSeparator;
         this.colorTheme = colorTheme;
         this.versionedColorThemesCss = versionedColorThemesCss;

@@ -181,9 +181,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
+        renderExpandDom(cellElement, treeValue, false);
+    }
+
+    public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue, boolean clusterized) {
         for (int i = 0; i <= treeValue.level; i++) {
             DivElement img = createIndentElement(cellElement);
-            updateIndentElement(img, treeValue, i);
+            updateIndentElement(img, treeValue, i, clusterized);
         }
     }
 
@@ -227,7 +231,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return div;
     }
 
-    private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
+    private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel, boolean clusterized) {
         StaticImage indentIcon;
         Element img = (Element) element.getPropertyObject(IMAGE);
         int nodeLevel = treeValue.level;
@@ -240,7 +244,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else {
             assert indentLevel == nodeLevel;
             img.setAttribute(TREE_NODE_ATTRIBUTE, "true");
-            indentIcon = getNodeIcon(treeValue);
+            indentIcon = getNodeIcon(treeValue, clusterized);
         }
 
         if(!MainFrame.useBootstrap) {
@@ -315,14 +319,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         element.getStyle().clearBackgroundImage();
     }
 
-    private static StaticImage getNodeIcon(GTreeColumnValue treeValue) {
+    private static StaticImage getNodeIcon(GTreeColumnValue treeValue, boolean clusterized) {
         switch (treeValue.type) {
             case LEAF:
                 return StaticImage.TREE_LEAF;
             case OPEN:
-                return StaticImage.TREE_OPEN;
+                return clusterized ? StaticImage.TREE_LEAF : StaticImage.TREE_OPEN;
             case CLOSED:
-                return StaticImage.TREE_CLOSED;
+                return clusterized ? StaticImage.TREE_LEAF : StaticImage.TREE_CLOSED;
             case LOADING:
                 return StaticImage.LOADING_ASYNC;
         }
@@ -443,7 +447,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     imgContainer = cellElement.getChild(i).cast();
                 }
 
-                updateIndentElement(imgContainer, treeValue, i);
+                updateIndentElement(imgContainer, treeValue, i, false);
             }
         }
 

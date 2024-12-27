@@ -74,6 +74,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private GPropertyDraw selectedProperty;
 
+    private boolean clusterized = false;
+
     public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty, TableContainer tableContainer) {
         super(formController, gridController, tableContainer);
         this.selectedProperty = selectedProperty;
@@ -1517,11 +1519,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if (treeColumnValue.level > 0) {
             jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
         }
-        GTreeTable.renderExpandDom(jsElement, treeColumnValue);
+        GTreeTable.renderExpandDom(jsElement, treeColumnValue, clusterized);
     }
 
     private void rerenderArrow(ImageElement img, Boolean isExpanded) {
-        GwtClientUtils.setThemeImage(isExpanded == null ? ICON_LEAF : isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
+        GwtClientUtils.setThemeImage(isExpanded == null || clusterized ? ICON_LEAF : isExpanded ? ICON_OPEN : ICON_CLOSED, img::setSrc);
     }
 
     private void rerenderDots(ImageElement img, boolean branch) {
@@ -1883,14 +1885,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void clusterize() {
+        clusterized = false;
         Element scrollDiv = getTableDataScroller();
         Element bodyDiv = getTableDataBody();
         if(scrollDiv != null && bodyDiv != null) {
-            scrollDiv.getParentElement().addClassName("clusterize");
-            scrollDiv.addClassName("clusterize-scroll");
             Element contentDiv = bodyDiv.getElementsByTagName("tbody").getItem(0);
-            contentDiv.addClassName("clusterize-content");
-            clusterize(scrollDiv, contentDiv);
+            if(MainFrame.pivotClusterizeMinRowCount > 0 && contentDiv.getChildCount() > MainFrame.pivotClusterizeMinRowCount) {
+                scrollDiv.getParentElement().addClassName("clusterize");
+                scrollDiv.addClassName("clusterize-scroll");
+                contentDiv.addClassName("clusterize-content");
+                clusterize(scrollDiv, contentDiv);
+                clusterized = true;
+            }
         }
     }
 

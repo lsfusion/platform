@@ -89,6 +89,7 @@ public class LogicsSessionObject {
         long busyDialogTimeout = json.optLong("busyDialogTimeout");
         boolean showNotDefinedStrings = json.optBoolean("showNotDefinedStrings");
         boolean pivotOnlySelectedColumn = json.optBoolean("pivotOnlySelectedColumn");
+        int pivotClusterizeMinRowCount = json.optInt("pivotClusterizeMinRowCount");
         String matchSearchSeparator = json.optString("matchSearchSeparator");
         boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
@@ -101,7 +102,8 @@ public class LogicsSessionObject {
         double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings,
+                pivotOnlySelectedColumn, pivotClusterizeMinRowCount, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,

@@ -966,6 +966,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         busyDialogTimeout = valueSetting('busyDialogTimeout'),
         showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
+        pivotClusterizeMinRowCount = valueSetting('pivotClusterizeMinRowCount'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
         useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
         userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
