@@ -601,7 +601,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
-        return type.formatHTTP(returnValue, charset).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, getContext().getConnectionContext()));
+        return type.formatHTTP(returnValue, charset).convertFileValue(paramName, "file", value -> FormChanges.convertFileValue(value, getContext().getConnectionContext()));
     }
     private ExternalRequest.Result formatReturnValue(Object returnValue, Property returnProperty, Charset charset, String paramName) {
         return formatReturnValue(returnValue, returnProperty.getType(), charset, paramName);

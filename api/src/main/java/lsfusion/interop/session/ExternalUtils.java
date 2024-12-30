@@ -526,9 +526,8 @@ public class ExternalUtils {
                 entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension, charset)));
                 if(contentDisposition != null) {
                     String resultFileName = result.fileName;
-                    if(resultFileName == null)
-                        resultFileName = "file";
-                    contentDisposition.set((contentDisposition.result != null ? contentDisposition.result + "; " : "") + "filename=\"" + BaseUtils.getContentFileName(resultFileName, extension) + "\"");
+                    if(resultFileName != null)
+                        contentDisposition.set((contentDisposition.result != null ? contentDisposition.result + "; " : "") + "filename=\"" + BaseUtils.getContentFileName(resultFileName, extension) + "\"");
                 }
             } else {
                 entity = new StringEntity((String) value, nvl(forceContentType, getStringContentType(charset)));
