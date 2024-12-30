@@ -356,7 +356,7 @@ public abstract class CallHTTPAction extends CallAction {
 
     protected ExternalRequest.Result formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset, String paramName) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return getParamType(paramInterface, value).formatHTTP(value.getValue(), charset).convertFileValue(paramName, context::convertFileValue);
+        return getParamType(paramInterface, value).formatHTTP(value.getValue(), charset).convertFileValue(paramName, null, context::convertFileValue);
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, CallHTTPAction.UrlProcessor urlProcessor, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlCharset) {
