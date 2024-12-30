@@ -2180,7 +2180,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     logger.info("ChangeCurrentDate finished");
                 }
             } catch (Exception e) {
-                logger.error(String.format("ChangeCurrentDate error: %s", e));
+                logger.error(String.format("ChangeCurrentDate error: %s", e), e);
             }
         }, true, Settings.get().getCheckCurrentDate(), true, "Changing current date");
     }
@@ -2196,7 +2196,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 timeLM.currentZDateTimeSnapshot.change(newZDataDateTime, session);
                 session.applyException(this, stack);
             } catch (Exception e) {
-                logger.error(String.format("ChangeCurrentDateTime error: %s", e));
+                logger.error(String.format("ChangeCurrentDateTime error: %s", e), e);
             }
         }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current dateTime");
     }
