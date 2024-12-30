@@ -133,8 +133,8 @@ public class ExternalRequest implements Serializable {
             return new Result(valueConverter.apply(value), name, fileName);
         }
 
-        public Result convertFileValue(String name, Function<Object, Object> valueConverter) {
-            return new Result(valueConverter.apply(value), this.name != null ? this.name : name, fileName);
+        public Result convertFileValue(String name, String fileName, Function<Object, Object> valueConverter) {
+            return new Result(valueConverter.apply(value), this.name != null ? this.name : name, this.fileName != null ? this.fileName : fileName);
         }
     }
     public static class Param implements Serializable {
