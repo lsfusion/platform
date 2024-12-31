@@ -30,12 +30,12 @@ public abstract class FileBasedClass<T> extends DataClass<T> {
     }
 
     @Override
-    public ExternalRequest.Result formatHTTP(T value, Charset charset) {
+    public ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName) {
         if(value == null)
             return new ExternalRequest.Result(FileData.NULL);
         Result<String> fileName = new Result<>();
         FileData result = formatHTTPNotNull(value, charset, fileName);
-        return new ExternalRequest.Result(result, fileName.result);
+        return new ExternalRequest.Result(result, fileName.result != null ? fileName.result : (needFileName ? "file" : null));
     }
 
     protected abstract T parseHTTPNotNull(FileData b, String charsetName, String fileName);
