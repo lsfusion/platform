@@ -46,9 +46,8 @@ FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
 viewType
 NEWSESSION | NESTEDSESSION
-DRAW groupObjectName 
-BEFORE formPropertyName
-AFTER formPropertyName
+DRAW groupObjectName
+insertPosition 
 QUICKFILTER formPropertyName
 ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
@@ -217,13 +216,30 @@ In the current platform implementation, if the name and caption are not specifie
 
     Modifiers specifying that object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed in a new (nested) session.
 
-- `BEFORE formPropertyName` | `AFTER  formPropertyName`
+- `insertPosition`
 
-    Specifying that a property or an action should be added to the form structure before (keyword `BEFORE`) or after (keyword `AFTER`) the previously added property or action. Typically used in the [form extension](Form_extension.md) concept.
+    Specifying the insert position of the property (action) within the list of properties and actions on the form. Most often used together with the [form extension mechanism](Form_extension.md). It can be specified in one of the following ways:
 
-    - `formPropertyName`
+    - `AFTER formPropertyName`
+    - `BEFORE formPropertyName`
 
-        [Property/action name on the form](#name).
+        The property (action) will be added to the form structure directly before (keyword `BEFORE`) or after (keyword `AFTER`) the specified property (action) on the form. 
+
+        - `formPropertyName`
+
+            [Property/action on the form name](#name).
+
+    - `FIRST`
+
+        Keyword indicating that the property (action) will be added to the beginning of the list.
+
+    - `LAST`
+
+        Keyword indicating that the property (action) will be added to the end of the list. Unlike default addition, properties (actions) inserted using `LAST` will always be positioned after all properties (actions) added in the order of declaration.
+
+    - `DEFAULT`
+
+        Keyword indicating that the property (action) is added in the order of declaration. This is the default value.
 
 - `QUICKFILTER formPropertyName`
 

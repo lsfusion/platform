@@ -83,16 +83,25 @@ To access design components, you can use their names or address property compone
 
 - `insertPos`
 
-    Component insertion or moving position. Specified with one of the following options:
+    Specifying the insertion position of the component. It can be specified in one of the following ways:
 
-    - `BEFORE` selector
-    - `AFTER` selector 
+    - `BEFORE selector`
+    - `AFTER selector` 
 
-        Specifies that the component should be added or moved before (`BEFORE`) or after (`AFTER`) the specified components. The specified component must be a child of the current container. 
+        Specifying that the component must be added or moved just before (keyword `BEFORE`) or after (keyword `AFTER`) the specified component. The specified component must be a child of the current container. 
 
     - `FIRST`
 
-        A keyword specifying that the component should be added or moved to the first position in the list of the current container's children. 
+        Keyword indicating that the component should be added or moved to the beginning of the list of child components of the current container.
+  
+    - `LAST`
+
+        Keyword indicating that the component should be added or moved to the end of the list of child components of the current container. Unlike default addition, components inserted using `LAST` will always be positioned after all components added in the order of insertion.
+
+    - `DEFAULT`
+
+        Keyword indicating that the component should be added or moved in the order of insertion to the list of child components of the current container. This is the default value.
+
 
 - `propertyName`
 
