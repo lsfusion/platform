@@ -73,8 +73,8 @@ public class ExternalDBFAction extends CallAction {
                             dbfFile.addField(fields);
                         }
                         for (ImMap<String, Object> row : jdbcTable.set) {
-                            for (int i = 0; i < fields.length; i++) {
-                                putField(dbfFile, fields[i], String.valueOf(row.values().get(i)), append);
+                            for (Field field : fields) {
+                                putField(dbfFile, field, String.valueOf(row.get(field.getName())), append);
                             }
                             dbfFile.write();
                         }
@@ -114,13 +114,14 @@ public class ExternalDBFAction extends CallAction {
                 dbfFields.add(new DateField(field));
             } else if (type instanceof LogicalClass)
                 dbfFields.add(new LogicalField(field));
-            else if (type instanceof StringClass)
-                dbfFields.add(new CharField(field, ((StringClass) type).length.value));
-            else
+            else if (type instanceof StringClass) {
+                int length = ((StringClass) type).length.value;
+                dbfFields.add(new CharField(field, length < 0 || length > 253 ? 253 : length));
+            } else
                 dbfFields.add(new CharField(field, 253));
         }
 
-        return dbfFields.toArray(new Field[dbfFields.size()]);
+        return dbfFields.toArray(new Field[0]);
     }
 
     private List<String> formatFieldNames(List<String> fieldNames) {
