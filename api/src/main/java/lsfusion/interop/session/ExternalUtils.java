@@ -540,9 +540,23 @@ public class ExternalUtils {
 
     public static byte[] sendTCP(byte[] fileBytes, String host, Integer port, Integer timeout) throws IOException {
         try (Socket socket = new Socket(host, port)) {
-            if (timeout != null) {
-                socket.setSoTimeout(timeout);
+            return sendTCP(fileBytes, socket, timeout, false);
+        }
+    }
+
+    public static byte[] sendTCP(byte[] fileBytes, Socket socket, Integer timeout, boolean newConnection) throws IOException {
+        if (timeout != null) {
+            socket.setSoTimeout(timeout);
+        }
+
+        if(newConnection) {
+            socket.getOutputStream().write(fileBytes);
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[1024*1024*10]; //10MB
+                out.write(buffer, 0, socket.getInputStream().read(buffer));
+                return out.toByteArray();
             }
+        } else {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
                 os.write(fileBytes);
