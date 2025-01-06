@@ -1,6 +1,8 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
@@ -31,7 +33,9 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.HttpClientAction;
+import org.apache.commons.httpclient.util.URIUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -290,7 +294,37 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
-    Map<String, String> fontFamilyMap = new HashMap<>();
+    private Map<String, String> fontFamilyMap = new HashMap<>();
+
+    public static String convertUrl(String url, Result<String> rFileExtension) {
+        int lastDot = url.lastIndexOf(";");
+        if(lastDot >= 0) {
+            String extension = url.substring(lastDot + 1);
+
+            if(BaseUtils.isSimpleWord(extension)) {
+                rFileExtension.set(extension);
+                url = url.substring(0, lastDot);
+            }
+        }
+        if(rFileExtension.result == null) {
+            lastDot = url.lastIndexOf(".");
+            if(lastDot >= 0) {
+                String extension = url.substring(lastDot + 1);
+                int query = extension.indexOf("?");
+                if(query >= 0)
+                    extension = extension.substring(0, query);
+
+                if(BaseUtils.isSimpleWord(extension))
+                    rFileExtension.set(extension);
+            }
+        }
+
+        try {
+            return URIUtil.encodeQuery(url, ExternalUtils.defaultUrlCharset.name());
+        } catch (Throwable t) {
+            throw Throwables.propagate(t);
+        }
+    }
 
     @Converter(from = ClientWebAction.class)
     public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
@@ -310,20 +344,36 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         Object resource = action.resource;
         String resourcePath;
         String originalResourceName = action.originalResourceName;
+        String fileExtension = null;
+        boolean isFileUrl = false;
+        String resourceName = action.resourceName;
         if(action.isFile) {
-            resourcePath = FileUtils.saveWebFile(action.resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
-            if(action.isFont()) {
-                String fontFamily = fontFamilyMap.get(action.resourceName);
-                if(fontFamily == null) {
-                    fontFamily = SystemUtils.registerFont(action);
-                    fontFamilyMap.put(action.resourceName, fontFamily);
-                }
-                originalResourceName = fontFamily;
+            if(resource instanceof RawFileData) {
+                resourcePath = FileUtils.saveWebFile(resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
+                fileExtension = BaseUtils.getFileExtension(resourceName);
+            } else {
+                Result<String> rFileExtension = new Result<>();
+                // we do the server conversion (not sending GStringWithFiles to the client), to make it possible to encode the query and do some other manipulations
+                // valuesConverter.convertFileValue(resource, formSessionObject, servlet)
+                Object convertedValue = ClientFormChangesToGwtConverter.getConvertFileValue(formSessionObject, servlet).convertFileValue(resource);
+                resourcePath = convertUrl((String) convertedValue, rFileExtension);
+                fileExtension = rFileExtension.result;
+                isFileUrl = true;
             }
         } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType,
-                action.isFile, action.syncType, action.remove);
+
+        if(action.isFile && (BaseUtils.equalsIgnoreCase(fileExtension, "ttf") || BaseUtils.equalsIgnoreCase(fileExtension, "otf"))) {
+            String fontFamily = fontFamilyMap.get(resourceName);
+            if(fontFamily == null) {
+                fontFamily = SystemUtils.registerFont(action);
+                fontFamilyMap.put(resourceName, fontFamily);
+            }
+            originalResourceName = fontFamily;
+        }
+
+        return new GClientWebAction(resourcePath, resourceName, originalResourceName, action.isFile, fileExtension, isFileUrl, values, types, returnType,
+                action.syncType, action.remove);
     }
 
     @Converter(from = ResetServerSettingsCacheClientAction.class)

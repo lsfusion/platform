@@ -1889,10 +1889,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
         }
 
-        return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(params.length, index -> {
-            ValueClass param = params[index];
-            return param != null ? param.getType() : null;
-        })));
+        return addInternalClientAction(resourceName, params, syncType);
     }
 
     public LAWithParams addScriptedShowRecDepAction(List<ActionOrPropertyUsage> ids, boolean showRec, boolean global) throws ScriptingErrorLog.SemanticErrorException {

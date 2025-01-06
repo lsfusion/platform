@@ -449,48 +449,53 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         private final NativeStringMap<String> resources = new NativeStringMap<>();
         private void executeFile(GClientWebAction action) {
+            String resource = action.resource;
+            if(!action.isFileUrl)
+                resource = GwtClientUtils.getAppStaticWebURL(resource);
             if(action.remove) {
-                unloadResource(action.resourceName);
-                resources.remove(action.resource);
+                unloadResource(resource, action.originalResourceName, action.fileExtension);
+                resources.remove(resource);
                 onFileExecuted(action);
             } else {
-                String resource = action.resource;
                 if (resources.containsKey(resource)) {
                     onFileExecuted(action);
                 } else {
                     resources.put(resource, null);
-                    executeFile(action, GwtClientUtils.getAppStaticWebURL(resource), action.resourceName, action.originalResourceName);
+                    executeFile(action, resource, action.originalResourceName, action.fileExtension);
                 }
             }
         }
 
-        private native void unloadResource(String resourceName)/*-{
-            var links = $wnd.document.head.getElementsByTagName("link");
-            for (var i=0; i<links.length; i++) {
-                var link = links[i];
-                if(link.href.indexOf(resourceName) > 0) {
-                    link.parentNode.removeChild(link);
+        private native void unloadResource(String resourcePath, String resourceName, String extension)/*-{
+            if(extension === 'css') {
+                var links = $wnd.document.head.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    if (link.href.indexOf(resourcePath) > 0) {
+                        link.parentNode.removeChild(link);
+                    }
                 }
             }
         }-*/;
 
-        private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
+        // should be pretty similar to WriteResourcesJSPTag
+        private native void executeFile(GClientWebAction action, String resourcePath, String originalResourceName, String extension)/*-{
             var thisObj = this;
 
-            if (resourceName.endsWith('js')) {
+            if (extension === 'js') {
                 var scr = document.createElement('script');
                 scr.src = resourcePath;
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
                 scr.onload = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
-            } else if (resourceName.endsWith('css')) {
+            } else if (extension === 'css') {
                 var link = document.createElement("link");
                 link.href = resourcePath;
                 link.type = "text/css";
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
-            } else if (resourceName.endsWith('ttf') || resourceName.endsWith('otf')) {
+            } else if (extension === 'ttf' || extension === 'otf') {
                 var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
                 fontFace.load().then(function (loaded_face) {
                     document.fonts.add(fontFace);

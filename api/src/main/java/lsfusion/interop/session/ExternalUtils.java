@@ -232,10 +232,10 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, returnMultiType, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue.apply(request));
+        return getExternalResponse(execResult, returnMultiType, convertFileValue.apply(request));
     }
 
-    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, String returnMultiType, String singleFileName, ConvertFileValue convertFileValue) {
+    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, String returnMultiType, ConvertFileValue convertFileValue) {
         if(execResult instanceof lsfusion.interop.session.ResultExternalResponse) {
             lsfusion.interop.session.ResultExternalResponse resultExecResult = (lsfusion.interop.session.ResultExternalResponse) execResult;
             Result<String> contentDisposition = new Result<>();
@@ -471,7 +471,7 @@ public class ExternalUtils {
     private static ExternalRequest.Result[] convertFileValue(ConvertFileValue convertFileValue, ExternalRequest.Result[] results) {
         ExternalRequest.Result[] convertedResults = new ExternalRequest.Result[results.length];
         for(int i = 0; i < results.length; i++)
-            convertedResults[i] = results[i].convertFileValue(convertFileValue::convertFileValue);
+            convertedResults[i] = results[i].convertFileValue(convertFileValue);
         return convertedResults;
     }
 

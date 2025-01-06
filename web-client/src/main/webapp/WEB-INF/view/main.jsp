@@ -39,7 +39,7 @@
 
         </style>
 
-        <lsf:writeResources resources="${mainResourcesBeforeSystem}"/>
+        <lsf:writeResources resources="${resourcesBeforeSystem}"/>
 
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 "static/js/external/jquery-3.7.1.min.js",
@@ -193,7 +193,7 @@
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>
-        <lsf:writeResources resources="${mainResourcesAfterSystem}"/>
+        <lsf:writeResources resources="${resourcesAfterSystem}"/>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>

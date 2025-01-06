@@ -293,7 +293,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             }
 
             PropertyInterfaceImplement<Interface> where;
-            if(propCase.isSimple())
+            if(propCase.isSimple() && propCase.implement instanceof PropertyMapImplement)
                 where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
                 where = propCase.where;

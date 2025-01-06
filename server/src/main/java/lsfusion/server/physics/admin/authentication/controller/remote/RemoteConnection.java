@@ -620,7 +620,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, null, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;

@@ -147,6 +147,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
+import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
@@ -812,6 +813,13 @@ public abstract class LogicsModule {
         // creating action
         return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls,
                 SetFact.EMPTYORDER(), SetFact.EMPTY(), selectTop.getFormSelectTop(), returnString);
+    }
+
+    public LA addInternalClientAction(String resourceName, ValueClass[] params, boolean syncType) {
+        return addJoinAProp(new LA(new InternalClientAction(ListFact.toList(params.length, index -> {
+            ValueClass param = params[index];
+            return param != null ? param.getType() : null;
+        }), ListFact.EMPTY(), syncType)), BaseUtils.add(getUParams(params.length), addCProp(StringClass.instance, LocalizedString.create(resourceName, false))));
     }
 
     // ------------------- Export property action ----------------- //

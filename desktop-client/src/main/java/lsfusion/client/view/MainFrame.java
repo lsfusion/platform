@@ -452,6 +452,6 @@ public abstract class MainFrame extends JFrame {
     public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator);
+        return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator, null);
     }
 }

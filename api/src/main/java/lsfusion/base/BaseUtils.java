@@ -27,6 +27,8 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -43,7 +45,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -59,7 +60,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 316;
+        return 317;
     }
 
     public static String getPlatformVersion() {
@@ -1413,8 +1414,11 @@ public class BaseUtils {
     }
 
     public static String getContentFileName(String name, String extension) {
-        //comma is not allowed in Content-Disposition filename*
-        return getFileName(name, extension).replace(",", "");
+        try {
+            return URLEncoder.encode(getFileName(name, extension), String.valueOf(StandardCharsets.UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
     }
     public static String getFileName(String name, String extension) {
         return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
@@ -1603,6 +1607,10 @@ public class BaseUtils {
 
     public static String getFileExtension(String filename) {
         return FilenameUtils.getExtension(filename);
+    }
+
+    public static boolean isSimpleWord(String string) {
+        return string.matches("^[a-zA-Z0-9_$]+$");
     }
 
     public static String replaceFileName(String filePath, String toName, boolean escapeDot) {
@@ -2139,6 +2147,9 @@ public class BaseUtils {
         return value -> a.test(value) || b.test(value);
     }
 
+    public static boolean equalsIgnoreCase(String s, String suffix) {
+        return s.toLowerCase().endsWith(suffix.toLowerCase());
+    }
     public static boolean endsWithIgnoreCase(String s, String suffix) {
         return s != null && suffix != null && s.toLowerCase().endsWith(suffix.toLowerCase());
     }
