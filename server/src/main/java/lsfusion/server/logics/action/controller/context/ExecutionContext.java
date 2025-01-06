@@ -729,7 +729,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
+    // when we want to expose value outside but with file access on the web server
     public Object convertFileValue(Object value) {
+        // todo: here ExternalRequest of the Context (used for its creation) should be + maybe "overriden" in exec / eval
+        return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
+    }
+    public Object convertFileValue(String value) {
         // todo: here ExternalRequest of the Context (used for its creation) should be + maybe "overriden" in exec / eval
         return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
     }

@@ -1,10 +1,9 @@
 package lsfusion.interop.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.StringWithFiles;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -121,6 +120,7 @@ public class ExternalRequest implements Serializable {
 
         public Result(Object value, String fileName) {
             this(value, null, fileName);
+            assert value instanceof String || value instanceof FileData;
         }
 
         public Result(Object value, String name, String fileName) {
@@ -129,12 +129,26 @@ public class ExternalRequest implements Serializable {
             this.fileName = fileName;
         }
 
-        public Result convertFileValue(Function<Object, Object> valueConverter) {
-            return new Result(valueConverter.apply(value), name, fileName);
+        // converting when sending response from the app server to the web server
+        public Result convertFileValue(String name, ConvertFileValue valueConverter) {
+            Object convertedValue = valueConverter.convertFileValue(value);
+            assert convertedValue instanceof String || convertedValue instanceof FileData || convertedValue instanceof StringWithFiles;
+            return new Result(convertedValue, this.name != null ? this.name : name, fileName);
         }
 
-        public Result convertFileValue(String name, Function<Object, Object> valueConverter) {
-            return new Result(valueConverter.apply(value), this.name != null ? this.name : name, fileName);
+        // converting response from the web server to the client
+        public Result convertFileValue(ConvertFileValue convertFileValue) {
+            assert value instanceof String || value instanceof FileData || value instanceof StringWithFiles;
+            Object convertedValue = convertFileValue.convertFileValue(value);
+            assert convertedValue instanceof String || convertedValue instanceof FileData;
+            return new Result(convertedValue, name, fileName);
+        }
+
+        // converting when sending request from the app server to the client
+        public Result convertFileValue(Function<Object, Object> valueConverter, String name) {
+            Object convertedValue = valueConverter.apply(value);
+            assert convertedValue instanceof String || convertedValue instanceof FileData;
+            return new Result(convertedValue, this.name != null ? this.name : name, fileName);
         }
     }
     public static class Param implements Serializable {

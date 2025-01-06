@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.http.controller.MainController;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
@@ -8,9 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerUtils {
@@ -39,8 +38,8 @@ public class ServerUtils {
     }
 
     private static final ConcurrentHashMap<String, String> versions = new ConcurrentHashMap<>();
-    public static Map getVersionedResources(ServletContext servletContext, String... resources) throws IOException {
-        Map<String, String> versionedResources = new LinkedHashMap<>();
+    public static List<MainController.WebAction> getVersionedResources(ServletContext servletContext, String... resources) throws IOException {
+        List<MainController.WebAction> versionedResources = new ArrayList<>();
         for (String resource : resources) {
             String version = versions.get(resource);
             if (version == null) {
@@ -48,12 +47,12 @@ public class ServerUtils {
                 versions.put(resource, version);
             }
 
-            versionedResources.put(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1));
+            versionedResources.add(new MainController.WebAction(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1), false));
         }
         return versionedResources;
     }
 
     public static String getVersionedResource(ServletContext servletContext, String resource) throws IOException {
-        return (String) getVersionedResources(servletContext, resource).keySet().iterator().next();
+        return getVersionedResources(servletContext, resource).iterator().next().resource;
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -42,6 +41,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderI
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -283,7 +283,10 @@ public class FormChanges {
             return AppServerImage.getAppImage(((NeedImage) convertData).imageSupplier.apply((String)value).get(context));
         }
 
-        return convertUnsafeFileValue(value, context);
+        if(value instanceof String)
+            return convertString(context, (String) value);
+
+        return value;
     }
 
     private static Serializable convertRawFileData(Type type, Serializable value, boolean needImage) {
@@ -294,53 +297,59 @@ public class FormChanges {
         return value;
     }
 
-    public static Object convertFileValue(Object value, ConnectionContext context) {
+    public static Object convertFileValue(String value, ConnectionContext context) {
         try {
-            return convertUnsafeFileValue(value, context);
+            return convertString(context, value);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private static Object convertUnsafeFileValue(Object value, ConnectionContext context) throws IOException {
-        if(value instanceof String) {
-            String string = (String) value;
-            if (!string.contains(inlineFileSeparator)) // optimization
-                return string;
+    public static Object convertFileValue(Object value, ConnectionContext context) {
+        assert value instanceof String || value instanceof FileData; // assert that it is the result of formatHTTP
 
-            String[] parts = string.split(inlineFileSeparator, -1);
-            int length = parts.length / 2;
-            String[] prefixes = new String[length + 1];
-            Serializable[] files = new Serializable[length];
-            boolean[] removeRaw = null;
-            for (int k = 0; k < length + 1; k++) {
-                prefixes[k] = parts[k * 2];
-                if (k * 2 + 1 < parts.length) {
-                    String name = parts[k * 2 + 1];
-                    if (name.startsWith(inlineSerializedImageSeparator)) {
-                        files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
-                    } else if (name.startsWith(inlineImageSeparator)) {
-                        files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
-                    } else if (name.startsWith(inlineDataFileSeparator)) {
-                        int separatorLength = inlineDataFileSeparator.length();
-                        int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
-                        boolean needImage = name.charAt(separatorLength) == '1';
-                        FileClass file = FileClass.deserializeString(name.substring(separatorLength + 1, endFileType));
-                        files[k] = convertRawFileData(file, (Serializable) file.parseString(name.substring(endFileType + separatorLength)), needImage);
+        if(value instanceof String)
+            return convertFileValue((String) value, context);
 
-                        if(removeRaw == null)
-                            removeRaw = new boolean[parts.length];
-                        removeRaw[k * 2 + 1] = true;
-                    } else { // resource file
-                        Result<String> fullPath = new Result<>();
-                        files[k] = new StringWithFiles.Resource(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
-                    }
+        return value;
+    }
+
+    @NotNull
+    private static Serializable convertString(ConnectionContext context, String string) throws IOException {
+        if (!string.contains(inlineFileSeparator)) // optimization
+            return string;
+
+        String[] parts = string.split(inlineFileSeparator, -1);
+        int length = parts.length / 2;
+        String[] prefixes = new String[length + 1];
+        Serializable[] files = new Serializable[length];
+        boolean[] removeRaw = null;
+        for (int k = 0; k < length + 1; k++) {
+            prefixes[k] = parts[k * 2];
+            if (k * 2 + 1 < parts.length) {
+                String name = parts[k * 2 + 1];
+                if (name.startsWith(inlineSerializedImageSeparator)) {
+                    files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
+                } else if (name.startsWith(inlineImageSeparator)) {
+                    files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
+                } else if (name.startsWith(inlineDataFileSeparator)) {
+                    int separatorLength = inlineDataFileSeparator.length();
+                    int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
+                    boolean needImage = name.charAt(separatorLength) == '1';
+                    FileClass file = FileClass.deserializeString(name.substring(separatorLength + 1, endFileType));
+                    files[k] = convertRawFileData(file, (Serializable) file.parseString(name.substring(endFileType + separatorLength)), needImage);
+
+                    if(removeRaw == null)
+                        removeRaw = new boolean[parts.length];
+                    removeRaw[k * 2 + 1] = true;
+                } else { // resource file
+                    Result<String> fullPath = new Result<>();
+                    files[k] = new StringWithFiles.Resource(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
                 }
             }
-
-            return new StringWithFiles(prefixes, files, removeRaw != null ? getRawString(parts, removeRaw) : string);
         }
-        return value;
+
+        return new StringWithFiles(prefixes, files, removeRaw != null ? getRawString(parts, removeRaw) : string);
     }
 
     // we need to remove files from strings, because otherwise writeUTF will fail
