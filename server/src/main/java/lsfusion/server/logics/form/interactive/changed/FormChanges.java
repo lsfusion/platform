@@ -337,7 +337,7 @@ public class FormChanges {
                     int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
                     boolean needImage = name.charAt(separatorLength) == '1';
                     FileClass file = FileClass.deserializeString(name.substring(separatorLength + 1, endFileType));
-                    files[k] = convertRawFileData(file, (Serializable) file.parseString(name.substring(endFileType + separatorLength)), needImage);
+                    files[k] = convertRawFileData(file, (Serializable) file.parseCast(name.substring(endFileType + separatorLength)), needImage);
 
                     if(removeRaw == null)
                         removeRaw = new boolean[parts.length];
