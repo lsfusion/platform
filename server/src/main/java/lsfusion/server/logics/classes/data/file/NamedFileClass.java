@@ -86,10 +86,8 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    public NamedFileData read(Object value) {
-        if(value instanceof byte[])
-            return new NamedFileData((byte[]) value);
-        return (NamedFileData) value;
+    protected NamedFileData readBytes(byte[] bytes) {
+        return new NamedFileData(bytes);
     }
 
     @Override

@@ -99,10 +99,8 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public FileData read(Object value) {
-        if(value instanceof byte[])
-            return new FileData((byte[]) value);
-        return (FileData) value;
+    protected FileData readBytes(byte[] bytes) {
+        return new FileData(bytes);
     }
 
     @Override
