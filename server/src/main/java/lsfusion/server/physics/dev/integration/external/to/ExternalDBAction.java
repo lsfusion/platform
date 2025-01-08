@@ -35,6 +35,8 @@ public class ExternalDBAction extends CallDBAction {
         ConnectionService connectionService = context.getConnectionService();
         if(connectionService != null)
             conn = connectionService.getSQLConnection(connectionString);
+        else if (connectionString.isEmpty())
+            throw new UnsupportedOperationException("Empty connection string is supported only inside of NEWCONNECTION operator");
 
         if (conn == null) {
             conn = DriverManager.getConnection(connectionString);

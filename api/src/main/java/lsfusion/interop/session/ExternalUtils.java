@@ -538,38 +538,38 @@ public class ExternalUtils {
         return entity;
     }
 
-    public static byte[] sendTCP(byte[] fileBytes, String host, Integer port, Integer timeout) throws IOException {
+    public static byte[] sendTCP(byte[] fileBytes, String host, Integer port, Integer timeout, boolean externalTCPWaitForByteMinusOne) throws IOException {
         try (Socket socket = new Socket(host, port)) {
-            return sendTCP(fileBytes, socket, timeout, false);
+            return sendTCP(fileBytes, socket, timeout, externalTCPWaitForByteMinusOne);
         }
     }
 
-    public static byte[] sendTCP(byte[] fileBytes, Socket socket, Integer timeout, boolean newConnection) throws IOException {
+    public static byte[] sendTCP(byte[] fileBytes, Socket socket, Integer timeout, boolean externalTCPWaitForByteMinusOne) throws IOException {
         if (timeout != null) {
             socket.setSoTimeout(timeout);
         }
 
-        if(newConnection) {
-            socket.getOutputStream().write(fileBytes);
-            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                byte[] buffer = new byte[1024*1024*10]; //10MB
-                out.write(buffer, 0, socket.getInputStream().read(buffer));
-                return out.toByteArray();
-            }
-        } else {
+        if (externalTCPWaitForByteMinusOne) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
                 os.write(fileBytes);
 
                 //reading finishes when the sender closes the stream or by SO timeout
                 int b;
-                while((b = is.read()) != -1) {
+                while ((b = is.read()) != -1) {
                     baos.write((byte) b);
                 }
             } catch (SocketTimeoutException e) {
                 //timeout exception, finish reading
             }
             return baos.toByteArray();
+        } else {
+            socket.getOutputStream().write(fileBytes);
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[1024 * 1024 * 10]; //10MB
+                out.write(buffer, 0, socket.getInputStream().read(buffer));
+                return out.toByteArray();
+            }
         }
     }
 

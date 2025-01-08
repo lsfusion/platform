@@ -9,6 +9,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -21,23 +22,26 @@ public class ExternalTCPAction extends ExternalSocketAction {
 
     @Override
     protected void send(ExecutionContext<PropertyInterface> context, String host, Integer port, byte[] fileBytes) throws SQLException, SQLHandledException, IOException {
+        boolean externalTCPWaitForByteMinusOne = Settings.get().isExternalTCPWaitForByteMinusOne();
+
         Integer timeout = (Integer) context.getBL().LM.timeoutTcp.read(context);
         byte[] response;
         if (clientAction) {
-            response = (byte[]) context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout));
+            response = (byte[]) context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
         } else {
             Socket socket = null;
             ConnectionService connectionService = context.getConnectionService();
             if (connectionService != null) {
                 socket = connectionService.getTCPSocket(host, port);
-            }
+            } else if (host.isEmpty())
+                throw new UnsupportedOperationException("Empty host is supported only inside of NEWCONNECTION operator");
             if (socket == null) {
                 socket = new Socket(host, port);
                 if (connectionService != null)
                     connectionService.putTCPSocket(host, port, socket);
             }
             try {
-                response = ExternalUtils.sendTCP(fileBytes, socket, timeout, connectionService != null);
+                response = ExternalUtils.sendTCP(fileBytes, socket, timeout, externalTCPWaitForByteMinusOne);
             } finally {
                 if (connectionService == null)
                     socket.close();

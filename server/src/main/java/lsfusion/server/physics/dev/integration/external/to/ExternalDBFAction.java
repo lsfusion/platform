@@ -70,6 +70,8 @@ public class ExternalDBFAction extends CallAction {
                     ConnectionService connectionService = context.getConnectionService();
                     if (connectionService != null)
                         dbfFile = connectionService.getDBFFile(connectionString);
+                    else if (connectionString.isEmpty())
+                        throw new UnsupportedOperationException("Empty connectionString is supported only inside of NEWCONNECTION operator");
 
                     if (dbfFile == null) {
                         if (append) {
