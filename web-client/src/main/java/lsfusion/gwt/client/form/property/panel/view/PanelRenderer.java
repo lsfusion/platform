@@ -74,10 +74,10 @@ public abstract class PanelRenderer {
 
     public abstract ComponentViewWidget getComponentViewWidget();
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
+    public void update(PValue value, boolean loading, AppBaseImage image, String parentElementClass, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
-        this.value.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
+        this.value.update(value, loading, image, parentElementClass, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
                 regexp, regexpMessage, valueTooltip);
     }
 

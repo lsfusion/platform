@@ -317,6 +317,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.tag = clientPropertyDraw.tag;
         propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
+        propertyDraw.parentElementClass = clientPropertyDraw.parentElementClass;
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
@@ -371,6 +372,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
+        propertyDraw.parentElementClassReader = convertParentElementClassReader(clientPropertyDraw.parentElementClassReader);
         propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
         propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
         propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
@@ -475,6 +477,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GLastReader convertLastReader(ClientPropertyDraw.LastReader reader) {
         return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GParentElementClassReader convertParentElementClassReader(ClientPropertyDraw.ParentElementClassReader reader) {
+        return reader == null ? null : new GParentElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {

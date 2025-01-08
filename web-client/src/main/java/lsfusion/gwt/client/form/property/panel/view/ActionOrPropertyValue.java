@@ -31,6 +31,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     protected PValue value;
     protected boolean loading;
     private AppBaseImage image;
+    private String parentElementClass;
     private String valueElementClass;
     private GFont font;
     private String background;
@@ -123,6 +124,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public String getForeground() {
         return foreground != null ? foreground.toString() : null;
+    }
+
+    @Override
+    public String getParentElementClass() {
+        return parentElementClass;
     }
 
     @Override
@@ -320,12 +326,13 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public abstract void pasteValue(final String value);
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
+    public void update(PValue value, boolean loading, AppBaseImage image, String parentElementClass, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
         this.value = value;
         this.loading = loading;
         this.image = image;
+        this.parentElementClass = parentElementClass;
         this.valueElementClass = valueElementClass;
         this.font = font;
         this.background = background;

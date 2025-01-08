@@ -123,6 +123,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelColumnVertical = panelColumnVertical;
     }
 
+    public void setParentClass(Object parentClass) {
+        if(parentClass instanceof LocalizedString)
+            target.parentElementClass = ((LocalizedString) parentClass).getSourceString();
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) parentClass, PropertyDrawExtraType.PARENTELEMENTCLASS, getVersion());
+    }
+
     public void setValueClass(Object valueClass) {
         if(valueClass instanceof LocalizedString)
             target.valueElementClass = ((LocalizedString) valueClass).getSourceString();

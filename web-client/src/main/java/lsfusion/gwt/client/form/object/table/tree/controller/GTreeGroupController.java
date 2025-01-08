@@ -135,6 +135,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateCellParentElementClasses(GParentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
     public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }

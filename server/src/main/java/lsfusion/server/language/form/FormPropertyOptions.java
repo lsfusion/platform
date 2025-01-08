@@ -34,6 +34,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity showIf;
     private PropertyObjectEntity disableIf;
     private PropertyObjectEntity readOnlyIf;
+    private PropertyObjectEntity parentElementClass;
     private PropertyObjectEntity valueElementClass;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
@@ -152,6 +153,14 @@ public class FormPropertyOptions {
 
     public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
+    }
+
+    public PropertyObjectEntity getParentElementClass() {
+        return parentElementClass;
+    }
+
+    public void setParentElementClass(PropertyObjectEntity parentElementClass) {
+        this.parentElementClass = parentElementClass;
     }
 
     public PropertyObjectEntity getValueElementClass() {
@@ -502,6 +511,7 @@ public class FormPropertyOptions {
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setDisableIf(nvl(overrides.getDisableIf(), disableIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
+        merged.setParentElementClass(nvl(overrides.getParentElementClass(), parentElementClass));
         merged.setValueElementClass(nvl(overrides.getValueElementClass(), valueElementClass));
         merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setForeground(nvl(overrides.getForeground(), foreground));

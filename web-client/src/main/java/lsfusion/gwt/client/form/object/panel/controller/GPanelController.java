@@ -77,6 +77,14 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
+    public void updateCellParentElementClasses(GParentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setCellParentElementClasses(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
     public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellValueElementClasses(values);

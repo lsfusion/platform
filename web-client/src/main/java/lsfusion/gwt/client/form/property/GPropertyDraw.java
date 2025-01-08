@@ -116,6 +116,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String tag;
     public GInputType inputType;
+    public String parentElementClass;
     public String valueElementClass;
     public boolean toolbar;
     public boolean toolbarActions;
@@ -377,6 +378,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GShowIfReader showIfReader;
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;
+    public GParentElementClassReader parentElementClassReader;
     public GValueElementClassReader valueElementClassReader;
 
     public GCaptionElementClassReader captionElementClassReader;
