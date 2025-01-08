@@ -20,6 +20,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.entity.mime.*;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -290,6 +291,18 @@ public class ExternalUtils {
         return MIMETypeUtils.fileExtensionForMIMEType(contentType.getMimeType());
     }
 
+    public static boolean isTextExtension(String extension) {
+        return isTextMimeType(MIMETypeUtils.MIMETypeForFileExtension(extension));
+    }
+
+    public static boolean isTextContentType(ContentType contentType) {
+        return isTextMimeType(contentType.getMimeType());
+    }
+
+    private static boolean isTextMimeType(String mimeType) {
+        return mimeType.startsWith("text/");
+    }
+
     public static String getParameterValue(List<NameValuePair> queryParams, String key) {
         ImList<String> params = getParameterValues(queryParams, key);
         return params.isEmpty() ? null : params.get(0);
@@ -338,7 +351,7 @@ public class ExternalUtils {
         Object value;
         if(extension != null) { // FILE
             RawFileData file;
-            if(contentType.getMimeType().startsWith("text/") && convertedToString) //humanReadable
+            if(isTextContentType(contentType) && convertedToString) //humanReadable
                 file = new RawFileData((String)object, charset);
             else
                 file = new RawFileData((byte[])object);
@@ -515,27 +528,37 @@ public class ExternalUtils {
             entity = builder.build();
         } else if(paramCount == 1) {
             ExternalRequest.Result result = single(results);
-            if(contentDisposition != null) {
-                String paramName = result.name;
-                if(paramName != null)
-                    contentDisposition.set("name=\"" + paramName + "\"");
-            }
+
             Object value = result.value;
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
                 entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension, charset)));
-                if(contentDisposition != null) {
-                    String resultFileName = result.fileName;
-                    if(resultFileName != null)
-                        contentDisposition.set((contentDisposition.result != null ? contentDisposition.result + "; " : "") + "filename=\"" + BaseUtils.getContentFileName(resultFileName, extension) + "\"");
-                }
-            } else {
+
+                String fileName = result.fileName;
+                if(contentDisposition != null && fileName != null)
+                    contentDisposition.set(getContentDisposition(fileName, extension, charset));
+            } else
                 entity = new StringEntity((String) value, nvl(forceContentType, getStringContentType(charset)));
-            }
         } else {
             entity = bodyUrl != null ? new StringEntity(bodyUrl, nvl(forceContentType, getUrlEncodedContentType(charset))) : null;
         }
         return entity;
+    }
+
+    public static String getContentDisposition(String name, String extension, Charset charset) {
+        String result = "inline";
+
+//        if(paramName != null)
+//            result += "; name=\"" + paramName + "\"";
+
+        String fullFileName = getContentFileName(name, extension);
+
+        if(StringUtils.isAsciiPrintable(name))
+            result += "; filename=\"" + fullFileName +"\"";
+
+        result += "; filename*=" + charset.name() + "''" + fullFileName;
+
+        return result;
     }
 
     public static byte[] sendTCP(byte[] fileBytes, String host, Integer port, Integer timeout) throws IOException {

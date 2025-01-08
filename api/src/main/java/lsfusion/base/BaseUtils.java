@@ -60,7 +60,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 317;
+        return 318;
     }
 
     public static String getPlatformVersion() {
@@ -293,18 +293,12 @@ public class BaseUtils {
             return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
-        if (objectType == 15) {
-            int size = inStream.readInt();
-            String[] prefixes = new String[size + 1];
-            for(int i = 0; i < size + 1; i++) {
-                prefixes[i] = inStream.readUTF();
-            }
-            Serializable[] files = new Serializable[size];
-            for(int i = 0; i < size; i++)
-                files[i] = (Serializable) deserializeObject(inStream);
-            String rawString = inStream.readUTF();
+        if (objectType == 20) {
+            return new FileStringWithFiles(deserializeStringWithFiles(inStream), inStream.readUTF());
+        }
 
-            return new StringWithFiles(prefixes, files, rawString);
+        if (objectType == 15) {
+            return deserializeStringWithFiles(inStream);
         }
 
         if (objectType == 16) {
@@ -326,6 +320,20 @@ public class BaseUtils {
         }
 
         throw new IOException();
+    }
+
+    private static StringWithFiles deserializeStringWithFiles(DataInputStream inStream) throws IOException {
+        int size = inStream.readInt();
+        String[] prefixes = new String[size + 1];
+        for(int i = 0; i < size + 1; i++) {
+            prefixes[i] = inStream.readUTF();
+        }
+        Serializable[] files = new Serializable[size];
+        for(int i = 0; i < size; i++)
+            files[i] = (Serializable) deserializeObject(inStream);
+        String rawString = inStream.readUTF();
+
+        return new StringWithFiles(prefixes, files, rawString);
     }
 
     public static String deserializeString(DataInputStream inStream) throws IOException {
@@ -474,18 +482,19 @@ public class BaseUtils {
             return;
         }
 
+        if (object instanceof FileStringWithFiles) {
+            outStream.writeByte(20);
+
+            FileStringWithFiles file = (FileStringWithFiles) object;
+            serializeStringWithFiles(outStream, file.stringData);
+            outStream.writeUTF(file.extension);
+            return;
+        }
+
         if (object instanceof StringWithFiles) {
             outStream.writeByte(15);
 
-            StringWithFiles stringWithFiles = (StringWithFiles) object;
-
-            outStream.writeInt(stringWithFiles.files.length);
-            for(String prefix : stringWithFiles.prefixes) {
-                outStream.writeUTF(prefix);
-            }
-            for(Serializable data : stringWithFiles.files)
-                serializeObject(outStream, data);
-            outStream.writeUTF(stringWithFiles.rawString);
+            serializeStringWithFiles(outStream, (StringWithFiles) object);
             return;
         }
 
@@ -519,6 +528,16 @@ public class BaseUtils {
 
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
+
+    private static void serializeStringWithFiles(DataOutputStream outStream, StringWithFiles stringWithFiles) throws IOException {
+        outStream.writeInt(stringWithFiles.files.length);
+        for(String prefix : stringWithFiles.prefixes) {
+            outStream.writeUTF(prefix);
+        }
+        for(Serializable data : stringWithFiles.files)
+            serializeObject(outStream, data);
+        outStream.writeUTF(stringWithFiles.rawString);
+    }
 
     public static byte[] serializeCustomObject(Object object) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -1825,6 +1844,25 @@ public class BaseUtils {
             sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
         }
         return sb.toString();
+    }
+
+    public static boolean containsInBytes(byte[] bytes, String target) {
+        byte[] targetBytes = target.getBytes(StandardCharsets.UTF_8);
+        int targetLength = targetBytes.length;
+
+        for (int i = 0; i <= bytes.length - targetLength; i++) {
+            boolean match = true;
+            for (int j = 0; j < targetLength; j++) {
+                if (bytes[i + j] != targetBytes[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String calculateBase64Hash(String algorithm, String input, String salt) throws RuntimeException {

@@ -123,7 +123,8 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     }
 
     private String getEncode(String valueSource) {
-        return "encode(" + valueSource + ", 'base64')";
+        // it's important to have it unchunked here, because when putting to json \n is escaped, and then in convertFileValue that \n goes to the base64 string and breaks everything
+        return "replace(encode(" + valueSource + ", 'base64'), E'\\n', '')";
     }
 
     @Override
