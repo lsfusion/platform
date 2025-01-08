@@ -2,6 +2,7 @@ package lsfusion.interop.session;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.FileStringWithFiles;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.StringWithFiles;
 
@@ -132,13 +133,13 @@ public class ExternalRequest implements Serializable {
         // converting when sending response from the app server to the web server
         public Result convertFileValue(String name, ConvertFileValue valueConverter) {
             Object convertedValue = valueConverter.convertFileValue(value);
-            assert convertedValue instanceof String || convertedValue instanceof FileData || convertedValue instanceof StringWithFiles;
+            assert convertedValue instanceof String || convertedValue instanceof FileData || convertedValue instanceof StringWithFiles || convertedValue instanceof FileStringWithFiles;
             return new Result(convertedValue, this.name != null ? this.name : name, fileName);
         }
 
         // converting response from the web server to the client
         public Result convertFileValue(ConvertFileValue convertFileValue) {
-            assert value instanceof String || value instanceof FileData || value instanceof StringWithFiles;
+            assert value instanceof String || value instanceof FileData || value instanceof StringWithFiles || value instanceof StringWithFiles;
             Object convertedValue = convertFileValue.convertFileValue(value);
             assert convertedValue instanceof String || convertedValue instanceof FileData;
             return new Result(convertedValue, name, fileName);
