@@ -1202,10 +1202,16 @@ public class PropertyDrawView extends BaseComponentView {
 
     @Override
     protected String getDefaultElementClass(FormInstanceContext context) {
-        if(isProperty(context)) {
+        if (isProperty(context)) {
             Type type = getAssertCellType(context);
-            if (type instanceof LogicalClass && entity.isPredefinedSwitch())
-                return "form-switch";
+            if (type instanceof LogicalClass) {
+                if (entity.isPredefinedSwitch())
+                    return "form-switch";
+                if (isTagInput(context)) {
+                    return "form-check";
+                }
+            }
+
         }
 
         return null;

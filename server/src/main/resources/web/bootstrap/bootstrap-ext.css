@@ -307,11 +307,11 @@
 }
 
 /* checkboxes uses it's own margins / paddings */
-
+/*default margin-left for form-check-input is 1.5em*/
 .panel-renderer-value.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
 .form-switch .panel-renderer-value.form-check-input /* .form-switch form-check-input sets it's own margin-left */
 {
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding) var(--border-comp-vert-padding) -1.5em;
 }
 
 /* have no idea, why .form-check .form-check-input margin-top doesn't break the center alignment, so we're changing only left margin in the form-switch */

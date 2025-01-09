@@ -17,3 +17,9 @@
 [data-bs-theme=dark] .btn-close {
     filter: var(--bs-btn-close-white-filter);
 }
+
+/*default is width:15px, height:16px*/
+.form-check-input[type=checkbox]::before {
+    width: 1em;
+    height: 1em;
+}
