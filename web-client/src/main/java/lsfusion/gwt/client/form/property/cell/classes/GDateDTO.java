@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import com.google.gwt.core.client.JsDate;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.data.GDateType;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -30,7 +32,7 @@ public class GDateDTO implements Serializable {
     
     @Override
     public String toString() {
-        return new java.sql.Date(year, month - 1, day).toString(); //need sql format for GCalendar
+        return GDateType.instance.formatString(PValue.getPValue(this), null);
     }
 
     @Override
