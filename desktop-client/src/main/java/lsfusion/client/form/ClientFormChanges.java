@@ -146,8 +146,6 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).showIfReader;
             case PropertyReadType.FOOTER:
                 return clientForm.getProperty(inStream.readInt()).footerReader;
-            case PropertyReadType.CELL_PARENTELEMENTCLASS:
-                return clientForm.getProperty(inStream.readInt()).parentElementClassReader;
             case PropertyReadType.CELL_VALUEELEMENTCLASS:
                 return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CAPTIONELEMENTCLASS:

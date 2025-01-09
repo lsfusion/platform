@@ -7,7 +7,7 @@
     margin-right: var(--border-label-horz-padding);
 }
 
-:not(.panel-custom):not(.form-check) > .panel-property-label {
+:not(.panel-custom) > .panel-property-label {
     margin-top: var(--border-label-vert-padding);
     margin-bottom: var(--border-label-vert-padding);
 }

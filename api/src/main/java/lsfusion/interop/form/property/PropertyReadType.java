@@ -33,8 +33,6 @@ public class PropertyReadType {
 
     public final static byte CONTAINER_IMAGE = 15;
 
-    public final static byte CELL_PARENTELEMENTCLASS = 31;
-
     public final static byte CELL_VALUEELEMENTCLASS = 16;
 
     public final static byte COMPONENT_ELEMENTCLASS = 17;

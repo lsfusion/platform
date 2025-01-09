@@ -42,7 +42,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> cellFontValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues;
-    private NativeHashMap<GGroupObjectValue, PValue> cellParentElementClasses;
     private NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses;
     private NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses;
 
@@ -159,10 +158,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        PValue parentElementClass = null;
-        if(cellParentElementClasses != null) {
-            parentElementClass = cellParentElementClasses.get(columnKey);
-        }
         PValue valueElementClass = null;
         if(cellValueElementClasses != null) {
             valueElementClass = cellValueElementClasses.get(columnKey);
@@ -202,7 +197,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
-                parentElementClass == null ? property.parentElementClass : PValue.getClassStringValue(parentElementClass),
                 valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
                 font == null ? property.font : PValue.getFontValue(font),
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
@@ -285,10 +279,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
             columnsUpdated = needColumnsPanel();
         }
-    }
-
-    public void setCellParentElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellParentElementClasses) {
-        this.cellParentElementClasses = cellParentElementClasses;
     }
 
     public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses) {

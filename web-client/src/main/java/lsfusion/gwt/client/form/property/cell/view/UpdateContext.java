@@ -56,10 +56,6 @@ public interface UpdateContext {
 
     default String getValueTooltip() { return null; }
 
-    default String getParentElementClass() {
-        return null;
-    }
-
     default String getValueElementClass() {
         return null;
     }

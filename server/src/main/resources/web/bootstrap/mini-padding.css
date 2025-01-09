@@ -56,13 +56,3 @@
     --border-padding: 0.25rem;
     --border-cont-padding: 0.333rem;
 }
-
-.form-check-input[type=checkbox]::before {
-    top: -0.2em;
-}
-
-.form-check-input[type=checkbox]:checked::after,
-.form-check-input[type=checkbox]:indeterminate::after {
-    left: .2em;
-    font-size: 1rem;
-}

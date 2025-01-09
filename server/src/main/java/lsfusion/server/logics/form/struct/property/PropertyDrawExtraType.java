@@ -69,23 +69,7 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "{logics.property.readonly}";
         }
-    },
-    PARENTELEMENTCLASS {
-        @Override
-        public ReportFieldExtraType getReportExtraType() {
-            return null;
-        }
-
-        @Override
-        public byte getPropertyReadType() {
-            return PropertyReadType.CELL_PARENTELEMENTCLASS;
-        }
-
-        @Override
-        public String getText() {
-            return "PARENTELEMENTCLASS";
-        }
-    },
+    }, 
     VALUEELEMENTCLASS {
         @Override
         public ReportFieldExtraType getReportExtraType() {

@@ -554,11 +554,6 @@ public class ScriptingFormEntity {
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
-        PropertyObjectEntity parentElementClassProperty = options.getParentElementClass();
-        if(parentElementClassProperty != null) {
-            property.setPropertyExtra(parentElementClassProperty, PropertyDrawExtraType.PARENTELEMENTCLASS, version);
-        }
-
         PropertyObjectEntity valueElementClassProperty = options.getValueElementClass();
         if(valueElementClassProperty != null) {
             property.setPropertyExtra(valueElementClassProperty, PropertyDrawExtraType.VALUEELEMENTCLASS, version);

@@ -51,7 +51,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
-    public ParentElementClassReader parentElementClassReader = new ParentElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
     public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
@@ -98,7 +97,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String tag;
     public String inputType;
-    public String parentElementClass;
     public String valueElementClass;
     public String captionElementClass;
     public boolean toolbar;
@@ -618,7 +616,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         tag = pool.readString(inStream);
         inputType = pool.readString(inStream);
-        parentElementClass = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
@@ -1003,23 +1000,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.LAST;
-        }
-    }
-
-    public class ParentElementClassReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CELL_PARENTELEMENTCLASS;
         }
     }
 

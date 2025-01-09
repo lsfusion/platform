@@ -88,7 +88,6 @@ public class PropertyDrawView extends BaseComponentView {
 
     public String tag;
     public String inputType;
-    public String parentElementClass;
     public String valueElementClass;
     public String captionElementClass;
 
@@ -705,7 +704,6 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, getTag(pool.context));
         pool.writeString(outStream, getInputType(pool.context));
-        pool.writeString(outStream, getParentElementClass(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
@@ -1210,20 +1208,6 @@ public class PropertyDrawView extends BaseComponentView {
                 return "form-switch";
         }
 
-        return null;
-    }
-
-    public String getParentElementClass(FormInstanceContext context) {
-        if(parentElementClass != null)
-            return parentElementClass;
-
-        if (isProperty(context)) {
-            if(isTagInput(context)) {
-                Type type = getAssertCellType(context);
-                if(type instanceof LogicalClass)
-                    return "form-check";
-            }
-        }
         return null;
     }
 

@@ -112,8 +112,6 @@ public class GFormChanges {
                 return form.getProperty(readerId).showIfReader;
             case GPropertyReadType.READONLY:
                 return form.getProperty(readerId).readOnlyReader;
-            case GPropertyReadType.CELL_PARENTELEMENTCLASS:
-                return form.getProperty(readerId).parentElementClassReader;
             case GPropertyReadType.CELL_VALUEELEMENTCLASS:
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
@@ -198,7 +196,6 @@ public class GFormChanges {
         public final static byte COMPONENT_SHOWIF = 13;
         public final static byte CUSTOM_OPTIONS = 14;
         public final static byte CONTAINER_IMAGE = 15;
-        public final static byte CELL_PARENTELEMENTCLASS = 31;
         public final static byte CELL_VALUEELEMENTCLASS = 16;
         public final static byte COMPONENT_ELEMENTCLASS = 17;
         public final static byte CAPTIONELEMENTCLASS = 18;

@@ -335,9 +335,6 @@ public abstract class CellRenderer {
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
         return GwtClientUtils.nullEquals(state.readonly, readonly);
     }
-    private static boolean equalsParentElementClassState(RenderedState state, String elementClass) {
-        return GwtClientUtils.nullEquals(state.parentElementClass, elementClass);
-    }
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
     }
@@ -363,13 +360,6 @@ public abstract class CellRenderer {
             renderedState.readonly = readonly;
 
             updateReadonly(element, readonly);
-        }
-
-        String parentElementClass = updateContext.getParentElementClass();
-        if(isNew || !equalsParentElementClassState(renderedState, parentElementClass)) {
-            renderedState.parentElementClass = parentElementClass;
-
-            BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element).getParentElement(), parentElementClass, "parent");
         }
 
         String valueElementClass = updateContext.getValueElementClass();
@@ -458,7 +448,6 @@ public abstract class CellRenderer {
 
         public Boolean readonly;
 
-        public String parentElementClass;
         public String valueElementClass;
 
         public boolean highlightDuplicateValue;
