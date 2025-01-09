@@ -154,10 +154,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.writeObject(outStream, entity.listViewType);
         pool.writeObject(outStream, entity.pivotOptions);
         pool.writeString(outStream, entity.customRenderFunction);
-        boolean mapTileProvider = entity.mapTileProvider != null;
-        pool.writeBoolean(outStream, mapTileProvider);
-        if (mapTileProvider)
-            pool.writeString(outStream, entity.mapTileProvider);
+        pool.writeString(outStream, entity.mapTileProvider);
         pool.writeBoolean(outStream, entity.asyncInit);
         pool.serializeCollection(outStream, this);
         pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));

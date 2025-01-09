@@ -174,8 +174,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         listViewType = pool.readObject(inStream);
         pivotOptions = pool.readObject(inStream);
         customRenderFunction = pool.readString(inStream);
-        if (pool.readBoolean(inStream))
-            mapTileProvider = pool.readString(inStream);
+        mapTileProvider = pool.readString(inStream);
 
         asyncInit = pool.readBoolean(inStream);
 

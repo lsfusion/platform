@@ -110,11 +110,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     private ArrayList<JavaScriptObject> lines = new ArrayList<>(); // later also should be
     @Override
     protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
+        JavaScriptObject customOptions = getCustomOptions();
+
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = initMap(renderElement, getCustomOptions());
+            map = initMap(renderElement, customOptions);
         }
-        updateMap(map, markerClusters, grid.getMapTileProvider(), getCustomOptions());
+
+        if (customOptionsUpdated)
+            updateMap(map, markerClusters, grid.getMapTileProvider(), customOptions);
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
 
@@ -235,7 +239,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                             // all possible styles available in the documentation https://developers.google.com/maps/documentation/javascript/json-styling-overview
                             styles: [] //empty array is necessary to prevent "Map styles must be an array, but was passed {}" errors in the web browser console when rendering map
                         },
-                        customOptions != null ? customOptions.googleOptions : {})
+                        customOptions != null ? customOptions.options : {})
                 );
         } else if (tileProvider === 'yandex') {
             tile = L.yandex(
@@ -243,23 +247,18 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                     type: "map", //map, satellite, hybrid, map~vector
                     //all possible mapOptions available in the documentation in options parameter https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map
                     mapOptions: {} // see options https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map#field_detail
-                }, customOptions != null ? customOptions.yandexOptions : {})
+                }, customOptions != null ? customOptions.options : {})
             );
         } else {
             tile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 $wnd.mergeObjects({attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
-                    customOptions != null ? customOptions.leafletOptions : {}));
+                    customOptions != null ? customOptions.options : {}));
         }
         map.tile = tile;
         tile.addTo(map);
 
-        if (map.markerClusters != null)
-            map.removeLayer(map.markerClusters)
-
         map.addLayer(markerClusters);
-        map.markerClusters = markerClusters;
     }-*/;
-
 
     protected native JavaScriptObject initMap(com.google.gwt.dom.client.Element element, JavaScriptObject customOptions)/*-{
         var center = $wnd.mergeObjects({lat: 0, lng: 0}, customOptions != null ? customOptions.center : {})
