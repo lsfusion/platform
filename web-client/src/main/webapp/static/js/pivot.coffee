@@ -616,7 +616,7 @@ callWithJQuery ($) ->
     Pivot Table core: create PivotData object and call Renderer on it
     ###
 
-    $.fn.pivot = (input, inputOpts, locale="en") ->
+    $.fn.pivot = (input, inputOpts, locale="en", clusterize) ->
         locale = "en" if not locales[locale]?
         defaults =
             cols : [], rows: [], vals: []
@@ -643,7 +643,7 @@ callWithJQuery ($) ->
         try
             pivotData = new opts.dataClass(input, opts)
             try
-                result = opts.renderer(pivotData, opts.rendererOptions)
+                result = opts.renderer(pivotData, opts.rendererOptions, clusterize)
             catch e
                 console.error(e.stack) if console?
                 result = $("<span>").html opts.localeStrings.renderError
@@ -660,7 +660,7 @@ callWithJQuery ($) ->
     Pivot Table UI: calls Pivot Table core above with options set by user
     ###
 
-    $.fn.pivotUI = (input, inputOpts, overwrite = false, locale="en") ->
+    $.fn.pivotUI = (input, inputOpts, overwrite = false, locale="en", clusterize) ->
         locale = "en" if not locales[locale]?
         defaults =
             derivedAttributes: {}
@@ -1201,7 +1201,7 @@ callWithJQuery ($) ->
                 drawSize = opts.attach()
                 subopts.rendererOptions.plotly = $.extend {}, subopts.rendererOptions.plotly, drawSize
 
-                pivotScrollDiv.pivot(materializedInput,subopts,locale)
+                pivotScrollDiv.pivot(materializedInput,subopts,locale, clusterize)
 
                 opts.afterRefresh() if opts.afterRefresh?
                 

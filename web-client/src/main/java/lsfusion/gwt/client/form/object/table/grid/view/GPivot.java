@@ -285,7 +285,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         else
             GwtClientUtils.removeClassName(getDrawElement(), "pivotTable-noSettings");
 
-        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage(), clusterize); // we need to updateRendererState after it is painted
     }
 
     public void initDefaultSettings(GGridController gridController) {
@@ -474,6 +474,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         rerender();
     }
 
+    boolean clusterize;
+    @Override
+    protected void showAllPressed() {
+        clusterize = true;
+    }
+
     private native WrapperObject overrideFilter(WrapperObject config, String column, JsArrayString columnInclusions, JsArrayString columnExclusions)/*-{
         var newInclusions = {};
         newInclusions[column] = columnInclusions;
@@ -604,7 +610,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void afterRefresh() {
-        clusterize();
         // we don't want to do force-layout, so we'll just emulate UpdateDOMCommand behaviour
         Scheduler.get().scheduleFinally(() -> {
             // is rerendered (so there are new tableDataScroller and header), so we need force Update (and do it after pivot method)
@@ -728,7 +733,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns, String language)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array,
+                                 JavaScriptObject config, JsArrayString orderColumns, String language, boolean clusterize)/*-{
 //        var d = element;
         var d = $doc.createElement('div'); // we need some div to append it later to avoid blinking
         d.className = 'pvtUiWrapperDiv';
@@ -737,7 +743,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
-        $wnd.$(d).pivotUI(array, config, true, language);
+        $wnd.$(d).pivotUI(array, config, true, language, clusterize);
 
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
@@ -1881,27 +1887,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             left += cell.getOffsetWidth();
         }
     }
-
-    private void clusterize() {
-        if (showAllPressed) {
-            Element scrollDiv = getTableDataScroller();
-            Element bodyDiv = getTableDataBody();
-            if (scrollDiv != null && bodyDiv != null) {
-                Element contentDiv = bodyDiv.getElementsByTagName("tbody").getItem(0);
-                scrollDiv.getParentElement().addClassName("clusterize");
-                scrollDiv.addClassName("clusterize-scroll");
-                contentDiv.addClassName("clusterize-content");
-                clusterize(scrollDiv, contentDiv);
-            }
-        }
-    }
-
-    private native void clusterize(Element scrollDiv, Element contentDiv) /*-{
-        var clusterize = new $wnd.Clusterize({
-            scrollElem: scrollDiv,
-            contentElem: contentDiv
-        });
-    }-*/;
 
     public native void resizePlotlyChart() /*-{
         var plotlyElement = this.@GPivot::getPlotlyChartElement()();

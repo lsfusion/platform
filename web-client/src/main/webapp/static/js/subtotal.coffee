@@ -131,7 +131,7 @@ callWithJQuery ($) ->
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
 
 
-    SubtotalRenderer = (pivotData, opts) ->
+    SubtotalRenderer = (pivotData, opts, clusterize) ->
         defaults =
             table: clickCallback: null
             localeStrings: totals: "Totals", subtotalOf: "Subtotal of"
@@ -674,7 +674,16 @@ callWithJQuery ($) ->
                 eventHandlers[event] = (e) -> handler(e, value, filters, pivotData)
             return eventHandlers
 
-        buildValues = (tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts) ->
+        buildValues = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts) ->
+            if clusterize
+                addClass scrollDiv, "clusterize-scroll"
+                addClass tbody, "clusterize-content"
+                c = new Clusterize(
+                    rows: []
+                    scrollElem: scrollDiv
+                    contentElem: tbody
+                );
+
             for rh in rowAttrHeaders
                 rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
                 if rh.children.length > 0
@@ -712,6 +721,12 @@ callWithJQuery ($) ->
                         "data-rownode": rh.node,
                         getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
                     tr.appendChild td
+                if clusterize
+                    c.append([tr.outerHTML])
+
+            if clusterize
+                $(document).ready ->
+                    c.refresh()
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
@@ -1077,7 +1092,7 @@ callWithJQuery ($) ->
                 colCnt += th.colSpan
             return colCnt
             
-        main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
+        main = (rowAttrs, rowKeys, colAttrs, colKeys, clusterize) ->
             rowAttrHeaders = []
             colAttrHeaders = []
 
@@ -1144,9 +1159,9 @@ callWithJQuery ($) ->
                     childrenCnt = rowKeyHeaders.children.length
                     for i in [0...childrenCnt]
                         chKey = rowKeyHeaders.children[i]
-                        buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts 
+                        buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts
 
-            buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
+            buildValues scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts
             if not hideColsTotalRow
                 tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
                 buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
@@ -1170,10 +1185,10 @@ callWithJQuery ($) ->
             
             return outerDiv
 
-        return main rowAttrs, rowKeys, colAttrs, colKeys
+        return main rowAttrs, rowKeys, colAttrs, colKeys, clusterize
 
     $.pivotUtilities.subtotal_renderers =
-        "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
+        "TABLE"             : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, opts, clusterize
         "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
         "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
         "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts

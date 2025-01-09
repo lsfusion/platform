@@ -250,7 +250,7 @@
 
     }).call(this);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
-    SubtotalRenderer = function(pivotData, opts) {
+    SubtotalRenderer = function(pivotData, opts, clusterize) {
       var addClass, adjustColAxisHeader, adjustRowAxisHeader, allTotal, arrowCollapsed, arrowColumnIsNeeded, arrowExpanded, arrowText, buildAxisHeaders, buildColAxisHeader, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeader, buildRowHeader, buildRowTotalsHeader, buildValues, callbacks, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, classZoom, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colSubtotalIsEnabled, colTotals, collapseChildCol, collapseChildRow, collapseCol, collapseColAxis, collapseColAxisHeaders, collapseHiddenColSubtotal, collapseRow, collapseRowAxis, collapseRowAxisHeaders, collapseShowColSubtotal, collapseShowRowSubtotal, createArrowAndTextDivs, createColAttrHeaderTH, createColAxisHeaderTH, createColGroup, createElement, createRowAttrHeaderTH, createRowAxisHeaderTH, createValueTD, defaults, emptyTopAttrTH, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, findAxisHeadersColCount, getColumnWidth, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, hideColAxisHeadersColumn, hideColsTotalRow, hideRowsTotalsCol, i, longestGroupLength, main, processColKeys, processRowKeys, ref, ref1, ref2, removeClass, renderColAttrHeader, renderColAxisHeader, renderRowAttrHeader, renderRowAxisHeader, renderValueCell, replaceClass, rowArrowsLevelPadding, rowArrowsPadding, rowAttrs, rowGroups, rowHeaderColsData, rowKeys, rowSplitPositions, rowTotals, setAttributes, showChildCol, showChildRow, tree;
       defaults = {
         table: {
@@ -1028,9 +1028,17 @@
         }
         return eventHandlers;
       };
-      buildValues = function(tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts) {
-        var aggregator, ch, cls, k, l, len1, len2, rCls, ref3, results, rh, td, totalAggregator, tr, val;
-        results = [];
+      buildValues = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts) {
+        var aggregator, c, ch, cls, k, l, len1, len2, rCls, ref3, rh, td, totalAggregator, tr, val;
+        if (clusterize) {
+          addClass(scrollDiv, "clusterize-scroll");
+          addClass(tbody, "clusterize-content");
+          c = new Clusterize({
+            rows: [],
+            scrollElem: scrollDiv,
+            contentElem: tbody
+          });
+        }
         for (k = 0, len1 = rowAttrHeaders.length; k < len1; k++) {
           rh = rowAttrHeaders[k];
           rCls = `pvtVal row${rh.row} rowcol${rh.col} ${classRowExpanded}`;
@@ -1080,12 +1088,17 @@
               "data-rowcol": `col${rh.col}`,
               "data-rownode": rh.node
             }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
-            results.push(tr.appendChild(td));
-          } else {
-            results.push(void 0);
+            tr.appendChild(td);
+          }
+          if (clusterize) {
+            c.append([tr.outerHTML]);
           }
         }
-        return results;
+        if (clusterize) {
+          return $(document).ready(function() {
+            return c.refresh();
+          });
+        }
       };
       buildColTotalsHeader = function(rowHeadersColumns, colAttrs) {
         var arrowTh, colspan, th, tr;
@@ -1691,7 +1704,7 @@
         }
         return colCnt;
       };
-      main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
+      main = function(rowAttrs, rowKeys, colAttrs, colKeys, clusterize) {
         var bodyDiv, bodyTable, chKey, childrenCnt, colAttrHeaders, colAxisHeaders, colKeyHeaders, colsData, colspan, headerDiv, headerTable, k, l, len1, node, outerDiv, overallSpan, ref3, ref4, rowAttrHeaders, rowAttrHeadersCount, rowAxisHeaders, rowKeyHeaders, scrollDiv, tbody, thead, tr, trs;
         rowAttrHeaders = [];
         colAttrHeaders = [];
@@ -1774,7 +1787,7 @@
             }
           }
         }
-        buildValues(tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts);
+        buildValues(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts);
         if (!hideColsTotalRow) {
           tr = buildColTotalsHeader(longestGroupLength(rowGroups), colAttrs);
           if (colAttrs.length > 0) {
@@ -1795,11 +1808,11 @@
         outerDiv.setAttribute("data-numcols", colKeys.length);
         return outerDiv;
       };
-      return main(rowAttrs, rowKeys, colAttrs, colKeys);
+      return main(rowAttrs, rowKeys, colAttrs, colKeys, clusterize);
     };
     $.pivotUtilities.subtotal_renderers = {
-      "TABLE": function(pvtData, opts) {
-        return SubtotalRenderer(pvtData, opts);
+      "TABLE": function(pvtData, opts, clusterize) {
+        return SubtotalRenderer(pvtData, opts, clusterize);
       },
       "TABLE_BARCHART": function(pvtData, opts) {
         return $(SubtotalRenderer(pvtData, opts)).barchart();
