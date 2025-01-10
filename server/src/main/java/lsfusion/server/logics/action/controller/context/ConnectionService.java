@@ -24,11 +24,7 @@ public class ConnectionService {
 
     public Connection getSQLConnection(String connectionString) {
         if(connectionString.isEmpty()) {
-            if(sqlConnectionMap.size() == 1) {
-                return sqlConnectionMap.values().iterator().next();
-            } else {
-                throw new UnsupportedOperationException("Empty connection string is supported only if there was only one non-empty connectionString inside of NEWCONNECTION operator");
-            }
+            return (Connection) getSingle(sqlConnectionMap);
         } else {
             return sqlConnectionMap.get(connectionString);
         }
@@ -51,11 +47,7 @@ public class ConnectionService {
 
     public DBF getDBFFile(String connectionString) {
         if(connectionString.isEmpty()) {
-            if(dbfFilesMap.size() == 1) {
-                return dbfFilesMap.values().iterator().next();
-            } else {
-                throw new UnsupportedOperationException("Empty connection string is supported only if there was only one non-empty connectionString inside of NEWCONNECTION operator");
-            }
+            return (DBF) getSingle(dbfFilesMap);
         } else {
             return dbfFilesMap.get(connectionString);
         }
@@ -78,11 +70,7 @@ public class ConnectionService {
 
     public Socket getTCPSocket(String host, Integer port) {
         if (host.isEmpty()) {
-            if (tcpSocketMap.size() == 1) {
-                return tcpSocketMap.values().iterator().next();
-            } else {
-                throw new UnsupportedOperationException("Empty host is supported only if there was only one non-empty host inside of NEWCONNECTION operator");
-            }
+            return (Socket) getSingle(tcpSocketMap);
         } else {
             return tcpSocketMap.get(Pair.create(host, port));
         }
@@ -101,6 +89,14 @@ public class ConnectionService {
             }
         }
         tcpSocketMap.clear();
+    }
+
+    private Object getSingle(Map map) {
+        if (map.size() == 1) {
+            return map.values().iterator().next();
+        } else {
+            throw new UnsupportedOperationException("Empty connectionString is supported only if there was only one non-empty connectionString inside of NEWCONNECTION operator");
+        }
     }
 
     public void close() {

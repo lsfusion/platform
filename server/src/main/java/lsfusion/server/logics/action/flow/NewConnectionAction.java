@@ -19,7 +19,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 
 public class NewConnectionAction extends AroundAspectAction {
-    private ConnectionService connectionService;
 
     public <I extends PropertyInterface> NewConnectionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                              ActionMapImplement<?, I> action) {
@@ -46,7 +45,7 @@ public class NewConnectionAction extends AroundAspectAction {
 
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        connectionService = new ConnectionService();
+        ConnectionService connectionService = new ConnectionService();
         FlowResult result;
 
         try {
