@@ -18,6 +18,12 @@
     filter: var(--bs-btn-close-white-filter);
 }
 
+/*override rule in bootstrap-ext*/
+/*.need display:block to correctly display checkbox in ::before*/
+.display-flex.form-check.panel-container {
+    display: block;
+}
+
 /*default is width:15px, height:16px*/
 .form-check-input[type=checkbox]::before {
     width: 1em;

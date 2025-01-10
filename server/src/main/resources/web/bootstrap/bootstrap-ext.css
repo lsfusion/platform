@@ -306,6 +306,11 @@
     flex-wrap: nowrap;
 }
 
+/*.form-check set display: block*/
+.display-flex.form-check {
+    display: flex;
+}
+
 /* checkboxes uses it's own margins / paddings */
 /*default margin-left for form-check-input is 1.5em*/
 .panel-renderer-value.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
