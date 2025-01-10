@@ -1089,6 +1089,13 @@ public abstract class LogicsModule {
                 (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1), sync)));
     }
 
+    protected LA addNewConnectionAProp(Group group, LocalizedString caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        return addAction(group, new LA(new NewConnectionAction(caption, listInterfaces,
+                (ActionMapImplement) readImplements.get(0))));
+    }
+
     // ------------------- Request action ----------------- //
 
     protected LA addRequestAProp(Group group, boolean hasDo, LocalizedString caption, Object... params) {

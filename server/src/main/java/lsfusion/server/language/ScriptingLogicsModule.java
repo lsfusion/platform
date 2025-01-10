@@ -4843,6 +4843,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(newAction, allParams);
     }
 
+    public LAWithParams addScriptedNewConnectionAction(LAWithParams action) {
+        List<LAPWithParams> propParams = singletonList(action);
+        List<Integer> allParams = mergeAllParams(propParams);
+        LA<?> newAction = addNewConnectionAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
+        return new LAWithParams(newAction, allParams);
+    }
+
     private ImList<LP> findLPsForImport(List<NamedPropertyUsage> propUsages, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
         MList<LP> mProps = ListFact.mList(propUsages.size());
         for (NamedPropertyUsage propUsage : propUsages) {
