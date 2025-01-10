@@ -952,6 +952,11 @@ public class PropertyFact {
         NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, sync);
         return aggAction.getImplement(listInterfaces);
     }
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewConnectionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action) {
+        ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
+        NewConnectionAction aggAction = new NewConnectionAction(LocalizedString.NONAME, listInterfaces, action);
+        return aggAction.getImplement(listInterfaces);
+    }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createApplyAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable, Property canceled, Property applyMessage) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         ApplyAction aggAction = new ApplyAction(LocalizedString.NONAME, listInterfaces, action, keepSessionProperties, serializable, canceled, applyMessage);

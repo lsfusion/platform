@@ -2749,6 +2749,15 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
 	;
 
+newConnectionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedNewConnectionAction($aDB.action);
+	}
+}
+	:	'NEWCONNECTION' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
+	;
+
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<NamedPropertyUsage> migrateSessionProps = Collections.emptyList();
@@ -3346,6 +3355,7 @@ recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] retu
 	|	applyADB=applyActionDefinitionBody[context, dynamic] { $action = $applyADB.action; }
     |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $action = $newThreadADB.action; } // mixed
 	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $action = $newExecutorADB.action; } // mixed, recursive but always semi
+	|	newConnectionADB=newConnectionActionDefinitionBody[context, dynamic] { $action = $newConnectionADB.action; }
 ;
 
 // always semi in the end
