@@ -48,7 +48,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         Charset charset = ExternalUtils.downloadCharset;
         response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
         //inline = open in browser, attachment = download
-        response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, "inline; filename*=" + charset.name() + "''" + BaseUtils.getContentFileName(displayName, extension));
+        response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, ExternalUtils.getContentDisposition(displayName, extension, charset));
         // expiration will be set in urlRewrite.xml /file (just to have it at one place)
 
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary

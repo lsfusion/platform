@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -273,8 +274,12 @@ public class FormChanges {
             value = ((FileData) value).getRawFile().convertString();
 
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
-            if(convertData != null)
-                return convertRawFileData(convertData.type, (Serializable) value, convertData instanceof NeedImage);
+            if(convertData != null) {
+                value = convertRawFileData(convertData.type, (Serializable) value, convertData instanceof NeedImage);
+                if(value instanceof FileData) // here is small problem that NamedFileData won't be converted, but we'll ignore that for now
+                    value = convertFileData(context, (FileData) value);
+                return value;
+            }
 
             return true;
         }
@@ -305,13 +310,36 @@ public class FormChanges {
         }
     }
 
+    public static Object convertFileValue(FileData fileData, ConnectionContext context) {
+        try {
+            return convertFileData(context, fileData);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public static Object convertFileValue(Object value, ConnectionContext context) {
         assert value instanceof String || value instanceof FileData; // assert that it is the result of formatHTTP
 
+        if(value instanceof FileData)
+            return convertFileValue((FileData)value, context);
         if(value instanceof String)
             return convertFileValue((String) value, context);
 
         return value;
+    }
+
+    private static Serializable convertFileData(ConnectionContext context, FileData fileData) throws IOException {
+        String extension = fileData.getExtension();
+        // somewhy json uses mime type application/json and not considered to be text
+        if(!HumanReadableFileClass.is(extension) && !ExternalUtils.isTextExtension(extension))
+            return fileData;
+
+        RawFileData rawFile = fileData.getRawFile();
+        if(!BaseUtils.containsInBytes(rawFile.getBytes(), inlineFileSeparator)) // optimization
+            return fileData;
+
+        return new FileStringWithFiles((StringWithFiles) convertString(context, rawFile.convertString()), extension);
     }
 
     @NotNull
@@ -337,7 +365,7 @@ public class FormChanges {
                     int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
                     boolean needImage = name.charAt(separatorLength) == '1';
                     FileClass file = FileClass.deserializeString(name.substring(separatorLength + 1, endFileType));
-                    files[k] = convertRawFileData(file, (Serializable) file.parseString(name.substring(endFileType + separatorLength)), needImage);
+                    files[k] = convertRawFileData(file, (Serializable) file.parseCast(name.substring(endFileType + separatorLength)), needImage);
 
                     if(removeRaw == null)
                         removeRaw = new boolean[parts.length];

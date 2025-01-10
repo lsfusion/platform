@@ -12,7 +12,7 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
-// todo onLoginLoad = ABSTRACT CASE INTEGER(STRING) IS DEPECATED! DO NOT USE! Only for backward compatibility
+// todo onLoginLoad = ABSTRACT CASE INTEGER(STRING) IS DEPRECATED! DO NOT USE! Only for backward compatibility
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onLoginInit ABSTRACT LIST ();
 onLoginInit = DATA LOCAL INTEGER (STRING);

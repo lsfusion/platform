@@ -669,6 +669,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+                <ref bean="executeOnInitTask"/>
             </set>
         </property>
     </bean>

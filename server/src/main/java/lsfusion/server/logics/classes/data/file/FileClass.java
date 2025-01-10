@@ -93,6 +93,11 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
         return value != null ? Base64.encodeBase64StringUnChunked(getRawFileData(value).getBytes()) : null;
     }
 
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return getEncode(getCastToStatic(valueSource));
+    }
+
     public T parseString(String s) {
         return getValue(new RawFileData(Base64.decodeBase64(s)));
     }
@@ -101,16 +106,25 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
 
     public String getCastToConvert(boolean needImage, String value, SQLSyntax syntax) {
         String stringConcatenate = syntax.getStringConcatenate();
-        return "'" + ScriptedStringUtils.wrapFile((needImage ? "1" : "0") + serializeString(), "'" + stringConcatenate + getEncode(value, syntax) + stringConcatenate + "'") + "'";
+        return "'" + ScriptedStringUtils.wrapFile((needImage ? "1" : "0") + serializeString(), "'" + stringConcatenate + getEncode(value) + stringConcatenate + "'") + "'";
     }
+
+    protected abstract T readBytes(byte[] bytes);
 
     @Override
-    public String formatStringSource(String valueSource, SQLSyntax syntax) {
-        return getEncode(valueSource, syntax);
+    public T read(Object value) {
+        if(value instanceof byte[])
+            return readBytes((byte[])value);
+        return (T) value;
     }
 
-    private String getEncode(String valueSource, SQLSyntax syntax) {
-        return "encode(" + getCastToStatic(valueSource) + ", 'base64')";
+    public T parseCast(String s) {
+        return readBytes(Base64.decodeBase64(s));
+    }
+
+    private String getEncode(String valueSource) {
+        // it's important to have it unchunked here, because when putting to json \n is escaped, and then in convertFileValue that \n goes to the base64 string and breaks everything
+        return "replace(encode(" + valueSource + ", 'base64'), E'\\n', '')";
     }
 
     @Override
