@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
@@ -133,10 +134,15 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -2682,17 +2688,54 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        if(path != null)
-            path = path.addExcl(this);
-        else {
-            if(!marks.add(this))
-                return false;
+    public boolean checkRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
+        if (path.contains(this)) {
+            return false;
+//            List<Property> cycle = new ArrayList<>();
+//            boolean found = false;
+//            for (Property property : path) {
+//                if (property.equals(this)) {
+//                    found = true;
+//                }
+//                if (found) {
+//                    cycle.add(property);
+//                }
+//            }
+//            cycle.add(this);
+//
+//            throw new ScriptParsingException("Property " + this + " is recursive. One of the paths : " + cycle);
         }
-        return calculateCheckRecursions(abstractPath, path, marks);
+        
+        if (localMarks.contains(this) || marks.contains(this)) return false;
+        
+        path.add(this);
+        localMarks.add(this);
+        
+        boolean result = calculateCheckRecursions(path, localMarks, marks);
+        
+        path.remove(this);
+        marks.add(this);
+        
+        return result;
     }
-
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    
+//    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+//        if(path != null)
+//            path = path.addExcl(this);
+//        else {
+//            if(marks.contains(this))
+//                return false;
+//        }
+//        boolean result = calculateCheckRecursions(abstractPath, path, marks);
+//
+//        if(path == null)
+//            marks.add(this);
+//
+//        return result;
+//    }
+    
+    
+    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
         return false;
     }
 

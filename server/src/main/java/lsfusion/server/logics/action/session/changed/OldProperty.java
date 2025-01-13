@@ -23,6 +23,7 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.OldDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.List;
 import java.util.Set;
 
 public class OldProperty<T extends PropertyInterface> extends SessionProperty<T> {
@@ -66,8 +67,8 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     @Override
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        return property.checkRecursions(abstractPath, path, marks);
+    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
+        return property.checkRecursions(path, localMarks, marks);
     }
 
     @Override

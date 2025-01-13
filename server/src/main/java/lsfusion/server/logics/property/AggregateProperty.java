@@ -47,6 +47,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
@@ -94,9 +95,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return false;
     }
 
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
         for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path, marks))
+            if(depend.checkRecursions(path, localMarks, marks))
                 return true;
         return false;
     }

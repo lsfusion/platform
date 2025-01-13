@@ -23,7 +23,9 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
     protected Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks() {
         final int splitCount = getSplitCount();
         MCol<SingleProgramTask> mTasks = ListFact.mCol();
-        ImMap<Integer, ImSet<T>> groupProps = getObjects().mapValues((int i) -> i / splitCount).groupValues();
+        ImSet<T> objects = getObjects();
+        ImMap<Integer, ImSet<T>> groupProps = objects.mapValues((int i) -> i / splitCount).groupValues();
+        System.out.printf("%s: SplitCount: %d, groups count: %d, all: %d%n", getCaption(), splitCount, groupProps.size(), objects.size());
         for (int i = 0, size = groupProps.size(); i < size; i++) {
             final int group = groupProps.getKey(i);
             final ImSet<T> objSet = groupProps.getValue(i);

@@ -11,6 +11,7 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.property.Property;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;

@@ -49,6 +49,7 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 
 public abstract class DataProperty extends AbstractDataProperty {
@@ -184,9 +185,9 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
+    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
         if (event != null)
-            return event.where.property.calculateCheckRecursions(abstractPath, path, marks);
+            return event.where.property.calculateCheckRecursions(path, localMarks, marks);
         return false;
     }
 

@@ -16,7 +16,7 @@ public class MarkRecursionsTask extends GroupPropertiesTask {
     private Set<Action> actionMarks = new ConcurrentIdentityWeakHashSet<>();
 
     public String getCaption() {
-        return "Looking for recursions in abstract actions";
+        return "Looking for recursions in abstract actions - 2";
     }
 
     protected void runTask(ActionOrProperty property) {
