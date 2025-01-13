@@ -77,3 +77,8 @@
 .h6,h6 {
     font-size: 0.75rem
 }
+
+/*for sketchy theme only*/
+.form-check-input:checked::after {
+    font-size: 1em;
+}

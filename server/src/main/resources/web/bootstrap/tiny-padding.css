@@ -61,8 +61,14 @@
     top: 0.1em;
 }
 
-.form-check-input[type=checkbox]:checked::after,
-.form-check-input[type=checkbox]:indeterminate::after {
-    left: .2em;
-    font-size: 1rem;
+/*for sketchy theme only*/
+.form-check .form-check-input[type=checkbox]:checked::after,
+.form-check .form-check-input[type=checkbox]:indeterminate::after {
+    top: 0.3em;
+    left: 0.3em;
+}
+
+/*for sketchy theme only*/
+.form-switch .form-check-input[type=checkbox]::after {
+    top: 0.2em;
 }

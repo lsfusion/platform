@@ -18,14 +18,45 @@
     filter: var(--bs-btn-close-white-filter);
 }
 
-/*override rule in bootstrap-ext*/
-/*.need display:block to correctly display checkbox in ::before*/
-.display-flex.form-check.panel-container {
-    display: block;
+/*reset align-self:center to show correct checkbox in ::before*/
+.flex-center.form-check-input[type=checkbox] {
+    align-self: unset;
+}
+
+/*margin-right need because checkbox in ::before has width 0*/
+.form-check .panel-renderer-value.form-check-input[type=checkbox] {
+    margin-right: 1.5em;
 }
 
 /*default is width:15px, height:16px*/
 .form-check-input[type=checkbox]::before {
-    width: 1em;
+    width: 0.9375em;
     height: 1em;
+}
+
+.form-check-input[type=checkbox]::before {
+    top: -0.2em;
+}
+
+.form-check-input[type=checkbox]::after,
+.form-switch .form-check-input[type=checkbox]::after {
+    top: -0.1em;
+}
+
+/*default is width:32px, height: 16px*/
+.form-switch .form-check-input[type=checkbox]::before {
+    width: 2em;
+    height: 1em;
+}
+
+/*default is width:12px, height:12px*/
+.form-switch .form-check-input[type=checkbox]::after {
+    width: 0.75em;
+    height: 0.75em;
+    font-size: 1em;
+}
+
+/*default is left:18px*/
+.form-switch .form-check-input[type=checkbox]:checked::after {
+    left: 1.125em;
 }

@@ -2,17 +2,17 @@
 .property-container-panel {
 }
 
-:not(.panel-custom):not(.form-check) > .panel-property-label.wrap-text-not-empty {
+:not(.panel-custom) > .panel-property-label.wrap-text-not-empty {
     margin-left: var(--border-label-horz-padding);
     margin-right: var(--border-label-horz-padding);
 }
 
-:not(.panel-custom):not(.form-check) > .panel-property-label {
+:not(.panel-custom):not(.form-check):not(.form-switch) > .panel-property-label {
     margin-top: var(--border-label-vert-padding);
     margin-bottom: var(--border-label-vert-padding);
 }
 
-:not(.panel-custom):not(.form-check) > .panel-renderer-value,
+:not(.panel-custom):not(.form-check):not(.form-switch) > .panel-renderer-value,
     .panel-custom {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
