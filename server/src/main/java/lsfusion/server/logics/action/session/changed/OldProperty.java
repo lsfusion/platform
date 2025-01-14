@@ -67,8 +67,11 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     @Override
-    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
-        return property.checkRecursions(path, localMarks, marks);
+    public boolean calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (usePrev) {
+            return property.checkRecursions(path, localMarks, marks, true);
+        }
+        return false;
     }
 
     @Override

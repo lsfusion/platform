@@ -185,9 +185,9 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
-        if (event != null)
-            return event.where.property.calculateCheckRecursions(path, localMarks, marks);
+    public boolean calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (event != null && !usePrev)
+            return event.where.property.calculateCheckRecursions(path, localMarks, marks, false);
         return false;
     }
 

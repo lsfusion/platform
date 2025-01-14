@@ -2688,22 +2688,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    public boolean checkRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
+    public boolean checkRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
         if (path.contains(this)) {
-            return false;
-//            List<Property> cycle = new ArrayList<>();
-//            boolean found = false;
-//            for (Property property : path) {
-//                if (property.equals(this)) {
-//                    found = true;
-//                }
-//                if (found) {
-//                    cycle.add(property);
-//                }
-//            }
-//            cycle.add(this);
-//
-//            throw new ScriptParsingException("Property " + this + " is recursive. One of the paths : " + cycle);
+            List<Property<?>> cycle = new ArrayList<>();
+            boolean found = false;
+            for (Property<?> property : path) {
+                if (property.equals(this)) {
+                    found = true;
+                }
+                if (found) {
+                    cycle.add(property);
+                }
+            }
+            cycle.add(this);
+
+            throw new ScriptParsingException("Property " + this + " is recursive. One of the paths : " + cycle);
         }
         
         if (localMarks.contains(this) || marks.contains(this)) return false;
@@ -2711,7 +2710,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         path.add(this);
         localMarks.add(this);
         
-        boolean result = calculateCheckRecursions(path, localMarks, marks);
+        boolean result = calculateCheckRecursions(path, localMarks, marks, usePrev);
         
         path.remove(this);
         marks.add(this);
@@ -2735,7 +2734,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 //    }
     
     
-    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
+    public boolean calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
         return false;
     }
 

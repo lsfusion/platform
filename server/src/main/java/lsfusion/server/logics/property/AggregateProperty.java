@@ -95,9 +95,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return false;
     }
 
-    public boolean calculateCheckRecursions(Set<Property> path, Set<Property> localMarks, Set<Property> marks) {
-        for(Property depend : getDepends())
-            if(depend.checkRecursions(path, localMarks, marks))
+    public boolean calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        for(Property<?> depend : getDepends())
+            if(depend.checkRecursions(path, localMarks, marks, usePrev))
                 return true;
         return false;
     }

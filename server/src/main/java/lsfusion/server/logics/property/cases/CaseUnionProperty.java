@@ -133,9 +133,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return abs.type;
     }
 
-    public void checkRecursions(Set<Property> propertyMarks) {
+    public void checkRecursions(Set<Property<?>> propertyMarks, boolean usePrev) {
         assert isAbstract();
-        checkRecursions(new LinkedHashSet<>(), new HashSet<>(), propertyMarks);
+        checkRecursions(new LinkedHashSet<>(), new HashSet<>(), propertyMarks, usePrev);
     }
 
     @Override
