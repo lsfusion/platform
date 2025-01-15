@@ -134,7 +134,8 @@ public class ExternalRequest implements Serializable {
         public Result convertFileValue(String name, ConvertFileValue valueConverter) {
             Object convertedValue = valueConverter.convertFileValue(value);
             assert convertedValue instanceof String || convertedValue instanceof FileData || convertedValue instanceof StringWithFiles || convertedValue instanceof FileStringWithFiles;
-            return new Result(convertedValue, this.name != null ? this.name : name, fileName);
+            assert this.name == null;
+            return new Result(convertedValue, name, fileName);
         }
 
         // converting response from the web server to the client
@@ -149,7 +150,18 @@ public class ExternalRequest implements Serializable {
         public Result convertFileValue(Function<Object, Object> valueConverter, String name) {
             Object convertedValue = valueConverter.apply(value);
             assert convertedValue instanceof String || convertedValue instanceof FileData;
-            return new Result(convertedValue, this.name != null ? this.name : name, fileName);
+            assert this.name == null;
+
+            String fileName = null;
+            if(name != null) {
+                // backward compatibility, NAMEDFILE should be used instead
+                String[] nameParts = name.split(";");
+                if (nameParts.length >= 2) {
+                    name = nameParts[0];
+                    fileName = nameParts[1];
+                }
+            }
+            return new Result(convertedValue, name, fileName != null ? fileName : this.fileName);
         }
     }
     public static class Param implements Serializable {

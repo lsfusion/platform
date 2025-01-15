@@ -492,7 +492,7 @@ public class ExternalUtils {
     public static HttpEntity getInputStreamFromList(ExternalRequest.Result[] results, String bodyUrl, List<Map<String, String>> bodyParamHeadersList, Result<String> contentDisposition, ContentType forceContentType, Charset charset) {
         HttpEntity entity;
         int paramCount = results.length;
-        if (paramCount > 1 && (forceContentType == null || forceContentType.getMimeType().startsWith("multipart/"))) {
+        if (forceContentType == null ? paramCount > 1 : forceContentType.getMimeType().startsWith("multipart/")) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             //Default mode is STRICT, which uses only US-ASCII. EXTENDED mode allows UTF-8.
             builder.setMode(HttpMultipartMode.EXTENDED);
@@ -503,22 +503,19 @@ public class ExternalUtils {
                 String paramName = result.name;
                 if(paramName == null)
                     paramName = "param" + i;
-                String[] bodyParamName = paramName.split(";"); // backward compatibility, NAMEDFILE should be used instead
-                String bodyPartName = bodyParamName[0];
 
                 ContentBody contentBody;
                 if (value instanceof FileData) {
-                    String resultFileName = result.fileName;
-                    if(resultFileName == null)
-                        resultFileName = "file" + i;
-                    String fileName = bodyParamName.length >= 2 ? bodyParamName[1] : resultFileName;
+                    String fileName = result.fileName;
+                    if(fileName == null)
+                        fileName = "file" + i;
                     String extension = ((FileData) value).getExtension();
                     contentBody = new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension, charset), fileName);
                 } else {
                     contentBody = new StringBody((String) value, getStringContentType(charset));
                 }
 
-                FormBodyPart formBodyPart = FormBodyPartBuilder.create(bodyPartName, contentBody).build();;
+                FormBodyPart formBodyPart = FormBodyPartBuilder.create(paramName, contentBody).build();;
                 Map<String, String> bodyParamHeaders = bodyParamHeadersList.size() > i ? bodyParamHeadersList.get(i) : null;
                 if(bodyParamHeaders != null)
                     for (Map.Entry<String, String> bodyParamHeader : bodyParamHeaders.entrySet())
