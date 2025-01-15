@@ -655,6 +655,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.getRemoteContext();
     }
 
+    public boolean isWeb() {
+        return !getRemoteContext().isNative;
+    }
+
     private void assertNotUserInteractionInTransaction() {
         ServerLoggers.assertLog(!getSession().isInTransaction() || ThreadLocalContext.userInteractionCanBeProcessedInTransaction(), "USER INTERACTION IN TRANSACTION");
     }

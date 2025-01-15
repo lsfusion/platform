@@ -3451,6 +3451,16 @@ public class Settings implements Cloneable {
         this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
     }
 
+    public boolean generateReportsOnWebServer = false;
+
+    public boolean isGenerateReportsOnWebServer() {
+        return generateReportsOnWebServer;
+    }
+
+    public void setGenerateReportsOnWebServer(boolean generateReportsOnWebServer) {
+        this.generateReportsOnWebServer = generateReportsOnWebServer;
+    }
+
     public boolean exportDBFNumericMandatoryZeroes = false;
 
     public boolean isExportDBFNumericMandatoryZeroes() {
