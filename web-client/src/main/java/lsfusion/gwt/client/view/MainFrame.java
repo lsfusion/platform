@@ -654,7 +654,7 @@ public class MainFrame implements EntryPoint {
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
                 mobileMode = gClientSettings.mobileMode;
-                mobile =  mobileMode!= null ? mobileMode : Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
+                mobile = mobileMode != null ? mobileMode : Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
                 mobileAdjustment = mobile ? 1 : 0;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
