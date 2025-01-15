@@ -9,7 +9,6 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -39,8 +38,8 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException {
-        return target.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupId, printType, userPreferences);
+    public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
+        return target.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupId, userPreferences);
     }
 
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh, boolean forceLocalEvents) throws RemoteException {

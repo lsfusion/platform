@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -30,6 +31,7 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
 import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
@@ -179,13 +181,20 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GProcessNavigatorChangesAction(navigatorChanges);
     }
 
+    public static FileData exportToFileByteArray(MainDispatchServlet servlet, ReportGenerationData generationData, FormPrintType printType, String sheetName, String password, boolean jasperReportsIgnorePageMargins) {
+        return new FileData(ReportGenerator.exportToFileByteArray(generationData, printType, sheetName, password, jasperReportsIgnorePageMargins, servlet.getNavigatorProvider().getRemoteLogics()), printType.getExtension());
+    }
+
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
-        boolean autoPrint = action.autoPrint;
-        RawFileData rawFileData = ReportGenerator.exportToFileByteArray(action.generationData, action.printType, action.jasperReportsIgnorePageMargins, servlet.getNavigatorProvider().getRemoteLogics());
+        FileData fileData = action.fileData;
+        Integer autoPrintTimeout = action.autoPrintTimeout;
+        if(fileData == null) {
+            fileData = exportToFileByteArray(servlet, action.generationData, action.printType, action.sheetName, action.password, action.jasperReportsIgnorePageMargins);
+            autoPrintTimeout = action.autoPrint && action.printType != FormPrintType.HTML ? fileData.getLength() / 15 : null;
+        }
 
-        String report = FileUtils.exportReport(action.printType, rawFileData);
-        return new GReportAction(report, autoPrint, autoPrint && action.printType != FormPrintType.HTML ? rawFileData.getLength() / 15 : null);
+        return new GReportAction(FileUtils.exportFile(fileData), action.autoPrint, autoPrintTimeout);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
