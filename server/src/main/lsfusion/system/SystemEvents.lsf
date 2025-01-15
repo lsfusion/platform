@@ -155,6 +155,7 @@ serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
+mobileMode '{service.mobile.mode}' = DATA TBOOLEAN(DesignEnv);
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
 contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(DesignEnv);
 highlightDuplicateValue '{service.highlight.duplicate.value}' = DATA TBOOLEAN (DesignEnv);
@@ -180,7 +181,7 @@ toggleNavigatorPinMode () {
 navigatorPinModeClass = ABSTRACT STRING();
 
 needReload = DATA LOCAL BOOLEAN();
-WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionNavbar(de))
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionNavbar(de)) OR CHANGED (mobileMode(de))
     OR CHANGED (suppressOnFocusChange(de))  OR CHANGED (contentWordWrap(de)) OR CHANGED (highlightDuplicateValue(de))  OR CHANGED (userFiltersManualApplyMode(de)) DO {
     needReload() <- TRUE;
 } 
@@ -188,7 +189,7 @@ needReloadText = '{system.events.design.need.reload}';
 
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
-    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, suppressOnFocusChange, contentWordWrap, highlightDuplicateValue, userFiltersManualApplyMode
+    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, mobileMode, suppressOnFocusChange, contentWordWrap, highlightDuplicateValue, userFiltersManualApplyMode
 
     FILTERS de = currentDesignEnv()
 
@@ -206,6 +207,7 @@ DESIGN design {
     MOVE PROPERTY(captionTheme(de));
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
+    MOVE PROPERTY(mobileMode(de));
     MOVE PROPERTY(suppressOnFocusChange(de)) {
         class = NULL; // Without "class = NULL", the suppressOnFocusChange property has the css-class "form-switch" because the heuristic mechanism is triggered by the "on" letters in the property name.
     };

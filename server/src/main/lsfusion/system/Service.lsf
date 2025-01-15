@@ -949,6 +949,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
+        mobileMode = mobileMode(user),
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
