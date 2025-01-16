@@ -94,11 +94,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return false;
     }
 
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path, marks))
-                return true;
-        return false;
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        for (Property<?> depend : getDepends())
+            depend.checkRecursions(path, localMarks, marks, usePrev);
     }
 
     public boolean isStored() {
