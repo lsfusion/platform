@@ -130,76 +130,57 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
      }
 
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
-        ConcreteObjectClass readClass;
+        if (valueClass != null) { //can be null in getDefaultEventAction, now we just ignore this ChangeClass
+            if (needDialog())
+                throw new UnsupportedOperationException(getString("logics.error.unable.create.object.of.abstract.class"));
 
-        if (needDialog()) {
-            throw new UnsupportedOperationException(getString("logics.error.unable.create.object.of.abstract.class"));
-            //CustomClass baseClass; CustomClass currentClass;
-            //CustomObjectInstance object = (CustomObjectInstance) context.getSingleObjectInstance();
-            //if(object == null) {
-            //    baseClass = this.baseClass;
-            //    currentClass = baseClass;
-            //} else {
-            //    baseClass = object.baseClass;
-            //    currentClass = object.currentClass;
-            //}
+            ConcreteObjectClass readClass = (ConcreteObjectClass) valueClass;
+            boolean singleWhereNotNull = true;
+            if (where == null || (innerKeys.isEmpty() && (singleWhereNotNull = where.read(context, innerValues) != null))) {
+                PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
+                ObjectValue object = innerValues.get(changeInterface);
+                if (object instanceof DataObject) {
+                    DataObject dataObject = (DataObject) object;
 
-            //ObjectValue objectValue = context.requestUserClass(baseClass, currentClass, true);
-            //if (!(objectValue instanceof DataObject)) { // cancel
-            //    return FlowResult.FINISH;
-            //}
-
-            //readClass = baseClass.getBaseClass().findConcreteClassID((Long) ((DataObject) objectValue).object);
-        } else
-            readClass = (ConcreteObjectClass) valueClass;
-
-        boolean singleWhereNotNull = true;
-        if(where==null || (innerKeys.isEmpty() && (singleWhereNotNull = where.read(context, innerValues)!=null))) {
-            PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-            ObjectValue object = innerValues.get(changeInterface);
-            if(object instanceof DataObject) {
-                DataObject dataObject = (DataObject)object;
-                
-                boolean seekOther = false;
-                DataObject nearObject = null; // после удаления выбираем соседний объект
-                if (objectInstance instanceof ObjectInstance) {
-                    CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                    if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
-                        List<ImMap<ObjectInstance, DataObject>> keys = customObjectInstance.groupTo.keys.keyOrderSet().toJavaList();
-                        boolean found = false;
-                        for (int i = keys.size() - 1; i >= 0; i--) {
-                            DataObject keyObject = keys.get(i).get((ObjectInstance) objectInstance);
-                            if (keyObject.equals(dataObject)) {
-                                if (i < keys.size() - 1) {
-                                    nearObject = keys.get(i + 1).get((ObjectInstance) objectInstance);
-                                    break;
-                                } else found = true;
-                            } else
-                                if (found) {
+                    boolean seekOther = false;
+                    DataObject nearObject = null; // после удаления выбираем соседний объект
+                    if (objectInstance instanceof ObjectInstance) {
+                        CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
+                        if (readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
+                            List<ImMap<ObjectInstance, DataObject>> keys = customObjectInstance.groupTo.keys.keyOrderSet().toJavaList();
+                            boolean found = false;
+                            for (int i = keys.size() - 1; i >= 0; i--) {
+                                DataObject keyObject = keys.get(i).get((ObjectInstance) objectInstance);
+                                if (keyObject.equals(dataObject)) {
+                                    if (i < keys.size() - 1) {
+                                        nearObject = keys.get(i + 1).get((ObjectInstance) objectInstance);
+                                        break;
+                                    } else found = true;
+                                } else if (found) {
                                     nearObject = keyObject;
                                     break;
                                 }
+                            }
+                            seekOther = true;
                         }
-                        seekOther = true;
                     }
-                }
 
-                context.changeClass(objectInstance, dataObject, readClass);
+                    context.changeClass(objectInstance, dataObject, readClass);
 
-                if(seekOther) {
-                    if (nearObject != null)
-                        ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
-                    else
-                        ((CustomObjectInstance) objectInstance).groupTo.seek(UpdateType.FIRST);
-                }
-            } else
-                proceedNullException();
-        } else
-            if(singleWhereNotNull) { // дебильный кейс, но надо все равно поддержать
+                    if (seekOther) {
+                        if (nearObject != null)
+                            ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
+                        else
+                            ((CustomObjectInstance) objectInstance).groupTo.seek(UpdateType.FIRST);
+                    }
+                } else
+                    proceedNullException();
+            } else if (singleWhereNotNull) { // дебильный кейс, но надо все равно поддержать
                 Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
-                if(!exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
+                if (!exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
                     context.changeClass(new ClassChange(innerKeys.singleValue(), exprWhere, readClass));
             }
+        }
 
         return FlowResult.FINISH;
     }
