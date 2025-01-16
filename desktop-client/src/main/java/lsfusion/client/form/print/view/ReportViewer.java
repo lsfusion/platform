@@ -1,6 +1,7 @@
 package lsfusion.client.form.print.view;
 
 import lsfusion.base.file.IOUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.swing.JRViewer;
 import net.sf.jasperreports.swing.JRViewerPanel;
@@ -23,7 +24,7 @@ public class ReportViewer extends JRViewer {
     private String getDefaultPrinterName() {
         try {
             Process p = Runtime.getRuntime().exec("wmic printer where default=true get name");
-            String cmdOut = IOUtils.readStreamToString(p.getInputStream());
+            String cmdOut = IOUtils.readStreamToString(p.getInputStream(), "cp866");
             p.waitFor();
             int exitValue = p.exitValue();
             if (exitValue == 0) {
@@ -31,7 +32,8 @@ public class ReportViewer extends JRViewer {
                 Matcher matcher = pattern.matcher(cmdOut);
                 return matcher.find() ? trim(matcher.group(1)) : null;
             } else {
-                throw new RuntimeException("Failed to get default printer name");
+                ClientLoggers.clientLogger.error("Failed to get default printer name");
+                return null;
             }
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
