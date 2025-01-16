@@ -150,6 +150,7 @@
                 <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
                 <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
+                <entry key="mobileMode" value="${settings.mobileMode:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
                 <entry key="useISOTimeFormatsInIntegration" value="${settings.useISOTimeFormatsInIntegration:}"/>
