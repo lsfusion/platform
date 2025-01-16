@@ -314,9 +314,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 }
             } else {
                 if (action.inDevMode) {
-                    pageCount = MainFrame.instance.runReport(action.reportPathList, action.formCaption, action.formSID, action.isModal, action.generationData, action.printerName);
+                    pageCount = MainFrame.instance.runReport(action.reportPathList, action.formCaption, action.formSID, action.isModal, action.generationData, action.printerName, action.useDefaultPrinterInPrintIfNotSpecified);
                 } else {
-                    pageCount = MainFrame.instance.runReport(action.isModal, action.formCaption, action.generationData, action.printerName, null);
+                    pageCount = MainFrame.instance.runReport(action.isModal, action.formCaption, action.generationData, action.printerName, action.useDefaultPrinterInPrintIfNotSpecified, null);
                 }
             }
         } catch (Exception e) {

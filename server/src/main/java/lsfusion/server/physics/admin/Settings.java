@@ -3482,4 +3482,15 @@ public class Settings implements Cloneable {
     public void setExternalTCPWaitForByteMinusOne(boolean externalTCPWaitForByteMinusOne) {
         this.externalTCPWaitForByteMinusOne = externalTCPWaitForByteMinusOne;
     }
+
+    //used only in desktop-client
+    public boolean useDefaultPrinterInPrintIfNotSpecified = false;
+
+    public boolean isuseDefaultPrinterInPrintIfNotSpecified() {
+        return useDefaultPrinterInPrintIfNotSpecified;
+    }
+
+    public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
+        this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
+    }
 }

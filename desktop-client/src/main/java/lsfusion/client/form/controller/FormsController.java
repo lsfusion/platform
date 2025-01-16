@@ -250,8 +250,8 @@ public class FormsController implements ColorThemeChangeListener {
         this.lastCompletedRequest = lastCompletedRequest;
     }
 
-    public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
-        ClientReportDockable page = new ClientReportDockable(generationData, this, formCaption, printerName, editInvoker);
+    public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        ClientReportDockable page = new ClientReportDockable(generationData, this, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         openForm(page);
         return page.pageCount;
     }
