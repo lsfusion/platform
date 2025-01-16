@@ -24,6 +24,7 @@ public class ReportClientAction implements ClientAction {
     public boolean isModal;
     public boolean inDevMode;
     public String printerName;
+    public boolean useDefaultPrinterInPrintIfNotSpecified;
     public String password;
     public String sheetName;
     public boolean jasperReportsIgnorePageMargins;
@@ -36,7 +37,7 @@ public class ReportClientAction implements ClientAction {
     }
 
     public ReportClientAction(List<String> reportPathList, String formCaption, String formSID, boolean autoPrint, boolean isModal, ReportGenerationData generationData,
-                              FormPrintType printType, String printerName, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
+                              FormPrintType printType, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
         this.autoPrint = autoPrint;
 
         this.reportPathList = reportPathList;
@@ -46,6 +47,7 @@ public class ReportClientAction implements ClientAction {
         this.generationData = generationData;
         this.printType = printType;
         this.printerName = printerName;
+        this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
         this.inDevMode = inDevMode;
         this.password = password;
         this.sheetName = sheetName;
