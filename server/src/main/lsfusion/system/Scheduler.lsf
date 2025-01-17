@@ -222,7 +222,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
                     parameter, timeout, script PANEL SHOWIF NOT isWeb()
     
     OBJECTS std = ScheduledTaskDetail
-    PROPERTIES json(std) PANEL CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(std)
+    PROPERTIES json(std) PANEL CUSTOM 'interpreter' SHOWIF isWeb() AND td IS ScheduledTaskDetail ON CHANGE changeScript(std)
     EVENTS ON CHANGE td { SEEK scheduledTask.std = td; }
     
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
