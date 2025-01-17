@@ -13,7 +13,7 @@ public class DesignStyles {
         JRDesignStyle style = new JRDesignStyle();
         style.setName("DefaultStyle");
 
-        style.setFontName("lsf.TimesNewRoman");
+        style.setFontName("DejaVu Sans");
         style.setFontSize((float) 10);
         style.setVerticalTextAlign(VerticalTextAlignEnum.MIDDLE);
 
@@ -35,7 +35,7 @@ public class DesignStyles {
         JRDesignStyle style = new JRDesignStyle();
         style.setName("DefaultStyle");
 
-        style.setFontName("lsf.TimesNewRoman");
+        style.setFontName("DejaVu Sans");
         style.setFontSize((float) 10);
         style.setVerticalTextAlign(VerticalTextAlignEnum.MIDDLE);
 
