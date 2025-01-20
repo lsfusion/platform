@@ -1027,6 +1027,7 @@
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
         <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
         <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
+        <property name="jasperReportsDefaultPdfEncoding" value="${logics.jasperReportsDefaultPdfEncoding:#{null}}"/>
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
         <property name="setCountry" value="${user.setCountry:#{null}}"/>

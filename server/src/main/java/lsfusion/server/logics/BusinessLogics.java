@@ -188,6 +188,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String orderDependencies;
 
+    private String jasperReportsDefaultPdfEncoding;
+
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
     
@@ -630,6 +632,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
         }
+    }
+
+    public String getJasperReportsDefaultPdfEncoding() {
+        return jasperReportsDefaultPdfEncoding;
+    }
+
+    public void setJasperReportsDefaultPdfEncoding(String jasperReportsDefaultPdfEncoding) {
+        this.jasperReportsDefaultPdfEncoding = jasperReportsDefaultPdfEncoding;
     }
 
     public String getLsfStrLiteralsLanguage() {
