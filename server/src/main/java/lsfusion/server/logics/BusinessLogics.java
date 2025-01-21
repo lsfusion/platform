@@ -188,7 +188,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String orderDependencies;
 
-    private String jasperReportsDefaultPdfEncoding;
+    private String pdfEncoding;
 
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
@@ -634,12 +634,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public String getJasperReportsDefaultPdfEncoding() {
-        return jasperReportsDefaultPdfEncoding;
+    public String getPdfEncoding() {
+        return pdfEncoding;
     }
 
-    public void setJasperReportsDefaultPdfEncoding(String jasperReportsDefaultPdfEncoding) {
-        this.jasperReportsDefaultPdfEncoding = jasperReportsDefaultPdfEncoding;
+    public void setPdfEncoding(String pdfEncoding) {
+        this.pdfEncoding = pdfEncoding;
     }
 
     public String getLsfStrLiteralsLanguage() {

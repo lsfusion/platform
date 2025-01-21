@@ -16,7 +16,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.*;
@@ -204,7 +203,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(FormPrintType printType, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws SQLException, SQLHandledException {
-        String defaultPdfEncoding = getBusinessLogics().getJasperReportsDefaultPdfEncoding();
+        String defaultPdfEncoding = getBusinessLogics().getPdfEncoding();
         if(defaultPdfEncoding != null) {
             JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", defaultPdfEncoding);
         }
