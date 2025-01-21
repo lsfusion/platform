@@ -203,11 +203,6 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(FormPrintType printType, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws SQLException, SQLHandledException {
-        String defaultPdfEncoding = getBusinessLogics().getPdfEncoding();
-        if(defaultPdfEncoding != null) {
-            JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", defaultPdfEncoding);
-        }
-
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> customDesigns = getCustomReportDesigns(hierarchy, printType, reportPrefix);
         if (customDesigns != null) {
             return customDesigns;

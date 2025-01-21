@@ -121,6 +121,8 @@ import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModul
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+import net.sf.jasperreports.engine.JRPropertiesUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -298,6 +300,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 tFormats = new TFormats(twoDigitYearStart,
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
                         timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
+
+                if(pdfEncoding != null) {
+                    JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", pdfEncoding);
+                }
 
                 new TaskRunner(this).runTask(initTask);
             } catch (RuntimeException re) {
@@ -632,10 +638,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
         }
-    }
-
-    public String getPdfEncoding() {
-        return pdfEncoding;
     }
 
     public void setPdfEncoding(String pdfEncoding) {
