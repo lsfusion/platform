@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+    <fontFamily name="Liberation Mono">
+        <normal>fonts/liberationMono/LiberationMono-Regular.ttf</normal>
+        <bold>fonts/liberationMono/LiberationMono-Bold.ttf</bold>
+        <italic>fonts/liberationMono/LiberationMono-Italic.ttf</italic>
+        <boldItalic>fonts/liberationMono/LiberationMono-BoldItalic.ttf</boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+</fontFamilies>

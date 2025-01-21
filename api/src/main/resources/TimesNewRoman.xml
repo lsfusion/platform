@@ -5,7 +5,6 @@
         <bold>timesbd.ttf</bold>
         <italic>timesi.ttf</italic>
         <boldItalic>timesbi.ttf</boldItalic>
-        <pdfEncoding>Cp1251</pdfEncoding>
         <pdfEmbedded>true</pdfEmbedded>
         <exportFonts>
             <export key="net.sf.jasperreports.html">'Times New Roman',times,serif</export>
