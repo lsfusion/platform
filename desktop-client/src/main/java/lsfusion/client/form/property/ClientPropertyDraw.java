@@ -137,6 +137,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelColumnVertical;
+    public boolean panelCustom;
 
     public FlexAlignment valueAlignmentHorz;
     public FlexAlignment valueAlignmentVert;
@@ -579,6 +580,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
+        panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
 
         valueAlignmentHorz = pool.readObject(inStream);

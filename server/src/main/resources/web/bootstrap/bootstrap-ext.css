@@ -278,6 +278,8 @@
 }
 
 /* form-floating needs border-box because it sets the explicit height */
+/* form-check also counts on border-box box-sizing */
+.form-check > .prop-size-value,
 .form-floating > .prop-size-value {
     box-sizing: border-box;
 }
@@ -306,21 +308,9 @@
     flex-wrap: nowrap;
 }
 
-/* checkboxes uses it's own margins / paddings */
-
-.panel-renderer-value.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
-.form-switch .panel-renderer-value.form-check-input /* .form-switch form-check-input sets it's own margin-left */
-{
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-}
-
 /* have no idea, why .form-check .form-check-input margin-top doesn't break the center alignment, so we're changing only left margin in the form-switch */
 .form-switch.data-grid-cell .form-check-input {
     margin-left: unset;
-}
-
-.panel-container.form-switch {
-    padding-left: unset;
 }
 
 table.pvtTable thead tr th {

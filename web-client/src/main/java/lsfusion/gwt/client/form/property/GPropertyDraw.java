@@ -415,7 +415,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int captionCharHeight;
 
     public boolean panelColumnVertical;
-    
+    public boolean panelCustom;
+
     public GFlexAlignment valueAlignmentHorz;
     public GFlexAlignment valueAlignmentVert;
 

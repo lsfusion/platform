@@ -308,6 +308,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         return result;
     }
 
+    public void setPanelCustom(Boolean panelCustom) {
+        target.panelCustom = panelCustom;
+    }
+
     public void setValueOverflowHorz(String valueOverflowHorz) {
         target.valueOverflowHorz = valueOverflowHorz;
     }
