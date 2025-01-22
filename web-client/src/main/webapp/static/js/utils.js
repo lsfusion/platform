@@ -499,3 +499,17 @@ function handleOptionKeyEvent(isButton, e, keyDown, isInGrid) {
     if (keyDown && e.shiftKey && isInGrid && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
         e.stopPropagation();
 }
+
+// is necessary to allow collapsible-text to be shown in exel theme
+function addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass) {
+    let element = $(parent).find(toggleElementSelector);
+    if (element.length > 0) {
+        element.css('cursor', 'pointer');
+        element.css('text-decoration', 'underline');
+        element.on('click', function () {
+            $(parent).find(containerElementSelector).each(function () {
+                $(this).toggleClass(collapsibleClass);
+            })
+        })
+    }
+}

@@ -119,6 +119,9 @@ public class DialogBoxHelper {
                 timer.schedule(timeout);
             }
 
+            GwtClientUtils.addShowCollapsedContainerEvent(getElement(),
+                    "span.text-primary.highlight-text", "span#collapseTextId", "collapsible-text");
+
             nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
                 if (Event.ONKEYDOWN == event.getTypeInt()) {
                     if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
