@@ -47,6 +47,7 @@ public interface GTableView extends TableComponent {
     }
 
     // columns
+    void updateCellElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);

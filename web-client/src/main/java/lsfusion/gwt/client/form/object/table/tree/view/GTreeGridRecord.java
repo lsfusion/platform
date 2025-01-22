@@ -45,6 +45,12 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public AppBaseImage getImage(GPropertyDraw property) {
         return (AppBaseImage) getAttribute(property.sID + "_image");
     }
+    public void setElementClass(GPropertyDraw property, String elementClass) {
+        setAttribute(property.sID + "_elementclass", elementClass);
+    }
+    public String getElementClass(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_elementclass");
+    }
     public void setValueElementClass(GPropertyDraw property, String valueElementClass) {
         setAttribute(property.sID + "_valueelementclass", valueElementClass);
     }

@@ -436,6 +436,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propValues = values.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propLoadings = loadings.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnlyValues.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyElementClasses = cellElementClasses.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueElementClasses = cellValueElementClasses.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyFonts = cellFontValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyBackgrounds = cellBackgroundValues.get(property);
@@ -459,6 +460,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
                             record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(fullKey)));
+                            PValue elementClass = propertyElementClasses == null ? null : propertyElementClasses.get(fullKey);
+                            record.setElementClass(column.columnSID, elementClass == null ? property.elementClass : PValue.getClassStringValue(elementClass));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue font = propertyFonts == null ? null : propertyFonts.get(fullKey);
@@ -658,6 +661,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updateCellElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateCellElementClasses(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
     }
 
     @Override
@@ -1291,6 +1301,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected AppBaseImage getImage(GPropertyDraw property, GridDataRecord record) {
             return record.getImage(columnSID);
+        }
+
+        @Override
+        protected String getElementClass(GPropertyDraw property, GridDataRecord record) {
+            return record.getElementClass(columnSID);
         }
 
         @Override
