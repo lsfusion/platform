@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.RenderedClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
@@ -267,8 +268,15 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueHeight != null)
             return valueHeight;
 
-        if (charHeight != null || (!isCustom(context) && isProperty(context) && getAssertValueType(context) instanceof TextClass))
+        if (charHeight != null)
             return -2;
+
+        if (!isCustom(context) && isProperty(context)) {
+            Type valueType = getAssertValueType(context);
+            if (valueType instanceof TextClass || (valueType instanceof RenderedClass && entity.isList(context))) { // in grid rendered classes still have small fixed width, so the height also better to be small
+                return -2;
+            }
+        }
 
         return -1;
     }
