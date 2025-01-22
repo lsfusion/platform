@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class DialogBoxHelper {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -119,8 +120,9 @@ public class DialogBoxHelper {
                 timer.schedule(timeout);
             }
 
-            GwtClientUtils.addShowCollapsedContainerEvent(getElement(),
-                    "span.text-primary.highlight-text", "span#collapseTextId", "collapsible-text");
+            if (!MainFrame.useBootstrap)
+                GwtClientUtils.addShowCollapsedContainerEvent(getElement(),
+                        "span.text-primary.highlight-text", "span#collapseTextId", "collapsible-text");
 
             nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
                 if (Event.ONKEYDOWN == event.getTypeInt()) {
