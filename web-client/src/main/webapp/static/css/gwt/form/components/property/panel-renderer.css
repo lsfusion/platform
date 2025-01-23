@@ -12,7 +12,7 @@
     margin-bottom: var(--border-label-vert-padding);
 }
 
-/*:not(.panel-custom) >  .panel-renderer-value,*/
+:not(.panel-custom) >  .panel-renderer-value,
     .panel-custom, .panel-custom.form-check {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
