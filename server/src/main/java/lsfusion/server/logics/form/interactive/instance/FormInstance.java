@@ -102,6 +102,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
@@ -2525,6 +2526,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> getChangedDrawProps(FormInstanceContext context, Set<PropertyDrawInstance> newShown, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
         MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mExclMap();
 
+        MSet<ComponentView> filledElementClassReaderComponents = SetFact.mSet();
         for (PropertyDrawInstance<?> drawProperty : properties) {
             boolean newPropIsShown = newShown.contains(drawProperty);
             boolean oldPropIsShown = addShownHidden(isShown, drawProperty, newPropIsShown);
@@ -2558,6 +2560,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.valueTooltipReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+
+                for (ComponentView component : entity.getPropertyComponents()) {
+                    if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity == drawProperty.entity) {
+                        fillChangedReader(instanceFactory.getInstance(component).elementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                        filledElementClassReaderComponents.add(component);
+                        break;
+                    }
+                }
             } else if (oldPropIsShown) {
                 result.dropProperties.exclAdd(drawProperty);
             }
@@ -2600,7 +2610,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
 
-            fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+            if (!filledElementClassReaderComponents.contains(component)) {
+                fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+            }
         }
         return mReadProperties.immutable();
     }
