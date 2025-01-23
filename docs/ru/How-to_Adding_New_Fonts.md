@@ -1,5 +1,5 @@
 ---
-title: 'Добавление новых шрифтов'
+title: 'How-to: Добавление новых шрифтов'
 ---
 
 Платформа lsFusion гарантированно поддерживает в JasperReports следующие шрифты: `DejaVu Sans`, `DejaVu SansMono`, `DejaVu Serif`, `Liberation Mono`, `Liberation Sans`, `Liberation Serif`, `Noto Sans`, `Noto Serif`.
