@@ -113,6 +113,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         showAllButton.addClickHandler(event -> {
             updateRendererState(true);
             pageSize = Integer.MAX_VALUE / 10; // /10 to prevent Integer overflow because in GroupObjectInstance we use "pageSize * 2"
+            showAllPressed = true;
             this.grid.changePageSize(pageSize);
         });
         messageAndButton.addCentered(showAllButton);
@@ -163,6 +164,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     private int pageSize = getDefaultPageSize();
+    protected boolean showAllPressed = false;
 
     // should correspond FormInstance.constructor - changePageSize method
     public int getDefaultPageSize() {

@@ -23,7 +23,6 @@ public class ClientSettings implements Serializable {
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
-    public int pivotClusterizeMinRowCount;
     public String matchSearchSeparator;
     public ColorTheme colorTheme;
     public boolean useBootstrap;
@@ -46,7 +45,7 @@ public class ClientSettings implements Serializable {
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
                           boolean useRequestTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
                           boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
-                          boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, int pivotClusterizeMinRowCount, String matchSearchSeparator, ColorTheme colorTheme,
+                          boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, String size, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
                           String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins,
@@ -66,7 +65,6 @@ public class ClientSettings implements Serializable {
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
-        this.pivotClusterizeMinRowCount = pivotClusterizeMinRowCount;
         this.matchSearchSeparator = matchSearchSeparator;
         this.colorTheme = colorTheme;
         this.useBootstrap = useBootstrap;

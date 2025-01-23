@@ -76,7 +76,6 @@ public class MainFrame implements EntryPoint {
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
     public static boolean pivotOnlySelectedColumn;
-    public static int pivotClusterizeMinRowCount;
     public static String matchSearchSeparator;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
@@ -659,7 +658,6 @@ public class MainFrame implements EntryPoint {
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
-                pivotClusterizeMinRowCount = gClientSettings.pivotClusterizeMinRowCount;
                 matchSearchSeparator = gClientSettings.matchSearchSeparator;
                 changeColorTheme(gClientSettings.colorTheme);
                 colorPreferences = gClientSettings.colorPreferences;

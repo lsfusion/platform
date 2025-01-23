@@ -137,7 +137,6 @@
                 <entry key="editBooleanOnSingleClick" value="${settings.editBooleanOnSingleClick:}"/>
                 <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
-                <entry key="pivotClusterizeMinRowCount" value="${settings.pivotClusterizeMinRowCount:}"/>
                 <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
                 <entry key="tsVectorDictionaryLanguage" value="${settings.tsVectorDictionaryLanguage:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
