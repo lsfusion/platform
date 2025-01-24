@@ -2531,8 +2531,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if (newPropIsShown) {
                 GroupObjectInstance toDraw = drawProperty.toDraw;
-                boolean update = toDraw == null || !drawProperty.isList() || toDraw.toUpdate();
-                boolean updateCaption = update || (drawProperty.isList() && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
+                boolean isList = drawProperty.isList();
+                boolean update = toDraw == null || !isList || toDraw.toUpdate();
+                boolean updateCaption = update || (isList && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
                 boolean hidden = isUserHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();

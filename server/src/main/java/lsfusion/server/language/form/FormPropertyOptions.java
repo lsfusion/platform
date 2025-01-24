@@ -34,7 +34,6 @@ public class FormPropertyOptions {
     private PropertyObjectEntity showIf;
     private PropertyObjectEntity disableIf;
     private PropertyObjectEntity readOnlyIf;
-    private PropertyObjectEntity gridElementClass;
     private PropertyObjectEntity valueElementClass;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
@@ -153,14 +152,6 @@ public class FormPropertyOptions {
 
     public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
-    }
-
-    public PropertyObjectEntity getGridElementClass() {
-        return gridElementClass;
-    }
-
-    public void setGridElementClass(PropertyObjectEntity gridElementClass) {
-        this.gridElementClass = gridElementClass;
     }
 
     public PropertyObjectEntity getValueElementClass() {
@@ -511,7 +502,6 @@ public class FormPropertyOptions {
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setDisableIf(nvl(overrides.getDisableIf(), disableIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
-        merged.setGridElementClass(nvl(overrides.getGridElementClass(), gridElementClass));
         merged.setValueElementClass(nvl(overrides.getValueElementClass(), valueElementClass));
         merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setForeground(nvl(overrides.getForeground(), foreground));

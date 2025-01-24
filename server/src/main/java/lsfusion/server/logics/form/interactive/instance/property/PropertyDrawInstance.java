@@ -226,7 +226,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyShowIf = propertyExtras.get(PropertyDrawExtraType.SHOWIF);
         propertyReadOnly = propertyExtras.get(PropertyDrawExtraType.READONLYIF);
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
-        propertyGridElementClass = propertyExtras.get(PropertyDrawExtraType.GRIDELEMENTCLASS);
+        propertyGridElementClass = isList() ? propertyExtras.get(PropertyDrawExtraType.GRIDELEMENTCLASS) : null;
         propertyValueElementClass = propertyExtras.get(PropertyDrawExtraType.VALUEELEMENTCLASS);
         propertyCaptionElementClass = propertyExtras.get(PropertyDrawExtraType.CAPTIONELEMENTCLASS);
         propertyFont = propertyExtras.get(PropertyDrawExtraType.FONT);
