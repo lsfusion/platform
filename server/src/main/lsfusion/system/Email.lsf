@@ -283,8 +283,7 @@ FORM mail '{email.form.mail}'
     FILTERS folder(e) = f
                     
     OBJECTS ae = AttachmentEmail
-    PROPERTIES(ae) READONLY filename
-    PROPERTIES(ae) GRID     openFile, saveFile
+    PROPERTIES(ae) SHOWIF ae IS AttachmentEmail filename READONLY, openFile GRID, saveFile GRID
     FILTERS email(ae) = e
 ;
 
@@ -297,7 +296,7 @@ DESIGN mail {
                 alignment = STRETCH;
                 MOVE PROPERTY(receiveEmailAction(a)) { alignment = STRETCH; }
                 MOVE BOX(a) {
-                    caption = '';
+                    caption = '{email.form.account}';
                     GRID(a) { width = 200; }
                     REMOVE TOOLBARLEFT(a);
                 }
