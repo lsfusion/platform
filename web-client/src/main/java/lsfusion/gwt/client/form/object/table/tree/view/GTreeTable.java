@@ -499,8 +499,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        protected String getElementClass(GPropertyDraw property, GTreeGridRecord record) {
-            return record.getElementClass(property);
+        protected String getGridElementClass(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getGridElementClass(property);
         }
 
         @Override
@@ -872,11 +872,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         boolean loading = loadingMap != null && PValue.getBooleanValue(loadingMap.get(key));
                         objectRecord.setLoading(property, loading);
 
-                        PValue elementClass = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propElementClasses = cellElementClasses.get(property);
-                        if (propElementClasses != null)
-                            elementClass = propElementClasses.get(key);
-                        objectRecord.setElementClass(property, elementClass == null ? property.elementClass : PValue.getClassStringValue(elementClass));
+                        PValue gridElementClass = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propGridElementClasses = cellGridElementClasses.get(property);
+                        if (propGridElementClasses != null)
+                            gridElementClass = propGridElementClasses.get(key);
+                        objectRecord.setGridElementClass(property, gridElementClass == null ? property.elementClass : PValue.getClassStringValue(gridElementClass));
 
                         PValue valueElementClass = null;
                         NativeHashMap<GGroupObjectValue, PValue> propValueElementClasses = cellValueElementClasses.get(property);

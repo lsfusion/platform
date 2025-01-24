@@ -80,7 +80,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
@@ -330,8 +330,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
-    public void updateCellElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        cellElementClasses.put(propertyDraw, values);
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        cellGridElementClasses.put(propertyDraw, values);
     }
 
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -796,7 +796,7 @@ protected Double getUserFlex(int i) {
         protected abstract PValue getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract AppBaseImage getImage(GPropertyDraw property, T record);
-        protected abstract String getElementClass(GPropertyDraw property, T record);
+        protected abstract String getGridElementClass(GPropertyDraw property, T record);
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract GFont getFont(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
@@ -974,9 +974,9 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public String getElementClass() {
+            public String getGridElementClass() {
                 T row = (T) cell.getRow();
-                return column.getElementClass(property, row);
+                return column.getGridElementClass(property, row);
             }
 
             @Override

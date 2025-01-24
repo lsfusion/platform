@@ -335,8 +335,8 @@ public abstract class CellRenderer {
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
         return GwtClientUtils.nullEquals(state.readonly, readonly);
     }
-    private static boolean equalsElementClassState(RenderedState state, String elementClass) {
-        return GwtClientUtils.nullEquals(state.elementClass, elementClass);
+    private static boolean equalsGridElementClassState(RenderedState state, String gridElementClass) {
+        return GwtClientUtils.nullEquals(state.gridElementClass, gridElementClass);
     }
     private static boolean equalsValueElementClassState(RenderedState state, String valueElementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, valueElementClass);
@@ -365,11 +365,11 @@ public abstract class CellRenderer {
             updateReadonly(element, readonly);
         }
 
-        String elementClass = updateContext.getElementClass();
-        if(isNew || !equalsElementClassState(renderedState, elementClass)) {
-            renderedState.elementClass = elementClass;
+        String gridElementClass = updateContext.getGridElementClass();
+        if(isNew || !equalsGridElementClassState(renderedState, gridElementClass)) {
+            renderedState.gridElementClass = gridElementClass;
 
-            BaseImage.updateClasses(element, elementClass, "element");
+            BaseImage.updateClasses(element, gridElementClass, "grid");
         }
 
         String valueElementClass = updateContext.getValueElementClass();
@@ -458,7 +458,7 @@ public abstract class CellRenderer {
 
         public Boolean readonly;
 
-        public String elementClass;
+        public String gridElementClass;
         public String valueElementClass;
 
         public boolean highlightDuplicateValue;

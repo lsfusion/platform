@@ -5,9 +5,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
@@ -189,15 +186,6 @@ public class GComponent implements Serializable {
 
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-            if(GComponent.this instanceof GPropertyDraw) {
-                GPropertyDraw property = controller.getProperty(GComponent.this.ID);
-                GPropertyController propertyController = controller.getPropertyController(property);
-                if(propertyController instanceof GGridController) {
-                    ((GGridController) propertyController).updateCellElementClasses(property, values);
-                    return;
-                }
-            }
-
             controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 

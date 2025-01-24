@@ -25,6 +25,10 @@ public class GPanelController extends GPropertyController {
         formController.addEnterBindings(GBindingMode.ALL, this::focusNextElement, null);
     }
 
+    @Override
+    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
     private void focusNextElement(boolean forward) {
         formController.focusNextElement(FocusUtils.Reason.KEYNEXTNAVIGATE, forward);
     }

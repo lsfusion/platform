@@ -401,8 +401,9 @@ public class GGridController extends GAbstractTableController {
         update(requestIndex, updateState);
     }
 
-    public void updateCellElementClasses(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
-        table.updateCellElementClasses(property, values);
+    @Override
+    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateCellGridElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

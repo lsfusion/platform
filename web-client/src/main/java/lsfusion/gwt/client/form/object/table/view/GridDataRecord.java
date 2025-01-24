@@ -61,16 +61,16 @@ public class GridDataRecord implements RowIndexHolder {
         setAttribute(column + "_image", image);
     }
 
-    public void setElementClass(String column, String elementClass) {
-        setAttribute(column + "_elementClass", elementClass);
+    public void setGridElementClass(String column, String gridElementClass) {
+        setAttribute(column + "_gridElementClass", gridElementClass);
     }
 
-    public String getElementClass(String column) {
-        return (String) getAttribute(column + "_elementClass");
+    public String getGridElementClass(String column) {
+        return (String) getAttribute(column + "_gridElementClass");
     }
 
-    public void setValueElementClass(String column, String elementClass) {
-        setAttribute(column + "_valueElementClass", elementClass);
+    public void setValueElementClass(String column, String valueElementClass) {
+        setAttribute(column + "_valueElementClass", valueElementClass);
     }
 
     public String getValueElementClass(String column) {
