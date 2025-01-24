@@ -1966,12 +1966,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             List<IndexData<String>> additionalIndexes = new ArrayList<>();
             for (IndexData<String> indexData : indexList) {
                 if (indexData.options.type == IndexType.LIKE) {
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.DEFAULT)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.DEFAULT)));
                 } else if (indexData.options.type == IndexType.MATCH) {
                     // We don't need to add indexes if the index was built for TSVECTOR type, but we don't have that information
                     // And it should be fine while we are dropping indexes with IF EXISTS
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.DEFAULT)));
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.LIKE)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.DEFAULT)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.LIKE)));
                 }
             }
             indexList.addAll(additionalIndexes);
@@ -2616,7 +2616,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index, String dbName, IndexType indexType) {
         PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
-            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage(), dbName));
+            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, dbName));
             propertyImplement.property.markIndexed(propertyImplement.mapping, index, indexType);
         }
     }
@@ -3161,17 +3161,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (fields.size() == 1 && fields.get(0).type instanceof TSVectorClass) {
                 return res;
             }
-            res.add(new IndexData<>(fields, changeIndexOptions(options, IndexType.LIKE)));
+            res.add(new IndexData<>(fields, options.changeType(IndexType.LIKE)));
         }
         if (options.type == IndexType.LIKE || options.type == IndexType.MATCH) {
-            res.add(new IndexData<>(fields, changeIndexOptions(options, IndexType.DEFAULT)));
+            res.add(new IndexData<>(fields, options.changeType(IndexType.DEFAULT)));
         }
         return res;
-    }
-
-    private IndexOptions changeIndexOptions(IndexOptions oldOptions, IndexType newType) {
-        String newDBName = (oldOptions.dbName == null ? null : oldOptions.dbName + newType.suffix());
-        return new IndexOptions(oldOptions.order, newType, oldOptions.language, newDBName);
     }
 
     private class NewDBStructure extends DBStructure<Field> {
@@ -3354,7 +3349,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             index.add(inputDB.readUTF());
                         }
                         if (version < 32) {
-                            indexes.add(new IndexData<>(index, new IndexOptions(inputDB.readBoolean())));
+                            indexes.add(new IndexData<>(index, IndexOptions.deserialize32(inputDB)));
                         } else if (version < 36) {
                             indexes.add(new IndexData<>(index, IndexOptions.deserialize35(inputDB)));
                         } else {
