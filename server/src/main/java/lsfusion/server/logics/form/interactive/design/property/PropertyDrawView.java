@@ -92,6 +92,8 @@ public class PropertyDrawView extends BaseComponentView {
     public String valueElementClass;
     public String captionElementClass;
 
+    public Boolean panelCustom;
+
     public KeyInputEvent changeKey;
     public Integer changeKeyPriority;
     public Boolean showChangeKey;
@@ -620,238 +622,8 @@ public class PropertyDrawView extends BaseComponentView {
         return field.valueClass;
     }
 
-    @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        pool.writeString(outStream, getDrawCaption());
-        AppServerImage.serialize(getImage(pool.context), outStream, pool);
-        pool.writeLong(outStream, maxValue);
-        outStream.writeBoolean(echoSymbols);
-        outStream.writeBoolean(noSort);
-
-        Compare defaultCompare = getDefaultCompare(pool.context);
-        if(defaultCompare != null)
-            defaultCompare.serialize(outStream);
-        else
-            outStream.writeByte(-1);
-
-        outStream.writeInt(getCharHeight());
-        outStream.writeInt(getCharWidth(pool.context));
-
-        outStream.writeInt(getValueWidth(pool.context));
-        outStream.writeInt(getValueHeight(pool.context));
-
-        outStream.writeInt(getCaptionWidth(pool.context.entity));
-        outStream.writeInt(getCaptionHeight(pool.context));
-        outStream.writeInt(getCaptionCharHeight(pool.context));
-
-        pool.writeObject(outStream, changeKey);
-        pool.writeInt(outStream, changeKeyPriority);
-        outStream.writeBoolean(showChangeKey);
-        pool.writeObject(outStream, changeMouse);
-        pool.writeInt(outStream, changeMousePriority);
-        outStream.writeBoolean(showChangeMouse);
-
-        outStream.writeBoolean(drawAsync);
-
-        pool.writeObject(outStream, inline);
-        outStream.writeBoolean(entity.isList(pool.context));
-
-        pool.writeObject(outStream, focusable);
-        outStream.writeByte(entity.getEditType().serialize());
-
-        outStream.writeBoolean(panelColumnVertical);
-        
-        pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
-        pool.writeObject(outStream, getValueAlignmentVert(pool.context));
-
-        pool.writeBoolean(outStream, highlightDuplicateValue(pool.context));
-
-        pool.writeString(outStream, getValueOverflowHorz(pool.context));
-        pool.writeString(outStream, getValueOverflowVert(pool.context));
-
-        pool.writeBoolean(outStream, getValueShrinkHorz(pool.context));
-        pool.writeBoolean(outStream, getValueShrinkVert(pool.context));
-
-        pool.writeString(outStream, ThreadLocalContext.localize(comment));
-        pool.writeString(outStream, getCommentElementClass(pool.context));
-        outStream.writeBoolean(panelCommentVertical);
-        outStream.writeBoolean(isPanelCommentFirst(pool.context));
-        pool.writeObject(outStream, getPanelCommentAlignment(pool.context));
-
-        pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
-        pool.writeString(outStream, ThreadLocalContext.localize(getPattern(pool.context)));
-        pool.writeString(outStream, ThreadLocalContext.localize(regexp));
-        pool.writeString(outStream, ThreadLocalContext.localize(regexpMessage));
-
-        pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
-        pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
-
-        pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
-        outStream.writeBoolean(entity.hide);
-        outStream.writeBoolean(entity.remove);
-
-        //entity часть
-        if(isProperty(pool.context)) {
-            Type cellType = getAssertCellType(pool.context);
-            // however this hack helps only in some rare cases, since baseType is used in a lot of places
-            if(cellType == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
-                cellType = IntegerClass.instance;
-            TypeSerializer.serializeType(outStream, cellType);
-        } else {
-            outStream.writeByte(1);
-            outStream.writeByte(DataType.ACTION);
-        }
-
-        // optimization
-        boolean differentValue = isDifferentValue(pool.context);
-        outStream.writeBoolean(differentValue);
-        if(differentValue)
-            TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
-
-        pool.writeString(outStream, getTag(pool.context));
-        pool.writeString(outStream, getInputType(pool.context));
-        pool.writeString(outStream, getValueElementClass(pool.context));
-        pool.writeString(outStream, getCaptionElementClass(pool.context));
-        pool.writeBoolean(outStream, hasToolbar(pool.context));
-        pool.writeBoolean(outStream, hasToolbarActions(pool.context));
-
-        Type externalChangeType = getExternalChangeType(pool.context);
-        outStream.writeBoolean(externalChangeType != null);
-        if (externalChangeType != null) {
-            TypeSerializer.serializeType(outStream, externalChangeType);
-        }
-
-        Map<String, AsyncEventExec> asyncExecMap = getAsyncEventExec(pool.context);
-        outStream.writeInt(asyncExecMap.size());
-        for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
-            pool.writeString(outStream, entry.getKey());
-            AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
-        }
-
-        outStream.writeBoolean(entity.ignoreHasHeaders);
-
-        outStream.writeBoolean(entity.askConfirm);
-        if(entity.askConfirm)
-            pool.writeString(outStream, getAskConfirmMessage(pool.context));
-        outStream.writeBoolean(hasEditObjectAction(pool.context));
-        outStream.writeBoolean(hasChangeAction(pool.context));
-        outStream.writeBoolean(entity.hasDynamicImage());
-        outStream.writeBoolean(entity.hasDynamicCaption());
-
-        ActionOrProperty inheritedProperty = entity.getInheritedProperty();
-        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
-
-        ActionOrPropertyObjectEntity<?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
-        ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip
-
-        pool.writeString(outStream, debugBinding.getNamespace());
-        pool.writeString(outStream, getSID());
-        pool.writeString(outStream, debugBinding.getCanonicalName());
-        pool.writeString(outStream, getPropertyFormName());
-        pool.writeString(outStream, getIntegrationSID());
-        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
-
-        pool.writeString(outStream, entity.columnsName);
-        ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
-        outStream.writeInt(columnGroupObjects.size());
-        for (GroupObjectEntity groupEntity : columnGroupObjects) {
-            pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
-        }
-
-        outStream.writeBoolean(isProperty(pool.context));
-
-        outStream.writeBoolean(isWrap(pool.context));
-        outStream.writeBoolean(isWrapWordBreak(pool.context));
-        outStream.writeBoolean(isCollapse(pool.context));
-        outStream.writeBoolean(isEllipsis(pool.context));
-
-        outStream.writeBoolean(isCaptionWrap(pool.context));
-        outStream.writeBoolean(isCaptionWrapWordBreak(pool.context));
-        outStream.writeBoolean(isCaptionCollapse(pool.context));
-        outStream.writeBoolean(isCaptionEllipsis(pool.context));
-
-        outStream.writeBoolean(clearText);
-        outStream.writeBoolean(notSelectAll);
-
-        // for pivoting
-        pool.writeString(outStream, entity.formula);
-        if(entity.formula != null) {
-            ImList<PropertyDrawEntity> formulaOperands = entity.formulaOperands;
-            outStream.writeInt(formulaOperands.size());
-            for (PropertyDrawEntity formulaOperand : formulaOperands)
-                pool.serializeObject(outStream, pool.context.view.get(formulaOperand));
-        }
-
-        pool.writeString(outStream, entity.aggrFunc != null ? entity.aggrFunc.toString() : null);
-        outStream.writeInt(entity.lastAggrColumns.size());
-        outStream.writeBoolean(entity.lastAggrDesc);
-
-        pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
-
-        MapKeysTable<? extends PropertyInterface> mapTable = isProperty(pool.context) ?
-                        ((Property<?>)debugBinding).mapTable : null;
-        pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
-
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) debug.property.getInterfaceClasses(ClassType.formPolicy);
-        ImMap<PropertyInterface, ObjectEntity> interfaceEntities = (ImMap<PropertyInterface, ObjectEntity>) debug.mapping;
-        outStream.writeInt(debug.property.interfaces.size());
-        for (PropertyInterface iFace : debug.property.interfaces) {
-            pool.writeString(outStream, interfaceEntities.get(iFace).toString());
-            
-            ValueClass paramClass = interfaceClasses.get(iFace);
-            outStream.writeBoolean(paramClass != null);
-            if (paramClass != null) {
-                paramClass.serialize(outStream);
-            }
-        }
-
-        if(isProperty(pool.context)) {
-            ValueClass valueClass = ((PropertyObjectEntity<?>) debug).property.getValueClass(ClassType.formPolicy);
-            outStream.writeBoolean(valueClass != null);
-            if(valueClass != null)
-                valueClass.serialize(outStream);
-        } else {
-            outStream.writeBoolean(true);
-            outStream.writeByte(DataType.ACTION);
-        }
-        
-        pool.writeString(outStream, getCustomRenderFunction(pool.context));
-        pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
-        pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
-        pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
-
-        pool.writeString(outStream, entity.eventID);
-
-        pool.writeString(outStream, debug.getCreationScript());
-        pool.writeString(outStream, debug.getCreationPath());
-        pool.writeString(outStream, debug.getPath());
-        pool.writeString(outStream, entity.getFormPath());
-
-        pool.writeString(outStream, entity.getMouseBinding(pool.context));
-
-        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
-        outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
-        if (keyBindings != null) {
-            for (int i=0,size=keyBindings.size();i<size;i++) {
-                pool.writeObject(outStream, keyBindings.getKey(i));
-                pool.writeString(outStream, keyBindings.getValue(i));
-            }
-        }
-
-        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
-        outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
-        if (contextMenuBindings != null) {
-            for (int i = 0; i < contextMenuBindings.size(); ++i) {
-                pool.writeString(outStream, contextMenuBindings.getKey(i));
-                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
-            }
-        }
-
-        outStream.writeBoolean(isNotNull());
-        outStream.writeBoolean(isSticky(pool.context));
-        outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
+    private static boolean containsClass(String aClass, String check) {
+        return aClass != null && aClass.contains(check);
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, FormInstanceContext context) {
@@ -1191,6 +963,241 @@ public class PropertyDrawView extends BaseComponentView {
         return hasFlow(context, ChangeFlowType.INTERACTIVEFORM) && !hasFlow(context, ChangeFlowType.READONLYCHANGE);
     }
 
+    @Override
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
+
+        pool.writeString(outStream, getDrawCaption());
+        AppServerImage.serialize(getImage(pool.context), outStream, pool);
+        pool.writeLong(outStream, maxValue);
+        outStream.writeBoolean(echoSymbols);
+        outStream.writeBoolean(noSort);
+
+        Compare defaultCompare = getDefaultCompare(pool.context);
+        if(defaultCompare != null)
+            defaultCompare.serialize(outStream);
+        else
+            outStream.writeByte(-1);
+
+        outStream.writeInt(getCharHeight());
+        outStream.writeInt(getCharWidth(pool.context));
+
+        outStream.writeInt(getValueWidth(pool.context));
+        outStream.writeInt(getValueHeight(pool.context));
+
+        outStream.writeInt(getCaptionWidth(pool.context.entity));
+        outStream.writeInt(getCaptionHeight(pool.context));
+        outStream.writeInt(getCaptionCharHeight(pool.context));
+
+        pool.writeObject(outStream, changeKey);
+        pool.writeInt(outStream, changeKeyPriority);
+        outStream.writeBoolean(showChangeKey);
+        pool.writeObject(outStream, changeMouse);
+        pool.writeInt(outStream, changeMousePriority);
+        outStream.writeBoolean(showChangeMouse);
+
+        outStream.writeBoolean(drawAsync);
+
+        pool.writeObject(outStream, inline);
+        outStream.writeBoolean(entity.isList(pool.context));
+
+        pool.writeObject(outStream, focusable);
+        outStream.writeByte(entity.getEditType().serialize());
+
+        outStream.writeBoolean(isPanelCustom(pool.context));
+        outStream.writeBoolean(panelColumnVertical);
+
+        pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
+        pool.writeObject(outStream, getValueAlignmentVert(pool.context));
+
+        pool.writeBoolean(outStream, highlightDuplicateValue(pool.context));
+
+        pool.writeString(outStream, getValueOverflowHorz(pool.context));
+        pool.writeString(outStream, getValueOverflowVert(pool.context));
+
+        pool.writeBoolean(outStream, getValueShrinkHorz(pool.context));
+        pool.writeBoolean(outStream, getValueShrinkVert(pool.context));
+
+        pool.writeString(outStream, ThreadLocalContext.localize(comment));
+        pool.writeString(outStream, getCommentElementClass(pool.context));
+        outStream.writeBoolean(panelCommentVertical);
+        outStream.writeBoolean(isPanelCommentFirst(pool.context));
+        pool.writeObject(outStream, getPanelCommentAlignment(pool.context));
+
+        pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
+        pool.writeString(outStream, ThreadLocalContext.localize(getPattern(pool.context)));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexp));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexpMessage));
+
+        pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
+        pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
+
+        pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
+        outStream.writeBoolean(entity.hide);
+        outStream.writeBoolean(entity.remove);
+
+        //entity часть
+        if(isProperty(pool.context)) {
+            Type cellType = getAssertCellType(pool.context);
+            // however this hack helps only in some rare cases, since baseType is used in a lot of places
+            if(cellType == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
+                cellType = IntegerClass.instance;
+            TypeSerializer.serializeType(outStream, cellType);
+        } else {
+            outStream.writeByte(1);
+            outStream.writeByte(DataType.ACTION);
+        }
+
+        // optimization
+        boolean differentValue = isDifferentValue(pool.context);
+        outStream.writeBoolean(differentValue);
+        if(differentValue)
+            TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
+
+        pool.writeString(outStream, getTag(pool.context));
+        pool.writeString(outStream, getInputType(pool.context));
+        pool.writeString(outStream, getValueElementClass(pool.context));
+        pool.writeString(outStream, getCaptionElementClass(pool.context));
+        pool.writeBoolean(outStream, hasToolbar(pool.context));
+        pool.writeBoolean(outStream, hasToolbarActions(pool.context));
+
+        Type externalChangeType = getExternalChangeType(pool.context);
+        outStream.writeBoolean(externalChangeType != null);
+        if (externalChangeType != null) {
+            TypeSerializer.serializeType(outStream, externalChangeType);
+        }
+
+        Map<String, AsyncEventExec> asyncExecMap = getAsyncEventExec(pool.context);
+        outStream.writeInt(asyncExecMap.size());
+        for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
+            pool.writeString(outStream, entry.getKey());
+            AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
+        }
+
+        outStream.writeBoolean(entity.ignoreHasHeaders);
+
+        outStream.writeBoolean(entity.askConfirm);
+        if(entity.askConfirm)
+            pool.writeString(outStream, getAskConfirmMessage(pool.context));
+        outStream.writeBoolean(hasEditObjectAction(pool.context));
+        outStream.writeBoolean(hasChangeAction(pool.context));
+        outStream.writeBoolean(entity.hasDynamicImage());
+        outStream.writeBoolean(entity.hasDynamicCaption());
+
+        ActionOrProperty inheritedProperty = entity.getInheritedProperty();
+        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
+
+        ActionOrPropertyObjectEntity<?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
+        ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip
+
+        pool.writeString(outStream, debugBinding.getNamespace());
+        pool.writeString(outStream, getSID());
+        pool.writeString(outStream, debugBinding.getCanonicalName());
+        pool.writeString(outStream, getPropertyFormName());
+        pool.writeString(outStream, getIntegrationSID());
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
+
+        pool.writeString(outStream, entity.columnsName);
+        ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
+        outStream.writeInt(columnGroupObjects.size());
+        for (GroupObjectEntity groupEntity : columnGroupObjects) {
+            pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
+        }
+
+        outStream.writeBoolean(isProperty(pool.context));
+
+        outStream.writeBoolean(isWrap(pool.context));
+        outStream.writeBoolean(isWrapWordBreak(pool.context));
+        outStream.writeBoolean(isCollapse(pool.context));
+        outStream.writeBoolean(isEllipsis(pool.context));
+
+        outStream.writeBoolean(isCaptionWrap(pool.context));
+        outStream.writeBoolean(isCaptionWrapWordBreak(pool.context));
+        outStream.writeBoolean(isCaptionCollapse(pool.context));
+        outStream.writeBoolean(isCaptionEllipsis(pool.context));
+
+        outStream.writeBoolean(clearText);
+        outStream.writeBoolean(notSelectAll);
+
+        // for pivoting
+        pool.writeString(outStream, entity.formula);
+        if(entity.formula != null) {
+            ImList<PropertyDrawEntity> formulaOperands = entity.formulaOperands;
+            outStream.writeInt(formulaOperands.size());
+            for (PropertyDrawEntity formulaOperand : formulaOperands)
+                pool.serializeObject(outStream, pool.context.view.get(formulaOperand));
+        }
+
+        pool.writeString(outStream, entity.aggrFunc != null ? entity.aggrFunc.toString() : null);
+        outStream.writeInt(entity.lastAggrColumns.size());
+        outStream.writeBoolean(entity.lastAggrDesc);
+
+        pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
+
+        MapKeysTable<? extends PropertyInterface> mapTable = isProperty(pool.context) ?
+                        ((Property<?>)debugBinding).mapTable : null;
+        pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
+
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) debug.property.getInterfaceClasses(ClassType.formPolicy);
+        ImMap<PropertyInterface, ObjectEntity> interfaceEntities = (ImMap<PropertyInterface, ObjectEntity>) debug.mapping;
+        outStream.writeInt(debug.property.interfaces.size());
+        for (PropertyInterface iFace : debug.property.interfaces) {
+            pool.writeString(outStream, interfaceEntities.get(iFace).toString());
+
+            ValueClass paramClass = interfaceClasses.get(iFace);
+            outStream.writeBoolean(paramClass != null);
+            if (paramClass != null) {
+                paramClass.serialize(outStream);
+            }
+        }
+
+        if(isProperty(pool.context)) {
+            ValueClass valueClass = ((PropertyObjectEntity<?>) debug).property.getValueClass(ClassType.formPolicy);
+            outStream.writeBoolean(valueClass != null);
+            if(valueClass != null)
+                valueClass.serialize(outStream);
+        } else {
+            outStream.writeBoolean(true);
+            outStream.writeByte(DataType.ACTION);
+        }
+
+        pool.writeString(outStream, getCustomRenderFunction(pool.context));
+        pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
+        pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
+        pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
+
+        pool.writeString(outStream, entity.eventID);
+
+        pool.writeString(outStream, debug.getCreationScript());
+        pool.writeString(outStream, debug.getCreationPath());
+        pool.writeString(outStream, debug.getPath());
+        pool.writeString(outStream, entity.getFormPath());
+
+        pool.writeString(outStream, entity.getMouseBinding(pool.context));
+
+        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
+        outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
+        if (keyBindings != null) {
+            for (int i=0,size=keyBindings.size();i<size;i++) {
+                pool.writeObject(outStream, keyBindings.getKey(i));
+                pool.writeString(outStream, keyBindings.getValue(i));
+            }
+        }
+
+        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
+        outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
+        if (contextMenuBindings != null) {
+            for (int i = 0; i < contextMenuBindings.size(); ++i) {
+                pool.writeString(outStream, contextMenuBindings.getKey(i));
+                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
+            }
+        }
+
+        outStream.writeBoolean(isNotNull());
+        outStream.writeBoolean(isSticky(pool.context));
+        outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
+    }
+
     public String getCaptionElementClass(FormInstanceContext context) {
         if (captionElementClass != null)
             return captionElementClass;
@@ -1198,7 +1205,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(isProperty(context)) {
             String valueElementClass = getValueElementClass(context);
             // shortcut for the toggle button checkbox
-            if(valueElementClass != null && valueElementClass.contains("btn-check"))
+            if(containsClass(valueElementClass, "btn-check"))
                 return "btn btn-outline-primary";
 
             if (valueElementClass == null && isSimplePanelText(context))
@@ -1211,12 +1218,28 @@ public class PropertyDrawView extends BaseComponentView {
     @Override
     protected String getDefaultElementClass(FormInstanceContext context) {
         if(isProperty(context)) {
-            Type type = getAssertCellType(context);
-            if (type instanceof LogicalClass && entity.isPredefinedSwitch())
-                return "form-switch";
+            if (isTagInput(context)) {
+                Type type = getAssertCellType(context);
+                if(type instanceof LogicalClass) {
+                    String logicalClass = null;
+                    if(!entity.isList(context))
+                        logicalClass = "form-check";
+                    if(entity.isPredefinedSwitch())
+                        logicalClass = (logicalClass != null ? logicalClass + " " : "") + "form-switch";
+                    return logicalClass;
+                }
+            }
         }
 
         return null;
+    }
+
+    public boolean isPanelCustom(FormInstanceContext context) {
+        if(panelCustom != null)
+            return panelCustom;
+
+        // form-check needs its own layouting
+        return containsClass(getElementClass(context), "form-check");
     }
 
     public String getValueElementClass(FormInstanceContext context) {

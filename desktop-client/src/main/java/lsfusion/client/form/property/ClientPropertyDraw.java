@@ -51,6 +51,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
+    public GridElementClassReader gridElementClassReader = new GridElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
     public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
@@ -137,6 +138,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelColumnVertical;
+    public boolean panelCustom;
 
     public FlexAlignment valueAlignmentHorz;
     public FlexAlignment valueAlignmentVert;
@@ -579,6 +581,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
+        panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
 
         valueAlignmentHorz = pool.readObject(inStream);
@@ -1000,6 +1003,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.LAST;
+        }
+    }
+
+    public class GridElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CELL_GRIDELEMENTCLASS;
         }
     }
 

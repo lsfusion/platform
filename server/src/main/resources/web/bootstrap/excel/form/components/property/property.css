@@ -77,3 +77,9 @@ a.text-based-value-empty {
 select > option {
     color: var(--text-color);
 }
+
+/*parent of checkbox input and label need to be flex*/
+.form-check {
+    display: flex;
+    align-items: center;
+}

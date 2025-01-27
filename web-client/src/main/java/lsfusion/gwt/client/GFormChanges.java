@@ -112,6 +112,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).showIfReader;
             case GPropertyReadType.READONLY:
                 return form.getProperty(readerId).readOnlyReader;
+            case GPropertyReadType.CELL_GRIDELEMENTCLASS:
+                return form.getProperty(readerId).gridElementClassReader;
             case GPropertyReadType.CELL_VALUEELEMENTCLASS:
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
@@ -211,5 +213,6 @@ public class GFormChanges {
         public final static byte CONTAINER_CAPTIONCLASS = 28;
         public final static byte CONTAINER_VALUECLASS = 29;
         public final static byte GRID_VALUECLASS = 30;
+        public final static byte CELL_GRIDELEMENTCLASS = 31;
     }
 }

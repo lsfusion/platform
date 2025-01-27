@@ -171,6 +171,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyShowIf;
     public final PropertyObjectInstance<?> propertyReadOnly;
     public final PropertyObjectInstance<?> propertyFooter;
+    public final PropertyObjectInstance<?> propertyGridElementClass;
     public final PropertyObjectInstance<?> propertyValueElementClass;
     public final PropertyObjectInstance<?> propertyCaptionElementClass;
     public final PropertyObjectInstance<?> propertyFont;
@@ -191,6 +192,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ShowIfReaderInstance showIfReader;
     public ExtraReaderInstance footerReader;
     public ExtraReaderInstance readOnlyReader;
+    public ExtraReaderInstance gridElementClassReader;
     public ExtraReaderInstance valueElementClassReader;
     public ExtraReaderInstance captionElementClassReader;
     public ExtraReaderInstance fontReader;
@@ -224,6 +226,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyShowIf = propertyExtras.get(PropertyDrawExtraType.SHOWIF);
         propertyReadOnly = propertyExtras.get(PropertyDrawExtraType.READONLYIF);
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
+        propertyGridElementClass = isList() ? propertyExtras.get(PropertyDrawExtraType.GRIDELEMENTCLASS) : null;
         propertyValueElementClass = propertyExtras.get(PropertyDrawExtraType.VALUEELEMENTCLASS);
         propertyCaptionElementClass = propertyExtras.get(PropertyDrawExtraType.CAPTIONELEMENTCLASS);
         propertyFont = propertyExtras.get(PropertyDrawExtraType.FONT);
@@ -244,6 +247,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         showIfReader = new ShowIfReaderInstance(PropertyDrawExtraType.SHOWIF, propertyShowIf);
         footerReader = new ExtraReaderInstance(PropertyDrawExtraType.FOOTER, propertyFooter);
         readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
+        gridElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.GRIDELEMENTCLASS, propertyGridElementClass);
         valueElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUEELEMENTCLASS, propertyValueElementClass);
         captionElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTIONELEMENTCLASS, propertyCaptionElementClass);
         fontReader = new ExtraReaderInstance(PropertyDrawExtraType.FONT, propertyFont);

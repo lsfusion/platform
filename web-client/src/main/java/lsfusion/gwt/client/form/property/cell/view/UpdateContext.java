@@ -56,6 +56,10 @@ public interface UpdateContext {
 
     default String getValueTooltip() { return null; }
 
+    default String getGridElementClass() {
+        return null;
+    }
+
     default String getValueElementClass() {
         return null;
     }
