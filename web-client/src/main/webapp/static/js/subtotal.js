@@ -1095,9 +1095,7 @@
           }
         }
         if (clusterize) {
-          return $(document).ready(function() {
-            return c.refresh();
-          });
+          return setTimeout(c.refresh(), 10);
         }
       };
       buildColTotalsHeader = function(rowHeadersColumns, colAttrs) {

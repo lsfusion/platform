@@ -725,8 +725,7 @@ callWithJQuery ($) ->
                     c.append([tr.outerHTML])
 
             if clusterize
-                $(document).ready ->
-                    c.refresh()
+                setTimeout(c.refresh(), 10)
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
