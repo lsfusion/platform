@@ -209,7 +209,7 @@ DESIGN design {
     MOVE PROPERTY(captionNavbar(de));
     MOVE PROPERTY(mobileMode(de));
     MOVE PROPERTY(suppressOnFocusChange(de)) {
-        class = NULL; // Without "class = NULL", the suppressOnFocusChange property has the css-class "form-switch" because the heuristic mechanism is triggered by the "on" letters in the property name.
+        class = 'form-check';
     };
     MOVE PROPERTY(contentWordWrap(de));
     MOVE PROPERTY(highlightDuplicateValue(de));

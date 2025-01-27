@@ -62,4 +62,6 @@ public class PropertyReadType {
     public final static byte CONTAINER_VALUECLASS = 29;
 
     public final static byte GRID_VALUECLASS = 30;
+
+    public final static byte CELL_GRIDELEMENTCLASS = 31;
 }
