@@ -819,7 +819,7 @@ public abstract class LogicsModule {
         return addJoinAProp(new LA(new InternalClientAction(ListFact.toList(params.length, index -> {
             ValueClass param = params[index];
             return param != null ? param.getType() : null;
-        }), ListFact.EMPTY(), syncType)), BaseUtils.add(getUParams(params.length), addCProp(StringClass.instance, LocalizedString.create(resourceName, false))));
+        }), ListFact.EMPTY(), syncType)), BaseUtils.add(addCProp(StringClass.instance, LocalizedString.create(resourceName, false)), getUParams(params.length)));
     }
 
     // ------------------- Export property action ----------------- //
