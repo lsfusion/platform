@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
