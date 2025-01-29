@@ -2285,12 +2285,24 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    String separatorValue = null;
+    LPWithParams separatorProperty = null;
+}
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConcatProp($separator.val, $list.props);
+		$property = self.addScriptedConcatProp(separatorValue, separatorProperty, $list.props);
 	}
 }
-	:   'CONCAT' separator=stringLiteral ',' list=nonEmptyPropertyExpressionList[context, dynamic]
+	:   'CONCAT' separator=propertyExpressionOrLiteral[context] {
+                                 if (inMainParseState()) {
+                                     if($separator.literal != null && $separator.literal.value instanceof LocalizedString) {
+                                         separatorValue = ((LocalizedString) $separator.literal.value).toString();
+                                     } else {
+                                         separatorProperty = $separator.property;
+                                     }
+                                 }
+                             } ',' list=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, FormEntity form, MappedForm mapped]
@@ -2734,6 +2746,15 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	        'THREADS' threadsExpr=propertyExpression[context, dynamic]
 	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
+	;
+
+newConnectionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedNewConnectionAction($aDB.action);
+	}
+}
+	:	'NEWCONNECTION' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	;
 
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3333,6 +3354,7 @@ recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] retu
 	|	applyADB=applyActionDefinitionBody[context, dynamic] { $action = $applyADB.action; }
     |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $action = $newThreadADB.action; } // mixed
 	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $action = $newExecutorADB.action; } // mixed, recursive but always semi
+	|	newConnectionADB=newConnectionActionDefinitionBody[context, dynamic] { $action = $newConnectionADB.action; }
 ;
 
 // always semi in the end

@@ -504,8 +504,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final List<String> customReportPathList, final String formCaption, final java.lang.String formSID, boolean isModal, ReportGenerationData generationData, java.lang.String printerName) throws IOException, ClassNotFoundException {
-        return runReport(isModal, formCaption, generationData, printerName, new EditReportInvoker() {
+    public Integer runReport(final List<String> customReportPathList, final String formCaption, final java.lang.String formSID, boolean isModal,
+                             ReportGenerationData generationData, java.lang.String printerName, boolean useDefaultPrinterInPrintIfNotSpecified) throws IOException, ClassNotFoundException {
+        return runReport(isModal, formCaption, generationData, printerName, useDefaultPrinterInPrintIfNotSpecified, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
                 return !customReportPathList.isEmpty();
@@ -550,11 +551,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            return ReportDialog.showReportDialog(generationData, formCaption, printerName, editInvoker);
+            return ReportDialog.showReportDialog(generationData, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         } else {
-            return formsController.openReport(generationData, formCaption, printerName, editInvoker);
+            return formsController.openReport(generationData, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         }
     }
 

@@ -147,6 +147,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
+import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
@@ -814,6 +815,13 @@ public abstract class LogicsModule {
                 SetFact.EMPTYORDER(), SetFact.EMPTY(), selectTop.getFormSelectTop(), returnString);
     }
 
+    public LA addInternalClientAction(String resourceName, ValueClass[] params, boolean syncType) {
+        return addJoinAProp(new LA(new InternalClientAction(ListFact.toList(params.length, index -> {
+            ValueClass param = params[index];
+            return param != null ? param.getType() : null;
+        }), ListFact.EMPTY(), syncType)), BaseUtils.add(getUParams(params.length), addCProp(StringClass.instance, LocalizedString.create(resourceName, false))));
+    }
+
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
@@ -1079,6 +1087,13 @@ public abstract class LogicsModule {
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
                 (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1), sync)));
+    }
+
+    protected LA addNewConnectionAProp(Group group, LocalizedString caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        return addAction(group, new LA(new NewConnectionAction(caption, listInterfaces,
+                (ActionMapImplement) readImplements.get(0))));
     }
 
     // ------------------- Request action ----------------- //

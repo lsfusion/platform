@@ -3451,6 +3451,16 @@ public class Settings implements Cloneable {
         this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
     }
 
+    public boolean generateReportsOnWebServer = false;
+
+    public boolean isGenerateReportsOnWebServer() {
+        return generateReportsOnWebServer;
+    }
+
+    public void setGenerateReportsOnWebServer(boolean generateReportsOnWebServer) {
+        this.generateReportsOnWebServer = generateReportsOnWebServer;
+    }
+
     public boolean exportDBFNumericMandatoryZeroes = false;
 
     public boolean isExportDBFNumericMandatoryZeroes() {
@@ -3459,5 +3469,28 @@ public class Settings implements Cloneable {
 
     public void setExportDBFNumericMandatoryZeroes(boolean exportDBFNumericMandatoryZeroes) {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
+    }
+
+    @Deprecated
+    //todo: backward compatibility, will be removed in v7
+    public boolean externalTCPWaitForByteMinusOne = false;
+
+    public boolean isExternalTCPWaitForByteMinusOne() {
+        return externalTCPWaitForByteMinusOne;
+    }
+
+    public void setExternalTCPWaitForByteMinusOne(boolean externalTCPWaitForByteMinusOne) {
+        this.externalTCPWaitForByteMinusOne = externalTCPWaitForByteMinusOne;
+    }
+
+    //used only in desktop-client
+    public boolean useDefaultPrinterInPrintIfNotSpecified = false;
+
+    public boolean isuseDefaultPrinterInPrintIfNotSpecified() {
+        return useDefaultPrinterInPrintIfNotSpecified;
+    }
+
+    public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
+        this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
     }
 }

@@ -56,6 +56,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> showIfs = new ArrayList<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
@@ -201,6 +202,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.values.add(index, null);
                 this.readOnlys.add(index, null);
                 this.showIfs.add(index, null);
+                this.cellGridElementClasses.add(index, null);
                 this.cellValueElementClasses.add(index, null);
                 this.cellFontValues.add(index, null);
                 this.cellBackgroundValues.add(index, null);
@@ -372,6 +374,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     public String getRowForegroundColor(GGroupObjectValue key) {
         return PValue.getColorStringValue(rowForegroundValues.get(key));
+    }
+
+    @Override
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.cellGridElementClasses.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
     }
 
     @Override
@@ -571,6 +580,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return PValue.getBooleanValue(readOnlyValues.get(GGroupObjectValue.getFullKey(rowKey, columnKey)));
     }
 
+    protected String getCellGridElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellGridElementClass = cellGridElementClasses.get(properties.indexOf(property));
+        if(cellGridElementClass == null)
+            return null;
+
+        return PValue.getClassStringValue(cellGridElementClass.get(GGroupObjectValue.getFullKey(rowKey, columnKey)));
+    }
+
     protected String getCellValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> cellValueElementClass = cellValueElementClasses.get(properties.indexOf(property));
         if(cellValueElementClass == null)
@@ -649,6 +666,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             return null;
 
         return valueTooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected String getGridElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return getCellGridElementClass(property, rowKey, columnKey);
     }
 
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

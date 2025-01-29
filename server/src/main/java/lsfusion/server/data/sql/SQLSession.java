@@ -57,14 +57,12 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
-import lsfusion.server.data.type.parse.StringParseInterface;
 import lsfusion.server.data.type.reader.Reader;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.data.ArrayClass;
@@ -108,7 +106,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.data.table.IndexType.*;
 import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 
@@ -761,16 +758,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndexes(StoredTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
+    private DBManager.IndexData<ImOrderMap<Field, Boolean>> getExtraIndexes(ImOrderSet<KeyField> keys) {
+        List<ImOrderMap<Field, Boolean>> indexes = new ArrayList<>();
         for(int i=1;i<keys.size();i++)
-            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), defaultIndexOptions, ifNotExists);
+            indexes.add(BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true));
+        return new DBManager.IndexData<>(indexes, new IndexOptions(true, DEFAULT, null));
+    }
+
+    public void addExtraIndexes(StoredTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
+        DBManager.IndexData<ImOrderMap<Field, Boolean>> extraIndexes = getExtraIndexes(keys);
+        for(ImOrderMap<Field, Boolean> fields : extraIndexes.fields)
+            addIndex(table, fields, extraIndexes.options, ifNotExists);
     }
 
     public void checkExtraIndexes(SQLSession threadLocalSQL, StoredTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
-        for(int i=1;i<keys.size();i++) {
-            ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
-            threadLocalSQL.checkDefaultIndex(table, fields, defaultIndexOptions);
-        }
+        DBManager.IndexData<ImOrderMap<Field, Boolean>> extraIndexes = getExtraIndexes(keys);
+        for(ImOrderMap<Field, Boolean> fields : extraIndexes.fields)
+            threadLocalSQL.checkDefaultIndex(table, fields, extraIndexes.options);
     }
 
     private String getConstraintName(String table) {
@@ -930,10 +934,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public void addIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, ifNotExists);
-    }
-
-    public void addIndex(StoredTable table, ImOrderMap<Field, Boolean> fields) throws SQLException {
-        addIndex(table, fields, defaultIndexOptions, false);
     }
 
     public void addIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {

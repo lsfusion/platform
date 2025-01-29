@@ -2,6 +2,8 @@ package lsfusion.server.logics.form.open.stat;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.action.ServerPrintAction;
@@ -98,6 +100,11 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         return params.toArray(new ValueClass[0]);
     }
 
+    public static RawFileData exportToFileByteArray(ReportGenerationData reportData, FormPrintType staticType, String sheetName, String password) {
+        //on the app-server the jasper classes should already be loaded, so remoteLogic is null
+        return ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, Settings.get().isJasperReportsIgnorePageMargins(), null);
+    }
+
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         FormSelectTop<Integer> selectTop = selectTopInterfaces.mapValues(context);
@@ -123,13 +130,17 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             String printer = printerInterface != null ? (String)context.getKeyObject(printerInterface) : null;
             if (server) {
                 ServerPrintAction.autoPrintReport(reportData, printer, (e) -> ServerLoggers.printerLogger.error("ServerPrint error", e));
-            } else if (exportFile != null)
-                //on the app-server the jasper classes should already be loaded, so remoteLogic is null
-                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, Settings.get().isJasperReportsIgnorePageMargins(), null), ExternalUtils.printCharset.toString());
-            else {
+            } else if (exportFile != null || (!Settings.get().isGenerateReportsOnWebServer() && context.isWeb())) {
+                RawFileData report = exportToFileByteArray(reportData, staticType, sheetName, password);
+                if(exportFile != null)
+                    writeResult(exportFile, staticType, context, report, ExternalUtils.printCharset.toString());
+                else {
+                    context.requestUserInteraction(new ReportClientAction(autoPrint, autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
+                }
+            } else {
                 String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
                 List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
-                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), autoPrint, syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
+                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), autoPrint, syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
                 formPageCount.change(pageCount, context);
             }
         }

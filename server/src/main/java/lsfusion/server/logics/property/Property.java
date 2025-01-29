@@ -135,6 +135,8 @@ import lsfusion.server.physics.exec.db.table.TableFactory;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -2682,18 +2684,44 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        if(path != null)
-            path = path.addExcl(this);
-        else {
-            if(!marks.add(this))
-                return false;
+    // Cycles are detected using a modified depth-first search.
+    // The modification adds global markers because the algorithm runs from different graph vertices simultaneously in
+    // multiple threads. Once a vertex is fully processed, it is marked globally, preventing other threads from
+    // revisiting it since no cycle was found there.
+    public void checkRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (path.contains(this)) {
+            throw new ScriptParsingException("Property " + this + " is recursive. One of the paths: " + findCycle(path));
         }
-        return calculateCheckRecursions(abstractPath, path, marks);
+        
+        if (localMarks.contains(this) || marks.contains(this)) return;
+        
+        path.add(this);
+        localMarks.add(this);
+        
+        calculateCheckRecursions(path, localMarks, marks, usePrev);
+        
+        path.remove(this);
+        marks.add(this);
     }
-
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        return false;
+    
+    private List<Property<?>> findCycle(Set<Property<?>> path) {
+        List<Property<?>> cycle = new ArrayList<>();
+        boolean found = false;
+        
+        for (Property<?> property : path) {
+            if (property.equals(this)) {
+                found = true;
+            }
+            if (found) {
+                cycle.add(property);
+            }
+        }
+        
+        cycle.add(this);
+        return cycle;
+    }
+    
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
     }
 
     @Override

@@ -496,8 +496,10 @@ getServerSettings() + WHEN TRUE THEN {
     onLoginInit();
     FOR INTEGER order = onLoginInit(STRING s) ORDER order DO {
         readResource(s);
-        noAuthResources(resourcePath()) <- RAWFILE (resource());
-        noAuthResourcesOrder(resourcePath()) <- order;
+        FOR STRING actualUrl = OVERRIDE resourcePath(), s DO {  // when the resource is not found consider it to be url
+            noAuthResources(actualUrl) <- RAWFILE (resource());
+            noAuthResourcesOrder(actualUrl) <- order;
+        }
     }
     
     generateJnlpUrls();
@@ -506,7 +508,7 @@ getServerSettings() + WHEN TRUE THEN {
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
-    lsfParams= (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
+    lsfParams = (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
     noAuthResourcesBeforeSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) < 0 ORDER noAuthResourcesOrder(s)),
     noAuthResourcesAfterSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) >= 0 ORDER noAuthResourcesOrder(s));
 };
@@ -918,8 +920,10 @@ getInitSettings(User user) + WHEN user IS User THEN {
         onWebClientInit();
         FOR INTEGER order = onWebClientInit(STRING s) ORDER order DO {
             readResource(s);
-            webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-            webClientLoadedResourcesOrder(resourcePath()) <- order;
+            FOR STRING actualUrl = (OVERRIDE resourcePath(), s) DO { // when the resource is not found consider it to be url
+                webClientLoadedResources(actualUrl) <- RAWFILE (resource());
+                webClientLoadedResourcesOrder(actualUrl) <- order;
+            }
         }
     }
 
@@ -945,6 +949,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
+        mobileMode = mobileMode(user),
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),

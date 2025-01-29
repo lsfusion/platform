@@ -8,6 +8,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.*;
@@ -397,7 +399,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         };
 
         if(request.needNotificationId)
-            return new ResultExternalResponse(new Object[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+            return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
         else if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
 
             int mode = Settings.get().getExternalUINotificationMode();
@@ -488,16 +490,36 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             Map<String, Integer> paramIndexes = new HashMap<>();
             for (ExternalRequest.Param param : request.params) {
                 String paramName = param.name;
-                String paramValue = param.value.toString(); // ??? should be separated to fileParams and fileNames should be added ???
+                Object paramValue = param.value;
 
-                Integer paramIndex = paramIndexes.get(paramName);
-                if(paramIndex == null)
-                    paramIndex = 0;
-                paramIndexes.put(paramName, paramIndex + 1);
+                if(paramValue instanceof String) {
+                    Integer paramIndex = paramIndexes.get(paramName);
+                    if (paramIndex == null)
+                        paramIndex = 0;
+                    paramIndexes.put(paramName, paramIndex + 1);
 
-                mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
+                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), (String) paramValue);
+                }
             }
             CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
+        }
+        if (action.uses(businessLogics.LM.fileParams.property)) {
+            MExclMap<ImList<Object>, NamedFileData> mParams = MapFact.mExclMap();
+            Map<String, Integer> paramIndexes = new HashMap<>();
+            for (ExternalRequest.Param param : request.params) {
+                String paramName = param.name;
+                Object paramValue = param.value;
+
+                if(paramValue instanceof FileData) {
+                    Integer paramIndex = paramIndexes.get(paramName);
+                    if (paramIndex == null)
+                        paramIndex = 0;
+                    paramIndexes.put(paramName, paramIndex + 1);
+
+                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), ExternalRequest.getNamedFile((FileData) paramValue, param.fileName));
+                }
+            }
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.fileParams, mParams.immutable());
         }
         if (action.uses(businessLogics.LM.actionPathInfo.property)) {
             businessLogics.LM.actionPathInfo.change(actionPathInfo, session);
@@ -555,7 +577,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(returnMultiType, headerNames, headerValues);
         Charset charset = responseType.charset;
 
-        List<Object> returns = new ArrayList<>();
+        List<ExternalRequest.Result> returns = new ArrayList<>();
 
         LP[] returnProps;
         if (returnNames.length > 0) {
@@ -568,21 +590,22 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returnProps[i] = returnProperty;
             }
             for (LP<?> returnProp : returnProps)
-                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset));
+                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset, returnProps.length > 1 ? returnProp.property.getName() : null));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>();
             ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
-            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset));
+            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset, null));
         }
 
-        return new ResultExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
+        return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
     }
 
-    private Object formatReturnValue(Object returnValue, Type type, Charset charset) {
-        return FormChanges.convertFileValue(type.formatHTTP(returnValue, charset), getContext().getConnectionContext());
+    private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
+        // response requires filename if the file is returned
+        return type.formatHTTP(returnValue, charset, true).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, getContext().getConnectionContext()));
     }
-    private Object formatReturnValue(Object returnValue, Property returnProperty, Charset charset) {
-        return formatReturnValue(returnValue, returnProperty.getType(), charset);
+    private ExternalRequest.Result formatReturnValue(Object returnValue, Property returnProperty, Charset charset, String paramName) {
+        return formatReturnValue(returnValue, returnProperty.getType(), charset, paramName);
     }
 
     protected abstract ExecSession getExecSession() throws SQLException;
@@ -597,7 +620,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, null, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;

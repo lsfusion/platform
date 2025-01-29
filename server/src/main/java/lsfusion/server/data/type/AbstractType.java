@@ -120,8 +120,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatHTTP(T value, Charset charset) {
-        return formatNullableString(value, true);
+    public ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName) {
+        return new ExternalRequest.Result(formatNullableString(value, true));
     }
 
     @Override

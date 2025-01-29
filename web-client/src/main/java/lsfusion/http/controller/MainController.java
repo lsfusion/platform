@@ -10,6 +10,8 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
+import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
@@ -21,13 +23,15 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
-import net.customware.gwt.dispatch.shared.general.StringResult;
+import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.SessionInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -69,49 +73,13 @@ public class MainController {
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
 
-    @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
-    public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
-        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
-        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
-        return "push-notification";
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+        remoteNavigator.updateClientInfo(clientInfo);
+        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(new ExternalRequest.Param[0], request), remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String processLogin(ModelMap model, HttpServletRequest request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
-                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
-            } else {
-                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
-            }
-        }
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-
-        model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
-        model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
-        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        addStandardModelAttributes(model, request, serverSettings, true);
-
-        try {
-            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
-                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, null, request)));
-            model.addAttribute("urls", oauth2AuthenticationUrls);
-        } catch (Throwable e){
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
-        }
-
-        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
-        addUserDataAttributes(model, request);
-        if (checkVersionError.result != null) {
-            model.addAttribute("error", checkVersionError.result);
-            checkVersionError.set(null);
-            return "restricted";
-        } else {
-            return "login";
-        }
+    public static String sendRequest(HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, String action) throws RemoteException {
+        return sendRequest(AuthenticationToken.ANONYMOUS, request, params, sessionObject, NavigatorProviderImpl.getConnectionInfo(request), action);
     }
 
     @GetMapping(value = "/manifest", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -137,209 +105,13 @@ public class MainController {
         return response;
     }
 
-    @RequestMapping(value = "/registration", method = RequestMethod.GET)
-    public String registration(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        addStandardModelAttributes(model, request, serverSettings, true);
-        addUserDataAttributes(model, request);
-        return getDisableRegistration(serverSettings) ? "login" : "registration";
+    public static String sendRequest(AuthenticationToken token, HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, ConnectionInfo connectionInfo, String action) throws RemoteException {
+        ExternalRequest externalRequest = MainController.getExternalRequest(params, request);
+        ExternalResponse result = sessionObject.remoteLogics.exec(token, connectionInfo, action, externalRequest);
+        return LogicsSessionObject.getStringResult(result, ClientFormChangesToGwtConverter.getConvertFileValue(sessionObject, request, connectionInfo, externalRequest));
     }
 
-    @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String processRegistration(HttpServletRequest request, @RequestParam String username, @RequestParam String password,
-                          @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
-
-        if (getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)))
-            return "login";
-
-        JSONArray user = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("login", username);
-        jsonObject.put("password", password);
-        jsonObject.put("firstName", firstName);
-        jsonObject.put("lastName", lastName);
-        jsonObject.put("email", email);
-        user.put(jsonObject);
-
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
-        if (jsonResponse.has("success")){
-            SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
-        } else if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            Map<String, String> userData = new HashMap<>();
-            userData.put("username", username);
-            userData.put("firstName", firstName);
-            userData.put("lastName", lastName);
-            userData.put("email", email);
-            request.getSession(true).setAttribute("USER_DATA", userData);
-            return getRedirectUrl("/registration", null, request);
-        }
-        return getRedirectUrl("/login", null, request);
-    }
-
-    @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
-    public String forgotPassword(ModelMap model, HttpServletRequest request) {
-        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
-        return "forgot-password";
-    }
-
-    @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
-    public String processForgotPassword(@RequestParam String usernameOrEmail, HttpServletRequest request) {
-        JSONArray jsonArray = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("userNameOrEmail", usernameOrEmail);
-        jsonArray.put(jsonObject);
-
-        JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
-        if (jsonResponse.has("success")){
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
-                    + " " + jsonResponse.optString("email"));
-        } else if (jsonResponse.has("error")) {
-            String[] error = jsonResponse.optString("error").split(":");
-            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", error.length > 1 ? error[1] : error[0]);
-            return getRedirectUrl("/forgot-password", null, request);
-        }
-        return getRedirectUrl("/login", null, request);
-    }
-
-    @RequestMapping(value = "/change-password", method = RequestMethod.GET)
-    public String changePassword(ModelMap model, HttpServletRequest request) {
-        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
-        return "change-password";
-    }
-
-    @RequestMapping(value = "/change-password", method = RequestMethod.POST)
-    public String processChangePassword(HttpServletRequest request, @RequestParam String newPassword,
-                                        @RequestParam String token) {
-        JSONArray user = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("newPassword", newPassword);
-        jsonObject.put("token", token);
-        user.put(jsonObject);
-
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.changePassword");
-        if (jsonResponse.has("success")){
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
-        } else if (jsonResponse.has("error")) {
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
-            return getRedirectUrl("/change-password", jsonResponse.has("passwordStrengthError") ? null : Collections.singletonList("token"), request);
-        }
-        return getRedirectUrl("/login", Collections.singletonList("token"), request);
-    }
-
-    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
-        remoteNavigator.updateClientInfo(clientInfo);
-        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(new ExternalRequest.Param[0], request), remoteNavigator);
-    }
-
-    private void addUserDataAttributes(ModelMap model, HttpServletRequest request) {
-        HttpSession session = request.getSession(true);
-        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
-        if (userDataSessionAttribute != null) {
-            Map<?, ?> userData = (Map<?, ?>) userDataSessionAttribute;
-            userData.keySet().forEach(key -> model.addAttribute((String) key, userData.get(key)));
-            session.removeAttribute("USER_DATA");
-        }
-    }
-
-    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings, boolean noAuth) {
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
-        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
-
-        if (noAuth){
-            model.addAttribute("noAuthResourcesBeforeSystem", getSavedNoAuthResources(serverSettings, true));
-            model.addAttribute("noAuthResourcesAfterSystem", getSavedNoAuthResources(serverSettings, false));
-        }
-    }
-
-    private Map<String, String> getSavedNoAuthResources(ServerSettings serverSettings, boolean before) {
-        Map<String, String> savedResources = null;
-        if (serverSettings != null) {
-            List<Pair<String, RawFileData>> resources = before ? serverSettings.noAuthResourcesBeforeSystem : serverSettings.noAuthResourcesAfterSystem;
-            if (resources != null)
-                savedResources = saveResources(serverSettings, resources, true);
-        }
-        return savedResources;
-    }
-
-    private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {
-        ServerSettings serverSettings = getServerSettings(request, noCache);
-        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
-        if(checkVersionError != null) {
-            if(!noCache) // try without cache
-                return getAndCheckServerSettings(request, rCheck, true);
-            rCheck.set(checkVersionError);
-        }
-        return serverSettings;
-    }
-
-    @RequestMapping(value = "/main", method = RequestMethod.GET)
-    public String processMain(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getServerSettings(request, false);
-
-        addStandardModelAttributes(model, request, serverSettings, false);
-        model.addAttribute("logicsName", getLogicsName(serverSettings));
-        model.addAttribute("lsfParams", getLsfParams(serverSettings));
-
-        String sessionId;
-        List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
-        List<Pair<String, RawFileData>> mainResourcesAfterSystem;
-        try {
-            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
-                try {
-                    return new StringResult(navigatorProvider.createNavigator(sessionObject, request));
-                } catch (RemoteMessageException e) {
-                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
-                    throw e;
-                }
-            }).get();
-            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true));
-            mainResourcesBeforeSystem = initSettings.mainResourcesBeforeSystem;
-            mainResourcesAfterSystem = initSettings.mainResourcesAfterSystem;
-        } catch (AuthenticationException authenticationException) {
-            return getRedirectUrl("/logout", null, request);
-        } catch (Throwable e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("redirectURL", getDirectUrl("/main", null, null, request));
-            return "app-not-available";
-        }
-
-        model.addAttribute("sessionID", sessionId);
-        model.addAttribute("mainResourcesBeforeSystem", serverSettings != null && mainResourcesBeforeSystem != null ? saveResources(serverSettings, mainResourcesBeforeSystem, false) : null);
-        model.addAttribute("mainResourcesAfterSystem", serverSettings != null && mainResourcesAfterSystem != null ? saveResources(serverSettings, mainResourcesAfterSystem, false) : null);
-
-        return "main";
-    }
-
-    private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
-        Map<String, String> versionedResources = new LinkedHashMap<>();
-        for (Pair<String, RawFileData> resource : resources) {
-            String fullPath = resource.first;
-            String extension = BaseUtils.getFileExtension(fullPath);
-            versionedResources.put(extension.equals("html") ? resource.second.convertString() : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth), extension);
-        }
-        return versionedResources;
-    }
-
-    private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
-        return logicsProvider.getServerSettings(request, noCache);
-    }
-
-    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
-        ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(jsonArray.toString());
-        try {
-            return logicsProvider.runRequest(request,
-                    (sessionObject, retry) -> LogicsSessionObject.getJSONObjectResult(sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getConnectionInfo(request),
-                    method + "[JSONFILE]", getExternalRequest(new ExternalRequest.Param[]{fileParam}, request))));
-        } catch (IOException | AppServerNotAvailableDispatchException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+    public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
         String screenSize = null;
         String scale = null;
 
@@ -361,7 +133,268 @@ public class MainController {
         }
 
         remoteNavigator.updateClientInfo(clientInfo);
-        return LogicsSessionObject.getInitSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
+        SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(request);
+        return LogicsSessionObject.getInitSettings(sessionInfo, remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
+    }
+
+    @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
+    public String pushNotification(ModelMap model, HttpServletRequest request) {
+        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
+        addNoAuthStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false));
+        return "push-notification";
+    }
+
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    public String processLogin(ModelMap model, HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
+                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+            } else {
+                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            }
+        }
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
+
+        model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
+        model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
+        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
+        addNoAuthStandardModelAttributes(model, request, serverSettings);
+
+        try {
+            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
+                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, null, request)));
+            model.addAttribute("urls", oauth2AuthenticationUrls);
+        } catch (Throwable e) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
+        }
+
+        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        addUserDataAttributes(model, request);
+        if (checkVersionError.result != null) {
+            model.addAttribute("error", checkVersionError.result);
+            checkVersionError.set(null);
+            return "restricted";
+        } else {
+            return "login";
+        }
+    }
+
+    @RequestMapping(value = "/registration", method = RequestMethod.GET)
+    public String registration(ModelMap model, HttpServletRequest request) {
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
+        addNoAuthStandardModelAttributes(model, request, serverSettings);
+        addUserDataAttributes(model, request);
+        return getDisableRegistration(serverSettings) ? "login" : "registration";
+    }
+
+    @RequestMapping(value = "/registration", method = RequestMethod.POST)
+    public String processRegistration(HttpServletRequest request, @RequestParam String username, @RequestParam String password,
+                                      @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
+
+        if (getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)))
+            return "login";
+
+        JSONArray user = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("login", username);
+        jsonObject.put("password", password);
+        jsonObject.put("firstName", firstName);
+        jsonObject.put("lastName", lastName);
+        jsonObject.put("email", email);
+        user.put(jsonObject);
+
+        JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
+        if (jsonResponse.has("success")) {
+            SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
+        } else if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
+            Map<String, String> userData = new HashMap<>();
+            userData.put("username", username);
+            userData.put("firstName", firstName);
+            userData.put("lastName", lastName);
+            userData.put("email", email);
+            request.getSession(true).setAttribute("USER_DATA", userData);
+            return getRedirectUrl("/registration", null, request);
+        }
+        return getRedirectUrl("/login", null, request);
+    }
+
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
+    public String forgotPassword(ModelMap model, HttpServletRequest request) {
+        addNoAuthStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false));
+        return "forgot-password";
+    }
+
+    private void addUserDataAttributes(ModelMap model, HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
+        if (userDataSessionAttribute != null) {
+            Map<?, ?> userData = (Map<?, ?>) userDataSessionAttribute;
+            userData.keySet().forEach(key -> model.addAttribute((String) key, userData.get(key)));
+            session.removeAttribute("USER_DATA");
+        }
+    }
+
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
+    public String processForgotPassword(@RequestParam String usernameOrEmail, HttpServletRequest request) {
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userNameOrEmail", usernameOrEmail);
+        jsonArray.put(jsonObject);
+
+        JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
+        if (jsonResponse.has("success")) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
+                    + " " + jsonResponse.optString("email"));
+        } else if (jsonResponse.has("error")) {
+            String[] error = jsonResponse.optString("error").split(":");
+            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", error.length > 1 ? error[1] : error[0]);
+            return getRedirectUrl("/forgot-password", null, request);
+        }
+        return getRedirectUrl("/login", null, request);
+    }
+
+    @RequestMapping(value = "/change-password", method = RequestMethod.GET)
+    public String changePassword(ModelMap model, HttpServletRequest request) {
+        addNoAuthStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false));
+        return "change-password";
+    }
+
+    @RequestMapping(value = "/change-password", method = RequestMethod.POST)
+    public String processChangePassword(HttpServletRequest request, @RequestParam String newPassword,
+                                        @RequestParam String token) {
+        JSONArray user = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("newPassword", newPassword);
+        jsonObject.put("token", token);
+        user.put(jsonObject);
+
+        JSONObject jsonResponse = sendRequest(user, request, "Authentication.changePassword");
+        if (jsonResponse.has("success")) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
+        } else if (jsonResponse.has("error")) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("error"));
+            return getRedirectUrl("/change-password", jsonResponse.has("passwordStrengthError") ? null : Collections.singletonList("token"), request);
+        }
+        return getRedirectUrl("/login", Collections.singletonList("token"), request);
+    }
+
+    private void addNoAuthStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
+        addStandardModelAttributes(model, request, serverSettings);
+
+        addResourcesAttributes(model, serverSettings, true, serverSettings != null ? serverSettings.noAuthResourcesBeforeSystem : null, serverSettings != null ? serverSettings.noAuthResourcesAfterSystem : null);
+    }
+
+    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
+        model.addAttribute("title", getTitle(serverSettings));
+        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
+        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+        model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
+        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
+    }
+
+    private void addResourcesAttributes(ModelMap model, ServerSettings serverSettings, boolean noAuth, List<Pair<String, RawFileData>> resourcesBeforeSystem, List<Pair<String, RawFileData>> resourcesAfterSystem) {
+        model.addAttribute("resourcesBeforeSystem", resourcesBeforeSystem != null ? saveResources(serverSettings, resourcesBeforeSystem, noAuth) : null);
+        model.addAttribute("resourcesAfterSystem", resourcesAfterSystem != null ? saveResources(serverSettings, resourcesAfterSystem, noAuth) : null);
+    }
+
+    private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {
+        ServerSettings serverSettings = getServerSettings(request, noCache);
+        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion()) : null;
+        if (checkVersionError != null) {
+            if (!noCache) // try without cache
+                return getAndCheckServerSettings(request, rCheck, true);
+            rCheck.set(checkVersionError);
+        }
+        return serverSettings;
+    }
+
+    private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
+        return logicsProvider.getServerSettings(request, noCache);
+    }
+
+    @RequestMapping(value = "/main", method = RequestMethod.GET)
+    public String processMain(ModelMap model, HttpServletRequest request) {
+        ServerSettings serverSettings = getServerSettings(request, false);
+
+        addStandardModelAttributes(model, request, serverSettings);
+
+        model.addAttribute("logicsName", getLogicsName(serverSettings));
+        model.addAttribute("lsfParams", getLsfParams(serverSettings));
+
+        String sessionId;
+        LogicsSessionObject.InitSettings initSettings;
+        try {
+            Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
+            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+                try {
+                    String result = navigatorProvider.createNavigator(sessionObject, request);
+                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true)));
+                    return result;
+                } catch (RemoteMessageException e) {
+                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
+                    throw e;
+                }
+            });
+            initSettings = rInitSettings.result;
+        } catch (AuthenticationException authenticationException) {
+            return getRedirectUrl("/logout", null, request);
+        } catch (Throwable e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("redirectURL", getDirectUrl("/main", null, null, request));
+            return "app-not-available";
+        }
+
+        model.addAttribute("sessionID", sessionId);
+        addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
+
+        return "main";
+    }
+
+    private List<WebAction> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
+        List<WebAction> versionedResources = new ArrayList<>();
+        for (Pair<String, RawFileData> resource : resources) {
+            String fullPath = resource.first;
+            String extension;
+
+            String url;
+            boolean isUrl = false;
+            if (resource.second != null) { // resource file
+                extension = BaseUtils.getFileExtension(fullPath);
+                url = extension.equals("html") ? resource.second.convertString() : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth);
+            } else { // url
+                Result<String> rExtension = new Result<>();
+                url = ClientActionToGwtConverter.convertUrl(fullPath, rExtension);
+                extension = rExtension.result;
+                isUrl = true;
+            }
+            versionedResources.add(new WebAction(url, extension, isUrl));
+        }
+        return versionedResources;
+    }
+
+    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method) {
+        try {
+            return logicsProvider.runRequest(request,
+                    (sessionObject, retry) -> new JSONObject(sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(jsonArray.toString())}, sessionObject, method + "[JSONFILE]")));
+        } catch (IOException | AppServerNotAvailableDispatchException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static class WebAction {
+        public final String resource;
+        public final String extension;
+        public final boolean isUrl;
+
+        public WebAction(String resource, String extension, boolean isUrl) {
+            this.resource = resource;
+            this.extension = extension;
+            this.isUrl = isUrl;
+        }
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {

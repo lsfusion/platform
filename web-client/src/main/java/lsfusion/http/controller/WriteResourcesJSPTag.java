@@ -6,13 +6,14 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class WriteResourcesJSPTag extends TagSupport {
 
-    private Map<String, String> resources;
+    private List<MainController.WebAction> resources;
 
-    public void setResources(Map<String, String> resources) {
+    public void setResources(List<MainController.WebAction> resources) {
         this.resources = resources;
     }
 
@@ -21,8 +22,10 @@ public class WriteResourcesJSPTag extends TagSupport {
         if (resources != null) {
             try {
                 JspWriter out = pageContext.getOut();
-                for (String s : resources.keySet()) {
-                    String extension = resources.get(s);
+                // should be pretty similar to GwtActionDispatcher.executeFile
+                for (MainController.WebAction webAction : resources) {
+                    String s = webAction.resource;
+                    String extension = webAction.extension;
                     if (extension.equals("js")) {
                         out.print("<script type='text/javascript' src='" + s + "'></script>");
                     } else if (extension.equals("css")) {

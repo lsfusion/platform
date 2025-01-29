@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -29,17 +30,10 @@ import static lsfusion.base.BaseUtils.serializeObject;
 public class InternalClientAction extends CallAction {
 
     private final boolean syncType;
-    @Deprecated
-    private final String resourceName;
 
     public InternalClientAction(ImList<Type> params, ImList<LP> targetPropList, boolean syncType) {
-        this(params, targetPropList, syncType, null, null);
-    }
-
-    public InternalClientAction(ImList<Type> params, ImList<LP> targetPropList, boolean syncType, String resourceName, ImList<Type> types) {
-        super(resourceName != null ? 0 : 1,  resourceName != null ? types : params, targetPropList);
+        super(1,  params, targetPropList);
         this.syncType = syncType;
-        this.resourceName = resourceName;
     }
 
     @Override
@@ -51,7 +45,7 @@ public class InternalClientAction extends CallAction {
         LP targetProp = targetPropList.isEmpty() ? null : targetPropList.get(0);
 
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
-        String exec = resourceName != null ? resourceName : (String) context.getKeyObject(orderInterfaces.get(0));
+        String exec = (String) context.getKeyObject(orderInterfaces.get(0));
 
         boolean remove = false;
         Matcher commandMatcher = Pattern.compile("remove (.*)").matcher(exec);
@@ -60,13 +54,13 @@ public class InternalClientAction extends CallAction {
             exec = commandMatcher.group(1);
         }
 
-        boolean isFile = exec.contains(".");
-        if(resourceName != null && !isFile && exec.contains("(")) { //backward compatibility
+        if(!exec.contains(".") && exec.contains("(")) { //backward compatibility
            exec = exec.substring(0, exec.indexOf("("));
         }
 
+        boolean isFile = !BaseUtils.isSimpleWord(exec); // not function
         try {
-            for (int i = resourceName != null ? 0 : 1; i < orderInterfaces.size(); i++) {
+            for (int i = 1; i < orderInterfaces.size(); i++) {
                 PropertyInterface orderInterface = orderInterfaces.get(i);
                 ObjectValue objectValue = context.getKeys().get(orderInterface);
                 values.add(FormChanges.serializeConvertFileValue(objectValue.getValue(), context));
@@ -77,21 +71,21 @@ public class InternalClientAction extends CallAction {
             throw Throwables.propagate(e);
         }
 
-        Object resource;
-        String resourceName;
+        Object resource = exec;
+        String resourceName = exec;
         if(isFile) {
             Result<String> fullPath = new Result<>();
-            RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, false, true, fullPath, "web");
-            fileData.getID(); // to calculate the cache
+            RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, true, true, fullPath, "web");
+            if(fileData != null) {
+                fileData.getID(); // to calculate the cache
 
-            resource = fileData;
-            resourceName = fullPath.result;
-        } else {
-            resource = exec;
-            resourceName = exec;
+                resource = fileData;
+                resourceName = fullPath.result;
+            } else // we don't convert in EXTERNAL HTTP, so we won't do it here, because it's not clear what to do with the query encoding
+                resource = FormChanges.convertFileValue(exec, context.getRemoteContext());
         }
 
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, values, types, returnType, isFile, syncType, remove);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, isFile, values, types, returnType, syncType, remove);
         if (syncType) {
             Object result = context.requestUserInteraction(clientWebAction);
             if(targetProp != null)

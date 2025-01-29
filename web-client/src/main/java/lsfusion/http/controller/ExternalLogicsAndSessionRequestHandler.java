@@ -2,7 +2,6 @@ package lsfusion.http.controller;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.file.StringWithFiles;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
@@ -35,14 +34,12 @@ import static java.util.Collections.list;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
 
-    public ExternalLogicsAndSessionRequestHandler(LogicsProvider logicsProvider, SessionProvider sessionProvider, ServletContext servletContext) {
+    public ExternalLogicsAndSessionRequestHandler(LogicsProvider logicsProvider, SessionProvider sessionProvider) {
         super(logicsProvider);
         this.sessionProvider = sessionProvider;
-        this.servletContext = servletContext;
     }
 
     private final SessionProvider sessionProvider;
-    private final ServletContext servletContext;
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -64,13 +61,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
         InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
 
-        Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> value -> {
-            if(value instanceof StringWithFiles) {
-                StringWithFiles stringWithFiles = (StringWithFiles) value;
-                return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, new SessionInfo(connectionInfo, externalRequest)));
-            }
-            return value;
-        };
+        Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> ClientFormChangesToGwtConverter.getConvertFileValue(sessionObject, request, connectionInfo, externalRequest);
 
         String paramSessionID = request.getParameter("session");
         Result<String> sessionID = paramSessionID != null ? new Result<>(paramSessionID) : null;

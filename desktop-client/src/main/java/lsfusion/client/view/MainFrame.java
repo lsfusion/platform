@@ -445,13 +445,13 @@ public abstract class MainFrame extends JFrame {
         setTitle(MainController.getMainTitle() + " - " + userName + " (" + MainController.serverInfo.host + ":" + MainController.serverInfo.port + ")");
     }
 
-    public abstract Integer runReport(List<String> customReportPathList, String formCaption, String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(List<String> customReportPathList, String formCaption, String formSID, boolean isModal, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified) throws IOException, ClassNotFoundException;
 
-    public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator);
+        return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator, null);
     }
 }

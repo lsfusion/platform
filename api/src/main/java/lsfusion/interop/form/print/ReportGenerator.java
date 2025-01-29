@@ -786,26 +786,6 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
-        exportAndOpen(generationData, type, null, null, jasperReportsIgnorePageMargins, remoteLogics);
-    }
-
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
-        try {
-            File tempFile = exportToFile(generationData, type, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics);
-
-            try {
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(tempFile);
-                }
-            } finally {
-                tempFile.deleteOnExit();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(ApiResourceBundle.getString("exceptions.error.exporting.to", type), e);
-        }
-    }
-
     private static JRAbstractExporter getExporter(FormPrintType printType) {
         switch (printType) {
             case XLS:
@@ -894,14 +874,10 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
-        return exportToFileByteArray(generationData, type, null, null, jasperReportsIgnorePageMargins, remoteLogics);
-    }
-    
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+    public static RawFileData exportToFileByteArray(ReportGenerationData reportData, FormPrintType staticType, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
         try {
             try {
-                return new RawFileData(exportToFile(generationData, type, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics));
+                return new RawFileData(exportToFile(reportData, staticType, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics));
             } finally {
                 JRVirtualizationHelper.clearThreadVirtualizer();
             }

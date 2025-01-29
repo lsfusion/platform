@@ -121,6 +121,8 @@ import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModul
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+import net.sf.jasperreports.engine.JRPropertiesUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -187,6 +189,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String logicsCaption;
 
     private String orderDependencies;
+
+    private String pdfEncoding;
 
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
@@ -296,6 +300,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 tFormats = new TFormats(twoDigitYearStart,
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
                         timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
+
+                if(pdfEncoding != null) {
+                    JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", pdfEncoding);
+                }
 
                 new TaskRunner(this).runTask(initTask);
             } catch (RuntimeException re) {
@@ -630,6 +638,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
         }
+    }
+
+    public void setPdfEncoding(String pdfEncoding) {
+        this.pdfEncoding = pdfEncoding;
     }
 
     public String getLsfStrLiteralsLanguage() {
@@ -2141,10 +2153,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
-        if(isServer) {
-            result.add(getChangeCurrentDateTask(scheduler));
-            result.add(getChangeDataCurrentDateTimeTask(scheduler));
-        }
+        result.add(getChangeCurrentDateTask(scheduler));
+        result.add(getChangeDataCurrentDateTimeTask(scheduler));
         result.add(getFlushAsyncValuesCachesTask(scheduler));
         result.add(resetResourcesCacheTasks(scheduler));
 
@@ -2182,7 +2192,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     logger.info("ChangeCurrentDate finished");
                 }
             } catch (Exception e) {
-                logger.error(String.format("ChangeCurrentDate error: %s", e));
+                logger.error(String.format("ChangeCurrentDate error: %s", e), e);
             }
         }, true, Settings.get().getCheckCurrentDate(), true, "Changing current date");
     }
@@ -2198,7 +2208,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 timeLM.currentZDateTimeSnapshot.change(newZDataDateTime, session);
                 session.applyException(this, stack);
             } catch (Exception e) {
-                logger.error(String.format("ChangeCurrentDateTime error: %s", e));
+                logger.error(String.format("ChangeCurrentDateTime error: %s", e), e);
             }
         }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current dateTime");
     }

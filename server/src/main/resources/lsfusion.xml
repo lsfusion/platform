@@ -150,12 +150,14 @@
                 <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
                 <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
+                <entry key="mobileMode" value="${settings.mobileMode:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
                 <entry key="useISOTimeFormatsInIntegration" value="${settings.useISOTimeFormatsInIntegration:}"/>
                 <entry key="highlightDuplicateValue" value="${settings.highlightDuplicateValue:}"/>
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
                 <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
+                <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
             </map>
         </property>
         </bean>
@@ -669,6 +671,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+                <ref bean="executeOnInitTask"/>
             </set>
         </property>
     </bean>
@@ -1024,6 +1027,7 @@
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
         <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
         <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
+        <property name="pdfEncoding" value="${logics.pdfEncoding:#{null}}"/>
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
         <property name="setCountry" value="${user.setCountry:#{null}}"/>

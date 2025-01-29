@@ -123,6 +123,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelColumnVertical = panelColumnVertical;
     }
 
+    public void setClass(Object elementClass) {
+        super.setClass(elementClass);
+        if(elementClass instanceof PropertyObjectEntity)
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) elementClass, PropertyDrawExtraType.GRIDELEMENTCLASS, getVersion());
+    }
+
     public void setValueClass(Object valueClass) {
         if(valueClass instanceof LocalizedString)
             target.valueElementClass = ((LocalizedString) valueClass).getSourceString();
@@ -306,6 +312,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             }
         }
         return result;
+    }
+
+    public void setPanelCustom(Boolean panelCustom) {
+        target.panelCustom = panelCustom;
     }
 
     public void setValueOverflowHorz(String valueOverflowHorz) {

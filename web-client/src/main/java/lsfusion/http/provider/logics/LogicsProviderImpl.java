@@ -94,8 +94,20 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
                                    request != null ? request.getParameter("exportName") : null);
     }
 
+    public static ServerSettings getServerSettings(HttpServletRequest request, boolean noCache, LogicsSessionObject sessionObject) throws RemoteException {
+        return getServerSettings(sessionObject, NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), request.getServletContext(), noCache);
+    }
+
+    public static ServerSettings getServerSettings(LogicsSessionObject sessionObject, SessionInfo sessionInfo, String contextPath, ServletContext servletContext, boolean noCache) throws RemoteException {
+        return sessionObject.getServerSettings(sessionInfo, contextPath, noCache, ClientFormChangesToGwtConverter.getConvertFileValue(servletContext, null)); // we need to use null because of the infinite recursion
+    }
+
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
-        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
+        try {
+            return runRequest(getLogicsConnection(request), (sessionObject, retry) -> getServerSettings(request, noCache, sessionObject));
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
@@ -125,7 +137,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         }
 
         public String[] convertFileValue(SessionInfo sessionInfo, Serializable[] files) throws RemoteException {
-            return ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, sessionObject, sessionInfo);
+            return ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, LogicsProviderImpl.getServerSettings(sessionObject, sessionInfo, null, servletContext, false));
         }
     }
 

@@ -57,10 +57,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.ColorClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
@@ -1892,10 +1889,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
         }
 
-        return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(params.length, index -> {
-            ValueClass param = params[index];
-            return param != null ? param.getType() : null;
-        })));
+        return addInternalClientAction(resourceName, params, syncType);
     }
 
     public LAWithParams addScriptedShowRecDepAction(List<ActionOrPropertyUsage> ids, boolean showRec, boolean global) throws ScriptingErrorLog.SemanticErrorException {
@@ -3518,8 +3512,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addCCProp(params.size()), params);
     }
 
-    public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(addSFUProp(separator, params.size()), params);
+    public LPWithParams addScriptedConcatProp(String separatorValue, LPWithParams separatorProperty, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        if(separatorValue != null) {
+            return addScriptedJProp(addSFUProp(separatorValue, params.size()), params);
+        } else {
+            List<LPWithParams> resultParams = new ArrayList<>();
+            resultParams.add(addScriptedJProp(addSFUProp(BaseUtils.impossibleString, params.size()), params));
+            resultParams.add(new LPWithParams(baseLM.impossibleString));
+            resultParams.add(separatorProperty);
+            return addScriptedJProp(baseLM.replace, resultParams);
+        }
     }
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
@@ -4838,6 +4840,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LAPWithParams> propParams = Arrays.asList(action, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
         LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, sync, getParamsPlainList(propParams).toArray());
+        return new LAWithParams(newAction, allParams);
+    }
+
+    public LAWithParams addScriptedNewConnectionAction(LAWithParams action) {
+        List<LAPWithParams> propParams = singletonList(action);
+        List<Integer> allParams = mergeAllParams(propParams);
+        LA<?> newAction = addNewConnectionAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, allParams);
     }
 

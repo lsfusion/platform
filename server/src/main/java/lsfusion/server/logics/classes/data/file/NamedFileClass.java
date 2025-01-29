@@ -5,11 +5,11 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -65,13 +65,13 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected NamedFileData parseHTTPNotNull(FileData b, String charsetName) {
-        return new NamedFileData(b, "file");
+    protected NamedFileData parseHTTPNotNull(FileData b, String charsetName, String fileName) {
+        return ExternalRequest.getNamedFile(b, fileName);
     }
 
     @Override
     protected NamedFileData writePropNotNull(RawFileData value, String extension, String charset) {
-        return new NamedFileData(new FileData(value, extension), "file");
+        return new NamedFileData(new FileData(value, extension));
     }
 
     @Override
@@ -80,15 +80,14 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected FileData formatHTTPNotNull(NamedFileData b, Charset charset) {
+    protected FileData formatHTTPNotNull(NamedFileData b, Charset charset, Result<String> fileName) {
+        fileName.set(b.getName());
         return b.getFileData();
     }
 
     @Override
-    public NamedFileData read(Object value) {
-        if(value instanceof byte[])
-            return new NamedFileData((byte[]) value);
-        return (NamedFileData) value;
+    protected NamedFileData readBytes(byte[] bytes) {
+        return new NamedFileData(bytes);
     }
 
     @Override
@@ -111,7 +110,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
 
     @Override
     protected NamedFileData getValue(RawFileData data) {
-        return new NamedFileData(new FileData(data, "dat"), "file");
+        return new NamedFileData(new FileData(data, "dat"));
     }
 
     @Override

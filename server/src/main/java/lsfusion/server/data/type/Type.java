@@ -144,7 +144,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatXML(T object);
     String formatConnectionString(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
-    Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
+    ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName); // returns String or FileData (not null), null's encode'it depending on type
     RawFileData formatFile(T value, String charset);
 
     T parseUI(String value) throws ParseException;

@@ -8,7 +8,6 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -80,12 +79,12 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    protected FileData parseHTTPNotNull(FileData b, String charsetName) {
+    protected FileData parseHTTPNotNull(FileData b, String charsetName, String fileName) {
         return b;
     }
 
     @Override
-    protected FileData formatHTTPNotNull(FileData b, Charset charset) {
+    protected FileData formatHTTPNotNull(FileData b, Charset charset, Result<String> fileName) {
         return b;
     }
 
@@ -100,10 +99,8 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public FileData read(Object value) {
-        if(value instanceof byte[])
-            return new FileData((byte[]) value);
-        return (FileData) value;
+    protected FileData readBytes(byte[] bytes) {
+        return new FileData(bytes);
     }
 
     @Override

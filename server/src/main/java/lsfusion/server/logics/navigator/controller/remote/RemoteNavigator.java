@@ -133,7 +133,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
-        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue());
+        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
 
