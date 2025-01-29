@@ -324,7 +324,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         updateView(dataUpdated, updateState);
 
         dataUpdated = false;
-        customOptionsUpdated = false;
     }
 
     @Override
@@ -807,12 +806,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }-*/;
 
     private JavaScriptObject customOptions;
-    protected boolean customOptionsUpdated = true;
     @Override
     public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, true, values.firstValue()); // for now we're assuming that custom options is json
         dataUpdated = true;
-        customOptionsUpdated = true;
     }
 
     public JavaScriptObject getCustomOptions() {
