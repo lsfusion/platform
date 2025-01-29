@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -824,4 +825,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     public static native <T> T toObject(JavaScriptObject object) /*-{
         return object;
     }-*/;
+
+    private JavaScriptObject customOptions;
+    @Override
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
+        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, true, values.firstValue()); // for now we're assuming that custom options is json
+        dataUpdated = true;
+    }
+
+    public JavaScriptObject getCustomOptions() {
+        return customOptions;
+    }
 }
