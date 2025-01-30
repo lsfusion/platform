@@ -622,7 +622,8 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options;
 	                                        $customRenderFunction = $viewType.customRenderFunction; $mapTileProvider = $viewType.mapTileProvider;}
-        ('OPTIONS' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
+        (('OPTIONS'| 'HEADER') // HEADER is deprecated! Only for backward compatibility. Use OPTIONS instead.
+                decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	;
 
 groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, String mapTileProvider]
