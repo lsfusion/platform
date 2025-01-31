@@ -32,8 +32,8 @@ public class CopyReportResources extends InternalAction {
     }
 
     private void readResource(Map<String, RawFileData> filesMap, String resource) {
-        Result path = new Result<>();
+        Result<String> path = new Result<>();
         RawFileData reportFile = ResourceUtils.findResourceAsFileData(resource, true, true, path, null);
-        filesMap.put("target/classes/" + path.result, reportFile);
+        filesMap.put(path.result, reportFile);
     }
 }
