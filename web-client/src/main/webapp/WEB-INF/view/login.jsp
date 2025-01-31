@@ -48,7 +48,7 @@
                       action="login_check<%=queryString%>" >
                     <fieldset>
                         <div class="label-and-field">
-                            <label for="username"><%= ServerMessages.getString(request, "login") %></label>
+                            <label for="username"><%= ServerMessages.getString(request, "login.or.email") %></label>
                             <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
                         </div>
                         <div class="label-and-field">
@@ -78,16 +78,16 @@
                         &#32;
                         <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
                     </div>
-                    <c:if test="${not empty urls}">
-                        <div class="oauth-block">
-                            <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
-                            <div class="oauth-links">
-                                <c:forEach var="url" items="${urls}">
-                                    <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
-                                </c:forEach>
-                            </div>
+                </c:if>
+                <c:if test="${not empty urls}">
+                    <div class="oauth-block">
+                        <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
+                        <div class="oauth-links">
+                            <c:forEach var="url" items="${urls}">
+                                <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
+                            </c:forEach>
                         </div>
-                    </c:if>
+                    </div>
                 </c:if>
             </div>
             <div class="footer">

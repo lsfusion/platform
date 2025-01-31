@@ -55,7 +55,7 @@ onUserRegister(User user) + {
 }
 
 disableRole '{security.user.role.disable.role}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID));
+disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID)) LAZY;
 
 // Forms
 FORM userRolesDialog '{security.user.roles}'

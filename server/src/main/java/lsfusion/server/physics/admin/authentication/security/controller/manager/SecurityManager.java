@@ -6,6 +6,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -168,18 +169,29 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return adminUser;
     }
 
-    private DataObject initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> roles, boolean rolesOnlyIfNew, Map<String, String> attributes) throws SQLException, SQLHandledException {
-        DataObject userObject = readUser(userName, session);
+    // LDAP or OAuth authentication
+    private Pair<DataObject, String> initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> roles, boolean rolesOnlyIfNew, Map<String, String> attributes) throws SQLException, SQLHandledException {
+        Pair<DataObject, String> userObjectAndLogin = readUser(userName, email, session);
 
-        if (userObject == null)
-            userObject = addUser(userName, password.get(), session);
-        else if(rolesOnlyIfNew)
+        if (userObjectAndLogin == null || userObjectAndLogin.second == null) {
+            if(rolesOnlyIfNew && securityLM.disableRoleSID.read(session, new DataObject(roles.get(0))) != null) // if selfRegister is disabled
+                return null;
+
+            DataObject userObject;
+            if(userObjectAndLogin == null)
+                userObject = addUser(userName, password.get(), session);
+            else {
+                userObject = userObjectAndLogin.first;
+                authenticationLM.loginCustomUser.change(userName, session, userObject);
+            }
+            userObjectAndLogin = new Pair<>(userObject, userName);
+        } else if(rolesOnlyIfNew)
             roles = null;
 
-        setUserParameters(userObject, firstName, lastName, email, roles, attributes, session);
+        setUserParameters(userObjectAndLogin.first, firstName, lastName, email, roles, attributes, session);
         apply(session, stack);
 
-        return userObject;
+        return userObjectAndLogin;
     }
 
     public DataObject getAdminUser() {
@@ -201,8 +213,24 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return userObject;
     }
 
+    public Pair<DataObject, String> readUser(String login, String email, DataSession session) throws SQLException, SQLHandledException {
+        DataObject userObject = readUser(login, session);
+        if(userObject != null)
+            return new Pair<>(userObject, login);
+
+        if(email != null) {
+            ObjectValue readUser = authenticationLM.customUserEmail.readClasses(session, new DataObject(email));
+            if(!readUser.isNull()) {
+                userObject = (DataObject) readUser;
+                return new Pair<>(userObject, (String) authenticationLM.loginCustomUser.read(session, userObject));
+            }
+        }
+
+        return null;
+    }
+
     public DataObject readUser(String login, DataSession session) throws SQLException, SQLHandledException {
-        ObjectValue userObject = authenticationLM.customUserNormalized.readClasses(session, new DataObject(login));
+        ObjectValue userObject = authenticationLM.customUserLogin.readClasses(session, new DataObject(login));
         return userObject.isNull() ? null : (DataObject) userObject;
     }
 
@@ -291,32 +319,32 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         try (DataSession session = createSession()) {
-            DataObject userObject = null;
+            String userName = authentication.getUserName();
+
+            Pair<DataObject, String> userObjectAndLogin = null;
             if (authentication instanceof PasswordAuthentication) {
+                String password = ((PasswordAuthentication) authentication).getPassword();
+
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
                     Integer port = (Integer) authenticationLM.portLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
                     String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
                     try {
-                        String userName = authentication.getUserName();
-                        String password = ((PasswordAuthentication) authentication).getPassword();
                         LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(userName, password);
 
-                        if (ldapParameters.isConnected()) {
-                            userObject = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), false, ldapParameters.getAttributes());
-                        } else {
+                        if(!ldapParameters.isConnected())
                             throw new LoginException();
-                        }
+                        userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), false, ldapParameters.getAttributes());
                     } catch (CommunicationException e) {
                         systemLogger.error("LDAP authentication failed", e);
                     }
                 }
 
-                if(userObject == null) {
-                    userObject = readUser(authentication.getUserName(), session);
+                if(userObjectAndLogin == null) {
+                    userObjectAndLogin = readUser(userName, userName, session);
 
-                    if (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword()))
+                    if (userObjectAndLogin == null || userObjectAndLogin.second == null || !authenticationLM.checkPassword(session, userObjectAndLogin.first, password))
                         throw new LoginException();
                 }
             } else {
@@ -326,12 +354,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
 
                 // Because user data can change on the oauth2 provider side - we will update userParameters on each authentication.
-                userObject = initAndUpdateUser(session, stack, oauth2.getUserName(), () -> BaseUtils.generatePassword(20, false, true), oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), Collections.singletonList("selfRegister"), true, oauth2.getAttributes());
+                userObjectAndLogin = initAndUpdateUser(session, stack, oauth2.getUserName(), () -> BaseUtils.generatePassword(20, false, true), oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), Collections.singletonList("selfRegister"), true, oauth2.getAttributes());
+                if(userObjectAndLogin == null)
+                    throw new LoginException();
             }
-            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+            if (authenticationLM.isLockedCustomUser.read(session, userObjectAndLogin.first) != null) {
                 throw new LockedException();
             }
-            return generateToken(authentication.getUserName());
+            return generateToken(userObjectAndLogin.second);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
