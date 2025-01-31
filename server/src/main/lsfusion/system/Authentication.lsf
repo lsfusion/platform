@@ -77,12 +77,21 @@ name '{authentication.name.user}' (User user) = IF user IS SystemUser
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 // login
-login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
+login '{authentication.login}' = DATA ISTRING (CustomUser) CHARWIDTH 15 LAZY;
 name(CustomUser c) += login(c);
-loginShortened(STRING login) = IF wordCount(login, ':') > 1 THEN getWord(login, ':', 2) ELSE login;
-customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
-customUserLowerShort (login) = GROUP LAST CustomUser customUser ORDER customUser BY ISTRING[100](lower(loginShortened(login(customUser))));
-customUserNormalized (ISTRING[100] login) = OVERRIDE customUserLower(lower(login)), customUserLowerShort(lower(login)) LAZY;
+
+lowerLogin(CustomUser c) = lower(login(c));
+customUserLowerLogin = GROUP AGGR CustomUser customUser BY lowerLogin(customUser);
+customUserLogin (ISTRING login) = customUserLowerLogin(lower(login)) LAZY;
+lowerEmail(CustomUser c) = lower(email(c)) IF c IS CustomUser;
+customUserLowerEmail = GROUP LAST CustomUser customUser ORDER lowerLogin(customUser), customUser BY lowerEmail(customUser);
+customUserEmail(ISTRING email) = customUserLowerEmail(lower(email)) LAZY;
+
+// deprecated
+customUserLower(ISTRING[100] login) = customUserLowerLogin(login);
+customUserNormalized(ISTRING[100] login) = customUserLogin(login);
+
+//customUserNormalized (ISTRING[100] login) = customUserLower(lower(login)) LAZY;
 logName (CustomUser user) = OVERRIDE name(user), login(user) LAZY;
 
 // password
@@ -225,7 +234,7 @@ passwordStrengthError = DATA LOCAL STRING ();
 registerUser(JSONFILE user) {
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
         checkPasswordStrength(password);
-        IF customUserNormalized(login) THEN {
+        IF customUserLogin(login) THEN {
             EXPORT FROM error = '{registration.not.successful.login.exist}';
         } ELSE IF passwordStrengthError() THEN {
             EXPORT FROM error = passwordStrengthError();
@@ -320,7 +329,7 @@ clearPassResetToken () + {
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY;
-isLockedLogin (login) = isLocked(customUserNormalized(lower(login)));
+isLockedLogin (login) = isLocked(customUserLogin(lower(login)));
 
 // Current User
 currentUser = NATIVE User ();
@@ -429,7 +438,7 @@ syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
 syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
-    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUserNormalized(s) AND NOT isLockedLogin(s);
+    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUserLogin(s) AND NOT isLockedLogin(s);
 }
 
 FORM customUser '{authentication.custom.user}'
@@ -667,7 +676,7 @@ relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.physics.admin.aut
 reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
-        user() <- customUserNormalized(login);
+        user() <- customUserLogin(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE '{authentication.relogin.user.locked}';

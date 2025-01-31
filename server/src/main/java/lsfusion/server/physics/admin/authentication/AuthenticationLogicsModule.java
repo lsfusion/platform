@@ -37,7 +37,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP isLockedCustomUser;
     public LP<?> loginCustomUser;
-    public LP customUserNormalized;
+    public LP customUserLogin;
+    public LP customUserEmail;
     public LP logNameCustomUser;
     public LP sha256PasswordCustomUser;
     public LP calculatedHash;
@@ -153,7 +154,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
 
         loginCustomUser = findProperty("login[CustomUser]");
-        customUserNormalized = findProperty("customUserNormalized[ISTRING[100]]");
+        customUserLogin = findProperty("customUserLogin[ISTRING]");
+        customUserEmail = findProperty("customUserEmail[ISTRING]");
         logNameCustomUser = findProperty("logName[CustomUser]");
 
         sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
