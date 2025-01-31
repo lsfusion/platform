@@ -558,7 +558,28 @@ onClientStarted () + {
 }
 
 onDesktopClientStarted() + {
-    readReportResources();
+    
+    LOCAL hash = STRING(STRING);
+    
+    readResource('jasperreports.properties');
+    zipping('jasperreports.properties') <- resource();
+    hash('jasperreports.properties') <- md5(resource()); 
+
+    readResource('jasperreports_extension.properties');
+    zipping('jasperreports_extension.properties') <- resource();
+    hash('jasperreports_extension.properties') <- md5(resource());
+
+    readResourcePaths('/fonts/.*');
+    
+    FOR resourcePaths(STRING path) DO {
+        readResource(path);
+        zipping(path) <- resource();
+        hash(path) <- md5(resource());
+    }
+    
+    makeZipFile();
+     
+    copyReportResources(zipped(), md5(GROUP CONCAT hash(STRING s), '' ORDER s));
 }
 
 NAVIGATOR {
