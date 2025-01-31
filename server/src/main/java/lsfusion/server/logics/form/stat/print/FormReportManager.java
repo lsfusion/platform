@@ -27,9 +27,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
@@ -42,7 +40,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.getBusinessLogics;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public abstract class FormReportManager extends FormDataManager {
