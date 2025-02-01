@@ -558,22 +558,7 @@ onClientStarted () + {
 }
 
 onDesktopClientStarted() + {
-    readResource('jasperreports.properties');
-    zipping('jasperreports.properties') <- resource();
-
-    readResource('jasperreports_extension.properties');
-    zipping('jasperreports_extension.properties') <- resource();
-
-    readResourcePaths('/fonts/.*');
-    
-    FOR resourcePaths(STRING path) DO {
-        readResource(path);
-        zipping(path) <- resource();
-    }
-    
-    makeZipFile(TRUE);
-     
-    copyReportResources(zipped(), md5(zipped()));
+    copyReportResources();
 }
 
 NAVIGATOR {
