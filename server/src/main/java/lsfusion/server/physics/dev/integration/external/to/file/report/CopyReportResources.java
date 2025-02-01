@@ -17,7 +17,7 @@ public class CopyReportResources extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         FileData zipFile = (FileData) getParam(0, context);
         String md5 = (String) getParam(1, context);
-        if (!(boolean) context.requestUserInteraction(new CopyReportResourcesCheckHashClientAction(md5))) {
+        if (!(boolean) context.requestUserInteraction(new CopyReportResourcesClientAction(null, md5))) {
             context.delayUserInteraction(new CopyReportResourcesClientAction(zipFile, md5));
         }
     }
