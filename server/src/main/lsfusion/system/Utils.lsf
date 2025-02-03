@@ -100,13 +100,7 @@ readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.fil
 
 zipReportResources() {
     readMultipleResource('jasperreports_extension.properties');
-    FOR resource(INTEGER i) DO {
-        appendToFile('temp.properties', STRING(resource(i)));
-    }
-    LOCAL resultFile = FILE();
-    READ 'temp.properties' TO resultFile;
-    zipping('jasperreports_extension.properties') <- resultFile();
-    delete('temp.properties');
+    zipping('jasperreports_extension.properties') <- file(RAWFILE(GROUP CONCAT STRING(resource(INTEGER i)), '' ORDER i), '.properties');
 
     readResourcePaths('/fonts/.*');
 
