@@ -78,10 +78,8 @@ makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.
 
 resource '{utils.resource.file}' = DATA LOCAL FILE ();
 resourcePath '{utils.resource.file.path}' = DATA LOCAL STRING ();
-readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING);
-
-resource '{utils.resource.file}' = DATA LOCAL FILE (INTEGER);
-readMultipleResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadMultipleResourceAction' (STRING);
+readResource '{utils.read.resource}' (STRING path, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction';
+readResource(STRING path) { readResource(path, NULL); }
 
 getResource(STRING path) {
     readResource(path);
@@ -91,7 +89,8 @@ getResource(STRING path) {
 } @@api;
 
 resourcePaths = DATA LOCAL STRING (STRING);
-readResourcePaths  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction' (STRING);
+readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
+readResourcePaths (STRING pattern) { readResourcePaths(pattern, NULL); }
 
 resourceFile '{utils.resource.file}' = resource(); // deprecated
 
@@ -99,11 +98,19 @@ properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
 
 zipReportResources() {
-    readMultipleResource('jasperreports_extension.properties');
-    zipping('jasperreports_extension.properties') <- file(RAWFILE(GROUP CONCAT STRING(resource(INTEGER i)), '' ORDER i), '.properties');
+    readResource('jasperreports.properties');
+    zipping('jasperreports.properties') <- resource();
+    
+    readResourcePaths('.*/jasperreports_extension.properties', TRUE);
+    LOCAL result = STRING();
+    FOR resourcePaths(STRING path) DO {
+        readResource(path, TRUE);
+        result() <- CONCAT '', result(), STRING(resource());
+    }
+    zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
 
+    resourcePaths(STRING path) <- NULL;
     readResourcePaths('/fonts/.*');
-
     FOR resourcePaths(STRING path) DO {
         readResource(path);
         zipping(path) <- resource();

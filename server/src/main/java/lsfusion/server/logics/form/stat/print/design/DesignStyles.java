@@ -1,5 +1,7 @@
 package lsfusion.server.logics.form.stat.print.design;
 
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.design.JRDesignStyle;
 import net.sf.jasperreports.engine.type.LineStyleEnum;
 import net.sf.jasperreports.engine.type.ModeEnum;
@@ -9,11 +11,13 @@ import java.awt.*;
 
 public class DesignStyles {
 
+    private static String defaultFont = JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).getProperty("net.sf.jasperreports.default.pdf.font.name");
+
     public static JRDesignStyle getDefaultStyle() {
         JRDesignStyle style = new JRDesignStyle();
         style.setName("DefaultStyle");
 
-        style.setFontName("DejaVu Sans");
+        style.setFontName(defaultFont);
         style.setFontSize((float) 10);
         style.setVerticalTextAlign(VerticalTextAlignEnum.MIDDLE);
 
