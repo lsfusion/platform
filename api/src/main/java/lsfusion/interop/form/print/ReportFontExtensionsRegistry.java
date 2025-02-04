@@ -50,7 +50,7 @@ public class ReportFontExtensionsRegistry implements ExtensionsRegistry {
         return null;
     }
 
-    protected void ensureFontExtensions()
+    public void ensureFontExtensions()
     {
         if ((fontFamilies == null || fontSets == null) && fontFamiliesLocations != null)
         {

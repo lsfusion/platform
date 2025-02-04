@@ -4,20 +4,15 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
+import lsfusion.interop.form.print.ReportExtensionsRegistryFactory;
 import net.lingala.zip4j.ZipFile;
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
-import net.sf.jasperreports.engine.fonts.FontExtensionsCollector;
-import net.sf.jasperreports.engine.fonts.SimpleFontExtensionHelper;
+import net.sf.jasperreports.engine.JRPropertiesMap;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 public class CopyReportResourcesClientAction implements ClientAction {
     public final FileData zipFile;
@@ -55,12 +50,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
 
     private void loadFontExtensions() throws IOException {
         Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jasperFontsTempDir.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
-        SimpleFontExtensionHelper fontExtensionHelper = SimpleFontExtensionHelper.getInstance();
-        DefaultJasperReportsContext context = DefaultJasperReportsContext.getInstance();
-        FontExtensionsCollector extensionsCollector = new FontExtensionsCollector();
-
-        try (Stream<Path> walkStream = Files.walk(Paths.get(jasperFontsTempDir.getPath()))) {
-            walkStream.filter(path -> path.toString().endsWith(".xml")).forEach(path -> fontExtensionHelper.loadFontExtensions(context, path.toString(), extensionsCollector));
-        }
+        JRPropertiesMap properties = JRPropertiesMap.loadProperties(new URL("file:" + jasperFontsTempDir.getAbsolutePath() + "/jasperreports_extension.properties"));
+        new ReportExtensionsRegistryFactory().createRegistry("simple.font.families", properties).ensureFontExtensions();
     }
 }
