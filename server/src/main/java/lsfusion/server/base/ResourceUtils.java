@@ -116,7 +116,7 @@ public class ResourceUtils {
             final String fileName = ze.getName();
             assert !fileName.startsWith("/");
             if (!ze.isDirectory()) {
-                fillResourcesResult((fullPaths ? "jar:file:/" + file.getAbsolutePath() + "!" : "") + ("/" + fileName), patterns, retval, fullPaths);
+                fillResourcesResult((fullPaths ? "jar:" + file.toURI() + "!" : "") + ("/" + fileName), patterns, retval, fullPaths);
             }
         }
         try {
@@ -135,7 +135,7 @@ public class ResourceUtils {
                 if (file.isDirectory()) {
                     result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", patterns, fullPaths));
                 } else {
-                    final String fileName = (fullPaths ? "file:" + directory.getAbsolutePath().replace("\\", "/") : "") + relativePath + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
+                    final String fileName = (fullPaths ? directory.toURI() : "") + relativePath + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
                     fillResourcesResult(fileName, patterns, result, fullPaths);
                 }
             }

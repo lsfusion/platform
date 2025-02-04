@@ -4,9 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.interop.form.print.ReportExtensionsRegistryFactory;
 import net.lingala.zip4j.ZipFile;
 import net.sf.jasperreports.engine.JRPropertiesMap;
+import net.sf.jasperreports.engine.fonts.FontFamily;
+import net.sf.jasperreports.engine.util.ClassUtils;
+import net.sf.jasperreports.extensions.ExtensionsRegistryFactory;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -50,7 +52,8 @@ public class CopyReportResourcesClientAction implements ClientAction {
 
     private void loadFontExtensions() throws IOException {
         Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jasperFontsTempDir.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
-        JRPropertiesMap properties = JRPropertiesMap.loadProperties(new URL("file:" + jasperFontsTempDir.getAbsolutePath() + "/jasperreports_extension.properties"));
-        new ReportExtensionsRegistryFactory().createRegistry("simple.font.families", properties).ensureFontExtensions();
+        JRPropertiesMap properties = JRPropertiesMap.loadProperties(new File(jasperFontsTempDir, "jasperreports_extension.properties").toURI().toURL());
+        ExtensionsRegistryFactory factory = (ExtensionsRegistryFactory) ClassUtils.instantiateClass(properties.getProperty("net.sf.jasperreports.extension.registry.factory.simple.font.families"), ExtensionsRegistryFactory.class);
+        factory.createRegistry("simple.font.families", properties).getExtensions(FontFamily.class); //call ReportFontExtensionRegistry ensureFontExtensions
     }
 }

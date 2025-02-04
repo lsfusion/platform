@@ -3,6 +3,7 @@ package lsfusion.interop.form.print;
 import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.extensions.DefaultExtensionsRegistry;
+import net.sf.jasperreports.extensions.ExtensionsRegistry;
 import net.sf.jasperreports.extensions.ExtensionsRegistryFactory;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class ReportExtensionsRegistryFactory implements ExtensionsRegistryFactor
             DefaultExtensionsRegistry.PROPERTY_REGISTRY_PREFIX + "simple.font.families.";
     
     @Override
-    public ReportFontExtensionsRegistry createRegistry(String registryId, JRPropertiesMap properties) {
+    public ExtensionsRegistry createRegistry(String registryId, JRPropertiesMap properties) {
         List<JRPropertiesUtil.PropertySuffix> fontFamiliesProperties = JRPropertiesUtil.getProperties(properties, SIMPLE_FONT_FAMILIES_PROPERTY_PREFIX);
         List<String> fontFamiliesLocations = new ArrayList<>();
         for (Iterator<JRPropertiesUtil.PropertySuffix> it = fontFamiliesProperties.iterator(); it.hasNext();)
