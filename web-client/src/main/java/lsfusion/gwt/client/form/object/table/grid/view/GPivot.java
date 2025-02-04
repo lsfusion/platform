@@ -1087,6 +1087,25 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setValueCellBackground(jsElement, getRowLevel(rowKeys.length()), columnKeys.length(), false);
     }
 
+    public JsArray formatArray(JsArray columnNames, JsArray array) {
+        JsArray stringArray = JsArray.createArray().cast();
+        for(int i = 0; i < array.length(); ++i) {
+            stringArray.push(fromObject(formatValue(columnNames.get(i).toString(), array.get(i), false)));
+        }
+        return stringArray;
+    }
+
+    public String formatValue(String columnName, JavaScriptObject value, boolean nullString) {
+        if (value == null) {
+            return nullString ? "null" : null;
+        } else if (columnName.equals(COLUMN)) {
+            return value.toString();
+        } else {
+            GPropertyDraw property = columnMap.get(columnName).property;
+            return property.getCellRenderer(RendererType.PIVOT).format(getPValue(property, value), RendererType.PIVOT, null);
+        }
+    }
+
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
         int totalRowLevels = getTotalRowLevels();
         int totalColLevels = config.getArrayString("cols").length();
@@ -1966,6 +1985,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
+            },
+
+            formatArray: function (columnNames, array) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatArray(*)(columnNames, array);
+            },
+
+            formatValue: function (columnName, value, nullString) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatValue(*)(columnName, value, nullString);
             }
         }
 

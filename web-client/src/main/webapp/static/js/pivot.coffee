@@ -720,7 +720,7 @@ callWithJQuery ($) ->
                         if recordsProcessed > 0
                             attrValues[attr]["null"] = recordsProcessed
                 for attr of attrValues
-                    value = record[attr] ? "null"
+                    value = if opts.callbacks then opts.callbacks.formatValue(attr, record[attr], true) else record[attr] ? "null"
                     attrValues[attr][value] ?= 0
                     attrValues[attr][value]++
                 recordsProcessed++

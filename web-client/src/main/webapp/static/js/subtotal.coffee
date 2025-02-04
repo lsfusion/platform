@@ -16,12 +16,12 @@ callWithJQuery ($) ->
             @rowAttrGroups = convertAttrsToGroups @rowAttrs, opts.rendererOptions.rowSubtotalDisplay.splitPositions
             @rowAttrIndex = buildRowAttrsIndex @rowAttrGroups
                 
-        processKey = (record, totals, keys, attrs, getAggregator) ->
+        processKey = (callbacks, record, totals, keys, attrs, getAggregator) ->
             key = []
             addKey = false
             for attr in attrs
                 key.push record[attr] # ? "null"
-                flatKey = key.join String.fromCharCode(0)
+                flatKey = (if callbacks then callbacks.formatArray(attrs, key) else key).join String.fromCharCode(0)
                 if not totals[flatKey]
                     totals[flatKey] = getAggregator key.slice()
                     addKey = true
@@ -34,20 +34,20 @@ callWithJQuery ($) ->
             colKey = []
 
             @allTotal.push record
-            rowKey = processKey record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
+            rowKey = processKey @callbacks, record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
                 return @aggregator this, key, []
-            colKey = processKey record, @colTotals, @colKeys, @colAttrs, (key) =>
+            colKey = processKey @callbacks, record, @colTotals, @colKeys, @colAttrs, (key) =>
                 return @aggregator this, [], key
             m = rowKey.length-1
             n = colKey.length-1
             return if m < 0 or n < 0
             for i in [0..m]
                 fRowKey = rowKey.slice(0, i+1)
-                flatRowKey = fRowKey.join String.fromCharCode(0)
+                flatRowKey = (if @callbacks then @callbacks.formatArray(@rowAttrs, fRowKey) else fRowKey).join String.fromCharCode(0)
                 @tree[flatRowKey] = {} if not @tree[flatRowKey]
                 for j in [0..n]
                     fColKey = colKey.slice 0, j+1
-                    flatColKey = fColKey.join String.fromCharCode(0)
+                    flatColKey = (if @callbacks then @callbacks.formatArray(@colAttrs, fColKey) else fColKey).join String.fromCharCode(0)
                     @tree[flatRowKey][flatColKey] = @aggregator this, fRowKey, fColKey if not @tree[flatRowKey][flatColKey]
                     @tree[flatRowKey][flatColKey].push record
 
@@ -339,7 +339,7 @@ callWithJQuery ($) ->
         setAttributes = (e, attrs) ->
             e.setAttribute a, v for own a, v of attrs
 
-        processColKeys = (keysArr) ->
+        processColKeys = (colAttrs, keysArr) ->
             lastIdx = keysArr[0].length-1
             headers = children: []
             row = 0
@@ -347,41 +347,43 @@ callWithJQuery ($) ->
                 (val0, k0) => 
                     col = 0
                     k0.reduce(
-                        (acc, curVal, curIdx) => 
-                            if not acc[curVal]
+                        (acc, curVal, curIdx) =>
+                            curValString = if callbacks then callbacks.formatValue(colAttrs[curIdx], curVal, false) else curVal
+                            if not acc[curValString]
                                 key = k0.slice 0, col+1
-                                acc[curVal] =
+                                acc[curValString] =
                                     row: row
                                     col: col
                                     descendants: 0
                                     children: []
                                     value: curVal
                                     key: key 
-                                    flatKey: key.join String.fromCharCode(0) 
+                                    flatKey: (if callbacks then callbacks.formatArray(colAttrs, key) else key).join String.fromCharCode(0)
                                     firstLeaf: null 
                                     leaves: 0
                                     parent: if col isnt 0 then acc else null
                                     childrenSpan: 0
-                                acc.children.push curVal
+                                acc.children.push curValString
                             if col > 0 
                                 acc.descendants++
                             col++
                             if curIdx == lastIdx
                                 node = headers
                                 for i in [0..lastIdx-1] when lastIdx > 0
-                                    node[k0[i]].leaves++
-                                    if not node[k0[i]].firstLeaf 
-                                        node[k0[i]].firstLeaf = acc[curVal]
-                                    node = node[k0[i]]
+                                    index = if callbacks then callbacks.formatValue(colAttrs[i], k0[i]) else k0[i]
+                                    node[index].leaves++
+                                    if not node[index].firstLeaf
+                                        node[index].firstLeaf = acc[curValString]
+                                    node = node[index]
                                 return headers
-                            return acc[curVal]
+                            return acc[curValString]
                         headers)
                     row++
                     return headers
                 headers)
             return headers
 
-        processRowKeys = (keysArr, className, splitPositions) ->
+        processRowKeys = (rowAttrs, keysArr, className, splitPositions) ->
             lastIdx = keysArr[0].length-1
             headers = children: []
             row = 0
@@ -389,11 +391,13 @@ callWithJQuery ($) ->
                 (val0, k0) => 
                     col = 0
                     curElement = []
+                    curColumns = []
                     k0.reduce(
                         (acc, curVal, curIdx) => 
                             curElement.push curVal
+                            curColumns.push rowAttrs[curIdx]
                             if splitPositions.indexOf(curIdx) != -1
-                                flatCurElement = curElement.join String.fromCharCode(0)
+                                flatCurElement = (if callbacks then callbacks.formatArray(curColumns, curElement) else curElement).join String.fromCharCode(0)
                                 if not acc[flatCurElement] 
                                     key = k0.slice 0, curIdx+1
                                     acc[flatCurElement] =
@@ -404,7 +408,7 @@ callWithJQuery ($) ->
                                         values: curElement
                                         text: flatCurElement
                                         key: key 
-                                        flatKey: key.join String.fromCharCode(0)
+                                        flatKey: (if callbacks then callbacks.formatArray(rowAttrs, key) else key).join String.fromCharCode(0)
                                         firstLeaf: null 
                                         leaves: 0
                                         parent: if col isnt 0 then acc else null
@@ -421,7 +425,8 @@ callWithJQuery ($) ->
                                             node.firstLeaf = acc[flatCurElement]
                                         node = node.parent
                                     return headers 
-                                curElement = [] 
+                                curElement = []
+                                curColumns = []
                                 return acc[flatCurElement]
                             else 
                                 return acc
@@ -556,9 +561,9 @@ callWithJQuery ($) ->
                 return false
             return splitPositions.indexOf(index) != -1    
 
-        buildColHeader = (axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) ->
+        buildColHeader = (callbacks, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) ->
             # DF Recurse
-            buildColHeader axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData for chKey in h.children
+            buildColHeader callbacks, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData for chKey in h.children
             # Process
             ah = axisHeaders.ah[h.col]
             ah.attrHeaders.push h
@@ -1095,8 +1100,8 @@ callWithJQuery ($) ->
             rowAttrHeaders = []
             colAttrHeaders = []
 
-            colKeyHeaders = processColKeys colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
-            rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
+            colKeyHeaders = processColKeys colAttrs, colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
+            rowKeyHeaders = processRowKeys rowAttrs, rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
             outerDiv = createElement "div", "subtotalouterdiv"
 
@@ -1117,7 +1122,7 @@ callWithJQuery ($) ->
                 if colKeyHeaders?
                     node = counter: 0
                     for chKey in colKeyHeaders.children
-                        buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData 
+                        buildColHeader callbacks, colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
                 if not hideRowsTotalsCol        

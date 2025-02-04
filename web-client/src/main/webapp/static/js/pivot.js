@@ -1191,7 +1191,7 @@
             }
           }
           for (attr in attrValues) {
-            value = (ref = record[attr]) != null ? ref : "null";
+            value = opts.callbacks ? opts.callbacks.formatValue(attr, record[attr], true) : (ref = record[attr]) != null ? ref : "null";
             if ((base = attrValues[attr])[value] == null) {
               base[value] = 0;
             }

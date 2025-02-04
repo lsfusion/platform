@@ -40,10 +40,10 @@
           rowKey = [];
           colKey = [];
           this.allTotal.push(record);
-          rowKey = processKey(record, this.rowTotals, this.rowKeys, this.rowAttrs, (key) => {
+          rowKey = processKey(this.callbacks, record, this.rowTotals, this.rowKeys, this.rowAttrs, (key) => {
             return this.aggregator(this, key, []);
           });
-          colKey = processKey(record, this.colTotals, this.colKeys, this.colAttrs, (key) => {
+          colKey = processKey(this.callbacks, record, this.colTotals, this.colKeys, this.colAttrs, (key) => {
             return this.aggregator(this, [], key);
           });
           m = rowKey.length - 1;
@@ -54,7 +54,7 @@
           results = [];
           for (i = k = 0, ref = m; (0 <= ref ? k <= ref : k >= ref); i = 0 <= ref ? ++k : --k) {
             fRowKey = rowKey.slice(0, i + 1);
-            flatRowKey = fRowKey.join(String.fromCharCode(0));
+            flatRowKey = (this.callbacks ? this.callbacks.formatArray(this.rowAttrs, fRowKey) : fRowKey).join(String.fromCharCode(0));
             if (!this.tree[flatRowKey]) {
               this.tree[flatRowKey] = {};
             }
@@ -63,7 +63,7 @@
               results1 = [];
               for (j = l = 0, ref1 = n; (0 <= ref1 ? l <= ref1 : l >= ref1); j = 0 <= ref1 ? ++l : --l) {
                 fColKey = colKey.slice(0, j + 1);
-                flatColKey = fColKey.join(String.fromCharCode(0));
+                flatColKey = (this.callbacks ? this.callbacks.formatArray(this.colAttrs, fColKey) : fColKey).join(String.fromCharCode(0));
                 if (!this.tree[flatRowKey][flatColKey]) {
                   this.tree[flatRowKey][flatColKey] = this.aggregator(this, fRowKey, fColKey);
                 }
@@ -199,14 +199,14 @@
 
       };
 
-      processKey = function(record, totals, keys, attrs, getAggregator) {
+      processKey = function(callbacks, record, totals, keys, attrs, getAggregator) {
         var addKey, attr, flatKey, k, key, len1;
         key = [];
         addKey = false;
         for (k = 0, len1 = attrs.length; k < len1; k++) {
           attr = attrs[k];
           key.push(record[attr]);
-          flatKey = key.join(String.fromCharCode(0));
+          flatKey = (callbacks ? callbacks.formatArray(attrs, key) : key).join(String.fromCharCode(0));
           if (!totals[flatKey]) {
             totals[flatKey] = getAggregator(key.slice());
             addKey = true;
@@ -594,7 +594,7 @@
         }
         return results;
       };
-      processColKeys = function(keysArr) {
+      processColKeys = function(colAttrs, keysArr) {
         var headers, lastIdx, row;
         lastIdx = keysArr[0].length - 1;
         headers = {
@@ -605,23 +605,24 @@
           var col;
           col = 0;
           k0.reduce((acc, curVal, curIdx) => {
-            var k, key, node, ref3;
-            if (!acc[curVal]) {
+            var curValString, index, k, key, node, ref3;
+            curValString = callbacks ? callbacks.formatValue(colAttrs[curIdx], curVal, false) : curVal;
+            if (!acc[curValString]) {
               key = k0.slice(0, col + 1);
-              acc[curVal] = {
+              acc[curValString] = {
                 row: row,
                 col: col,
                 descendants: 0,
                 children: [],
                 value: curVal,
                 key: key,
-                flatKey: key.join(String.fromCharCode(0)),
+                flatKey: (callbacks ? callbacks.formatArray(colAttrs, key) : key).join(String.fromCharCode(0)),
                 firstLeaf: null,
                 leaves: 0,
                 parent: col !== 0 ? acc : null,
                 childrenSpan: 0
               };
-              acc.children.push(curVal);
+              acc.children.push(curValString);
             }
             if (col > 0) {
               acc.descendants++;
@@ -633,22 +634,23 @@
                 if (!(lastIdx > 0)) {
                   continue;
                 }
-                node[k0[i]].leaves++;
-                if (!node[k0[i]].firstLeaf) {
-                  node[k0[i]].firstLeaf = acc[curVal];
+                index = callbacks ? callbacks.formatValue(colAttrs[i], k0[i]) : k0[i];
+                node[index].leaves++;
+                if (!node[index].firstLeaf) {
+                  node[index].firstLeaf = acc[curValString];
                 }
-                node = node[k0[i]];
+                node = node[index];
               }
               return headers;
             }
-            return acc[curVal];
+            return acc[curValString];
           }, headers);
           row++;
           return headers;
         }, headers);
         return headers;
       };
-      processRowKeys = function(keysArr, className, splitPositions) {
+      processRowKeys = function(rowAttrs, keysArr, className, splitPositions) {
         var headers, lastIdx, row;
         lastIdx = keysArr[0].length - 1;
         headers = {
@@ -656,14 +658,16 @@
         };
         row = 0;
         keysArr.reduce((val0, k0) => {
-          var col, curElement;
+          var col, curColumns, curElement;
           col = 0;
           curElement = [];
+          curColumns = [];
           k0.reduce((acc, curVal, curIdx) => {
             var flatCurElement, key, node;
             curElement.push(curVal);
+            curColumns.push(rowAttrs[curIdx]);
             if (splitPositions.indexOf(curIdx) !== -1) {
-              flatCurElement = curElement.join(String.fromCharCode(0));
+              flatCurElement = (callbacks ? callbacks.formatArray(curColumns, curElement) : curElement).join(String.fromCharCode(0));
               if (!acc[flatCurElement]) {
                 key = k0.slice(0, curIdx + 1);
                 acc[flatCurElement] = {
@@ -674,7 +678,7 @@
                   values: curElement,
                   text: flatCurElement,
                   key: key,
-                  flatKey: key.join(String.fromCharCode(0)),
+                  flatKey: (callbacks ? callbacks.formatArray(rowAttrs, key) : key).join(String.fromCharCode(0)),
                   firstLeaf: null,
                   leaves: 0,
                   parent: col !== 0 ? acc : null,
@@ -698,6 +702,7 @@
                 return headers;
               }
               curElement = [];
+              curColumns = [];
               return acc[flatCurElement];
             } else {
               return acc;
@@ -866,13 +871,13 @@
         }
         return splitPositions.indexOf(index) !== -1;
       };
-      buildColHeader = function(axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) {
+      buildColHeader = function(callbacks, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) {
         var ah, chKey, isExpanded, k, len1, ref3, ref4;
         ref3 = h.children;
         for (k = 0, len1 = ref3.length; k < len1; k++) {
           chKey = ref3[k];
           // DF Recurse
-          buildColHeader(axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData);
+          buildColHeader(callbacks, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData);
         }
         // Process
         ah = axisHeaders.ah[h.col];
@@ -1707,10 +1712,10 @@
         rowAttrHeaders = [];
         colAttrHeaders = [];
         if (colAttrs.length !== 0 && colKeys.length !== 0) {
-          colKeyHeaders = processColKeys(colKeys);
+          colKeyHeaders = processColKeys(colAttrs, colKeys);
         }
         if (rowAttrs.length !== 0 && rowKeys.length !== 0) {
-          rowKeyHeaders = processRowKeys(rowKeys, "pvtRowLabel", rowSplitPositions);
+          rowKeyHeaders = processRowKeys(rowAttrs, rowKeys, "pvtRowLabel", rowSplitPositions);
         }
         outerDiv = createElement("div", "subtotalouterdiv");
         headerDiv = createElement("div", "headerdiv");
@@ -1730,7 +1735,7 @@
             ref3 = colKeyHeaders.children;
             for (k = 0, len1 = ref3.length; k < len1; k++) {
               chKey = ref3[k];
-              buildColHeader(colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData);
+              buildColHeader(callbacks, colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData);
               overallSpan += colKeyHeaders[chKey].th.colSpan;
             }
           }
