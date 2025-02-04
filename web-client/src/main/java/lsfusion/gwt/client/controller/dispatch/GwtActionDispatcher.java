@@ -531,9 +531,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), null, true, PValue.convertFileValue(action.values.get(i))));
             }
             String function = action.resource;
-            PValue currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
-                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
-            onActionExecuted(action, PValue.convertFileValueBack(currentActionResult));
+            PValue currentActionResult = null;
+            try {
+                currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
+                        GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
+            } finally {
+                // we need to call onActionExecuted to set isExecuting = false, otherwise js-actions will not be executed until the page reloads
+                onActionExecuted(action, PValue.convertFileValueBack(currentActionResult));
+            }
         }
     }
 
