@@ -5,10 +5,6 @@ import lsfusion.base.file.FileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 import net.lingala.zip4j.ZipFile;
-import net.sf.jasperreports.engine.JRPropertiesMap;
-import net.sf.jasperreports.engine.fonts.FontFamily;
-import net.sf.jasperreports.engine.util.ClassUtils;
-import net.sf.jasperreports.extensions.ExtensionsRegistryFactory;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -33,7 +29,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
             if (zipFile == null) {
                 boolean exists = new File(jasperFontsTempDir, md5).exists();
                 if (exists)
-                    loadFontExtensions();
+                    setContextClassLoader();
                 return exists;
             } else {
                 FileUtils.cleanDirectory(jasperFontsTempDir);
@@ -42,7 +38,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
                 try(ZipFile zf = new ZipFile(zip)) {
                     zf.extractAll(jasperFontsTempDir.getAbsolutePath());
                 }
-                loadFontExtensions();
+                setContextClassLoader();
                 return null;
             }
         } catch (Exception e) {
@@ -50,10 +46,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
         }
     }
 
-    private void loadFontExtensions() throws IOException {
+    private void setContextClassLoader() throws IOException {
         Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jasperFontsTempDir.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
-        JRPropertiesMap properties = JRPropertiesMap.loadProperties(new File(jasperFontsTempDir, "jasperreports_extension.properties").toURI().toURL());
-        ExtensionsRegistryFactory factory = (ExtensionsRegistryFactory) ClassUtils.instantiateClass(properties.getProperty("net.sf.jasperreports.extension.registry.factory.simple.font.families"), ExtensionsRegistryFactory.class);
-        factory.createRegistry("simple.font.families", properties).getExtensions(FontFamily.class); //call ReportFontExtensionRegistry ensureFontExtensions
     }
 }
