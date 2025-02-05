@@ -406,11 +406,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ImOrderMap<OrderInstance, Boolean> fixedOrders = MapFact.EMPTYORDER();
 
-    private PropertyDrawInstance calendarDateProperty;
-    public void setCalendarDateProperty(PropertyDrawInstance calendarDateProperty) {
-        this.calendarDateProperty = calendarDateProperty;
-    }
-
     // обертку потому как сложный assertion
     private ImOrderMap<OrderInstance,Boolean> setOrders = null;
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
