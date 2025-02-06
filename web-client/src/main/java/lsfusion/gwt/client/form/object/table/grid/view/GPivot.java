@@ -39,6 +39,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -1106,6 +1107,22 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    public JavaScriptObject formatNumeric(String columnName, JavaScriptObject value) {
+        if (value == null) {
+            return null;
+        } else if (columnName.equals(COLUMN)) {
+            return getNaN();
+        } else {
+            GPropertyDraw property = columnMap.get(columnName).property;
+            CellRenderer cellRenderer = property.getCellRenderer(RendererType.PIVOT);
+            return cellRenderer instanceof IntegralCellRenderer ? fromObject(cellRenderer.format(getPValue(property, value), RendererType.PIVOT, null)) : getNaN();
+        }
+    }
+
+    private final native JavaScriptObject getNaN() /*-{
+        return NaN;
+    }-*/;
+
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
         int totalRowLevels = getTotalRowLevels();
         int totalColLevels = config.getArrayString("cols").length();
@@ -1993,6 +2010,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             formatValue: function (columnName, value, nullString) {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatValue(*)(columnName, value, nullString);
+            },
+
+            formatNumeric: function (columnName, value) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatNumeric(*)(columnName, value);
             }
         }
 

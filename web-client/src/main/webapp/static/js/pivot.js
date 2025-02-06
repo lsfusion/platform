@@ -460,7 +460,7 @@
     rx = /(\d+)|(\D+)/g;
     rd = /\d/;
     rz = /^0/;
-    naturalSort = (as, bs) => {
+    naturalSort = (as, bs, attr, callbacks) => {
       var a, a1, b, b1, nas, nbs;
       if ((bs != null) && (as == null)) {
         //nulls first
@@ -477,8 +477,8 @@
         return 1;
       }
       //numbers and numbery strings group together
-      nas = +as;
-      nbs = +bs;
+      nas = callbacks ? callbacks.formatNumeric(attr, as) : +as;
+      nbs = callbacks ? callbacks.formatNumeric(attr, bs) : +bs;
       if (nas < nbs) {
         return -1;
       }
@@ -503,8 +503,8 @@
         return 1;
       }
       //finally, "smart" string sorting per http://stackoverflow.com/a/4373421/112871
-      a = String(as);
-      b = String(bs);
+      a = callbacks ? callbacks.formatValue(attr, as, true) : String(as);
+      b = callbacks ? callbacks.formatValue(attr, bs, true) : String(bs);
       if (a === b) {
         return 0;
       }

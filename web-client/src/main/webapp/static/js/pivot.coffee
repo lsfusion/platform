@@ -229,7 +229,7 @@ callWithJQuery ($) ->
     rx = /(\d+)|(\D+)/g
     rd = /\d/
     rz = /^0/
-    naturalSort = (as, bs) =>
+    naturalSort = (as, bs, attr, callbacks) =>
         #nulls first
         return -1 if bs? and not as?
         return  1 if as? and not bs?
@@ -239,8 +239,8 @@ callWithJQuery ($) ->
         return  1 if typeof bs == "number" and isNaN(bs)
 
         #numbers and numbery strings group together
-        nas = +as
-        nbs = +bs
+        nas = if callbacks then callbacks.formatNumeric(attr, as) else +as
+        nbs = if callbacks then callbacks.formatNumeric(attr, bs) else +bs
         return -1 if nas < nbs
         return  1 if nas > nbs
 
@@ -254,8 +254,8 @@ callWithJQuery ($) ->
         return  1 if isNaN(nas) and not isNaN(nbs)
 
         #finally, "smart" string sorting per http://stackoverflow.com/a/4373421/112871
-        a = String(as)
-        b = String(bs)
+        a = if callbacks then callbacks.formatValue(attr, as, true) else String(as)
+        b = if callbacks then callbacks.formatValue(attr, bs, true) else String(bs)
         return 0 if a == b
         return (if a > b then 1 else -1) unless rd.test(a) and rd.test(b)
 

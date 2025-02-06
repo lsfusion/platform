@@ -33,6 +33,7 @@
           this.multiplePredicatesSort = this.multiplePredicatesSort.bind(this);
           this.rowAttrGroups = convertAttrsToGroups(this.rowAttrs, opts.rendererOptions.rowSubtotalDisplay.splitPositions);
           this.rowAttrIndex = buildRowAttrsIndex(this.rowAttrGroups);
+          this.callbacks = opts.callbacks;
         }
 
         processRecord(record) { //this code is called in a tight loop
@@ -112,7 +113,7 @@
             }
             return results;
           }).call(this);
-          return this.multiplePredicatesSort(groupPredicates);
+          return this.multiplePredicatesSort(groupPredicates, this.callbacks);
         }
 
         groupPredicate(attrGroup) {
@@ -132,9 +133,9 @@
             }
           }
           if (predicates.length === 0) {
-            predicates.push(this.defaultPredicate(attrGroup, this.rowAttrIndex));
+            predicates.push(this.defaultPredicate(attrGroup, this.rowAttrIndex, this.callbacks));
           }
-          return this.multiplePredicatesSort(predicates);
+          return this.multiplePredicatesSort(predicates, this.callbacks);
         }
 
         rowAxisPredicate(sortItem) {
@@ -166,14 +167,14 @@
           };
         }
 
-        defaultPredicate(attrGroup, rowAttrIndex) {
+        defaultPredicate(attrGroup, rowAttrIndex, callbacks) {
           boundMethodCheck(this, SubtotalPivotData);
           return function(a, b) {
             var attr, i, k, len1, result;
             for (k = 0, len1 = attrGroup.length; k < len1; k++) {
               attr = attrGroup[k];
               i = rowAttrIndex[attr];
-              result = $.pivotUtilities.naturalSort(a[i], b[i]);
+              result = $.pivotUtilities.naturalSort(a[i], b[i], attr, callbacks);
               if (result !== 0) {
                 return result;
               }
@@ -182,13 +183,13 @@
           };
         }
 
-        multiplePredicatesSort(predicates) {
+        multiplePredicatesSort(predicates, callbacks) {
           boundMethodCheck(this, SubtotalPivotData);
           return function(a, b) {
             var k, len1, predicate, result;
             for (k = 0, len1 = predicates.length; k < len1; k++) {
               predicate = predicates[k];
-              result = predicate(a, b);
+              result = predicate(a, b, callbacks);
               if (result !== 0) {
                 return result;
               }

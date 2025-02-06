@@ -15,6 +15,7 @@ callWithJQuery ($) ->
             
             @rowAttrGroups = convertAttrsToGroups @rowAttrs, opts.rendererOptions.rowSubtotalDisplay.splitPositions
             @rowAttrIndex = buildRowAttrsIndex @rowAttrGroups
+            @callbacks = opts.callbacks
                 
         processKey = (callbacks, record, totals, keys, attrs, getAggregator) ->
             key = []
@@ -64,7 +65,7 @@ callWithJQuery ($) ->
 
         rowAttrsSortPredicate: () =>
             groupPredicates = (@groupPredicate group for group in @rowAttrGroups)
-            @multiplePredicatesSort groupPredicates
+            @multiplePredicatesSort groupPredicates, @callbacks
 
         groupPredicate: (attrGroup) =>
             predicates = []
@@ -76,8 +77,8 @@ callWithJQuery ($) ->
                     lastKeyIndex = @rowAttrIndex[attrGroup[attrGroup.length-1]]
                     predicates.push @valuePredicate sortItem, lastKeyIndex
             if predicates.length == 0
-                predicates.push @defaultPredicate attrGroup, @rowAttrIndex      
-            @multiplePredicatesSort predicates
+                predicates.push @defaultPredicate attrGroup, @rowAttrIndex, @callbacks
+            @multiplePredicatesSort predicates, @callbacks
         
         rowAxisPredicate: (sortItem) =>
             index = @rowAttrIndex[sortItem.value]
@@ -96,18 +97,18 @@ callWithJQuery ($) ->
                 else
                     return -$.pivotUtilities.naturalSort(value(a[0..lastKeyIndex], colKey), value(b[0..lastKeyIndex], colKey))
             
-        defaultPredicate: (attrGroup, rowAttrIndex) =>
+        defaultPredicate: (attrGroup, rowAttrIndex, callbacks) =>
             (a, b) ->
                 for attr in attrGroup
                     i = rowAttrIndex[attr]
-                    result = $.pivotUtilities.naturalSort(a[i], b[i])
+                    result = $.pivotUtilities.naturalSort(a[i], b[i], attr, callbacks)
                     return result if result != 0
                 return 0
             
-        multiplePredicatesSort: (predicates) =>
+        multiplePredicatesSort: (predicates, callbacks) =>
             (a, b) ->
                 for predicate in predicates
-                    result = predicate(a, b)
+                    result = predicate(a, b, callbacks)
                     return result if result != 0
                 return 0
 
