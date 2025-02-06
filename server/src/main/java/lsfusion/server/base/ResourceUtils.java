@@ -294,14 +294,12 @@ public class ResourceUtils {
 //            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
-                boolean fullPaths = fileName.startsWith("C:");
-
-                String template = fullPaths ? fileName : BaseUtils.replaceFileName(fileName, ".*", true);
+                String template = BaseUtils.replaceFileName(fileName, ".*", true);
 
                 Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.get(template);
                 if(cachedResources == null) {
-                    Pattern pattern = Pattern.compile(fullPaths ? template : (".*/" + template));
-                    List<String> resources = ResourceUtils.getResources(pattern, fullPaths);
+                    Pattern pattern = Pattern.compile(".*/" + template);
+                    List<String> resources = ResourceUtils.getResources(pattern);
                     cachedResources = new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
                     cachedFoundResourcePathes.put(template, cachedResources);
                 }
@@ -310,7 +308,7 @@ public class ResourceUtils {
                     return cachedResources.second.get(fileName);
 
                 for (String entry : cachedResources.first)
-                    if (fullPaths ? entry.equals(fileName) : entry.endsWith("/" + fileName))
+                    if (entry.endsWith("/" + fileName))
                         return entry;
 //            } else {
 //                Pattern pattern = Pattern.compile(".*/" + fileName.replace(".", "\\."));
