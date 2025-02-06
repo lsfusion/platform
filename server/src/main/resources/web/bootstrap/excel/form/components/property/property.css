@@ -78,8 +78,22 @@ select > option {
     color: var(--text-color);
 }
 
-/*parent of checkbox input and label need to be flex*/
 .form-check {
-    display: flex;
-    align-items: center;
+    padding-left: 1.5em;
+}
+
+.form-check .form-check-input {
+    margin-left: -1.5em;
+    width: 1em;
+    height: 1em;
+}
+
+.form-check .panel-property-label {
+    display: inline-block;
+}
+
+.form-check .form-check-input,
+.form-check .form-check-label,
+.form-check .panel-property-label {
+    float: left;
 }
