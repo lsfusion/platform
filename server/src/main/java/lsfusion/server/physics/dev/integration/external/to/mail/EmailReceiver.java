@@ -343,7 +343,7 @@ public class EmailReceiver {
                             break;
                         }
                         if (emailData == null) {
-                            dataEmails.add(Arrays.asList(uid, idFolder, emailFolder.getName(), dateTimeSentEmail, null, null, user, null, null, null));
+                            dataEmails.add(Arrays.asList(uid, idFolder, dateTimeSentEmail, null, null, user, null, null, null, null, null));
                         }
                     }
 
