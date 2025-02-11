@@ -929,7 +929,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
-            if(prop != null) {
+            if (prop != null && !(prop.property instanceof StoredDataProperty)) {
                 Boolean materialized = (Boolean) values.get("materialized");
                 if (materialized) {
                     if (!prop.property.isMarkedStored()) {
