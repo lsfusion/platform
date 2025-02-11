@@ -179,7 +179,6 @@
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
-            <scope>compile</scope>
             <!--избавляемся от ошибок при компиляции-->
             <exclusions>
                 <exclusion>
