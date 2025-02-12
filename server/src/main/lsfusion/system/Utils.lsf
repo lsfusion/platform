@@ -97,35 +97,6 @@ resourceFile '{utils.resource.file}' = resource(); // deprecated
 properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
 
-zipReportResources() {
-    readResource('jasperreports.properties');
-    zipping('jasperreports.properties') <- resource();
-    
-    readResourcePaths('.*/jasperreports_extension.properties', TRUE);
-    LOCAL result = STRING();
-    FOR resourcePaths(STRING path) DO {
-        readResource(path, TRUE);
-        result() <- CONCAT '', result(), STRING(resource());
-    }
-    zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
-
-    resourcePaths(STRING path) <- NULL;
-    readResourcePaths('/fonts/.*');
-    FOR resourcePaths(STRING path) DO {
-        readResource(path);
-        zipping(path) <- resource();
-    }
-
-    makeZipFile(TRUE);
-}
-
-copyReportResources (FILE zipFile, STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CopyReportResources';
-
-copyReportResources() {
-    zipReportResources();
-    copyReportResources(zipped(), md5(zipped()));
-}
-
 // ---------------------------------- Console  ---------------------------------- //
 cmdOut '{utils.cmd.std.out}' = DATA LOCAL STRING ();
 cmdErr '{utils.cmd.std.err}' = DATA LOCAL STRING ();
@@ -266,6 +237,35 @@ copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyT
 array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
 
 basicStaticName(StaticObject object) = getWord(staticName(object), '.', 2);
+
+zipReportResources() {
+    readResource('jasperreports.properties');
+    zipping('jasperreports.properties') <- resource();
+
+    readResourcePaths('.*/jasperreports_extension.properties', TRUE);
+    LOCAL result = STRING();
+    FOR resourcePaths(STRING path) ORDER DESC path DO {
+        readResource(path, TRUE);
+        result() <- CONCAT '', result(), STRING(resource());
+    }
+    zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
+
+    resourcePaths(STRING path) <- NULL;
+    readResourcePaths('/fonts/.*');
+    FOR resourcePaths(STRING path) DO {
+        readResource(path);
+        zipping(substrFrom(path, 2)) <- resource(); //need to remove leading slash
+    }
+
+    makeZipFile(TRUE);
+}
+
+copyReportResources (FILE zipFile, STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CopyReportResources';
+
+copyReportResources() {
+    zipReportResources();
+    copyReportResources(zipped(), md5(zipped()));
+}
 
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';

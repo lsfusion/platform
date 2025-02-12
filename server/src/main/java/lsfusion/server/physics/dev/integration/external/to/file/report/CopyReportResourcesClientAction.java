@@ -1,11 +1,10 @@
 package lsfusion.server.physics.dev.integration.external.to.file.report;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import net.lingala.zip4j.ZipFile;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,19 +25,16 @@ public class CopyReportResourcesClientAction implements ClientAction {
     @Override
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         try {
+            File jar = new File(jasperFontsTempDir, md5 + ".jar");
             if (zipFile == null) {
-                boolean exists = new File(jasperFontsTempDir, md5).exists();
+                boolean exists = jar.exists();
                 if (exists)
-                    setContextClassLoader();
+                    setContextClassLoader(jar);
                 return exists;
             } else {
-                FileUtils.cleanDirectory(jasperFontsTempDir);
-                File zip = new File(jasperFontsTempDir, md5);
-                zipFile.getRawFile().write(zip);
-                try(ZipFile zf = new ZipFile(zip)) {
-                    zf.extractAll(jasperFontsTempDir.getAbsolutePath());
-                }
-                setContextClassLoader();
+                zipFile.getRawFile().write(jar);
+                setContextClassLoader(jar);
+                safeDeleteOldFiles(jar.getName());
                 return null;
             }
         } catch (Exception e) {
@@ -46,7 +42,16 @@ public class CopyReportResourcesClientAction implements ClientAction {
         }
     }
 
-    private void setContextClassLoader() throws IOException {
-        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jasperFontsTempDir.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
+    private void setContextClassLoader(File jar) throws IOException {
+        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jar.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
+    }
+
+    private void safeDeleteOldFiles(String jar) {
+        File[] listFiles = jasperFontsTempDir.listFiles(f -> !f.getName().equals(jar));
+        if (listFiles != null) {
+            for (File file : listFiles) {
+                BaseUtils.safeDelete(file);
+            }
+        }
     }
 }
