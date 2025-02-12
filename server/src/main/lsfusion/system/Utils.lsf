@@ -246,7 +246,7 @@ zipReportResources() {
     LOCAL result = STRING();
     FOR resourcePaths(STRING path) ORDER DESC path DO {
         readResource(path, TRUE);
-        result() <- CONCAT '', result(), STRING(resource());
+        result() <- CONCAT '\n', result(), STRING(resource());
     }
     zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
 

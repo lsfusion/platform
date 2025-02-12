@@ -318,7 +318,6 @@ namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_name
 
 // hashes
 md5(FILE file) = FORMULA STRING 'md5($1)';
-md5(STRING str) = FORMULA STRING 'md5($1)';
 
 //get name and extension
 extension(FILE file) = FORMULA TEXT 'get_extension($1)';

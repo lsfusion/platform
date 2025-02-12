@@ -241,10 +241,5 @@
             <version>1.11.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.lingala.zip4j</groupId>
-            <artifactId>zip4j</artifactId>
-        </dependency>
-
     </dependencies>
 </project>

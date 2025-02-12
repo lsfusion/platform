@@ -103,7 +103,6 @@
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
         <jakarta.activation.version>1.2.1</jakarta.activation.version>
         <javax.activation.version>1.1.1</javax.activation.version>
-        <net.lingala.zip4j.version>2.11.5</net.lingala.zip4j.version>
 
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <javax.servlet.jsp.api.version>2.3.3</javax.servlet.jsp.api.version>
@@ -657,12 +656,6 @@
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
                 <version>${javax.activation.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.lingala.zip4j</groupId>
-                <artifactId>zip4j</artifactId>
-                <version>${net.lingala.zip4j.version}</version>
             </dependency>
 
             <!--optional dependencies-->

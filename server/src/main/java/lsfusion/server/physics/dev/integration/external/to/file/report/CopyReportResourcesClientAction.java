@@ -34,6 +34,8 @@ public class CopyReportResourcesClientAction implements ClientAction {
             } else {
                 zipFile.getRawFile().write(jar);
                 setContextClassLoader(jar);
+                //If server restarts while the client is running, the jar file cannot be deleted before setContextClassLoader with new jar.
+                //Need first execute setContextClassLoader with new jar and only then delete old jar.
                 safeDeleteOldFiles(jar.getName());
                 return null;
             }
