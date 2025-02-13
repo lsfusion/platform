@@ -13,12 +13,16 @@ public class IndexOptions {
     public String language;
     public String dbName;
 
-    public static IndexOptions defaultIndexOptions = new IndexOptions(true, IndexType.DEFAULT, Settings.get().getFilterMatchLanguage(), null);
-
-    public IndexOptions(boolean order) {
-        this(order, IndexType.DEFAULT, null, null);
+    public IndexOptions(boolean order, IndexType type, String dbName) {
+        this(order, type, Settings.get().getFilterMatchLanguage(), dbName);
     }
 
+    private IndexOptions(boolean order, IndexType type, String language, String dbName) {
+        this.order = order;
+        this.type = type;
+        this.language = language;
+        this.dbName = dbName;
+    }
     public static IndexOptions deserialize35(DataInputStream inStream) throws IOException {
         boolean order = inStream.readBoolean();
         IndexType indexType = IndexType.deserialize(inStream.readByte());
@@ -26,11 +30,13 @@ public class IndexOptions {
         return new IndexOptions(order, indexType, language, null);
     }
 
-    public IndexOptions(boolean order, IndexType type, String language, String dbName) {
-        this.order = order;
-        this.type = type;
-        this.language = language;
-        this.dbName = dbName;
+    public static IndexOptions deserialize32(DataInputStream inStream) throws IOException {
+        return new IndexOptions(inStream.readBoolean(), IndexType.DEFAULT, null, null);
+    }
+
+    public IndexOptions changeType(IndexType newType) {
+        String newDBName = (dbName == null ? null : dbName + newType.suffix());
+        return new IndexOptions(order, newType, language, newDBName);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

@@ -2,13 +2,11 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
@@ -55,32 +53,32 @@ public class ImportEMLAction extends EmailAction {
 
             try (ExecutionContext.NewSession session = context.newSession()) {
 
-                ObjectValue emailObject = findProperty("emailAccountUID[Account,LONG]").readClasses(session, accountObject, uidObject);
+                ObjectValue emailObject = emailLM.emailAccountUID.readClasses(session, accountObject, uidObject);
                 if (emailObject instanceof NullValue) {
-                    //обратная совместимость
-                    emailObject = findProperty("emailId[Account,STRING]").readClasses(session, accountObject, new DataObject(email.id));
+                    //backward compatibility
+                    emailObject = emailLM.emailId.readClasses(session, accountObject, new DataObject(email.id));
                     if (emailObject instanceof NullValue) {
-                        emailObject = session.addObject((ConcreteCustomClass) emailLM.findClass("Email"));
+                        emailObject = session.addObject(emailLM.email);
                     }
                 }
 
-                emailLM.findProperty("account[Email]").change(accountObject, session, (DataObject) emailObject);
-                emailLM.findProperty("uid[Email]").change(uidObject.object, session, (DataObject) emailObject);
-                emailLM.findProperty("id[Email]").change(email.id, session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeSent[Email]").change(email.dateTimeSent, session, (DataObject) emailObject);
-                emailLM.findProperty("dateTimeReceived[Email]").change(LocalDateTime.now(), session, (DataObject) emailObject);
-                emailLM.findProperty("fromAddress[Email]").change(email.fromAddress, session, (DataObject) emailObject);
-                emailLM.findProperty("toAddress[Email]").change(nameAccount, session, (DataObject) emailObject);
-                emailLM.findProperty("subject[Email]").change(email.subject, session, (DataObject) emailObject);
-                emailLM.findProperty("message[Email]").change(email.message, session, (DataObject) emailObject);
-                emailLM.findProperty("emlFile[Email]").change(emlFile, session, (DataObject) emailObject);
+                emailLM.accountEmail.change(accountObject, session, (DataObject) emailObject);
+                emailLM.uidEmail.change(uidObject.object, session, (DataObject) emailObject);
+                emailLM.idEmail.change(email.id, session, (DataObject) emailObject);
+                emailLM.dateTimeSentEmail.change(email.dateTimeSent, session, (DataObject) emailObject);
+                emailLM.dateTimeReceivedEmail.change(LocalDateTime.now(), session, (DataObject) emailObject);
+                emailLM.fromAddressEmail.change(email.fromAddress, session, (DataObject) emailObject);
+                emailLM.toAddressEmail.change(nameAccount, session, (DataObject) emailObject);
+                emailLM.subjectEmail.change(email.subject, session, (DataObject) emailObject);
+                emailLM.messageEmail.change(email.message, session, (DataObject) emailObject);
+                emailLM.emlFileEmail.change(emlFile, session, (DataObject) emailObject);
 
                 for (EmailAttachment attachment : email.attachments) {
-                    DataObject attachmentObject = session.addObject((ConcreteCustomClass) emailLM.findClass("AttachmentEmail"));
-                    emailLM.findProperty("email[AttachmentEmail]").change(emailObject, session, attachmentObject);
-                    emailLM.findProperty("id[AttachmentEmail]").change(String.valueOf(attachment.id), session, attachmentObject);
-                    emailLM.findProperty("name[AttachmentEmail]").change(BaseUtils.getFileName(attachment.name), session, attachmentObject);
-                    emailLM.findProperty("file[AttachmentEmail]").change(attachment.file, session, attachmentObject);
+                    DataObject attachmentObject = session.addObject(emailLM.attachmentEmail);
+                    emailLM.emailAttachmentEmail.change(emailObject, session, attachmentObject);
+                    emailLM.idAttachmentEmail.change(String.valueOf(attachment.id), session, attachmentObject);
+                    emailLM.nameAttachmentEmail.change(BaseUtils.getFileName(attachment.name), session, attachmentObject);
+                    emailLM.fileAttachmentEmail.change(attachment.file, session, attachmentObject);
                 }
                 String result = session.applyMessage();
                 if (result != null) {
@@ -128,7 +126,7 @@ public class ImportEMLAction extends EmailAction {
         return String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
     }
 
-    private class Email {
+    private static class Email {
         String id;
         LocalDateTime dateTimeSent;
         String fromAddress;
@@ -146,7 +144,7 @@ public class ImportEMLAction extends EmailAction {
         }
     }
 
-    private class EmailAttachment {
+    private static class EmailAttachment {
         int id;
         String name;
         FileData file;

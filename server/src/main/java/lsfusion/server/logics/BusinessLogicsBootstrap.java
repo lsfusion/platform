@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.lowagie.text.FontFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
@@ -32,6 +33,9 @@ public class BusinessLogicsBootstrap {
         SystemProperties.enableMailEncodeFileName();
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
         SystemProperties.setDGCParams();
+
+        // need to allow JRPDFExporter using system fonts (have no idea why it is not needed on the desktop client)
+        FontFactory.registerDirectories();
 
         long startTime = System.currentTimeMillis();
         startLog("Server is starting...");

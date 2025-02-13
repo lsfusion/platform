@@ -5,7 +5,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -55,25 +54,6 @@ public class GridView extends GridPropertyView {
         pool.serializeObject(outStream, getRecord());
 
         pool.serializeObject(outStream, groupObject);
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        tabVertical = inStream.readBoolean();
-        quickSearch = inStream.readBoolean();
-        captionHeight = inStream.readInt();
-        captionCharHeight = inStream.readInt();
-
-        lineWidth = inStream.readInt();
-        lineHeight = inStream.readInt();
-
-        record = pool.deserializeObject(inStream);
-
-        groupObject = pool.deserializeObject(inStream);
     }
 
     @Override

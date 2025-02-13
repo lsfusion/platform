@@ -126,6 +126,6 @@ public class NavigatorImageButton extends ImageButton {
 
     @Override
     protected String getCaption() {
-        return element.caption;
+        return element.getCaption();
     }
 }

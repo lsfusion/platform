@@ -66,13 +66,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.instance = instance;
     }
 
-    public void ensure(boolean cleanDB) throws Exception {
+    public void ensureDBConnection(boolean cleanDB) throws Exception {
         ensureDB(cleanDB);
 
         ensureConnection = startConnection();
         ensureConnection.setAutoCommit(true);
-
-        ensureSqlFuncs();
     }
 
     public static List<String> getAllDBNames() {
@@ -95,7 +93,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public abstract String getDBName();
 
-    protected void ensureSqlFuncs() throws IOException, SQLException {
+    public void ensureSqlFuncs() throws IOException, SQLException {
         executeEnsure(findSQLScripts());
     }
 

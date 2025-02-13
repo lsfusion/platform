@@ -1,8 +1,11 @@
 package lsfusion.server.logics.navigator;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -11,6 +14,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -23,13 +27,16 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
+import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
+import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 
 public abstract class NavigatorElement {
 
@@ -58,6 +65,13 @@ public abstract class NavigatorElement {
 
     public Property propertyElementClass;
     public String elementClass;
+
+    public KeyInputEvent changeKey;
+    public Integer changeKeyPriority;
+    public Boolean showChangeKey;
+    public MouseInputEvent changeMouse;
+    public Integer changeMousePriority;
+    public Boolean showChangeMouse;
 
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -252,6 +266,21 @@ public abstract class NavigatorElement {
         this.showIfProperty = showIfProperty;
     }
 
+    public void setChangeKey(String code, boolean showChangeKey) {
+        ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        KeyStroke changeKey = KeyStroke.getKeyStroke(options.keyStroke);
+        this.changeKey = new KeyInputEvent(changeKey, options.bindingModesMap);
+        this.changeKeyPriority = options.priority;
+        this.showChangeKey = showChangeKey;
+    }
+
+    public void setChangeMouse(String code, boolean showChangeMouse) {
+        ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        this.changeMouse = new MouseInputEvent(options.keyStroke, options.bindingModesMap);
+        this.changeMousePriority = options.priority;
+        this.showChangeMouse = showChangeMouse;
+    }
+
     public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
@@ -293,6 +322,13 @@ public abstract class NavigatorElement {
         if(windowCanonicalName != null) {
             outStream.writeBoolean(parentWindow);
         }
+
+        BaseUtils.writeObject(outStream, changeKey);
+        SerializationUtil.writeInt(outStream, changeKeyPriority);
+        outStream.writeBoolean(nvl(showChangeKey, true));
+        BaseUtils.writeObject(outStream, changeMouse);
+        SerializationUtil.writeInt(outStream, changeMousePriority);
+        outStream.writeBoolean(nvl(showChangeMouse, true));
 
         AppServerImage.serialize(getImage(context), outStream);
 

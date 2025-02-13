@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.TimeConverter;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
@@ -12,9 +11,9 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -61,10 +60,11 @@ public class TimeClass extends HasTimeClass<LocalTime> {
         return localePreferences != null ? localePreferences.timeFormat : ThreadLocalContext.getTFormats().timePattern;
     }
 
-    public LocalTime parseString(String s) throws ParseException {
+    @Override
+    protected LocalTime parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
         try {
             try {
-                return LocalTime.parse(s, ThreadLocalContext.getTFormats().timeParser);
+                return LocalTime.parse(s, formatter);
             } catch (Exception ignored) {
             }
             return TimeConverter.smartParse(s);
@@ -74,10 +74,13 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     @Override
-    public String formatString(LocalTime value, boolean ui) {
-        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
-        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.timeFormat)
-                : ThreadLocalContext.getTFormats().timeFormatter)) : null;
+    public LocalTime parseString(String s) throws ParseException {
+        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_TIME : ThreadLocalContext.getTFormats().timeParser);
+    }
+
+    @Override
+    public String formatString(LocalTime value) {
+        return value != null ? value.format(Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_TIME : ThreadLocalContext.getTFormats().timeFormatter) : null;
     }
 
     public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {

@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -68,6 +69,7 @@ public class MainFrame implements EntryPoint {
     public static boolean showDetailedInfo;
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
+    public static Boolean mobileMode;
     public static boolean suppressOnFocusChange;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
@@ -523,6 +525,8 @@ public class MainFrame implements EntryPoint {
 
         navigatorController.setRoot(result.root);
 
+        addBindings(formsController, result.root);
+
         GwtClientUtils.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
         GwtClientUtils.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
         GwtClientUtils.setGlobalClassName(true, "size-" + size);
@@ -588,6 +592,13 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
     }
 
+    private void addBindings(FormsController formsController, GNavigatorElement element) {
+        formsController.addBindings(element, element.bindingEvents);
+        for(GNavigatorElement child : element.children) {
+            addBindings(formsController, child);
+        }
+    }
+
     public static String subscription;
     public static String clientId;
     private void updateServiceClientInfo(FormsController formsController, String subscription, String clientId) {
@@ -623,8 +634,6 @@ public class MainFrame implements EntryPoint {
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         double scale = getScale();
-        mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
-        mobileAdjustment = mobile ? 1 : 0;
 
         logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
                 Window.Location.getParameter("exportName"));
@@ -644,6 +653,9 @@ public class MainFrame implements EntryPoint {
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
+                mobileMode = gClientSettings.mobileMode;
+                mobile = mobileMode != null ? mobileMode : Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
+                mobileAdjustment = mobile ? 1 : 0;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;

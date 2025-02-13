@@ -4,10 +4,11 @@ import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-public abstract class HasTimeClass<T> extends TimeSeriesClass<T> {
+public abstract class HasTimeClass<T extends Temporal> extends TimeSeriesClass<T> {
     public final ExtInt millisLength;
 
     public HasTimeClass(LocalizedString caption, ExtInt millisLength) {

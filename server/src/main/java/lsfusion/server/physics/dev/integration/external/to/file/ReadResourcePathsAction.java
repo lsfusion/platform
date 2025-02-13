@@ -13,24 +13,21 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class ReadResourcePathsAction extends InternalAction {
-    private final ClassPropertyInterface resourcePathInterface;
 
     public ReadResourcePathsAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
-
-        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
-        resourcePathInterface = i.next();
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String pattern = (String) context.getKeyValue(resourcePathInterface).getValue();
-        List<String> allResources = ResourceUtils.getResources(Pattern.compile(pattern));
+        String pattern = (String) getParam(0, context);
+        boolean fullPaths = getParam(1, context) != null;
+
+        List<String> allResources = ResourceUtils.getResources(Pattern.compile(pattern), fullPaths);
         allResources
                 .forEach(r -> {
                     try {
@@ -39,5 +36,10 @@ public class ReadResourcePathsAction extends InternalAction {
                         throw Throwables.propagate(e);
                     }
                 });
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

@@ -7,8 +7,13 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
 ## Syntax
 
 ```
-EXPORT [exportFormat] [TOP n [OFFSET m]] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n [OFFSET m]] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] 
+  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
+  [TO (propertyId | (groupId1 = propertyId1, ..., groupIdM = propertyIdM))]
 ```
 
 `exportFormat` can be specified by one of the following options:
@@ -79,6 +84,16 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
     Keyword. Specifies reverse sort order. By default, ascending sort is used.
 
+- `TOP topExpr`
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Export only first `n` records, where `n` is value of expression `topExpr` or `topPropertyExprT` for group object `topGroupIdT`.
+
+- `OFFSET offsetExpr`
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Export only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
+
 ### Export format
 
 - `ATTR`
@@ -112,10 +127,6 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 - `sheetProperty`
 
   The [ID of the property](IDs.md#propertyid) whose value is used as the name of the sheet in the exported file. The property must not have parameters. It is used for `XLS` and `XLSX` export formats.
-     
-- `TOP n [OFFSET m]`
-
-    Exports only the first `n` records. [Integer literal](Literals.md#intliteral) with `m` offset (Integer literal).
 
 ### Export destination
 

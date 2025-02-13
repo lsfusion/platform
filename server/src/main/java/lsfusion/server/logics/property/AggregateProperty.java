@@ -94,11 +94,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return false;
     }
 
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        for(Property depend : getDepends())
-            if(depend.checkRecursions(abstractPath, path, marks))
-                return true;
-        return false;
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        for (Property<?> depend : getDepends())
+            depend.checkRecursions(path, localMarks, marks, usePrev);
     }
 
     public boolean isStored() {
@@ -181,11 +179,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public static AggregateProperty recalculate = null;
 
     public void recalculateMaterialization(BusinessLogics BL, DataSession session, SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateMaterialization(BL, session, sql, baseClass, null, true, runInTransaction);
+        recalculateMaterialization(BL, session, sql, baseClass, null, null, runInTransaction);
     }
 
-    public void recalculateMaterialization(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses, boolean runInTransaction) throws SQLException, SQLHandledException {
-        recalculateMaterialization(sql, runInTransaction, DataSession.emptyEnv(OperationOwner.unknown), baseClass, where, recalculateClasses);
+    public void recalculateMaterialization(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, PropertyChange<T> where, Boolean recalculateClasses, boolean runInTransaction) throws SQLException, SQLHandledException {
+        recalculateMaterialization(sql, runInTransaction, baseClass, where, recalculateClasses);
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
@@ -194,36 +192,40 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @StackMessage("{logics.info.recalculation.of.materialized.property}")
     @ThisMessage
-    public void recalculateMaterialization(SQLSession sql, boolean runInTransaction, QueryEnvironment env, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
-        OperationOwner opOwner = env.getOpOwner();
-        sql.pushVolatileStats(opOwner);
+    public void recalculateMaterialization(SQLSession sql, boolean runInTransaction, BaseClass baseClass, PropertyChange<T> where, Boolean recalculateClasses) throws SQLException, SQLHandledException {
+        boolean classesAreValid = recalculateClasses != null && !recalculateClasses; // NOCLASSES
+        if (!classesAreValid && (recalculateClasses != null || Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr())) {
+            recalculateClasses(sql, runInTransaction, baseClass, where);
 
-        PropertyChangeTableUsage<T> table = null;
-        try {
-            boolean useRecalculate = recalculateClasses && (Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null);
+            classesAreValid = true;
+        }
 
-            if (useRecalculate)
-                recalculateClasses(sql, runInTransaction, env, baseClass);
-
+        if(recalculateClasses == null || !recalculateClasses) { // ALL || NOCLASSES
             boolean serializable = DBManager.RECALC_MAT_TIL;
             boolean mixedSerializable = runInTransaction && !serializable && Settings.get().isRecalculateMaterializationsMixedSerializable();
 
-            Query<T, String> recalculateQuery = getRecalculateQuery(false, mixedSerializable, baseClass, !useRecalculate, where);
+            Query<T, String> recalculateQuery = getRecalculateQuery(false, mixedSerializable, baseClass, !classesAreValid, where);
 
-            if(mixedSerializable) {
-                table = createChangeTable("recmt");
-                table.writeRows(sql, recalculateQuery, baseClass, env, false);
-                recalculateQuery = getRecalculateQuery(false, false, baseClass, !useRecalculate, PropertyChangeTableUsage.getChange(table));
-                serializable = true;
+            OperationOwner opOwner = OperationOwner.unknown;
+            sql.pushVolatileStats(opOwner);
+
+            PropertyChangeTableUsage<T> table = null;
+            try {
+                if (mixedSerializable) {
+                    table = createChangeTable("recmt");
+                    table.writeRows(sql, recalculateQuery, baseClass, DataSession.emptyEnv(opOwner), false);
+                    recalculateQuery = getRecalculateQuery(false, false, baseClass, !classesAreValid, PropertyChangeTableUsage.getChange(table));
+                    serializable = true;
+                }
+
+                ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, recalculateQuery.map(mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), opOwner, TableOwner.global);
+                DBManager.run(sql, runInTransaction, serializable, session -> session.modifyRecords(modifyQuery));
+            } finally {
+                if (table != null)
+                    table.drop(sql, opOwner);
+
+                sql.popVolatileStats(opOwner);
             }
-
-            ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, recalculateQuery.map(mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env, TableOwner.global);
-            DBManager.run(sql, runInTransaction, serializable, session -> session.modifyRecords(modifyQuery));
-        } finally {
-            if(table != null)
-                table.drop(sql, opOwner);
-
-            sql.popVolatileStats(opOwner);
         }
     }
     

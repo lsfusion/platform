@@ -39,6 +39,9 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
     protected RemoteNavigatorInterface getRemoteNavigator(A action) throws SessionInvalidatedException {
         return getNavigatorSessionObject(action).remoteNavigator;
     }
+    protected ServerSettings getServerSettings(A action) throws SessionInvalidatedException {
+        return getNavigatorSessionObject(action).serverSettings;
+    }
     protected ClientCallBackInterface getClientCallback(A action) throws RemoteException {
         return getNavigatorSessionObject(action).getRemoteCallback();
     }

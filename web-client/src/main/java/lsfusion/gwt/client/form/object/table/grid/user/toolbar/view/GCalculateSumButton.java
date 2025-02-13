@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.math.BigDecimal;
 
@@ -13,7 +14,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public GCalculateSumButton() {
-        super(StaticImage.SUM, messages.formQueriesCalculateSum());
+        super(MainFrame.useBootstrap ? "Σ" : null, MainFrame.useBootstrap ? null : StaticImage.SUM, messages.formQueriesCalculateSum());
     }
 
     public void showPopup(Number result, GPropertyDraw property) {

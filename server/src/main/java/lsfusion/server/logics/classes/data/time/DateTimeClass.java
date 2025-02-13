@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
@@ -16,6 +15,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -146,10 +146,11 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
         return readXLS(cellValue);
     }
 
-    public LocalDateTime parseString(String s) throws ParseException {
+    @Override
+    protected LocalDateTime parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
         try {
             try {
-                return LocalDateTime.parse(s, ThreadLocalContext.getTFormats().dateTimeParser);
+                return LocalDateTime.parse(s, formatter);
             } catch (DateTimeParseException ignored) {
             }
             return DateConverter.smartParse(s);
@@ -159,10 +160,13 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public String formatString(LocalDateTime value, boolean ui) {
-        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
-        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.dateTimeFormat)
-                : ThreadLocalContext.getTFormats().dateTimeFormatter)) : null;
+    public LocalDateTime parseString(String s) throws ParseException {
+        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE_TIME : ThreadLocalContext.getTFormats().dateTimeParser);
+    }
+
+    @Override
+    public String formatString(LocalDateTime value) {
+        return value != null ? value.format(Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE_TIME : ThreadLocalContext.getTFormats().dateTimeFormatter) : null;
     }
 
     public String getSID() {

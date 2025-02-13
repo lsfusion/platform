@@ -20,6 +20,7 @@ public class SizedFlexPanel extends FlexPanel {
     }
 
     public SizedFlexPanel() {
+        this(false);
     }
 
     protected void addFillShrinkSized(Widget widget) {

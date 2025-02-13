@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.comb.ArrayCombinations;
 import lsfusion.base.dnf.ExtraMapSetWhere;
 import lsfusion.base.lambda.ArrayInstancer;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
@@ -149,6 +150,11 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         public And<K> remove(ImSet<? extends K> keys) {
             return new And<>(map.remove(keys));
+        }
+
+        @Override
+        public ImMap<K, AndClassSet> removeFn(FunctionSet<K> filter) {
+            return new And<>(map.removeFn(filter));
         }
 
         public And<K> getBase() {

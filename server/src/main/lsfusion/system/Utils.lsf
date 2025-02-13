@@ -68,7 +68,8 @@ getFileSize '{utils.get.file.size}'  INTERNAL  'lsfusion.server.physics.dev.inte
 zipping '{utils.zipping.file}' = DATA LOCAL FILE (STRING[1000]);
 zippingPath '{utils.zipping.path}' = DATA LOCAL STRING (STRING[1000]);
 zipped '{utils.zipped}' = DATA LOCAL FILE ();
-makeZipFile '{utils.make.zip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeZipFileAction' ();
+makeZipFile '{utils.make.zip.file}' (BOOLEAN zeroTime)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeZipFileAction';
+makeZipFile '{utils.make.zip.file}' () { makeZipFile(NULL); }
 
 //unzip files
 unzipping '{utils.unzipping}' = DATA LOCAL FILE ();
@@ -77,7 +78,8 @@ makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.
 
 resource '{utils.resource.file}' = DATA LOCAL FILE ();
 resourcePath '{utils.resource.file.path}' = DATA LOCAL STRING ();
-readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING);
+readResource '{utils.read.resource}' (STRING path, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction';
+readResource(STRING path) { readResource(path, NULL); }
 
 getResource(STRING path) {
     readResource(path);
@@ -87,7 +89,8 @@ getResource(STRING path) {
 } @@api;
 
 resourcePaths = DATA LOCAL STRING (STRING);
-readResourcePaths  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction' (STRING);
+readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
+readResourcePaths (STRING pattern) { readResourcePaths(pattern, NULL); }
 
 resourceFile '{utils.resource.file}' = resource(); // deprecated
 
@@ -234,6 +237,35 @@ copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyT
 array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
 
 basicStaticName(StaticObject object) = getWord(staticName(object), '.', 2);
+
+zipReportResources() {
+    readResource('jasperreports.properties');
+    zipping('jasperreports.properties') <- resource();
+
+    readResourcePaths('.*/jasperreports_extension.properties', TRUE);
+    LOCAL result = STRING();
+    FOR resourcePaths(STRING path) ORDER DESC path DO {
+        readResource(path, TRUE);
+        result() <- CONCAT '\n', result(), STRING(resource());
+    }
+    zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
+
+    resourcePaths(STRING path) <- NULL;
+    readResourcePaths('/fonts/.*');
+    FOR resourcePaths(STRING path) DO {
+        readResource(path);
+        zipping(substrFrom(path, 2)) <- resource(); //need to remove leading slash
+    }
+
+    makeZipFile(TRUE);
+}
+
+copyReportResources (FILE zipFile, STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CopyReportResources';
+
+copyReportResources() {
+    zipReportResources();
+    copyReportResources(zipped(), md5(zipped()));
+}
 
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';

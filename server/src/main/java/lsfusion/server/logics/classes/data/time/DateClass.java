@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
@@ -16,6 +15,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -144,11 +144,12 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         return readXLS(cellValue);
     }
 
-    public LocalDate parseString(String s) throws ParseException {
+    @Override
+    protected LocalDate parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
         try {
             //try to parse with default locale formats
             try {
-                return LocalDate.parse(s, ThreadLocalContext.getTFormats().dateParser);
+                return LocalDate.parse(s, formatter);
             } catch (Exception ignored) {
             }
             LocalDateTime result = DateConverter.smartParse(s);
@@ -158,10 +159,13 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         }
     }
 
-    public String formatString(LocalDate value, boolean ui) {
-        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
-        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.dateFormat)
-                : ThreadLocalContext.getTFormats().dateFormatter)) : null;
+    @Override
+    public LocalDate parseString(String s) throws ParseException {
+        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE : ThreadLocalContext.getTFormats().dateParser);
+    }
+
+    public String formatString(LocalDate value) {
+        return value != null ? value.format(Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE : ThreadLocalContext.getTFormats().dateFormatter) : null;
     }
 
     public String getSID() {

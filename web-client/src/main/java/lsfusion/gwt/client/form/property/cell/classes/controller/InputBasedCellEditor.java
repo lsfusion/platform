@@ -147,4 +147,5 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         if(!GwtClientUtils.isTDorTH(cellParent))
             GwtClientUtils.clearFlexParentElement(cellParent);
     }
+
 }

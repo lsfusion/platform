@@ -7,6 +7,9 @@ public abstract class HumanReadableFileClass extends StaticFormatFileClass {
         super(multiple, storeName);
     }
 
+    public static boolean is(String extension) {
+        return extension.equals("json") || extension.equals("html") || extension.equals("csv") || extension.equals("txt") || extension.equals("xml");
+    }
 //    @Override
 //    public RawFileData parseString(String s) {
 //        return new RawFileData(s.getBytes());

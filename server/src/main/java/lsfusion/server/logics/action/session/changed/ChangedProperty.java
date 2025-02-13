@@ -33,6 +33,8 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.Set;
+
 public class ChangedProperty<T extends PropertyInterface> extends SessionProperty<T> {
 
     private final IncrementType type;
@@ -205,4 +207,11 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
             return "IS" + ((IsClassProperty)property).interfaces.single().interfaceClass.getSID();
         return super.getChangeExtSID();
     }
+    
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (!usePrev) {
+            property.checkRecursions(path, localMarks, marks, false);
+        }
+    }
+    
 }

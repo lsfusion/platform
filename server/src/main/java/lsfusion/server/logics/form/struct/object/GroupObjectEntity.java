@@ -18,7 +18,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -45,7 +44,6 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -71,6 +69,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Group propertyGroup; // used for integration (export / import)
 
     private Pair<Integer, Integer> scriptIndex;
+
+    public boolean enableManualUpdate;
 
     private String integrationSID;
     private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)

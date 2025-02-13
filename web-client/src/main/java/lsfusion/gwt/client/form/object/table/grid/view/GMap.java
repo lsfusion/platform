@@ -108,12 +108,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     private Map<GGroupObjectValue, JavaScriptObject> markers = new HashMap<>();
     private Map<GGroupObjectValue, GroupMarker> groupMarkers = new HashMap<>();
     private ArrayList<JavaScriptObject> lines = new ArrayList<>(); // later also should be
+    private JavaScriptObject mapOptions;
+    private JavaScriptObject viewOptions;
     @Override
     protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
+            map = initMap(renderElement);
         }
+
+        updateMap(map, markerClusters, grid.getMapTileProvider(), getCustomOptions());
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
 
@@ -211,32 +215,83 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             return isReadOnly("latitude", key, true) && isReadOnly("longitude", key, true);
     }
 
+    protected native static JavaScriptObject getMapOptions(JavaScriptObject customOptions)/*-{
+        return customOptions != null ? {
+            tileProvider: customOptions.tileProvider,
+            options: customOptions.options
+        } : null;
+    }-*/;
+
+    protected native static JavaScriptObject getViewOptions(JavaScriptObject customOptions)/*-{
+        return customOptions != null ? {
+            center: customOptions.center,
+            zoom: customOptions.zoom
+        } : null;
+    }-*/;
+
     protected native boolean hasFitBoundsProperty(JavaScriptObject object)/*-{
         return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
     }-*/;
 
-    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider)/*-{
-        var L = $wnd.L;
-        var map = L.map(element);
+    protected native JavaScriptObject updateMap(JavaScriptObject map, JavaScriptObject markerClusters, String tileProvider, JavaScriptObject customOptions)/*-{
+        var newMapOptions = @GMap::getMapOptions(*)(customOptions);
+        var newViewOptions = @GMap::getViewOptions(*)(customOptions);
 
-        if (tileProvider === 'google') {
-            L.gridLayer
-                .googleMutant({
-                    type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
-                }).addTo(map);
-        } else if (tileProvider === 'yandex') {
-            L.yandex().addTo(map);
-        } else {
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+        if (!$wnd.deepEquals(this.@GMap::mapOptions, newMapOptions)) {
+            var L = $wnd.L;
+
+            if (map.tile != null)
+                map.tile.removeFrom(map);
+
+            tileProvider = newMapOptions != null && newMapOptions.tileProvider != null ? newMapOptions.tileProvider :
+                tileProvider != null ? tileProvider : $wnd.lsfParams.defaultMapProvider;
+
+            var tile;
+            var options = newMapOptions != null ? newMapOptions.options : {};
+            if (tileProvider === 'google') {
+                tile = L.gridLayer.googleMutant(
+                    $wnd.mergeObjects({
+                        // In Leaflet.GridLayer.GoogleMutant it is possible to customize only two parameters: type and styles
+                        type: "roadmap", // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+                        // all possible styles available in the documentation https://developers.google.com/maps/documentation/javascript/json-styling-overview
+                        styles: [] //empty array is necessary to prevent "Map styles must be an array, but was passed {}" errors in the web browser console when rendering map
+                    }, options));
+            } else if (tileProvider === 'yandex') {
+                tile = L.yandex(
+                    $wnd.mergeObjects({
+                        type: "map", //map, satellite, hybrid, map~vector
+                        //all possible mapOptions available in the documentation in options parameter https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map
+                        mapOptions: {} // see options https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map#field_detail
+                    }, options));
+            } else {
+                tile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    $wnd.mergeObjects({attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
+                        options));
+            }
+
+            map.tile = tile;
+            tile.addTo(map);
+
+            map.addLayer(markerClusters);
+
+            this.@GMap::mapOptions = newMapOptions;
         }
 
-        map.setView([0,0], 6); // we need to set view to have editing and dragging fields initialized
+        if (!$wnd.deepEquals(this.@GMap::viewOptions, newViewOptions)) {
+            @GMap::setView(*)(map, newViewOptions);
+            this.@GMap::viewOptions = newViewOptions;
+        }
+    }-*/;
 
-        map.addLayer(markerClusters);
+    protected native JavaScriptObject initMap(com.google.gwt.dom.client.Element element)/*-{
+        return $wnd.L.map(element);
+    }-*/;
 
-        return map;
+    protected static native JavaScriptObject setView(JavaScriptObject map, JavaScriptObject viewOptions)/*-{
+        var center = $wnd.mergeObjects({lat: 0, lng: 0}, viewOptions != null ? viewOptions.center : {})
+        var zoom = viewOptions != null && viewOptions.zoom != null ? viewOptions.zoom : 6;
+
+        return map.setView(center, zoom); // we need to setView to have editing and dragging fields initialized;
     }-*/;
 
     protected native JavaScriptObject refreshMarkerClusters(JavaScriptObject markerClusters, JsArray<JavaScriptObject> markers)/*-{

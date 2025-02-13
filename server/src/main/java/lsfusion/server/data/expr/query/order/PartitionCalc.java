@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -41,7 +42,11 @@ public class PartitionCalc extends PartitionToken {
         }
 
         public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {
-            return "(" + func + "(" + exprs.mapList(sources).toString(",") + ") OVER ("+BaseUtils.toString(" ",
+            String exprs = this.exprs.mapList(sources).toString(",");
+            if(func.equals(PartitionType.SELECT_FUNC)) // optimization
+                return exprs;
+
+            return "(" + func + "(" + exprs + ") OVER ("+BaseUtils.toString(" ",
                     BaseUtils.clause("PARTITION BY ",partitions.map(sources).toString(",")) +
                     BaseUtils.clause("ORDER BY ", Query.stringOrder(orders.map(sources), syntax))) + ")" + ")";
         }

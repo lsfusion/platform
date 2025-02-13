@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUserLocale;
-
 public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
     public static final String AUTH_SECRET_KEY = "authSecret";
     private LogicsProvider logicsProvider;
@@ -76,7 +74,7 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
                 try {
                     Map<String, Object> userInfo = new HashMap<>(principal.getAttributes());
                     AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new OAuth2Authentication(username, authSecret, userInfo));
-                    return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken, request));
+                    return new Pair<>(authToken, LSFRemoteAuthenticationProvider.getUserLocale(sessionObject, authentication, authToken, request));
                 } catch (LockedException le) {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());
                 }

@@ -10,7 +10,6 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.Log4jWriter;

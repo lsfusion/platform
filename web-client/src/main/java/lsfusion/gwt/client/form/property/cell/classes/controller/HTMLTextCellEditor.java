@@ -19,8 +19,15 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     protected native String getEditorValue(Element element)/*-{
+        // empty string checking is necessary to make the HTMLTextCellEditor behavior identical to the text editor - null if value is empty
         var aceEditor = element.aceEditor;
-        return aceEditor != null ? aceEditor.getValue() : '';
+        if (aceEditor != null) {
+            var value = aceEditor.getValue();
+            if (value !== '')
+                return value;
+        }
+
+        return null;
     }-*/;
 
     @Override

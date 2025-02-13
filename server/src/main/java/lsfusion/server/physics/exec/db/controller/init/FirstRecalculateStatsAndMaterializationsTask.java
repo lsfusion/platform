@@ -16,12 +16,22 @@ public class FirstRecalculateStatsAndMaterializationsTask extends SimpleBLTask {
     }
 
     @Override
+    public boolean isStartLoggable() {
+        return isEnabled();
+    }
+
+    @Override
     public void run(Logger logger) {
-        if(!SystemProperties.lightStart)
-            try(DataSession session = createSession()) {
+        if (isEnabled()) {
+            try (DataSession session = createSession()) {
                 getDbManager().firstRecalculateStatsAndMaterializations(session);
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
+        }
+    }
+
+    private boolean isEnabled() {
+        return !SystemProperties.lightStart;
     }
 }

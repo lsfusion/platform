@@ -30,6 +30,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -101,8 +102,8 @@ public class PropertyOrderSet<T extends PropertyInterface> {
         return new Pair<>(new PropertyOrderSet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(join::getExpr), ordersNotNull), (SessionTableUsage)tableUsage);
     }
 
-    public ImOrderSet<ImMap<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return getExecuteQuery().executeClasses(env, orders).keyOrderSet();
+    public ImOrderSet<ImMap<T, DataObject>> executeClasses(ExecutionEnvironment env, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+        return getExecuteQuery().executeClasses(env, orders, limitOffset).keyOrderSet();
     }
     
     public PropertyOrderSet<T> and(Where andWhere) {

@@ -4,8 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
@@ -28,7 +26,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -232,17 +229,6 @@ public class LoginDialog extends JDialog {
         pack();
     }
 
-    private ServerSettings getAndCheckServerSettings(LogicsConnection serverInfo, Result<String> rCheck, boolean noCache) {
-        ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null, noCache);
-        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
-        if(checkVersionError != null) {
-            if(!noCache) // try without cache
-                return getAndCheckServerSettings(serverInfo, rCheck, true);
-            rCheck.set(checkVersionError);
-        }
-        return serverSettings;
-    }
-
     private static void syncUsers(RemoteLogicsInterface remoteLogics, Result<List<UserInfo>> userInfos) {
         if (remoteLogics != null) {
             JSONArray users = new JSONArray();
@@ -253,7 +239,7 @@ public class LoginDialog extends JDialog {
             ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(users.toString());
             try {
                 ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getConnectionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new ExternalRequest.Param[]{computerParam, fileParam}));
-                List<Object> currentUsers = LogicsSessionObject.getJSONArrayResult(result).toList();
+                List<Object> currentUsers = new JSONArray(LogicsSessionObject.getStringResult(result, null)).toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos.result) {
                     if (currentUsers.remove(userInfo.name)) {
@@ -268,6 +254,17 @@ public class LoginDialog extends JDialog {
                 ClientLoggers.clientLogger.error("Error synchronizing users", e);
             }
         }
+    }
+
+    private ServerSettings getAndCheckServerSettings(LogicsConnection serverInfo, Result<String> rCheck, boolean noCache) {
+        ServerSettings serverSettings = MainController.getServerSettings(serverInfo, noCache);
+        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
+        if(checkVersionError != null) {
+            if(!noCache) // try without cache
+                return getAndCheckServerSettings(serverInfo, rCheck, true);
+            rCheck.set(checkVersionError);
+        }
+        return serverSettings;
     }
     
     private static void storeServerAndUserInfos(LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {

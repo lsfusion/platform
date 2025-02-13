@@ -76,7 +76,10 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
 
     protected native String getEditorValue(Element element)/*-{
         var quill = element.quill;
-        return quill != null ? quill.root.innerHTML : '';
+
+        //quilljs Documentation says:
+        // "Note even when Quill is empty, there is still a blank line represented by '\n', so getLength() will return 1."
+        return quill != null && quill.getLength() > 1 ? quill.root.innerHTML : null;
     }-*/;
 
     protected native void enableEditing(Element element, boolean enableEditing)/*-{

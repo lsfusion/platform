@@ -499,3 +499,42 @@ function handleOptionKeyEvent(isButton, e, keyDown, isInGrid) {
     if (keyDown && e.shiftKey && isInGrid && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
         e.stopPropagation();
 }
+
+// is necessary to allow collapsible-text to be shown in exel theme
+function addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass) {
+    let element = $(parent).find(toggleElementSelector);
+    if (element.length > 0) {
+        element.css('cursor', 'pointer');
+        element.css('text-decoration', 'underline');
+        element.on('click', function () {
+            $(parent).find(containerElementSelector).each(function () {
+                $(this).toggleClass(collapsibleClass);
+            })
+        })
+    }
+}
+
+function mergeObjects(defaultObj, obj) {
+        return {...defaultObj, ...obj};
+}
+
+function deepEquals(obj1, obj2) {
+    if (obj1 === obj2)
+        return true;
+
+    if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 === null || obj2 === null)
+        return false;
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length)
+        return false;
+
+    for (let key of keys1) {
+        if (!keys2.includes(key) || !deepEquals(obj1[key], obj2[key]))
+            return false;
+    }
+
+    return true;
+}

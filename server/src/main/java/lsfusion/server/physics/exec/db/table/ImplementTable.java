@@ -179,6 +179,12 @@ public class ImplementTable extends DBTable { // последний интерф
         propertyClasses = propertyClasses.addExcl(field, classes);
     }
 
+    @NFLazy
+    public void removeField(PropertyField field) {
+        properties = properties.removeIncl(field);
+        propertyClasses = propertyClasses.removeIncl(field);
+    }
+
     @IdentityLazy
     protected ImSet<ImOrderSet<Field>> getIndexes() {
         return super.getIndexes().addExcl(indexes);

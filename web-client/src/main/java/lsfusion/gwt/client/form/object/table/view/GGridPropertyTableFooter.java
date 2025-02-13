@@ -55,6 +55,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
+    public Boolean isPropertyReadOnly() {
+        return true;
+    }
+
+    @Override
     public boolean isSelectedRow() {
         return false;
     }

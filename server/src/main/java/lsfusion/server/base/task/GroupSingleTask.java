@@ -53,7 +53,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
                 }
 
                 @Override
-                public boolean isLoggable() {
+                public boolean isStartLoggable() {
                     return GroupSingleTask.this.isGroupLoggable();
                 }
 

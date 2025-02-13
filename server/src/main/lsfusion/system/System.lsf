@@ -56,7 +56,9 @@ headersTo = DATA LOCAL NESTED TEXT(TEXT);
 cookiesTo = DATA LOCAL NESTED TEXT(TEXT);
 query = DATA LOCAL NESTED TEXT();
 params = DATA LOCAL NESTED TEXT(TEXT, INTEGER);
-params(text) = params(text, 0);
+params(TEXT name) = params(name, 0);
+fileParams = DATA LOCAL NESTED NAMEDFILE (TEXT, INTEGER);
+fileParams(TEXT name) = fileParams(name, 0);
 actionPathInfo = DATA LOCAL NESTED TEXT();
 contentType = DATA LOCAL NESTED TEXT();
 body = DATA LOCAL NESTED RAWFILE();
@@ -90,6 +92,8 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
+
+forceUpdate INTERNAL 'lsfusion.server.logics.action.flow.ForceUpdateGroupObjectAction' (STRING);
 
 formApplied ABSTRACT LIST FIRST (); 
 formApplied() + {

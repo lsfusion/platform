@@ -3,11 +3,16 @@ package lsfusion.server.logics.property.set;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.WindowExpr;
+import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.FormulaJoinImpl;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.AggrExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -21,6 +26,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
@@ -50,6 +56,10 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return orders;
     }
 
+    // groups should (and only them) contain window interfaces
+    private final SelectTop<I> selectTop;
+    private final SelectTop<Interface<I>> mapSelectTop;
+
     public boolean getOrdersNotNull() {
         return ordersNotNull;
     }
@@ -62,7 +72,27 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return super.isNameValueUnique();
     }
 
-    public static <I extends PropertyInterface<I>> OrderGroupProperty<I> create(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, PropertyInterfaceImplement<I> whereProp, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public OrderGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, PropertyInterfaceImplement<I> nameProp, PropertyInterfaceImplement<I> whereProp, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, SelectTop<I> selectTop) {
+        super(caption, innerInterfaces, groupInterfaces);
+        this.props = props;
+        this.groupType = groupType;
+        this.orders = orders;
+        this.ordersNotNull = ordersNotNull;
+
+        this.nameProp = nameProp;
+        this.whereProp = whereProp;
+        assert groupType == GroupType.CONCAT || (whereProp == null && nameProp == null);
+
+        this.selectTop = selectTop;
+        this.mapSelectTop = selectTop.mapValues(BaseUtils.<ImRevMap<I, Interface<I>>>immutableCast(getMapRevInterfaces()));
+
+        finalizeInit();
+    }
+
+    private final PropertyInterfaceImplement<I> nameProp;
+    private final PropertyInterfaceImplement<I> whereProp;
+
+    public static <I extends PropertyInterface<I>> OrderGroupProperty<I> create(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, PropertyInterfaceImplement<I> whereProp, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, SelectTop<I> selectTop) {
 
         PropertyInterfaceImplement<I> nameProp = null;
         if(groupType == GroupType.CONCAT) {
@@ -81,32 +111,19 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 //            assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
         }
 
-        return new OrderGroupProperty<>(caption, innerInterfaces, groupInterfaces, props, nameProp, whereProp, groupType, orders, ordersNotNull);
+        return new OrderGroupProperty<>(caption, innerInterfaces, groupInterfaces, props, nameProp, whereProp, groupType, orders, ordersNotNull, selectTop);
     }
 
-    private final PropertyInterfaceImplement<I> nameProp;
-    private final PropertyInterfaceImplement<I> whereProp;
+    public static <I extends PropertyInterface> ImRevMap<I, KeyExpr> getMapKeys(ImSet<I> innerInterfaces, SelectTop<I> selectTop) {
+        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
 
-    public OrderGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, PropertyInterfaceImplement<I> nameProp, PropertyInterfaceImplement<I> whereProp, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
-        super(caption, innerInterfaces, groupInterfaces);
-        this.props = props;
-        this.groupType = groupType;
-        this.orders = orders;
-        this.ordersNotNull = ordersNotNull;
+        if(!selectTop.isEmpty())
+            mapKeys = mapKeys.mapRevValues((anInterface, expr) -> {
+                WindowExpr windowExpr = selectTop.getParamExpr(anInterface);
+                return windowExpr != null ? windowExpr : expr;
+            });
 
-        this.nameProp = nameProp;
-        this.whereProp = whereProp;
-        assert groupType == GroupType.CONCAT || (whereProp == null && nameProp == null);
-
-        finalizeInit();
-    }
-
-    private ImRevMap<Interface<I>, I> getConcatMap() {
-        if(groupType == GroupType.CONCAT && nameProp instanceof PropertyMapImplement && whereProp instanceof PropertyMapImplement &&
-                ((PropertyMapImplement<?, ?>) whereProp).property.canBeChanged(false) &&
-                ((PropertyMapImplement<?, ?>) whereProp).property.getType() instanceof LogicalClass)
-            return PropertyInterface.getIdentityMap(getMapInterfaces());
-        return null;
+        return mapKeys;
     }
     @Override
     @IdentityStrongLazy
@@ -143,9 +160,21 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
 
+    private ImRevMap<Interface<I>, I> getConcatMap() {
+        if(groupType == GroupType.CONCAT && nameProp instanceof PropertyMapImplement && whereProp instanceof PropertyMapImplement &&
+                ((PropertyMapImplement<?, ?>) whereProp).property.canBeChanged(false) &&
+                ((PropertyMapImplement<?, ?>) whereProp).property.getType() instanceof LogicalClass && selectTop.isEmpty())
+            return PropertyInterface.getIdentityMap(getMapInterfaces());
+        return null;
+    }
+
+    protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
+        return MapFact.override(getMapKeys(innerInterfaces, selectTop), BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface && !selectTop.contains((I) key))));
+    }
+
     protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
-        ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
+        ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement);
 
         if(checkPrereadNull(mapKeys, calcType, propChanges, changedWhere != null))
             return Expr.NULL();
@@ -156,6 +185,14 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, calcType, propChanges, changedGroupWhere);
         ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, calcType, propChanges, changedGroupWhere);
 
+        // we do this to make map in all group maps reversable
+        if(!selectTop.isEmpty()) {
+            joinImplement = joinImplement.mapValues((anInterface, expr) -> {
+                FormulaJoinImpl formula = mapSelectTop.getParamFormula(anInterface);
+                return (formula != null ? FormulaExpr.create(formula, ListFact.singleton(expr)) : expr);
+            });
+        }
+
         GroupType groupType = getGroupType();
         if(changedWhere!=null) {
             assert calcType.isExpr();
@@ -164,6 +201,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groupType, getGroupImplements(mapKeys, prevChanges),
                     getExprImplements(mapKeys, prevChanges), getOrderImplements(mapKeys, prevChanges), joinImplement));
         }
+
         return GroupExpr.create(groups, exprs, orders, ordersNotNull, groupType, joinImplement, calcType instanceof CalcClassType);
     }
 
@@ -172,6 +210,10 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
     protected Where getPartitionWhere(Where where, GroupType groupType, ImMap<Interface<I>, Expr> groups, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<Interface<I>, ? extends Expr> joinImplement) {
+        if(!selectTop.isEmpty()) {
+            groups = groups.remove(mapSelectTop.getParamsSet());
+            joinImplement = joinImplement.remove(mapSelectTop.getParamsSet());
+        }
         return GroupExpr.create(groups, where.and(groupType.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement).getWhere();
     }
 }

@@ -8,6 +8,7 @@ The `FOR` operator creates an [action](Actions.md) that implements [loop](Loop_F
 
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
+[TOP topExpr] [OFFSET offsetExpr]
 [NEW [alias =] className]
 DO action
 [ELSE alternativeAction]
@@ -43,6 +44,14 @@ In the case when the operator contains a `NEW` block, and no condition is specif
 - `orderExpr1, ..., orderExprK`
 
     A list of expressions that define the order in which object collections will be iterated over. To determine the order, first the value of the first expression is used; then, if equal, the value of the second is used, etc. If the list is undefined, iteration is performed in an arbitrary order.
+
+- `TOP topExpr`
+
+  Only first `n` records will participate in the iteration, where `n` is value of expression `topExpr`.
+
+- `OFFSET offsetExpr`
+
+  Only records with offset `m` will participate in the iteration, where `m` is value of expression `offsetExpr`.
 
 - `alias`
 
@@ -98,7 +107,7 @@ copy (Sku old)  {
 }
 
 createDetails (Order o)  {
-    FOR in(Sku s) NEW d = OrderDetail DO {
+    FOR in(Sku s) NEW d = OrderDetail TOP 100 DO {
         order(d) <- o;
         sku(d) <- s;
     }

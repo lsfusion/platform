@@ -40,6 +40,7 @@ import java.sql.SQLException;
 public interface PropertyInterfaceImplement<P extends PropertyInterface> extends ActionOrPropertyInterfaceImplement {
 
     <T extends PropertyInterface> PropertyInterfaceImplement<T> map(ImRevMap<P, T> map);
+    <T extends PropertyInterface> PropertyInterfaceImplement<T> mapInner(ImRevMap<P, T> map);
 
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere);

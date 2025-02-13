@@ -244,8 +244,9 @@ public class GridController extends AbstractTableController {
                 formController.changeMode(groupObject, UpdateMode.FORCE);
             }));
             forceUpdateTableButton.setFocusable(false);
-            forceUpdateTableButton.setVisible(false);
             addToToolbar(forceUpdateTableButton);
+
+            setUpdateMode(groupObject.enableManualUpdate);
         }
     }
 

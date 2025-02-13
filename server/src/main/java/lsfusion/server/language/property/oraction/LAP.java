@@ -168,7 +168,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         return getActionOrProperty().getInterfaceClasses(listInterfaces, classType);
     }
 
-    public String[] getInterfaceNames() {
+    public ImOrderSet<String> getInterfaceNames() {
         return getActionOrProperty().getInterfaceNames(listInterfaces);
     }
 

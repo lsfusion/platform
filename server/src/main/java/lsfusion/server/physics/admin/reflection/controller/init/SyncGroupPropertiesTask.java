@@ -6,6 +6,11 @@ public class SyncGroupPropertiesTask extends SyncTask {
         return "Synchronizing group properties";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizeGroupProperties();
     }

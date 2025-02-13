@@ -133,28 +133,6 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         outStream.writeInt(hierarchicalWidth);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        groups = pool.deserializeList(inStream);
-        toolbarSystem = pool.deserializeObject(inStream);
-        filtersContainer = pool.deserializeObject(inStream);
-        filters = NFFact.finalSet(pool.deserializeSet(inStream));
-
-        expandOnClick = inStream.readBoolean();
-        hierarchicalWidth = inStream.readInt();
-
-        captionHeight = inStream.readInt();
-        captionCharHeight = inStream.readInt();
-
-        lineWidth = inStream.readInt();
-        lineHeight = inStream.readInt();
-
-        entity = pool.context.entity.getTreeGroup(ID);
-    }
-
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();

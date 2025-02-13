@@ -10,11 +10,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
-        <lsf:writeResources resources="${noAuthResourcesBeforeSystem}"/>
+        <lsf:writeResources resources="${resourcesBeforeSystem}"/>
         <link rel="shortcut icon" href="${logicsIcon}"/>
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
-        <lsf:writeResources resources="${noAuthResourcesAfterSystem}"/>
+        <lsf:writeResources resources="${resourcesAfterSystem}"/>
         <script>
             const check = function () {
                 if (document.getElementById('newPassword').value !==

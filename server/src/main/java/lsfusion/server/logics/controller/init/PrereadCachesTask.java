@@ -10,9 +10,18 @@ public class PrereadCachesTask extends SimpleBLTask {
         return "Prereading properties graph";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return isEnabled();
+    }
+
     public void run(Logger logger) {
-        if (!SystemProperties.lightStart && !Settings.get().isDisablePrereadCaches()) {
+        if (isEnabled()) {
             getBL().prereadCaches();
         }
+    }
+
+    private boolean isEnabled() {
+        return !SystemProperties.lightStart && !Settings.get().isDisablePrereadCaches();
     }
 }

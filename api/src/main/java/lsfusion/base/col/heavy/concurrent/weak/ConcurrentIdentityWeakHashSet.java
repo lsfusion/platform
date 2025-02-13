@@ -21,7 +21,7 @@ public class ConcurrentIdentityWeakHashSet<K> implements Set<K> {
 
     @Override
     public boolean contains(Object o) {
-        return map.contains(o);
+        return map.containsKey(o);
     }
 
     @Override

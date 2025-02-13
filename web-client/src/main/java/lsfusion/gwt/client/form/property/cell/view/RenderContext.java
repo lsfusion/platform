@@ -7,6 +7,8 @@ public interface RenderContext {
 
     boolean globalCaptionIsDrawn();
 
+    default Boolean isPropertyReadOnly() { return false; }
+
     GFont getFont();
 
     Widget getPopupOwnerWidget();

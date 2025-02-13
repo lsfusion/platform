@@ -7,22 +7,22 @@ The `CONCAT` operator creates a [property](Properties.md) that implements a stri
 ### Syntax
 
 ```
-CONCAT separatorString, concatExpr1, ..., concatExprN
+CONCAT separatorExpr, concatExpr1, ..., concatExprN
 ```
 
 ### Description
 
-The `CONCAT` operator creates a property that concatenates values using the `separatorString` separator. Here, `NULL` values are skipped and the separator is inserted only between non-`NULL` values.
+The `CONCAT` operator creates a property that concatenates values using the `separatorExpr` separator. Here, `NULL` values are skipped and the separator is inserted only between non-`NULL` values.
 
 ### Parameters
 
-- `separatorString`
+- `separatorExpr`
 
-    A [string literal](Literals.md#strliteral) to be used as a separator.
+    [Expression](Expression.md) to be used as a separator.
 
 - `concatExpr1, ..., concatExprN`
 
-    [Expressions](Expression.md) whose values are to be concatenated.
+    Expressions whose values are to be concatenated.
 
 ### Examples
 

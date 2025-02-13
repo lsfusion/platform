@@ -89,9 +89,7 @@ public abstract class FormToolbarAction extends InternalAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if (type.isChange())
-            return false;
-        return super.hasFlow(type);
+    protected boolean hasNoChange() {
+        return true;
     }
 }

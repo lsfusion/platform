@@ -6,6 +6,11 @@ public class SyncPropertyParentsTask extends SyncTask {
         return "Synchronizing property parents";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizePropertyParents();
     }

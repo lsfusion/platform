@@ -10,7 +10,7 @@ public class FormCheckBox extends CheckBox {
     public FormCheckBox(String label) {
         super(label);
 
-        GwtClientUtils.addClassName(this, "form-check");
+        GwtClientUtils.addClassNames(this, "form-check", "panel-custom");
         GwtClientUtils.addClassName(getElement().getElementsByTagName("input").getItem(0), "form-check-input");
         GwtClientUtils.addClassName(getElement().getElementsByTagName("input").getItem(0), "panel-renderer-value", "panelRendererValue", v5);
         GwtClientUtils.addClassName(getElement().getElementsByTagName("label").getItem(0), "form-check-label");

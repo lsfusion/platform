@@ -13,8 +13,8 @@ title: 'Built-in classes'
 |`BOOLEAN`            |Logical data type         |`TRUE`, `NULL`|
 |`TBOOLEAN`           |Logical data type (3-state)    |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Date                          |`13_07_1982`|
-|`DATETIME`           |Date and time                 |`13_07_1982_18:00`|
-|`TIME`               |Time                          |`18:00`|
+|`DATETIME`           |Date and time                 |`13_07_1982_18:00`, `13_07_1982_18:00:00`|
+|`TIME`               |Time                          |`18:00`, `18:00:00`|
 |`YEAR`               |Year                          ||
 |`STRING`, `STRING[ ]`|String data type with optional maximum length, case-sensitive||
 |`ISTRING`, `ISTRING[ ]`|String data type with optional maximum length, case-insensitive||

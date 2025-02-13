@@ -14,14 +14,37 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ThreadUtils {
+
+    public static void interruptThreadExecutor(ExecutorService executor, ExecutionContext context) {
+        if(executor != null) {
+            try {
+                Field workerField = ThreadPoolExecutor.class.getDeclaredField("workers");
+                workerField.setAccessible(true);
+                Class workerClass = Class.forName("java.util.concurrent.ThreadPoolExecutor$Worker");
+
+                HashSet<Object> workers = (HashSet<Object>) workerField.get(executor);
+                Field threadField = workerClass.getDeclaredField("thread");
+                threadField.setAccessible(true);
+                for (Object worker : workers) {
+                    interruptThread(context, (Thread) threadField.get(worker));
+                }
+            } catch (Throwable e) {
+                ServerLoggers.systemLogger.error("Failed to kill sql processes in TaskRunner", e);
+            }
+
+            executor.shutdownNow();
+        }
+    }
 
     public static void interruptThread(Context context, Thread thread) throws SQLException, SQLHandledException {
         interruptThread(context.getLogicsInstance().getDbManager(), thread);
@@ -36,28 +59,19 @@ public class ThreadUtils {
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
             thread.interrupt(); // it's better to do it before to prevent sql query execution
             ServerLoggers.exinfoLog("THREAD INTERRUPT ENDED " + thread);
-            SQLSession.cancelExecutingStatement(dbManager, thread, true);
         }
+        interruptSQL(dbManager, thread, true);
     }
 
     public static void sleep(long millis) {
         SystemUtils.sleep(millis);
     }
 
-    public static void interruptThread(DBManager dbManager, Thread thread, Future future) throws SQLException, SQLHandledException {
+    public static void interruptSQL(DBManager dbManager, Thread thread, boolean interrupt) throws SQLException, SQLHandledException {
         if(thread != null)
-            SQLSession.cancelExecutingStatement(dbManager, thread, true);
-        future.cancel(true);
+            SQLSession.cancelExecutingStatement(dbManager, thread, interrupt);
     }
 
-    public static void cancelThread(Context context, Thread thread) throws SQLException, SQLHandledException {
-        cancelThread(context.getLogicsInstance().getDbManager(), thread);
-    }
-
-    public static void cancelThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
-        if(thread != null)
-            SQLSession.cancelExecutingStatement(dbManager, thread, false);
-    }
     public static ThreadGroup getRootThreadGroup( ) {
         ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );
         ThreadGroup ptg;

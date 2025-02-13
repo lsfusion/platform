@@ -31,8 +31,7 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     }
 
     public String getFullCaption() {
-        String eventCaption = getEventCaption(showKey && keyInputEvent != null ? SwingUtils.getKeyStrokeCaption(keyInputEvent.keyStroke) : null,
-                showMouse && mouseInputEvent != null ? mouseInputEvent.mouseEvent : null);
+        String eventCaption = getEventCaption(keyInputEvent, showKey, mouseInputEvent, showMouse);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 

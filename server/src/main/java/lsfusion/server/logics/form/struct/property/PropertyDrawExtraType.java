@@ -69,7 +69,23 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "{logics.property.readonly}";
         }
-    }, 
+    },
+    GRIDELEMENTCLASS {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.CELL_GRIDELEMENTCLASS;
+        }
+
+        @Override
+        public String getText() {
+            return "GRIDELEMENTCLASS";
+        }
+    },
     VALUEELEMENTCLASS {
         @Override
         public ReportFieldExtraType getReportExtraType() {

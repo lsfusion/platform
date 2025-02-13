@@ -4,6 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.FileStringWithFiles;
 import lsfusion.base.file.StringWithFiles;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.connection.ComputerInfo;
@@ -278,38 +280,46 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     private final static ConnectionInfo connectionInfo = new ConnectionInfo(new ComputerInfo(SystemUtils.getLocalHostName(), SystemUtils.getLocalHostIP()), UserInfo.NULL);
 
     public Object convertFileValue(ExternalRequest request, Object value) {
-        if (value instanceof StringWithFiles) {
-            StringWithFiles stringWithFiles = (StringWithFiles) value;
-            return executeOnSomeClient(remoteClient -> {
-                Serializable[] files = stringWithFiles.files;
-                String[] convertedFiles = new String[files.length];
-
-                List<Serializable> readFiles = new ArrayList<>();
-                List<Integer> readIndices = new ArrayList<>();
-
-                for (int i = 0, filesLength = files.length; i < filesLength; i++) {
-                    Serializable file = files[i];
-                    String cachedConversion = cachedConversions.get(remoteClient, file);
-                    if (cachedConversion != null)
-                        convertedFiles[i] = cachedConversion.equals(AppServerImage.NULL) ? null : cachedConversion;
-                    else {
-                        readFiles.add(file);
-                        readIndices.add(i);
-                    }
-                }
-
-                if (!readFiles.isEmpty()) { // optimization
-                    String[] remoteConvertedFiles = remoteClient.convertFileValue(new SessionInfo(connectionInfo, request), readFiles.toArray(new Serializable[0]));
-                    for (int i = 0; i < remoteConvertedFiles.length; i++) {
-                        String convertedFile = remoteConvertedFiles[i];
-                        cachedConversions.put(remoteClient, readFiles.get(i), convertedFile == null ? AppServerImage.NULL : convertedFile);
-                        convertedFiles[readIndices.get(i)] = convertedFile;
-                    }
-                }
-
-                return ExternalUtils.convertFileValue(stringWithFiles.prefixes, convertedFiles);
-            });
-        }
+        if(value instanceof FileStringWithFiles)
+            return convertFileValue((FileStringWithFiles) value, request);
+        if (value instanceof StringWithFiles)
+            return convertFileValue((StringWithFiles) value, request);
         return value;
+    }
+
+    private FileData convertFileValue(FileStringWithFiles stringWithFiles, ExternalRequest request) {
+        return stringWithFiles.convertFileValue(stringData -> convertFileValue(stringData, request));
+    }
+
+    private String convertFileValue(StringWithFiles stringWithFiles, ExternalRequest request) {
+        return executeOnSomeClient(remoteClient -> {
+            Serializable[] files = stringWithFiles.files;
+            String[] convertedFiles = new String[files.length];
+
+            List<Serializable> readFiles = new ArrayList<>();
+            List<Integer> readIndices = new ArrayList<>();
+
+            for (int i = 0, filesLength = files.length; i < filesLength; i++) {
+                Serializable file = files[i];
+                String cachedConversion = cachedConversions.get(remoteClient, file);
+                if (cachedConversion != null)
+                    convertedFiles[i] = cachedConversion.equals(AppServerImage.NULL) ? null : cachedConversion;
+                else {
+                    readFiles.add(file);
+                    readIndices.add(i);
+                }
+            }
+
+            if (!readFiles.isEmpty()) { // optimization
+                String[] remoteConvertedFiles = remoteClient.convertFileValue(new SessionInfo(connectionInfo, request), readFiles.toArray(new Serializable[0]));
+                for (int i = 0; i < remoteConvertedFiles.length; i++) {
+                    String convertedFile = remoteConvertedFiles[i];
+                    cachedConversions.put(remoteClient, readFiles.get(i), convertedFile == null ? AppServerImage.NULL : convertedFile);
+                    convertedFiles[readIndices.get(i)] = convertedFile;
+                }
+            }
+
+            return ExternalUtils.convertFileValue(stringWithFiles.prefixes, convertedFiles);
+        });
     }
 }

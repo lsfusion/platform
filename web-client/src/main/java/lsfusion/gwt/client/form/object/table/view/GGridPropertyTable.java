@@ -80,6 +80,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
@@ -327,6 +328,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getColumnKey(getSelectedCell());
         return null;
+    }
+
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        cellGridElementClasses.put(propertyDraw, values);
     }
 
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -791,6 +796,7 @@ protected Double getUserFlex(int i) {
         protected abstract PValue getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract AppBaseImage getImage(GPropertyDraw property, T record);
+        protected abstract String getGridElementClass(GPropertyDraw property, T record);
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract GFont getFont(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
@@ -858,6 +864,11 @@ protected Double getUserFlex(int i) {
             @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public Boolean isPropertyReadOnly() {
+                return GGridPropertyTable.this.isReadOnly(cell);
             }
 
             @Override
@@ -934,6 +945,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public boolean highlightDuplicateValue(PValue value) {
+                return GGridPropertyTable.this.highlightDuplicateValue(cell, value);
+            }
+
+            @Override
             public boolean isLoading() {
                 return column.isLoading(property, (T) cell.getRow());
             }
@@ -955,6 +971,12 @@ protected Double getUserFlex(int i) {
             @Override
             public CellRenderer.ToolbarAction[] getToolbarActions() {
                 return !property.toolbarActions || isPropertyReadOnly() != null ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
+            }
+
+            @Override
+            public String getGridElementClass() {
+                T row = (T) cell.getRow();
+                return column.getGridElementClass(property, row);
             }
 
             @Override

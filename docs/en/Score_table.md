@@ -46,6 +46,31 @@ name 'Team name' = DATA STRING[30] (Team) IN base;
 
 Thus, the team name is a [data](Data_properties_DATA.md) (user-entered) string-type property. Using the `IN` option, the created property is added to the predefined `base` [property group](Groups_of_properties_and_actions.md). Object properties belonging to the `base` group will be automatically displayed on the dialog form for selecting an object of the `Team` class.
 
+:::info
+Optionally, you can create forms for editing and viewing teams.
+
+```lsf
+FORM team 'Team'
+    OBJECTS t = Team PANEL
+    PROPERTIES(t) name
+
+    EDIT Team OBJECT t
+;
+
+FORM teams 'Teams'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Team OBJECT t
+;
+
+NAVIGATOR {
+    NEW teams;
+}
+```
+:::
+
 ### Game definition
 
 We introduce the concept of the game and its attributes: date, participants (host team and guest team), and their names.
@@ -169,7 +194,8 @@ To determine the number of games played by the team at home and away, the [`GROU
 -   number of games won in regular time, in overtime, and in extra time  
       
     ```lsf
-    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
+    gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                      0 IF team IS Team AND type IS GameResult MATERIALIZED;
     
     gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
     gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
@@ -183,7 +209,8 @@ The total result of the `gamesWonByResult` property will be the number of wins o
 -   number of games played in regular time, in overtime and in extra time (determined by analogy with the above-specified properties of the number of wins)  
       
     ```lsf
-    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+                                                       0 IF team IS Team AND type IS GameResult MATERIALIZED;;
     
     gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
     gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
@@ -231,7 +258,7 @@ We add an interface that allows you to work with the developed system, entering 
 We declare the form with a name and caption. We add to the form a block of objects of the `Game` class with all the properties defined in the system. We also place a button on the form for adding a new game and deleting it.
 
 ```lsf
-FORM MainForm 'Score table'
+FORM scoreTable 'Score table'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 ;
@@ -244,7 +271,7 @@ Data properties displayed on a form that are of a primitive type (`date`, `hostG
 We extend the form by adding a score table block to it. The score table will be shown as a list of teams (objects of the `Team` class) with their statistical indicators, sorted by rating using the `ORDERS` operator.
 
 ```lsf
-EXTEND FORM MainForm
+EXTEND FORM scoreTable
     OBJECTS team = Team
     PROPERTIES(team) place, name, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
                      gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points, NEW, DELETE
@@ -255,7 +282,7 @@ EXTEND FORM MainForm
 The above form can be defined with a single block of code without using the `EXTEND FORM` statement.
 
 ```lsf
-FORM MainFormSingle 'Score table'
+FORM scoreTable 'Score table'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 
@@ -267,17 +294,17 @@ FORM MainFormSingle 'Score table'
 ```
 :::
 
-We place the created form on the main menu of the program - the predefined navigator `root` folder - and indicate that it should be positioned by the very first element in front of the system menu item `'Administration'`.
+We place the created form on the main menu of the program.
 
 ```lsf
 NAVIGATOR {
-    NEW MainForm FIRST;
+    NEW scoreTable;
 }
 ```
 
 The process of creating an information system is completed.
 
-## The complete source code (on [GitHub](https://github.com/lsfusion/samples/tree/master/hockeystats))
+## The complete source code
 
 ```lsf
 MODULE HockeyStats;
@@ -287,6 +314,25 @@ REQUIRE System, Utils;
 CLASS Team 'Team';
 
 name 'Team name' = DATA STRING[30] (Team) IN base;
+
+FORM team 'Team'
+    OBJECTS t = Team PANEL
+    PROPERTIES(t) name
+
+    EDIT Team OBJECT t
+;
+
+FORM teams 'Teams'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Team OBJECT t
+;
+
+NAVIGATOR {
+    NEW teams;
+}
 
 CLASS Game 'Game';
 
@@ -334,13 +380,15 @@ hostGamesPlayed = GROUP SUM 1 BY hostTeam(Game game);
 guestGamesPlayed = GROUP SUM 1 BY guestTeam(Game game);
 gamesPlayed 'G' (Team team) = hostGamesPlayed(team) (+) guestGamesPlayed(team);
 
-gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type), 0;
+gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game game), result(game)](team, type),
+                                                  0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
 gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
 gamesWonSO 'WB' (Team team) = gamesWonBy(team, GameResult.winSO);
 
-gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 0;
+gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+                                                   0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
 gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
@@ -359,19 +407,7 @@ goalsConceded 'Conceded goals' (Team team) = OVERRIDE hostGoalsConceded(team) (+
 place 'Rank' (Team team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
                                                (OVERRIDE goalsScored(team) (-) goalsConceded(team), 0), goalsScored(team);
 
-FORM MainForm 'Score table'
-    OBJECTS game = Game
-    PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
-;
-
-EXTEND FORM MainForm
-    OBJECTS team = Team
-    PROPERTIES(team) place, name, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
-                     gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points, NEW, DELETE
-    ORDERS place(team)
-;
-
-FORM MainFormSingle 'Score table'
+FORM scoreTable 'Score table'
     OBJECTS game = Game
     PROPERTIES(game) date, hostTeamName, hostGoals, guestGoals, guestTeamName, resultName, NEW, DELETE
 
@@ -382,6 +418,6 @@ FORM MainFormSingle 'Score table'
 ;
 
 NAVIGATOR {
-    NEW MainForm FIRST;
+    NEW scoreTable;
 }
 ```

@@ -9,6 +9,10 @@
     --bs-table-accent-bg: rgba(255, 255, 255, 0.3);
 }
 
+[data-bs-theme=dark] :not(.first-visible-row):not(.table-active) > .duplicate-cell {
+    --bs-table-color-state: rgba(255, 255, 255, 0.3);
+}
+
 /* it's a copy of btn-dark - inverting btn-light, somewhy btns are not themed in the current version of bootstrap  */
 [data-bs-theme=dark] .btn-light {
     --bs-btn-color: #fff;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+    <fontFamily name="Noto Sans">
+        <normal>fonts/notoSans/NotoSans-Regular.ttf</normal>
+        <bold>fonts/notoSans/NotoSans-Bold.ttf</bold>
+        <italic>fonts/notoSans/NotoSans-Italic.ttf</italic>
+        <boldItalic>fonts/notoSans/NotoSans-BoldItalic.ttf</boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+</fontFamilies>

@@ -28,7 +28,7 @@ public class RemoteSessionContext extends RemoteConnectionContext {
     public RemoteSessionContext(RemoteSession session) {
         this.session = session;
 
-        remoteContext = new ConnectionContext(true, false);
+        remoteContext = new ConnectionContext(true, false, false, false);
     }
 
     @Override

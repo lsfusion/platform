@@ -307,32 +307,30 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
     
     
-    public void synchronizeParents() {
-        runWithStartLog(()-> {
-            ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
-            ImportField parentNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
-            ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
+    public void synchronizeNavigatorElementParents() {
+        ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField parentNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
-            List<List<Object>> dataParents = getRelations(LM.root, getElementWithChildren(LM.root));
+        List<List<Object>> dataParents = getRelations(LM.root, getElementWithChildren(LM.root));
 
-            ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
-            ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(parentNameField));
-            List<ImportProperty<?>> propsParent = new ArrayList<>();
-            propsParent.add(new ImportProperty(parentNameField, reflectionLM.parentNavigatorElement.getMapping(keyElement), LM.object(reflectionLM.navigatorElement).getMapping(keyParent)));
-            propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
-            ImportTable table = new ImportTable(asList(nameField, parentNameField, numberField), dataParents);
-            try {
-                try (DataSession session = createSyncSession()) {
-                    session.pushVolatileStats("RM_PT");
-                    IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
-                    service.synchronize(true, false);
-                    session.popVolatileStats();
-                    apply(session);
-                }
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+        ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
+        ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(parentNameField));
+        List<ImportProperty<?>> propsParent = new ArrayList<>();
+        propsParent.add(new ImportProperty(parentNameField, reflectionLM.parentNavigatorElement.getMapping(keyElement), LM.object(reflectionLM.navigatorElement).getMapping(keyParent)));
+        propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
+        ImportTable table = new ImportTable(asList(nameField, parentNameField, numberField), dataParents);
+        try {
+            try (DataSession session = createSyncSession()) {
+                session.pushVolatileStats("RM_PT");
+                IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                apply(session);
             }
-        }, "Synchronizing navigator elements parents");
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private Set<String> getElementWithChildren(NavigatorElement element) {
@@ -620,8 +618,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyParents() {
-        runWithStartLog(()-> synchronizePropertyParents(true), "Synchronizing actions parents");
-        runWithStartLog(()-> synchronizePropertyParents(false), "Synchronizing properties parents");
+        runWithStartLog(()-> synchronizePropertyParents(true), "Synchronizing action parents");
+        runWithStartLog(()-> synchronizePropertyParents(false), "Synchronizing property parents");
     }
     public void synchronizePropertyParents(boolean actions) {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);

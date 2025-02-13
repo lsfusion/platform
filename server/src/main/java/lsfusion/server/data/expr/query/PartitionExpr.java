@@ -14,6 +14,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
+import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.join.query.PartitionJoin;
 import lsfusion.server.data.expr.join.where.KeyEqual;
@@ -180,7 +181,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
         final Query fQuery = query;
-        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys((key, value) -> value.isValue() && fQuery.partitions.contains(key), restGroup);
+        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys((key, value) -> value.isValue() && fQuery.partitions.contains(key) && !WindowExpr.is(key), restGroup);
 
         ImSet<Expr> restPartitions = query.partitions.remove(translate.keys());
 
@@ -281,7 +282,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     // все же включим, так как есть проблема с AfterTranslateAspect, когда initTranslate два раза для такого не "настоящего" NotNull полученного в getWhere
     @Override
     public boolean hasNotNull() {
-        return query.type.canBeNull();
+        return AggrType.canBeNull(query.type, group.keys());
     }
 
     @Override
@@ -321,6 +322,10 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
-        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerFollows(), query.getWhere(), query.partitions,group);
+        boolean hasLimitOffset = WindowExpr.has(group.keys());
+
+        ImOrderMap<Expr, Boolean> limitOrders = hasLimitOffset ? query.orders : MapFact.EMPTYORDER();
+
+        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerFollows(), query.getWhere(), query.partitions,group, limitOrders);
     }
 }

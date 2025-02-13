@@ -105,7 +105,7 @@ public class EmailSender {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), ExternalUtils.getContentType(attachment.extension, charset).toString());
         MimeBodyPart filePart = new MimeBodyPart();
         filePart.setDataHandler(new DataHandler(dataSource));
-        filePart.setFileName(attachment.attachmentName);
+        filePart.setFileName(attachment.attachmentName + "." + attachment.extension);
         filePart.setHeader("Content-Transfer-Encoding", "base64");
         mp.addBodyPart(filePart);
     }
@@ -179,9 +179,9 @@ public class EmailSender {
     }
 
     public static class AttachmentFile {
-        private RawFileData file;
-        private String attachmentName;
-        private String extension;
+        public RawFileData file;
+        public String attachmentName;
+        public String extension;
 
         public AttachmentFile(RawFileData file, String attachmentName, String extension) {
             this.file = file;

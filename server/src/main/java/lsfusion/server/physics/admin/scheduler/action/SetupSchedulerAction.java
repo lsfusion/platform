@@ -27,7 +27,7 @@ public class SetupSchedulerAction extends InternalAction {
             startLog("Starting Scheduler");
             Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
             Integer threadCount = (Integer) findProperty("threadCountScheduler[]").read(context);
-            boolean onlySystemTasks = scheduler.setupScheduledTasks(context.getSession(), threadCount);
+            boolean onlySystemTasks = scheduler.setupScheduledTasks(context, threadCount);
             if(onlySystemTasks)
                 context.messageWarning("Scheduler will execute only system tasks, change serverComputer() to enable user tasks", "Scheduler disabled");
             findProperty("isStartedScheduler[]").change(true, context);

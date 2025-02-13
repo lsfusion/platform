@@ -137,6 +137,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
+    public <K extends PropertyInterface> PropertyInterfaceImplement<K> mapInner(ImRevMap<P, K> remap) {
+        return remap.get((P)this);
+    }
+
     public ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         return null;
     }

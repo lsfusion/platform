@@ -6,6 +6,11 @@ public class SyncGroupObjectsTask extends SyncTask {
         return "Synchronizing group objects";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizeGroupObjects();
     }

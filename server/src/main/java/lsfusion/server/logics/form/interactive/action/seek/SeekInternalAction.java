@@ -28,10 +28,8 @@ public class SeekInternalAction extends InternalAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if(type.isChange())
-            return true;
-        return super.hasFlow(type);
+    protected boolean hasNoChange() {
+        return true;
     }
 
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

@@ -2,7 +2,7 @@ package lsfusion.interop.session;
 
 public class ResultExternalResponse extends ExternalResponse {
 
-    public final Object[] results;
+    public final ExternalRequest.Result[] results;
 
     public final String[] headerNames;
     public final String[] headerValues;
@@ -16,7 +16,7 @@ public class ResultExternalResponse extends ExternalResponse {
         return statusHttp;
     }
 
-    public ResultExternalResponse(Object[] results, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, int statusHttp) {
+    public ResultExternalResponse(ExternalRequest.Result[] results, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, int statusHttp) {
         this.results = results;
         this.headerNames = headerNames;
         this.headerValues = headerValues;

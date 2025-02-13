@@ -169,7 +169,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     private StatKeys<KeyExpr> getStatKeys(Where where, StatType type, StatKeys<KeyExpr> pushStatKeys) {
-        return where.getPushedStatKeys(group.keys(), type, pushStatKeys);
+        return PartitionJoin.getStatKeys(where, group.keys(), type, pushStatKeys);
     }
 
     private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats(StatType statType) {
@@ -233,7 +233,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public ImRevMap<String, KeyExpr> genKeyNames() {
-        return group.keys().mapRevKeys(new CompiledQuery.GenNameIndex("rk", ""));
+        return group.keys().mapRevKeys(new CompiledQuery.GenFieldNameIndex("rk", ""));
     }
 
     private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {
@@ -247,12 +247,6 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     @Override
     public StatKeys<KeyExpr> getPushedStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
         return getStatKeys(type, pushStatKeys);
-    }
-
-    @Override
-    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<KeyExpr, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
-        assert !newPush || !group.keys().intersect(getMapIterate().keys());
-        return super.getPushGroup(group, newPush, pushExtraWhere);
     }
 
     @Override

@@ -209,10 +209,11 @@ public class CustomRestoreAction extends InternalAction {
                             if (valueClass instanceof AbstractCustomClass) {
                                 valueClass = table.lpProperties.get(0).getInterfaceClasses(ClassType.signaturePolicy)[k];
                             }
-                            DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
+                            Object objectValue = convertValue(keysEntry.get(k), valueClass);
+                            DataObject keyObject = context.getSession().getDataObject(valueClass, objectValue);
                             if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
                                 keyObject = context.getSession().addObject((ConcreteCustomClass) valueClass, keyObject);
-                                keyObject.object = keysEntry.get(k);
+                                keyObject.object = objectValue;
                             }
                             keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? ObjectType.instance : (Type) valueClass), keyObject);
                         }
@@ -287,6 +288,16 @@ public class CustomRestoreAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private Object convertValue(Object value, ValueClass valueClass) {
+        if (valueClass instanceof DateClass && value instanceof Date)
+            return sqlDateToLocalDate((Date) value);
+        else if (valueClass instanceof TimeClass && value instanceof Time)
+            return sqlTimeToLocalTime((Time) value);
+        else if (valueClass instanceof DateTimeClass && value instanceof Timestamp)
+            return sqlTimestampToLocalDateTime((Timestamp) value);
+        return value;
     }
 
     private LocalDate getWriteDate(Object value) {

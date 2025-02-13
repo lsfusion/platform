@@ -42,6 +42,7 @@ import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
+import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.navigator.controller.NavigatorController;
@@ -207,6 +208,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         formsController = new FormsController(mainControl, mainNavigator);
 
+        addBindings(formsController, navigatorData.root);
+
         initDockStations(navigatorData);
 
         mainNavigator.applyNavigatorChanges(navigatorData.navigatorChanges, navigatorController);
@@ -214,7 +217,15 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         bindUIHandlers();
     }
 
-    private long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
+    private void addBindings(FormsController formsController, ClientNavigatorElement element) {
+        formsController.addBindings(element, element.changeKey, element.changeKeyPriority);
+        formsController.addBindings(element, element.changeMouse, element.changeMousePriority);
+        for(ClientNavigatorElement child : element.children) {
+            addBindings(formsController, child);
+        }
+    }
+
+    public long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
         return executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, sync);
     }
 
@@ -493,8 +504,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final List<String> customReportPathList, final String formCaption, final java.lang.String formSID, boolean isModal, ReportGenerationData generationData, java.lang.String printerName) throws IOException, ClassNotFoundException {
-        return runReport(isModal, formCaption, generationData, printerName, new EditReportInvoker() {
+    public Integer runReport(final List<String> customReportPathList, final String formCaption, final java.lang.String formSID, boolean isModal,
+                             ReportGenerationData generationData, java.lang.String printerName, boolean useDefaultPrinterInPrintIfNotSpecified) throws IOException, ClassNotFoundException {
+        return runReport(isModal, formCaption, generationData, printerName, useDefaultPrinterInPrintIfNotSpecified, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
                 return !customReportPathList.isEmpty();
@@ -539,11 +551,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            return ReportDialog.showReportDialog(generationData, formCaption, printerName, editInvoker);
+            return ReportDialog.showReportDialog(generationData, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         } else {
-            return formsController.openReport(generationData, formCaption, printerName, editInvoker);
+            return formsController.openReport(generationData, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         }
     }
 

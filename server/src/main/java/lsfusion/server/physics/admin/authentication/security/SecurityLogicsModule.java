@@ -20,6 +20,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule {
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
     public LP disableRole;
+    public LP disableRoleSID;
 
     public LP<?> permissionUserRoleNavigatorElement;
     public LP<?> permissionViewUserRoleActionOrProperty;
@@ -52,6 +53,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule {
         hasUserRole = findProperty("has[User,UserRole]");
         createSystemUserRoles = findAction("createSystemUserRoles[]");
         disableRole = findProperty("disableRole[UserRole]");
+        disableRoleSID = findProperty("disableRole[STRING]");
 
         //permissions
         permissionUserRoleNavigatorElement = findProperty("namePermission[UserRole,NavigatorElement]");

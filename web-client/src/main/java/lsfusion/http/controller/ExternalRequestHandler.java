@@ -115,7 +115,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 } else {
                     response.addHeader(headerName, headerValues[i]);
                 }
-                hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+                hasContentDisposition = hasContentDisposition || headerName.equals(ExternalUtils.CONTENT_DISPOSITION_HEADER);
             }
         }
 
@@ -127,7 +127,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         if(contentType != null && !hasContentType)
             response.setContentType(contentType);
         if(contentDisposition != null && !hasContentDisposition)
-            response.addHeader("Content-Disposition", contentDisposition);
+            response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
         response.setStatus(statusHttp);
         responseEntity.writeTo(response.getOutputStream());
     }

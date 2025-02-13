@@ -89,9 +89,9 @@ public abstract class CallDBAction extends CallAction {
                 }
                 if (parse == null) parse = paramValue.getParse(paramClass.getType(), syntax);
             } else
-                parse = AbstractParseInterface.SAFENULL; // тут получается, что типа нет, но он и не нужен (STRUCT'ы не имеют смысла, за cast типов отвечает сама внешняя SQL команда, все safe соответственно ни writeParam, ни getType вызваться не могут / не должны)
+                parse = AbstractParseInterface.SAFENULL; // // here it turns out that there is no type, but it is not needed (STRUCT's have no sense, the external SQL command itself is responsible for casting types, all safe respectively neither writeParam nor getType can / should not be called)
 
-            mParamObjects.exclAdd(getParamName(String.valueOf(i + 1)), parse);
+            mParamObjects.exclAdd(SQLSession.getParamName(String.valueOf(i + 1)), parse); // should match the string SQLSession.getParamName("$1") in the readJDBC (one-level up in the stack)
         }
         return mParamObjects.immutable();
     }
@@ -101,9 +101,9 @@ public abstract class CallDBAction extends CallAction {
 
         String exec = (String) context.getKeyObject(this.exec);
         boolean isFile = exec.endsWith(".sql");
-        exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
         if(isFile)
             exec = ResourceUtils.findResourceAsString(exec, false, true, null, null);
+        exec = ScriptingLogicsModule.transformFormulaText(exec, SQLSession.getParamName("$1"));
 
         List<String> tempTables = new ArrayList<>();
         try {

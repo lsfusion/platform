@@ -450,8 +450,4 @@ public class FlexPanelImpl {
             setFlexBasis(layoutData, element, calcSize, vertical, grid);
         }
     }
-
-    private String getFlexValue(double flex, String flexBasis) {
-        return flex + " 0 " + flexBasis;
-    }
 }

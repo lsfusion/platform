@@ -85,7 +85,7 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQuer
 
     @IdentityLazy
     public StatKeys<KeyExpr> getPushedStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
-        return query.where.getPushedStatKeys(keys, type, pushStatKeys); // формально full, но у full пока нет смысла добавлять инфраструктуру pushStatKeys
+        return PartitionJoin.getStatKeys(query.where, keys, type, pushStatKeys); // формально full, но у full пока нет смысла добавлять инфраструктуру pushStatKeys
     }
 
     public Where getWhere() {

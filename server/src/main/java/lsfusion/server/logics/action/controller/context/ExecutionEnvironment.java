@@ -67,7 +67,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public <P extends PropertyInterface> FlowResult execute(Action<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, PushAsyncResult pushedAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
         // hasMoreSessionUsages is true since we don't know what gonna happen next
-        return property.execute(new ExecutionContext<>(change, pushedAsyncResult, this, null, formEnv, stack, true));
+        return property.execute(new ExecutionContext<>(change, pushedAsyncResult, this, null, null, formEnv, stack, true));
     }
 
     public void cancel(ExecutionStack stack) throws SQLException, SQLHandledException {

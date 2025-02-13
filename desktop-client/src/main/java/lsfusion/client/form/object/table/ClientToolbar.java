@@ -5,7 +5,6 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientToolbar extends ClientComponent {
@@ -21,21 +20,6 @@ public class ClientToolbar extends ClientComponent {
     public boolean showManualUpdate = true;
 
     public ClientToolbar() {
-    }
-
-    @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        outStream.writeBoolean(visible);
-
-        outStream.writeBoolean(showViews);
-        outStream.writeBoolean(showFilters);
-        outStream.writeBoolean(showSettings);
-        outStream.writeBoolean(showCountQuantity);
-        outStream.writeBoolean(showCalculateSum);
-        outStream.writeBoolean(showPrintGroupXls);
-        outStream.writeBoolean(showManualUpdate);
     }
 
     @Override

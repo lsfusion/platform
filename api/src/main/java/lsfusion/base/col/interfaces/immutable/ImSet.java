@@ -56,6 +56,11 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     ImSet<T> remove(ImSet<? extends T> remove);
     ImSet<T> removeIncl(ImSet<? extends T> remove);
     ImSet<T> removeIncl(T element);
+    ImSet<T> removeFn(FunctionSet<T> filter);
+    default ImSet<T> removeFn(SFunctionSet<T> filter) {
+        return removeFn((FunctionSet<T>) filter);
+    }
+
 
     T getIdentIncl(T element);
 

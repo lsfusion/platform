@@ -37,6 +37,7 @@ Context dependent action operators can use external context parameters. They can
 -   [`MULTI` operator](MULTI_action_operator.md)
 -   [`NEW` operator](NEW_operator.md)
 -   [`NESTEDSESSION` operator](NESTEDSESSION_operator.md)
+-   [`NEWCONNECTION` operator](NEWCONNECTION_operator.md)
 -   [`NEWEXECUTOR` operator](NEWEXECUTOR_operator.md)
 -   [`NEWSESSION` operator](NEWSESSION_operator.md)
 -   [`NEWTHREAD` operator](NEWTHREAD_operator.md)

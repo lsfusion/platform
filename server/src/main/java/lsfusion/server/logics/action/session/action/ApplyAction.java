@@ -25,7 +25,6 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -102,13 +101,9 @@ public class ApplyAction extends KeepContextAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.ANYEFFECT)
-            return true;
         if (type == ChangeFlowType.APPLY)
             return true;
-        if (type == ChangeFlowType.READONLYCHANGE)
-            return true;
-        if (type == ChangeFlowType.HASSESSIONUSAGES)
+        if (type.isManageSession())
             return true;
         return super.hasFlow(type);
     }

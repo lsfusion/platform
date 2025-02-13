@@ -70,7 +70,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     public ActionMapImplement<?, Interface<T>> getSetNotNullAction(boolean notNull) {
         if(notNull) {
             PropertyInterface addedObject = new PropertyInterface();
-            ImRevMap<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = getMapInterfaces().toRevExclMap().reverse();
+            ImRevMap<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = getMapRevInterfaces();
 
             ImRevMap<T, PropertyInterface> propValues = MapFact.addRevExcl(MapFact.singletonRev(aggrInterface, addedObject), // aggrInterface = aggrObject, остальные из row'а читаем
                     aggrInterfaces.filterInclRev(innerInterfaces.removeIncl(aggrInterface))); // assert что будут все в aggrInterfaces

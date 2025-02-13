@@ -55,7 +55,7 @@ public abstract class CallAction extends SystemAction {
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             PropertyInterface paramInterface = orderInterfaces.get(i);
             ObjectValue objectValue = context.getKeyValue(paramInterface);
-            Object value = getParamType(paramInterface, objectValue).formatString(objectValue.getValue());
+            Object value = getParamType(paramInterface, objectValue).formatConnectionString(objectValue.getValue());
 
             connectionString = connectionString.replace(getParamName(String.valueOf(i + 1)), (String) value);
         }

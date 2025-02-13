@@ -88,7 +88,7 @@ META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
 END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
-    WHEN LOCAL SET(objectClass o IS objectClass) DO {
+    WHEN LOCAL SET(objectClass o IS objectClass) INLINE DO {
         IF o IS objectClass AND NOT prefix###date(o) THEN prefix###date(o) <- currentDate();
         IF o IS objectClass AND NOT prefix###time(o) THEN prefix###time(o) <- currentTime();
     };

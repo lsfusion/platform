@@ -1,17 +1,12 @@
 package lsfusion.http.authentication;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
 import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.logics.LogicsProvider;
-import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
-import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.LogicsSessionObject;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
-import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.lang.NonNull;
@@ -24,7 +19,6 @@ import org.springframework.util.Assert;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +44,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
             HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
             List<ClientRegistration> clientRegistrations;
             try {
-                clientRegistrations = runRequest(request, (sessionObject, retry) -> getOauth2ClientCredentials(sessionObject.remoteLogics, request));
+                clientRegistrations = runRequest(request, (sessionObject, retry) -> getOauth2ClientCredentials(sessionObject, request));
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -71,13 +65,11 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         return Collections.unmodifiableMap(result);
     }
 
-    private List<ClientRegistration> getOauth2ClientCredentials(RemoteLogicsInterface remoteLogics, HttpServletRequest request) throws RemoteException {
+    private List<ClientRegistration> getOauth2ClientCredentials(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         String authSecret = servletContext.getInitParameter(OAuth2ToLSFTokenFilter.AUTH_SECRET_KEY);
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getConnectionInfo(request),
-                "Authentication.getClientCredentials", MainController.getExternalRequest(new ExternalRequest.Param[]{ExternalRequest.getSystemParam(authSecret)}, request));
-        JSONArray jsonArray = LogicsSessionObject.getJSONArrayResult(result);
+        JSONArray jsonArray = new JSONArray(MainController.sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(authSecret)}, sessionObject, "Authentication.getClientCredentials"));
 
         int jsonArrayLength = jsonArray.length();
         if (jsonArrayLength == 1 && jsonArray.getJSONObject(0).has("error")){

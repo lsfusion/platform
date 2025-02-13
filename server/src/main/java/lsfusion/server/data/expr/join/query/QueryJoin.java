@@ -270,7 +270,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         return getPushedStatKeys(type, pushCost, pushStat, pushKeys, pushNotNullKeys, rPushedKeys).getCost();
     }
 
-    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<K, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
+    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<K, ? extends Expr> group, Result<Where> pushExtraWhere) {
         return BaseUtils.immutableCast(group);
     }
 

@@ -142,16 +142,15 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String getJSONType();
     String formatCSV(T object);
     String formatXML(T object);
+    String formatConnectionString(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
-    Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
+    ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName); // returns String or FileData (not null), null's encode'it depending on type
     RawFileData formatFile(T value, String charset);
 
-    String formatMessage(T object);
+    T parseUI(String value) throws ParseException;
+    String formatUI(T object);
 
-    String formatString(T value, boolean ui);
-    default String formatString(T value) { // Returns null if passed null (files are base64 encoded)
-        return formatString(value, false);
-    }
+    String formatString(T value); // Returns null if passed null (files are base64 encoded)
     String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString
 
     AndClassSet getBaseClassSet(BaseClass baseClass);

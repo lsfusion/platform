@@ -6,6 +6,11 @@ public class SyncTablesTask extends SyncTask {
         return "Synchronizing tables";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     protected boolean runInDebug() {
         return true;
     }

@@ -2,10 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.form.property.async.ClientAsyncCloseForm;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
-import lsfusion.client.navigator.ClientNavigatorAction;
-import lsfusion.client.navigator.ClientNavigatorChanges;
-import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.ClientNavigatorFolder;
+import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.action.GAction;
@@ -27,6 +24,7 @@ import java.util.ArrayList;
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     private final ClientNavigatorChangesToGwtConverter navigatorConverter = ClientNavigatorChangesToGwtConverter.getInstance();
+    private final ClientBindingToGwtConverter bindingConverter = ClientBindingToGwtConverter.getInstance();
 
     public ClientNavigatorToGwtConverter(MainDispatchServlet servlet, String sessionID) {
         super(servlet, sessionID);
@@ -45,6 +43,13 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.creationPath = clientElement.creationPath;
         element.path = clientElement.path;
         element.children = new ArrayList<>();
+
+        if(clientElement.changeKey != null)
+            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeKey, clientElement.changeKeyPriority));
+        element.showChangeKey = clientElement.showChangeKey;
+        if(clientElement.changeMouse != null)
+            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeMouse, clientElement.changeMousePriority));
+        element.showChangeMouse = clientElement.showChangeMouse;
 
         element.image = createImage(clientElement.appImage, false);
 

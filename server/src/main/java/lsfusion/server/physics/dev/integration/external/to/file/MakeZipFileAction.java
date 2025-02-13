@@ -17,6 +17,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -30,12 +31,13 @@ import java.util.zip.ZipOutputStream;
 
 public class MakeZipFileAction extends InternalAction {
 
-    public MakeZipFileAction(UtilsLogicsModule LM) {
-        super(LM);
+    public MakeZipFileAction(UtilsLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
+            boolean zeroTime = getParam(0, context) != null;
 
             KeyExpr iExpr = new KeyExpr("i");
             ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("i", iExpr);
@@ -63,7 +65,10 @@ public class MakeZipFileAction extends InternalAction {
                             }
 
                             InputStream bis = fileBytes.getRawFile().getInputStream();
-                            zos.putNextEntry(new ZipEntry(fileName));
+                            ZipEntry ze = new ZipEntry(fileName);
+                            if(zeroTime)
+                                ze.setTime(0); //to make zip file deterministic
+                            zos.putNextEntry(ze);
                             byte[] buf = new byte[1024];
                             int len;
                             while ((len = bis.read(buf)) > 0) {

@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -52,6 +51,7 @@ public class ReceiveEmailAction extends InternalAction {
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
             accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
             accountQuery.addProperty("insecureSSLAccount", emailLM.insecureSSLAccount.getExpr(accountExpr));
+            accountQuery.addProperty("readAllFoldersAccount", emailLM.readAllFoldersAccount.getExpr(accountExpr));
             accountQuery.and(emailLM.receiveHostAccount.getExpr(accountExpr).getWhere());
             accountQuery.and(emailLM.disableAccount.getExpr(accountExpr).getWhere().not());
 
@@ -79,8 +79,10 @@ public class ReceiveEmailAction extends InternalAction {
                     Integer lastDays = (Integer) accountValues.get("lastDaysAccount").getValue();
                     Integer maxMessages = (Integer) accountValues.get("maxMessagesAccount").getValue();
                     boolean insecureSSL = accountValues.get("insecureSSLAccount").getValue() != null;
+                    boolean readAllFolders = accountValues.get("readAllFoldersAccount").getValue() != null;
 
-                    EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, lastDays, maxMessages, insecureSSL);
+                    EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages,
+                            lastDays, maxMessages, insecureSSL, readAllFolders);
 
                 } catch (Exception e) {
                     String message = localize("{mail.failed.to.receive.mail}") + ", account: " + user;

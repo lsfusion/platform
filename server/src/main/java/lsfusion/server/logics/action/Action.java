@@ -181,7 +181,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         if(compile!=null)
             return compile.action.getUsedExtProps();
 
-        return calculateUsedExtProps();
+        return aspectUsedExtProps();
     }
 
     @IdentityStartLazy
@@ -479,7 +479,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         for(ActionMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
-            if(beforeResult != FlowResult.FINISH)
+            if(!beforeResult.isFinish())
                 return beforeResult;
         }
 

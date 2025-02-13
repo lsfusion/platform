@@ -1,7 +1,10 @@
 package lsfusion.server.base.controller.thread;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.AsyncContext;
@@ -9,12 +12,20 @@ import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
+import java.sql.SQLException;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 // есть в принципе 2 подхода :
 // wrapService, когда привязываемся к task'е
@@ -160,6 +171,27 @@ public class ExecutorFactory {
             @Override
             public void aspectAfterRun(Object submit) {
                 ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
+            }
+        });
+    }
+
+    public static <T> T executeWithTimeout(BusinessLogics BL, Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier) {
+        final Result<Thread> thread = new Result<>();
+        return BaseUtils.executeWithTimeout(() -> {
+            thread.set(Thread.currentThread());
+            try {
+                return callable.call();
+            } finally {
+                thread.set(null);
+            }
+        }, timeout, serviceSupplier, e -> {
+            if(timeout != null) {
+                // thread already was interrupted with future.cancel(true)
+                try {
+                    ThreadUtils.interruptSQL(BL.getDbManager(), thread.result, true);
+                } catch (SQLException | SQLHandledException ex) {
+                    ServerLoggers.sqlSuppLog(ex);
+                }
             }
         });
     }

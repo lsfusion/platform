@@ -208,7 +208,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         junctionView = new GToolbarButton(
                 MainFrame.useTextAsFilterSeparator ? messages.formFilterConditionViewAnd() : null,
                 MainFrame.useTextAsFilterSeparator ? null : StaticImage.FILTER_SEPARATOR,
-                messages.formFilterConditionViewAnd(), true) {
+                messages.formFilterConditionViewAnd()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {

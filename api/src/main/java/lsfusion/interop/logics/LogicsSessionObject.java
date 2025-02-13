@@ -18,7 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
@@ -37,8 +36,9 @@ public class LogicsSessionObject {
     }
 
     public ServerSettings serverSettings; // caching
-    public static ClientSettings getClientSettings(ExternalRequest externalRequest, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        JSONObject json = getJSONObjectResult(remoteNavigator.exec("Service.getClientSettings[]", externalRequest));
+    public static ClientSettings getClientSettings(ExternalRequest externalRequest, RemoteNavigatorInterface remoteNavigator, ConvertFileValue convertFileValue) throws RemoteException {
+        ExternalResponse result = remoteNavigator.exec("Service.getClientSettings[]", externalRequest);
+        JSONObject json = new JSONObject(getStringResult(result, convertFileValue));
 
         String currentUserName = json.optString("currentUserName");
         Integer fontSize = !json.has("fontSize") ? null : json.optInt("fontSize");
@@ -48,6 +48,7 @@ public class LogicsSessionObject {
         boolean autoReconnectOnConnectionLost = json.optBoolean("autoReconnectOnConnectionLost");
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
         int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
+        Boolean mobileMode = !json.has("mobileMode") ? null : json.getBoolean("mobileMode");
         boolean suppressOnFocusChange = json.optBoolean("suppressOnFocusChange");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
@@ -101,7 +102,7 @@ public class LogicsSessionObject {
         double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobileMode, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,
@@ -114,7 +115,7 @@ public class LogicsSessionObject {
         // If we call the optJSONArray() on JSONObject, we get null, same with optJSONObject.
         if (json instanceof JSONObject) {
             JSONObject jsonObject = (JSONObject) json;
-            return Collections.singletonMap(jsonObject.optString("key"), jsonObject.optString("value"));
+            return Collections.singletonMap(jsonObject.optString("key"), jsonObject.optString("value", null));
         }
 
         JSONArray jsonArray = (JSONArray) json;
@@ -122,7 +123,7 @@ public class LogicsSessionObject {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.optJSONObject(i);
             if (jsonObject != null)
-                map.put(jsonObject.optString("key"), jsonObject.optString("value"));
+                map.put(jsonObject.optString("key"), jsonObject.optString("value", null));
         }
         return map;
     }
@@ -130,7 +131,7 @@ public class LogicsSessionObject {
     private static List<Pair<String, RawFileData>> getFileData(JSONObject json, String field) {
         if (json.has(field)) {
             List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
-            getMapFromJSON(json.opt(field)).forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(Base64.decodeBase64(file)))));
+            getMapFromJSON(json.opt(field)).forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, file != null ? new RawFileData(Base64.decodeBase64(file)) : null)));
             return resultFiles;
         }
         return null;
@@ -140,9 +141,45 @@ public class LogicsSessionObject {
         return base64 != null ? new FileData(Base64Decoder.decode(base64)) : null;
     }
 
-    public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache) throws RemoteException {
+    public static InitSettings getInitSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator, ConvertFileValue convertFileValue) throws RemoteException {
+        ExternalResponse result = remoteNavigator.exec("Service.getInitSettings[]", sessionInfo.externalRequest);
+        JSONObject json = new JSONObject(getStringResult(result, convertFileValue));
+
+        List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
+        List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
+
+        return new InitSettings(mainResourcesBeforeSystem, mainResourcesAfterSystem);
+    }
+
+    public static class InitSettings {
+
+        public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
+        public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
+
+        public InitSettings(List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem) {
+            this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
+            this.mainResourcesAfterSystem = mainResourcesAfterSystem;
+        }
+    }
+
+    public static String getStringResult(ExternalResponse result, ConvertFileValue convertFileValue) {
+        ExternalRequest.Result exResult = ((ResultExternalResponse) result).results[0];
+        if(convertFileValue != null) // in the desktop client it can be null
+            exResult = exResult.convertFileValue(convertFileValue);
+        return ((FileData) exResult.value).getRawFile().getString(ExternalUtils.defaultBodyCharset); // because we don't send any charset and thus defaultBodyCharset will be used in the result
+    }
+
+    private static void fillRanges(JSONArray rangesJson, List<String> ranges) {
+        if(rangesJson != null)
+            for (int i = 0; i < rangesJson.length(); i++) {
+                ranges.add(rangesJson.getJSONObject(i).getString("range"));
+           }
+    }
+
+    public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache, ConvertFileValue convertFileValue) throws RemoteException {
         if(serverSettings == null || serverSettings.inDevMode || noCache) {
-            JSONObject json = getJSONObjectResult(remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo.connectionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest));
+            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo.connectionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest);
+            JSONObject json = new JSONObject(getStringResult(result, convertFileValue));
 
             String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
@@ -168,44 +205,5 @@ public class LogicsSessionObject {
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem);
         }
         return serverSettings;
-    }
-
-    public static class InitSettings {
-
-        public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
-        public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
-
-        public InitSettings(List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem) {
-            this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
-            this.mainResourcesAfterSystem = mainResourcesAfterSystem;
-        }
-    }
-
-    public static InitSettings getInitSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        JSONObject json = getJSONObjectResult(remoteNavigator.exec("Service.getInitSettings[]", sessionInfo.externalRequest));
-
-        List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
-        List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
-
-        return new InitSettings(mainResourcesBeforeSystem, mainResourcesAfterSystem);
-    }
-
-    private static void fillRanges(JSONArray rangesJson, List<String> ranges) {
-        if(rangesJson != null)
-            for (int i = 0; i < rangesJson.length(); i++) {
-                ranges.add(rangesJson.getJSONObject(i).getString("range"));
-           }
-    }
-
-    public static JSONObject getJSONObjectResult(ExternalResponse result) {
-        return new JSONObject(getStringResult(result));
-    }
-
-    public static JSONArray getJSONArrayResult(ExternalResponse result) {
-        return new JSONArray(getStringResult(result));
-    }
-
-    private static String getStringResult(ExternalResponse result) {
-        return ((FileData) ((ResultExternalResponse)result).results[0]).getRawFile().getString(ExternalUtils.defaultBodyCharset); // because we don't send any charset and thus defaultBodyCharset will be used in the result
     }
 }

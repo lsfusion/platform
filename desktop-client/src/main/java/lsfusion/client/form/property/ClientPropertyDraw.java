@@ -51,6 +51,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
+    public GridElementClassReader gridElementClassReader = new GridElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
     public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
@@ -137,9 +138,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelColumnVertical;
+    public boolean panelCustom;
 
     public FlexAlignment valueAlignmentHorz;
     public FlexAlignment valueAlignmentVert;
+
+    public boolean highlightDuplicateValue;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -577,10 +581,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
+        panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
 
         valueAlignmentHorz = pool.readObject(inStream);
         valueAlignmentVert = pool.readObject(inStream);
+
+        highlightDuplicateValue = pool.readBoolean(inStream);
 
         valueOverflowHorz = pool.readString(inStream);
         valueOverflowVert = pool.readString(inStream);
@@ -789,8 +796,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = getCaptionOrEmpty();
         }
 
-        String eventCaption = getEventCaption(showChangeKey && changeKey != null ? getChangeKeyCaption() : null,
-                showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
@@ -862,7 +868,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(tooltip) ? tooltip : caption);
 
-        String eventCaption = getEventCaption(changeKey != null ? getChangeKeyCaption() : null, changeMouse != null ? changeMouse.mouseEvent : null);
+        String eventCaption = getEventCaption(changeKey, showChangeKey, changeMouse, showChangeMouse);
         String bindingText = eventCaption != null ? String.format(EDIT_KEY_TOOL_TIP_FORMAT, eventCaption) : "";
 
         if (!MainController.showDetailedInfo) {
@@ -997,6 +1003,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.LAST;
+        }
+    }
+
+    public class GridElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CELL_GRIDELEMENTCLASS;
         }
     }
 

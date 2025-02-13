@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.service.action;
 
+import com.google.common.base.Throwables;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -38,16 +39,10 @@ public abstract class MultiThreadAction extends InternalAction {
             ObjectValue threadCount = context.getKeyValue(threadCountInterface);
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
-                    propertyTimeout == null ? null : (Integer) propertyTimeout.getValue(), context);
-        } catch (InterruptedException e) {
+                    propertyTimeout == null ? null : (Integer) propertyTimeout.getValue(), context, task::logTimeoutTasks);
+        } catch (Throwable e) {
             errorOccurred = true;
-            
-            task.logTimeoutTasks();
-            
-            taskRunner.shutdownNow();            
-            taskRunner.interruptThreadPoolProcesses(context);       
-            
-            ThreadUtils.interruptThread(context, Thread.currentThread());
+            throw Throwables.propagate(e);
         } finally {
             Messages messages = getMessages(task, errorOccurred);
             context.message(messages.message, messages.header);

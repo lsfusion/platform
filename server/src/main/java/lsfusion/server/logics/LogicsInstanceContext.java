@@ -39,7 +39,7 @@ public class LogicsInstanceContext extends AbstractContext {
     public LogicsInstanceContext(LogicsInstance logicsInstance) {
         this.logicsInstance = logicsInstance;
 
-        remoteContext = new ConnectionContext(true, false);
+        remoteContext = new ConnectionContext(true, false, false, false);
     }
 
     @Override

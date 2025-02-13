@@ -2,7 +2,6 @@ package lsfusion.client.form.object.table.view;
 
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.PanelWidget;
-import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
@@ -11,10 +10,9 @@ import java.awt.*;
 public class ToolbarView extends FlexPanel {
     private PanelWidget mainPanel;
 
-    public ToolbarView(ClientToolbar toolbar) {
+    public ToolbarView() {
         super(false);
         initBottomContainer();
-//        toolbar.installMargins(this);
     }
 
     private void initBottomContainer() {

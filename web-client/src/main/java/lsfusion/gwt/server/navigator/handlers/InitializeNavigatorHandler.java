@@ -22,6 +22,7 @@ import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.http.controller.MainController;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -39,9 +40,28 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         super(servlet);
     }
 
-    @Override
-    public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
-        return new InitializeNavigatorResult(getClientSettings(getRemoteNavigator(action), servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP, false)), getNavigatorInfo(getRemoteNavigator(action), servlet, action.sessionID));
+    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, MainDispatchServlet servlet, ClientInfo clientInfo) throws RemoteException {
+        ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, serverSettings, servlet.getRequest(), clientInfo);
+        ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
+
+        GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());
+
+        GColorPreferences colorPreferences = new GColorPreferences(
+                converter.convertOrCast(clientSettings.colorPreferences.getSelectedRowBackground()),
+                converter.convertOrCast(clientSettings.colorPreferences.getSelectedCellBackground()),
+                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBackground()),
+                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBorderColor()),
+                converter.convertOrCast(clientSettings.colorPreferences.getTableGridColor())
+        );
+
+        LocalePreferences localePreferences = clientSettings.localePreferences;
+        return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
+                clientSettings.showDetailedInfoDelay, clientSettings.mobileMode, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
+                clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
+                clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.locale.getLanguage(), localePreferences.dateFormat, localePreferences.timeFormat,
+                localePreferences.twoDigitYearStart, servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
+                clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
+                clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel);
     }
 
     private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, String sessionID) throws RemoteException {
@@ -74,28 +94,10 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }
 
-    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, ClientInfo clientInfo) throws RemoteException {
-        ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, servlet.getRequest(), clientInfo);
-        ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
-
-        GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());
-
-        GColorPreferences colorPreferences = new GColorPreferences(
-                converter.convertOrCast(clientSettings.colorPreferences.getSelectedRowBackground()),
-                converter.convertOrCast(clientSettings.colorPreferences.getSelectedCellBackground()),
-                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBackground()),
-                converter.convertOrCast(clientSettings.colorPreferences.getFocusedCellBorderColor()),
-                converter.convertOrCast(clientSettings.colorPreferences.getTableGridColor())
-        );
-
-        LocalePreferences localePreferences = clientSettings.localePreferences;
-        return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
-                clientSettings.showDetailedInfoDelay, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
-                clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
-                clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.locale.getLanguage(), localePreferences.dateFormat, localePreferences.timeFormat,
-                localePreferences.twoDigitYearStart, servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
-                clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
-                clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel);
+    @Override
+    public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
+        RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
+        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {

@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class ReportDialog extends JDialog {
     public static Integer pageCount;
-    public ReportDialog(JFrame owner, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException, JRException {
+    public ReportDialog(JFrame owner, String formCaption, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException, JRException {
         super(owner, true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -26,7 +26,7 @@ public class ReportDialog extends JDialog {
         print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 
-        final ReportViewer viewer = new ReportViewer(print, printerName, editInvoker);
+        final ReportViewer viewer = new ReportViewer(print, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         double realZoom = viewer.getRealZoom();
 
         setTitle(formCaption);
@@ -37,9 +37,9 @@ public class ReportDialog extends JDialog {
         getContentPane().add(viewer);
     }
 
-    public static Integer showReportDialog(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+    public static Integer showReportDialog(ReportGenerationData generationData, String formCaption, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         try {
-            ReportDialog dlg = new ReportDialog(MainFrame.instance, formCaption, generationData, printerName, editInvoker);
+            ReportDialog dlg = new ReportDialog(MainFrame.instance, formCaption, generationData, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
             dlg.setVisible(true);
             return pageCount;
         } catch (JRException e) {

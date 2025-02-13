@@ -35,7 +35,7 @@ public abstract class AbstractTableController implements TableController {
         if (toolbar == null || !toolbar.visible) {
             toolbarView = null;
         } else {
-            toolbarView = new ToolbarView(toolbar);
+            toolbarView = new ToolbarView();
             formLayout.addBaseComponent(toolbar, toolbarView);
         }
     }

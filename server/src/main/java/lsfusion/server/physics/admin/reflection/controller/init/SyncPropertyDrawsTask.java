@@ -6,6 +6,11 @@ public class SyncPropertyDrawsTask extends SyncTask {
         return "Synchronizing property draws";
     }
 
+    @Override
+    public boolean isStartLoggable() {
+        return false;
+    }
+
     public void runSync() {
         getReflectionManager().synchronizePropertyDraws();
     }

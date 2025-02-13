@@ -4,7 +4,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
@@ -73,7 +72,9 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     }
 
     protected abstract Long parse(String date) throws ParseException;
+    protected abstract Long parseUIString(String date) throws ParseException;
     protected abstract String format(Long epoch);
+    protected abstract String formatUI(Long epoch);
 
     @Override
     public BigDecimal parseString(String s) throws ParseException {
@@ -81,8 +82,18 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     }
 
     @Override
-    public String formatString(BigDecimal obj, boolean ui) {
+    public BigDecimal parseUI(String value) throws ParseException {
+        return (BigDecimal) parseInterval(value, this::parseUIString);
+    }
+
+    @Override
+    public String formatString(BigDecimal obj) {
         return formatInterval(obj, this::format);
+    }
+
+    @Override
+    public String formatUI(BigDecimal obj) {
+        return formatInterval(obj, this::formatUI);
     }
 
     protected abstract String getSQLFrom(String source);

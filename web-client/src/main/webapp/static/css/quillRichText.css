@@ -35,6 +35,10 @@
     font-size: var(--bs-body-font-size, var(--excel-font-size));
 }
 
+.ql-editor-html p {
+    margin: revert;
+}
+
 .ql-tooltip {
     white-space: normal; /*for the tooltip is not hidden behind the parent component*/
 }

@@ -78,7 +78,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         // TEXT PART
         setTextPadding(getSizeElement(element));
 
-        if(property.isEditableNotNull())
+        if(property.isEditableNotNull(renderContext))
             GwtClientUtils.addClassName(element, "text-based-value-required");
 
         if(getInputElement(element) == null)
@@ -93,14 +93,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         // TEXT PART
         clearTextPadding(getSizeElement(element));
 
-        if (property.isEditableNotNull())
-            GwtClientUtils.removeClassName(element, "text-based-value-required");
-
         GwtClientUtils.removeClassName(element, "text-based-value-null");
         GwtClientUtils.removeClassName(element, "text-based-value-empty");
 
         Element inputElement = getInputElement(element);
-        if(property.isEditableNotNull()) {
+
+        if(property.isEditableNotNull(renderContext)) {
+            GwtClientUtils.removeClassName(element, "text-based-value-required");
+
             if(inputElement != null) {
                 GwtClientUtils.removeClassName(inputElement, "is-invalid");
             }
@@ -138,7 +138,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
-            if(property.isEditableNotNull()) {
+            if(property.isEditableNotNull(updateContext)) {
                 if (isNull) {
                     GwtClientUtils.addClassName(inputElement, "is-invalid");
                 } else {

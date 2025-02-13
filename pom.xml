@@ -24,7 +24,7 @@
 
     <properties>
         <project.scm.id>github.com</project.scm.id>
-        <next.beta.version>1</next.beta.version>
+        <next.beta.version>2</next.beta.version>
     </properties>
 
     <scm>

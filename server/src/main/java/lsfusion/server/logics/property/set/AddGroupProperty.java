@@ -1,9 +1,11 @@
 package lsfusion.server.logics.property.set;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -42,6 +44,12 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
 
     public boolean getOrdersNotNull() {
         return false;
+    }
+
+    // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
+    protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
+        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
+        return MapFact.override(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {

@@ -1,5 +1,6 @@
 package lsfusion.base.col.implementations.abs;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -211,5 +212,12 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         for(int i=0,size=size();i<size;i++)
             array[i] = get(i);
         return array;
+    }
+
+    public boolean contains(K element) {
+        for(int i=0,size=size();i<size;i++)
+            if(BaseUtils.hashEquals(get(i), element))
+                return true;
+        return false;
     }
 }

@@ -1899,4 +1899,8 @@ public class GwtClientUtils {
         $wnd.setGlobalClassName(set, elementClass);
     }-*/;
 
+    public static native void addShowCollapsedContainerEvent(Element parent, String toggleElementSelector, String containerElementSelector, String collapsibleClass) /*-{
+        $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
+    }-*/;
+
 }

@@ -14,6 +14,7 @@ title: 'How-to'
 8.  [Metaprogramming](How-to_Metaprogramming.md): The mechanism for generating reusable code based on [metacode](Metaprogramming.md).
 9.  [Physical model](How-to_Physical_model.md): Definition of a scheme for storing data in a relational database.
 10. [Internationalization](How-to_Internationalization.md): Description of the naming rules for system elements in different languages.
-11. [Use Cases](How-to_Use_Cases.md): Common use cases.
+11. [Adding new fonts](How-to_Adding_New_Fonts.md): Description of adding new fonts for JasperReports.
+12. [Use Cases](How-to_Use_Cases.md): Common use cases.
 
   

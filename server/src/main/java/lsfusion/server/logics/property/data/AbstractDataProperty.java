@@ -3,7 +3,10 @@ package lsfusion.server.logics.property.data;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
@@ -11,6 +14,8 @@ import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.sql.SQLException;
 
 public abstract class AbstractDataProperty extends Property<ClassPropertyInterface> {
 
@@ -34,6 +39,10 @@ public abstract class AbstractDataProperty extends Property<ClassPropertyInterfa
 
     protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return getDataClassValueWhere().getCommonExClasses(SetFact.singleton("value")).get("value");
+    }
+
+    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateClasses(sql, runInTransaction, baseClass, null);
     }
 
     protected abstract ClassWhere<Object> getDataClassValueWhere();

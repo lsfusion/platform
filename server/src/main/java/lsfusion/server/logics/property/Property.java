@@ -135,6 +135,8 @@ import lsfusion.server.physics.exec.db.table.TableFactory;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -1239,6 +1241,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
+    public void unmarkStored() {
+        markedStored = false;
+    }
+
     public String mapDbName;
 
     public String getDBName() {
@@ -1259,6 +1265,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         mapTable.table.addField(field, fieldClassWhere);
 
         this.field = field;
+    }
+
+    public void destroyStored(DBNamingPolicy policy) {
+        if(mapTable != null) {
+            String dbName = mapDbName != null ? mapDbName : policy.transformActionOrPropertyCNToDBName(this.canonicalName);
+
+            PropertyField field = new PropertyField(dbName, getType());
+            fieldClassWhere = getClassWhere(mapTable, field);
+            mapTable.table.removeField(field);
+
+            mapTable = null;
+            fieldClassWhere = null;
+            this.field = null;
+        }
     }
 
     public static class DuplicateFieldNameException extends RuntimeException {
@@ -1282,7 +1302,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
-        assert isStored();
+        assert isMarkedStored();
 
         ImList<Field> indexFields = index.mapListValues((PropertyObjectInterfaceImplement<String> indexField) -> {
             if (indexField instanceof PropertyObjectImplement) {
@@ -1342,6 +1362,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return type.getInterfaceClasses(this, valueClasses);
     }
 
+    @IdentityLazy
     public Type getType() {
         ValueClass valueClass = getValueClass(ClassType.typePolicy);
         return valueClass != null ? valueClass.getType() : null;
@@ -2547,18 +2568,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getComplexity(false);
     }
 
-    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateClasses(sql, runInTransaction, DataSession.emptyEnv(OperationOwner.unknown), baseClass);
-    }
-
     @StackMessage("{logics.recalculating.data.classes}")
-    public void recalculateClasses(SQLSession sql, boolean runInTransaction, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass, PropertyChange<T> where) throws SQLException, SQLHandledException {
         assert isStored();
-        
+
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
-        Where where = getIncorrectWhere(baseClass, mapTable.mapKeys.join(mapKeys));
-        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, where);
-        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, env, TableOwner.global);
+        ImRevMap<T, KeyExpr> mapExprs = mapTable.mapKeys.join(mapKeys);
+        Where incorrectWhere = getIncorrectWhere(baseClass, mapExprs);
+
+        if(where != null)
+            incorrectWhere = incorrectWhere.and(where.getWhere(mapExprs));
+
+        Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, incorrectWhere);
+
+        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global);
         DBManager.run(sql, runInTransaction, DBManager.RECALC_CLASSES_TIL, sql1 -> sql1.updateRecords(modifyQuery));
     }
 
@@ -2661,18 +2684,44 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
-    public boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        if(path != null)
-            path = path.addExcl(this);
-        else {
-            if(!marks.add(this))
-                return false;
+    // Cycles are detected using a modified depth-first search.
+    // The modification adds global markers because the algorithm runs from different graph vertices simultaneously in
+    // multiple threads. Once a vertex is fully processed, it is marked globally, preventing other threads from
+    // revisiting it since no cycle was found there.
+    public void checkRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (path.contains(this)) {
+            throw new ScriptParsingException("Property " + this + " is recursive. One of the paths: " + findCycle(path));
         }
-        return calculateCheckRecursions(abstractPath, path, marks);
+        
+        if (localMarks.contains(this) || marks.contains(this)) return;
+        
+        path.add(this);
+        localMarks.add(this);
+        
+        calculateCheckRecursions(path, localMarks, marks, usePrev);
+        
+        path.remove(this);
+        marks.add(this);
     }
-
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        return false;
+    
+    private List<Property<?>> findCycle(Set<Property<?>> path) {
+        List<Property<?>> cycle = new ArrayList<>();
+        boolean found = false;
+        
+        for (Property<?> property : path) {
+            if (property.equals(this)) {
+                found = true;
+            }
+            if (found) {
+                cycle.add(property);
+            }
+        }
+        
+        cycle.add(this);
+        return cycle;
+    }
+    
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
     }
 
     @Override

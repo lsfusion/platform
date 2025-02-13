@@ -121,8 +121,6 @@ public class NewSessionAction extends AroundAspectAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.NEWSESSION) 
-            return true;
         if (type == ChangeFlowType.APPLY)
             return false;
         if (type == ChangeFlowType.CANCEL)

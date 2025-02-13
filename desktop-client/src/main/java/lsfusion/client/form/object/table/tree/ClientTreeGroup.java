@@ -56,28 +56,6 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
         return filters;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        outStream.writeBoolean(boxed != null);
-        if(boxed != null)
-            outStream.writeBoolean(boxed);
-
-        pool.serializeCollection(outStream, groups);
-        pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream, filtersContainer);
-        pool.serializeObject(outStream, filterControls);
-        pool.serializeCollection(outStream, filters);
-        
-        outStream.writeBoolean(expandOnClick);
-        outStream.writeInt(hierarchicalWidth);
-
-        outStream.writeInt(captionHeight);
-
-        outStream.writeInt(lineWidth);
-        outStream.writeInt(lineHeight);
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 

@@ -6,7 +6,6 @@ import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
-import lsfusion.interop.session.SessionInfo;
 
 import java.net.MalformedURLException;
 import java.rmi.NoSuchObjectException;
@@ -80,14 +79,6 @@ public abstract class AbstractLogicsProviderImpl {
                 return runRequest(connection, runnable, true);
             else
                 throw e;
-        }
-    }
-
-    public ServerSettings getServerSettings(LogicsConnection connection, final SessionInfo sessionInfo, final String contextPath, final boolean noCache) {
-        try {
-            return runRequest(connection, (sessionObject, retry) -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
-        } catch (Throwable t) {
-            return null;
         }
     }
 

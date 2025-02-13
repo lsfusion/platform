@@ -2,7 +2,6 @@ package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
@@ -16,6 +15,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,9 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -148,10 +146,16 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
         return readXLS(cellValue);
     }
 
-    public Instant parseString(String s) throws ParseException {
+    private static ZoneId getZoneId() {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return localePreferences != null ? TimeZone.getTimeZone(localePreferences.timeZone).toZoneId() : ZoneId.systemDefault();
+    }
+
+    @Override
+    protected Instant parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
         try {
             try {
-                return ZonedDateTime.parse(s, ThreadLocalContext.getTFormats().zDateTimeParser).toInstant();
+                return formatter.parse(s, Instant::from);
             } catch (DateTimeParseException ignored) {
             }
             return DateConverter.smartParseInstant(s);
@@ -161,11 +165,27 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     @Override
-    public String formatString(Instant value, boolean ui) {
-        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
-        return value != null ? (ui && localePreferences != null ?
-                value.atZone(TimeZone.getTimeZone(localePreferences.timeZone).toZoneId()).format(DateTimeFormatter.ofPattern(localePreferences.dateTimeFormat)) :
-                ThreadLocalContext.getTFormats().zDateTimeFormatter.format(value)) : null;
+    public Instant parseString(String s) throws ParseException {
+        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_INSTANT : ThreadLocalContext.getTFormats().zDateTimeParser);
+    }
+
+    @Override
+    public String formatString(Instant value) {
+        return value != null ? (Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_INSTANT : ThreadLocalContext.getTFormats().zDateTimeFormatter).format(value) : null;
+    }
+
+    @Override
+    public Instant parseUI(String s) throws ParseException {
+        LocalDateTime localDateTime = DateTimeClass.instance.parseUI(s);
+        return localDateTime.atZone(getZoneId()).toInstant();
+    }
+
+    @Override
+    public String formatUI(Instant value) {
+        if(value == null)
+            return null;
+
+        return DateTimeClass.instance.formatUI(value.atZone(getZoneId()).toLocalDateTime());
     }
 
     public String getSID() {

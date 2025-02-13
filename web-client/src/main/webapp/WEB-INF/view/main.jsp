@@ -39,7 +39,7 @@
 
         </style>
 
-        <lsf:writeResources resources="${mainResourcesBeforeSystem}"/>
+        <lsf:writeResources resources="${resourcesBeforeSystem}"/>
 
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 "static/js/external/jquery-3.7.1.min.js",
@@ -131,8 +131,8 @@
                 "static/css/datePicker.css",
 
                 //Quill
-                "static/js/external/quill.min.js", //https://cdn.quilljs.com/1.3.6/quill.min.js
-                "static/css/external/quill.bubble.css", //https://cdn.quilljs.com/1.3.6/quill.bubble.css
+                "static/js/external/quill.min.js", //https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js
+                "static/css/external/quill.bubble.css", //https://cdn.jsdelivr.net/npm/quill@2/dist/quill.bubble.css
                 "static/css/quillRichText.css",
 
                 //Ace code editor
@@ -193,7 +193,7 @@
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>
-        <lsf:writeResources resources="${mainResourcesAfterSystem}"/>
+        <lsf:writeResources resources="${resourcesAfterSystem}"/>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>

@@ -84,6 +84,11 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return filterFn(new NotFunctionSet<>((FunctionSet<K>) remove));
     }
 
+    @Override
+    public ImSet<K> removeFn(FunctionSet<K> filter) {
+        return filterFn(new NotFunctionSet<>(filter));
+    }
+
     public ImSet<K> removeIncl(final ImSet<? extends K> remove) {  // как правило внутренние, поэтому на disjoint нет смысла проверять
         return remove(remove);
     }
@@ -353,13 +358,6 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         for(int i=0,size=size();i<size;i++)
             result.add(get(i));
         return result;
-    }
-
-    public boolean contains(K element) {
-        for(int i=0,size=size();i<size;i++)
-            if(BaseUtils.hashEquals(get(i), element))
-                return true;
-        return false;
     }
 
     @Override

@@ -1,5 +1,13 @@
 /* it's better to do not use table to avoid breaking layout in other bootstrap components*/
 .lsf-table.table {
+
+    /*
+        position:relative is necessary because we rely on offsetLeft and offsetWidth when calculating columnLeft and columnRight.
+        Without relative, <table> will not consider offsetParent and columnLeft and columnRight may not be calculated correctly
+        For example, for the right table, if we have two tables on the form and use horizontal = TRUE;
+    */
+    position: relative;
+
     table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
     width: 100%; /* it's odd but without this table-layout is switched to auto */
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */

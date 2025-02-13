@@ -17,7 +17,9 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType] [TOP n [OFFSET m]]
+MESSAGE [syncType]
+[TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+[OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
 ```
 
 ### Description
@@ -78,16 +80,20 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 
     Keyword. If specified, the form displays data to the user in [message](In_a_print_view_PRINT.md#interactive) mode.
 
-- `TOP n [OFFSET m]`
-
-    Displays only the first `n` entries. [Integer literal](Literals.md#intliteral) with `m` offset (Integer literal).
-
 - `syncType`
 
     Determines when the created action should be continued:
 
     - `WAIT` - after the client completes the action (closes the preview/message form). Used by default.
     - `NOWAIT` - after preparation of the information for sending to the client (form data is read).
+
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Print only first `n` records, where `n` is value of expression `topExpr` or `topPropertyExprT` for group object `topGroupIdT`.
+
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Print only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
 
 ### Examples
 

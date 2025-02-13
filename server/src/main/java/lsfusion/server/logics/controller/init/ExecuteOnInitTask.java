@@ -13,4 +13,9 @@ public class ExecuteOnInitTask extends ExecuteActionTask {
     public String getCaption() {
         return "Executing onInit action";
     }
+
+    @Override
+    public boolean isEndLoggable() {
+        return true;
+    }
 }

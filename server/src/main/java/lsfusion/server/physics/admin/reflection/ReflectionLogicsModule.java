@@ -10,7 +10,6 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
-import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -54,6 +53,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP canonicalNameProperty;
     public LP loggableProperty;
     public LP userLoggableProperty;
+    public LP userMaterializedProperty;
     public LP storedProperty;
     public LP isSetNotNullProperty;
     public LP disableInputListProperty;
@@ -260,6 +260,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         canonicalNameProperty = findProperty("canonicalName[Property]");
         loggableProperty = findProperty("loggable[Property]");
         userLoggableProperty = findProperty("userLoggable[Property]");
+        userMaterializedProperty = findProperty("userMaterialized[Property]");
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
         disableInputListProperty = findProperty("disableInputList[Property]");

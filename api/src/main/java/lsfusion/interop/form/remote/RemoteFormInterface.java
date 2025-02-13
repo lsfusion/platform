@@ -9,7 +9,6 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 
@@ -82,7 +81,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // group object shortcut actions (system toolbar)
 
-    Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException;
+    Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
 
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 

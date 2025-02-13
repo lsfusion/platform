@@ -35,28 +35,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return changedExpr.diff(changedPrevExpr).sum(getPrevExpr(joinImplement, CalcType.EXPR, propChanges));
     }
 
-    // такая же помошь компилятору как и при getExpr в GroupProperty
-    private Where getGroupKeys(PropertyChange<Interface<I>> propertyChange, Result<ImRevMap<I, KeyExpr>> mapKeys, Result<ImMap<I, Expr>> mapValueKeys) {
-        ImMap<PropertyInterfaceImplement<I>, Expr> changeValues = propertyChange.getMapExprs().mapKeys(value -> value.implement);
-
-        ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces);
-
-        Where valueWhere = Where.TRUE();
-        ImValueMap<I,Expr> mvMapValueKeys = innerKeys.mapItValues();// есть совместная обработка
-        for(int i=0,size=innerKeys.size();i<size;i++) {
-            Expr expr = changeValues.get(innerKeys.getKey(i));
-            if(expr!=null) {
-                mvMapValueKeys.mapValue(i, expr);
-                valueWhere = valueWhere.and(innerKeys.getValue(i).compare(expr, Compare.EQUALS));
-            } else
-                mvMapValueKeys.mapValue(i, innerKeys.getValue(i));
-        }
-
-        mapKeys.set(innerKeys);
-        mapValueKeys.set(mvMapValueKeys.immutableValue());
-        return valueWhere;
-    }
-
     @Override
     protected boolean noIncrement() {
         return false;
