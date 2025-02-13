@@ -1,5 +1,7 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -13,10 +15,10 @@ public class ContinueAction extends ChangeFlowAction {
         finalizeInit();
     }
 
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.CONTINUE)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {

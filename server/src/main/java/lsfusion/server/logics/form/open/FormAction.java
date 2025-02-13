@@ -10,6 +10,7 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -140,7 +141,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     }
 
     @Override
-    protected ImMap<Property, Boolean> calculateUsedExtProps() {
+    protected ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
 
         MMap<Property, Boolean> mProps = MapFact.mMap(addValue);
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself

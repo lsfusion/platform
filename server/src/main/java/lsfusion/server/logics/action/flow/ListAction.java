@@ -1,6 +1,7 @@
 package lsfusion.server.logics.action.flow;
 
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -18,6 +19,8 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -114,17 +117,28 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
-    public ImList<ActionMapImplement<?, PropertyInterface>> getList() {
+    public ImList<ActionMapImplement<?, PropertyInterface>> getList(ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return super.getList(recursiveAbstracts);
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        
         MList<ActionMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
         for(ActionMapImplement<?, PropertyInterface> action : getActions())
-            mResult.addAll(action.getList());
+            mResult.addAll(action.getList(recursiveAbstracts));
         return mResult.immutableList();
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ImList<ActionMapImplement<?, PropertyInterface>> list = getList();
-        ImList<ActionMapImplement<?, PropertyInterface>> replacedList = list.mapListValues((ActionMapImplement<?, PropertyInterface> element) -> element.mapReplaceExtend(replacer));
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return null;
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        final ImSet<Action<?>> localRecursiveAbstracts = recursiveAbstracts;
+        
+        ImList<ActionMapImplement<?, PropertyInterface>> list = getList(SetFact.EMPTY());
+        ImList<ActionMapImplement<?, PropertyInterface>> replacedList = list.mapListValues((ActionMapImplement<?, PropertyInterface> element) -> element.mapReplaceExtend(replacer, localRecursiveAbstracts));
 
         if(replacedList.filterList(Objects::nonNull).isEmpty())
             return null;
@@ -137,8 +151,13 @@ public class ListAction extends ListCaseAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        return getListAsyncEventExec(getListActions(), optimistic, recursive);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return AsyncMapExec.RECURSIVE();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        
+        return getListAsyncEventExec(getListActions(), optimistic, recursiveAbstracts);
     }
 
     @Override
@@ -150,7 +169,12 @@ public class ListAction extends ListCaseAction {
 
     @Override
     @IdentityStartLazy
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return false;
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        
         boolean lookingForChangeFlow = false;
         boolean lookingForChange = true;
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
@@ -160,7 +184,7 @@ public class ListAction extends ListCaseAction {
             if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.CONTINUE) || listAction.hasFlow(ChangeFlowType.RETURN)))
                 return false;
 
-            boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore(type);
+            boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore(type, recursiveAbstracts);
             if(endsWithApply) {
                 lookingForChange = false; // change'и уже не важны, только возможность уйти за пределы APPLY
                 lookingForChangeFlow = true;
@@ -172,4 +196,14 @@ public class ListAction extends ListCaseAction {
         
         return true;
     }
+    
+    @Override
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return MapFact.EMPTY();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        return super.calculateUsedExtProps(recursiveAbstracts);
+    }
+    
 }

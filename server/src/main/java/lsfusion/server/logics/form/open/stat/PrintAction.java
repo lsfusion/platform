@@ -14,6 +14,7 @@ import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -147,7 +148,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         if(exportFile != null)
             return getChangeProps(exportFile.property);
         return MapFact.EMPTY();

@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.internal.to;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -8,6 +9,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -117,11 +119,11 @@ public abstract class InternalAction extends ExplicitAction {
         return false;
     }
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type.isSession() && !hasNoChange())
             return true;
         if(type == ChangeFlowType.ANYEFFECT)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

@@ -9,6 +9,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -97,7 +98,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
     protected abstract void writeRootNode(PrintWriter printWriter, T rootNode) throws IOException;
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getChangeProps(exportFile.property);
     }
 }

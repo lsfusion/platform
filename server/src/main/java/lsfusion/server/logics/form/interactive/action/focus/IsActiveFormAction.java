@@ -1,8 +1,10 @@
 package lsfusion.server.logics.form.interactive.action.focus;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -18,7 +20,7 @@ public class IsActiveFormAction extends SystemExplicitAction {
     private LP<?> isActiveFormProperty;
     private FormEntity requestedForm;
 
-    public ImMap<Property, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getChangeProps(isActiveFormProperty.property);
     }
 

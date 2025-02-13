@@ -77,10 +77,10 @@ public class TryAction extends KeepContextAction {
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ActionMapImplement<?, PropertyInterface> replacedTryAction = tryAction.mapReplaceExtend(replacer);
-        ActionMapImplement<?, PropertyInterface> replacedCatchAction = catchAction != null ? catchAction.mapReplaceExtend(replacer) : null;
-        ActionMapImplement<?, PropertyInterface> replacedFinallyAction = finallyAction != null ? finallyAction.mapReplaceExtend(replacer) : null;
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, PropertyInterface> replacedTryAction = tryAction.mapReplaceExtend(replacer, recursiveAbstracts);
+        ActionMapImplement<?, PropertyInterface> replacedCatchAction = catchAction != null ? catchAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
+        ActionMapImplement<?, PropertyInterface> replacedFinallyAction = finallyAction != null ? finallyAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
         if(replacedTryAction == null && replacedCatchAction == null && replacedFinallyAction == null)
             return null;
 
@@ -94,7 +94,7 @@ public class TryAction extends KeepContextAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         //catch commented, because it's pessimistic operator
         ImList<ActionMapImplement<?, PropertyInterface>> list = ListFact.singleton(tryAction);
 //        if(catchAction != null) // technically catch is a branching operator, but for now it's not that important
@@ -102,7 +102,7 @@ public class TryAction extends KeepContextAction {
         if(finallyAction != null)
             list = list.addList(finallyAction);
 
-        return getListAsyncEventExec(list, optimistic, recursive);
+        return getListAsyncEventExec(list, optimistic, recursiveAbstracts);
     }
 
     @Override

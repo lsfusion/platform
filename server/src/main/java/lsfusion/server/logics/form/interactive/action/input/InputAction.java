@@ -152,7 +152,7 @@ public class InputAction extends SystemExplicitAction {
     }
 
     @Override
-    public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         return new AsyncMapInput<>(getInputClass(), getFullContextList(), getActions(), isStrict(), hasDrawOldValue && !optimistic, oldValueInterface, customChangeFunction);
     }
 
@@ -196,16 +196,16 @@ public class InputAction extends SystemExplicitAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getRequestChangeExtProps(1, index -> valueClass.getType(), index -> targetProp);
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.INPUT)
             return true;
         if(type == ChangeFlowType.INTERACTIVEWAIT)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

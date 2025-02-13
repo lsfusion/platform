@@ -9,6 +9,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -72,13 +73,13 @@ public class NewSessionAction extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> migrateProps;
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        return super.aspectChangeExtProps().replaceValues(true);
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
-        return super.calculateUsedExtProps().replaceValues(true);
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.calculateUsedExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
@@ -120,14 +121,14 @@ public class NewSessionAction extends AroundAspectAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.APPLY)
             return false;
         if (type == ChangeFlowType.CANCEL)
             return false;
         if ((type instanceof FormChangeFlowType || type == ChangeFlowType.HASSESSIONUSAGES || type == ChangeFlowType.NEEDMORESESSIONUSAGES) && !isNested)
             return false;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
@@ -151,8 +152,8 @@ public class NewSessionAction extends AroundAspectAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<PropertyInterface> simpleInput = aspectActionImplement.mapAsyncEventExec(optimistic, recursive);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        AsyncMapEventExec<PropertyInterface> simpleInput = aspectActionImplement.mapAsyncEventExec(optimistic, recursiveAbstracts);
         if(simpleInput != null)
             return simpleInput.newSession();
         return null;

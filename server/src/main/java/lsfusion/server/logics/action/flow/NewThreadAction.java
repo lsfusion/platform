@@ -127,9 +127,9 @@ public class NewThreadAction extends AroundAspectAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(!type.isSession())
             return false;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

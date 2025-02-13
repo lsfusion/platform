@@ -86,14 +86,14 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         if(where==null)
             return MapFact.EMPTY();
         return getUsedProps(where);
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         ImMap<Property, Boolean> result = getChangeExtProps(valueClass, needDialog());
         if(this.result!=null)
             result = result.merge(this.result.property.getChangeProps().toMap(false), addValue);
@@ -117,7 +117,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         if(where==null && !needDialog())
             return new AsyncMapAdd<>(valueClass);
         return null;
@@ -186,12 +186,12 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type.isChange())
             return true;
         if(type == ChangeFlowType.PRIMARY)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     @Override
