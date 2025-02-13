@@ -86,9 +86,9 @@ public class RecalculatePropertyAction<P extends PropertyInterface, I extends Pr
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.ANYEFFECT)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

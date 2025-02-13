@@ -1,7 +1,9 @@
 package lsfusion.server.logics.form.interactive.action.seek;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
@@ -30,7 +32,7 @@ public class SeekObjectAction extends SeekAction {
     }
 
     @Override
-    protected AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    protected AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         return new AsyncMapChange<>(null, object, null, interfaces.single());
     }
 }

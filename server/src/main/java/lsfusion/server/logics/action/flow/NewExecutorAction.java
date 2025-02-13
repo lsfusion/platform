@@ -9,6 +9,7 @@ import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -44,13 +45,13 @@ public class NewExecutorAction extends AroundAspectAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        return super.aspectChangeExtProps().replaceValues(true);
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
-        return super.calculateUsedExtProps().replaceValues(true);
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.calculateUsedExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
@@ -87,8 +88,8 @@ public class NewExecutorAction extends AroundAspectAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        return aspectActionImplement.mapAsyncEventExec(optimistic, recursive);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        return aspectActionImplement.mapAsyncEventExec(optimistic, recursiveAbstracts);
     }
 
     @Override

@@ -2,18 +2,17 @@ package lsfusion.server.logics.action.implement;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -27,8 +26,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
@@ -74,15 +71,19 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return action.execute(context.map(mapping));
     }
 
-    public ActionMapImplement<?, T> mapReplaceExtend(Action.ActionReplacer replacer) {
-        ActionMapImplement<?, P> replaced = action.replace(replacer);
+    public ActionMapImplement<?, T> mapReplaceExtend(Action.ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, P> replaced = action.replace(replacer, recursiveAbstracts);
         if(replaced != null)
             return replaced.map(mapping);
         return null;        
     }
 
     public ImList<ActionMapImplement<?, T>> getList() {
-        return PropertyFact.mapActionImplements(mapping, action.getList());
+        return getList(SetFact.EMPTY());
+    }
+    
+    public ImList<ActionMapImplement<?, T>> getList(ImSet<Action<?>> recursiveAbstracts) {
+        return PropertyFact.mapActionImplements(mapping, action.getList(recursiveAbstracts));
     }
 /*    public ActionMapImplement<?, T> compile() {
         return property.compile().map(mapping);
@@ -140,8 +141,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return new ActionImplement<>(action, mapping.join(map));
     }
 
-    public AsyncMapEventExec<T> mapAsyncEventExec(boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<P> asyncMapInputExec = action.getAsyncEventExec(optimistic, recursive);
+    public AsyncMapEventExec<T> mapAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        AsyncMapEventExec<P> asyncMapInputExec = action.getAsyncEventExec(optimistic, recursiveAbstracts);
         if(asyncMapInputExec != null)
             return asyncMapInputExec.map(mapping);
         return null;

@@ -56,18 +56,18 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> used = SetFact.mSet();
         ifProp.mapFillDepends(used);
-        return used.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
+        return used.immutable().toMap(false).merge(super.calculateUsedExtProps(recursiveAbstracts), addValue);
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         ImList<ActionMapImplement<?, PropertyInterface>> list = ListFact.singleton(trueAction);
         if(falseAction != null)
             list = list.addList(falseAction);
-        return getBranchAsyncEventExec(list, optimistic, recursive, false, falseAction != null);
+        return getBranchAsyncEventExec(list, optimistic, recursiveAbstracts, false, falseAction != null);
     }
 
     @Override
@@ -103,9 +103,9 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ActionMapImplement<?, PropertyInterface> replacedTrueAction = trueAction.mapReplaceExtend(replacer);
-        ActionMapImplement<?, PropertyInterface> replacedFalseAction = falseAction != null ? falseAction.mapReplaceExtend(replacer) : null;
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, PropertyInterface> replacedTrueAction = trueAction.mapReplaceExtend(replacer, recursiveAbstracts);
+        ActionMapImplement<?, PropertyInterface> replacedFalseAction = falseAction != null ? falseAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
         if(replacedTrueAction == null && replacedFalseAction == null)
             return null;
 

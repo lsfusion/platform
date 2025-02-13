@@ -7,10 +7,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -23,6 +20,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -377,17 +375,17 @@ public abstract class CallHTTPAction extends CallAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> mProps = SetFact.mSet();
         if(headersToProperty != null)
             mProps.add(headersToProperty.property);
         if(cookiesToProperty != null)
             mProps.add(cookiesToProperty.property);
-        return super.aspectChangeExtProps().merge(getChangeProps(mProps.immutable()), addValue);
+        return super.aspectChangeExtProps(recursiveAbstracts).merge(getChangeProps(mProps.immutable()), addValue);
     }
 
     @Override
-    protected ImMap<Property, Boolean> calculateUsedExtProps() {
+    protected ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> mUsedProps = SetFact.mSet();
         for(LP headerProperty : bodyParamHeadersPropertyList)
             mUsedProps.add(headerProperty.property);
@@ -395,6 +393,6 @@ public abstract class CallHTTPAction extends CallAction {
             mUsedProps.add(headersProperty.property);
         if(cookiesProperty != null)
             mUsedProps.add(cookiesProperty.property);
-        return super.calculateUsedExtProps().merge(mUsedProps.immutable().toMap(false), addValue);
+        return super.calculateUsedExtProps(recursiveAbstracts).merge(mUsedProps.immutable().toMap(false), addValue);
     }
 }

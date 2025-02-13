@@ -20,6 +20,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -42,8 +43,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public abstract class ImportAction extends SystemAction {
@@ -203,7 +202,7 @@ public abstract class ImportAction extends SystemAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> mProps = SetFact.mSet();
         for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
             mProps.add((Property) propertyDraw.getImportProperty().property);

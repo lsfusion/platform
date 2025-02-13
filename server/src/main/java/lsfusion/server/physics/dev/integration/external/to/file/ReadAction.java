@@ -3,6 +3,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.ReadClientAction;
@@ -11,6 +12,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -38,7 +40,7 @@ public class ReadAction extends SystemAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getChangeProps(targetProp.property);
     }
 

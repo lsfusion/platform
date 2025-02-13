@@ -4,11 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
@@ -94,7 +94,7 @@ public class GenerateJNLPAction extends InternalAction {
     }
 
     @Override
-    public ImSet<Property> getUsedProps() {
+    protected ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
         return SetFact.fromJavaSet(new HashSet<>(Arrays.asList(LM.baseLM.url.property, LM.baseLM.query.property, LM.baseLM.appHost.property, LM.baseLM.appPort.property, LM.baseLM.exportName.property)));
     }
 }

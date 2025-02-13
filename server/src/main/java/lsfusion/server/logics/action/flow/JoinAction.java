@@ -1,7 +1,5 @@
 package lsfusion.server.logics.action.flow;
 
-import lsfusion.base.Pair;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -14,7 +12,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -49,24 +46,18 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        if(isRecursive && recursive) // recursion guard
-            return AsyncMapExec.RECURSIVE();
-
-        AsyncMapEventExec<T> simpleInput = action.action.getAsyncEventExec(optimistic, isRecursive || recursive);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        AsyncMapEventExec<T> simpleInput = action.action.getAsyncEventExec(optimistic, recursiveAbstracts);
         if(simpleInput != null)
             return simpleInput.mapJoin(action.mapping);
         return null;
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if(isRecursive) // recursion guard
-            return false;
-
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.RETURN)
             return false;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     public ImSet<Action> getDependActions() {
@@ -74,21 +65,12 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        if(isRecursive) // recursion guard
-            return MapFact.EMPTY();
-        return super.aspectChangeExtProps();
-    }
-
-    @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> used = SetFact.mSet();
         for(PropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
             value.mapFillDepends(used);
         ImMap<Property, Boolean> result = used.immutable().toMap(false);
-        if(!isRecursive)
-            result = result.merge(super.calculateUsedExtProps(), addValue);
-        return result;
+        return result.merge(super.calculateUsedExtProps(recursiveAbstracts), addValue);
     }
 
     @IdentityInstanceLazy
@@ -97,40 +79,25 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public ImList<ActionMapImplement<?, PropertyInterface>> getList() {
+    public ImList<ActionMapImplement<?, PropertyInterface>> getList(ImSet<Action<?>> recursiveAbstracts) {
         // если все интерфейсы однозначны и нет return'ов - inlin'им
-        if(isRecursive || action.action.hasFlow(ChangeFlowType.RETURN))
-            return super.getList();
+        if(action.action.hasFlow(ChangeFlowType.RETURN, recursiveAbstracts))
+            return super.getList(recursiveAbstracts);
         
         ImRevMap<T, PropertyInterface> identityMap = PropertyInterface.getIdentityMap(action.mapping);
         if(identityMap == null)
-            return super.getList();
+            return super.getList(recursiveAbstracts);
 
-        return PropertyFact.mapActionImplements(identityMap, action.action.getList());
+        return PropertyFact.mapActionImplements(identityMap, action.action.getList(recursiveAbstracts));
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        if(isRecursive)
-            return null;
-
-        ActionMapImplement<?, T> replacedAction = action.action.replace(replacer);
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, T> replacedAction = action.action.replace(replacer, recursiveAbstracts);
         if(replacedAction == null)
             return null;
 
         return PropertyFact.createJoinAction(replacedAction.map(action.mapping));
-    }
-
-    private boolean isRecursive;
-    // пока исходим из того что рекурсивными могут быть только abstract'ы
-    @Override
-    protected void markRecursions(ImSet<ListCaseAction> recursiveActions, Set<Action> marks) {
-        Action<T> execAction = action.action;
-        if(execAction instanceof ListCaseAction && recursiveActions.contains((ListCaseAction)execAction)) {
-            assert ((ListCaseAction) execAction).isAbstract();
-            isRecursive = true;
-        } else
-            super.markRecursions(recursiveActions, marks);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override
@@ -141,17 +108,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
-        if(isRecursive) // recursion guard
-            return SetFact.EMPTY();
-        return super.getRecInnerDebugActions();
-    }
-
-    @Override
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
-        if(isRecursive) // recursion guard
-            return false;
-        
-        return action.action.endsWithApplyAndNoChangesAfterBreaksBefore(type);
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
+        return action.action.endsWithApplyAndNoChangesAfterBreaksBefore(type, recursiveAbstracts);
     }
 }

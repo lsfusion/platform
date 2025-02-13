@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -13,6 +14,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -97,10 +99,10 @@ public class InternalClientAction extends CallAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.INTERNALASYNC || type == ChangeFlowType.INTERACTIVEWAIT)
             return !syncType;
 
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

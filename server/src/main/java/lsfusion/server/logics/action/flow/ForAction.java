@@ -111,13 +111,13 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
        MSet<Property> mUsed = SetFact.mSet();
        if(ifProp!=null)
            ifProp.mapFillDepends(mUsed);
        for(PropertyInterfaceImplement<I> order : orders.keyIt())
            order.mapFillDepends(mUsed);
-       return mUsed.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
+       return mUsed.immutable().toMap(false).merge(super.calculateUsedExtProps(recursiveAbstracts), addValue);
     }
     
     private static class RowUpdateIterate<I extends PropertyInterface> implements Iterable<ImMap<I, DataObject>>, Iterator<ImMap<I, DataObject>>, UpdateCurrentClasses {
@@ -281,8 +281,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        ImMap<Property, Boolean> result = super.aspectChangeExtProps();
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        ImMap<Property, Boolean> result = super.aspectChangeExtProps(recursiveAbstracts);
         if(addObject != null) // может быть, из-за break, noinline и т.п.
             result = result.merge(AddObjectAction.getChangeExtProps(addClass, needDialog()), addValue);
         return result;
@@ -489,7 +489,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.BREAK || type == ChangeFlowType.RETURN)
             return false;
         if (addObject != null) {
@@ -498,7 +498,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             if (type == ChangeFlowType.PRIMARY)
                 return true;
         }
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     public interface PushFor<PI extends PropertyInterface, I extends PropertyInterface> {
@@ -527,9 +527,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer) {
-        ActionMapImplement<?, I> replacedAction = action.mapReplaceExtend(replacer);
-        ActionMapImplement<?, I> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer) : null;
+    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, I> replacedAction = action.mapReplaceExtend(replacer, recursiveAbstracts);
+        ActionMapImplement<?, I> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
         if(replacedAction == null && replacedElseAction == null)
             return null;
         
@@ -541,11 +541,11 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         ImList<ActionMapImplement<?, I>> list = ListFact.singleton(action);
         if(elseAction != null)
             list = list.addList(elseAction);
-        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(list, optimistic, recursive, false, elseAction != null);
+        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(list, optimistic, recursiveAbstracts, false, elseAction != null);
         if(asyncExec != null)
             return asyncExec.mapInner(mapInterfaces.reverse());
         return null;

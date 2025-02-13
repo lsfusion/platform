@@ -1,8 +1,10 @@
 package lsfusion.server.logics.form.interactive.action.lifecycle;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
@@ -39,12 +41,12 @@ public class FormApplyAction extends FormFlowAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type.isManageSession())
             return true;
         if(type == ChangeFlowType.PRIMARY)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     @Override
