@@ -1559,7 +1559,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         int width = 0;
         for (int i = 0; i < cols.length(); ++i) {
             String column = cols.get(i);
-            if (!column.equals(COLUMN)) {
+            if (column != null && !column.equals(COLUMN)) {
                 width = Math.max(width, getColumnMapWidth(column));
             }
         }
