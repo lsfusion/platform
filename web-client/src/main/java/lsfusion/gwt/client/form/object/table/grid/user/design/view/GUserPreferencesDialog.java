@@ -27,7 +27,6 @@ import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
     private GGridController groupController;
     private GGridTable grid;
@@ -151,11 +150,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
             }
         });
 
-        ResizableComplexPanel mainContainer = new ResizableComplexPanel();
-        GwtClientUtils.addClassName(mainContainer, "dialog-user-preferences-container");
-        mainContainer.add(focusPanel);
-
-        setBodyWidget(mainContainer);
+        setBodyWidget(focusPanel);
 
         refreshValues(mergeFont());
     }
