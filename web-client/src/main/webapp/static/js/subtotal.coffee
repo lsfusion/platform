@@ -692,56 +692,58 @@ callWithJQuery ($) ->
 
             if clusterize
                 setTimeout ->
-                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts)
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, 1000)
                 , 0
             else
-                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts)
+                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, rowAttrHeaders.length)
 
-        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts) ->
-            for rh in rowAttrHeaders
-                rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
-                if rh.children.length > 0
-                    rCls += " pvtRowSubtotal"
-                    rCls += if opts.rowSubtotalDisplay.hideOnExpand then " #{classRowHide}" else "  #{classRowShow}"
-                else
-                    rCls += " #{classRowShow}"
-                tr = if rh.sTr then rh.sTr else rh.tr
-                for ch in colAttrHeaders when ch.col is colAttrs.length-1 or (ch.children.length isnt 0 and colSubtotalIsEnabled opts.colSubtotalDisplay, ch.col)
-                    aggregator = tree[rh.flatKey][ch.flatKey] ? { value: (-> null), format: -> "" }
-                    val = aggregator.value()
-                    cls = " #{rCls} col#{ch.row} colcol#{ch.col} #{classColExpanded}"
-                    if ch.children.length > 0
-                        cls += " pvtColSubtotal"
-                        cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
+        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block, blockSize) ->
+            for i in [block*blockSize...(block+1)*blockSize]
+                rh = rowAttrHeaders[i]
+                if rh
+                    rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
+                    if rh.children.length > 0
+                        rCls += " pvtRowSubtotal"
+                        rCls += if opts.rowSubtotalDisplay.hideOnExpand then " #{classRowHide}" else "  #{classRowShow}"
                     else
-                        cls += " #{classColShow}"
-                    td = createValueTD val, rh.key, ch.key, aggregator, cls, 
-                        "data-value": val
-                        "data-rownode": rh.node
-                        "data-colnode": ch.node,
-                        getTableEventHandlers val, rh.key, ch.key, rowAttrs, colAttrs, opts
+                        rCls += " #{classRowShow}"
+                    tr = if rh.sTr then rh.sTr else rh.tr
+                    for ch in colAttrHeaders when ch.col is colAttrs.length-1 or (ch.children.length isnt 0 and colSubtotalIsEnabled opts.colSubtotalDisplay, ch.col)
+                        aggregator = tree[rh.flatKey][ch.flatKey] ? { value: (-> null), format: -> "" }
+                        val = aggregator.value()
+                        cls = " #{rCls} col#{ch.row} colcol#{ch.col} #{classColExpanded}"
+                        if ch.children.length > 0
+                            cls += " pvtColSubtotal"
+                            cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
+                        else
+                            cls += " #{classColShow}"
+                        td = createValueTD val, rh.key, ch.key, aggregator, cls,
+                            "data-value": val
+                            "data-rownode": rh.node
+                            "data-colnode": ch.node,
+                            getTableEventHandlers val, rh.key, ch.key, rowAttrs, colAttrs, opts
 
-                    tr.appendChild td
+                        tr.appendChild td
 
-        
-                if not hideRowsTotalsCol            
-                    # buildRowTotal
-                    totalAggregator = rowTotals[rh.flatKey]
-                    val = totalAggregator.value()
-                    td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
-                        "data-value": val
-                        "data-row": "row#{rh.row}"
-                        "data-rowcol": "col#{rh.col}"
-                        "data-rownode": rh.node,
-                        getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
-                    tr.appendChild td
-                if clusterize
-                    c.append([tr.outerHTML])
-                    if c.getRowsAmount() % 10 == 0
-                        c.refresh()
 
-            if clusterize
-                  c.refresh()
+                    if not hideRowsTotalsCol
+                        # buildRowTotal
+                        totalAggregator = rowTotals[rh.flatKey]
+                        val = totalAggregator.value()
+                        td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
+                            "data-value": val
+                            "data-row": "row#{rh.row}"
+                            "data-rowcol": "col#{rh.col}"
+                            "data-rownode": rh.node,
+                            getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
+                        tr.appendChild td
+                    if clusterize
+                        c.append([tr.outerHTML])
+
+            setTimeout ->
+                if (block + 1)*blockSize < rowAttrHeaders.length
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block + 1, blockSize)
+            , 0
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"

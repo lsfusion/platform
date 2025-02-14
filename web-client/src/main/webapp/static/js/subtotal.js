@@ -1047,75 +1047,75 @@
         }
         if (clusterize) {
           return setTimeout(function() {
-            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts);
+            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, 1000);
           }, 0);
         } else {
-          return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts);
+          return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, rowAttrHeaders.length);
         }
       };
-      fillData = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts) {
-        var aggregator, ch, cls, k, l, len1, len2, rCls, ref3, rh, td, totalAggregator, tr, val;
-        for (k = 0, len1 = rowAttrHeaders.length; k < len1; k++) {
-          rh = rowAttrHeaders[k];
-          rCls = `pvtVal row${rh.row} rowcol${rh.col} ${classRowExpanded}`;
-          if (rh.children.length > 0) {
-            rCls += " pvtRowSubtotal";
-            rCls += opts.rowSubtotalDisplay.hideOnExpand ? ` ${classRowHide}` : `  ${classRowShow}`;
-          } else {
-            rCls += ` ${classRowShow}`;
-          }
-          tr = rh.sTr ? rh.sTr : rh.tr;
-          for (l = 0, len2 = colAttrHeaders.length; l < len2; l++) {
-            ch = colAttrHeaders[l];
-            if (!(ch.col === colAttrs.length - 1 || (ch.children.length !== 0 && colSubtotalIsEnabled(opts.colSubtotalDisplay, ch.col)))) {
-              continue;
-            }
-            aggregator = (ref3 = tree[rh.flatKey][ch.flatKey]) != null ? ref3 : {
-              value: (function() {
-                return null;
-              }),
-              format: function() {
-                return "";
-              }
-            };
-            val = aggregator.value();
-            cls = ` ${rCls} col${ch.row} colcol${ch.col} ${classColExpanded}`;
-            if (ch.children.length > 0) {
-              cls += " pvtColSubtotal";
-              cls += opts.colSubtotalDisplay.hideOnExpand ? ` ${classColHide}` : ` ${classColShow}`;
+      fillData = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block, blockSize) {
+        var aggregator, ch, cls, k, l, len1, rCls, ref3, ref4, ref5, rh, td, totalAggregator, tr, val;
+        for (i = k = ref3 = block * blockSize, ref4 = (block + 1) * blockSize; (ref3 <= ref4 ? k < ref4 : k > ref4); i = ref3 <= ref4 ? ++k : --k) {
+          rh = rowAttrHeaders[i];
+          if (rh) {
+            rCls = `pvtVal row${rh.row} rowcol${rh.col} ${classRowExpanded}`;
+            if (rh.children.length > 0) {
+              rCls += " pvtRowSubtotal";
+              rCls += opts.rowSubtotalDisplay.hideOnExpand ? ` ${classRowHide}` : `  ${classRowShow}`;
             } else {
-              cls += ` ${classColShow}`;
+              rCls += ` ${classRowShow}`;
             }
-            td = createValueTD(val, rh.key, ch.key, aggregator, cls, {
-              "data-value": val,
-              "data-rownode": rh.node,
-              "data-colnode": ch.node
-            }, getTableEventHandlers(val, rh.key, ch.key, rowAttrs, colAttrs, opts));
-            tr.appendChild(td);
-          }
-          if (!hideRowsTotalsCol) {
-            
-            // buildRowTotal
-            totalAggregator = rowTotals[rh.flatKey];
-            val = totalAggregator.value();
-            td = createValueTD(val, rh.key, [], totalAggregator, `pvtTotal rowTotal ${rCls}`, {
-              "data-value": val,
-              "data-row": `row${rh.row}`,
-              "data-rowcol": `col${rh.col}`,
-              "data-rownode": rh.node
-            }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
-            tr.appendChild(td);
-          }
-          if (clusterize) {
-            c.append([tr.outerHTML]);
-            if (c.getRowsAmount() % 10 === 0) {
-              c.refresh();
+            tr = rh.sTr ? rh.sTr : rh.tr;
+            for (l = 0, len1 = colAttrHeaders.length; l < len1; l++) {
+              ch = colAttrHeaders[l];
+              if (!(ch.col === colAttrs.length - 1 || (ch.children.length !== 0 && colSubtotalIsEnabled(opts.colSubtotalDisplay, ch.col)))) {
+                continue;
+              }
+              aggregator = (ref5 = tree[rh.flatKey][ch.flatKey]) != null ? ref5 : {
+                value: (function() {
+                  return null;
+                }),
+                format: function() {
+                  return "";
+                }
+              };
+              val = aggregator.value();
+              cls = ` ${rCls} col${ch.row} colcol${ch.col} ${classColExpanded}`;
+              if (ch.children.length > 0) {
+                cls += " pvtColSubtotal";
+                cls += opts.colSubtotalDisplay.hideOnExpand ? ` ${classColHide}` : ` ${classColShow}`;
+              } else {
+                cls += ` ${classColShow}`;
+              }
+              td = createValueTD(val, rh.key, ch.key, aggregator, cls, {
+                "data-value": val,
+                "data-rownode": rh.node,
+                "data-colnode": ch.node
+              }, getTableEventHandlers(val, rh.key, ch.key, rowAttrs, colAttrs, opts));
+              tr.appendChild(td);
+            }
+            if (!hideRowsTotalsCol) {
+              // buildRowTotal
+              totalAggregator = rowTotals[rh.flatKey];
+              val = totalAggregator.value();
+              td = createValueTD(val, rh.key, [], totalAggregator, `pvtTotal rowTotal ${rCls}`, {
+                "data-value": val,
+                "data-row": `row${rh.row}`,
+                "data-rowcol": `col${rh.col}`,
+                "data-rownode": rh.node
+              }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
+              tr.appendChild(td);
+            }
+            if (clusterize) {
+              c.append([tr.outerHTML]);
             }
           }
         }
-        if (clusterize) {
-          return c.refresh();
-        }
+        return setTimeout(function() {
+          if ((block + 1) * blockSize < rowAttrHeaders.length) {
+            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block + 1, blockSize);
+          }
+        }, 0);
       };
       buildColTotalsHeader = function(rowHeadersColumns, colAttrs) {
         var arrowTh, colspan, th, tr;
