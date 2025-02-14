@@ -690,7 +690,7 @@
         });
       }
 
-      arrSort(attrs) {
+      arrSort(attrs, callbacks) {
         var a, sortersArr;
         sortersArr = (function() {
           var l, len1, results;
@@ -706,7 +706,7 @@
           for (i in sortersArr) {
             if (!hasProp.call(sortersArr, i)) continue;
             sorter = sortersArr[i];
-            comparison = sorter(a[i], b[i]);
+            comparison = sorter(a[i], b[i], attrs[i], callbacks);
             if (comparison !== 0) {
               return comparison;
             }
@@ -734,7 +734,7 @@
               });
               break;
             default:
-              this.rowKeys.sort(this.arrSort(this.rowAttrs));
+              this.rowKeys.sort(this.arrSort(this.rowAttrs, this.callbacks));
           }
           switch (this.colOrder) {
             case "value_a_to_z":
@@ -746,7 +746,7 @@
                 return -naturalSort(v([], a), v([], b));
               });
             default:
-              return this.colKeys.sort(this.arrSort(this.colAttrs));
+              return this.colKeys.sort(this.arrSort(this.colAttrs, this.callbacks));
           }
         }
       }

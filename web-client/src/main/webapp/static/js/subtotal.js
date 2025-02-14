@@ -95,7 +95,7 @@
                   return -$.pivotUtilities.naturalSort(v([], a), v([], b));
                 });
               default:
-                return this.colKeys.sort(this.arrSort(this.colAttrs));
+                return this.colKeys.sort(this.arrSort(this.colAttrs, this.callbacks));
             }
           }
         }
@@ -1035,7 +1035,7 @@
         return eventHandlers;
       };
       buildValues = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts) {
-        var c;
+        var c, clusterizedRowsDiv;
         if (clusterize) {
           addClass(scrollDiv, "clusterize-scroll");
           addClass(tbody, "clusterize-content");
@@ -1044,18 +1044,19 @@
             scrollElem: scrollDiv,
             contentElem: tbody
           });
-        }
-        if (clusterize) {
+          clusterizedRowsDiv = createElement('div');
           return setTimeout(function() {
-            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, 1000);
+            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, 0);
           }, 0);
         } else {
-          return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, rowAttrHeaders.length);
+          return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, null, opts, 0);
         }
       };
-      fillData = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block, blockSize) {
-        var aggregator, ch, cls, k, l, len1, rCls, ref3, ref4, ref5, rh, td, totalAggregator, tr, val;
-        for (i = k = ref3 = block * blockSize, ref4 = (block + 1) * blockSize; (ref3 <= ref4 ? k < ref4 : k > ref4); i = ref3 <= ref4 ? ++k : --k) {
+      fillData = function(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, start) {
+        var aggregator, ch, cls, finish, k, l, len1, rCls, ref3, ref4, ref5, rh, td, totalAggregator, tr, val;
+        finish = 0;
+        for (i = k = ref3 = start, ref4 = rowAttrHeaders.length; (ref3 <= ref4 ? k < ref4 : k > ref4); i = ref3 <= ref4 ? ++k : --k) {
+          finish = i;
           rh = rowAttrHeaders[i];
           if (rh) {
             rCls = `pvtVal row${rh.row} rowcol${rh.col} ${classRowExpanded}`;
@@ -1108,12 +1109,18 @@
             }
             if (clusterize) {
               c.append([tr.outerHTML]);
+              clusterizedRowsDiv.appendChild(tr);
             }
+          }
+          if (clusterize && ((Date.now() - startTime) > 100)) { //100ms check
+            break;
           }
         }
         return setTimeout(function() {
-          if ((block + 1) * blockSize < rowAttrHeaders.length) {
-            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block + 1, blockSize);
+          if ((finish + 1) < rowAttrHeaders.length) {
+            return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, finish + 1);
+          } else if (callbacks) {
+            return callbacks.setClusterizedRowsDiv(clusterizedRowsDiv);
           }
         }, 0);
       };

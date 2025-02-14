@@ -27,6 +27,7 @@ public class GZDateTimeDTO implements Serializable {
 
     @Override
     public String toString() {
-        return GZDateTimeType.instance.formatString(PValue.getPValue(this), null);
+        assert false;
+        return toJsDate().toString();
     }
 }

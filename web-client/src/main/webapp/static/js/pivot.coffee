@@ -364,11 +364,11 @@ callWithJQuery ($) ->
                     return if v != (record[k] ? "null")
                 callback(record)
 
-        arrSort: (attrs) =>
+        arrSort: (attrs, callbacks) =>
             sortersArr = (getSort(@sorters, a) for a in attrs)
             (a,b) ->
                 for own i, sorter of sortersArr
-                    comparison = sorter(a[i], b[i])
+                    comparison = sorter(a[i], b[i], attrs[i], callbacks)
                     return comparison if comparison != 0
                 return 0
 
@@ -379,11 +379,11 @@ callWithJQuery ($) ->
                 switch @rowOrder
                     when "value_a_to_z"  then @rowKeys.sort (a,b) =>  naturalSort v(a,[]), v(b,[])
                     when "value_z_to_a" then @rowKeys.sort (a,b) => -naturalSort v(a,[]), v(b,[])
-                    else             @rowKeys.sort @arrSort(@rowAttrs)
+                    else             @rowKeys.sort @arrSort(@rowAttrs, @callbacks)
                 switch @colOrder
                     when "value_a_to_z"  then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
                     when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
-                    else             @colKeys.sort @arrSort(@colAttrs)
+                    else             @colKeys.sort @arrSort(@colAttrs, @callbacks)
 
         getColKeys: () =>
             @sortKeys()

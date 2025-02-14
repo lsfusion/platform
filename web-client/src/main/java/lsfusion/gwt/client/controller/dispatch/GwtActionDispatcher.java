@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
@@ -416,7 +415,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GFilterGroupAction action) {
-        GWT.log("GFilterGroupAction");
     }
 
     private class JSExecutor {

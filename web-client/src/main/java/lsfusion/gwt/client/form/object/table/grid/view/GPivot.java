@@ -39,7 +39,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -386,7 +385,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if (plot != null) {
             exportToImage(plot);
         } else {
-            exportToExcel(getDrawElement());
+            exportToExcel(getRootDiv(clusterizedRowsDiv, getDrawElement()));
         }
     }
     
@@ -398,10 +397,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return {format: 'jpeg', filename: 'lsfPlot'};
     }-*/;
 
-    public native void exportToExcel(Element element)
+    public native Element getRootDiv(Element clusterizedRowsDiv, Element drawElement)
+        /*-{
+            if(clusterizedRowsDiv != null) {
+                return clusterizedRowsDiv;
+            } else {
+                return drawElement.getElementsByClassName("subtotalouterdiv")[0];
+            }
+        }-*/;
+
+    public native void exportToExcel(Element rootDiv)
         /*-{
             var instance = this;
-            var rootDiv = element.getElementsByClassName("subtotalouterdiv")[0];
             instance.@GPivot::updateTableToExcelAttributes(*)(rootDiv);
 
             var workbook = $wnd.TableToExcel.tableToBook(rootDiv, {
@@ -1100,12 +1107,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             return getNaN();
         } else {
             GPropertyDraw property = columnMap.get(columnName).property;
-            CellRenderer cellRenderer = property.getCellRenderer(RendererType.PIVOT);
-            return cellRenderer instanceof IntegralCellRenderer ? fromObject(cellRenderer.format(getPValue(property, value), RendererType.PIVOT, null)) : getNaN();
+            GType cellType = property.getCellType();
+            return cellType instanceof GIntegralType ? fromObject(((GIntegralType) cellType).getDoubleValue(getPValue(property, value))) : getNaN();
         }
     }
 
-    private final native JavaScriptObject getNaN() /*-{
+    private native JavaScriptObject getNaN() /*-{
         return NaN;
     }-*/;
 
@@ -1294,7 +1301,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             if (value != null) {
-                jsElement.setTitle(fromObject(value).toString());
+                jsElement.setTitle(formatValue(lastRenderCol, value, false));
             }
         }
         setTableToExcelColorAttributes(jsElement, null);
@@ -1366,6 +1373,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             String pattern;
             if(value != null) {
                 double doubleValue = (propType instanceof GObjectType ? GLongType.instance : (GIntegralType) propType).getDoubleValue(value);
+                dataValue = String.valueOf(doubleValue);
                 int fractDigits = 0;
                 while ((long) doubleValue - doubleValue != 0) {
                     doubleValue = doubleValue * 10;
@@ -1589,7 +1597,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         int width = 0;
         for (int i = 0; i < cols.length(); ++i) {
             String column = cols.get(i);
-            if (!column.equals(COLUMN)) {
+            if (column != null && !column.equals(COLUMN)) {
                 width = Math.max(width, getColumnMapWidth(column));
             }
         }
@@ -1850,6 +1858,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    private Element clusterizedRowsDiv;
+    public void setClusterizedRowsDiv(Element clusterizedRowsDiv) {
+        this.clusterizedRowsDiv = clusterizedRowsDiv;
+    }
+
     private Integer scrollLeft = null;
     private int scrollLeftCounter = 0;
 
@@ -1988,6 +2001,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
+            },
+
+            setClusterizedRowsDiv: function(clusterizedRowsDiv) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::setClusterizedRowsDiv(*)(clusterizedRowsDiv);
             },
 
             formatArray: function (columnNames, array) {

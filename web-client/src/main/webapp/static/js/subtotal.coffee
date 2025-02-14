@@ -61,7 +61,7 @@ callWithJQuery ($) ->
                 switch @colOrder
                     when "value_a_to_z" then @colKeys.sort (a,b) =>  $.pivotUtilities.naturalSort v([],a), v([],b)
                     when "value_z_to_a" then @colKeys.sort (a,b) => -$.pivotUtilities.naturalSort v([],a), v([],b)
-                    else                     @colKeys.sort @arrSort(@colAttrs)
+                    else                     @colKeys.sort @arrSort(@colAttrs, @callbacks)
 
         rowAttrsSortPredicate: () =>
             groupPredicates = (@groupPredicate group for group in @rowAttrGroups)
@@ -689,16 +689,17 @@ callWithJQuery ($) ->
                     scrollElem: scrollDiv
                     contentElem: tbody
                 );
-
-            if clusterize
+                clusterizedRowsDiv = createElement 'div'
                 setTimeout ->
-                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, 1000)
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, 0)
                 , 0
             else
-                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, 0, rowAttrHeaders.length)
+                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, null, opts, 0)
 
-        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block, blockSize) ->
-            for i in [block*blockSize...(block+1)*blockSize]
+        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, start) ->
+            finish = 0
+            for i in [start...rowAttrHeaders.length]
+                finish = i
                 rh = rowAttrHeaders[i]
                 if rh
                     rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
@@ -739,10 +740,15 @@ callWithJQuery ($) ->
                         tr.appendChild td
                     if clusterize
                         c.append([tr.outerHTML])
+                        clusterizedRowsDiv.appendChild tr
+
+                if clusterize && ((Date.now() - startTime) > 100) #100ms check
+                    break
 
             setTimeout ->
-                if (block + 1)*blockSize < rowAttrHeaders.length
-                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts, block + 1, blockSize)
+                if (finish + 1) < rowAttrHeaders.length
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, clusterizedRowsDiv, opts, finish + 1)
+                else if callbacks then callbacks.setClusterizedRowsDiv(clusterizedRowsDiv)
             , 0
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
