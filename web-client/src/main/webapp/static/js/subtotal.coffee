@@ -690,6 +690,14 @@ callWithJQuery ($) ->
                     contentElem: tbody
                 );
 
+            if clusterize
+                setTimeout ->
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts)
+                , 0
+            else
+                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts)
+
+        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, c, opts) ->
             for rh in rowAttrHeaders
                 rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
                 if rh.children.length > 0
@@ -729,9 +737,11 @@ callWithJQuery ($) ->
                     tr.appendChild td
                 if clusterize
                     c.append([tr.outerHTML])
+                    if c.getRowsAmount() % 10 == 0
+                        c.refresh()
 
             if clusterize
-                setTimeout(c.refresh(), 10)
+                  c.refresh()
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
