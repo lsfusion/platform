@@ -2,8 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import com.google.gwt.core.client.JsDate;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.classes.data.GDateTimeType;
-import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -38,7 +36,8 @@ public class GDateTimeDTO implements Serializable {
 
     @Override
     public String toString() {
-        return GDateTimeType.instance.formatString(PValue.getPValue(this), null);
+        assert false;
+        return toJsDate().toString();
     }
 
     @Override

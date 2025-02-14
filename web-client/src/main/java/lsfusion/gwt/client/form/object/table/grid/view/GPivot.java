@@ -115,14 +115,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayMixed> getData(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
+    private JsArray<JsArrayMixed> getData(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
 
         // getting values
         for (GGroupObjectValue key : keys != null && !keys.isEmpty()  ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
-            JsArrayMixed rowValues = getValues(key, convertDataToStrings);
+            JsArrayMixed rowValues = getValues(key);
 
             if (full) {
                 // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
@@ -139,7 +139,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return array;
     }
 
-    private JsArrayMixed getValues(GGroupObjectValue key, boolean convertDataToStrings) {
+    private JsArrayMixed getValues(GGroupObjectValue key) {
         JsArrayMixed rowValues = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++) {
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
@@ -149,10 +149,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             CellRenderer renderer = null;
             NativeHashMap<GGroupObjectValue, PValue> patternValues = null;
-            if(convertDataToStrings) {
-                renderer = property.getCellRenderer(RendererType.PIVOT);
-                patternValues = patterns.get(i);
-            }
             GType renderType = property.getRenderType(RendererType.PIVOT);
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
@@ -271,8 +267,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         aggrCaptions = new ArrayList<>();
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
-        boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
-        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings, true); // convertToObjects()
+        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, true); // convertToObjects()
 
         if(firstUpdateView != null) // we need to read data first, to know property captions
             initDefaultConfig(grid);
@@ -572,15 +567,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, WrapperObject exclusions, String aggregatorName, String rendererName) {
         updateSortCols(this.config, config);
         this.config = config;
-
-        // see convertDataToStrings comment
-//        boolean isTable = rendererName != null && rendererName.contains("Table");
-//        if(isTable != this.isTable) {
-//            this.isTable = isTable;
-//
-//            this.config = overrideDataClass(this.config, isTable);
-//            rerender();
-//        }
 
         List<GPropertyDraw> properties = new ArrayList<>();
         List<GGroupObjectValue> columnKeys = new ArrayList<>();
@@ -2110,7 +2096,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
         JsArrayString rowsOrCols = config.getArrayString(cols ? "cols" : "rows");
-        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
+        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false);
         ArrayList<String> headers = toArrayList(data.get(0));
         List<Integer> headerIndexes = new ArrayList<>();
         for (int i = 0; i < rowsOrCols.length(); i++) {
