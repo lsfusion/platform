@@ -2,13 +2,12 @@ package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Callback;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.FormRadioButton;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -55,7 +54,7 @@ public class GSaveResetConfirmDialog {
             });
             allUsersRB.addKeyPressHandler(event -> radioKeyPressed(event, callback));
 
-            VerticalPanel panel = new VerticalPanel();
+            FlexPanel panel = new FlexPanel(true);
             panel.add(new HTML((save ? messages.formGridPreferencesSave() : messages.formGridPreferencesReset()) + ":"));
             panel.add(GwtClientUtils.createVerticalStrut(6));
             panel.add(currentUserRB);
