@@ -88,10 +88,6 @@
 
 /* ------------- preferences ----------- */
 
-.dialog-user-preferences-container {
-    min-height: 40em;
-}
-
 .dialog-modal-body {
     overflow: auto;
 }
