@@ -580,8 +580,10 @@ public class PropertyDrawView extends BaseComponentView {
 
         if(entity.isStaticProperty()) {
             Type type = entity.getStaticType();
-            reportField.minimumWidth = type.getReportMinimumWidth() * scale;
-            reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+            if(type != null) {
+                reportField.minimumWidth = type.getReportMinimumWidth() * scale;
+                reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+            }
         }
         Integer reportCharWidth = charWidth;
         if (reportCharWidth != null) {
