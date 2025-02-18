@@ -94,13 +94,17 @@ class ReportUtils {
         } else if (cls == LocalDateTime.class) {
             text = pattern != null ? getPatternExpression(fieldName, pattern)  : String.format("java.sql.Timestamp.valueOf($F{%s})", fieldName);
         } else if (cls == Instant.class) {
-            text = pattern != null ? getPatternExpression(fieldName, pattern)  : String.format("java.sql.Timestamp.from($F{%s})", fieldName);
+            text = pattern != null ? getZDateTimePatternExpression(fieldName, pattern)  : String.format("java.sql.Timestamp.from($F{%s})", fieldName);
         }
         return text != null ? new JRDesignExpression(text) : null;
     }
 
     private static String getPatternExpression(String fieldName, String pattern) {
         return String.format("$F{%s}.format(java.time.format.DateTimeFormatter.ofPattern(\"%s\"))", fieldName, pattern);
+    }
+
+    private static String getZDateTimePatternExpression(String fieldName, String pattern) {
+        return String.format("$F{%s}.atZone(java.util.TimeZone.getDefault().toZoneId()).format(java.time.format.DateTimeFormatter.ofPattern(\"%s\"))", fieldName, pattern);
     }
     
     public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";
