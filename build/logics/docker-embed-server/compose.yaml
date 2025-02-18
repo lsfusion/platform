@@ -1,28 +1,17 @@
-volumes:
-  docker-server:
-
 services:
   db:
     image: postgres:15.4
     volumes:
       - ./docker-db:/var/lib/postgresql/data
+    network_mode: host
     environment:
       POSTGRES_PASSWORD: 11111 # postgres requires password to be set
 
   logics:
-    image: <${docker.repo.name}/${project.artifactId}:${build.timestamp}>
-#    image: local/mycompany:2024-11-01.11-14
+    image: ${docker.image.fullName}
     volumes:
-      - docker-server:/lsfusion
-
-  server:
-    image: lsfusion/server:test
-    depends_on:
-      - db
-      - logics
-    volumes:
-      - docker-server:/lsfusion
-
+      - ./docker-server:/lsfusion
+    network_mode: host
     environment:
       - DB_PASSWORD=11111
       - DB_SERVER=db
@@ -32,15 +21,14 @@ services:
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
 
   client:
-    image: lsfusion/client:test
+    image: lsfusion/client:6.0-SNAPSHOT
     depends_on:
-      - server
+      - logics
     volumes:
       - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
-    ports:
-      - "8080:8080"
+    network_mode: host
     environment:
-      - APP_REGISTRY_SERVER=server
+      - APP_REGISTRY_SERVER=logics
       - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
 #      - SERVER_HOST=server
 #      - SERVER_PORT=7652

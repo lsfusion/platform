@@ -15,36 +15,51 @@
     <properties>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
-        <maven.build.timestamp.format>yyyy-MM-dd.HH-mm</maven.build.timestamp.format>
-        <docker.repo.name>local</docker.repo.name>
+        
+        <docker.image.namespace>local</docker.image.namespace>
+        <docker.image.repository>${project.artifactId}</docker.image.repository>
+        <docker.image.tag>${project.version}</docker.image.tag>
+        <docker.image.fullName>${docker.image.namespace}/${docker.image.repository}:${docker.image.tag}</docker.image.fullName>
+        <docker.logics.file.name>${assemble.file.name}</docker.logics.file.name>
+        <docker.template.subfolder>docker</docker.template.subfolder>
     </properties>
 
     <profiles>
         <profile>
-            <id>docker-build-image</id>
+            <id>embed-server</id>
+            <properties>
+                <docker.image.repository>${project.artifactId}-embed-server</docker.image.repository>
+                <docker.template.subfolder>docker-embed-server</docker.template.subfolder>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.5.0</version>
+                        <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>add-build-timestamp</id>
+                                <id>copy-resources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
                                 <configuration>
-                                    <name>build.timestamp</name>
-                                    <regex>.*</regex>
-                                    <replacement>${maven.build.timestamp}</replacement>
-                                    <failIfNoMatch>false</failIfNoMatch>
+                                    <outputDirectory>${project.basedir}/target</outputDirectory>
+                                    <resources>
+                                        <resource>                                                   
+                                            <directory>${project.parent.basedir}/${docker.template.subfolder}</directory>
+                                            <filtering>true</filtering> <!-- filling property placeholders -->
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.3.0</version>
                         <executions>
                             <execution>
                                 <id>docker-build</id>
@@ -52,20 +67,39 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <!-- execution phase-->
-                                <phase>package</phase>
+                                <phase>install</phase>
                                 <configuration>
                                     <executable>docker</executable>
                                     <arguments>
                                         <argument>build</argument>
                                         <argument>--progress=plain</argument>
                                         <argument>--build-arg</argument>
-                                        <argument>FILENAME=target/${assemble.file.name}</argument>
+                                        <argument>FILENAME=target/${docker.logics.file.name}</argument>
 
                                         <argument>-t</argument>
-                                        <!--repoName/imageName:tag-->
-                                        <argument>${docker.repo.name}/${project.artifactId}:${build.timestamp}</argument>
+                                        <!--namespace/repoName:tag-->
+                                        <argument>${docker.image.fullName}</argument>
                                         <!--Dockerfile location-->
-                                        <argument>${project.basedir}</argument>
+                                        <argument>-f</argument>
+                                        <argument>target/Dockerfile</argument>
+                                        <!--Docker context-->
+                                        <argument>.</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>docker-push</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <!-- execution phase-->
+                                <phase>deploy</phase>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>push</argument>
+                                        <argument>${docker.image.fullName}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
