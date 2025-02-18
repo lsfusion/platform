@@ -46,6 +46,8 @@ public class GGridController extends GAbstractTableController {
 
     public Widget recordView;
 
+    public GToolbarButton exportToExcelButton;
+
     private static boolean isList(GGroupObject groupObject) {
         return groupObject.viewType.isList();
     }
@@ -330,12 +332,13 @@ public class GGridController extends GAbstractTableController {
         if(groupObject.toolbar.showPrintGroupXls) {
             GToolbarButtonGroup printButtonGroup = new GToolbarButtonGroup();
 
-            printButtonGroup.add(new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
+            exportToExcelButton = new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> table.runGroupReport();
                 }
-            });
+            };
+            printButtonGroup.add(exportToExcelButton);
 
             addToToolbar(printButtonGroup);
         }

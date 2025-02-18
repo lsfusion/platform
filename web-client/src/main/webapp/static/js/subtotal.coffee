@@ -132,7 +132,7 @@ callWithJQuery ($) ->
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
 
 
-    SubtotalRenderer = (pivotData, opts) ->
+    SubtotalRenderer = (pivotData, opts, clusterize) ->
         defaults =
             table: clickCallback: null
             localeStrings: totals: "Totals", subtotalOf: "Subtotal of"
@@ -606,19 +606,19 @@ callWithJQuery ($) ->
                 rowspan: span
             tr.appendChild th
 
-        buildRowHeaders = (tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, opts, start, childrenCnt) ->
+        buildRowHeaders = (tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, start, childrenCnt) ->
             startTime = Date.now()
             finish = 0
             for i in [start...childrenCnt]
                 finish = i
                 chKey = rowKeyHeaders.children[i]
                 buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts
-                if (Date.now() - startTime) > 100 #100ms check
+                if not clusterize && (Date.now() - startTime) > 100 #100ms check
                     break
             if finish + 1 < childrenCnt
                 setTimeout ->
-                    buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, opts, finish + 1, childrenCnt
-                , 10
+                    buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, finish + 1, childrenCnt
+                , 0
 
         buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChildList, opts) ->
             for i in [0...h.children.length]
@@ -694,11 +694,21 @@ callWithJQuery ($) ->
                 eventHandlers[event] = (e) -> handler(e, value, filters, pivotData)
             return eventHandlers
 
-        buildValues = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts) ->
+        buildValues = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts) ->
+            if clusterize
+                addClass scrollDiv, "clusterize-scroll"
+                addClass tbody, "clusterize-content"
+                c = new Clusterize(
+                    rows: []
+                    scrollElem: scrollDiv
+                    contentElem: tbody
+                );
+                clusterizedRowsDiv = createElement 'div'
             setTimeout ->
-                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts, 0)
-            , 10
-        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts, start) ->
+                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, 0)
+            , 0
+
+        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, start) ->
             startTime = Date.now()
             finish = 0
             for i in [start...rowAttrHeaders.length]
@@ -741,14 +751,18 @@ callWithJQuery ($) ->
                             "data-rownode": rh.node,
                             getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
                         tr.appendChild td
+                    if c
+                        c.append([tr.outerHTML])
+                        clusterizedRowsDiv.appendChild tr
 
                 if (Date.now() - startTime) > 100 #100ms check
                     break
 
             setTimeout ->
                 if (finish + 1) < rowAttrHeaders.length
-                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts, finish + 1)
-            , 10
+                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, finish + 1)
+                else if callbacks then callbacks.finishFillData(clusterizedRowsDiv)
+            , 0
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
@@ -1114,7 +1128,9 @@ callWithJQuery ($) ->
                 colCnt += th.colSpan
             return colCnt
             
-        main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
+        main = (rowAttrs, rowKeys, colAttrs, colKeys, clusterize) ->
+            if callbacks then callbacks.startFillData()
+
             rowAttrHeaders = []
             colAttrHeaders = []
 
@@ -1179,11 +1195,14 @@ callWithJQuery ($) ->
                 if rowKeyHeaders?
                     node = counter: 0
                     childrenCnt = rowKeyHeaders.children.length
-                    setTimeout ->
-                        buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, opts, 0, childrenCnt
-                    , 10
+                    if clusterize
+                        buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, 0, childrenCnt
+                    else
+                        setTimeout ->
+                            buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, 0, childrenCnt
+                        , 0
 
-            buildValues scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
+            buildValues scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts
             if not hideColsTotalRow
                 tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
                 buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
@@ -1207,10 +1226,10 @@ callWithJQuery ($) ->
             
             return outerDiv
 
-        return main rowAttrs, rowKeys, colAttrs, colKeys
+        return main rowAttrs, rowKeys, colAttrs, colKeys, clusterize
 
     $.pivotUtilities.subtotal_renderers =
-        "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
+        "TABLE"             : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, opts, clusterize
         "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
         "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
         "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts

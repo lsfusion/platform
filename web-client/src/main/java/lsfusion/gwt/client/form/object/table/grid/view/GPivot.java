@@ -477,10 +477,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         rerender();
     }
 
+    boolean useClusterize = false; //set true to use clusterize
     boolean clusterize;
     @Override
     protected void showAllPressed() {
-        clusterize = true;
+        clusterize = useClusterize;
     }
 
     private native WrapperObject overrideFilter(WrapperObject config, String column, JsArrayString columnInclusions, JsArrayString columnExclusions)/*-{
@@ -1858,8 +1859,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    public void startFillData() {
+        grid.exportToExcelButton.setEnabled(false);
+    }
+
     private Element clusterizedRowsDiv;
-    public void setClusterizedRowsDiv(Element clusterizedRowsDiv) {
+    public void finishFillData(Element clusterizedRowsDiv) {
+        grid.exportToExcelButton.setEnabled(true);
         this.clusterizedRowsDiv = clusterizedRowsDiv;
     }
 
@@ -2003,8 +2009,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
             },
 
-            setClusterizedRowsDiv: function(clusterizedRowsDiv) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::setClusterizedRowsDiv(*)(clusterizedRowsDiv);
+            startFillData: function() {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::startFillData(*)();
+            },
+
+            finishFillData: function(clusterizedRowsDiv) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::finishFillData(*)(clusterizedRowsDiv);
             },
 
             formatArray: function (columnNames, array) {
