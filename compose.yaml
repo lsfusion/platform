@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15.4
+    image: postgres:latest
     volumes:
       - ./docker-db:/var/lib/postgresql/data # host/path:container/path
     network_mode: host

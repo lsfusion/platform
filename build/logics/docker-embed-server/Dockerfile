@@ -1,4 +1,4 @@
-FROM openjdk:11.0.8-jdk
+FROM openjdk:21-jdk
 
 ARG FILENAME
 
