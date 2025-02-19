@@ -1,4 +1,4 @@
-FROM openjdk:11.0.8-jdk
+FROM openjdk:21-jdk
 
 # jenkins use regex for replace jar file version in next line before build. Check jenkins branch on change
 

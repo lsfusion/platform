@@ -3,7 +3,7 @@ volumes:
 
 services:
   db:
-    image: postgres:15.4
+    image: postgres:latest
     volumes:
       - ./docker-db:/var/lib/postgresql/data
     network_mode: host
@@ -26,11 +26,11 @@ services:
 
     environment:
       - DB_PASSWORD=11111
-      - DB_SERVER=db
-      #      - DB_USER=postgres
-      #      - DB_NAME=lsfusion
-      #      - JAVA_OPTS=-Xmx4000m
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
+#      - DB_SERVER=db
+#      - DB_USER=postgres
+#      - DB_NAME=lsfusion
+#      - JAVA_OPTS=-Xmx4000m
 
   client:
     image: lsfusion/client:6.0-SNAPSHOT
@@ -40,11 +40,8 @@ services:
       - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
     network_mode: host
     environment:
-      - APP_REGISTRY_SERVER=server
       - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
+#      - APP_REGISTRY_SERVER=server
 #      - SERVER_HOST=server
 #      - SERVER_PORT=7652
 #      - JAVA_OPTS=-Xmx4000m
-
-
-# todo need to do the same in platform`s docker-compose
