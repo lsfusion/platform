@@ -22,6 +22,7 @@
         <docker.image.fullName>${docker.image.namespace}/${docker.image.repository}:${docker.image.tag}</docker.image.fullName>
         <docker.logics.file.name>${assemble.file.name}</docker.logics.file.name>
         <docker.template.subfolder>docker</docker.template.subfolder>
+        <docker.compose.outputDirectory>${project.basedir}/target</docker.compose.outputDirectory>
     </properties>
 
     <profiles>
@@ -40,7 +41,7 @@
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>copy-resources</id>
+                                <id>copy-dockerfile</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
@@ -48,9 +49,31 @@
                                 <configuration>
                                     <outputDirectory>${project.basedir}/target</outputDirectory>
                                     <resources>
-                                        <resource>                                                   
+                                        <resource>  
                                             <directory>${project.parent.basedir}/${docker.template.subfolder}</directory>
                                             <filtering>true</filtering> <!-- filling property placeholders -->
+                                            <includes>
+                                                <include>Dockerfile</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-compose</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${docker.compose.outputDirectory}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.parent.basedir}/${docker.template.subfolder}</directory>
+                                            <filtering>true</filtering> <!-- filling property placeholders -->
+                                            <includes>
+                                                <include>compose.yaml</include>
+                                            </includes>
                                         </resource>
                                     </resources>
                                 </configuration>
