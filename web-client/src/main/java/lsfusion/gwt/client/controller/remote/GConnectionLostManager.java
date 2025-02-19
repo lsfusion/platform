@@ -200,6 +200,8 @@ public class GConnectionLostManager {
 
             this.fatal = fatal;
 
+            GwtClientUtils.addClassName(this, "dialog-block");
+
             ResizableComplexPanel content = new ResizableComplexPanel();
             GwtClientUtils.addClassName(content, "dialog-block-content");
 
