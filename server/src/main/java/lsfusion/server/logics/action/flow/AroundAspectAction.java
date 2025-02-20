@@ -65,13 +65,13 @@ public abstract class AroundAspectAction extends KeepContextAction {
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        return aspectReplaceGenerics(replacer);
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        return aspectReplaceGenerics(replacer, recursiveAbstracts);
     }
     
-    private <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> aspectReplaceGenerics(ActionReplacer replacer) {
+    private <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> aspectReplaceGenerics(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         ActionMapImplement<T, PropertyInterface> aspectActionImplement = (ActionMapImplement<T, PropertyInterface>) this.aspectActionImplement;
-        ActionMapImplement<?, T> replacedAction = aspectActionImplement.action.replace(replacer);
+        ActionMapImplement<?, T> replacedAction = aspectActionImplement.action.replace(replacer, recursiveAbstracts);
         if(replacedAction == null)
             return null;
 

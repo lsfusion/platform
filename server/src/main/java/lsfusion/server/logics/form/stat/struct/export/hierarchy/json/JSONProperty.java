@@ -12,6 +12,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -276,7 +277,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         }
 
         @Override
-        public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
             return new AsyncMapJSONChange<>(interfaces.toRevMap());
         }
 
@@ -300,12 +301,12 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         }
 
         @Override
-        public boolean hasFlow(ChangeFlowType type) {
+        public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
             if(type instanceof FormChangeFlowType && !form.hasNoChange((FormChangeFlowType) type))
                 return true;
             if(type == ChangeFlowType.ANYEFFECT)
                 return true;
-            return super.hasFlow(type);
+            return super.hasFlow(type, recursiveAbstracts);
         }
     }
 

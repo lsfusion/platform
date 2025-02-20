@@ -40,7 +40,7 @@ public class CheckCanBeChangedAction extends KeepContextAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return MapFact.singleton(changeProp.property, false);
     }
 

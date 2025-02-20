@@ -73,10 +73,10 @@ public class RequestAction extends KeepContextAction {
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ActionMapImplement<?, PropertyInterface> replacedRequestAction = requestAction.mapReplaceExtend(replacer);
-        ActionMapImplement<?, PropertyInterface> replacedDoAction = doAction != null ? doAction.mapReplaceExtend(replacer) : null;
-        ActionMapImplement<?, PropertyInterface> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer) : null;
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, PropertyInterface> replacedRequestAction = requestAction.mapReplaceExtend(replacer, recursiveAbstracts);
+        ActionMapImplement<?, PropertyInterface> replacedDoAction = doAction != null ? doAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
+        ActionMapImplement<?, PropertyInterface> replacedElseAction = elseAction != null ? elseAction.mapReplaceExtend(replacer, recursiveAbstracts) : null;
         if(replacedRequestAction == null && replacedDoAction == null && replacedElseAction == null)
             return null;
 
@@ -110,12 +110,12 @@ public class RequestAction extends KeepContextAction {
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         // because ELSE actions in the INPUT operator are not achieved in async mode, we "disable" async for RequestAction-s
         if (!optimistic && elseAction != null)
             return null;
 
-        return requestAction.mapAsyncEventExec(optimistic, recursive);
+        return requestAction.mapAsyncEventExec(optimistic, recursiveAbstracts);
     }
 
     public ActionMapImplement<?, PropertyInterface> getDoAction() {

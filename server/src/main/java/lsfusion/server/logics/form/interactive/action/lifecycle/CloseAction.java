@@ -1,8 +1,10 @@
 package lsfusion.server.logics.form.interactive.action.lifecycle;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapCloseForm;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -26,7 +28,7 @@ public class CloseAction extends FormFlowAction {
     }
 
     @Override
-    protected AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    protected AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         return new AsyncMapCloseForm<>();
     }
 

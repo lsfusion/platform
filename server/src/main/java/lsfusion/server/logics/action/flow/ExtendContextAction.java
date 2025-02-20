@@ -6,12 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -76,14 +76,14 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ActionMapImplement<?, I> extReplace = replaceExtend(replacer);
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, I> extReplace = replaceExtend(replacer, recursiveAbstracts);
         if(extReplace!=null)
             return extReplace.map(mapInterfaces.reverse());
         return null;
     }
 
-    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer) {
+    public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
 }

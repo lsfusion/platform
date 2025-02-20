@@ -61,7 +61,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
 
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
      @Override
-     public ImMap<Property, Boolean> aspectChangeExtProps() {
+     public ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
          OrObjectClassSet orSet;
          if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.wherePolicy).getOrSet(changeInterface))==null)
              return aspectChangeBaseExtProps(baseClass);
@@ -88,7 +88,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
      }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         if(where==null)
             return MapFact.EMPTY();
         return getUsedProps(where);
@@ -186,7 +186,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
             return new AsyncMapRemove<>(mapInterfaces.reverse().get(changeInterface));
         return null;
@@ -211,12 +211,12 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type.isChange())
             return true;
         if(type == ChangeFlowType.PRIMARY && valueClass instanceof CustomClass)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     @Override

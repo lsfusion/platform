@@ -1,5 +1,7 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.Pair;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -10,6 +12,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -31,8 +34,13 @@ public abstract class ListCaseAction extends KeepContextAction {
 
     protected boolean checkExclusiveImplementations;
     protected boolean isLast;
+    protected boolean isRecursive = false;
     protected final AbstractType type;
 
+    public void setRecursive(boolean recursive) {
+        isRecursive = recursive;
+    }
+    
     public boolean isAbstract() {
         return abstractWhere != null;
     }
@@ -114,12 +122,43 @@ public abstract class ListCaseAction extends KeepContextAction {
 
     @Override
     protected void markRecursions(ImSet<ListCaseAction> recursiveActions, Set<Action> marks) {
-        super.markRecursions(recursiveActions.addExcl(this), marks); // // пока исходим из того что рекурсивными могут быть только abstract'ы
+        if (isAbstract()) {
+            // пока исходим из того что рекурсивными могут быть только abstract'ы
+            recursiveActions = recursiveActions.addExcl(this);
+        }
+        super.markRecursions(recursiveActions, marks);
     }
 
     protected abstract ImList<ActionMapImplement<?, PropertyInterface>> getListActions();
 
     public ImSet<Action> getDependActions() {
         return getListActions().mapListValues((Function<ActionMapImplement<?, PropertyInterface>, Action>) value -> value.action).toOrderSet().getSet();
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return false;
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        return super.hasFlow(type, recursiveAbstracts);
+    }
+    
+    @Override
+    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions(ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return SetFact.EMPTY();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        return super.getRecInnerDebugActions(recursiveAbstracts);
+    }
+    
+    @Override
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return MapFact.EMPTY();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        return super.aspectChangeExtProps(recursiveAbstracts);
     }
 }
