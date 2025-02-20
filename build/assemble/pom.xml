@@ -62,16 +62,9 @@
                             <createSourcesJar>true</createSourcesJar>
                             <filters>
                                 <filter>
-                                    <artifact>net.sf.jasperreports:jasperreports</artifact>
-                                    <excludes>
-                                        <exclude>jasperreports_extension.properties</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
                                     <artifact>net.sf.jasperreports:jasperreports-html-component</artifact>
                                     <excludes>
                                         <exclude>jasperreports.properties</exclude>
-                                        <exclude>jasperreports_extension.properties</exclude>
                                     </excludes>
                                 </filter>
                                 <filter>
@@ -106,6 +99,9 @@
                                     <addHeader>false</addHeader>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>jasperreports_extension.properties</resource>
+                                </transformer>
                             </transformers>
                         </configuration>
                         <executions>
