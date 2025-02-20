@@ -242,8 +242,13 @@ zipReportResources() {
     readResource('jasperreports.properties');
     zipping('jasperreports.properties') <- resource();
 
-    readResource('jasperreports_extension.properties');
-    zipping('jasperreports_extension.properties') <- resource();
+    readResourcePaths('.*/jasperreports_extension.properties', TRUE);
+    LOCAL result = STRING();
+    FOR resourcePaths(STRING path) ORDER DESC path DO {
+        readResource(path, TRUE);
+        result() <- CONCAT '\n', result(), STRING(resource());
+    }
+    zipping('jasperreports_extension.properties') <- file(RAWFILE(result()), '.properties');
 
     resourcePaths(STRING path) <- NULL;
     readResourcePaths('/fonts/.*');
