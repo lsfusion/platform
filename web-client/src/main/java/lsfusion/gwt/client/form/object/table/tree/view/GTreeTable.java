@@ -548,6 +548,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getValueTooltip(property);
         }
 
+        @Override
+        protected PValue getPropertyCustomOptions(GPropertyDraw property, GTreeGridRecord record) {
+            return null;
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 

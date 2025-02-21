@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.classes.data.GJSONType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -17,12 +20,11 @@ public class RichTextCellRenderer extends TextCellRenderer {
         String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : "";
 
         element.setTitle(innerText);
-        initQuill(element, innerText, property.hasAutoHeight());
-
+        initQuill(element, innerText, property.hasAutoHeight(), GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, updateContext.getPropertyCustomOptions()));
         return true;
     }
 
-    protected native void initQuill(Element element, String innerText, boolean autoSizedY)/*-{
+    protected native void initQuill(Element element, String innerText, boolean autoSizedY, JavaScriptObject options)/*-{
         var toolbarOptions = [
             ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
             ['link', 'image'],
@@ -41,14 +43,24 @@ public class RichTextCellRenderer extends TextCellRenderer {
         changeQuillBlotTagName('formats/bold', 'B'); // Quill uses <strong> by default
         changeQuillBlotTagName('formats/italic', 'I'); // Quill uses <em> by default
 
-        var quill = new Quill(element, {
+        var quillParent = element;
+        // need a wrapper element because if the snow theme is used, the quill replaces the element
+        if (options != null && options.theme != null && options.theme === 'snow') {
+            quillParent = document.createElement('div');
+            element.appendChild(quillParent);
+            element.classList.add('ql-snow-wrapper')
+        }
+
+        var config = $wnd.mergeObjects({
             modules: {
                 toolbar: toolbarOptions
             },
-            bounds: element, //for the tooltip is not hidden behind the parent component
+            bounds: quillParent, //for the tooltip is not hidden behind the parent component
             theme: 'bubble',
             readOnly: true
-        });
+        }, options);
+
+        var quill = element.quill == null ? new Quill(quillParent, config) : element.quill;
 
         //The image selection dialog triggers a blur event, which ends the editor editing.
         // Need to enable suppressBlur before image dialog and then disable it
@@ -66,7 +78,7 @@ public class RichTextCellRenderer extends TextCellRenderer {
             }
         })
 
-        quill.on('text-change', function(delta, oldDelta, source) {
+        quill.on('text-change', function(delta) {
             if (delta.ops && delta.ops.length > 0) {
                 delta.ops.forEach(function(op) {
                     if (op.insert && op.insert.image) {// check if image inserted

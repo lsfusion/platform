@@ -18,7 +18,7 @@
 }
 
 /* renderer in panel overlaps other components */
-.ql-container {
+.ql-container.ql-bubble {
     height: unset;
 }
 
@@ -26,7 +26,7 @@
     overflow-y: visible;
 }
 
-.ql-editor {
+.ql-container.ql-bubble .ql-editor {
     width: 100%;
     padding: 1px 0;
     color: var(--text-color);
@@ -45,4 +45,16 @@
 
 .ql-clipboard {
     white-space: normal;
+}
+
+.ql-snow-wrapper {
+    flex-direction: column;
+}
+
+.data-grid-cell .ql-snow-wrapper.property-hide-toolbar, .ql-container.property-hide-toolbar {
+    background-color: var(--bs-table-bg);
+}
+
+.ql-container.ql-snow, .ql-toolbar.ql-snow {
+    width: 100%;
 }

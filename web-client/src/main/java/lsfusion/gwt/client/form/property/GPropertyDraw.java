@@ -394,6 +394,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GExtraPropReader regexpMessageReader;
     public GExtraPropReader tooltipReader;
     public GExtraPropReader valueTooltipReader;
+    public GExtraPropReader propertyCustomOptionsReader;
 
     // for pivoting
     public String formula;

@@ -874,6 +874,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'MEASURE' { $options.setPivotMeasure(true); }
 		|   st = stickyOption { $options.setSticky($st.sticky); }
 		|   sync = syncTypeLiteral { $options.setSync($sync.val); }
+		|   'OPTIONS' propObj=formPropertyObject { options.setPropertyCustomOptions($propObj.property); }
 		)*
 	;
 
