@@ -1328,12 +1328,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, newIndexKeysSet, oldOptions, newOptions, Settings.get().isStartServerAnyWay());
                     }
                 } else {
-                    // temporary change
-                    try {
-                        sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOptions, Settings.get().isStartServerAnyWay());
-                    } catch (PSQLException ignored) {
-                    
-                    }
+                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOptions, Settings.get().isStartServerAnyWay());
                 }
             }
         }
@@ -1386,12 +1381,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void dropTableIndexes(SQLSession sql, DBTable table, List<IndexData<String>> indexes) throws SQLException {
         for (IndexData<String> index : indexes) {
             ImOrderSet<String> indexKeysSet = SetFact.fromJavaOrderSet(index.fields);
-            // temporary change
-            try {
-                sql.dropIndex(table, table.keys, indexKeysSet, index.options, Settings.get().isStartServerAnyWay());
-            } catch (PSQLException ignored) {
-            
-            }
+            sql.dropIndex(table, table.keys, indexKeysSet, index.options, Settings.get().isStartServerAnyWay());
         }
     }
 
