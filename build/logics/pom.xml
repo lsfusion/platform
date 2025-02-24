@@ -15,6 +15,9 @@
     <properties>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+
+        <deploy.releases.repo>${deploy.dummy.repo}</deploy.releases.repo>
+        <deploy.snapshots.repo>${deploy.dummy.repo}</deploy.snapshots.repo>
         
         <docker.image.namespace>local</docker.image.namespace>
         <docker.image.repository>${project.artifactId}</docker.image.repository>
@@ -22,7 +25,7 @@
         <docker.image.fullName>${docker.image.namespace}/${docker.image.repository}:${docker.image.tag}</docker.image.fullName>
         <docker.logics.file.name>${assemble.file.name}</docker.logics.file.name>
         <docker.template.subfolder>docker</docker.template.subfolder>
-        <docker.compose.outputDirectory>${project.basedir}/target</docker.compose.outputDirectory>
+        <docker.compose.outputDirectory>${project.basedir}${file.separator}target</docker.compose.outputDirectory>
     </properties>
 
     <profiles>
@@ -81,6 +84,27 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enforce-profile-active</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireActiveProfile>
+                                            <profiles>assemble</profiles>
+                                        </requireActiveProfile>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
@@ -89,7 +113,6 @@
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
-                                <!-- execution phase-->
                                 <phase>install</phase>
                                 <configuration>
                                     <executable>docker</executable>
@@ -116,7 +139,6 @@
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
-                                <!-- execution phase-->
                                 <phase>deploy</phase>
                                 <configuration>
                                     <executable>docker</executable>
@@ -124,6 +146,29 @@
                                         <argument>push</argument>
                                         <argument>${docker.image.fullName}</argument>
                                     </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <properties>
+                                        <compose_file>${docker.compose.outputDirectory}${file.separator}compose.yaml</compose_file>
+                                    </properties>
+                                    <source>
+                                        System.out.println "Docker Compose configuration:\\n"
+                                        System.out.println new File(project.properties.compose_file).getText()
+                                        System.out.println "\\n---------------------------"
+                                        System.out.println "Generated compose.yaml is also placed in ${project.properties.compose_file}"
+                                    </source>
                                 </configuration>
                             </execution>
                         </executions>
