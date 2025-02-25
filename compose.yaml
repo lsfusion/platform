@@ -1,11 +1,8 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:latest
     volumes:
       - ./docker-db:/var/lib/postgresql/data # host/path:container/path
-    network_mode: host
     environment:
       POSTGRES_PASSWORD: 11111
 
@@ -16,15 +13,14 @@ services:
       - db
     volumes:
       - ./docker-server:/lsfusion # host/path:container/path
-    network_mode: host
 # use default credentials if dont define environment variables or modifying settings.properties in ./docker-server/conf
 # available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTS
 # environment variables can be used separately
 # priority: default -> settings.properties -> environment variables
     environment:
+      - DB_SERVER=db
+      - DB_PASSWORD=11111
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
-#      - DB_PASSWORD=11111
-#      - DB_SERVER=localhost
 #      - DB_USER=postgres
 #      - DB_NAME=lsfusion
 #      - JAVA_OPTS=-Xmx4000m
@@ -36,13 +32,15 @@ services:
       - server
     volumes:
       - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
-    network_mode: host
+    ports:
+      - "8080:8080"
 # use default credentials if dont define environment variables or modifying ROOT.xml in ./docker-client/Catalina/localhost.
 # available variables names: SERVER_HOST, SERVER_PORT, JAVA_OPTS
 # if use environment variables - use SERVER_HOST and SERVER_PORT both
 # priority: default -> ROOT.xml -> environment variables
     environment:
       - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
-#      - SERVER_HOST=localhost
+      - APP_REGISTRY_SERVER=server
+#      - SERVER_HOST=server
 #      - SERVER_PORT=7652
 #      - JAVA_OPTS=-Xmx4000m
