@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:latest
+    image: postgres:16
     volumes:
       - ./docker-db:/var/lib/postgresql/data
     environment:
