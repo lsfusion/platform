@@ -1,3 +1,5 @@
+name: ${docker.compose.projectName}
+
 services:
   db:
     image: postgres:16

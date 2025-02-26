@@ -25,6 +25,8 @@
         <docker.image.fullName>${docker.image.namespace}/${docker.image.repository}:${docker.image.tag}</docker.image.fullName>
         <docker.logics.file.name>${assemble.file.name}</docker.logics.file.name>
         <docker.template.subfolder>docker</docker.template.subfolder>
+        
+        <docker.compose.projectName>${project.artifactId}</docker.compose.projectName>
         <docker.compose.outputDirectory>${project.basedir}${file.separator}target</docker.compose.outputDirectory>
     </properties>
 

@@ -1,3 +1,5 @@
+name: lsfusion
+
 services:
   db:
     image: postgres:16
