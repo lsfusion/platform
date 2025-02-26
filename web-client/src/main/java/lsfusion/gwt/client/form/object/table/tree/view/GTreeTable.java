@@ -117,7 +117,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
 
         if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null, null, null),
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null, null, null, null),
                     () -> {
                         GTreeObjectTableNode node = getExpandSelectedNode();
                         return node != null && node.isExpandable();

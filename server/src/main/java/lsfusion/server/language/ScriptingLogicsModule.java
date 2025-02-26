@@ -1446,7 +1446,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             actionOrProperty.drawOptions.setShowChangeMouse(showChangeMouse);
     }
 
-    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");
+    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "window", "group", "editing", "showing", "panel", "cell");
     private static Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
