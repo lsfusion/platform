@@ -752,12 +752,24 @@ public class GwtClientUtils {
         Widget ownerWidget = popupOwner.widget;
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
-                if(!attachEvent.isAttached()) {
+                if(!attachEvent.isAttached() && !ignoreDestroy(ownerWidget.getElement())) {
                     GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
                 }
             });
         }
         return tippy;
+    }
+
+    public static String IGNORE_DESTROY = "ignore-destroy";
+    private static boolean ignoreDestroy(Element element) {
+        while(element != null) {
+            if(element.getPropertyBoolean(IGNORE_DESTROY)) {
+                return true;
+            } else {
+                element = element.getParentElement();
+            }
+        }
+        return false;
     }
 
     public static void hideAndDestroyTippyPopup(JavaScriptObject popup) {
