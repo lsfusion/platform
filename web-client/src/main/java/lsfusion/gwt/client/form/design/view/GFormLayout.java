@@ -383,13 +383,13 @@ public class GFormLayout extends SizedFlexPanel {
             GSize fixedWidth = fixWidthOnInit ? GwtClientUtils.getOffsetWidth(element).add(extraWidth) : null;
             GSize fixedHeight = fixHeightOnInit ? GwtClientUtils.getOffsetHeight(element).add(extraHeight) : null;
 
-            main.getElement().setPropertyBoolean(IGNORE_DESTROY, true);
+            GwtClientUtils.setGlobalPropertyBoolean(IGNORE_DESTROY, true);
             try {
                 // in theory fixFlexBasis could be used, but it's not clear what to do with the opposite direction, since it requires DOM change (to make resize of the modal form work in that direction)
                 removeSized(main);
                 addMainView(main, fixedWidth, fixedHeight);
             } finally {
-                main.getElement().setPropertyBoolean(IGNORE_DESTROY, false);
+                GwtClientUtils.setGlobalPropertyBoolean(IGNORE_DESTROY, false);
             }
         } finally {
             FlexPanel.setMaxPrefWidth(maxWindowElement, (GSize) null);
