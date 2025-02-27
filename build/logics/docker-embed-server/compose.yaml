@@ -14,25 +14,25 @@ services:
       - db
     volumes:
       - ./docker-server:/lsfusion
+    # available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTS
+    # environment variables can be used separately
+    # priority: default -> settings.properties -> environment variables
     environment:
       - DB_SERVER=db
       - DB_PASSWORD=11111
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
-#      - DB_USER=postgres
-#      - DB_NAME=lsfusion
-#      - JAVA_OPTS=-Xmx4000m
 
   client:
-    image: lsfusion/client:6.0-SNAPSHOT
+    image: lsfusion/client:5.2-SNAPSHOT
     depends_on:
       - logics
     volumes:
       - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
     ports:
       - "8080:8080"
+    # available variables names: SERVER_HOST, SERVER_PORT, JAVA_OPTS
+    # if use environment variables - use SERVER_HOST and SERVER_PORT both
+    # priority: default -> ROOT.xml -> environment variables
     environment:
       - APP_REGISTRY_SERVER=logics
       - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
-#      - SERVER_HOST=logics
-#      - SERVER_PORT=7652
-#      - JAVA_OPTS=-Xmx4000m

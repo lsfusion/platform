@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: 11111
 
   server:
-# jenkins use regex for replace image version in next line before build. Check jenkins branch on change
+# jenkins uses regex for replace image version in next line before build. Check jenkins branch on change
     image: lsfusion/server:5.2-SNAPSHOT
     depends_on:
       - db
@@ -23,12 +23,9 @@ services:
       - DB_SERVER=db
       - DB_PASSWORD=11111
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
-#      - DB_USER=postgres
-#      - DB_NAME=lsfusion
-#      - JAVA_OPTS=-Xmx4000m
 
   client:
-# jenkins use regex for replace image version in next line before build. Check jenkins branch on change
+# jenkins uses regex for replace image version in next line before build. Check jenkins branch on change
     image: lsfusion/client:5.2-SNAPSHOT
     depends_on:
       - server
@@ -43,6 +40,3 @@ services:
     environment:
       - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
       - APP_REGISTRY_SERVER=server
-#      - SERVER_HOST=server
-#      - SERVER_PORT=7652
-#      - JAVA_OPTS=-Xmx4000m
