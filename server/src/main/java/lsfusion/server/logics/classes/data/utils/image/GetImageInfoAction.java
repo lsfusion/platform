@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.utils.image;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -14,34 +15,41 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class GetImageInfoAction extends InternalAction {
-    private final ClassPropertyInterface imageInterface;
-
     public GetImageInfoAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
-
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        imageInterface = i.next();
     }
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
+            RawFileData inputFile = (RawFileData) getParam(0, context);
 
-            RawFileData inputFile = (RawFileData) context.getKeyValue(imageInterface).getValue();
-            if (inputFile != null) {
-                BufferedImage image = ImageIO.read(inputFile.getInputStream());
-                if(image != null) {
-                    findProperty("widthImageInfo[]").change(image.getWidth(), context);
-                    findProperty("heightImageInfo[]").change(image.getHeight(), context);
-                } else {
-                    throw new RuntimeException("Failed to read image");
-                }
-            }
+            Pair<Integer, Integer> imageInfo = getImageInfo(inputFile);
+            findProperty("widthImageInfo[]").change(imageInfo.first, context);
+            findProperty("heightImageInfo[]").change(imageInfo.second, context);
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private Pair<Integer, Integer> getImageInfo(RawFileData inputFile) throws IOException {
+        Integer width = null, height = null;
+        if (inputFile != null) {
+            BufferedImage image = ImageIO.read(inputFile.getInputStream());
+            if (image != null) {
+                width = image.getWidth();
+                height = image.getHeight();
+            } else {
+                throw new RuntimeException("Failed to read image");
+            }
+        }
+        return Pair.create(width, height);
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

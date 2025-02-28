@@ -14,34 +14,40 @@ import net.coobird.thumbnailator.Thumbnails;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class ResizeImageScaleAction extends InternalAction {
-    private final ClassPropertyInterface fileInterface;
-    private final ClassPropertyInterface scaleInterface;
-
     public ResizeImageScaleAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
-
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        fileInterface = i.next();
-        scaleInterface = i.next();
     }
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
-            Double scale = (Double) context.getKeyValue(scaleInterface).getValue();
+            RawFileData inputFile = (RawFileData) getParam(0, context);
+            Number scale = (Number) getParam(1, context);
 
-            if (scale != 0) {
-                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale).toOutputStream(os);
-                    findProperty("resizedImage[]").change(new RawFileData(os), context);
-                }
-            }
+            findProperty("resizedImage[]").change(getResizedImage(inputFile, scale), context);
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private RawFileData getResizedImage(RawFileData inputFile, Number scale) throws IOException {
+        RawFileData result = null;
+        if (inputFile != null && scale != null) {
+            double doubleScale = scale.doubleValue();
+            if(doubleScale != 0) {
+                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / doubleScale).toOutputStream(os);
+                    result = new RawFileData(os);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

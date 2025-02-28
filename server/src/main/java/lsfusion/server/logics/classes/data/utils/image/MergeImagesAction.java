@@ -15,33 +15,36 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class MergeImagesAction extends InternalAction {
-
-    private final ClassPropertyInterface backgroundImageInterface;
-    private final ClassPropertyInterface frontImageInterface;
-
     public MergeImagesAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
-
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        backgroundImageInterface = i.next();
-        frontImageInterface = i.next();
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            BufferedImage backgroundImage = ImageIO.read(((RawFileData) context.getKeyValue(backgroundImageInterface).getValue()).getInputStream());
-            BufferedImage frontImage = ImageIO.read(((RawFileData) context.getKeyValue(frontImageInterface).getValue()).getInputStream());
+            RawFileData backgroundFile = (RawFileData) getParam(0, context);
+            RawFileData frontFile = (RawFileData) getParam(1, context);
+
+            findProperty("mergedImage[]").change(mergeImages(backgroundFile, frontFile), context);
+        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private RawFileData mergeImages(RawFileData backgroundFile, RawFileData frontFile) throws IOException {
+        RawFileData result = null;
+        if (backgroundFile != null && frontFile != null) {
+            BufferedImage backgroundImage = ImageIO.read(backgroundFile.getInputStream());
+            BufferedImage frontImage = ImageIO.read(frontFile.getInputStream());
 
             int backgroundWidth = backgroundImage.getWidth();
             int backgroundHeight = backgroundImage.getHeight();
             int frontWidth = frontImage.getWidth();
             int frontHeight = frontImage.getHeight();
 
-            if(backgroundWidth >= frontWidth && backgroundHeight >= frontHeight) {
+            if (backgroundWidth >= frontWidth && backgroundHeight >= frontHeight) {
 
                 BufferedImage mergedImage = new BufferedImage(backgroundWidth, backgroundHeight, BufferedImage.TYPE_INT_RGB);
 
@@ -53,15 +56,16 @@ public class MergeImagesAction extends InternalAction {
 
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 ImageIO.write(mergedImage, "JPG", os);
-                findProperty("mergedImage[]").change(new RawFileData(os), context);
+                result = new RawFileData(os);
             } else {
                 throw new RuntimeException("Background image must be bigger than front image");
             }
-
-
-
-        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException(e);
         }
+        return result;
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
