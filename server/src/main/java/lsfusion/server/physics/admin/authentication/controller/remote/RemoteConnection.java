@@ -380,7 +380,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
-        checkEnableApi(property, actionParam, script, request);
+        ExternalResponse response = checkEnableApi(property, actionParam, script, request);
+        if (response != null)
+            return response;
 
         RemoteNavigator.Notification runnable = new RemoteNavigator.Notification() {
             @Override
@@ -443,25 +445,25 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     protected AuthenticationException authException;
 
-    private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
+    private ExternalResponse checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
         boolean forceAPI = false;
         String annotation = property.action.annotation;
         if(annotation != null) {
             if(annotation.equals("noauth"))
-                return;
+                return null;
             forceAPI = annotation.equals("api");
         }
 
         if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getImplicitParamValues()), request.signature))
-            return;
+            return null;
 
         if(authException != null)
             throw authException;
 
-        checkEnableApi(token.isAnonymous(), forceAPI);
+        return checkEnableApi(request, token.isAnonymous(), forceAPI);
     }
 
-    private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
+    private static ExternalResponse checkEnableApi(ExternalRequest request, boolean anonymous, boolean forceAPI) {
         byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0) {
             if(forceAPI)
@@ -470,8 +472,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
         }
 
-        if(anonymous && enableApi == 1)
-            throw new AuthenticationException();
+        if(anonymous && enableApi == 1) {
+            String preservingUrl = request.servletPath + request.pathInfo;
+            return new RedirectExternalResponse("/login" + (preservingUrl.isEmpty() ? "" : ("?redirect:" + preservingUrl)), null);
+        }
+
+        return null;
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
