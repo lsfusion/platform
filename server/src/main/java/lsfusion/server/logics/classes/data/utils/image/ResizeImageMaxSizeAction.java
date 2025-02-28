@@ -16,43 +16,47 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class ResizeImageMaxSizeAction extends InternalAction {
-    private final ClassPropertyInterface fileInterface;
-    private final ClassPropertyInterface maxSizeInterface;
-
     public ResizeImageMaxSizeAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);
-
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        fileInterface = i.next();
-        maxSizeInterface = i.next();
     }
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
-            Integer maxSize = (Integer) context.getKeyValue(maxSizeInterface).getValue();
+            RawFileData inputFile = (RawFileData) getParam(0, context);
+            Integer maxSize = (Integer) getParam(1, context);
 
+            findProperty("resizedImage[]").change(getResizedImage(inputFile, maxSize), context);
+        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private RawFileData getResizedImage(RawFileData inputFile, Integer maxSize) throws IOException {
+        RawFileData result = null;
+        if (inputFile != null && maxSize != null) {
             BufferedImage image = ImageIO.read(inputFile.getInputStream());
             if (image != null) {
                 int imageWidth = image.getWidth();
                 int imageHeight = image.getHeight();
-
                 double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
                 if (scale != 0) {
                     try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                         Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toOutputStream(os);
-                        findProperty("resizedImage[]").change(new RawFileData(os), context);
+                        result = new RawFileData(os);
                     }
                 }
             } else {
                 throw new RuntimeException("Failed to read image");
             }
-        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
         }
+        return result;
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
