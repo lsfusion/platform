@@ -1,9 +1,9 @@
 package lsfusion.server.logics.classes.data.utils.image.opencv;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -32,8 +32,8 @@ public class ImageToStringAction extends InternalAction {
             String tessDataPath = (String) findProperty("tessDatPath[]").read(context);
 
             findProperty("imageToStringResult[]").change(imageToString(tessDataPath, imageObject, language, oem, psm), context);
-        } catch (ScriptingErrorLog.SemanticErrorException | TesseractException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (Throwable t) {
+            throw Throwables.propagate(t);
         }
     }
 
