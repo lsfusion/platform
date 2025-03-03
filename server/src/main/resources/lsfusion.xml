@@ -9,7 +9,16 @@
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
        default-lazy-init="true">
 
-    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" system-properties-mode="OVERRIDE"/>
+    <!-- 1. Loading values from settings.properties and lsfusion.properties with low priority -->
+    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" order="1"/>
+
+    <!-- 2. Loading values from Environment variables, higher priority than files -->
+    <!--  Spring automatically converts property names by replacing "." with "_" and converting them to uppercase.
+        For example, Spring will look for the db.name property in environment variables as DB_NAME  -->
+    <context:property-placeholder ignore-resource-not-found="true" order="2"/>
+
+    <!-- 3. Loading JVM parameters with the highest priority -->
+    <context:property-placeholder ignore-resource-not-found="true" system-properties-mode="OVERRIDE" order="3"/>
 
     <bean id="settings" class="lsfusion.server.physics.admin.Settings">
         <property name="properties">

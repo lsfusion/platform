@@ -11,6 +11,11 @@
         <lsfusion.releases.repo>https://repo.lsfusion.org/nexus/repository/releases</lsfusion.releases.repo>
         <lsfusion.public.repo>https://repo.lsfusion.org</lsfusion.public.repo>
         <lsfusion.snapshots.repo>https://repo.lsfusion.org/nexus/repository/snapshots</lsfusion.snapshots.repo>
+        
+        <deploy.releases.repo>${lsfusion.releases.repo}</deploy.releases.repo>
+        <deploy.snapshots.repo>${lsfusion.snapshots.repo}</deploy.snapshots.repo>
+        <!-- To have no errors on deploy phase if it is not configured in custom logics. Added for Docker deployment -->
+        <deploy.dummy.repo>file://${basedir}/target/dummy-repo</deploy.dummy.repo>
 
         <!-- MAVEN PLUGIN VERSIONS -->
         <aspectj.version>1.9.2</aspectj.version>
@@ -29,7 +34,8 @@
 
         <!-- assemble properties -->
         <assemble.finalName>base</assemble.finalName>
-        <assemble.jar>${project.build.directory}/${assemble.finalName}.${project.packaging}</assemble.jar>
+        <assemble.file.name>${assemble.finalName}.${project.packaging}</assemble.file.name>
+        <assemble.jar>${project.build.directory}/${assemble.file.name}</assemble.jar>
         <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
 
         <!-- DEPENDENCY VERSIONS -->
@@ -66,11 +72,11 @@
     <distributionManagement>
         <repository>
             <id>lsfusion.releases</id>
-            <url>${lsfusion.releases.repo}</url>
+            <url>${deploy.releases.repo}</url>
         </repository>
         <snapshotRepository>
             <id>lsfusion.snapshots</id>
-            <url>${lsfusion.snapshots.repo}</url>
+            <url>${deploy.snapshots.repo}</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -178,7 +184,12 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -194,6 +205,16 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>2.5</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmaven</groupId>
+                    <artifactId>gmaven-plugin</artifactId>
+                    <version>1.5</version>
                 </plugin>
             </plugins>
         </pluginManagement>
