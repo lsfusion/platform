@@ -752,11 +752,13 @@ public class GwtClientUtils {
         Widget ownerWidget = popupOwner.widget;
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
-                Scheduler.get().scheduleDeferred(() -> {
-                    if(!attachEvent.isAttached() && !ownerWidget.isAttached()) {
-                        GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
-                    }
-                });
+                if(!attachEvent.isAttached()) {
+                    Scheduler.get().scheduleDeferred(() -> {
+                        if (!ownerWidget.isAttached()){
+                            GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                        }
+                    });
+                }
             });
         }
         return tippy;
