@@ -1987,6 +1987,7 @@ public class ClientFormController implements AsyncListener {
         public int priority;
         public BindingMode bindPreview;
         public BindingMode bindDialog;
+        public BindingMode bindWindow;
         public BindingMode bindGroup;
         public BindingMode bindEditing;
         public BindingMode bindShowing;
@@ -2015,6 +2016,8 @@ public class ClientFormController implements AsyncListener {
             binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindWindow == null)
+            binding.bindWindow = ks.bindingModes != null ? ks.bindingModes.getOrDefault("window", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
             binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindEditing == null)
@@ -2029,6 +2032,7 @@ public class ClientFormController implements AsyncListener {
     public void addKeySetBinding(Binding binding) {
         binding.bindPreview = BindingMode.NO;
         binding.bindDialog = BindingMode.AUTO;
+        binding.bindWindow = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
         binding.bindEditing = BindingMode.NO;
         binding.bindShowing = BindingMode.AUTO;
@@ -2053,7 +2057,7 @@ public class ClientFormController implements AsyncListener {
 
     public void processBinding(InputEvent ks, boolean preview, java.awt.event.InputEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
         ProcessBinding.processBinding(ks, preview, ke, groupObjectSupplier, panel, this::equalGroup, bindings, keySetBindings,
-                this::bindPreview, this::bindDialog, this::bindGroup, this::bindEditing, this::bindShowing, this::bindPanel, this::commitOrCancelCurrentEditing);
+                this::bindPreview, this::bindDialog, this::bindWindow, this::bindGroup, this::bindEditing, this::bindShowing, this::bindPanel, this::commitOrCancelCurrentEditing);
     }
 
     private boolean bindPreview(Binding binding, boolean preview) {
@@ -2079,6 +2083,19 @@ public class ClientFormController implements AsyncListener {
                 return isDialog();
             case NO:
                 return !isDialog();
+        }
+        return true;
+    }
+
+    private boolean bindWindow(Binding binding) {
+        switch (binding.bindWindow) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return isWindow();
+            case NO:
+                return !isWindow();
         }
         return true;
     }
