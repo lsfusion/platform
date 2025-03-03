@@ -18,6 +18,7 @@ public class ProcessBinding {
                                   Map<InputEvent, List<ClientFormController.Binding>> bindings, List<ClientFormController.Binding> keySetBindings,
                                   BiFunction<ClientFormController.Binding, Boolean, Boolean> bindPreview,
                                   Function<ClientFormController.Binding, Boolean> bindDialog,
+                                  Function<ClientFormController.Binding, Boolean> bindWindow,
                                   BiFunction<ClientGroupObject, ClientFormController.Binding, Boolean> bindGroup,
                                   BiFunction<ClientFormController.Binding, java.awt.event.InputEvent, Boolean> bindEditing,
                                   Function<ClientFormController.Binding, Boolean> bindShowing,
@@ -30,7 +31,8 @@ public class ProcessBinding {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for (ClientFormController.Binding binding : keyBinding) // descending sorting by priority
-                if ((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview.apply(binding, preview) && bindDialog.apply(binding) && bindGroup.apply(groupObject, binding)
+                if ((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview.apply(binding, preview)
+                        && bindDialog.apply(binding) && bindWindow.apply(binding) && bindGroup.apply(groupObject, binding)
                         && bindEditing.apply(binding, ke) && bindShowing.apply(binding) && bindPanel.apply(binding, panel))
                     orderedBindings.put(-(binding.priority + (equalGroupFunction.apply(groupObject, binding) ? 100 : 0)), binding);
 
