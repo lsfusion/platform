@@ -118,7 +118,7 @@ public class FormsController implements ColorThemeChangeListener {
 
     public void processBinding(InputEvent ks, java.awt.event.InputEvent ke) {
         ProcessBinding.processBinding(ks, false, ke, () -> null, false, (groupObject, binding) -> true,
-                bindings, keySetBindings, (binding, preview) -> true, binding -> true, (groupObject, binding) -> true,
+                bindings, keySetBindings, (binding, preview) -> true, binding -> true, binding -> true, (groupObject, binding) -> true,
                 (binding, event) -> true, binding -> true, (binding, panel) -> true, () -> {});
     }
 
