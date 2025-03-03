@@ -347,8 +347,9 @@ public class ReportDesignGenerator {
             assert pattern != null;
             dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
         } else {
-            if (needToConvertExcelDateTime(reportField)) {
-                dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass, pattern));
+            JRExpression convertedExpression = ReportUtils.createConvertExcelDateTimeExpression(printType, reportField.sID, reportField.valueClass, pattern);
+            if (convertedExpression != null) {
+                dataField.setExpression(convertedExpression);
             }
             dataField.setPattern(pattern);
         }
@@ -360,11 +361,6 @@ public class ReportDesignGenerator {
             return (cls == Double.class || cls == BigDecimal.class) && pattern.matches(ReportUtils.EXCEL_SEPARATOR_PROBLEM_REGEX);
         }
         return false;
-    }
-
-    private boolean needToConvertExcelDateTime(ReportDrawField reportField) {
-        return (printType == FormPrintType.XLS || printType == FormPrintType.XLSX)
-                && reportField.valueClass == LocalDate.class || reportField.valueClass == LocalTime.class || reportField.valueClass == LocalDateTime.class || reportField.valueClass == Instant.class;
     }
     
     private void setBackground(JRDesignTextField dataField, ReportDrawField reportField) {
