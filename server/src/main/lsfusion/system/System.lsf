@@ -90,7 +90,7 @@ formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.inte
 formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.DropAction' () CHANGEKEY 'alt DELETE';
 formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshAction' () CHANGEKEY 'F5;priority=-100' IMAGE 'refresh.png';
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
-formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE;window=only' IMAGE 'close.png';
+formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
 
 forceUpdate INTERNAL 'lsfusion.server.logics.action.flow.ForceUpdateGroupObjectAction' (STRING);
