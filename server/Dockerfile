@@ -1,14 +1,10 @@
-FROM openjdk:11.0.8-jdk
+FROM openjdk:21-jdk
 
-# jenkins use regex for replace jar file version in next line before build. Check jenkins branch on change
-ADD https://download.lsfusion.org/java/lsfusion-server-5.2.jar server.jar
+# jenkins uses regex for replace jar file version in next line before build. Check jenkins branch on change
+ADD https://download.lsfusion.org/java/lsfusion-server-5.2-SNAPSHOT.jar server.jar
 
 WORKDIR /lsfusion
 
-COPY entrypoint.sh /
-
 EXPOSE 7652
 
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT "/entrypoint.sh"
+CMD ["java",  "-cp", ".:./*:../server.jar", "lsfusion.server.logics.BusinessLogicsBootstrap"]
