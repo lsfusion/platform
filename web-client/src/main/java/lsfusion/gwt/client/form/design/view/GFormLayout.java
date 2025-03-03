@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.IGNORE_DESTROY;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public class GFormLayout extends SizedFlexPanel {
@@ -383,14 +382,9 @@ public class GFormLayout extends SizedFlexPanel {
             GSize fixedWidth = fixWidthOnInit ? GwtClientUtils.getOffsetWidth(element).add(extraWidth) : null;
             GSize fixedHeight = fixHeightOnInit ? GwtClientUtils.getOffsetHeight(element).add(extraHeight) : null;
 
-            GwtClientUtils.setGlobalPropertyBoolean(IGNORE_DESTROY, true);
-            try {
-                // in theory fixFlexBasis could be used, but it's not clear what to do with the opposite direction, since it requires DOM change (to make resize of the modal form work in that direction)
-                removeSized(main);
-                addMainView(main, fixedWidth, fixedHeight);
-            } finally {
-                GwtClientUtils.setGlobalPropertyBoolean(IGNORE_DESTROY, false);
-            }
+            // in theory fixFlexBasis could be used, but it's not clear what to do with the opposite direction, since it requires DOM change (to make resize of the modal form work in that direction)
+            removeSized(main);
+            addMainView(main, fixedWidth, fixedHeight);
         } finally {
             FlexPanel.setMaxPrefWidth(maxWindowElement, (GSize) null);
             FlexPanel.setMaxPrefHeight(maxWindowElement, (GSize) null);

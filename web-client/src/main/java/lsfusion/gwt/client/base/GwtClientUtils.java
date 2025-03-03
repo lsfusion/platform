@@ -752,15 +752,15 @@ public class GwtClientUtils {
         Widget ownerWidget = popupOwner.widget;
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
-                if(!attachEvent.isAttached() && !getGlobalPropertyBoolean(IGNORE_DESTROY)) {
-                    GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
-                }
+                Scheduler.get().scheduleDeferred(() -> {
+                    if(!attachEvent.isAttached() && !ownerWidget.isAttached()) {
+                        GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                    }
+                });
             });
         }
         return tippy;
     }
-
-    public static String IGNORE_DESTROY = "ignore-destroy";
 
     public static void hideAndDestroyTippyPopup(JavaScriptObject popup) {
         hideAndDestroyTippyPopup(popup, false);
@@ -1595,14 +1595,6 @@ public class GwtClientUtils {
     }-*/;
     public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
         return object[field] = value;
-    }-*/;
-
-    public static native void setGlobalPropertyBoolean(String name, boolean value)/*-{
-        $wnd[name] = value;
-    }-*/;
-
-    public static native boolean getGlobalPropertyBoolean(String name)/*-{
-        return !!$wnd[name];
     }-*/;
 
     public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
