@@ -190,7 +190,9 @@ id = DATA STRING (Email);
 
 //todo: replace after migration
 //account(Email e) = account(folder(e));
-account(Email e) = DATA Account (Email) NONULL DELETE;
+account (Email e) = DATA Account (Email) NONULL DELETE;
+nameAccount '{email.name.account}' (Email e) = name(account(e));
+
 emailId = GROUP AGGR Email email BY account(email), id (email);
 
 //todo: remove after upgrading to 6.0
