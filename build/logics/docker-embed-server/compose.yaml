@@ -1,0 +1,38 @@
+name: ${docker.compose.projectName}
+
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - ./docker-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 11111 # postgres requires password to be set
+
+  logics:
+    image: ${docker.image.fullName}
+    depends_on:
+      - db
+    volumes:
+      - ./docker-server:/lsfusion
+    # available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTS
+    # environment variables can be used separately
+    # priority: default -> settings.properties -> environment variables
+    environment:
+      - DB_SERVER=db
+      - DB_PASSWORD=11111
+      - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
+
+  client:
+    image: lsfusion/client:7.0-SNAPSHOT
+    depends_on:
+      - logics
+    volumes:
+      - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
+    ports:
+      - "8080:8080"
+    # available variables names: SERVER_HOST, SERVER_PORT, JAVA_OPTS
+    # if use environment variables - use SERVER_HOST and SERVER_PORT both
+    # priority: default -> ROOT.xml -> environment variables
+    environment:
+      - APP_REGISTRY_SERVER=logics
+      - LANG=${LANG} # set locale from the host because the image tomcat from lsfusion/client uses C.UTF-8 locale
