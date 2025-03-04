@@ -453,14 +453,16 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, nameFormField,
                     sidGroupObjectField, canonicalNameWithPostfixField), dataPropertyDraws);
 
-            try {
-                try (DataSession session = createSyncSession()) {
+            try (DataSession session = createSyncSession()) {
+                try {
+                    LM.applyOnlyData.execute(session, getStack());
                     session.pushVolatileStats("RM_PD");
-                    IntegrationService service = new IntegrationService(session, table,
-                            asList(keyForm, keyPropertyDraw, keyGroupObject, keyActionOrProperty), propsPropertyDraw, deletes);
-                    service.synchronize(true, false);
+                    new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject, keyActionOrProperty),
+                            propsPropertyDraw, deletes).synchronize(true, false);
                     session.popVolatileStats();
                     apply(session);
+                } finally {
+                    LM.applyAll.execute(session, getStack());
                 }
             } catch (Exception e) {
                 throw Throwables.propagate(e);
