@@ -17,7 +17,7 @@ services:
       - docker-server:/lsfusion
 
   server:
-    image: lsfusion/server:6.0-beta2
+    image: lsfusion/server:6.0-SNAPSHOT
     depends_on:
       - db
       - logics
@@ -32,7 +32,7 @@ services:
       - LANG=${LANG} # set locale from the host because the image openjdk from lsfusion/server uses C.UTF-8 locale
 
   client:
-    image: lsfusion/client:6.0-beta2
+    image: lsfusion/client:6.0-SNAPSHOT
     depends_on:
       - server
     volumes:
