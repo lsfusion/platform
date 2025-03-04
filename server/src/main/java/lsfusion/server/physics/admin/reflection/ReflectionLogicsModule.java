@@ -56,7 +56,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP userMaterializedProperty;
     public LP storedProperty;
     public LP isSetNotNullProperty;
-    public LP disableInputListProperty;
+    public LP inputListProperty;
     public LP nameSelectProperty;
     public LP returnProperty;
     public LP classProperty;
@@ -263,7 +263,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         userMaterializedProperty = findProperty("userMaterialized[Property]");
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
-        disableInputListProperty = findProperty("disableInputList[Property]");
+        inputListProperty = findProperty("inputList[Property]");
         nameSelectProperty = findProperty("nameSelect[Property]");
         returnProperty = findProperty("return[Property]");
         classProperty = findProperty("class[Property]");

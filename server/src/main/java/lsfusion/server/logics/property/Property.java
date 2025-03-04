@@ -2156,7 +2156,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return notNull;
     }
 
-    public boolean disableInputList;
+    public Boolean inputList;
+    public boolean enableInputList() {
+        return inputList != null && inputList;
+    }
+    public boolean disableInputList() {
+        return inputList != null && !inputList;
+    }
 
     protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new PropertyClassImplement<>(this, classes, mapping);

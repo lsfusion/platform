@@ -267,7 +267,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
 
-                    if(getOldDBStructure(sql).version >= 41) {
+                    int oldDBStructureVersion = getOldDBStructure(sql).version;
+
+                    if(oldDBStructureVersion >= 41) {
                         startLog("Setting user materialized for properties");
                         setUserMaterializedProperties(sql);
                     }
@@ -275,12 +277,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLog("Setting user not null constraints for properties");
                     setNotNullProperties(sql);
 
-                    if (getOldDBStructure(sql).version >= 34) {
-                        startLog("Disabling input list");
-                        setDisableInputListProperties(sql);
+                    if (oldDBStructureVersion >= 42) {
+                        startLog("Setting input list");
+                        setInputListProperties(sql);
                     }
 
-                    if (getOldDBStructure(sql).version >= 39) {
+                    if (oldDBStructureVersion >= 39) {
                         startLog("Setting user select for properties");
                         setSelectProperties(sql);
                     }
@@ -359,17 +361,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void setDisableInputListProperties(SQLSession sql) throws SQLException, SQLHandledException {
+    private void setInputListProperties(SQLSession sql) throws SQLException, SQLHandledException {
         ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.and(reflectionLM.disableInputListProperty.getExpr(key).getWhere());
+        query.addProperty("inputList", reflectionLM.inputListProperty.getExpr(key));
+        query.and(reflectionLM.inputListProperty.getExpr(key).getWhere());
 
         for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null)
-                LM.disableInputList(prop);
+                LM.setInputList(prop, (Boolean) values.get("inputList"));
         }
     }
 
@@ -3316,7 +3319,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 41;
+    public static int newDBStructureVersion = 42;
 
     private class OldDBStructure extends DBStructure<String> {
 

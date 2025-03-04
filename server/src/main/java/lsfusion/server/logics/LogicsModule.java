@@ -1118,7 +1118,7 @@ public abstract class LogicsModule {
         InputContextSelector<T> contextSelector = null;
         assert contextList != null || contextFilter == null;
         if(contextList == null) {
-            if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+            if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && valueProperty.enableInputList()) { // && // if string and not disabled
                 contextList = new InputPropertyListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
@@ -2329,8 +2329,8 @@ public abstract class LogicsModule {
                 event);
     }
 
-    public <P extends PropertyInterface> void disableInputList(LP<P> lp) {
-        lp.property.disableInputList = true;
+    public <P extends PropertyInterface> void setInputList(LP<P> lp, Boolean enable) {
+        lp.property.inputList = enable;
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface, S extends PropertyInterface>

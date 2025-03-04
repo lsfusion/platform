@@ -1087,7 +1087,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(entity.hasDynamicCaption());
 
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
-        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
+        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList());
 
         ActionOrPropertyObjectEntity<?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip
