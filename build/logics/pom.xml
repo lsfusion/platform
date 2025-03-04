@@ -16,9 +16,6 @@
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
 
-        <deploy.releases.repo>${deploy.dummy.repo}</deploy.releases.repo>
-        <deploy.snapshots.repo>${deploy.dummy.repo}</deploy.snapshots.repo>
-        
         <docker.image.namespace>local</docker.image.namespace>
         <docker.image.repository>${project.artifactId}</docker.image.repository>
         <docker.image.tag>${project.version}</docker.image.tag>
@@ -40,6 +37,10 @@
         </profile>
         <profile>
             <id>docker</id>
+            <properties>
+                <deploy.releases.repo>${deploy.dummy.repo}</deploy.releases.repo>
+                <deploy.snapshots.repo>${deploy.dummy.repo}</deploy.snapshots.repo>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
