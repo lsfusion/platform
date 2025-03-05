@@ -1257,10 +1257,9 @@
         resizeObserverUnused = new ResizeObserver(function() {
           var childRect, minWidth;
           childRect = unusedDiv[0].getBoundingClientRect();
-          if (childRect.width > 0 && childRect.height > 0) {
+          if (childRect.width > 0) {
             unusedDivWrapper.css({
-              width: `${childRect.width}px`,
-              height: `${childRect.height}px`
+              width: `${childRect.width}px`
             });
             minWidth = unusedDiv.css("min-width");
             if (minWidth === "" || minWidth === "0px") {
@@ -1495,7 +1494,7 @@
         resizeObserverRows = new ResizeObserver(function() {
           var childRect, minWidth;
           childRect = pvtRowsDiv[0].getBoundingClientRect();
-          if (childRect.width > 0 && childRect.height > 0) {
+          if (childRect.width) {
             minWidth = pvtRowsDiv.css("min-width");
             if (minWidth === "" || minWidth === "0px") {
               return pvtRowsDiv.css("min-width", `${childRect.width}px`);

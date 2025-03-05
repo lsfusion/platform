@@ -752,8 +752,8 @@ callWithJQuery ($) ->
 
             resizeObserverUnused = new ResizeObserver ->
                 childRect = unusedDiv[0].getBoundingClientRect()
-                if childRect.width > 0 && childRect.height > 0
-                    unusedDivWrapper.css width: "#{childRect.width}px", height: "#{childRect.height}px"
+                if childRect.width > 0
+                    unusedDivWrapper.css width: "#{childRect.width}px"
 
                     minWidth = unusedDiv.css("min-width")
                     if minWidth == "" or minWidth == "0px"
@@ -961,7 +961,7 @@ callWithJQuery ($) ->
 
             resizeObserverRows = new ResizeObserver ->
                 childRect = pvtRowsDiv[0].getBoundingClientRect()
-                if childRect.width > 0 && childRect.height > 0
+                if childRect.width
                     minWidth = pvtRowsDiv.css("min-width")
                     if minWidth == "" or minWidth == "0px"
                         pvtRowsDiv.css "min-width", "#{childRect.width}px"
