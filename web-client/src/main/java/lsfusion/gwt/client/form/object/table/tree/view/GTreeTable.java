@@ -550,7 +550,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         @Override
         protected PValue getPropertyCustomOptions(GPropertyDraw property, GTreeGridRecord record) {
-            return null;
+            return record.getPropertyCustomOptions(property);
         }
 
         // in tree property might change
@@ -665,6 +665,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePropertyCustomOptionsValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -936,6 +941,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propValueTooltips != null)
                             valueTooltip = propValueTooltips.get(key);
                         objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
+
+                        PValue propertyCustomOptionsValue = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propPropertyCustomOptions = propertyCustomOptions.get(property);
+                        if (propPropertyCustomOptions != null)
+                            propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
+                        objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

@@ -191,6 +191,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
