@@ -44,6 +44,31 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-docker-templates</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>lsfusion.platform</groupId>
+                                            <artifactId>server</artifactId>
+                                            <type>jar</type>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${project.basedir}/target/templates</outputDirectory>
+                                            <includes>logics/${docker.template.subfolder}/**</includes>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
@@ -56,7 +81,7 @@
                                     <outputDirectory>${project.basedir}/target</outputDirectory>
                                     <resources>
                                         <resource>  
-                                            <directory>${project.parent.basedir}/${docker.template.subfolder}</directory>
+                                            <directory>${project.basedir}/target/templates/logics/${docker.template.subfolder}</directory>
                                             <filtering>true</filtering> <!-- filling property placeholders -->
                                             <includes>
                                                 <include>Dockerfile</include>
@@ -75,7 +100,7 @@
                                     <outputDirectory>${docker.compose.outputDirectory}</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>${project.parent.basedir}/${docker.template.subfolder}</directory>
+                                            <directory>${project.basedir}/target/templates/logics/${docker.template.subfolder}</directory>
                                             <filtering>true</filtering> <!-- filling property placeholders -->
                                             <includes>
                                                 <include>compose.yaml</include>
