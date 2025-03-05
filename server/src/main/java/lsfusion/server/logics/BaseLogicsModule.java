@@ -171,7 +171,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LA sleep;
     public LA applyOnlyCheck;
-    public LA applyOnlyData;
     public LA applyOnlyWithoutRecalc;
     public LA applyAll;
 
@@ -631,7 +630,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         sleep = findAction("sleep[LONG]");
         applyOnlyCheck = findAction("applyOnlyCheck[]");
-        applyOnlyData = findAction("applyOnlyData[]");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
         applyAll = findAction("applyAll[]");
 
