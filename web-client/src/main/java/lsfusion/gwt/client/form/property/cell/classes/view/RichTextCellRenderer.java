@@ -23,11 +23,10 @@ public class RichTextCellRenderer extends CellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         renderQuill(element, null);
 
-        if (renderContext.isInputRemoveAllPMB()) {
+        if (renderContext.isInputRemoveAllPMB())
             CellRenderer.removeAllPMB(null, element);
-            GwtClientUtils.addClassName(element, "form-control");
-        }
 
+        GwtClientUtils.addClassName(element, "form-control");
         return true;
     }
 
