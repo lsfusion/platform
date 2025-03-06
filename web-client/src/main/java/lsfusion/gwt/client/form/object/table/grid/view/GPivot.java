@@ -477,11 +477,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         rerender();
     }
 
-    boolean useClusterize = false; //set true to use clusterize
     boolean clusterize;
     @Override
     protected void showAllPressed() {
-        clusterize = useClusterize;
+        clusterize = MainFrame.useClusterizeInPivot;
     }
 
     private native WrapperObject overrideFilter(WrapperObject config, String column, JsArrayString columnInclusions, JsArrayString columnExclusions)/*-{

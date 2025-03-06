@@ -96,7 +96,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
                 clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.locale.getLanguage(), localePreferences.dateFormat, localePreferences.timeFormat,
                 localePreferences.twoDigitYearStart, servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
                 clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
-                clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel);
+                clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins,
+                clientSettings.cssBackwardCompatibilityLevel, clientSettings.useClusterizeInPivot);
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {

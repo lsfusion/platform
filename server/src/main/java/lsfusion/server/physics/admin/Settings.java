@@ -3450,4 +3450,14 @@ public class Settings implements Cloneable {
     public void setPrioritizeHTTPParameterNames(boolean prioritizeHTTPParameterNames) {
         this.prioritizeHTTPParameterNames = prioritizeHTTPParameterNames;
     }
+
+    public boolean useClusterizeInPivot = false;
+
+    public boolean isUseClusterizeInPivot() {
+        return useClusterizeInPivot;
+    }
+
+    public void setUseClusterizeInPivot(boolean useClusterizeInPivot) {
+        this.useClusterizeInPivot = useClusterizeInPivot;
+    }
 }
