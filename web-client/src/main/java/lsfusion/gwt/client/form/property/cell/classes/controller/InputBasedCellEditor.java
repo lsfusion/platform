@@ -72,7 +72,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
                 FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE, handler.event);
         }
 
-        CellRenderer.setIsEditing(parent, inputElement, true);
+        CellRenderer.setIsEditing(inputElement, true);
 
         if(!needReplace) {
             GwtClientUtils.addClassName(parent, "property-hide-toolbar");
@@ -89,7 +89,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
             setInputValue(parent, oldValue);
         }
 
-        CellRenderer.setIsEditing(parent, inputElement, false);
+        CellRenderer.setIsEditing(inputElement, false);
 
         inputElement = null;
         inputElementType = null;

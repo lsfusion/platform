@@ -1,11 +1,18 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class HTMLLinkCellRenderer extends HTMLBasedCellRenderer {
     public HTMLLinkCellRenderer(GPropertyDraw property) {
         super(property);
+    }
+
+    @Override
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        return true;
     }
 
     @Override

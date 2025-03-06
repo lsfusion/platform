@@ -21,6 +21,9 @@ public class RichTextCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         renderQuill(element, null);
+
+        if (renderContext.isInputRemoveAllPMB())
+            CellRenderer.removeAllPMB(element);
         return true;
     }
 

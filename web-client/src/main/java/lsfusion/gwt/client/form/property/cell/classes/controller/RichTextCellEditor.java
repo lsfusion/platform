@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class RichTextCellEditor extends ARequestValueCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
@@ -35,7 +36,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
         }
 
         start(parent, value, selectAll && !property.notSelectAll);
-
+        CellRenderer.setIsEditing(parent, true);
         GwtClientUtils.addClassName(parent, "property-hide-toolbar");
     }
 
@@ -87,7 +88,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
-
+        CellRenderer.setIsEditing(parent, false);
         enableEditing(parent, false);
 
         if (cancel)

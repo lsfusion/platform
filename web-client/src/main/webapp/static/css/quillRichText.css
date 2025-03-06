@@ -47,6 +47,6 @@
     white-space: normal;
 }
 
-.data-grid-cell .ql-snow-wrapper.property-hide-toolbar, .ql-container.property-hide-toolbar {
+.ql-container.remove-all-pmb.is-editing {
     background-color: var(--bs-table-bg);
 }
