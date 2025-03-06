@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class RichTextCellEditor extends ARequestValueCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
 
-    private GPropertyDraw property;
+    private final GPropertyDraw property;
 
     private String oldValue;
 
@@ -33,8 +33,6 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
             if (value != null)
                 value = value.replaceAll("<div", "<p").replaceAll("</div>", "</p>");
         }
-
-        enableEditing(parent, false);
 
         start(parent, value, selectAll && !property.notSelectAll);
 

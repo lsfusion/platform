@@ -21,7 +21,7 @@ public class RichTextCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         renderQuill(element, null);
-        return false;
+        return true;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class RichTextCellRenderer extends CellRenderer {
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         destroy(element);
-        return false;
+        return true;
     }
 
     @Override

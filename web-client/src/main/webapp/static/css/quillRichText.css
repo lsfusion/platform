@@ -26,7 +26,7 @@
     overflow-y: visible;
 }
 
-.ql-container.ql-bubble .ql-editor {
+.ql-editor {
     width: 100%;
     padding: 1px 0;
     color: var(--text-color);
@@ -47,14 +47,6 @@
     white-space: normal;
 }
 
-.ql-snow-wrapper {
-    flex-direction: column;
-}
-
 .data-grid-cell .ql-snow-wrapper.property-hide-toolbar, .ql-container.property-hide-toolbar {
     background-color: var(--bs-table-bg);
-}
-
-.ql-container.ql-snow, .ql-toolbar.ql-snow {
-    width: 100%;
 }
