@@ -204,11 +204,21 @@ hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'=
 countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
 countUserPreferences '{authentication.users.number}' (GroupObject g) = GROUP SUM 1 IF hasUserPreferences(g, CustomUser u);
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
+//reset user preferences if all shown properties were removed from form
+WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupObject(p)), CustomUser u) AND NOT countShowPropertyDraw(PREV(groupObject(p)), u) DO {
+    hasUserPreferences(PREV(groupObject(p)), u) <- NULL;
+    show(PropertyDraw pd, u) <- NULL WHERE groupObject(pd) == PREV(groupObject(p));
+}
 
 hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
 countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
 hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
+//reset user preferences if all shown properties were removed from form
+WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupObject(p))) AND NOT countShowPropertyDraw(PREV(groupObject(p)))  DO {
+    hasUserPreferences(PREV(groupObject(p))) <- NULL;
+    show(PropertyDraw pd) <- NULL WHERE groupObject(pd) == PREV(groupObject(p));
+}
 
 WHEN SET(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(groupObject(p)) DO
     show(p) <- PropertyDrawShowStatus.Hide;
