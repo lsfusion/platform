@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class HTMLLinkCellRenderer extends HTMLBasedCellRenderer {
     public HTMLLinkCellRenderer(GPropertyDraw property) {

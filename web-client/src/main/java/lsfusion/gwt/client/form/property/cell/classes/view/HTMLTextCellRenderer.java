@@ -10,13 +10,16 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class HTMLTextCellRenderer extends HTMLBasedCellRenderer {
 
-    public HTMLTextCellRenderer(GPropertyDraw property) {
+    private final boolean text;
+    public HTMLTextCellRenderer(GPropertyDraw property, boolean text) {
         super(property);
+
+        this.text = text;
     }
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        return true;
+        return text;
     }
 
     @Override
