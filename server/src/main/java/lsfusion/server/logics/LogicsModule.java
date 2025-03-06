@@ -1124,7 +1124,7 @@ public abstract class LogicsModule {
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
                 contextSelector = new InputContextSelector<T>() {
                     public Pair<InputFilterEntity<?, T>, ImOrderMap<InputOrderEntity<?, T>, Boolean>> getFilterAndOrders() {
-                        if (valueProperty.tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
+                        if (valueProperty.disableInputList(MapFact.EMPTY()))
                             return null;
                         return new Pair<>(null, null);
                     }

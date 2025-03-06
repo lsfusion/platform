@@ -444,13 +444,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected AuthenticationException authException;
 
     private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
-        boolean forceAPI = false;
-        String annotation = property.action.annotation;
-        if(annotation != null) {
-            if(annotation.equals("noauth"))
-                return;
-            forceAPI = annotation.equals("api");
-        }
+        if(property.action.hasAnnotation("noauth"))
+            return;
 
         if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getImplicitParamValues()), request.signature))
             return;
@@ -458,19 +453,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        checkEnableApi(token.isAnonymous(), forceAPI);
-    }
-
-    private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
         byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0) {
-            if(forceAPI)
+            if(property.action.hasAnnotation("api"))
                 enableApi = 1;
             else
                 throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
         }
 
-        if(anonymous && enableApi == 1)
+        if(token.isAnonymous() && enableApi == 1)
             throw new AuthenticationException();
     }
 

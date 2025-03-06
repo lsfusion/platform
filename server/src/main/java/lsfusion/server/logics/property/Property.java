@@ -17,7 +17,6 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -109,7 +108,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
@@ -2137,8 +2135,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
 
-    public boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
-        return !getSelectCost(fixedExprs).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
+    public boolean disableInputList(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        if(hasAnnotation("inputlist"))
+            return false;
+
+        // if cost-per-row * numberRows > max read count, won't read
+        boolean lowCost = getSelectCost(fixedExprs).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
+        if(!lowCost)
+            return false;
+
+        Type type = getType();
+        return (type instanceof TextClass || type instanceof AJSONClass);
     }
 
     private <X extends PropertyInterface> void setResetAsync(ActionMapImplement<X, T> action) {
@@ -2906,7 +2913,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     // filter or custom view completion
     public <X extends PropertyInterface> InputPropertyListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
-        if(isValueFull(fixedExprs) && !tooMuchSelectData(fixedExprs))
+        if(isValueFull(fixedExprs) && !disableInputList(fixedExprs))
             return new InputPropertyListEntity<>(this, fixedExprs.keys().toRevMap());
         return null;
     }
