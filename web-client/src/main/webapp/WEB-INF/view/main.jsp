@@ -126,6 +126,8 @@
                 //dateRangePicker
                 "static/js/external/moment-with-locales.min.js", //https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js // also used to define user date / time formats
                 "static/js/external/moment-jdateformatparser.min.js", //https://raw.githubusercontent.com/MadMG/moment-jdateformatparser/master/moment-jdateformatparser.min.js // also used to define user date / time formats
+                //need to format ZDateTime
+                "static/js/external/moment-timezone-with-data.min.js", //https://momentjs.com/downloads/moment-timezone-with-data.js
                 "static/js/external/daterangepicker.js",
                 "static/css/external/daterangepicker.css", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css
                 "static/css/datePicker.css",

@@ -90,6 +90,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean hasCapitalHyphensProblem; // first capital is not hyphenized
 
+    public static String timeZone;
     public static String dateFormat;
     public static String timeFormat;
     public static String dateTimeFormat;
@@ -667,6 +668,7 @@ public class MainFrame implements EntryPoint {
                 String language = gClientSettings.language;
                 Document.get().getDocumentElement().setAttribute("lang", language);
                 hasCapitalHyphensProblem = language != null && language.equals("en");
+                timeZone = gClientSettings.timeZone;
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;

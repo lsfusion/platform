@@ -1622,6 +1622,14 @@ public class GwtClientUtils {
         return $wnd.createPlainDateMillis(milliseconds);
     }-*/;
 
+    public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
+        return new Date($wnd.moment.tz(milliseconds, timeZone).format('YYYY-MM-DDTHH:mm:ss.SSS'));
+    }-*/;
+
+    public static native Number getDateTimeMillis(JsDate date, String timeZone)/*-{
+        return $wnd.moment.tz(date, timeZone).valueOf();
+    }-*/;
+
     public static native JsDate createJsDate()/*-{
         return $wnd.createPlainDateCurrent();
     }-*/;

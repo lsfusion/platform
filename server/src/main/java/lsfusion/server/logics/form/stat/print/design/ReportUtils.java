@@ -107,7 +107,7 @@ class ReportUtils {
     }
 
     private static String getZDateTimePatternExpression(String fieldName, String pattern) {
-        return String.format("$F{%s}.atZone(java.util.TimeZone.getDefault().toZoneId()).format(java.time.format.DateTimeFormatter.ofPattern(\"%s\"))", fieldName, pattern);
+        return String.format("$F{%s}.atZone(lsfusion.server.logics.classes.data.time.ZDateTimeClass.getZoneId()).format(java.time.format.DateTimeFormatter.ofPattern(\"%s\"))", fieldName, pattern);
     }
     
     public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";
