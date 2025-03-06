@@ -46,7 +46,3 @@
 .ql-clipboard {
     white-space: normal;
 }
-
-.ql-container.remove-all-pmb.is-editing {
-    background-color: var(--bs-table-bg);
-}

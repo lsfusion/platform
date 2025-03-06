@@ -81,16 +81,16 @@ public abstract class CellRenderer {
     }
 
 
-    public static void removeAllPMB(Element element) {
+    public static void removeAllPMB(Element parent, Element element) {
         GwtClientUtils.addClassName(element, "remove-all-pmb");
     }
-    public static void setIsEditing(Element element, boolean set) {
+    public static void setIsEditing(Element parent, Element element, boolean set) {
         if(set)
             GwtClientUtils.addClassName(element, "is-editing");
         else
             GwtClientUtils.removeClassName(element, "is-editing");
     }
-    public static boolean isEditing(Element element) {
+    public static boolean isEditing(Element parent, Element element) {
         return element.hasClassName("is-editing");
     }
 

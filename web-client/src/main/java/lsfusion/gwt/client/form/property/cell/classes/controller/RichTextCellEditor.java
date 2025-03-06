@@ -36,7 +36,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
         }
 
         start(parent, value, selectAll && !property.notSelectAll);
-        CellRenderer.setIsEditing(parent, true);
+        CellRenderer.setIsEditing(null, parent, true);
         GwtClientUtils.addClassName(parent, "property-hide-toolbar");
     }
 
@@ -88,7 +88,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
-        CellRenderer.setIsEditing(parent, false);
+        CellRenderer.setIsEditing(null, parent, false);
         enableEditing(parent, false);
 
         if (cancel)

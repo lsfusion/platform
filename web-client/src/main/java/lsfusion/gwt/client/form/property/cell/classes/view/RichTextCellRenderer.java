@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -22,8 +23,11 @@ public class RichTextCellRenderer extends CellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         renderQuill(element, null);
 
-        if (renderContext.isInputRemoveAllPMB())
-            CellRenderer.removeAllPMB(element);
+        if (renderContext.isInputRemoveAllPMB()) {
+            CellRenderer.removeAllPMB(null, element);
+            GwtClientUtils.addClassName(element, "form-control");
+        }
+
         return true;
     }
 

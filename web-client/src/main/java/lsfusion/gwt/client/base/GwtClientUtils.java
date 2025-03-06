@@ -85,14 +85,14 @@ public class GwtClientUtils {
             clearReadonlyFnc: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearReadonlyFnc(*)(element);
             },
-            removeAllPMB: function (controlElement) {
-                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::removeAllPMB(Lcom/google/gwt/dom/client/Element;)(controlElement);
+            removeAllPMB: function (element, controlElement) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::removeAllPMB(*)(element, controlElement);
             },
-            setIsEditing: function (controlElement, set) {
-                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setIsEditing(*)(controlElement, set);
+            setIsEditing: function (element, controlElement, set) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setIsEditing(*)(element, controlElement, set);
             },
-            isEditing: function (controlElement) {
-                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing(*)(controlElement);
+            isEditing: function (element, controlElement) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing(*)(element, controlElement);
             },
             useBootstrap: function() {
                 return @lsfusion.gwt.client.view.MainFrame::useBootstrap;

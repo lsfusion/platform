@@ -104,10 +104,10 @@ function selectMultiInput() {
                 onDropdownOpen: function () {
                     // setting auto hide partner to avoid fake blurs
                     this.setCaret(this.items.length);
-                    _setIsEditing(this.$control[0], true);
+                    _setIsEditing(element, this.$control[0], true);
                 },
                 onDropdownClose: function () {
-                    _setIsEditing(this.$control[0], false);
+                    _setIsEditing(element, this.$control[0], false);
                 },
                 openOnFocus: function () {
                     return !lsfUtils.isSuppressOnFocusChange(element);
@@ -367,18 +367,18 @@ function _wrapElement(element, createElement, wrap) {
 
 function _removeAllPMBInTD(element, controlElement) {
     if(_isInGrid(element))
-        lsfUtils.removeAllPMB(controlElement);
+        lsfUtils.removeAllPMB(element, controlElement);
 }
 
 function _isInGrid(element) {
     return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
 }
 
-function _setIsEditing(controlElement, add) {
-    lsfUtils.setIsEditing(controlElement, add);
+function _setIsEditing(element, controlElement, add) {
+    lsfUtils.setIsEditing(element, controlElement, add);
 }
-function _isEditing(controlElement) {
-    return lsfUtils.isEditing(controlElement);
+function _isEditing(element, controlElement) {
+    return lsfUtils.isEditing(element, controlElement);
 }
 
 // buttons / radios / selects
@@ -700,13 +700,13 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                 let selection = selectionElement[0]
 
                 selectElement.on('select2:open', function () {
-                    _setIsEditing(selection, true);
+                    _setIsEditing(element, selection, true);
                 });
 
                 selectElement.on('select2:close', function () {
                     // The timeout is needed because select2:close is triggered before key handler,
                     // and pressing escape closes the whole form, not the dropdown
-                    setTimeout(() => _setIsEditing(selection, false));
+                    setTimeout(() => _setIsEditing(element, selection, false));
                 });
 
                 return selection;
@@ -734,11 +734,11 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                         // needed here because refresh recreates dropdown
                         lsfUtils.addDropDownPartner(element, selectElement.multipleSelect('getDropdown')[0]);
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
-                        _setIsEditing(select, true);
+                        _setIsEditing(element, select, true);
                     },
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
-                        _setIsEditing(select, false);
+                        _setIsEditing(element, select, false);
                     }
                 });
                 lsfUtils.setOnFocusOut(element, function() {
@@ -763,19 +763,19 @@ function _selectDropdown(shouldBeSelected, changeValue) {
 
             select.addEventListener('keydown', function (e) {
                 if (e.keyCode === 32)
-                    _setIsEditing(select, true);
+                    _setIsEditing(element, select, true);
                 else if (e.key === 'Escape')
-                   _setIsEditing(select, false);
+                   _setIsEditing(element, select, false);
             });
 
             select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element, changeValue);
 
-                _setIsEditing(select, false);
+                _setIsEditing(element, select, false);
             })
 
             select.addEventListener('blur', function () {
-                _setIsEditing(select, false);
+                _setIsEditing(element, select, false);
             });
 
             select.addEventListener('mousedown', function (e) {
@@ -784,7 +784,7 @@ function _selectDropdown(shouldBeSelected, changeValue) {
                 //     return;
                 setTimeout(function() {
                     if(!e.defaultPrevented)
-                        _setIsEditing(select, !_isEditing(select));
+                        _setIsEditing(element, select, !_isEditing(element, select));
                 });
             });
 
@@ -836,12 +836,12 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
 
             mainElement.addEventListener('keydown', function (e) {
-                handleDropdownKeyEvent(_isEditing(mainElement), e, true);
+                handleDropdownKeyEvent(_isEditing(element, mainElement), e, true);
             });
 
             // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
             mainElement.addEventListener('keypress', function (e) {
-                handleDropdownKeyEvent(_isEditing(mainElement), e, false);
+                handleDropdownKeyEvent(_isEditing(element, mainElement), e, false);
             });
         },
         update: function (element, controller, list, extraValue) {
