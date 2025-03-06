@@ -548,12 +548,10 @@ public class ExternalUtils {
 //        if(paramName != null)
 //            result += "; name=\"" + paramName + "\"";
 
-        String fullFileName = getContentFileName(name, extension);
-
         if(StringUtils.isAsciiPrintable(name))
-            result += "; filename=\"" + fullFileName +"\"";
+            result += "; filename=\"" + name +"\"";
 
-        result += "; filename*=" + charset.name() + "''" + fullFileName;
+        result += "; filename*=" + charset.name() + "''" + getContentFileName(name, extension);
 
         return result;
     }
