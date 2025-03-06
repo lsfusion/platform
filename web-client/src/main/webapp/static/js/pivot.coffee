@@ -750,6 +750,16 @@ callWithJQuery ($) ->
             shownInAggregators = (c for c in shownAttributes when c not in opts.hiddenFromAggregators)
             shownInDragDrop = (c for c in shownAttributes when c not in opts.hiddenFromDragDrop)
 
+            resizeObserverUnused = new ResizeObserver ->
+                childRect = unusedDiv[0].getBoundingClientRect()
+                if childRect.width > 0
+                    unusedDivWrapper.css width: "#{childRect.width}px"
+
+                    minWidth = unusedDiv.css("min-width")
+                    if minWidth == "" or minWidth == "0px"
+                        unusedDiv.css "min-width", "#{childRect.width}px"
+
+            resizeObserverUnused.observe unusedDiv[0]
 
             unusedAttrsVerticalAutoOverride = false
             if opts.unusedAttrsVertical == "auto"
@@ -948,6 +958,16 @@ callWithJQuery ($) ->
             #row axes
             pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top")
             pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows)
+
+            resizeObserverRows = new ResizeObserver ->
+                childRect = pvtRowsDiv[0].getBoundingClientRect()
+                if childRect.width
+                    minWidth = pvtRowsDiv.css("min-width")
+                    if minWidth == "" or minWidth == "0px"
+                        pvtRowsDiv.css "min-width", "#{childRect.width}px"
+
+            resizeObserverRows.observe pvtRowsDiv[0]
+
             tr2.append pvtRows
 
             pvtRowsTable = $("<table>").addClass('pvtRowsTable')
