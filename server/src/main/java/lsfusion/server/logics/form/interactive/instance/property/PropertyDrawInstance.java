@@ -186,6 +186,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyRegexpMessage;
     public final PropertyObjectInstance<?> propertyTooltip;
     public final PropertyObjectInstance<?> propertyValueTooltip;
+    public final PropertyObjectInstance<?> propertyCustomOptions;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -207,6 +208,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance regexpMessageReader;
     public ExtraReaderInstance tooltipReader;
     public ExtraReaderInstance valueTooltipReader;
+    public ExtraReaderInstance propertyCustomOptionsReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
@@ -241,6 +243,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyRegexpMessage = propertyExtras.get(PropertyDrawExtraType.REGEXPMESSAGE);
         propertyTooltip = propertyExtras.get(PropertyDrawExtraType.TOOLTIP);
         propertyValueTooltip = propertyExtras.get(PropertyDrawExtraType.VALUETOOLTIP);
+        propertyCustomOptions = propertyExtras.get(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -262,6 +265,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         regexpMessageReader = new ExtraReaderInstance(PropertyDrawExtraType.REGEXPMESSAGE, propertyRegexpMessage);
         tooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.TOOLTIP, propertyTooltip);
         valueTooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUETOOLTIP, propertyValueTooltip);
+        propertyCustomOptionsReader = new ExtraReaderInstance(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, propertyCustomOptions);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 

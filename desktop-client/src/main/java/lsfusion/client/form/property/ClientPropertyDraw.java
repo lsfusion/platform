@@ -71,6 +71,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader regexpMessageReader = new ExtraPropReader(REGEXPMESSAGE);
     public ExtraPropReader tooltipReader = new ExtraPropReader(TOOLTIP);
     public ExtraPropReader valueTooltipReader = new ExtraPropReader(VALUETOOLTIP);
+    public ExtraPropReader propertyCustomOptionsReader = new ExtraPropReader(PROPERTY_CUSTOM_OPTIONS);
 
     public boolean boxed;
 

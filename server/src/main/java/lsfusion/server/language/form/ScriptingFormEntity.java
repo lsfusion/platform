@@ -29,6 +29,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.oraction.MappedActionOrProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -694,6 +695,11 @@ public class ScriptingFormEntity {
         Boolean sync = options.getSync();
         if(sync != null)
             property.sync = sync;
+
+        PropertyObjectEntity propertyCustomOptions = options.getPropertyCustomOptions();
+        if(propertyCustomOptions != null && ((PropertyObjectEntity<?>)propertyCustomOptions).property.getType().equals(JSONClass.instance))
+            property.setPropertyExtra(propertyCustomOptions, PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, version);
+
     }
 
     private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf) {

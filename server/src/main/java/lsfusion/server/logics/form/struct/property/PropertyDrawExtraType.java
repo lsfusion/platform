@@ -309,6 +309,22 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "VALUETOOLTIP";
         }
+    },
+    PROPERTY_CUSTOM_OPTIONS {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.PROPERTY_CUSTOM_OPTIONS;
+        }
+
+        @Override
+        public String getText() {
+            return "PROPERTY_CUSTOM_OPTIONS";
+        }
     }
     ;
 

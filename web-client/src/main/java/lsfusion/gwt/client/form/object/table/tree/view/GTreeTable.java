@@ -548,6 +548,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getValueTooltip(property);
         }
 
+        @Override
+        protected PValue getPropertyCustomOptions(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getPropertyCustomOptions(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -660,6 +665,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePropertyCustomOptionsValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -931,6 +941,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propValueTooltips != null)
                             valueTooltip = propValueTooltips.get(key);
                         objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
+
+                        PValue propertyCustomOptionsValue = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propPropertyCustomOptions = propertyCustomOptions.get(property);
+                        if (propPropertyCustomOptions != null)
+                            propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
+                        objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

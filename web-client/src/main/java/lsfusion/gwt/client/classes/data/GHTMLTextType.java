@@ -18,7 +18,7 @@ public class GHTMLTextType extends GTextType {
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new HTMLTextCellRenderer(property);
+        return new HTMLTextCellRenderer(property, true);
     }
 
     @Override

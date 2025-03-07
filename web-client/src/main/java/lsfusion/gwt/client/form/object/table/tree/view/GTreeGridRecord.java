@@ -99,6 +99,12 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public String getValueTooltip(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_valueTooltip");
     }
+    public void setPropertyCustomOptions(GPropertyDraw property, PValue propertyCustomOptions) {
+        setAttribute(property.sID + "_propertyCustomOptions", propertyCustomOptions);
+    }
+    public PValue getPropertyCustomOptions(GPropertyDraw property) {
+        return (PValue) getAttribute(property.sID + "_propertyCustomOptions");
+    }
     public void setForeground(GPropertyDraw property, String foreground) {
         setAttribute(property.sID + "_foreground", foreground);
     }

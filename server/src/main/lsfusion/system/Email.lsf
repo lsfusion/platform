@@ -279,7 +279,7 @@ FORM mail '{email.form.mail}'
     PROPERTIES(e)          openEMLFile
     ORDERS dateTimeSent(e) DESC
     
-    PROPERTIES READONLY SHOWIF isWeb() message '' = HTML(HTMLFILE(message(e))) PANEL 
+    PROPERTIES READONLY SHOWIF isWeb() message '' = HTMLLINK(HTMLFILE(message(e))) PANEL
     PROPERTIES(e) READONLY SHOWIF isNative() '' = message PANEL
     PROPERTIES(e) NEWSESSION deleteEmail = DELETE
     FILTERS folder(e) = f

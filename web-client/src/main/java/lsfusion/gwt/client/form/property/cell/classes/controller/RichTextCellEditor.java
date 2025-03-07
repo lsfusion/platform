@@ -8,11 +8,12 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class RichTextCellEditor extends ARequestValueCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
 
-    private GPropertyDraw property;
+    private final GPropertyDraw property;
 
     private String oldValue;
 
@@ -34,16 +35,21 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
                 value = value.replaceAll("<div", "<p").replaceAll("</div>", "</p>");
         }
 
-        enableEditing(parent, false);
-
+        enableRichTextEditing(parent, true);
         start(parent, value, selectAll && !property.notSelectAll);
+    }
 
-        GwtClientUtils.addClassName(parent, "property-hide-toolbar");
+    private void enableRichTextEditing(Element parent, boolean enable) {
+        enableEditing(parent, enable);
+        CellRenderer.setIsEditing(null, parent, enable);
+
+        if (enable)
+            GwtClientUtils.addClassName(parent, "property-hide-toolbar");
+        else
+            GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
     }
 
     protected native void start(Element element, String value, boolean selectAll)/*-{
-        this.@RichTextCellEditor::enableEditing(*)(element, true);
-
         var quill = element.quill;
         quill.focus();
 
@@ -88,10 +94,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
-
-        enableEditing(parent, false);
-
+        enableRichTextEditing(parent, false);
         if (cancel)
             setEditorValue(parent, oldValue); //to return the previous value after pressing esc
     }
