@@ -16,6 +16,8 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -26,11 +28,13 @@ import java.sql.SQLException;
 public class RecalculatePropertyAction<P extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
     private final PropertyMapImplement<P, I> recalc;
     private final PropertyInterfaceImplement<I> where;
+    private final Boolean classes;
 
-    public RecalculatePropertyAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<P, I> recalc, PropertyInterfaceImplement<I> where) {
+    public RecalculatePropertyAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<P, I> recalc, PropertyInterfaceImplement<I> where, Boolean classes) {
         super(caption, innerInterfaces, mapInterfaces);
         this.recalc = recalc;
         this.where = where;
+        this.classes = classes;
         finalizeInit();
     }
 
@@ -74,14 +78,17 @@ public class RecalculatePropertyAction<P extends PropertyInterface, I extends Pr
                 proceedNullException();
         }
 
-        context.getDbManager().runMaterializationRecalculation(context.getSession(), context.getSession().sql, (AggregateProperty<X>) recalc.property, propertyChange, true, false);
+        if(recalc.property instanceof AggregateProperty)
+            context.getDbManager().runMaterializationRecalculation(context.getSession(), context.getSession().sql, (AggregateProperty<X>) recalc.property, propertyChange, true, classes);
+        else
+            context.getDbManager().runRecalculateClasses(context.getSession().sql, (AbstractDataProperty) recalc.property, (PropertyChange<ClassPropertyInterface>)propertyChange, true);
         return FlowResult.FINISH;
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.ANYEFFECT)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

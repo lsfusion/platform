@@ -80,6 +80,7 @@ dbName '{reflection.db.name.property}' = DATA STRING[100] (Property) IN base;
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 loggable '{reflection.loggable.property}' = DATA BOOLEAN (Property);
 userLoggable '{reflection.user.loggable.property}' = DATA BOOLEAN (Property);
+userMaterialized '{reflection.user.materialized.property}' = DATA TBOOLEAN (Property);
 stored '{reflection.stored.property}' = DATA BOOLEAN (Property);
 isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
 disableInputList '{reflection.disable.input.list}' = DATA BOOLEAN (Property);
@@ -203,11 +204,21 @@ hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'=
 countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
 countUserPreferences '{authentication.users.number}' (GroupObject g) = GROUP SUM 1 IF hasUserPreferences(g, CustomUser u);
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
+//reset user preferences if all shown properties were removed from form
+WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupObject(p)), CustomUser u) AND NOT countShowPropertyDraw(PREV(groupObject(p)), u) DO {
+    hasUserPreferences(PREV(groupObject(p)), u) <- NULL;
+    show(PropertyDraw pd, u) <- NULL WHERE groupObject(pd) == PREV(groupObject(p));
+}
 
 hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
 countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
 hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
+//reset user preferences if all shown properties were removed from form
+WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupObject(p))) AND NOT countShowPropertyDraw(PREV(groupObject(p)))  DO {
+    hasUserPreferences(PREV(groupObject(p))) <- NULL;
+    show(PropertyDraw pd) <- NULL WHERE groupObject(pd) == PREV(groupObject(p));
+}
 
 WHEN SET(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(groupObject(p)) DO
     show(p) <- PropertyDrawShowStatus.Hide;
@@ -549,12 +560,13 @@ dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 FORM properties '{reflection.form.properties}'
     OBJECTS p=Property
     PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
-        quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE, 
+        quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, userMaterialized CHANGEABLE, stored CHANGEABLE, isSetNotNull CHANGEABLE, 
         disableInputList CHANGEABLE, staticCaptionSelect CHANGEABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent(tps), ps=Property
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
-    PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE
+    PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, 
+        userLoggable CHANGEABLE, loggable, userMaterialized CHANGEABLE, stored CHANGEABLE, isSetNotNull CHANGEABLE
 
     ORDERS number(p)
     ORDERS number(tps)

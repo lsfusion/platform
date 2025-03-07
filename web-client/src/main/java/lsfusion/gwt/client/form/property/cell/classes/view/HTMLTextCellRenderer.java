@@ -4,20 +4,22 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class HTMLTextCellRenderer extends HTMLBasedCellRenderer {
 
-    public HTMLTextCellRenderer(GPropertyDraw property) {
+    private final boolean text;
+    public HTMLTextCellRenderer(GPropertyDraw property, boolean text) {
         super(property);
+
+        this.text = text;
     }
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        return false;
+        return text;
     }
 
     @Override

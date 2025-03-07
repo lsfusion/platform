@@ -23,6 +23,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.*;
@@ -93,10 +94,16 @@ public class CaseAction extends ListCaseAction {
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return null;
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        final ImSet<Action<?>> localRecursiveAbstracts = recursiveAbstracts;
+        
         ImList<ActionCase<PropertyInterface>> cases = getCases();
         ImList<ActionCase<PropertyInterface>> replacedCases = cases.mapListValues((ActionCase<PropertyInterface> aCase) -> {
-            ActionMapImplement<?, PropertyInterface> implementReplace = aCase.implement.mapReplaceExtend(replacer);
+            ActionMapImplement<?, PropertyInterface> implementReplace = aCase.implement.mapReplaceExtend(replacer, localRecursiveAbstracts);
             if (implementReplace == null) 
                 return null;
             return new ActionCase<>(aCase.where, implementReplace);
@@ -142,13 +149,18 @@ public class CaseAction extends ListCaseAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         ImList<ActionCase<PropertyInterface>> cases = getCases();
         MSet<Property> mWhereProps = SetFact.mSetMax(cases.size());
         for(ActionCase<PropertyInterface> aCase : cases)
             if(aCase.where instanceof PropertyMapImplement)
                 mWhereProps.add(((PropertyMapImplement) aCase.where).property);
-        return mWhereProps.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
+        
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return mWhereProps.immutable().toMap(false);
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        return mWhereProps.immutable().toMap(false).merge(super.calculateUsedExtProps(recursiveAbstracts), addValue);
     }
 
     @IdentityLazy
@@ -261,9 +273,14 @@ public class CaseAction extends ListCaseAction {
         return cases.mapListValues(value -> value.implement);
     }
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        if (isRecursive) {
+            if (recursiveAbstracts.contains(this)) return AsyncMapExec.RECURSIVE();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+        
         Result<Boolean> rLastElse = new Result<>(false);
-        return getBranchAsyncEventExec(getAsyncListActions(rLastElse), optimistic, recursive, isExclusive, rLastElse.result);
+        return getBranchAsyncEventExec(getAsyncListActions(rLastElse), optimistic, recursiveAbstracts, isExclusive, rLastElse.result);
     }
 
     /*

@@ -961,6 +961,16 @@ public class Settings implements Cloneable {
         this.autoAnalyzeTempStats = autoAnalyzeTempStats;
     }
 
+    private boolean useISOTimeFormatsInIntegration = true;
+
+    public boolean isUseISOTimeFormatsInIntegration() {
+        return useISOTimeFormatsInIntegration;
+    }
+
+    public void setUseISOTimeFormatsInIntegration(boolean useISOTimeFormatsInIntegration) {
+        this.useISOTimeFormatsInIntegration = useISOTimeFormatsInIntegration;
+    }
+
     public boolean isUseGreaterEquals() {
         return useGreaterEquals;
     }
@@ -3324,6 +3334,16 @@ public class Settings implements Cloneable {
         this.contentWordWrap = contentWordWrap;
     }
 
+    private boolean highlightDuplicateValue = false;
+
+    public boolean isHighlightDuplicateValue() {
+        return highlightDuplicateValue;
+    }
+
+    public void setHighlightDuplicateValue(boolean highlightDuplicateValue) {
+        this.highlightDuplicateValue = highlightDuplicateValue;
+    }
+
     private int maxColumnsInPlainImportExport = 256;
 
     public int getMaxColumnsInPlainImportExport() {
@@ -3431,6 +3451,16 @@ public class Settings implements Cloneable {
         this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
     }
 
+    public boolean generateReportsOnWebServer = false;
+
+    public boolean isGenerateReportsOnWebServer() {
+        return generateReportsOnWebServer;
+    }
+
+    public void setGenerateReportsOnWebServer(boolean generateReportsOnWebServer) {
+        this.generateReportsOnWebServer = generateReportsOnWebServer;
+    }
+
     public boolean exportDBFNumericMandatoryZeroes = false;
 
     public boolean isExportDBFNumericMandatoryZeroes() {
@@ -3441,14 +3471,27 @@ public class Settings implements Cloneable {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
 
-    public boolean prioritizeHTTPParameterNames = false;
+    @Deprecated
+    //todo: backward compatibility, will be removed in v7
+    public boolean externalTCPWaitForByteMinusOne = false;
 
-    public boolean isPrioritizeHTTPParameterNames() {
-        return prioritizeHTTPParameterNames;
+    public boolean isExternalTCPWaitForByteMinusOne() {
+        return externalTCPWaitForByteMinusOne;
     }
 
-    public void setPrioritizeHTTPParameterNames(boolean prioritizeHTTPParameterNames) {
-        this.prioritizeHTTPParameterNames = prioritizeHTTPParameterNames;
+    public void setExternalTCPWaitForByteMinusOne(boolean externalTCPWaitForByteMinusOne) {
+        this.externalTCPWaitForByteMinusOne = externalTCPWaitForByteMinusOne;
+    }
+
+    //used only in desktop-client
+    public boolean useDefaultPrinterInPrintIfNotSpecified = false;
+
+    public boolean isuseDefaultPrinterInPrintIfNotSpecified() {
+        return useDefaultPrinterInPrintIfNotSpecified;
+    }
+
+    public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
+        this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
     }
 
     public boolean useClusterizeInPivot = false;

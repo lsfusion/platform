@@ -12,6 +12,7 @@ title: 'Оператор PARTITION'
 PARTITION 
 type expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 
@@ -21,6 +22,7 @@ type expr
 PARTITION 
 UNGROUP propertyId distributionType expr
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 
@@ -93,6 +95,14 @@ LIMIT [STRICT]
 - `orderExpr1, ..., orderExprK`
 
     Список выражений, определяющих порядок, в котором будут просматриваться наборы объектов при вычислении агрегирующей функции либо при распределении. Для определения порядка сначала используется значение первого выражения, затем при равенстве используется значение второго и т. д. 
+
+- `TOP topExpr`
+
+    В группировке будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
+
+- `OFFSET offsetExpr`
+
+    В группировке будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
 
 ### Примеры
 

@@ -98,7 +98,9 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.AlgType;
+import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -246,19 +248,29 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ImplementTable.reflectionStatProps(() -> {
                 SQLSession sql = getThreadLocalSql();
 
+                // splitting ensure function into two is necessary
+                // to make "DROP FUNCTION"-s execute after ensureDB (to have an active connection)
+                // but before ensureSqlFuncs.
+                adapter.ensureDBConnection(false);
+
                 if(!isFirstStart(sql) && getOldDBStructure(sql).version < 40) {
                     startLog("Migrating cast.sql functions");
                     sql.executeDDL("DROP FUNCTION IF EXISTS cast_json_to_static_file(jsonb)");
                     sql.executeDDL("DROP FUNCTION IF EXISTS cast_json_text_to_static_file(json)");
                 }
 
-                adapter.ensure(false);
+                adapter.ensureSqlFuncs();
 
                 if (!isFirstStart(sql)) {
                     updateStats(sql, true);
 
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
+
+                    if(getOldDBStructure(sql).version >= 41) {
+                        startLog("Setting user materialized for properties");
+                        setUserMaterializedProperties(sql);
+                    }
 
                     startLog("Setting user not null constraints for properties");
                     setNotNullProperties(sql);
@@ -934,6 +946,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
                     lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
+                }
+            }
+        }
+    }
+
+    private void setUserMaterializedProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("materialized", reflectionLM.userMaterializedProperty.getExpr(key));
+        query.and(reflectionLM.userMaterializedProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if (prop != null && !(prop.property instanceof StoredDataProperty)) {
+                Boolean materialized = (Boolean) values.get("materialized");
+                if (materialized) {
+                    if (!prop.property.isMarkedStored()) {
+                        LM.materialize(prop, namingPolicy);
+                    }
+                } else {
+                    if (prop.property.isMarkedStored()) {
+                        LM.dematerialize(prop, namingPolicy);
+                    }
                 }
             }
         }
@@ -1915,8 +1952,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 if (oldClass.sID.equals(newClass.sID)) {
-                    if (!(oldClass.sDataPropID.equals(newClass.sDataPropID))) // надо пометить перенос, и удаление
-                        mToCopy.add(newClass.sDataPropID, MapFact.singleton(oldClass.sDataPropID, SetFact.singleton(oldClass.ID)));
+                    if (!(oldClass.dataPropCN.equals(newClass.dataPropCN))) // надо пометить перенос, и удаление
+                        mToCopy.add(newClass.dataPropCN, MapFact.singleton(oldClass.dataPropCN, SetFact.singleton(oldClass.ID)));
                     break;
                 }
             }
@@ -1929,12 +1966,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             List<IndexData<String>> additionalIndexes = new ArrayList<>();
             for (IndexData<String> indexData : indexList) {
                 if (indexData.options.type == IndexType.LIKE) {
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.DEFAULT)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.DEFAULT)));
                 } else if (indexData.options.type == IndexType.MATCH) {
                     // We don't need to add indexes if the index was built for TSVECTOR type, but we don't have that information
                     // And it should be fine while we are dropping indexes with IF EXISTS
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.DEFAULT)));
-                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), changeIndexOptions(indexData.options, IndexType.LIKE)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.DEFAULT)));
+                    additionalIndexes.add(new IndexData<>(new ArrayList<>(indexData.fields), indexData.options.changeType(IndexType.LIKE)));
                 }
             }
             indexList.addAll(additionalIndexes);
@@ -2261,11 +2298,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        runMaterializationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
+        runMaterializationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, null);
     }
 
-    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, Boolean recalculateClasses) throws SQLException, SQLHandledException {
         aggregateProperty.recalculateMaterialization(businessLogics, dataSession, session, LM.baseClass, where, recalculateClasses, isolatedTransaction);
+    }
+
+    public <P extends PropertyInterface> void runRecalculateClasses(SQLSession session, final AbstractDataProperty abstractDataProperty, PropertyChange<ClassPropertyInterface> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        abstractDataProperty.recalculateClasses(session, isolatedTransaction, LM.baseClass, where);
     }
 
     public void recalculateMaterializationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
@@ -2358,12 +2399,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
-        if (!oldName.equals(newName)) {
+        if (!oldName.equalsIgnoreCase(newName)) {
             startLog("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
             sql.renameColumn(oldProperty.getTableName(getSyntax()), oldName, newName);
-            PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
-            field.setName(newName);
         }
+        PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
+        field.setName(newName);
     }
     
     private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
@@ -2407,8 +2448,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             String tableDBName = table.getName();
             if (tableRenames.containsKey(tableDBName)) {
                 String newDBName = tableRenames.get(tableDBName);
-                startLog("Renaming table from " + tableDBName + " to " + newDBName);
-                sql.renameTable(table, newDBName);
+                if (!tableDBName.equalsIgnoreCase(newDBName)) {
+                    startLog("Renaming table from " + tableDBName + " to " + newDBName);
+                    sql.renameTable(table, newDBName);
+                }
                 table.setName(newDBName);
             }
         }
@@ -2465,32 +2508,32 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // Изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
         Map<String, String> tableNewClassProps = new HashMap<>();
         for (DBConcreteClass cls : newData.concreteClasses) {
-            DBStoredProperty classProp = newData.getProperty(cls.sDataPropID);
+            DBStoredProperty classProp = newData.getProperty(cls.dataPropCN);
             assert classProp != null;
             String tableName = classProp.getTable().getName();
             if (tableNewClassProps.containsKey(tableName)) {
-                assert cls.sDataPropID.equals(tableNewClassProps.get(tableName));
+                assert cls.dataPropCN.equals(tableNewClassProps.get(tableName));
             } else {
-                tableNewClassProps.put(tableName, cls.sDataPropID);
+                tableNewClassProps.put(tableName, cls.dataPropCN);
             }
         }
         
         Map<String, String> nameRenames = new HashMap<>();
         for (DBConcreteClass cls : oldData.concreteClasses) {
-            if (!nameRenames.containsKey(cls.sDataPropID)) {
-                DBStoredProperty oldClassProp = oldData.getProperty(cls.sDataPropID);
+            if (!nameRenames.containsKey(cls.dataPropCN)) {
+                DBStoredProperty oldClassProp = oldData.getProperty(cls.dataPropCN);
                 assert oldClassProp != null;
                 String tableName = oldClassProp.tableName;
                 if (tableNewClassProps.containsKey(tableName)) {
                     String newName = tableNewClassProps.get(tableName);
-                    nameRenames.put(cls.sDataPropID, newName);
+                    nameRenames.put(cls.dataPropCN, newName);
                     String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(newName);
                     renameColumn(sql, oldData, oldClassProp, newDBName);
                     oldClassProp.migrateNames(newName);
-                    cls.sDataPropID = newName;
+                    cls.dataPropCN = newName;
                 }
             } else {
-                cls.sDataPropID = nameRenames.get(cls.sDataPropID);
+                cls.dataPropCN = nameRenames.get(cls.dataPropCN);
             }
         }
     } 
@@ -2573,7 +2616,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index, String dbName, IndexType indexType) {
         PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
-            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage(), dbName));
+            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, dbName));
             propertyImplement.property.markIndexed(propertyImplement.mapping, index, indexType);
         }
     }
@@ -2661,7 +2704,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             message += checkTableClasses(implementTable, session, isolatedTransaction, LM.baseClass, false); // так как снизу есть проверка классов
         }
-        ImOrderSet<Property> storedDataProperties;
+        ImOrderSet<AbstractDataProperty> storedDataProperties;
         try(DataSession dataSession = createRecalculateSession(session)) {
             storedDataProperties = businessLogics.getStoredDataProperties(dataSession);
         }
@@ -2818,7 +2861,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         try(DataSession dataSession = createRecalculateSession(session)) {
-            for (final Property property : businessLogics.getStoredDataProperties(dataSession)) {
+            for (final AbstractDataProperty property : businessLogics.getStoredDataProperties(dataSession)) {
                 long start = System.currentTimeMillis();
                 property.recalculateClasses(session, isolatedTransactions, LM.baseClass);
                 long time = System.currentTimeMillis() - start;
@@ -2893,13 +2936,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
         RawFileData struct = (RawFileData) sql.readRecord(structTable, MapFact.EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
             inputDB = new DataInputStream(struct.getInputStream());
-            //noinspection ResultOfMethodCallIgnored
-            inputDB.read();
+            readOldDBVersion(inputDB);
             migrationVersion = new MigrationVersion(inputDB.readUTF());
         }
         return migrationVersion;
     }
-
+    
+    public int readOldDBVersion(DataInputStream input) throws IOException {
+        int version = input.read() - 'v'; // for backward compatibility
+        if (version == 0) {
+            version = input.readInt();
+        }
+        return version;
+    }
+    
     public Map<String, String> getPropertyCNChanges(SQLSession sql) {
         runMigrationScript();
         try {
@@ -2971,25 +3021,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private class DBConcreteClass {
         public String sID;
-        public String sDataPropID; // в каком ClassDataProperty хранился
+        public String dataPropCN; // в каком ClassDataProperty хранился
 
         @Override
         public String toString() {
-            return sID + ' ' + sDataPropID;
+            return sID + ' ' + dataPropCN;
         }
 
         public Long ID = null; // только для старых
         public ConcreteCustomClass customClass = null; // только для новых
 
-        private DBConcreteClass(String sID, String sDataPropID, Long ID) {
+        private DBConcreteClass(String sID, String dataPropCN, Long ID) {
             this.sID = sID;
-            this.sDataPropID = sDataPropID;
+            this.dataPropCN = dataPropCN;
             this.ID = ID;
         }
 
         private DBConcreteClass(ConcreteCustomClass customClass) {
             sID = customClass.getSID();
-            sDataPropID = customClass.dataProperty.getCanonicalName();
+            dataPropCN = customClass.dataProperty.getCanonicalName();
 
             this.customClass = customClass;
         }
@@ -3007,7 +3057,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             outDB.writeInt(concreteClasses.size());
             for (DBConcreteClass concreteClass : concreteClasses) {
                 outDB.writeUTF(concreteClass.sID);
-                outDB.writeUTF(concreteClass.sDataPropID);
+                outDB.writeUTF(concreteClass.dataPropCN);
                 outDB.writeLong(concreteClass.ID);
             }
         }
@@ -3111,17 +3161,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (fields.size() == 1 && fields.get(0).type instanceof TSVectorClass) {
                 return res;
             }
-            res.add(new IndexData<>(fields, changeIndexOptions(options, IndexType.LIKE)));
+            res.add(new IndexData<>(fields, options.changeType(IndexType.LIKE)));
         }
         if (options.type == IndexType.LIKE || options.type == IndexType.MATCH) {
-            res.add(new IndexData<>(fields, changeIndexOptions(options, IndexType.DEFAULT)));
+            res.add(new IndexData<>(fields, options.changeType(IndexType.DEFAULT)));
         }
         return res;
-    }
-
-    private IndexOptions changeIndexOptions(IndexOptions oldOptions, IndexType newType) {
-        String newDBName = (oldOptions.dbName == null ? null : oldOptions.dbName + newType.suffix());
-        return new IndexOptions(oldOptions.order, newType, oldOptions.language, newDBName);
     }
 
     private class NewDBStructure extends DBStructure<Field> {
@@ -3271,7 +3316,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 40;
+    public static int newDBStructureVersion = 41;
 
     private class OldDBStructure extends DBStructure<String> {
 
@@ -3280,7 +3325,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (inputDB == null) {
                 version = -2;
             } else {
-                version = inputDB.read() - 'v';
+                version = readOldDBVersion(inputDB);
                 oldDBStructureVersion = version;
                 migrationVersion = new MigrationVersion(inputDB.readUTF());
 
@@ -3304,7 +3349,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             index.add(inputDB.readUTF());
                         }
                         if (version < 32) {
-                            indexes.add(new IndexData<>(index, new IndexOptions(inputDB.readBoolean())));
+                            indexes.add(new IndexData<>(index, IndexOptions.deserialize32(inputDB)));
                         } else if (version < 36) {
                             indexes.add(new IndexData<>(index, IndexOptions.deserialize35(inputDB)));
                         } else {

@@ -135,6 +135,11 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updateCellGridElementClasses(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }
@@ -182,6 +187,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

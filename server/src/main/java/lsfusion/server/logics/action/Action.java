@@ -133,13 +133,17 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         this.paramInfo = paramInfo;
     }
 
-    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<Property, Boolean> getChangeExtProps() {
+        return getChangeExtProps(SetFact.EMPTY());
+    }
+    
+    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
+    protected ImMap<Property, Boolean> getChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
-            return compile.action.getChangeExtProps();
+            return compile.action.getChangeExtProps(recursiveAbstracts);
 
-        return aspectChangeExtProps();
+        return aspectChangeExtProps(recursiveAbstracts);
     }
 
     // убирает Set и Drop, так как с depends будет использоваться
@@ -162,10 +166,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
     // true - if changed only in new session, false if changed in this session
     @IdentityStartLazy // только компиляция, построение лексикографики
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
         for(Action<?> dependAction : getDependActions())
-            result.addAll(dependAction.getChangeExtProps());
+            result.addAll(dependAction.getChangeExtProps(recursiveAbstracts));
         return result.immutable();
     }
 
@@ -177,27 +181,35 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public ImMap<Property, Boolean> getUsedExtProps() {
+        return getUsedExtProps(SetFact.EMPTY());
+    }
+    
+    protected ImMap<Property, Boolean> getUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
-            return compile.action.getUsedExtProps();
+            return compile.action.getUsedExtProps(recursiveAbstracts);
 
-        return calculateUsedExtProps();
+        return aspectUsedExtProps(recursiveAbstracts);
     }
 
     @IdentityStartLazy
-    protected ImMap<Property, Boolean> aspectUsedExtProps() {
-        return calculateUsedExtProps();
+    protected ImMap<Property, Boolean> aspectUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return calculateUsedExtProps(recursiveAbstracts);
     }
 
-    protected ImMap<Property, Boolean> calculateUsedExtProps() {
+    protected ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
         for(Action<?> dependAction : getDependActions())
-            result.addAll(dependAction.getUsedExtProps());
+            result.addAll(dependAction.getUsedExtProps(recursiveAbstracts));
         return result.immutable();
     }
-
+    
     public ImSet<Property> getUsedProps() {
-        return getUsedExtProps().keys();
+        return getUsedProps(SetFact.EMPTY());
+    }
+    
+    protected ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
+        return getUsedExtProps(recursiveAbstracts).keys();
     }
 
     protected static ImMap<Property, Boolean> getChangeProps(Property... props) {
@@ -231,23 +243,32 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return usedProps;
     }
 
-    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public boolean hasFlow(ChangeFlowType type) {
+        return hasFlow(type, SetFact.EMPTY());
+    }
+    
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.HASSESSIONUSAGES) {
             if(!getChangeProps().isEmpty())
                 return true;
-            if(Property.dependsSet(getUsedProps(), (SFunctionSet<Property>) Property::usesSession))
+            if(Property.dependsSet(getUsedProps(recursiveAbstracts), (SFunctionSet<Property>) Property::usesSession))
                 return true;                
         }
         for(Action<?> dependAction : getDependActions())
-            if(dependAction.hasFlow(type))
+            if(dependAction.hasFlow(type, recursiveAbstracts))
                 return true;
         return false;
     }
-
+    
+    
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
+        return endsWithApplyAndNoChangesAfterBreaksBefore(type, SetFact.EMPTY());
+    }
+    
     // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
     // потом по хорошему надо будет в if then apply else cancel
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         return false;
     }
 
@@ -269,18 +290,18 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public abstract ImSet<Action> getDependActions();
     
     @IdentityLazy
-    private ImSet<Pair<String, Integer>> getInnerDebugActions() {
-        ImSet<Pair<String, Integer>> result = getRecInnerDebugActions();
+    private ImSet<Pair<String, Integer>> getInnerDebugActions(ImSet<Action<?>> recursiveAbstracts) {
+        ImSet<Pair<String, Integer>> result = getRecInnerDebugActions(recursiveAbstracts);
         if (debugInfo != null && debugInfo.needToCreateDelegate()) {
             result = result.merge(debugInfo.getDebuggerModuleLine());
         }
         return result;
     }
 
-    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
+    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
-        for (Action action : getDependActions()) {
-            result.addAll(action.getInnerDebugActions());
+        for (Action<?> action : getDependActions()) {
+            result.addAll(action.getInnerDebugActions(recursiveAbstracts));
         }
         return result.immutable();
     }
@@ -479,7 +500,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         for(ActionMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
-            if(beforeResult != FlowResult.FINISH)
+            if(!beforeResult.isFinish())
                 return beforeResult;
         }
 
@@ -535,24 +556,24 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic) {
-        return getAsyncEventExec(optimistic, false);
+        return getAsyncEventExec(optimistic, SetFact.EMPTY());
     }
     @IdentityInstanceLazy
-    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<P> result = calculateAsyncEventExec(optimistic, recursive);
+    public AsyncMapEventExec<P> getAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        AsyncMapEventExec<P> result = calculateAsyncEventExec(optimistic, recursiveAbstracts);
 
         if(forceAsyncEventExec != null)
             result = forceAsyncEventExec.apply(result);
 
         return result;
     }
-    protected AsyncMapEventExec<P> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    protected AsyncMapEventExec<P> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
 
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive, boolean isExclusive, boolean lastElse) {
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean isExclusive, boolean lastElse) {
 //        return getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse);
-        return getNewBranchAsyncEventExec(actions, optimistic, recursive, lastElse);
+        return getNewBranchAsyncEventExec(actions, optimistic, recursiveAbstracts, lastElse);
 //        AsyncMapEventExec<X> newAsyncEventExec = getNewBranchAsyncEventExec(actions, optimistic, recursive, lastElse);
 //
 ////        differentResults(newAsyncEventExec, getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse));
@@ -560,12 +581,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 //        return newAsyncEventExec;
     }
 
-    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive, boolean optimisticCases) {
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean optimisticCases) {
         boolean firstNonRecursive = false;
         AsyncMapEventExec<X> bestAsyncExec = null;
         AsyncMapEventExec<X> mergedAsyncExec = null;
         for (ActionMapImplement<?, X> action : actions) {
-            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursiveAbstracts);
             // first non-recursive we consider the most optimistic
             if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
                 if(!firstNonRecursive) {
@@ -596,7 +617,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         return bestAsyncExec;
     }
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursive) {
 //        return getPrevFlowAsyncEventExec(actions, true, optimistic, recursive);
         return getNewListAsyncEventExec(actions, optimistic, recursive);
 
@@ -605,7 +626,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 //        return newAsyncEventExec;
     }
 
-    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursive) {
         boolean wasInteractiveWait = false;
         AsyncMapEventExec<X> bestAsyncExec = null;
         for (ActionMapImplement<?, X> action : actions) {
@@ -767,7 +788,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     private ActionMapImplement<?, P> callCompile(boolean forExecution) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
-            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(), getChangePropsLocations())) {
+            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(SetFact.EMPTY()), getChangePropsLocations())) {
                 return null;
             }
         }
@@ -787,16 +808,24 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action);
     }
     public ActionMapImplement<?, P> replace(ActionReplacer replacer) {
+        return replace(replacer, SetFact.EMPTY());
+    }
+    public ActionMapImplement<?, P> replace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this);
         if(replacedAction != null)
             return replacedAction;            
-        return aspectReplace(replacer);
+        return aspectReplace(replacer, recursiveAbstracts);
     }
-    protected ActionMapImplement<?, P> aspectReplace(ActionReplacer replacer) {
+    protected ActionMapImplement<?, P> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
-
+    
     public ImList<ActionMapImplement<?, P>> getList() {
+        return getList(SetFact.EMPTY());
+    }
+    
+    @IdentityLazy
+    public ImList<ActionMapImplement<?, P>> getList(ImSet<Action<?>> recursiveAbstracts) {
         return ListFact.singleton(getImplement());
     }
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {

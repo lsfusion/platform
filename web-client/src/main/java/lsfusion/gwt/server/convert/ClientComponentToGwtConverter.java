@@ -371,6 +371,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
+        propertyDraw.gridElementClassReader = convertGridElementClassReader(clientPropertyDraw.gridElementClassReader);
         propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
         propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
         propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
@@ -387,6 +388,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.regexpMessageReader = convertExtraPropReader(clientPropertyDraw.regexpMessageReader);
         propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
         propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
+        propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -415,9 +417,12 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.captionCharHeight = clientPropertyDraw.captionCharHeight;
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
-        
+        propertyDraw.panelCustom = clientPropertyDraw.panelCustom;
+
         propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
         propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
+
+        propertyDraw.highlightDuplicateValue = clientPropertyDraw.highlightDuplicateValue;
 
         propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
         propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;
@@ -473,6 +478,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GLastReader convertLastReader(ClientPropertyDraw.LastReader reader) {
         return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GGridElementClassReader convertGridElementClassReader(ClientPropertyDraw.GridElementClassReader reader) {
+        return reader == null ? null : new GGridElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {

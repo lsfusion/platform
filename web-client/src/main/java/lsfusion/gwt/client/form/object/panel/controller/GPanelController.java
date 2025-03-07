@@ -25,6 +25,10 @@ public class GPanelController extends GPropertyController {
         formController.addEnterBindings(GBindingMode.ALL, this::focusNextElement, null);
     }
 
+    @Override
+    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
     private void focusNextElement(boolean forward) {
         formController.focusNextElement(FocusUtils.Reason.KEYNEXTNAVIGATE, forward);
     }
@@ -212,6 +216,14 @@ public class GPanelController extends GPropertyController {
     public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyValueTooltips(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyCustomOptionsValues(values);
 
         updatedProperties.put(property, TRUE);
     }

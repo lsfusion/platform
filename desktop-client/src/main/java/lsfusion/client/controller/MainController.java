@@ -399,7 +399,15 @@ public class MainController {
     public static void setServerInfo(LogicsConnection serverInfo) {
         MainController.serverInfo = serverInfo;
 
-        serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, getSessionInfo(), null, false);
+        serverSettings = getServerSettings(serverInfo, false);
+    }
+
+    public static ServerSettings getServerSettings(LogicsConnection serverInfo, boolean noCache) {
+        try {
+            return LogicsProvider.instance.runRequest(serverInfo, (sessionObject, retry) -> sessionObject.getServerSettings(getSessionInfo(), null, noCache, null));
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     public static AuthenticationToken authToken;

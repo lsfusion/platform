@@ -25,7 +25,6 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -50,13 +49,13 @@ public class ApplyAction extends KeepContextAction {
     }
     
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        return super.aspectChangeExtProps().replaceValues(true);
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
-        return super.calculateUsedExtProps().replaceValues(true);
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.calculateUsedExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
@@ -96,26 +95,22 @@ public class ApplyAction extends KeepContextAction {
     }
 
     @Override
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         return true;
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.ANYEFFECT)
-            return true;
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.APPLY)
             return true;
-        if (type == ChangeFlowType.READONLYCHANGE)
+        if (type.isManageSession())
             return true;
-        if (type == ChangeFlowType.HASSESSIONUSAGES)
-            return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     @Override
-    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer) {
-        ActionMapImplement<?, PropertyInterface> replacedAction = action.mapReplaceExtend(replacer);
+    protected ActionMapImplement<?, PropertyInterface> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
+        ActionMapImplement<?, PropertyInterface> replacedAction = action.mapReplaceExtend(replacer, recursiveAbstracts);
         if(replacedAction == null)
             return null;
 

@@ -104,7 +104,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     }
 
     public void setLines(int lines) {
-        target.lines = lines;
+        target.setLines(lines);
     }
 
     public void setLineSize(int lineSize) {

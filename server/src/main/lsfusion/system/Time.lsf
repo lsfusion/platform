@@ -12,6 +12,10 @@ toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
 toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(DATE date) = DATETIME(date AS DATE);
 toZDateTime(DATE date) = ZDATETIME(date AS DATE);
+toDateTime(DATE date, TIME time) = [ FORMULA DATETIME '$1 + $2' ](date AS DATE, time AS TIME);
+
+toSeconds(TIME time) = [ FORMULA INTEGER 'extract(epoch from ($1))' ](time AS TIME);
+toTime(INTEGER seconds) = [ FORMULA TIME 'TIME \'00:00\' + INTERVAL \'1 second\' * $1' ](seconds AS INTEGER);
 
 toDateTime(LONG millis) = FORMULA DATETIME PG 'to_timestamp(CAST($1 AS NUMERIC),\'UTC\')::timestamp';
 toZDateTime(LONG millis) = FORMULA ZDATETIME PG 'to_timestamp(CAST($1 AS NUMERIC))';

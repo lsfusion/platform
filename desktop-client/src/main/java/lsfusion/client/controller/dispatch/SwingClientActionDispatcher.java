@@ -31,7 +31,6 @@ import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.session.ExternalUtils;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -311,13 +310,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     }
                 }
                 if (editChoice == JOptionPane.NO_OPTION) {
-                    ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password, action.jasperReportsIgnorePageMargins, MainController.remoteLogics);
+                    ClientFormController.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password, action.jasperReportsIgnorePageMargins, MainController.remoteLogics);
                 }
             } else {
                 if (action.inDevMode) {
-                    pageCount = MainFrame.instance.runReport(action.reportPathList, action.formCaption, action.formSID, action.isModal, action.generationData, action.printerName);
+                    pageCount = MainFrame.instance.runReport(action.reportPathList, action.formCaption, action.formSID, action.isModal, action.generationData, action.printerName, action.useDefaultPrinterInPrintIfNotSpecified);
                 } else {
-                    pageCount = MainFrame.instance.runReport(action.isModal, action.formCaption, action.generationData, action.printerName, null);
+                    pageCount = MainFrame.instance.runReport(action.isModal, action.formCaption, action.generationData, action.printerName, action.useDefaultPrinterInPrintIfNotSpecified, null);
                 }
             }
         } catch (Exception e) {

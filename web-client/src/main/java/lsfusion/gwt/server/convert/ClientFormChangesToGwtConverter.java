@@ -23,15 +23,22 @@ import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.http.provider.logics.LogicsProviderImpl;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.session.ConvertFileValue;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -215,6 +222,11 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             return FileUtils.saveWebFile(file.name, file.raw, serverSettings, false);
         }
 
+        if (value instanceof FileStringWithFiles) {
+            FileStringWithFiles file = (FileStringWithFiles) value;
+            return convertFileValue(convertFileValue(file, servletContext, serverSettings), sessionObject, servletContext, serverSettings);
+        }
+
         if (value instanceof StringWithFiles) {
             StringWithFiles stringWithFiles = (StringWithFiles) value;
             return new GStringWithFiles(stringWithFiles.prefixes, convertFileValue(stringWithFiles.files, servletContext, serverSettings, sessionObject), stringWithFiles.rawString);
@@ -223,9 +235,48 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return value;
     }
 
-    public static String[] convertFileValue(Serializable[] files, ServletContext servletContext, LogicsSessionObject sessionObject, SessionInfo sessionInfo) {
+    public static ConvertFileValue getConvertFileValue(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo, ExternalRequest externalRequest) {
+        ServletContext servletContext = request.getServletContext();
+        ServerSettings serverSettings;
         try {
-            return convertFileValue(convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false), null));
+            serverSettings = LogicsProviderImpl.getServerSettings(sessionObject, new SessionInfo(connectionInfo, externalRequest), request.getContextPath(), servletContext, false);
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+        return getConvertFileValue(servletContext, serverSettings);
+    }
+
+    public static ConvertFileValue getConvertFileValue(FormSessionObject sessionObject, MainDispatchServlet servlet) {
+        ServerSettings serverSettings;
+        try {
+            serverSettings = servlet.getServerSettings(sessionObject.navigatorID);
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+        return getConvertFileValue(servlet.getServletContext(), serverSettings);
+    }
+
+    public static ConvertFileValue getConvertFileValue(ServletContext servletContext, ServerSettings serverSettings) {
+        return value -> {
+            if(value instanceof FileStringWithFiles)
+                return convertFileValue((FileStringWithFiles)value, servletContext, serverSettings);
+            if(value instanceof StringWithFiles)
+                return convertFileValue((StringWithFiles) value, servletContext, serverSettings);
+            return value;
+        };
+    }
+
+    private static FileData convertFileValue(FileStringWithFiles file, ServletContext servletContext, ServerSettings serverSettings) {
+        return file.convertFileValue(stringData -> convertFileValue(stringData, servletContext, serverSettings));
+    }
+
+    private static String convertFileValue(StringWithFiles value, ServletContext servletContext, ServerSettings serverSettings) {
+        return ExternalUtils.convertFileValue(value.prefixes, convertFileValue(value.files, servletContext, serverSettings));
+    }
+
+    public static String[] convertFileValue(Serializable[] files, ServletContext servletContext, ServerSettings serverSettings) {
+        try {
+            return convertFileValue(convertFileValue(files, servletContext, serverSettings, null));
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

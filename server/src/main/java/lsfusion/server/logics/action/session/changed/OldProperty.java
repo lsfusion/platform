@@ -66,8 +66,10 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     @Override
-    public boolean calculateCheckRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path, Set<Property> marks) {
-        return property.checkRecursions(abstractPath, path, marks);
+    public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
+        if (usePrev) {
+            property.checkRecursions(path, localMarks, marks, true);
+        }
     }
 
     @Override

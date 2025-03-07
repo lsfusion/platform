@@ -1,11 +1,18 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.data.GJSONType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class RichTextCellRenderer extends TextCellRenderer {
+public class RichTextCellRenderer extends CellRenderer {
 
 
     public RichTextCellRenderer(GPropertyDraw property) {
@@ -13,42 +20,56 @@ public class RichTextCellRenderer extends TextCellRenderer {
     }
 
     @Override
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        renderQuill(element, null);
+
+        if (renderContext.isInputRemoveAllPMB())
+            CellRenderer.removeAllPMB(null, element);
+
+        GwtClientUtils.addClassName(element, "form-control");
+        return true;
+    }
+
+    @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : "";
 
         element.setTitle(innerText);
-        initQuill(element, innerText, property.hasAutoHeight());
-
+        update(element, innerText, GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, updateContext.getPropertyCustomOptions()));
         return true;
     }
 
-    protected native void initQuill(Element element, String innerText, boolean autoSizedY)/*-{
-        var toolbarOptions = [
-            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-            ['link', 'image'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-            [{ 'indent': '-1'}, { 'indent': '+1' }]           // outdent/indent
-                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'align': [] }],
-            ['clean']                                         // remove formatting button
-        ];
+    @Override
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
+        destroy(element);
+        return true;
+    }
 
+    @Override
+    public String format(PValue value, RendererType rendererType, String pattern) {
+        return PValue.getStringValue(value);
+    }
+
+    protected native void renderQuill(Element element, JavaScriptObject options)/*-{
         var Quill = $wnd.Quill;
+        var thisObj = this;
 
         changeQuillBlotTagName('formats/bold', 'B'); // Quill uses <strong> by default
         changeQuillBlotTagName('formats/italic', 'I'); // Quill uses <em> by default
 
-        var quill = new Quill(element, {
-            modules: {
-                toolbar: toolbarOptions
-            },
-            bounds: element, //for the tooltip is not hidden behind the parent component
-            theme: 'bubble',
-            readOnly: true
-        });
+        var quillParent = element;
+        // need a wrapper element because if the snow theme is used, the quill replaces the element
+        if (options != null && options.theme != null && options.theme === 'snow') {
+            quillParent = document.createElement('div');
+            element.appendChild(quillParent);
+            element.classList.add('ql-snow-wrapper')
+        }
+
+        var config = @RichTextCellRenderer::getConfig(*)(quillParent, options);
+        var quill = new Quill(quillParent, config);
+        element.config = config;
+        element.quill = quill;
+        element.quillParent = quillParent;
 
         //The image selection dialog triggers a blur event, which ends the editor editing.
         // Need to enable suppressBlur before image dialog and then disable it
@@ -66,7 +87,7 @@ public class RichTextCellRenderer extends TextCellRenderer {
             }
         })
 
-        quill.on('text-change', function(delta, oldDelta, source) {
+        quill.on('text-change', function(delta) {
             if (delta.ops && delta.ops.length > 0) {
                 delta.ops.forEach(function(op) {
                     if (op.insert && op.insert.image) {// check if image inserted
@@ -76,15 +97,9 @@ public class RichTextCellRenderer extends TextCellRenderer {
             }
         });
 
-        if (innerText != null)
-            quill.root.innerHTML = innerText.includes('<div') ? innerText.replaceAll('<div', '<p').replaceAll('</div>', '</p>') : innerText;
-
-        element.quill = quill;
-
-        if (autoSizedY) {
+        if (thisObj.@CellRenderer::property.@GPropertyDraw::hasAutoHeight()())
             element.getElementsByClassName("ql-editor")[0].classList.add("auto-sized-y")
-        }
-        
+
         // quill editor bubble theme does not support opening links from edit mode.
         // https://github.com/quilljs/quill/issues/857
         // open links programmatically on ctrl+click
@@ -107,6 +122,52 @@ public class RichTextCellRenderer extends TextCellRenderer {
             var blot = Quill.imports[blotName];
             blot.tagName = tagName;
             Quill.register(blot, true);
+        }
+    }-*/;
+
+    protected native void update(Element element, String innerText, JavaScriptObject options)/*-{
+        var thisObj = this;
+        var config = @RichTextCellRenderer::getConfig(*)(element, options);
+        if (!$wnd.deepEquals(element.config, config)) {
+            @RichTextCellRenderer::destroy(*)(element);
+            thisObj.@RichTextCellRenderer::renderQuill(*)(element, config);
+            element.config = config;
+        }
+
+        if (innerText != null)
+            element.quill.root.innerHTML = innerText.includes('<div') ? innerText.replaceAll('<div', '<p').replaceAll('</div>', '</p>') : innerText;
+    }-*/;
+
+    protected native static JavaScriptObject getConfig(Element quillParent, JavaScriptObject options)/*-{
+        return $wnd.mergeObjects({
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                    ['link', 'image'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                    [{ 'align': [] }],
+                    ['clean']                                         // remove formatting button
+                ]
+            },
+            bounds: quillParent, //for the tooltip is not hidden behind the parent component
+            theme: 'bubble',
+            readOnly: true
+        }, options);
+    }-*/;
+
+    protected native static void destroy(Element element)/*-{
+        if (element.quill != null) {
+            if (element.quillParent != null)
+                element.quillParent.innerHTML = '';
+            else
+                element.innerHTML = '';
+
+            element.quill = null;
         }
     }-*/;
 

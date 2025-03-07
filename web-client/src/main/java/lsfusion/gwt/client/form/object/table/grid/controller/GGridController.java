@@ -357,7 +357,7 @@ public class GGridController extends GAbstractTableController {
             };
             updateButtonGroup.add(manualUpdateTableButton);
 
-            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
+            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> changeMode(GUpdateMode.FORCE);
@@ -402,6 +402,11 @@ public class GGridController extends GAbstractTableController {
             updateState = fc.updateStateObjects.get(groupObject);
 
         update(requestIndex, updateState);
+    }
+
+    @Override
+    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateCellGridElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -452,6 +457,11 @@ public class GGridController extends GAbstractTableController {
     @Override
     public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

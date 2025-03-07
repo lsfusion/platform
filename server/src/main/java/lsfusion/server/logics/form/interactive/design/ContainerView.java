@@ -72,7 +72,7 @@ public class ContainerView extends ComponentView {
     private boolean horizontal;
     private boolean tabbed;
 
-    public FlexAlignment childrenAlignment = FlexAlignment.START;
+    public FlexAlignment childrenAlignment;
 
     private Boolean grid;
     private Boolean wrap;
@@ -217,6 +217,9 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isHorizontal() {
+        if(isReversed())
+            return !horizontal;
+
         return horizontal;
     }
 
@@ -231,7 +234,7 @@ public class ContainerView extends ComponentView {
         if(wrap != null)
             return wrap;
 
-        return lines > 1 || isHorizontal();
+        return hasLines() || isHorizontal();
     }
 
     public Boolean getAlignCaptions() {
@@ -239,6 +242,28 @@ public class ContainerView extends ComponentView {
             return alignCaptions;
 
         return isTabbed() ? true : null;
+    }
+
+    public FlexAlignment getChildrenAlignment() {
+        if(childrenAlignment != null)
+            return childrenAlignment;
+
+        return FlexAlignment.START;
+    }
+
+    public boolean hasLines() {
+        return getLines() > 1;
+    }
+
+    public int getLines() {
+        if(isReversed())
+            return 1;
+
+        return lines;
+    }
+
+    private boolean isReversed() {
+        return lines > 1 && getChildrenList().size() <= lines && !isGrid();
     }
 
     @Override
@@ -308,7 +333,7 @@ public class ContainerView extends ComponentView {
         // now there are several heuristics at the web client changing the default behaviour, and disabling wrap
         // most of them are grid related, so we just disable shrink in grid for now
         if (isWrap() && !isGrid()) {
-            boolean wrapHorizontal = (thisHorizontal == (lines == 1));
+            boolean wrapHorizontal = (thisHorizontal == !hasLines());
             return wrapHorizontal == horizontal; // if there is wrap and it's in required direction that's what we are looking for
             // important if it's wrong direction wrap, we should not use children since it will break this heuristics (it doesn't make sense when wrap "goes" to the upper containers)
         }
@@ -483,7 +508,7 @@ public class ContainerView extends ComponentView {
             pool.writeString(outStream, debugPoint.toString());
         }
 
-        pool.writeObject(outStream, childrenAlignment);
+        pool.writeObject(outStream, getChildrenAlignment());
         
         outStream.writeBoolean(isGrid());
         outStream.writeBoolean(isWrap());
@@ -493,7 +518,7 @@ public class ContainerView extends ComponentView {
         if(resizeOverflow != null)
             outStream.writeBoolean(resizeOverflow);
 
-        outStream.writeInt(lines);
+        outStream.writeInt(getLines());
         pool.writeInt(outStream, lineSize);
         pool.writeInt(outStream, captionLineSize);
         outStream.writeBoolean(isLineShrink(pool.context));

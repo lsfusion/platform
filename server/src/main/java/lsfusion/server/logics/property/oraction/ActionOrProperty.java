@@ -102,6 +102,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         setCustomRenderFunction(select == null ? null : select.equals("No") ? NOSELECT : (SELECT + select));
     }
 
+    public boolean hasAnnotation(String annotation) {
+        return this.annotation != null && this.annotation.equals(annotation);
+    }
+
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
         if (caption != null) {
@@ -214,8 +218,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return listInterfaces.mapList(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
     public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
-    public String[] getInterfaceNames(ImOrderSet<T> listInterfaces) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
-        return listInterfaces.mapList(paramNames).toArray(new String[listInterfaces.size()]);
+    public ImOrderSet<String> getInterfaceNames(ImOrderSet<T> listInterfaces) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
+        return listInterfaces.mapOrder(paramNames);
     }
 
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);

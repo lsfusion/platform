@@ -65,6 +65,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP subjectEmail;
     public LP messageEmail;
     public LP emlFileEmail;
+    public LP lastSentEmail;
 
     public LP skipFilter;
 
@@ -76,7 +77,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public LP emlFile;
 
-    public LP saveSentEmailToDirectoryAccount;
+    public LP sentFolder;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Email.lsf");
@@ -143,6 +144,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         subjectEmail = findProperty("subject[Email]");
         messageEmail = findProperty("message[Email]");
         emlFileEmail = findProperty("emlFile[Email]");
+        lastSentEmail = findProperty("lastSentEmail[]");
 
         skipFilter = findProperty("skipFilter[Email,Account,DATETIME]");
 
@@ -154,7 +156,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         emlFile = findProperty("emlFile[LONG]");
 
-        saveSentEmailToDirectoryAccount = findProperty("saveSentEmailToDirectory[Account]");
+        sentFolder = findProperty("sentFolder[Account]");
     }
 
     public LA<PropertyInterface> addEAProp(Group group, LocalizedString caption, int paramsCount, boolean syncType) {

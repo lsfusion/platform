@@ -260,7 +260,7 @@
 
 .forms-container-not-empty .flex-dir-vert > .navbar.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently),
 .flex-dir-vert > .navbar-always-hide-unpinned.navbar.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently),
-.forms-container-not-empty .flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:hover):not(.parent-was-selected-recently) > .navbar-nav,
+.forms-container-not-empty:not(.nav-mobile) .flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:hover):not(.parent-was-selected-recently) > .navbar-nav,
 .flex-dir-vert > .navbar-always-hide-unpinned.navbar.navbar-popup-over-selected-hover:not(:hover):not(.parent-was-selected-recently) > .navbar-nav {
     max-height: 0;
 

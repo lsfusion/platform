@@ -17,7 +17,9 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType] [TOP n [OFFSET m]]
+MESSAGE [syncType]
+[TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+[OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
 ```
 
 ### Описание
@@ -78,16 +80,20 @@ MESSAGE [syncType] [TOP n [OFFSET m]]
 
     Ключевое слово. Если указывается, то форма выдает данные пользователю в режиме [сообщения](In_a_print_view_PRINT.md#interactive).
 
-- `TOP n`
-
-    Выводит только первые `n` записей. [Целочисленный литерал](Literals.md#intliteral) со смещением `m`(Целочисленный литерал).
-
 - `syncType`
 
     Определяет, когда продолжить выполнение созданного действия:
 
     - `WAIT` - после завершения действия клиентом (закрытия формы предпросмотра / сообщения). Используется по умолчанию.
     - `NOWAIT` -  после подготовки информации для передачи клиенту (чтения данных формы).
+
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Печать только первых `n` записей, где `n` - значение выражения `topExpr` или `topPropertyExprT` для группы объектов `topGroupIdT`.
+
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Печать только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
 
 ### Примеры
 

@@ -3,7 +3,6 @@ package lsfusion.server.logics.form.stat;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
@@ -35,7 +34,7 @@ public abstract class FormDataManager {
         return dataInterface.getFormEntity();
     }
 
-    public PrintMessageData getPrintMessageData(SelectTop selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
+    public PrintMessageData getPrintMessageData(FormSelectTop<Integer> selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
         ExportResult sources = getExportData(selectTop);
 
@@ -73,7 +72,7 @@ public abstract class FormDataManager {
         return new PrintMessageData(message, titles, rows);
     }
 
-    public ExportResult getExportData(SelectTop selectTop) throws SQLException, SQLHandledException {
+    public ExportResult getExportData(FormSelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
         ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
         return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
@@ -100,7 +99,7 @@ public abstract class FormDataManager {
         for(ImMap<ObjectEntity, Object> row : tableData.data) {
             List<String> dataRow = new ArrayList<>();
             for(PropertyDrawEntity<?> property : tableProperties)
-                dataRow.add(sources.properties.types.get(property).formatMessage(StaticPropertyData.getProperty(sources.properties, property, row)));
+                dataRow.add(sources.properties.types.get(property).formatUI(StaticPropertyData.getProperty(sources.properties, property, row)));
             rows.add(dataRow);
         }
 
@@ -120,7 +119,7 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
-        return getExportData(SelectTop.NULL);
+        return getExportData(FormSelectTop.NULL());
     }
 
     public static class ExportResult {

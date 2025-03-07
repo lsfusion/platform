@@ -8,6 +8,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
@@ -21,6 +22,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -96,7 +98,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                boolean checkOnOk,
                                                                boolean readOnly,
                                                                String formID) {
-        super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext);
+        super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext, FormSelectTop.NULL());
 
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
@@ -175,12 +177,12 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getRequestChangeExtProps(inputObjects.size(), i -> inputObjects.get(i).getType(), inputProps::get);
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type instanceof FormChangeFlowType && !readOnly) {
             FormEntity form = getForm();
 
@@ -196,7 +198,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
 //    @Override
@@ -208,7 +210,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
 
     @Override
-    public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         ShowFormType showFormType = getShowFormType();
         return new AsyncMapOpenForm<>(form, forbidDuplicate, showFormType.isModal(), showFormType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }

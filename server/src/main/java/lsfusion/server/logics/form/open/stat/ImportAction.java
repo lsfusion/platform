@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
@@ -19,6 +20,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -41,8 +43,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public abstract class ImportAction extends SystemAction {
@@ -109,10 +109,11 @@ public abstract class ImportAction extends SystemAction {
             MExclMap<ImMap<ObjectEntity, DataObject>, MMap<PropertyObjectEntity, ObjectValue>> mRows = MapFact.mExclMap();
             for(PropertyObjectEntity prop : props) {
                 ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop).immutable();
+                DataClass type = (DataClass) prop.getType();
                 for(int j=0,sizeJ=propValues.size();j<sizeJ;j++) {
                     // convert to DataObject / ObjectValue
                     ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues((key, value) -> new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass));
-                    ObjectValue value = ObjectValue.getValue(propValues.getValue(j), (DataClass)prop.getType());
+                    ObjectValue value = ObjectValue.getValue(propValues.getValue(j), type);
 
                     MMap<PropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
                     if(mProps == null) {
@@ -201,10 +202,10 @@ public abstract class ImportAction extends SystemAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        List<Property> properties = new ArrayList<>();
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        MSet<Property> mProps = SetFact.mSet();
         for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
-            properties.add((Property) propertyDraw.getImportProperty().property);
-        return getChangeProps(properties.toArray(new Property[0]));
+            mProps.add((Property) propertyDraw.getImportProperty().property);
+        return getChangeProps(mProps.immutable());
     }
 }

@@ -80,6 +80,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
@@ -90,6 +91,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -247,7 +249,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event, GBindingMode.NO, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GBindingMode bindPreview, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, bindPreview, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
+        form.addBinding(event, new GBindingEnv(null, bindPreview, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {
@@ -329,6 +331,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        cellGridElementClasses.put(propertyDraw, values);
+    }
+
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellValueElementClasses.put(propertyDraw, values);
     }
@@ -363,6 +369,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         valueTooltips.put(propertyDraw, values);
+    }
+
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        propertyCustomOptions.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -791,6 +801,7 @@ protected Double getUserFlex(int i) {
         protected abstract PValue getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract AppBaseImage getImage(GPropertyDraw property, T record);
+        protected abstract String getGridElementClass(GPropertyDraw property, T record);
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract GFont getFont(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
@@ -800,6 +811,7 @@ protected Double getUserFlex(int i) {
         protected abstract String getRegexp(GPropertyDraw property, T record);
         protected abstract String getRegexpMessage(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
+        protected abstract PValue getPropertyCustomOptions(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -858,6 +870,11 @@ protected Double getUserFlex(int i) {
             @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
+            }
+
+            @Override
+            public Boolean isPropertyReadOnly() {
+                return GGridPropertyTable.this.isReadOnly(cell);
             }
 
             @Override
@@ -934,6 +951,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public boolean highlightDuplicateValue(PValue value) {
+                return GGridPropertyTable.this.highlightDuplicateValue(cell, value);
+            }
+
+            @Override
             public boolean isLoading() {
                 return column.isLoading(property, (T) cell.getRow());
             }
@@ -955,6 +977,12 @@ protected Double getUserFlex(int i) {
             @Override
             public CellRenderer.ToolbarAction[] getToolbarActions() {
                 return !property.toolbarActions || isPropertyReadOnly() != null ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
+            }
+
+            @Override
+            public String getGridElementClass() {
+                T row = (T) cell.getRow();
+                return column.getGridElementClass(property, row);
             }
 
             @Override
@@ -1010,6 +1038,12 @@ protected Double getUserFlex(int i) {
             public String getValueTooltip() {
                 T row = (T) cell.getRow();
                 return column.getValueTooltip(property, row);
+            }
+
+            @Override
+            public PValue getPropertyCustomOptions() {
+                T row = (T) cell.getRow();
+                return column.getPropertyCustomOptions(property, row);
             }
 
             @Override

@@ -7,10 +7,10 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -20,6 +20,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -29,6 +30,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -43,7 +45,6 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.NameValuePair;
 
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
 public abstract class CallHTTPAction extends CallAction {
     boolean clientAction;
@@ -120,6 +122,91 @@ public abstract class CallHTTPAction extends CallAction {
         return transformedText;
     }
 
+    public static <P extends PropertyInterface, V> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
+        property.changeList(session, env, params);
+    }
+
+    private static boolean isNoExec(String connectionString) {
+        return connectionString.isEmpty() || connectionString.startsWith("/");
+    }
+
+    private static ImRevMap<String, ExternalRequest.Param> getExplicitParams(ExternalRequest.Param[] params, ImOrderSet<String> names) {
+        MRevMap<String, ExternalRequest.Param> mExplicitParams = MapFact.mRevMapMax(names.size());
+        for (int i = 0, size = names.size(); i < size; i++) {
+            String paramName = names.get(i);
+            if(paramName != null) {
+                ExternalRequest.Param paramValue = ExternalUtils.getParameterValue(params, paramName);
+                if (paramValue != null)
+                    mExplicitParams.revAdd(paramName, paramValue);
+            }
+        }
+        return mExplicitParams.immutableRev();
+    }
+
+    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params) throws ParseException, SQLException, SQLHandledException {
+        ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
+        ImOrderSet<String> names = property.getInterfaceNames();
+        ObjectValue[] values = new ObjectValue[classes.length];
+
+        ImRevMap<String, ExternalRequest.Param> explicitParams = getExplicitParams(params, names);
+
+        int interfacesSize = classes.length;
+        int prmUsed = 0;
+        for (int i = 0; i < interfacesSize; i++) {
+            ValueClass valueClass = classes[i];
+            String paramName = names.get(i);
+
+            ExternalRequest.Param param = null;
+            // looking some explicitly named param
+            if(paramName != null)
+                param = explicitParams.get(paramName);
+
+            // if we have not found one - using the next in the list, not used
+            if(param == null) {
+                while(prmUsed < params.length) {
+                    ExternalRequest.Param paramUsed = params[prmUsed++];
+                    if(paramUsed.isImplicitParam() && !explicitParams.containsValue(paramUsed)) { // found
+                        param = paramUsed;
+                        break;
+                    }
+                }
+            }
+
+            Object value = null;
+            if (param != null) // all incorrect params will consider to be nulls
+                value = (valueClass != null ? valueClass.getType().parseHTTP(param) : param.value);
+
+            if(valueClass == null && value != null)
+                valueClass = value instanceof String ? StringClass.instance : CustomStaticFormatFileClass.get();
+
+            values[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
+        }
+        return values;
+    }
+
+    public static void fillResults(ExecutionContext context, ImList<LP> targetPropList, ImList<ExternalRequest.Param> results) throws ParseException, SQLException, SQLHandledException {
+        for(int i = 0, size = targetPropList.size(); i < size; i++) {
+            LP<?> targetProp = targetPropList.get(i);
+
+            ExternalRequest.Param value = null;
+            if (i < results.size()) // for missing writing null
+                value = results.get(i);
+
+            targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value), context);
+        }
+    }
+
+    public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
+        return BaseUtils.immutableCast(property.readAll(env).mapKeys(value -> (String) value.single()));
+    }
+
+    public static <P extends PropertyInterface> void writePropertyValues(ExecutionContext context, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+        writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
+    }
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+        property.change(session, env, MapFact.toMap(names, values));
+    }
+
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         Charset defaultUrlCharset = ExternalUtils.defaultUrlCharset;
@@ -165,11 +252,10 @@ public abstract class CallHTTPAction extends CallAction {
                     }
 
                     Charset bodyCharset = ExternalUtils.getBodyCharset(forceContentType);
-                    Object[] paramList = new Object[rNotUsedParams.result.size()];
+                    ExternalRequest.Result[] paramList = new ExternalRequest.Result[rNotUsedParams.result.size()];
                     for (int i = 0, size = rNotUsedParams.result.size(); i < size; i++)
-                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i), bodyCharset);
+                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i), bodyCharset, i < bodyParamNamesInterfaces.size() ? (String) context.getKeyObject(bodyParamNamesInterfaces.get(i)) : null);
 
-                    ImList<String> bodyParamNames = bodyParamNamesInterfaces.mapListValues(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface));
                     List<Map<String, String>> bodyParamHeadersList = new ArrayList<>();
                     for (LP bodyParamHeadersProperty : bodyParamHeadersPropertyList) {
                         Map<String, String> bodyParamHeaders = new HashMap<>();
@@ -177,10 +263,17 @@ public abstract class CallHTTPAction extends CallAction {
                         bodyParamHeadersList.add(bodyParamHeaders);
                     }
 
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType, bodyCharset);
-                    if (entity != null) {
+                    if(forceContentType == null && !bodyParamNamesInterfaces.isEmpty()) // if there are BODYPARAMNAMES we force the Content-Type to be multipart
+                        forceContentType = getMultipartContentType(bodyCharset);
+
+                    Result<String> contentDisposition = new Result<>();
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamHeadersList, contentDisposition, forceContentType, bodyCharset);
+                    if (entity != null) { // no body
                         body = IOUtils.readBytesFromHttpEntity(entity);
                         headers.put("Content-Type", entity.getContentType());
+
+                        if(contentDisposition.result != null && !headers.containsKey(ExternalUtils.CONTENT_DISPOSITION_HEADER))
+                            headers.put(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition.result);
                     }
                 }
 
@@ -194,10 +287,6 @@ public abstract class CallHTTPAction extends CallAction {
                     response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore);
                 }
 
-                byte[] responseBytes = response.responseBytes;
-                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType)) : ListFact.EMPTY();
-                fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
-
                 Map<String, List<String>> responseHeaders = response.responseHeaders;
                 String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
                 String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
@@ -210,6 +299,11 @@ public abstract class CallHTTPAction extends CallAction {
                     String[] cookieValues = responseCookies.values().toArray(new String[0]);
                     writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
                 }
+
+                byte[] responseBytes = response.responseBytes;
+                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues) : ListFact.EMPTY();
+                fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+
                 int statusCode = response.statusCode;
                 context.getBL().LM.statusHttp.change(statusCode, context);
 
@@ -243,72 +337,6 @@ public abstract class CallHTTPAction extends CallAction {
         return FlowResult.FINISH;
     }
 
-    private static boolean isNoExec(String connectionString) {
-        return connectionString.isEmpty() || connectionString.startsWith("/");
-    }
-
-    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params, List<NameValuePair> queryParams, String queryParamsCharsetName) throws ParseException, SQLException, SQLHandledException {
-        ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
-        String[] names = property.getInterfaceNames();
-        ObjectValue[] values = new ObjectValue[classes.length];
-
-        int interfacesSize = classes.length;
-        int prmUsed = 0;
-        for (int i = 0; i < interfacesSize; i++) {
-            ValueClass valueClass = classes[i];
-            String paramName = names[i];
-
-            ExternalRequest.Param param = null;
-            // if there are not enough parameters - looking for some in the query
-            String queryParamValue;
-            if(queryParams != null && paramName != null
-                    && (Settings.get().isPrioritizeHTTPParameterNames() || (interfacesSize - i > params.length - prmUsed))
-                    && (queryParamValue = ExternalUtils.getParameterValue(queryParams, paramName)) != null)
-                param = ExternalRequest.getUrlParam(queryParamValue, queryParamsCharsetName);
-
-            // if we have not found one - using the next in the list
-            if(param == null && prmUsed < params.length)
-                param = params[prmUsed++];
-
-            Object value = null;
-            if (param != null) // all incorrect params will consider to be nulls
-                value = (valueClass != null ? valueClass.getType().parseHTTP(param) : param.value);
-
-            if(valueClass == null && value != null)
-                valueClass = value instanceof String ? StringClass.instance : CustomStaticFormatFileClass.get();
-
-            values[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
-        }
-        return values;
-    }
-
-    public static void fillResults(ExecutionContext context, ImList<LP> targetPropList, ImList<ExternalRequest.Param> results) throws ParseException, SQLException, SQLHandledException {
-        for(int i = 0, size = targetPropList.size(); i < size; i++) {
-            LP<?> targetProp = targetPropList.get(i);
-
-            ExternalRequest.Param value = null;
-            if (i < results.size()) // для недостающих записываем null
-                value = results.get(i);
-
-            targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value), context);
-        }
-    }
-
-    public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
-        return BaseUtils.immutableCast(property.readAll(env).mapKeys(value -> (String) value.single()));
-    }
-
-    public static <P extends PropertyInterface> void writePropertyValues(ExecutionContext context, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
-    }
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        property.change(session, env, MapFact.toMap(names, values));
-    }
-
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, String> params) throws SQLException, SQLHandledException {
-        property.changeList(session, env, params);
-    }
-
     protected Integer getDefaultTimeout() {
         return null;
     };
@@ -324,9 +352,9 @@ public abstract class CallHTTPAction extends CallAction {
         return new ActionImplement<>(this, paramInterfaces.mapList(params).addExcl(queryInterface, query));
     }
 
-    protected Object formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset) {
+    protected ExternalRequest.Result formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset, String paramName) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return context.convertFileValue(getParamType(paramInterface, value).formatHTTP(value.getValue(), charset));
+        return getParamType(paramInterface, value).formatHTTP(value.getValue(), charset, false).convertFileValue(context::convertFileValue, paramName);
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, CallHTTPAction.UrlProcessor urlProcessor, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlCharset) {
@@ -334,9 +362,9 @@ public abstract class CallHTTPAction extends CallAction {
         MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             PropertyInterface paramInterface = orderInterfaces.get(i);
-            Object value = formatHTTP(context, paramInterface, urlCharset);
+            ExternalRequest.Result value = formatHTTP(context, paramInterface, urlCharset, null);
 
-            if (!urlProcessor.proceed(i, value, ExternalUtils.encodeUrlParam(urlCharset, value))) {
+            if (!urlProcessor.proceed(i, value.value, ExternalUtils.encodeUrlParam(urlCharset, value))) {
                 if(mNotUsedParams != null)
                     mNotUsedParams.exclAdd(paramInterface);
             }
@@ -344,5 +372,27 @@ public abstract class CallHTTPAction extends CallAction {
         if(rNotUsedParams != null)
             rNotUsedParams.set(mNotUsedParams.immutableOrder());
         return urlProcessor.finish(context);
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        MSet<Property> mProps = SetFact.mSet();
+        if(headersToProperty != null)
+            mProps.add(headersToProperty.property);
+        if(cookiesToProperty != null)
+            mProps.add(cookiesToProperty.property);
+        return super.aspectChangeExtProps(recursiveAbstracts).merge(getChangeProps(mProps.immutable()), addValue);
+    }
+
+    @Override
+    protected ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        MSet<Property> mUsedProps = SetFact.mSet();
+        for(LP headerProperty : bodyParamHeadersPropertyList)
+            mUsedProps.add(headerProperty.property);
+        if(headersProperty != null)
+            mUsedProps.add(headersProperty.property);
+        if(cookiesProperty != null)
+            mUsedProps.add(cookiesProperty.property);
+        return super.calculateUsedExtProps(recursiveAbstracts).merge(mUsedProps.immutable().toMap(false), addValue);
     }
 }

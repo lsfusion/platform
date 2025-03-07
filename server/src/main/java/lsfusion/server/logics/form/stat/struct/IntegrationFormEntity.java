@@ -14,7 +14,6 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -30,22 +29,25 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
-            
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
+                                                               PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super(LocalizedString.NONAME, version);
 
-        final ImMap<P, ValueClass> interfaceClasses;
+        ImMap<P, ValueClass> interfaceClasses;
         if(innerClasses == null) { // export / json
             if (where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
                 PropertyMapImplement<M, P> mapWhere = (PropertyMapImplement<M, P>) where;
                 interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
             } else 
                 interfaceClasses = MapFact.EMPTY();
+
         } else
             interfaceClasses = innerInterfaces.mapList(innerClasses);
 
+        ImMap<P, ValueClass> finalInterfaceClasses = interfaceClasses;
         mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> {
-            ValueClass interfaceClass = interfaceClasses.get(value);
+            ValueClass interfaceClass = finalInterfaceClasses.get(value);
             return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
         });
 

@@ -61,12 +61,20 @@ public class GridDataRecord implements RowIndexHolder {
         setAttribute(column + "_image", image);
     }
 
-    public void setValueElementClass(String column, String elementClass) {
-        setAttribute(column + "_elementClass", elementClass);
+    public void setGridElementClass(String column, String gridElementClass) {
+        setAttribute(column + "_gridElementClass", gridElementClass);
+    }
+
+    public String getGridElementClass(String column) {
+        return (String) getAttribute(column + "_gridElementClass");
+    }
+
+    public void setValueElementClass(String column, String valueElementClass) {
+        setAttribute(column + "_valueElementClass", valueElementClass);
     }
 
     public String getValueElementClass(String column) {
-        return (String) getAttribute(column + "_elementClass");
+        return (String) getAttribute(column + "_valueElementClass");
     }
 
     public void setFont(String column, GFont font) {
@@ -124,6 +132,14 @@ public class GridDataRecord implements RowIndexHolder {
 
     public String getValueTooltip(String column) {
         return (String) getAttribute(column + "_valueTooltip");
+    }
+
+    public void setPropertyCustomOptions(String column, PValue propertyCustomOptions) {
+        setAttribute(column + "_propertyCustomOptions", propertyCustomOptions);
+    }
+
+    public PValue getPropertyCustomOptions(String column) {
+        return (PValue) getAttribute(column + "_propertyCustomOptions");
     }
 
     public void setForeground(String column, String color) {

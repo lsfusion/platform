@@ -53,10 +53,10 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(hasFlow(writeTo, type))
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     public SetAction(LocalizedString caption,
@@ -79,14 +79,14 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         if(where!=null)
             return getUsedProps(writeFrom, where);
         return getUsedProps(writeFrom);
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         return getChangeProps(writeTo.property);
     }
 
@@ -170,7 +170,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> PropertyFact.createSetAction(context1, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders1, ordersNotNull1));
+        return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> PropertyFact.createSetAction(context1, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders1, ordersNotNull1, SetFact.EMPTYORDER()));
     }
 
     @Override
@@ -179,7 +179,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     @Override
-    protected AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+    protected AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         if((where == null || where.property instanceof ValueProperty) &&
                 mapInterfaces.valuesSet().containsAll(writeTo.mapping.valuesSet())) {
             // it can be mapped because of the assertion mapInterfaces.values + writeTo.values contains all inner interfaces

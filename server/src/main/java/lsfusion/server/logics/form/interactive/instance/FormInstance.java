@@ -265,7 +265,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isContentWordWrap(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
+        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -277,10 +277,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i = 0, size = groupObjects.size(); i < size; i++) {
             GroupObjectInstance groupObject = groupObjects.get(i);
             GroupObjectEntity groupEntity = groupObject.entity;
-
-            PropertyDrawEntity calendarDateProperty = entity.getField(groupEntity, "date", "dateFrom", "dateTime", "dateTimeFrom");
-            if (calendarDateProperty != null)
-                groupObject.setCalendarDateProperty(instanceFactory.getInstance(calendarDateProperty));
 
             groupObject.order = i;
             groupObject.setClassListener(classListener);
@@ -398,12 +394,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i=0,size=defaultOrders.size();i<size;i++) {
             PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
             GroupObjectInstance toDraw = property.toDraw;
-            Boolean ascending = defaultOrders.getValue(i);
+            Boolean descending = defaultOrders.getValue(i);
 
             if(toDraw != null) {
                 OrderInstance order = property.getOrderProperty();
                 toDraw.changeOrder(order, property, wasOrder.contains(toDraw) ? ADD : REPLACE);
-                if (!ascending) {
+                if (descending) {
                     toDraw.changeOrder(order, property, DIR);
                 }
                 wasOrder.add(toDraw);
@@ -2317,6 +2313,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         CustomClassListener classListener = getClassListener();
         return classListener != null && classListener.isContentWordWrap();
     }
+    public boolean highlightDuplicateValue() {
+        CustomClassListener classListener = getClassListener();
+        return classListener != null && classListener.highlightDuplicateValue();
+    }
     public boolean isNative() {
         CustomClassListener classListener = getClassListener();
         return classListener != null && classListener.isNative();
@@ -2527,8 +2527,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if (newPropIsShown) {
                 GroupObjectInstance toDraw = drawProperty.toDraw;
-                boolean update = toDraw == null || !drawProperty.isList() || toDraw.toUpdate();
-                boolean updateCaption = update || (drawProperty.isList() && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
+                boolean isList = drawProperty.isList();
+                boolean update = toDraw == null || !isList || toDraw.toUpdate();
+                boolean updateCaption = update || (isList && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
                 boolean hidden = isUserHidden(drawProperty);
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
@@ -2539,6 +2540,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.gridElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.fontReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
@@ -2552,6 +2554,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.regexpMessageReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.tooltipReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.valueTooltipReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.propertyCustomOptionsReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
             } else if (oldPropIsShown) {

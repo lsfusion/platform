@@ -11,11 +11,10 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
-public class OpenRawFileAction extends InternalAction {
+public class OpenRawFileAction extends AOpenAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
     private final ClassPropertyInterface noWaitInterface;
@@ -50,10 +49,5 @@ public class OpenRawFileAction extends InternalAction {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    protected boolean allowNulls() {
-        return true;
     }
 }

@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
@@ -70,8 +71,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.interactive.property.Async;
+import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.stat.FormDataManager;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
@@ -133,7 +135,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return weakRemoteFormListener.get();
     }
 
-    public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
+    public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormUserPreferences userPreferences) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
@@ -141,16 +143,21 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, groupId, userPreferences);
+            FormPrintType printType = FormPrintType.XLSX;
             ReportGenerationData reportGenerationData = formReportManager.getReportData(printType);
 
             int minSizeForExportToCSV = Settings.get().getMinSizeForReportExportToCSV();
             if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
                 FormDataManager.ExportResult exportData = formReportManager.getExportData();
+                FormIntegrationType type = FormIntegrationType.CSV;
                 RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(),
-                        FormIntegrationType.CSV, null, SelectTop.NULL, null, false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
-                return new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())); //add bom bytes
+                        type, null, FormSelectTop.NULL(), null, false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                return new FileData(new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())), type.getExtension()); //add bom bytes
 
             } else {
+                if(!Settings.get().isGenerateReportsOnWebServer() && !form.isNative())
+                    return new FileData(PrintAction.exportToFileByteArray(reportGenerationData, printType, null, null), printType.getExtension());
+
                 return reportGenerationData;
             }
         });

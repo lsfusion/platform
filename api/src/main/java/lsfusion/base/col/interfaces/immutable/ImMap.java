@@ -98,6 +98,10 @@ public interface ImMap<K, V> {
     ImMap<K, V> removeValues(V value); // желательно не менять если нет
     ImMap<K, V> removeNulls();
     ImMap<K, V> removeEquals(ImMap<K, V> map);
+    ImMap<K, V> removeFn(FunctionSet<K> filter);
+    default ImMap<K, V> removeFn(SFunctionSet<K> filter) {
+        return removeFn((FunctionSet<K>) filter);
+    }
 
     // replaces
 

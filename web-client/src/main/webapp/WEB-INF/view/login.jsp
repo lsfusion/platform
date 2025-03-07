@@ -12,7 +12,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
-        <lsf:writeResources resources="${noAuthResourcesBeforeSystem}"/>
+        <lsf:writeResources resources="${resourcesBeforeSystem}"/>
         <link rel="shortcut icon" href="${logicsIcon}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
@@ -24,7 +24,7 @@
                 "static/noauth/css/fontAwesome/css/solid.min.css"
                 )); %>
         <lsf:writeResources resources="${versionedResources}"/>
-        <lsf:writeResources resources="${noAuthResourcesAfterSystem}"/>
+        <lsf:writeResources resources="${resourcesAfterSystem}"/>
 
     </head>
     <body onload="document.loginForm.username.focus();">
@@ -48,7 +48,7 @@
                       action="login_check<%=queryString%>" >
                     <fieldset>
                         <div class="label-and-field">
-                            <label for="username"><%= ServerMessages.getString(request, "login") %></label>
+                            <label for="username"><%= ServerMessages.getString(request, "login.or.email") %></label>
                             <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
                         </div>
                         <div class="label-and-field">
@@ -78,16 +78,16 @@
                         &#32;
                         <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
                     </div>
-                    <c:if test="${not empty urls}">
-                        <div class="oauth-block">
-                            <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
-                            <div class="oauth-links">
-                                <c:forEach var="url" items="${urls}">
-                                    <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
-                                </c:forEach>
-                            </div>
+                </c:if>
+                <c:if test="${not empty urls}">
+                    <div class="oauth-block">
+                        <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
+                        <div class="oauth-links">
+                            <c:forEach var="url" items="${urls}">
+                                <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
+                            </c:forEach>
                         </div>
-                    </c:if>
+                    </div>
                 </c:if>
             </div>
             <div class="footer">

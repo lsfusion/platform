@@ -20,10 +20,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.logics.ServerSettings;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.IOUtils;
@@ -451,21 +448,9 @@ public class FileUtils {
         return saveData.apply(null);
     }
 
-    public static String exportReport(FormPrintType type, RawFileData report) {
+    public static String exportFile(FileData file) {
         try {
-            return FileUtils.saveActionFile(report, type.getExtension(), "lsfReport");
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public static String exportReport(FormPrintType type, ReportGenerationData reportData, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
-        return exportReport(type, ReportGenerator.exportToFileByteArray(reportData, type, jasperReportsIgnorePageMargins, remoteLogics));
-    }
-
-    public static String exportFile(RawFileData file) {
-        try {
-            return FileUtils.saveActionFile(file, "csv", "lsfReport");
+            return FileUtils.saveActionFile(file.getRawFile(), file.getExtension(), "lsfReport");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

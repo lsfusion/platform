@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import com.google.gwt.core.client.JsDate;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.data.GTimeType;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -120,10 +120,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatHTTP(T value, Charset charset) {
-        if(value == null)
-            return getParseNullValue();
-        return formatString(value);
+    public ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName) {
+        return new ExternalRequest.Result(formatNullableString(value, true));
     }
 
     @Override
@@ -160,7 +158,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     protected String formatNullableString(T object, boolean nullIsEmpty) {
         if(nullIsEmpty && object == null)
-            return "";            
+            return getParseNullValue();
         return formatString(object);
     }
 
@@ -210,7 +208,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     @Override
     public T parsePaste(String value) throws ParseException {
-        return parseNullableString(value, false);
+        return parseUI(value);
     }
 
     @Override
@@ -240,8 +238,18 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public String formatMessage(T object) {
-        return formatString(object, true);
+    public String formatConnectionString(T object) {
+        return formatNullableString(object, true);
+    }
+
+    @Override
+    public T parseUI(String value) throws ParseException {
+        return parseString(value);
+    }
+
+    @Override
+    public String formatUI(T object) {
+        return formatString(object);
     }
 
     @Override
@@ -273,7 +281,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public String formatString(T value, boolean ui) {
+    public String formatString(T value) {
         return value == null ? null : value.toString();
     }
 

@@ -1,9 +1,11 @@
 package lsfusion.server.logics.action.interactive;
 
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -39,12 +41,12 @@ public class MessageAction extends SystemAction {
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue messageObject = context.getKeyValue(messageInterface);
-        String message = messageObject.getType().formatMessage(messageObject.getValue());
+        String message = messageObject.getType().formatUI(messageObject.getValue());
 
         String header = null;
         if(headerInterface != null) {
             ObjectValue headerObject = context.getKeyValue(headerInterface);
-            header = headerObject.getType().formatMessage(headerObject.getValue());
+            header = headerObject.getType().formatUI(headerObject.getValue());
         }
 
         showMessage(context, message, nvl(header, "lsFusion"));
@@ -56,11 +58,11 @@ public class MessageAction extends SystemAction {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.SYNC)
             return true;
         if(type == ChangeFlowType.INTERACTIVEWAIT)
             return true;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 }

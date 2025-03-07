@@ -23,6 +23,8 @@ public interface UpdateContext {
 
     default boolean isNavigateInput() { return false; }
 
+    default boolean highlightDuplicateValue(PValue value) { return false; }
+
     boolean globalCaptionIsDrawn();
 
     PValue getValue();
@@ -53,6 +55,12 @@ public interface UpdateContext {
     default String getTooltip() { return null; }
 
     default String getValueTooltip() { return null; }
+
+    default PValue getPropertyCustomOptions() { return null; }
+
+    default String getGridElementClass() {
+        return null;
+    }
 
     default String getValueElementClass() {
         return null;

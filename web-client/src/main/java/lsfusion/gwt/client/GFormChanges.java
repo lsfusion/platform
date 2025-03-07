@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -112,6 +111,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).showIfReader;
             case GPropertyReadType.READONLY:
                 return form.getProperty(readerId).readOnlyReader;
+            case GPropertyReadType.CELL_GRIDELEMENTCLASS:
+                return form.getProperty(readerId).gridElementClassReader;
             case GPropertyReadType.CELL_VALUEELEMENTCLASS:
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
@@ -166,6 +167,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).tooltipReader;
             case GPropertyReadType.VALUETOOLTIP:
                 return form.getProperty(readerId).valueTooltipReader;
+            case GPropertyReadType.PROPERTY_CUSTOM_OPTIONS:
+                return form.getProperty(readerId).propertyCustomOptionsReader;
             default:
                 return null;
         }
@@ -211,5 +214,7 @@ public class GFormChanges {
         public final static byte CONTAINER_CAPTIONCLASS = 28;
         public final static byte CONTAINER_VALUECLASS = 29;
         public final static byte GRID_VALUECLASS = 30;
+        public final static byte CELL_GRIDELEMENTCLASS = 31;
+        public final static byte PROPERTY_CUSTOM_OPTIONS = 32;
     }
 }

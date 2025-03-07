@@ -77,3 +77,23 @@ a.text-based-value-empty {
 select > option {
     color: var(--text-color);
 }
+
+.form-check {
+    padding-left: 1.5em;
+}
+
+.form-check .form-check-input {
+    margin-left: -1.5em;
+    width: 1em;
+    height: 1em;
+}
+
+.form-check .panel-property-label {
+    display: inline-block;
+}
+
+.form-check .form-check-input,
+.form-check .form-check-label:not(.option-item),
+.form-check .panel-property-label {
+    float: left;
+}

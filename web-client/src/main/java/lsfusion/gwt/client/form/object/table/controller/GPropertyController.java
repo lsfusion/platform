@@ -21,6 +21,7 @@ public abstract class GPropertyController {
         return formController.formLayout;
     }
 
+    public abstract void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
@@ -40,6 +41,7 @@ public abstract class GPropertyController {
     public abstract void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);

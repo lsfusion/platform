@@ -9,7 +9,16 @@
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
        default-lazy-init="true">
 
-    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" system-properties-mode="OVERRIDE"/>
+    <!-- 1. Loading values from settings.properties and lsfusion.properties with low priority -->
+    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" order="1"/>
+
+    <!-- 2. Loading values from Environment variables, higher priority than files -->
+    <!--  Spring automatically converts property names by replacing "." with "_" and converting them to uppercase.
+        For example, Spring will look for the db.name property in environment variables as DB_NAME  -->
+    <context:property-placeholder ignore-resource-not-found="true" order="2"/>
+
+    <!-- 3. Loading JVM parameters with the highest priority -->
+    <context:property-placeholder ignore-resource-not-found="true" system-properties-mode="OVERRIDE" order="3"/>
 
     <bean id="settings" class="lsfusion.server.physics.admin.Settings">
         <property name="properties">
@@ -150,10 +159,14 @@
                 <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
                 <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
+                <entry key="mobileMode" value="${settings.mobileMode:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
+                <entry key="useISOTimeFormatsInIntegration" value="${settings.useISOTimeFormatsInIntegration:}"/>
+                <entry key="highlightDuplicateValue" value="${settings.highlightDuplicateValue:}"/>
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
                 <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
+                <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
             </map>
         </property>
         </bean>
@@ -667,6 +680,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+                <ref bean="executeOnInitTask"/>
             </set>
         </property>
     </bean>
@@ -1022,6 +1036,7 @@
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
         <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
         <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
+        <property name="pdfEncoding" value="${logics.pdfEncoding:#{null}}"/>
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
         <property name="setCountry" value="${user.setCountry:#{null}}"/>

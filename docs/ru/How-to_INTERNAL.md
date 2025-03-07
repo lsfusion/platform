@@ -276,3 +276,134 @@ public class ClientBeep implements ClientAction {
 Объект, который вернет метод `dispatch`, будет возвращен на сервер в виде результата выполнения метода `requestUserInteraction`. В данном примере в стандартную консоль сервера будет выведено сообщение `succeed`. Таким образом можно считывать на сервере результаты выполнения кода на клиенте.
 
 Так как java код не может быть выполнен непосредственно в браузере, то это действие будет работать только в десктоп-клиенте.
+
+## Пример 5
+
+### Условие
+
+Нужно реализовать действие, которое будет слушать определенной порт и вызывать соответствующее действие, при получении нового сообщения.
+
+### Решение
+
+```lsf
+CLASS Message;
+text 'Text' = DATA STRING (Message);
+receivedMessage (STRING str) {
+    NEW m = Message {
+        text(m) <- str;
+    }
+    APPLY;
+}
+
+listenPort INTERNAL 'ListenPort' (STRING, INTEGER);
+onStarted() + {
+    listenPort('localhost', 9999);
+}
+```
+
+Для реализации задачи можно использовать библиотеку [Apache Mina](https://mina.apache.org/). Ее необходимо добавить в _classpath_ сервера.
+
+#### ListenPort.java
+```java
+import lsfusion.server.base.controller.manager.MonitorServer;
+import lsfusion.server.base.controller.thread.EventThreadInfo;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
+import org.apache.mina.filter.logging.LoggingFilter;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
+
+public class ListenPort extends InternalAction {
+
+    public ListenPort(ScriptingLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
+    }
+
+    ListenPortServer server;
+
+    @Override
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        String host = (String) ((DataObject) getParamValue(0, context)).getValue();
+        Integer port = (Integer) ((DataObject) getParamValue(1, context)).getValue();
+
+        server = new ListenPortServer(context.getLogicsInstance(), host, port);
+    }
+
+    private class ListenPortServer extends MonitorServer {
+
+        LogicsInstance logicsInstance;
+
+        public ListenPortServer(LogicsInstance logicsInstance, String host, Integer port) {
+            this.logicsInstance = logicsInstance;
+
+            try {
+                IoAcceptor acceptor = new NioSocketAcceptor();
+
+                acceptor.getFilterChain().addLast( "logger", new LoggingFilter() );
+                acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter( new TextLineCodecFactory( Charset.forName( "UTF-8" ))));
+
+                acceptor.setHandler(new ListenPortHandler());
+
+                acceptor.bind(new InetSocketAddress(host, port));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String getEventName() {
+            return "listenPort";
+        }
+
+        @Override
+        public LogicsInstance getLogicsInstance() {
+            return logicsInstance;
+        }
+
+        private class ListenPortHandler extends IoHandlerAdapter {
+
+            @Override
+            public void sessionOpened(IoSession session) throws Exception {
+                super.sessionOpened(session);
+                ThreadLocalContext.aspectBeforeMonitor(ListenPortServer.this, EventThreadInfo.HTTP(ListenPortServer.this));
+            }
+
+            @Override
+            public void messageReceived(IoSession session, Object message) throws Exception {
+                String str = message.toString();
+                try (DataSession dataSession = logicsInstance.createSession()) {
+                    LM.findAction("receivedMessage[STRING]").execute(dataSession, getStack(), new DataObject(str, StringClass.instance));
+                }
+            }
+
+            @Override
+            public void sessionClosed(IoSession session) throws Exception {
+                super.sessionClosed(session);
+                ThreadLocalContext.aspectAfterMonitor(EventThreadInfo.HTTP(ListenPortServer.this));
+            }
+        }
+    }
+}
+```
+
+Действие `listenPort` создает объект класса `ListenPortServer`, который при помощи `NioSocketAcceptor` начинает слушать заданный порт, а сообщения обрабатывает через обработчик `ListenPortHandler`.
+Поскольку в качестве кодека используется `TextLineCodecFactory`, то в обработчик все сообщения приходят в виде строки. 
+Для каждого такого сообщения он вызывает действие `receivedMessage`, передавая в качестве параметра полученную строку. 

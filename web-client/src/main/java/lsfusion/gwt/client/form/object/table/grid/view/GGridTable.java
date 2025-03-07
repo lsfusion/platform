@@ -436,6 +436,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propValues = values.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propLoadings = loadings.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnlyValues.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyGridElementClasses = cellGridElementClasses.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueElementClasses = cellValueElementClasses.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyFonts = cellFontValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyBackgrounds = cellBackgroundValues.get(property);
@@ -446,6 +447,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propertyRegexpMessages = regexpMessages.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueTooltips = valueTooltips.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
+                    NativeHashMap<GGroupObjectValue, PValue> propCustomOptions = propertyCustomOptions.get(property);
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
@@ -459,6 +461,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
                             record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(fullKey)));
+                            PValue gridElementClass = propertyGridElementClasses == null ? null : propertyGridElementClasses.get(fullKey);
+                            record.setGridElementClass(column.columnSID, gridElementClass == null ? property.elementClass : PValue.getClassStringValue(gridElementClass));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue font = propertyFonts == null ? null : propertyFonts.get(fullKey);
@@ -478,6 +482,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             PValue valueTooltip = propertyValueTooltips == null ? null : propertyValueTooltips.get(fullKey);
                             record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
+                            record.setPropertyCustomOptions(column.columnSID, propCustomOptions == null ? null : propCustomOptions.get(fullKey));
                         }
                     }
                 });
@@ -661,6 +666,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateCellGridElementClasses(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateCellValueElementClasses(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
@@ -705,6 +717,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePropertyCustomOptionsValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
@@ -841,6 +860,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 return rowRecord.isReadonly(column.columnSID);
         }
         return false;
+    }
+
+    @Override
+    public boolean highlightDuplicateValue(Cell cell, PValue value) {
+        GPropertyDraw property = getProperty(cell);
+        if  (property != null && property.highlightDuplicateValue()) {
+            int prevRowIndex = cell.getRowIndex() - 1;
+            if (prevRowIndex >= 0)
+                return GwtClientUtils.nullEquals(value, getValueAt(prevRowIndex, cell.getColumnIndex()));
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean highlightDuplicateValue() {
+        return groupObject.highlightDuplicateValue;
     }
 
     @Override
@@ -1278,6 +1313,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
+        protected String getGridElementClass(GPropertyDraw property, GridDataRecord record) {
+            return record.getGridElementClass(columnSID);
+        }
+
+        @Override
         protected String getValueElementClass(GPropertyDraw property, GridDataRecord record) {
             return record.getValueElementClass(columnSID);
         }
@@ -1313,6 +1353,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected String getValueTooltip(GPropertyDraw property, GridDataRecord record) {
             return record.getValueTooltip(columnSID);
+        }
+
+        @Override
+        protected PValue getPropertyCustomOptions(GPropertyDraw property, GridDataRecord record) {
+            return record.getPropertyCustomOptions(columnSID);
         }
     }
 

@@ -714,8 +714,8 @@ public class GwtClientUtils {
         return tippy;
     }
 
-    public static JavaScriptObject initTippyPopup(PopupOwner popupOwner, Element popupElement, String target, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
-        JavaScriptObject tippy = initTippy(popupOwner, 0, target, onHideAction, onShowAction, referenceElementSupplier);
+    public static JavaScriptObject initTippyPopup(PopupOwner popupOwner, Element popupElement, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippy(popupOwner, 0, trigger, onHideAction, onShowAction, referenceElementSupplier);
         updateTippyContent(tippy, popupElement);
         return tippy;
     }
@@ -753,7 +753,11 @@ public class GwtClientUtils {
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
-                    GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                    Scheduler.get().scheduleDeferred(() -> {
+                        if (!ownerWidget.isAttached()){
+                            GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                        }
+                    });
                 }
             });
         }
@@ -831,17 +835,17 @@ public class GwtClientUtils {
                     {
                         name: 'flip',
                         options: {
-                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
-                        },
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right']
+                        }
                     },
                     {
                         name: 'preventOverflow',
                         options: {
                             altAxis: true,
-                            tether: false,
-                        },
-                    },
-                ],
+                            tether: false
+                        }
+                    }
+                ]
             },
             getReferenceClientRect: function() {
                 var referenceElement = null;
@@ -1897,6 +1901,10 @@ public class GwtClientUtils {
 
     public static native void setGlobalClassName (boolean set, String elementClass) /*-{
         $wnd.setGlobalClassName(set, elementClass);
+    }-*/;
+
+    public static native void addShowCollapsedContainerEvent(Element parent, String toggleElementSelector, String containerElementSelector, String collapsibleClass) /*-{
+        $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
     }-*/;
 
 }

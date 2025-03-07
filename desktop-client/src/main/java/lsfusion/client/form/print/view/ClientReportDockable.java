@@ -22,14 +22,15 @@ import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
     public Integer pageCount;
-    public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String formCaption, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+    public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String formCaption, String printerName,
+                                boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         super(null, formsController);
 
         try {
             final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
             print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
-            final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
+            final ReportViewer reportViewer = new ReportViewer(print, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
             setContent(prepareViewer(reportViewer));
             setTitleText(formCaption);
             

@@ -18,7 +18,7 @@
 }
 
 /* renderer in panel overlaps other components */
-.ql-container {
+.ql-container.ql-bubble {
     height: unset;
 }
 
@@ -33,6 +33,10 @@
 
     font-family: var(--bs-body-font-family, var(--excel-font-family));
     font-size: var(--bs-body-font-size, var(--excel-font-size));
+}
+
+.ql-editor-html p {
+    margin: revert;
 }
 
 .ql-tooltip {

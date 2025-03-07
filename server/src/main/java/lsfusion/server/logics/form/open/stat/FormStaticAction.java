@@ -12,7 +12,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -23,8 +23,8 @@ import java.sql.SQLException;
 public abstract class FormStaticAction<O extends ObjectSelector, T extends FormStaticType> extends FormAction<O> {
 
     protected final T staticType;
-    
-    protected SelectTop<ValueClass> selectTop;
+
+    protected final FormSelectTop<ClassPropertyInterface> selectTopInterfaces;
 
     public FormStaticAction(LocalizedString caption,
                             FormSelector<O> form,
@@ -33,12 +33,13 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
                             ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                             T staticType,
-                            SelectTop<ValueClass> selectTop,
+                            FormSelectTop<ValueClass> selectTop,
                             ValueClass... extraValueClasses) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses);
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, selectTop, extraValueClasses);
 
         this.staticType = staticType;
-        this.selectTop = selectTop;
+
+        this.selectTopInterfaces = FormAction.getSelectTop(selectTop, getOrderInterfaces());
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {

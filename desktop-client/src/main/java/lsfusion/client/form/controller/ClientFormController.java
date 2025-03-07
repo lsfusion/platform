@@ -4,9 +4,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.FileData;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.AsyncCallback;
@@ -77,6 +78,7 @@ import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
 import javax.swing.Timer;
 import javax.swing.*;
@@ -137,6 +139,26 @@ public class ClientFormController implements AsyncListener {
             return remoteForm == null ? null : ClientFormController.this.getAsyncValues(-1, 0, propertyID, columnKey, actionSID, value, asyncIndex, remoteForm);
         }
     };
+
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        exportAndOpen(generationData, type, null, null, jasperReportsIgnorePageMargins, remoteLogics);
+    }
+
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        try {
+            File tempFile = ReportGenerator.exportToFile(generationData, type, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics);
+
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(tempFile);
+                }
+            } finally {
+                tempFile.deleteOnExit();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(ApiResourceBundle.getString("exceptions.error.exporting.to", type), e);
+        }
+    }
 
     private ClientAsync[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, String actionSID, String value, int asyncIndex, RemoteFormInterface remoteForm) throws RemoteException {
         return ClientAsync.deserialize(remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, actionSID, value, asyncIndex, 0), form);
@@ -1766,17 +1788,17 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new RmiCheckNullFormRequest<Object>("runSingleGroupXlsExport") {
             @Override
             protected Object doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
+                return remoteForm.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), getUserPreferences());
             }
 
             @Override
             public void onResponse(long requestIndex, Object reportData) throws Exception {
                 if (reportData != null) {
-                    if (reportData instanceof RawFileData) {
-                        BaseUtils.openFile((RawFileData) reportData, "report", "csv");
+                    if (reportData instanceof FileData) {
+                        BaseUtils.openFile(((FileData) reportData).getRawFile(), "report", ((FileData) reportData).getExtension());
                     } else {
                         //assert generationData instanceof ReportGenerationData
-                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, MainController.jasperReportsIgnorePageMargins, MainController.remoteLogics);
+                        exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, MainController.jasperReportsIgnorePageMargins, MainController.remoteLogics);
                     }
                 }
             }
@@ -1965,6 +1987,7 @@ public class ClientFormController implements AsyncListener {
         public int priority;
         public BindingMode bindPreview;
         public BindingMode bindDialog;
+        public BindingMode bindWindow;
         public BindingMode bindGroup;
         public BindingMode bindEditing;
         public BindingMode bindShowing;
@@ -1993,6 +2016,8 @@ public class ClientFormController implements AsyncListener {
             binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
+        if(binding.bindWindow == null)
+            binding.bindWindow = ks.bindingModes != null ? ks.bindingModes.getOrDefault("window", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
             binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindEditing == null)
@@ -2007,6 +2032,7 @@ public class ClientFormController implements AsyncListener {
     public void addKeySetBinding(Binding binding) {
         binding.bindPreview = BindingMode.NO;
         binding.bindDialog = BindingMode.AUTO;
+        binding.bindWindow = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
         binding.bindEditing = BindingMode.NO;
         binding.bindShowing = BindingMode.AUTO;
@@ -2031,7 +2057,7 @@ public class ClientFormController implements AsyncListener {
 
     public void processBinding(InputEvent ks, boolean preview, java.awt.event.InputEvent ke, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
         ProcessBinding.processBinding(ks, preview, ke, groupObjectSupplier, panel, this::equalGroup, bindings, keySetBindings,
-                this::bindPreview, this::bindDialog, this::bindGroup, this::bindEditing, this::bindShowing, this::bindPanel, this::commitOrCancelCurrentEditing);
+                this::bindPreview, this::bindDialog, this::bindWindow, this::bindGroup, this::bindEditing, this::bindShowing, this::bindPanel, this::commitOrCancelCurrentEditing);
     }
 
     private boolean bindPreview(Binding binding, boolean preview) {
@@ -2057,6 +2083,19 @@ public class ClientFormController implements AsyncListener {
                 return isDialog();
             case NO:
                 return !isDialog();
+        }
+        return true;
+    }
+
+    private boolean bindWindow(Binding binding) {
+        switch (binding.bindWindow) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return isWindow();
+            case NO:
+                return !isWindow();
         }
         return true;
     }

@@ -117,7 +117,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
 
         if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null, null, null),
+            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null, null, null, null),
                     () -> {
                         GTreeObjectTableNode node = getExpandSelectedNode();
                         return node != null && node.isExpandable();
@@ -499,6 +499,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        protected String getGridElementClass(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getGridElementClass(property);
+        }
+
+        @Override
         protected String getValueElementClass(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValueElementClass(property);
         }
@@ -541,6 +546,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         protected String getValueTooltip(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValueTooltip(property);
+        }
+
+        @Override
+        protected PValue getPropertyCustomOptions(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getPropertyCustomOptions(property);
         }
 
         // in tree property might change
@@ -655,6 +665,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePropertyCustomOptionsValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -867,6 +882,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         boolean loading = loadingMap != null && PValue.getBooleanValue(loadingMap.get(key));
                         objectRecord.setLoading(property, loading);
 
+                        PValue gridElementClass = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propGridElementClasses = cellGridElementClasses.get(property);
+                        if (propGridElementClasses != null)
+                            gridElementClass = propGridElementClasses.get(key);
+                        objectRecord.setGridElementClass(property, gridElementClass == null ? property.elementClass : PValue.getClassStringValue(gridElementClass));
+
                         PValue valueElementClass = null;
                         NativeHashMap<GGroupObjectValue, PValue> propValueElementClasses = cellValueElementClasses.get(property);
                         if (propValueElementClasses != null)
@@ -920,6 +941,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propValueTooltips != null)
                             valueTooltip = propValueTooltips.get(key);
                         objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
+
+                        PValue propertyCustomOptionsValue = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propPropertyCustomOptions = propertyCustomOptions.get(property);
+                        if (propPropertyCustomOptions != null)
+                            propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
+                        objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));
@@ -1092,6 +1119,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnly.get(property);
             return propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(getRowKey(cell)));
         }
+        return false;
+    }
+
+    @Override
+    public boolean highlightDuplicateValue(Cell cell, PValue value) {
         return false;
     }
 

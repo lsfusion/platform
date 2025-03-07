@@ -27,6 +27,8 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -42,7 +44,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -289,18 +293,12 @@ public class BaseUtils {
             return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
-        if (objectType == 15) {
-            int size = inStream.readInt();
-            String[] prefixes = new String[size + 1];
-            for(int i = 0; i < size + 1; i++) {
-                prefixes[i] = inStream.readUTF();
-            }
-            Serializable[] files = new Serializable[size];
-            for(int i = 0; i < size; i++)
-                files[i] = (Serializable) deserializeObject(inStream);
-            String rawString = inStream.readUTF();
+        if (objectType == 20) {
+            return new FileStringWithFiles(deserializeStringWithFiles(inStream), inStream.readUTF());
+        }
 
-            return new StringWithFiles(prefixes, files, rawString);
+        if (objectType == 15) {
+            return deserializeStringWithFiles(inStream);
         }
 
         if (objectType == 16) {
@@ -322,6 +320,20 @@ public class BaseUtils {
         }
 
         throw new IOException();
+    }
+
+    private static StringWithFiles deserializeStringWithFiles(DataInputStream inStream) throws IOException {
+        int size = inStream.readInt();
+        String[] prefixes = new String[size + 1];
+        for(int i = 0; i < size + 1; i++) {
+            prefixes[i] = inStream.readUTF();
+        }
+        Serializable[] files = new Serializable[size];
+        for(int i = 0; i < size; i++)
+            files[i] = (Serializable) deserializeObject(inStream);
+        String rawString = inStream.readUTF();
+
+        return new StringWithFiles(prefixes, files, rawString);
     }
 
     public static String deserializeString(DataInputStream inStream) throws IOException {
@@ -470,18 +482,19 @@ public class BaseUtils {
             return;
         }
 
+        if (object instanceof FileStringWithFiles) {
+            outStream.writeByte(20);
+
+            FileStringWithFiles file = (FileStringWithFiles) object;
+            serializeStringWithFiles(outStream, file.stringData);
+            outStream.writeUTF(file.extension);
+            return;
+        }
+
         if (object instanceof StringWithFiles) {
             outStream.writeByte(15);
 
-            StringWithFiles stringWithFiles = (StringWithFiles) object;
-
-            outStream.writeInt(stringWithFiles.files.length);
-            for(String prefix : stringWithFiles.prefixes) {
-                outStream.writeUTF(prefix);
-            }
-            for(Serializable data : stringWithFiles.files)
-                serializeObject(outStream, data);
-            outStream.writeUTF(stringWithFiles.rawString);
+            serializeStringWithFiles(outStream, (StringWithFiles) object);
             return;
         }
 
@@ -515,6 +528,16 @@ public class BaseUtils {
 
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
+
+    private static void serializeStringWithFiles(DataOutputStream outStream, StringWithFiles stringWithFiles) throws IOException {
+        outStream.writeInt(stringWithFiles.files.length);
+        for(String prefix : stringWithFiles.prefixes) {
+            outStream.writeUTF(prefix);
+        }
+        for(Serializable data : stringWithFiles.files)
+            serializeObject(outStream, data);
+        outStream.writeUTF(stringWithFiles.rawString);
+    }
 
     public static byte[] serializeCustomObject(Object object) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -760,7 +783,7 @@ public class BaseUtils {
     }
 
     public static String clause(String clause, String data) {
-        return (data.length() == 0 ? "" : " " + clause + " " + data);
+        return data.isEmpty() ? "" : (" " + clause + " " + data);
     }
 
     public static <T> boolean replaceListElements(List<T> list, ImMap<T, T> to) {
@@ -1409,6 +1432,13 @@ public class BaseUtils {
         Desktop.getDesktop().open(file);
     }
 
+    public static String getContentFileName(String name, String extension) {
+        try {
+            return URLEncoder.encode(getFileName(name, extension), String.valueOf(StandardCharsets.UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
+    }
     public static String getFileName(String name, String extension) {
         return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
     }
@@ -1596,6 +1626,10 @@ public class BaseUtils {
 
     public static String getFileExtension(String filename) {
         return FilenameUtils.getExtension(filename);
+    }
+
+    public static boolean isSimpleWord(String string) {
+        return string.matches("^[a-zA-Z0-9_$]+$");
     }
 
     public static String replaceFileName(String filePath, String toName, boolean escapeDot) {
@@ -1810,6 +1844,25 @@ public class BaseUtils {
             sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
         }
         return sb.toString();
+    }
+
+    public static boolean containsInBytes(byte[] bytes, String target) {
+        byte[] targetBytes = target.getBytes(StandardCharsets.UTF_8);
+        int targetLength = targetBytes.length;
+
+        for (int i = 0; i <= bytes.length - targetLength; i++) {
+            boolean match = true;
+            for (int j = 0; j < targetLength; j++) {
+                if (bytes[i + j] != targetBytes[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String calculateBase64Hash(String algorithm, String input, String salt) throws RuntimeException {
@@ -2072,25 +2125,40 @@ public class BaseUtils {
 
     public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
-    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+    public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Throwable> onFailedOrInterrupted) {
         if (timeout != null) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            final Future<Object> future = executor.submit(callable);
-            executor.shutdown();
+            Future<T> future;
+
+            ExecutorService executor = serviceSupplier.get();
+            try {
+                future = executor.submit(callable);
+            } finally {
+                executor.shutdown();
+            }
 
             try {
                 return future.get(timeout, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            } catch (Throwable e) {
                 future.cancel(true);
+
+                if(onFailedOrInterrupted != null)
+                    onFailedOrInterrupted.accept(e);
+
                 throw Throwables.propagate(e);
             }
         } else {
             try {
                 return callable.call();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if(onFailedOrInterrupted != null)
+                    onFailedOrInterrupted.accept(e);
+
                 throw Throwables.propagate(e);
             }
         }
+    };
+    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+        return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, null);
     }
 
     public static void writeObject(DataOutputStream outStream, Object object) throws IOException {
@@ -2117,6 +2185,9 @@ public class BaseUtils {
         return value -> a.test(value) || b.test(value);
     }
 
+    public static boolean equalsIgnoreCase(String s, String suffix) {
+        return s.toLowerCase().endsWith(suffix.toLowerCase());
+    }
     public static boolean endsWithIgnoreCase(String s, String suffix) {
         return s != null && suffix != null && s.toLowerCase().endsWith(suffix.toLowerCase());
     }

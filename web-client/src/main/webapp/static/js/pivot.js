@@ -408,7 +408,7 @@
         }
       }
     };
-    
+
     //dateFormat deriver l10n requires month and day names to be passed in directly
     mthNamesEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     dayNamesEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -462,7 +462,7 @@
     rz = /^0/;
     naturalSort = (as, bs, attr, callbacks) => {
       var a, a1, b, b1, nas, nbs;
-      if ((bs != null) && (as == null)) {
+      if ((bs != null) && (as == null)) {//nulls first
         //nulls first
         return -1;
       }
@@ -487,7 +487,7 @@
       }
       if (typeof as === "number" && typeof bs !== "number") {
         //within that, true numbers before numbery strings
-        return -1;
+        //within that, true numbers before numbery stringsreturn -1;
       }
       if (typeof bs === "number" && typeof as !== "number") {
         return 1;
@@ -512,7 +512,7 @@
         return (a > b ? 1 : -1);
       }
       //special treatment for strings containing digits
-      a = a.match(rx); //create digits vs non-digit chunks and iterate through
+      //special treatment for strings containing digitsa = a.match(rx); //create digits vs non-digit chunks and iterate through
       b = b.match(rx);
       while (a.length && b.length) {
         a1 = a.shift();
@@ -603,7 +603,7 @@
         this.sorted = false;
         this.callbacks = opts.callbacks;
         this.sortItems = (ref10 = opts.sortCols) != null ? ref10 : [];
-        
+
         // iterate through input, accumulating data for cells
         PivotData.forEachRecord(this.input, this.derivedAttributes, (record) => {
           if (this.filter(record)) {
@@ -1254,6 +1254,20 @@
           }
           return results;
         })();
+        resizeObserverUnused = new ResizeObserver(function() {
+          var childRect, minWidth;
+          childRect = unusedDiv[0].getBoundingClientRect();
+          if (childRect.width > 0) {
+            unusedDivWrapper.css({
+              width: `${childRect.width}px`
+            });
+            minWidth = unusedDiv.css("min-width");
+            if (minWidth === "" || minWidth === "0px") {
+              return unusedDiv.css("min-width", `${childRect.width}px`);
+            }
+          }
+        });
+        resizeObserverUnused.observe(unusedDiv[0]);
         unusedAttrsVerticalAutoOverride = false;
         if (opts.unusedAttrsVertical === "auto") {
           unusedAttrsVerticalAutoCutoff = 120; // legacy support
@@ -1477,6 +1491,17 @@
         //row axes
         pvtRows = $("<td>").addClass('pvtRows pvtUiCell').attr("valign", "top");
         pvtRowsDiv = $("<div>").addClass('pvtUiCellVDiv').appendTo(pvtRows);
+        resizeObserverRows = new ResizeObserver(function() {
+          var childRect, minWidth;
+          childRect = pvtRowsDiv[0].getBoundingClientRect();
+          if (childRect.width) {
+            minWidth = pvtRowsDiv.css("min-width");
+            if (minWidth === "" || minWidth === "0px") {
+              return pvtRowsDiv.css("min-width", `${childRect.width}px`);
+            }
+          }
+        });
+        resizeObserverRows.observe(pvtRowsDiv[0]);
         tr2.append(pvtRows);
         pvtRowsTable = $("<table>").addClass('pvtRowsTable');
         pvtRowsDiv.append(pvtRowsTable);
@@ -1486,7 +1511,7 @@
         pivotRendererBody = $("<div>").addClass('pvtRendererBody').appendTo(pivotTable);
         pivotRendererFooter = $("<div>").addClass('pvtRendererFooter').appendTo(pivotTable);
         pivotScrollDiv = $("<div>").addClass('pvtRendererScrollDiv').appendTo(pivotRendererBody);
-        
+
         //finally the renderer dropdown and unused attribs are inserted at the requested location
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('.uiTableRow:nth-child(1)').prepend(rendererControl);
@@ -1585,7 +1610,7 @@
             return opts.splitRows = newSplitPaxis;
           }
         };
-        
+
         //set up for refreshing
         refreshDelayed = () => {
           var colIndex, columnAttr, drawSize, exclusions, inclusions, len2, n, newDropdown, numInputsToProcess, o, pivotUIOptions, pvtVals, ref2, ref3, rowIndex, subopts, unusedAttrsContainer, vals;
@@ -1603,19 +1628,19 @@
             tolerance: "pointer",
             forcePlaceholderSize: true,
             cancel: ".pvtTriangle", // in Firefox click event is triggered and pvtFilterBox is shown after drop
-            
-            // 1. In order to fix scrolling issue due to unused-table-cell unlimited size in Firefox 
-            // we wrapped its content into div with 'position: relative'. 
+
+            // 1. In order to fix scrolling issue due to unused-table-cell unlimited size in Firefox
+            // we wrapped its content into div with 'position: relative'.
             // This broke basic sortable item behaviour while dragging - z-index stopped working
             // and dragged item was overlapped by other elements.
-            // To fix this 'appendTo' was used - to append dragged item to upper component and make it visible while dragging. 
+            // To fix this 'appendTo' was used - to append dragged item to upper component and make it visible while dragging.
             appendTo: this.find(".pvtUiContainer"),
             // 2. 'appendTo' doesn't work with the default 'helper: "original"'. 'clone' should be used instead.
             helper: "clone",
-            // 3. 'helper: "clone"' sets 'display: none' to the source item before drag and restores the original 
+            // 3. 'helper: "clone"' sets 'display: none' to the source item before drag and restores the original
             // display property value to the item after drop. The problem is that we use different display values ('flex' or 'inline-flex')
-            // depending on the container; and 'clone' sets display as inline style which overrides our CSS settings. 
-            // ('!important' cannot be used too, because it overrides 'display: none' on drag start) 
+            // depending on the container; and 'clone' sets display as inline style which overrides our CSS settings.
+            // ('!important' cannot be used too, because it overrides 'display: none' on drag start)
             // So we clear the inline display style on drop to make our CSS properties be used instead.
             stop: function(event, ui) {
               return ui.item[0].style.display = null;
@@ -1781,8 +1806,8 @@
           tolerance: "pointer",
           forcePlaceholderSize: true,
           cancel: ".pvtTriangle", // in Firefox click event is triggered and pvtFilterBox is shown after drop
-          
-          // For the next 4 lines see comments for the similar lines in refreshDelayed 
+
+          // For the next 4 lines see comments for the similar lines in refreshDelayed
           appendTo: this.find(".pvtUiContainer"),
           helper: "clone",
           stop: function(event, ui) {

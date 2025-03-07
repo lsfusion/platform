@@ -11,7 +11,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.HTMLStringClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
 import java.nio.charset.Charset;
@@ -77,12 +76,12 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    protected RawFileData parseHTTPNotNull(FileData b, String charsetName) {
+    protected RawFileData parseHTTPNotNull(FileData b, String charsetName, String fileName) {
         return b.getRawFile();
     }
 
     @Override
-    protected FileData formatHTTPNotNull(RawFileData b, Charset charset) {
+    protected FileData formatHTTPNotNull(RawFileData b, Charset charset, Result<String> fileName) {
         return getFileData(b);
     }
 
@@ -112,10 +111,9 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         return CustomStaticFormatFileClass.get(multiple, storeName);
     }
 
-    public RawFileData read(Object value) {
-        if(value instanceof byte[])
-            return new RawFileData((byte[]) value);
-        return (RawFileData) value;
+    @Override
+    protected RawFileData readBytes(byte[] bytes) {
+        return new RawFileData(bytes);
     }
 
     public RawFileData read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {

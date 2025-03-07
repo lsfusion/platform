@@ -1,6 +1,10 @@
 
 /* ------------- block ----------- */
 
+.dialog-block {
+    z-index: 1000;
+}
+
 .dialog-block-content {
     display: flex;
     flex-direction: column;
@@ -87,10 +91,6 @@
 }
 
 /* ------------- preferences ----------- */
-
-.dialog-user-preferences-container {
-    min-height: 40em;
-}
 
 .dialog-modal-body {
     overflow: auto;

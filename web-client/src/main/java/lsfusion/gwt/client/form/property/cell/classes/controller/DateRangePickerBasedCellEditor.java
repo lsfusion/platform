@@ -21,15 +21,18 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-        super.start(handler, parent, renderContext, notFocusable, oldValue);
-
+    public boolean startText(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+        boolean explicitValue = super.startText(handler, parent, renderContext, oldValue);
         if (started && !isNative()) {
-            createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null,
+                    getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor(),
+                    !explicitValue && oldValue == null);
             openPicker(); // date range picker is opened only on click
 
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
         }
+
+        return explicitValue;
     }
 
     @Override
@@ -96,7 +99,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
     }-*/;
 
-    protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
+    protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern,
+                                       boolean singleDatePicker, boolean time, boolean date, boolean autoUpdateInput)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
@@ -153,7 +157,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
 //          to make the behaviour when editing a cell with date and a cell with text the same,
 //          disable autoUpdateInput so that the field is not filled in automatically when editing starts
-            autoUpdateInput: false,
+            autoUpdateInput: autoUpdateInput,
             opens: 'left', // thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()()
             alwaysShowCalendars: true
         };
@@ -163,8 +167,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         }
         editElement.daterangepicker(options);
 
-//       return autoUpdateInput after opening the picker and starting editing
-        thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true;
+        if (autoUpdateInput)
+            editElement.select();
+        else
+            thisObj.@DateRangePickerBasedCellEditor::getPickerObject()().autoUpdateInput = true; // return autoUpdateInput after opening the picker and starting editing
 
         //show only time picker
         if (time) {

@@ -43,17 +43,34 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
 
     private final ServletContext servletContext;
 
+    private String getSystemProperty(String propertyName) {
+        String property = System.getProperty(propertyName);
+        if (property == null)
+            property = System.getenv(propertyName.toUpperCase().replaceAll("\\.", "_"));
+        return property;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         String host = servletContext.getInitParameter(hostKey);
-        String port = servletContext.getInitParameter(portKey);
-        String exportName = servletContext.getInitParameter(exportNameKey);
-        if (host == null || port == null || exportName == null) {
-            throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
-        }
+        String hostProperty = getSystemProperty("app.registry.server");
+        if (hostProperty != null)
+            host = hostProperty;
 
-        String appPath = servletContext.getRealPath("");
-        FileUtils.APP_CONTEXT_FOLDER_PATH = appPath;
+        String port = servletContext.getInitParameter(portKey);
+        String portProperty = getSystemProperty("app.registry.port");
+        if (portProperty != null)
+            port = portProperty;
+
+        String exportName = servletContext.getInitParameter(exportNameKey);
+        String exportNameProperty = getSystemProperty("app.export.name");
+        if (exportNameProperty != null)
+            exportName = exportNameProperty;
+
+        if (host == null || port == null || exportName == null)
+            throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
+
+        FileUtils.APP_CONTEXT_FOLDER_PATH = servletContext.getRealPath("");
         String tempDir = ((File) servletContext.getAttribute(ServletContext.TEMPDIR)).getPath(); // appPath + "/WEB-INF/temp";
         FileUtils.APP_DOWNLOAD_FOLDER_PATH = tempDir;
         FileUtils.APP_UPLOAD_FOLDER_PATH = tempDir;
@@ -94,8 +111,20 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
                                    request != null ? request.getParameter("exportName") : null);
     }
 
+    public static ServerSettings getServerSettings(HttpServletRequest request, boolean noCache, LogicsSessionObject sessionObject) throws RemoteException {
+        return getServerSettings(sessionObject, NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), request.getServletContext(), noCache);
+    }
+
+    public static ServerSettings getServerSettings(LogicsSessionObject sessionObject, SessionInfo sessionInfo, String contextPath, ServletContext servletContext, boolean noCache) throws RemoteException {
+        return sessionObject.getServerSettings(sessionInfo, contextPath, noCache, ClientFormChangesToGwtConverter.getConvertFileValue(servletContext, null)); // we need to use null because of the infinite recursion
+    }
+
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
-        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
+        try {
+            return runRequest(getLogicsConnection(request), (sessionObject, retry) -> getServerSettings(request, noCache, sessionObject));
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
@@ -125,7 +154,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         }
 
         public String[] convertFileValue(SessionInfo sessionInfo, Serializable[] files) throws RemoteException {
-            return ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, sessionObject, sessionInfo);
+            return ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, LogicsProviderImpl.getServerSettings(sessionObject, sessionInfo, null, servletContext, false));
         }
     }
 

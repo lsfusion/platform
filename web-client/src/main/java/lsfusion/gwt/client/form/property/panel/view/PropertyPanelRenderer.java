@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -18,6 +19,7 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -32,7 +34,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         SizedWidget valueWidget = value.getSizedWidget(false);
 
-        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
+        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull((RenderContext) value), property.hasChangeAction);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
 
@@ -49,7 +51,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label);
             image = null;
@@ -57,7 +59,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         // we don't need image in value
         super.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
-                regexp, regexpMessage, valueTooltip);
+                regexp, regexpMessage, valueTooltip, propertyCustomOption);
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
@@ -164,14 +166,23 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(inline)
             return componentViewWidget;
 
-        SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
-        panel.transparentResize = true;
-        GwtClientUtils.addClassName(panel, "panel-container");
-        componentViewWidget.add(panel, 0);
-        // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
-//        cellRenderer.renderPanelContainer(panel);
+        Widget widget;
+        if (property.panelCustom) {
+            ResizableComplexPanel panel = new ResizableComplexPanel();
+            componentViewWidget.add(panel, 0);
+            GwtClientUtils.addClassName(panel, "panel-custom");
+            widget = panel;
+        } else {
+            SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
+            panel.transparentResize = true;
+            GwtClientUtils.addClassName(panel, "panel-container");
+            componentViewWidget.add(panel, 0);
+            // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+//          cellRenderer.renderPanelContainer(panel);
+            widget = panel;
+        }
 
-        return new SizedWidget(panel).view;
+        return new SizedWidget(widget).view;
     }
 
     @Override

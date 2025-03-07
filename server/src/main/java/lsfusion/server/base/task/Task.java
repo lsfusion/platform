@@ -45,10 +45,6 @@ public abstract class Task {
         return false;
     }
 
-    public String getEndCaption() {
-        return getCaption() + " ended";
-    }
-
     protected long getBaseComplexity() {
         return 1;
     }
@@ -144,35 +140,24 @@ public abstract class Task {
 
     public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, final Logger logger,
                         TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
+        long start = System.currentTimeMillis();
         if (isStartLoggable()) {
             String caption = getCaption();
             if(caption != null)
-                logger.info(caption);
+                logger.info(caption + (isEndLoggable() ? " started" : ""));
         }
-        if(propertyTimeout == null) {
+
+        ExecutorFactory.executeWithTimeout(BL, () -> {
             run(logger);
-        } else {
-            ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context));
-            final Result<Thread> thread = new Result<>();
-            Future future = service.submit(() -> {
-                thread.set(Thread.currentThread());
-                try {
-                    Task.this.run(logger);
-                } finally {
-                    thread.set(null);
-                }
-            });
-            service.shutdown();
+            return true;
+        }, propertyTimeout,
+            () -> ExecutorFactory.createTaskMirrorSyncService(BaseUtils.immutableCast(context)));
 
-            try {
-                future.get(propertyTimeout, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                ThreadUtils.interruptThread(BL.getDbManager(), thread.result, future);
-            }
+        if (isEndLoggable()) {
+            String caption = getCaption();
+            if (caption != null)
+                logger.info(getCaption() + " finished, " + (System.currentTimeMillis() - start) + "ms");
         }
-
-        if(isEndLoggable())
-            logger.info(getEndCaption());
 
         for (Task from : dependsFrom.keySet()) {
             from.dependProceeded(BL, executor, context, monitor, taskCount, logger, this, taskQueue, throwableConsumer, propertyTimeout);

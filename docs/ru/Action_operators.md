@@ -37,6 +37,7 @@ title: 'Операторы-действия'
 -   [Оператор `MULTI`](MULTI_action_operator.md)
 -   [Оператор `NEW`](NEW_operator.md)
 -   [Оператор `NESTEDSESSION`](NESTEDSESSION_operator.md)
+-   [Оператор `NEWCONNECTION`](NEWCONNECTION_operator.md)
 -   [Оператор `NEWEXECUTOR`](NEWEXECUTOR_operator.md)
 -   [Оператор `NEWSESSION`](NEWSESSION_operator.md)
 -   [Оператор `NEWTHREAD`](NEWTHREAD_operator.md)

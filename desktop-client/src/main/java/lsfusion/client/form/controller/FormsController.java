@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class FormsController implements ColorThemeChangeListener {
     private CControl control;
 
@@ -92,7 +94,7 @@ public class FormsController implements ColorThemeChangeListener {
 
     public void addBindings(ClientNavigatorElement element, InputEvent inputEvent, Integer priority) {
         if (inputEvent != null) {
-            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, priority) {
+            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, nvl(priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     if (element instanceof ClientNavigatorAction) {
@@ -116,7 +118,7 @@ public class FormsController implements ColorThemeChangeListener {
 
     public void processBinding(InputEvent ks, java.awt.event.InputEvent ke) {
         ProcessBinding.processBinding(ks, false, ke, () -> null, false, (groupObject, binding) -> true,
-                bindings, keySetBindings, (binding, preview) -> true, binding -> true, (groupObject, binding) -> true,
+                bindings, keySetBindings, (binding, preview) -> true, binding -> true, binding -> true, (groupObject, binding) -> true,
                 (binding, event) -> true, binding -> true, (binding, panel) -> true, () -> {});
     }
 
@@ -248,8 +250,8 @@ public class FormsController implements ColorThemeChangeListener {
         this.lastCompletedRequest = lastCompletedRequest;
     }
 
-    public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
-        ClientReportDockable page = new ClientReportDockable(generationData, this, formCaption, printerName, editInvoker);
+    public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        ClientReportDockable page = new ClientReportDockable(generationData, this, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
         openForm(page);
         return page.pageCount;
     }

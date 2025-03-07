@@ -10,11 +10,13 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.FormStaticAction;
+import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
@@ -42,14 +44,38 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
-    
+
     protected final FormEntity getForm() {
         return form.getStaticForm(getBaseLM());
     }
 
-    public static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses) {
+    public <C extends PropertyInterface> FormAction(LocalizedString caption,
+                                                    FormSelector<O> form,
+                                                    final ImList<O> objectsToSet,
+                                                    final ImList<Boolean> nulls,
+                                                    ImOrderSet<C> orderContextInterfaces, ImSet<ContextFilterSelector<C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
+                                                    FormSelectTop<ValueClass> selectTop,
+                                                    ValueClass... extraValueClasses) {
+        super(caption, getValueClasses(form, objectsToSet, orderContextInterfaces.size(), extraValueClasses, selectTop));
+
+        this.form = form;
+
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        ImOrderSet<ClassPropertyInterface> objectInterfaces = orderInterfaces.subOrder(0, objectsToSet.size());
+
+        mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);
+        this.notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(element -> !element).keys();
+
+        ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
+        this.contextInterfaces = mapContextInterfaces.valuesSet();
+        this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
+        if(mapContext != null)
+            mapContext.accept(mapContextInterfaces);
+    }
+
+    public static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses, FormSelectTop<ValueClass> selectTop) {
         ImList<ValueClass> objectClasses = objects.mapListValues(o -> form.getBaseClass(o));
-        return ArrayUtils.addAll(ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new)), extraValueClasses);
+        return ArrayUtils.addAll(ArrayUtils.addAll(ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new)), extraValueClasses), selectTop.getParams().toArray(new ValueClass[0]));
     }
 
     @Override
@@ -68,27 +94,8 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     protected final ImSet<ContextFilterSelector<ClassPropertyInterface, O>> contextFilters;
 
-    public <C extends PropertyInterface> FormAction(LocalizedString caption,
-                                                    FormSelector<O> form,
-                                                    final ImList<O> objectsToSet,
-                                                    final ImList<Boolean> nulls,
-                                                    ImOrderSet<C> orderContextInterfaces, ImSet<ContextFilterSelector<C, O>> contextFilters, Consumer<ImRevMap<C, ClassPropertyInterface>> mapContext,
-                                                    ValueClass... extraValueClasses) {
-        super(caption, getValueClasses(form, objectsToSet, orderContextInterfaces.size(), extraValueClasses));
-
-        this.form = form;
-
-        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();        
-        ImOrderSet<ClassPropertyInterface> objectInterfaces = orderInterfaces.subOrder(0, objectsToSet.size());
-        
-        mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);
-        this.notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(element -> !element).keys();
-
-        ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
-        this.contextInterfaces = mapContextInterfaces.valuesSet();
-        this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
-        if(mapContext != null)
-            mapContext.accept(mapContextInterfaces);
+    public static FormSelectTop<ClassPropertyInterface> getSelectTop(FormSelectTop<ValueClass> selectTop, ImOrderSet<ClassPropertyInterface> orderInterfaces) {
+        return selectTop.mapParams(orderInterfaces);
     }
 
     protected abstract void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException;
@@ -134,7 +141,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     }
 
     @Override
-    protected ImMap<Property, Boolean> calculateUsedExtProps() {
+    protected ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
 
         MMap<Property, Boolean> mProps = MapFact.mMap(addValue);
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself

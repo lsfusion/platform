@@ -26,10 +26,7 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.view.*;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -380,6 +377,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GShowIfReader showIfReader;
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;
+    public GGridElementClassReader gridElementClassReader;
     public GValueElementClassReader valueElementClassReader;
 
     public GCaptionElementClassReader captionElementClassReader;
@@ -396,6 +394,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GExtraPropReader regexpMessageReader;
     public GExtraPropReader tooltipReader;
     public GExtraPropReader valueTooltipReader;
+    public GExtraPropReader propertyCustomOptionsReader;
 
     // for pivoting
     public String formula;
@@ -418,9 +417,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int captionCharHeight;
 
     public boolean panelColumnVertical;
-    
+    public boolean panelCustom;
+
     public GFlexAlignment valueAlignmentHorz;
     public GFlexAlignment valueAlignmentVert;
+
+    public boolean highlightDuplicateValue;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -749,8 +751,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return editType == GPropertyEditType.EDITABLE ? null : editType == GPropertyEditType.DISABLE;
     }
 
-    public boolean isEditableNotNull() {
-        return notNull && isReadOnly() == null;
+    public boolean isEditableNotNull(RenderContext renderContext) {
+        return isEditableNotNull(renderContext.isPropertyReadOnly());
+    }
+
+    public boolean isEditableNotNull(UpdateContext updateContext) {
+        return isEditableNotNull(updateContext.isPropertyReadOnly());
+    }
+
+    private boolean isEditableNotNull(Boolean isPropertyReadonly) {
+        return notNull && isPropertyReadonly == null;
     }
 
     public boolean isTagInput() {
@@ -1024,6 +1034,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(focusable != null)
             return focusable;
         return !hasKeyBinding();
+    }
+
+    public boolean highlightDuplicateValue() {
+        return highlightDuplicateValue;
     }
 
     @Override

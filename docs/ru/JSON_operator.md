@@ -7,8 +7,12 @@ title: 'Оператор JSON'
 ## Синтаксис
 
 ```
-JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
-JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+JSON FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr]
+JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] 
+  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))] )
 ```
  
 ## Описание
@@ -18,8 +22,6 @@ JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
 При экспорте формы в блоке `OBJECTS` можно объектам формы добавлять дополнительные фильтры на равенство этих объектов [переданным значениям](Open_form.md#params). Также эти объекты [не будут участвовать](Structured_view.md#objects) в построении иерархии групп объектов.
 
 ## Параметры
-
-### Источник экспорта
 
 - `formName`
 
@@ -52,6 +54,16 @@ JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
 - `DESC`
 
     Ключевое слово. Указывает на обратный порядок сортировки. По умолчанию используется сортировка по возрастанию.
+
+- `TOP topExpr`
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Экспорт только первых `n` записей, где `n` - значение выражения `topExpr` или `topPropertyExprT` для группы объектов `topGroupIdT`.
+
+- `OFFSET offsetExpr`
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Экспорт только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
 
 ## Примеры
 

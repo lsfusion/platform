@@ -10,6 +10,7 @@ title: 'Оператор GROUP'
 GROUP 
 type expr1, ..., exprN
 [ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
 [WHERE whereExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
@@ -55,6 +56,14 @@ type expr1, ..., exprN
 
     Список выражений, определяющих порядок, в котором будут просматриваться наборы объектов при вычислении агрегирующей функции. Для определения порядка сначала используется значение первого выражения, затем при равенстве используется значение второго и т.д. 
 
+- `TOP topExpr`
+
+  В группировке будут участвовать только первых `n` записей, где `n` - значение выражения `topExpr`.
+
+- `OFFSET offsetExpr`
+
+  В группировке будут участвовать только записи со смещением `m`, где `m` - значение выражения `offsetExpr`.
+
 - `whereExpr`
 
     Фильтрующее выражение. В группировке будут участвовать только те наборы объектов, для которых значение фильтрующего выражения не равно `NULL`.
@@ -77,5 +86,5 @@ CLASS Tag;
 name = DATA STRING[100] (Tag);
 in = DATA BOOLEAN (Book, Tag);
 
-tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t;
+tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t TOP 10 OFFSET 0;
 ```

@@ -1,12 +1,15 @@
 package lsfusion.server.logics.action.flow;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -42,13 +45,13 @@ public class NewExecutorAction extends AroundAspectAction {
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        return super.aspectChangeExtProps().replaceValues(true);
+    protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
-    public ImMap<Property, Boolean> calculateUsedExtProps() {
-        return super.calculateUsedExtProps().replaceValues(true);
+    public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        return super.calculateUsedExtProps(recursiveAbstracts).replaceValues(true);
     }
 
     @Override
@@ -60,29 +63,33 @@ public class NewExecutorAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         boolean sync = this.sync == null || this.sync;
+        Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
+        if(nThreads == null || nThreads == 0)
+            nThreads = TaskRunner.availableProcessors();
         try {
-            Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
-            if(nThreads == null || nThreads == 0)
-                nThreads = TaskRunner.availableProcessors();
             executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
-            return proceed(context.override(executor));
-        } finally {
-            if(executor != null) {
+            FlowResult result;
+
+            try {
+                result = proceed(context.override(executor));
+            } finally {
                 executor.shutdown();
-                if(sync) {
-                    try {
-                        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                    } catch (InterruptedException ignored) {
-                        executor.shutdownNow();
-                    }
-                }
             }
+
+            if(sync && result.isFinish())
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+            return result;
+        } catch (InterruptedException e) {
+            ThreadUtils.interruptThreadExecutor(executor, context);
+
+            throw Throwables.propagate(e);
         }
     }
 
     @Override
-    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        return aspectActionImplement.mapAsyncEventExec(optimistic, recursive);
+    public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
+        return aspectActionImplement.mapAsyncEventExec(optimistic, recursiveAbstracts);
     }
 
     @Override

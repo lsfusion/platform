@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -55,6 +56,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> showIfs = new ArrayList<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
@@ -65,6 +67,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -205,6 +208,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.values.add(index, null);
                 this.readOnlys.add(index, null);
                 this.showIfs.add(index, null);
+                this.cellGridElementClasses.add(index, null);
                 this.cellValueElementClasses.add(index, null);
                 this.cellFontValues.add(index, null);
                 this.cellBackgroundValues.add(index, null);
@@ -215,6 +219,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.regexpMessages.add(index, null);
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
+                this.propertyCustomOptions.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -379,6 +384,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.cellGridElementClasses.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.cellValueElementClasses.set(properties.indexOf(propertyDraw), values);
 
@@ -444,6 +456,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.valueTooltips.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.propertyCustomOptions.set(properties.indexOf(propertyDraw), values);
 
         this.dataUpdated = true;
     }
@@ -575,6 +594,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return PValue.getBooleanValue(readOnlyValues.get(GGroupObjectValue.getFullKey(rowKey, columnKey)));
     }
 
+    protected String getCellGridElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellGridElementClass = cellGridElementClasses.get(properties.indexOf(property));
+        if(cellGridElementClass == null)
+            return null;
+
+        return PValue.getClassStringValue(cellGridElementClass.get(GGroupObjectValue.getFullKey(rowKey, columnKey)));
+    }
+
     protected String getCellValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> cellValueElementClass = cellValueElementClasses.get(properties.indexOf(property));
         if(cellValueElementClass == null)
@@ -655,6 +682,18 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return valueTooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellPropertyCustomOptions(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellPropertyCustomOptions = propertyCustomOptions.get(properties.indexOf(property));
+        if(cellPropertyCustomOptions == null)
+            return null;
+
+        return cellPropertyCustomOptions.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected String getGridElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return getCellGridElementClass(property, rowKey, columnKey);
+    }
+
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellValueElementClass(property, rowKey, columnKey);
     }
@@ -697,6 +736,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getValueTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue valueTooltip = getCellValueTooltip(property, rowKey, columnKey);
         return valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip);
+    }
+
+    protected PValue getPropertyCustomOptions(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return getCellPropertyCustomOptions(property, rowKey, columnKey);
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
@@ -808,4 +851,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     public static native <T> T toObject(JavaScriptObject object) /*-{
         return object;
     }-*/;
+
+    private JavaScriptObject customOptions;
+    @Override
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
+        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, true, values.firstValue()); // for now we're assuming that custom options is json
+        dataUpdated = true;
+    }
+
+    public JavaScriptObject getCustomOptions() {
+        return customOptions;
+    }
 }

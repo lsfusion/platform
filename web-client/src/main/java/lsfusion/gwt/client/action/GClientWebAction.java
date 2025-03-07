@@ -10,10 +10,13 @@ public class GClientWebAction implements GAction {
     public String resource;
     public String resourceName;
     public String originalResourceName;
+    public boolean isFile;
+    public String fileExtension;
+    public boolean isFileUrl;
+
     public ArrayList<Serializable> values;
     public ArrayList<Object> types;
     public GType returnType;
-    public boolean isFile;
     public boolean syncType;
     public boolean remove;
 
@@ -22,15 +25,17 @@ public class GClientWebAction implements GAction {
     @SuppressWarnings("UnusedDeclaration")
     public GClientWebAction() {}
 
-    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Serializable> values,
-                            ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType, boolean remove) {
+    public GClientWebAction(String resource, String resourceName, String originalResourceName, boolean isFile, String fileExtension, boolean isFileUrl, ArrayList<Serializable> values,
+                            ArrayList<Object> types, GType returnType, boolean syncType, boolean remove) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.originalResourceName = originalResourceName;
+        this.isFile = isFile;
+        this.fileExtension = fileExtension;
+        this.isFileUrl = isFileUrl;
         this.values = values;
         this.types = types;
         this.returnType = returnType;
-        this.isFile = isFile;
         this.syncType = syncType;
         this.remove = remove;
     }

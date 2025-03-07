@@ -146,6 +146,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).showIfReader;
             case PropertyReadType.FOOTER:
                 return clientForm.getProperty(inStream.readInt()).footerReader;
+            case PropertyReadType.CELL_GRIDELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).gridElementClassReader;
             case PropertyReadType.CELL_VALUEELEMENTCLASS:
                 return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CAPTIONELEMENTCLASS:
@@ -200,6 +202,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).regexpReader;
             case PropertyReadType.REGEXPMESSAGE:
                 return clientForm.getProperty(inStream.readInt()).regexpMessageReader;
+            case PropertyReadType.PROPERTY_CUSTOM_OPTIONS:
+                return clientForm.getProperty(inStream.readInt()).propertyCustomOptionsReader;
             default:
                 throw new IOException();
         }
