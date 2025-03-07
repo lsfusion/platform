@@ -85,7 +85,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             sendResponse(response, (ExternalUtils.ResultExternalResponse) responseHttpEntity);
         else if(responseHttpEntity instanceof ExternalUtils.RedirectExternalResponse) {
             ExternalUtils.RedirectExternalResponse redirect = (ExternalUtils.RedirectExternalResponse) responseHttpEntity;
-            response.sendRedirect(MainController.getDirectUrl(redirect.url, REDIRECT_PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
+            response.sendRedirect(MainController.getDirectUrl("/" + redirect.url, REDIRECT_PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
         } else {
             response.setContentType("text/html");
             response.getWriter().print(((ExternalUtils.HtmlExternalResponse) responseHttpEntity).html);
