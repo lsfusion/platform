@@ -19,7 +19,7 @@ public class GZDateTimeDTO implements Serializable {
     }
 
     public static PValue fromJsDate(JsDate date) {
-        return PValue.getPValue(new GZDateTimeDTO(GwtClientUtils.getDateTimeMillis(date, MainFrame.timeZone).longValue()));
+        return PValue.getPValue(new GZDateTimeDTO((long) GwtClientUtils.applyTimeZone(date, MainFrame.timeZone).getTime()));
     }
 
     public JsDate toJsDate() {
