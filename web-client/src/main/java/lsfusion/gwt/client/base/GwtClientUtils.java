@@ -1622,16 +1622,17 @@ public class GwtClientUtils {
         return $wnd.createPlainDateMillis(milliseconds);
     }-*/;
 
-    //add offset diff between client and server offset; zone() returns inverted value: "-60" for CET
     public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
-        var date = $wnd.createPlainDateMillis(milliseconds);
-        date.setTime(date.getTime() + ($wnd.moment().zone() - $wnd.moment.tz(date, timeZone).zone()) * 60 * 1000);
-        return date;
+        var moment = $wnd.moment.tz($wnd.createPlainDateMillis(milliseconds), timeZone);
+        moment.local(true);
+        return moment.toDate();
     }-*/;
 
-    //subtract offset diff between client and server offset; zone() returns inverted value: "-60" for CET
+    //add diff between client and server offsets
     public static native JsDate applyTimeZone(JsDate date, String timeZone)/*-{
-        date.setTime(date.getTime() - ($wnd.moment().zone() - $wnd.moment.tz(date, timeZone).zone()) * 60 * 1000);
+        var clientOffset = $wnd.moment(date).utcOffset();
+        var serverOffset = $wnd.moment(date).tz(timeZone).utcOffset();
+        date.setTime(date.getTime() + (clientOffset - serverOffset) * 60 * 1000);
         return date;
     }-*/;
 
