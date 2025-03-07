@@ -1623,17 +1623,18 @@ public class GwtClientUtils {
     }-*/;
 
     public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
-        var moment = $wnd.moment.tz($wnd.createPlainDateMillis(milliseconds), timeZone);
-        moment.local(true);
-        return moment.toDate();
+        var date = $wnd.createPlainDateMillis(milliseconds);
+        if (timeZone != null) {
+            var moment = $wnd.moment.tz($wnd.createPlainDateMillis(milliseconds), timeZone);
+            moment.local(true);
+            return moment.toDate();
+        } else {
+            return date;
+        }
     }-*/;
 
-    //add diff between client and server offsets
     public static native JsDate applyTimeZone(JsDate date, String timeZone)/*-{
-        var clientOffset = $wnd.moment(date).utcOffset();
-        var serverOffset = $wnd.moment(date).tz(timeZone).utcOffset();
-        date.setTime(date.getTime() + (clientOffset - serverOffset) * 60 * 1000);
-        return date;
+        return timeZone != null ? $wnd.moment(date).tz(timeZone, true).toDate() : date;
     }-*/;
 
     public static native JsDate createJsDate()/*-{
