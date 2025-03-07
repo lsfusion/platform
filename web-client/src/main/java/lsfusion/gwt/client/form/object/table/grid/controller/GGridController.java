@@ -457,6 +457,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }

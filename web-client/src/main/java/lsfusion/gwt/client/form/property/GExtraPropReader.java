@@ -37,6 +37,8 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updateTooltipValues(this, values);
         }else if (readerType == VALUETOOLTIP) {
             controller.updateValueTooltipValues(this, values);
+        }else if (readerType == PROPERTY_CUSTOM_OPTIONS) {
+            controller.updatePropertyCustomOptionsValues(this, values);
         }
     }
 
@@ -59,6 +61,8 @@ public class GExtraPropReader extends GExtraPropertyReader {
             return "TOOLTIP";
         } else if (readerType == VALUETOOLTIP) {
             return "VALUETOOLTIP";
+        } else if (readerType == PROPERTY_CUSTOM_OPTIONS) {
+            return "PROPERTY_CUSTOM_OPTIONS";
         }
         return null;
     }

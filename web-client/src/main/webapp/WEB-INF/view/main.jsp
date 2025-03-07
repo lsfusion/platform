@@ -133,6 +133,7 @@
                 //Quill
                 "static/js/external/quill.min.js", //https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js
                 "static/css/external/quill.bubble.css", //https://cdn.jsdelivr.net/npm/quill@2/dist/quill.bubble.css
+                "static/css/external/quill.snow.css", //https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css
                 "static/css/quillRichText.css",
 
                 //Ace code editor
