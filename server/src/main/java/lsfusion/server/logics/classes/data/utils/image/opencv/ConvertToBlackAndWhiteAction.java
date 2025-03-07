@@ -3,6 +3,8 @@ package lsfusion.server.logics.classes.data.utils.image.opencv;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -15,44 +17,38 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
+import java.sql.SQLException;
 
 public class ConvertToBlackAndWhiteAction extends InternalAction {
-    protected final ClassPropertyInterface imageInterface;
-    protected final ClassPropertyInterface thresholdInterface;
-
     public ConvertToBlackAndWhiteAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
-
-        Iterator<ClassPropertyInterface> i = interfaces.iterator();
-        imageInterface = i.next();
-        thresholdInterface = i.next();
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        FileData imageObject = (FileData) context.getKeyValue(imageInterface).getValue();
-        Integer threshold = (Integer) context.getKeyValue(thresholdInterface).getValue();
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        try {
+            FileData imageObject = (FileData) getParam(0, context);
+            Integer threshold = (Integer) getParam(1, context);
 
+            findProperty("convertToBlackAndWhiteResult[]").change(convertToBlackAndWhite(imageObject, threshold), context);
+        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private FileData convertToBlackAndWhite(FileData imageObject, Integer threshold) throws IOException {
+        FileData result = null;
         if (imageObject != null && threshold != null) {
             RawFileData imageFile = imageObject.getRawFile();
             String extension = imageObject.getExtension();
-
-            try {
-                BufferedImage coloredImage = ImageIO.read(new ByteArrayInputStream(imageFile.getBytes()));
-                if (coloredImage != null) {
-                    BufferedImage blackNWhite = thresholdImage(coloredImage, threshold);
-                    findProperty("convertToBlackAndWhiteResult[]").change(getFileData(blackNWhite, extension), context);
-                } else {
-                    throw new RuntimeException("Failed to read image");
-                }
-
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            BufferedImage coloredImage = ImageIO.read(new ByteArrayInputStream(imageFile.getBytes()));
+            if (coloredImage != null) {
+                result = getFileData(thresholdImage(coloredImage, threshold), extension);
+            } else {
+                throw new RuntimeException("Failed to read image");
             }
-        } else {
-            throw new RuntimeException("No image or threshold");
         }
+        return result;
     }
 
     private FileData getFileData(BufferedImage image, String extension) throws IOException {

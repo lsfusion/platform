@@ -201,7 +201,7 @@ public abstract class FormsController {
     public void processBinding(EventHandler handler) {
         ProcessBinding.processBinding(handler, false, false, false, bindingEvents, bindings,
                 eventTarget -> null,
-                (binding, preview) -> true, binding -> true, (bindingEvent, groupObject, equalGroup) -> true,
+                (binding, preview) -> true, binding -> true, binding -> true, (bindingEvent, groupObject, equalGroup) -> true,
                 (binding, event) -> true, (binding, showing) -> true, (binding, isMouse, panel) -> true,
                 (binding, isMouse, isCell) -> true, () -> {});
     }

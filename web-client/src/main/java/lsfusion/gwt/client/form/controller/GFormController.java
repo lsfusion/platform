@@ -1899,7 +1899,7 @@ public class GFormController implements EditManager {
 
     private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, GBindingMode.NO, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                new GBindingEnv(-100, GBindingMode.NO, null, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
                 event -> selectNextElement.accept(!shiftPressed),
                 null,
                 groupObject);
@@ -1923,7 +1923,7 @@ public class GFormController implements EditManager {
     public void processBinding(EventHandler handler, boolean preview, boolean isCell, boolean panel) {
         ProcessBinding.processBinding(handler, preview, isCell, panel, bindingEvents, bindings,
                 target -> getBindingGroupObject(Element.as(target)),
-                this::bindPreview, this::bindDialog, this::bindGroup, this::bindEditing, this::bindShowing,
+                this::bindPreview, this::bindDialog, this::bindWindow, this::bindGroup, this::bindEditing, this::bindShowing,
                 this::bindPanel, this::bindCell, this::checkCommitEditing);
     }
 
@@ -1957,7 +1957,7 @@ public class GFormController implements EditManager {
             case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
                 return true;
             default:
-                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindPreview);
         }
     }
 
@@ -1973,6 +1973,21 @@ public class GFormController implements EditManager {
             case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
+        }
+    }
+
+    private boolean bindWindow(GBindingEnv binding) {
+        switch (binding.bindWindow) {
+            case AUTO:
+            case ALL:
+                return true;
+            case ONLY:
+                return isWindow();
+            case NO:
+                return !isWindow();
+            case INPUT:
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindWindow);
         }
     }
 

@@ -1,6 +1,10 @@
 
 /* ------------- block ----------- */
 
+.dialog-block {
+    z-index: 1000;
+}
+
 .dialog-block-content {
     display: flex;
     flex-direction: column;

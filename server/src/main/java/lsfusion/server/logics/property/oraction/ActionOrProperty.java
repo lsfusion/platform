@@ -102,6 +102,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         setCustomRenderFunction(select == null ? null : select.equals("No") ? NOSELECT : (SELECT + select));
     }
 
+    public boolean hasAnnotation(String annotation) {
+        return this.annotation != null && this.annotation.equals(annotation);
+    }
+
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
         if (caption != null) {

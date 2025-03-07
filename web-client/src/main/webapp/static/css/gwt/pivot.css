@@ -43,6 +43,8 @@
     /*overflow: hidden auto;  Multiple keyword syntax is not supported in Safari */
     overflow-x: hidden;
     overflow-y: auto;
+    resize: horizontal;
+    padding-right: 5px;
 }
 
 .pvtUiCellHDiv {

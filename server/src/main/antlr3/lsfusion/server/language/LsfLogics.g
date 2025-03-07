@@ -867,7 +867,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
-		|   po=propertyDrawOrder { $options.setOrder($po.order); }
+		|   po=orderLiteral { $options.setDescending($po.descending); }
 		|   'FILTER' { $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
@@ -1388,7 +1388,6 @@ userFiltersDeclaration
 
 formOrderByList
 @init {
-	boolean ascending = true;
 	List<PropertyDrawEntity> properties = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
 	boolean addFirst = false;
@@ -1400,17 +1399,17 @@ formOrderByList
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
-	    orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
-		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); } )*
+	    orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); }
+		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); } )*
 	;
 	
-formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = true]
-	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $order = false; })?
+formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean descending = false]
+	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $descending = true; })?
 	;
 
-propertyDrawOrder returns [boolean order = true]
-	:	'ORDER' ('DESC' { $order = false; })?
-	;
+orderLiteral returns [boolean descending = false]
+    :   'ORDER' ('DESC' { $descending = true; })?
+    ;
 
 formPivotOptionsDeclaration
 @init {
@@ -1948,7 +1947,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 @after {
 	if (inMainParseState()) {
 		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type,
-		    $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, $gp.selectTop, groupContext, debugPoint);
+		    $gp.mainProps, $gp.orderProps, $gp.descending, $gp.whereProp, $gp.selectTop, groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -1959,27 +1958,27 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(),
-    List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null, SelectTop<LPWithParams> selectTop = null]
+    List<LPWithParams> orderProps = new ArrayList<>(), boolean descending = false, LPWithParams whereProp = null, SelectTop<LPWithParams> selectTop = null]
 	:
     	(
     	    gt=groupingType { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
-            ('ORDER' ('DESC' { $ascending = false; } )?
+            (order = orderLiteral { $descending = $order.descending; }
             orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
         |
             gt=groupingTypeOrder { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
-            ('ORDER' ('DESC' { $ascending = false; } )?
+            (order = orderLiteral { $descending = $order.descending; }
             orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })
         |
             { boolean setOrdered = false; }
             gct = aggrCustomType
             (
                 mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
-                (('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                (('WITHIN' { setOrdered = true; })? order = orderLiteral { $descending = $order.descending; }
                 orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
                 |
-                ('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                ('WITHIN' { setOrdered = true; })? order = orderLiteral { $descending = $order.descending; }
                 orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; }
             )
             { $type = new CustomGroupingType($gct.func, setOrdered, $gct.cls, $gct.valueNull); }
@@ -2020,11 +2019,11 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	int groupExprCnt = 0;
 	boolean strict = false;
 	int precision = 0;
-	boolean ascending = true;
+	boolean descending = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, $to.result, exprCnt, groupExprCnt, paramProps, context);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, descending, $to.result, exprCnt, groupExprCnt, paramProps, context);
 	}
 }
 	:	'PARTITION' (
@@ -2043,18 +2042,18 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
                 )
             )
             expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
-            (	'ORDER' ('DESC' { ascending = false; } )?
+            (	order = orderLiteral { descending = $order.descending; }
                 orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
             )?
             |
             gct = aggrCustomType { type = PartitionType.CUSTOM($gct.func, $gct.cls, $gct.valueNull); }
             (
                 mainList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($mainList.props); exprCnt = $mainList.props.size(); }
-                ('ORDER' ('DESC' { ascending = false; } )?
+                (order = orderLiteral { descending = $order.descending; }
                 orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); })?
                 |
                 { exprCnt = 0; }
-                'ORDER' ('DESC' { ascending = false; } )?
+                order = orderLiteral { descending = $order.descending; }
                 orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); }
             )
         )
@@ -2331,20 +2330,20 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 @init {
 	List<TypedParameter> newContext = new ArrayList<>(context);
     List<LPWithParams> orderProperties = new ArrayList<>();
-    List<Boolean> orderDirections = new ArrayList<>();
+    List<Boolean> orderDescendings = new ArrayList<>();
     boolean returnString = false;
 }
 @after {
 	if (inMainParseState()) {
 		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
-		 $whereExpr.property, orderProperties, orderDirections, $to.result, returnString, newContext);
+		 $whereExpr.property, orderProperties, orderDescendings, $to.result, returnString, newContext);
 	}
 }
 	:	('JSON' | 'JSONTEXT' { returnString = true; })
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
-		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
-        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
+		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDescendings.add($orderedProp.descending); }
+        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDescendings.add($orderedProp.descending); } )*
         )?
         (to = topOffset[newContext, true])?
 	;
@@ -2618,7 +2617,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 
     FormIntegrationType format = null;
     List<LPWithParams> orderProperties = new ArrayList<>();
-    List<Boolean> orderDirections = new ArrayList<>();
+    List<Boolean> orderDescendings = new ArrayList<>();
 	String separator = null;
 	Boolean hasHeader = null;
 	boolean noEscape = false;
@@ -2632,7 +2631,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, $pUsage.propUsage,
-			                                                 sheetName, root, tag, separator, hasHeader, noEscape, $to.result, charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, hasHeader, noEscape, $to.result, charset, attr, orderProperties, orderDescendings);
 	}
 } 
 	:	'EXPORT'
@@ -2640,15 +2639,15 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	                                                    sheetName = $type.sheetName; charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
-		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
-        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
+		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDescendings.add($orderedProp.descending); }
+        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDescendings.add($orderedProp.descending); } )*
         )?
 		(to = topOffset[context, dynamic])?
 		('TO' pUsage=propertyUsage)?
 	;
 
-propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, boolean order = true]
-	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $order = false; })?
+propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, boolean descending = false]
+	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $descending = true; })?
 	;
 
 nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<>(), List<Boolean> literals = new ArrayList<>(), List<LPWithParams> properties = new ArrayList<>(), List<LPTrivialLA> propUsages = new ArrayList<>()]
@@ -4662,8 +4661,7 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 		| 	'WHILE' { recursive = true; }
 		)
 		expr=propertyExpression[newContext, true]
-		('ORDER'
-			('DESC' { descending = true; } )? 
+		(order = orderLiteral { descending = $order.descending; }
 			ordExprs=nonEmptyPropertyExpressionList[newContext, true] { orders = $ordExprs.props; }
 		)?
 		(to = topOffset[context, false])?
@@ -4899,7 +4897,7 @@ eventStatement
 			}
 		}
 		whenExpr=propertyExpression[context, true]
-		(	'ORDER' ('DESC' { descending = true; })?
+		(	order = orderLiteral { descending = $order.descending; }
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		in=inlineStatement[context]

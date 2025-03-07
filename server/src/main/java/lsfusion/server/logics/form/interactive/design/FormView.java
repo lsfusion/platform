@@ -251,8 +251,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
 
-    public void addDefaultOrder(PropertyDrawEntity property, boolean ascending, Version version) {
-        defaultOrders.add(get(property), ascending, version);
+    public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
+        defaultOrders.add(get(property), descending, version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntity> column, Version version) {
@@ -281,9 +281,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         addPropertyDrawView(propertyView);
 
         //походу инициализируем порядки по умолчанию
-        Boolean ascending = entity.getNFDefaultOrder(property, version);
-        if (ascending != null) {
-            defaultOrders.add(propertyView, ascending, version);
+        Boolean descending = entity.getNFDefaultOrder(property, version);
+        if (descending != null) {
+            defaultOrders.add(propertyView, descending, version);
         }
 
         return propertyView;

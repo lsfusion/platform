@@ -1,3 +1,28 @@
+## 6.0-beta2 (2025-03-04)
+##### Implemented enhancements:
+ - CHANGEKEY binding: window [#1385](git@github.com:lsfusion/platform.git/issues/1385)
+ - Force mobile mode [#1367](git@github.com:lsfusion/platform.git/issues/1367)
+ - Move JasperReports export to the app server from the web server [#1366](git@github.com:lsfusion/platform.git/issues/1366)
+ - NEWCONNECTION operator [#1362](git@github.com:lsfusion/platform.git/issues/1362)
+ - Support string interpolation / FILE -> LINK casting in the text files (for example json) [#1361](git@github.com:lsfusion/platform.git/issues/1361)
+ - Support extensions in the FILE -> LINK conversion [#1360](git@github.com:lsfusion/platform.git/issues/1360)
+ - Support urls in the INTERNAL CLIENT / onWebClientInit [#1359](git@github.com:lsfusion/platform.git/issues/1359)
+ - Make CONCAT operator's separator an expression [#192](git@github.com:lsfusion/platform.git/issues/192)
+ - Use ISO formats for date / time types in integration [#1357](git@github.com:lsfusion/platform.git/issues/1357)
+ - Support CLASSES | NOCLASSES clause and data props in the RECALCULATE operator [#1356](git@github.com:lsfusion/platform.git/issues/1356)
+ - Implement duplicate value highlighting [#1355](git@github.com:lsfusion/platform.git/issues/1355)
+ - Make the behavior of RICHTEXT the same as that of TEXT when the value is empty [#1344](git@github.com:lsfusion/platform.git/issues/1344)
+ - Support TOP (OFFSET) in GROUP / JSON / PARTITION / FOR operators [#1330](git@github.com:lsfusion/platform.git/issues/1330)
+ - Support manual update setting by developer in language [#448](git@github.com:lsfusion/platform.git/issues/448)
+ - Improve mail receiving [#1338](git@github.com:lsfusion/platform.git/issues/1338)
+ - Implement CHANGEKEY option in navigator [#276](git@github.com:lsfusion/platform.git/issues/276)
+ - EVENTS ON TAB support [#1335](git@github.com:lsfusion/platform.git/issues/1335)
+##### Fixed bugs:
+ - Use default printer in PRINT (desktop-client) [#1369](git@github.com:lsfusion/platform.git/issues/1369)
+ - OnInit must be finished before start onStarted [#1364](git@github.com:lsfusion/platform.git/issues/1364)
+ - FOOTER NONULL text-based-value-required css [#1353](git@github.com:lsfusion/platform.git/issues/1353)
+ - User materialized properties same as user loggable [#1350](git@github.com:lsfusion/platform.git/issues/1350)
+## ----- PREVIOUS RELEASES --------
 ## 6.0-beta1 (2024-11-18)
 ##### Implemented enhancements:
  - EXPORT TOP OFFSET support [#1322](git@github.com:lsfusion/platform.git/issues/1322)
@@ -91,7 +116,6 @@
  - The action text is not restored after the action is "edited" [#1200](git@github.com:lsfusion/platform.git/issues/1200)
  - Connecting to the com port causes the desktop client to crash on newer versions of java [#1196](git@github.com:lsfusion/platform.git/issues/1196)
  - Line separators in MESSAGE (web and desktop) [#1191](git@github.com:lsfusion/platform.git/issues/1191)
-## ----- PREVIOUS RELEASES --------
 ## 6.0-beta0 (2024-07-15)
 ##### Implemented enhancements:
  - Support actionPathInfo - the "inner" path after exec/<action>/ [#1189](git@github.com:lsfusion/platform.git/issues/1189)

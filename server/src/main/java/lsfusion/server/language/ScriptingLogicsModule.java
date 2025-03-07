@@ -1446,7 +1446,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             actionOrProperty.drawOptions.setShowChangeMouse(showChangeMouse);
     }
 
-    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");
+    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "window", "group", "editing", "showing", "panel", "cell");
     private static Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
@@ -3092,7 +3092,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(noInline);
 
-        LA result = addForAProp(LocalizedString.NONAME, !descending, ordersNotNull, selectTop.CONST(), recursive, elseAction != null, usedParams.size(),
+        LA result = addForAProp(LocalizedString.NONAME, descending, ordersNotNull, selectTop.CONST(), recursive, elseAction != null, usedParams.size(),
                                 addClassName != null ? (CustomClass) findClass(addClassName) : null, autoSet != null ? autoSet : false, condition != null, noInline.size(), forceInline,
                                 getParamsPlainList(allCreationParams).toArray());
 
@@ -3112,7 +3112,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(result, usedParams);
     }
 
-    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, SelectTop<Integer> selectTop, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, SelectTop<Integer> selectTop, boolean descending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
@@ -3143,7 +3143,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LocalizedString emptyCaption = LocalizedString.NONAME;
         LP resultProp;
         if ((type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) || !selectTop.isEmpty()) {
-            resultProp = addOGProp(null, false, emptyCaption, getGroupType(type), whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, selectTop, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, getGroupType(type), whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, selectTop, descending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
@@ -3239,7 +3239,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     // второй результат в паре использованные параметры из внешнего контекста (LP на выходе имеет сначала эти использованные параметры, потом группировки)
     public LPContextIndependent addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                    boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+                                                    boolean descending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp));
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
@@ -3249,7 +3249,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
 
-        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, selectTop.CONST(), ascending, constraintCaption, whereProp, explicitInnerClasses);
+        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, selectTop.CONST(), descending, constraintCaption, whereProp, explicitInnerClasses);
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
@@ -3295,12 +3295,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                                       boolean ascending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+                                                                       boolean descending, LPWithParams whereProp, SelectTop<LPWithParams> selectTop, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if(selectTop == null)
             selectTop = SelectTop.NULL();
         if(groupProps == null)
             groupProps = Collections.emptyList();
-        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, selectTop, newContext, debugPoint);
+        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, descending, whereProp, selectTop, newContext, debugPoint);
         if(groupProps.size() > 0)
             return new Pair<>(null, ci);
         else
@@ -3372,7 +3372,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPContextIndependent(aggrObjectLP, resultSignature, Collections.emptyList());
     }
 
-    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending, SelectTop<LPWithParams> selectTop,
+    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean descending, SelectTop<LPWithParams> selectTop,
                                                  int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
 //        checks.checkPartitionWindowConsistence(partitionType, useLast);
         if(selectTop == null)
@@ -3381,7 +3381,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP ungroupProp = ungroupPropUsage != null ? findLPByPropertyUsage(ungroupPropUsage, paramProps.subList(0, groupPropsCnt), context) : null;
         checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
-        Pair<LP, List<Integer>> result = addScriptedPartitionProp(partitionType, strict, precision, isAscending, selectTop.CONST(), exprCnt, groupPropsCnt, paramProps, context, ungroupProp);
+        Pair<LP, List<Integer>> result = addScriptedPartitionProp(partitionType, strict, precision, descending, selectTop.CONST(), exprCnt, groupPropsCnt, paramProps, context, ungroupProp);
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
@@ -3422,14 +3422,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @NotNull
-    private Pair<LP, List<Integer>> addScriptedPartitionProp(PartitionType partitionType, boolean strict, int precision, boolean isAscending, SelectTop<Integer> selectTop, int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context, LP ungroupProp) {
+    private Pair<LP, List<Integer>> addScriptedPartitionProp(PartitionType partitionType, boolean strict, int precision, boolean descending, SelectTop<Integer> selectTop, int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context, LP ungroupProp) {
         boolean ordersNotNull = doesExtendContext(0, paramProps.subList(0, groupPropsCnt + exprCnt), paramProps.subList(groupPropsCnt + exprCnt, paramProps.size()));
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
         if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous() || partitionType == PartitionType.select() || partitionType instanceof PartitionType.Custom) {
-            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, selectTop, exprCnt, groupPropsCnt, resultParams.toArray());
+            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, descending, ordersNotNull, selectTop, exprCnt, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.distrCumProportion()) {
             assert exprCnt == 1;
             List<ResolveClassSet> contextClasses = getClassesFromTypedParams(context);// для не script - временный хак
@@ -3437,10 +3437,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             List<ResolveClassSet> explicitInnerClasses = new ArrayList<>();
             for(int usedParam : usedParams)
                 explicitInnerClasses.add(contextClasses.get(usedParam)); // one-based;
-            prop = addPGProp(null, false, precision, strict, LocalizedString.NONAME, usedParams.size(), explicitInnerClasses, isAscending, ordersNotNull, ungroupProp, resultParams.toArray());
+            prop = addPGProp(null, false, precision, strict, LocalizedString.NONAME, usedParams.size(), explicitInnerClasses, descending, ordersNotNull, ungroupProp, resultParams.toArray());
         } else {
             assert exprCnt == 1;
-            prop = addUGProp(null, false, strict, LocalizedString.NONAME, usedParams.size(), isAscending, ordersNotNull, ungroupProp, resultParams.toArray());
+            prop = addUGProp(null, false, strict, LocalizedString.NONAME, usedParams.size(), descending, ordersNotNull, ungroupProp, resultParams.toArray());
         }
         return new Pair<>(prop, usedParams);
     }
@@ -4405,7 +4405,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages,
                                                 LPWithParams whereProperty,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, SelectTop<LPWithParams> selectTop, boolean returnString,
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDescendings, SelectTop<LPWithParams> selectTop, boolean returnString,
                                                 List<TypedParameter> params)
             throws ScriptingErrorLog.SemanticErrorException {
 
@@ -4431,7 +4431,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             exExprs.add(orderProperty);
             String orderId = "order" + mExPropUsages.size();
             mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
-            mOrders.exclAdd(orderId, orderDirections.get(i));
+            mOrders.exclAdd(orderId, orderDescendings.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
         ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
@@ -4669,7 +4669,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
                                                 String separator, Boolean hasHeader, boolean noEscape, SelectTop<LPWithParams> selectTop, String charset, boolean attr,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDescendings) throws ScriptingErrorLog.SemanticErrorException {
 
         if(selectTop == null)
             selectTop = SelectTop.NULL();
@@ -4700,7 +4700,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             exExprs.add(orderProperty);
             String orderId = "order" + mExPropUsages.size();
             mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
-            mOrders.exclAdd(orderId, orderDirections.get(i));
+            mOrders.exclAdd(orderId, orderDescendings.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
         ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();

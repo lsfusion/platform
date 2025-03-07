@@ -93,7 +93,7 @@ select > option {
 }
 
 .form-check .form-check-input,
-.form-check .form-check-label,
+.form-check .form-check-label:not(.option-item),
 .form-check .panel-property-label {
     float: left;
 }

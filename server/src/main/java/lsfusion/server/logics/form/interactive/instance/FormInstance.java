@@ -394,12 +394,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i=0,size=defaultOrders.size();i<size;i++) {
             PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
             GroupObjectInstance toDraw = property.toDraw;
-            Boolean ascending = defaultOrders.getValue(i);
+            Boolean descending = defaultOrders.getValue(i);
 
             if(toDraw != null) {
                 OrderInstance order = property.getOrderProperty();
                 toDraw.changeOrder(order, property, wasOrder.contains(toDraw) ? ADD : REPLACE);
-                if (!ascending) {
+                if (descending) {
                     toDraw.changeOrder(order, property, DIR);
                 }
                 wasOrder.add(toDraw);

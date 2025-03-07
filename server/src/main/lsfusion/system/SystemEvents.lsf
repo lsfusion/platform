@@ -58,6 +58,17 @@ onClientStartedApply() {
     APPLY;
 }
 
+platformVersion = DATA TEXT();
+apiVersion = DATA INTEGER();
+revisionVersion = DATA INTEGER();
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();
+
+resetConnections() ABSTRACT();
+
+onInit() + {
+    synchronizeVersions();
+}
+
 isIconModuleAvailable = ABSTRACT BOOLEAN ();
 iconIfAvailable(STRING imagePath, STRING fontClasses) = imagePath + (IF isIconModuleAvailable() THEN ';' + fontClasses ELSE '');
 
@@ -76,7 +87,9 @@ defaultLogo() = iconIfAvailable('logo.png','lsfi lsfi-logo-vertical');
 logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
-logoAction() {}
+logoAction() {
+    MESSAGE CONCAT ' ', 'Current Version:', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+}
 logoActionClass = ABSTRACT STRING();
 logoHeader() = ABSTRACT STRING();
 
@@ -471,17 +484,6 @@ shutdown '{system.events.shutdown}' (Connection c)  {
         serverShutdown(c);
     }
 } CONFIRM;
-
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-revisionVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
-
-resetConnections() ABSTRACT();
-
-onInit() + {
-    synchronizeVersions();
-}
 
 onStarted() + { 
     writeDefaultCredentials();

@@ -671,9 +671,9 @@ public class ScriptingFormEntity {
         if(extNull != null)
             property.extNull = extNull;
 
-        Boolean order = options.getOrder();
-        if(order != null)
-            form.addDefaultOrder(property, order, version);
+        Boolean descending = options.getDescending();
+        if(descending != null)
+            form.addDefaultOrder(property, descending, version);
 
         Boolean filter = options.getFilter();
         if(filter != null && filter)
