@@ -415,11 +415,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(request.sessionId, runnable, pendNotification);
 
                 if (foundNavigator)
-                    return new RedirectExternalResponse("/push-notification", null);
+                    return new RedirectExternalResponse("push-notification", null);
                 else
-                    return new RedirectExternalResponse("/", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable));
+                    return new RedirectExternalResponse("", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable));
             } else
-                return new RedirectExternalResponse("/push-notification", RemoteNavigator.pushGlobalNotification(runnable));
+                return new RedirectExternalResponse("push-notification", RemoteNavigator.pushGlobalNotification(runnable));
         } else {
             try {
                 try (ExecSession execSession = getExecSession()) {
