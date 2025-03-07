@@ -983,7 +983,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
-        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel');
+        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel'),
+        useClusterizeInPivot = valueSetting('useClusterizeInPivot');
 }
 
 getClientSettings() {

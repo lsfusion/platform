@@ -114,7 +114,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         StaticImageButton showAllButton = new StaticImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll(), null);
         showAllButton.addClickHandler(event -> {
+            updateRendererState(true);
             pageSize = Integer.MAX_VALUE / 10; // /10 to prevent Integer overflow because in GroupObjectInstance we use "pageSize * 2"
+            showAllPressed();
             this.grid.changePageSize(pageSize);
         });
         messageAndButton.addCentered(showAllButton);
@@ -131,6 +133,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         addStretched(child); // we need to attach pageSize widget to make it work
 //
 //        add(new ResizableSimplePanel(this.pageSizeWidget)); // we need to attach pageSize widget to make it work
+    }
+
+    protected void showAllPressed() {
     }
 
     private final Widget drawWidget;
