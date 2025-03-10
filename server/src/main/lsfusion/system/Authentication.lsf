@@ -483,6 +483,7 @@ DESIGN customUser {
                     MOVE PROPERTY(useClientLocale(u));
                     MOVE PROPERTY(userLanguage(u));
                     MOVE PROPERTY(userCountry(u));
+                    MOVE PROPERTY(useClientTimeZone(u));
                     MOVE PROPERTY(userTimeZone(u));
                     MOVE PROPERTY(userTwoDigitYearStart(u));
                     MOVE PROPERTY(useClientDateTimeFormat(u));
