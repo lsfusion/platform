@@ -19,6 +19,10 @@ function createPlainDateTimeUTC(year, month, date, hours, minutes, seconds) {
     return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
 }
 
+function getClientTimeZone() {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 //this var is needed to localize daterangepicker, because GWT does not accept dynamic keys in arrays
 var getRanges = function (wnd, rangeIntervalToday, rangeIntervalYesterday, rangeLast7Days, rangeLast30Days, rangeThisMonth, rangeToMonthEnd,
                           rangePreviousMonth, rangeMonthStartToCurrentDate, rangeThisYear, rangeToYearEnd, clear, preDefinedDateRangesNames) {

@@ -1665,7 +1665,7 @@ public class GwtClientUtils {
     }-*/;
 
     public static native String getClientTimeZone()/*-{
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return $wnd.getClientTimeZone();
     }-*/;
 
 
