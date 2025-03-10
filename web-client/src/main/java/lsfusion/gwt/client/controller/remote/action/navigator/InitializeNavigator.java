@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
 public class InitializeNavigator extends NavigatorPriorityAction<InitializeNavigatorResult>{
-    public String timeZone;
     public String screenSize;
     public Double scale;
     public boolean mobile;
@@ -9,8 +8,7 @@ public class InitializeNavigator extends NavigatorPriorityAction<InitializeNavig
     public InitializeNavigator() {
     }
 
-    public InitializeNavigator(String timeZone, String screenSize, Double scale, boolean mobile) {
-        this.timeZone = timeZone;
+    public InitializeNavigator(String screenSize, Double scale, boolean mobile) {
         this.screenSize = screenSize;
         this.scale = scale;
         this.mobile = mobile;

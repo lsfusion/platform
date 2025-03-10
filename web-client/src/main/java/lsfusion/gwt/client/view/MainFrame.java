@@ -642,7 +642,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(GwtClientUtils.getClientTimeZone(), screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -670,7 +670,7 @@ public class MainFrame implements EntryPoint {
                 String language = gClientSettings.language;
                 Document.get().getDocumentElement().setAttribute("lang", language);
                 hasCapitalHyphensProblem = language != null && language.equals("en");
-                timeZone = gClientSettings.timeZone;
+                timeZone = gClientSettings.timeZone.equals(GwtClientUtils.getClientTimeZone()) ? null : gClientSettings.timeZone;
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
