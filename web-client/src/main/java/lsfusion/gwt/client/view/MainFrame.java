@@ -642,7 +642,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(GwtClientUtils.getClientTimeZone(), screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;

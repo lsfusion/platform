@@ -37,7 +37,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         super(servlet);
     }
 
-    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, MainDispatchServlet servlet, ClientInfo clientInfo) throws RemoteException {
+    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, String clientTimeZone, MainDispatchServlet servlet, ClientInfo clientInfo) throws RemoteException {
         ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, serverSettings, servlet.getRequest(), clientInfo);
         ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
 
@@ -52,7 +52,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         );
 
         LocalePreferences localePreferences = clientSettings.localePreferences;
-        String timeZone = localePreferences.timeZone.equals(TimeZone.getDefault().getID()) ? null : localePreferences.timeZone;
+
+        String timeZone = localePreferences.timeZone.equals(clientTimeZone) ? null : localePreferences.timeZone;
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
                 clientSettings.showDetailedInfoDelay, clientSettings.mobileMode, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
@@ -97,7 +98,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
+        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), action.timeZone, servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {
