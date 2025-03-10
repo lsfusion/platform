@@ -52,12 +52,12 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         );
 
         LocalePreferences localePreferences = clientSettings.localePreferences;
-        String timeZone = localePreferences.timeZone.equals(TimeZone.getDefault().getID()) ? null : localePreferences.timeZone;
+
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
                 clientSettings.showDetailedInfoDelay, clientSettings.mobileMode, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
                 clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.locale.getLanguage(),
-                timeZone, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
+                localePreferences.timeZone, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
                 clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
                 clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel,

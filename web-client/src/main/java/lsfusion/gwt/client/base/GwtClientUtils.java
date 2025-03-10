@@ -1623,14 +1623,7 @@ public class GwtClientUtils {
     }-*/;
 
     public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
-        var date = $wnd.createPlainDateMillis(milliseconds);
-        if (timeZone != null) {
-            var moment = $wnd.moment.tz($wnd.createPlainDateMillis(milliseconds), timeZone);
-            moment.local(true);
-            return moment.toDate();
-        } else {
-            return date;
-        }
+        return timeZone != null ? $wnd.moment.tz(milliseconds, timeZone).local(true).toDate() : $wnd.createPlainDateMillis(milliseconds);
     }-*/;
 
     public static native JsDate applyTimeZone(JsDate date, String timeZone)/*-{
@@ -1669,6 +1662,10 @@ public class GwtClientUtils {
     }-*/;
     public static native int getUTCSeconds(JsDate date)/*-{
         return date.getUTCSeconds();
+    }-*/;
+
+    public static native String getClientTimeZone()/*-{
+        return $wnd.getClientTimeZone();
     }-*/;
 
 
