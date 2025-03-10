@@ -1622,6 +1622,21 @@ public class GwtClientUtils {
         return $wnd.createPlainDateMillis(milliseconds);
     }-*/;
 
+    public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
+        var date = $wnd.createPlainDateMillis(milliseconds);
+        if (timeZone != null) {
+            var moment = $wnd.moment.tz($wnd.createPlainDateMillis(milliseconds), timeZone);
+            moment.local(true);
+            return moment.toDate();
+        } else {
+            return date;
+        }
+    }-*/;
+
+    public static native JsDate applyTimeZone(JsDate date, String timeZone)/*-{
+        return timeZone != null ? $wnd.moment(date).tz(timeZone, true).toDate() : date;
+    }-*/;
+
     public static native JsDate createJsDate()/*-{
         return $wnd.createPlainDateCurrent();
     }-*/;

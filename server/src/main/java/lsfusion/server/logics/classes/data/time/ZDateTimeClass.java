@@ -146,7 +146,7 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
         return readXLS(cellValue);
     }
 
-    private static ZoneId getZoneId() {
+    public static ZoneId getZoneId() {
         LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
         return localePreferences != null ? TimeZone.getTimeZone(localePreferences.timeZone).toZoneId() : ZoneId.systemDefault();
     }
