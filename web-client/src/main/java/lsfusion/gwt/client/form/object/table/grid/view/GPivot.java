@@ -2,7 +2,9 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
@@ -20,7 +22,6 @@ import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
-import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -49,6 +50,7 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static java.lang.Integer.decode;
@@ -114,14 +116,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     // we need key / value view since pivot
-    private JsArray<JsArrayMixed> getData(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean full) {
+    private JsArray<JsArrayMixed> getData(NativeStringMap<Column> columnMap, Aggregator aggregator, List<String> aggrCaptions, JsArrayString systemCaptions, boolean convertDataToStrings, boolean full) {
         JsArray<JsArrayMixed> array = JavaScriptObject.createArray().cast();
 
         array.push(getCaptions(columnMap, aggregator, aggrCaptions, systemCaptions));
 
         // getting values
         for (GGroupObjectValue key : keys != null && !keys.isEmpty()  ? keys : Collections.singleton((GGroupObjectValue) null)) { // can be null if manual update
-            JsArrayMixed rowValues = getValues(key);
+            JsArrayMixed rowValues = getValues(key, convertDataToStrings);
 
             if (full) {
                 // if there are no columns (there is no response yet, or they are all filtered, we steel need at least one row, because otherwise it breaks a lot of assertions
@@ -138,17 +140,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return array;
     }
 
-    private JsArrayMixed getValues(GGroupObjectValue key) {
+    private JsArrayMixed getValues(GGroupObjectValue key, boolean convertDataToStrings) {
         JsArrayMixed rowValues = JavaScriptObject.createArray().cast();
         for (int i = 0; i < properties.size(); i++) {
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             NativeHashMap<GGroupObjectValue, PValue> propValues = values.get(i);
             List<NativeHashMap<GGroupObjectValue, PValue>> propLastAggrs = lastAggrs.get(i);
-            GPropertyDraw property = properties.get(i);
 
             CellRenderer renderer = null;
             NativeHashMap<GGroupObjectValue, PValue> patternValues = null;
-            GType renderType = property.getRenderType(RendererType.PIVOT);
+            if(convertDataToStrings) {
+                renderer = properties.get(i).getCellRenderer(RendererType.PIVOT);
+                patternValues = patterns.get(i);
+            }
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 if (checkShowIf(i, columnKey)) // property is hidden
@@ -156,9 +160,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                pushValue(rowValues, propValues, fullKey, renderType, renderer, patternValues);
+                pushValue(rowValues, propValues, fullKey, renderer, patternValues);
                 for (NativeHashMap<GGroupObjectValue, PValue> propLastAggr : propLastAggrs) {
-                    pushValue(rowValues, propLastAggr, fullKey, renderType, renderer, patternValues);
+                    pushValue(rowValues, propLastAggr, fullKey, renderer, patternValues);
                 }
             }
         }
@@ -247,10 +251,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         obj[key] = value;
     }-*/;
 
-    private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, GType renderType, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
+    private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
         PValue value = propValues.get(fullKey);
         // in theory in renderColumn there is the reversed converting
-        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT, PValue.getStringValue(patterns.get(fullKey))) : PValue.getPivotValue(renderType, value)) : null);
+        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT, PValue.getStringValue(patterns.get(fullKey))) : PValue.getPivotValue(value)) : null);
     }
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
@@ -266,7 +270,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         aggrCaptions = new ArrayList<>();
         Aggregator aggregator = Aggregator.create();
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
-        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, true); // convertToObjects()
+        boolean convertDataToStrings = false; // so far we'll not use renderer formatters and we'll rely on native toString (if we decide to do it we'll have to track renderer type and rerender everything if this type changes that can may lead to some blinking)
+        JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, convertDataToStrings, true); // convertToObjects()
 
         if(firstUpdateView != null) // we need to read data first, to know property captions
             initDefaultConfig(grid);
@@ -280,7 +285,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         else
             GwtClientUtils.removeClassName(getDrawElement(), "pivotTable-noSettings");
 
-        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage(), clusterize); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
     public void initDefaultSettings(GGridController gridController) {
@@ -385,7 +390,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if (plot != null) {
             exportToImage(plot);
         } else {
-            exportToExcel(getRootDiv(clusterizedRowsDiv, getDrawElement()));
+            exportToExcel(getDrawElement());
         }
     }
     
@@ -397,18 +402,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return {format: 'jpeg', filename: 'lsfPlot'};
     }-*/;
 
-    public native Element getRootDiv(Element clusterizedRowsDiv, Element drawElement)
-        /*-{
-            if(clusterizedRowsDiv != null) {
-                return clusterizedRowsDiv;
-            } else {
-                return drawElement.getElementsByClassName("subtotalouterdiv")[0];
-            }
-        }-*/;
-
-    public native void exportToExcel(Element rootDiv)
+    public native void exportToExcel(Element element)
         /*-{
             var instance = this;
+            var rootDiv = element.getElementsByClassName("subtotalouterdiv")[0];
             instance.@GPivot::updateTableToExcelAttributes(*)(rootDiv);
 
             var workbook = $wnd.TableToExcel.tableToBook(rootDiv, {
@@ -475,12 +472,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             (include.contains(aggrCaption) ? inclusions : exclusions).push(aggrCaption);
         config = overrideFilter(config, name, inclusions, exclusions);
         rerender();
-    }
-
-    boolean clusterize;
-    @Override
-    protected void showAllPressed() {
-        clusterize = MainFrame.useClusterizeInPivot;
     }
 
     private native WrapperObject overrideFilter(WrapperObject config, String column, JsArrayString columnInclusions, JsArrayString columnExclusions)/*-{
@@ -575,6 +566,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         updateSortCols(this.config, config);
         this.config = config;
 
+        // see convertDataToStrings comment
+//        boolean isTable = rendererName != null && rendererName.contains("Table");
+//        if(isTable != this.isTable) {
+//            this.isTable = isTable;
+//
+//            this.config = overrideDataClass(this.config, isTable);
+//            rerender();
+//        }
+
         List<GPropertyDraw> properties = new ArrayList<>();
         List<GGroupObjectValue> columnKeys = new ArrayList<>();
         List<GPropertyGroupType> types = new ArrayList<>();
@@ -629,9 +629,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
     private Element getTableDataScroller() {
         return getElement(rendererElement, ".scrolldiv");
-    }
-    private Element getTableDataBody() {
-        return getElement(rendererElement, ".bodytable");
     }
     private Element getHeaderTableElement() {
         return getElement(rendererElement, ".headertable.pvtTable");
@@ -727,8 +724,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }-*/;
 
-    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array,
-                                 JavaScriptObject config, JsArrayString orderColumns, String language, boolean clusterize)/*-{
+    protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array, JavaScriptObject config, JsArrayString orderColumns, String language)/*-{
 //        var d = element;
         var d = $doc.createElement('div'); // we need some div to append it later to avoid blinking
         d.className = 'pvtUiWrapperDiv';
@@ -737,7 +733,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config.sorters[@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN] = $wnd.$.pivotUtilities.sortAs(orderColumns);
 
         // because we create new element, aggregators every time
-        $wnd.$(d).pivotUI(array, config, true, language, clusterize);
+        $wnd.$(d).pivotUI(array, config, true, language);
 
         // moving pagesize controller inside
         $wnd.$(d).find(".pvtRendererFooter").append(pageSizeElement);
@@ -1081,41 +1077,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setValueCellBackground(jsElement, getRowLevel(rowKeys.length()), columnKeys.length(), false);
     }
 
-    public JsArray formatArray(JsArray columnNames, JsArray array) {
-        JsArray stringArray = JsArray.createArray().cast();
-        for(int i = 0; i < array.length(); ++i) {
-            stringArray.push(fromObject(formatValue(columnNames.get(i).toString(), array.get(i), false)));
-        }
-        return stringArray;
-    }
-
-    public String formatValue(String columnName, JavaScriptObject value, boolean nullString) {
-        if (value == null) {
-            return nullString ? "null" : null;
-        } else if (columnName.equals(COLUMN)) {
-            return value.toString();
-        } else {
-            GPropertyDraw property = columnMap.get(columnName).property;
-            return property.getCellRenderer(RendererType.PIVOT).format(getPValue(property, value), RendererType.PIVOT, null);
-        }
-    }
-
-    public JavaScriptObject formatNumeric(String columnName, JavaScriptObject value) {
-        if (value == null) {
-            return null;
-        } else if (columnName.equals(COLUMN)) {
-            return getNaN();
-        } else {
-            GPropertyDraw property = columnMap.get(columnName).property;
-            GType cellType = property.getCellType();
-            return cellType instanceof GIntegralType ? fromObject(((GIntegralType) cellType).getDoubleValue(getPValue(property, value))) : getNaN();
-        }
-    }
-
-    private native JavaScriptObject getNaN() /*-{
-        return NaN;
-    }-*/;
-
     public void setValueCellBackground(Element td, int rowLevel, int columnLevel, boolean refresh) {
         int totalRowLevels = getTotalRowLevels();
         int totalColLevels = config.getArrayString("cols").length();
@@ -1194,15 +1155,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
-    private PValue getPValue(GPropertyDraw property, JavaScriptObject value) {
-        return PValue.getPivotPValue(property.getRenderType(RendererType.PIVOT), GStateTableView.<Object>toObject(value));
+    private PValue getPValue(JavaScriptObject value) {
+        return PValue.getPivotPValue(GStateTableView.<Object>toObject(value));
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
+        PValue pValue = getPValue(value); // in theory in pushValue is the reversed converting
+
         GPropertyDraw property = columnMap.get(columnName).property;
-
-        PValue pValue = getPValue(property, value); // in theory in pushValue there is the reversed converting
-
         GPivot.setTableToExcelPropertyAttributes(th, pValue, property);
 
         UpdateContext updateContext = new UpdateContext() {
@@ -1301,7 +1261,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             if (value != null) {
-                jsElement.setTitle(formatValue(lastRenderCol, value, false));
+                jsElement.setTitle(fromObject(value).toString());
             }
         }
         setTableToExcelColorAttributes(jsElement, null);
@@ -1372,11 +1332,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             type = "n";
             String pattern;
             if(value != null) {
-                double doubleValue = (propType instanceof GObjectType ? GLongType.instance : (GIntegralType) propType).getDoubleValue(value);
-                dataValue = String.valueOf(doubleValue);
+                NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
+                dataValue = NumberFormat.getDecimalFormat().format(PValue.getNumberValue(value)).replace(
+                        numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
+                BigDecimal numericValue = new BigDecimal(dataValue);
                 int fractDigits = 0;
-                while ((long) doubleValue - doubleValue != 0) {
-                    doubleValue = doubleValue * 10;
+                while (numericValue.longValue() - numericValue.doubleValue() != 0) {
+                    numericValue = numericValue.multiply(BigDecimal.TEN);
                     fractDigits++;
                 }
                 if (fractDigits > 0) {
@@ -1858,16 +1820,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
-    public void startFillData() {
-        grid.exportToExcelButton.setEnabled(false);
-    }
-
-    private Element clusterizedRowsDiv;
-    public void finishFillData(Element clusterizedRowsDiv) {
-        grid.exportToExcelButton.setEnabled(true);
-        this.clusterizedRowsDiv = clusterizedRowsDiv;
-    }
-
     private Integer scrollLeft = null;
     private int scrollLeftCounter = 0;
 
@@ -2006,26 +1958,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             checkPadding: function() {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::checkPadding(*)(false);
-            },
-
-            startFillData: function() {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::startFillData(*)();
-            },
-
-            finishFillData: function(clusterizedRowsDiv) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::finishFillData(*)(clusterizedRowsDiv);
-            },
-
-            formatArray: function (columnNames, array) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatArray(*)(columnNames, array);
-            },
-
-            formatValue: function (columnName, value, nullString) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatValue(*)(columnName, value, nullString);
-            },
-
-            formatNumeric: function (columnName, value) {
-                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatNumeric(*)(columnName, value);
             }
         }
 
@@ -2072,10 +2004,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         List<GPropertyFilter> filters = new ArrayList<>();
         for (int i = 0; i < elements.length(); i++) {
             Column column = columnMap.get(elements.get(i));
-            if (column != null) {
-                GPropertyDraw property = column.property;
-                filters.add(new GPropertyFilter(new GFilter(property), grid.groupObject, column.columnKey, getPValue(property, getRawObjectValue(values, i)), GCompare.EQUALS));
-            }
+            if (column != null)
+                filters.add(new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, getPValue(getRawObjectValue(values, i)), GCompare.EQUALS));
         }
         return filters;
     }
@@ -2122,7 +2052,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
         JsArrayString rowsOrCols = config.getArrayString(cols ? "cols" : "rows");
-        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false);
+        JsArray<JsArrayMixed> data = getData(columnMap, Aggregator.create(), aggrCaptions, JavaScriptObject.createArray().cast(), false, false);
         ArrayList<String> headers = toArrayList(data.get(0));
         List<Integer> headerIndexes = new ArrayList<>();
         for (int i = 0; i < rowsOrCols.length(); i++) {

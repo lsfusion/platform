@@ -3493,14 +3493,4 @@ public class Settings implements Cloneable {
     public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
         this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
     }
-
-    public boolean useClusterizeInPivot = false;
-
-    public boolean isUseClusterizeInPivot() {
-        return useClusterizeInPivot;
-    }
-
-    public void setUseClusterizeInPivot(boolean useClusterizeInPivot) {
-        this.useClusterizeInPivot = useClusterizeInPivot;
-    }
 }
