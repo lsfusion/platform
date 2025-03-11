@@ -41,6 +41,7 @@ SHOWIF propertyExpression
 READONLYIF propertyExpression
 BACKGROUND propertyExpression
 FOREGROUND propertyExpression
+OPTIONS propertyExpression
 HEADER propertyExpression
 FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
@@ -166,6 +167,14 @@ PROPERTIES(o) d=date, Order.number;
     - `propertyExpression`
 
         [Выражение](Expression.md).
+
+- `OPTIONS propertyExpression`
+ 
+    Указание свойства, значение которого определяет пользовательские опции отображения добавляемого свойства (действия).
+
+    - `propertyExpression`
+
+        Значение [выражения](Expression.md) зависит от конкретной функции отображения, и должно принадлежать классу JSON.
 
 - `HEADER propertyExpression`
 

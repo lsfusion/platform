@@ -51,6 +51,7 @@ EXTKEY
 SUBREPORT [subReportExpression]
 BACKGROUND backgroundExpr
 FOREGROUND foregroundExpr
+OPTIONS optionsExpr
 ```
 
 ### Описание
@@ -283,6 +284,14 @@ FOREGROUND foregroundExpr
     - `foregroundExpr`
 
         Выражение, значение которого определяет цвет текста.
+
+- `OPTIONS optionsExpr`
+    
+    Указание пользовательских опций отображения данной группы объектов.
+
+    - `optionsExpr`
+        
+      Выражение, значение которого передается в функцию, которая отвечает за отображение данных группы объектов. Значение выражения зависит от конкретной функции отображения и должно принадлежать классу JSON. 
 
 ### Примеры
 
