@@ -167,6 +167,7 @@
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
                 <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
                 <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
+                <entry key="noExecuteLocalEventsOnFormShowFallback" value="${settings.noExecuteLocalEventsOnFormShowFallback:}"/>
             </map>
         </property>
         </bean>

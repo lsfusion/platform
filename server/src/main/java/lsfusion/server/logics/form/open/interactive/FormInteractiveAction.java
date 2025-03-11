@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -153,6 +154,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ShowFormType showFormType = getShowFormType(syncType);
 
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
+
+        if(!Settings.get().isNoExecuteLocalEventsOnFormShowFallback())
+            // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
+            context.executeSessionEvents();
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
         context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, formId);
