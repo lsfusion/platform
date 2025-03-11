@@ -108,8 +108,7 @@ public class GroupMode {
 
                     if(aggrReader instanceof PropertyDrawInstance) { // calculate value
                         groupExpr = getExpr.apply(property.getGroupProperty());
-                        // this will lead to the incorrect type for the value (numeric instead of integer for example)
-//                        groupExpr = FormulaExpr.create(new CastFormulaImpl(NumericClass.get(100, 20)), ListFact.singleton(groupExpr));
+                        groupExpr = FormulaExpr.create(new CastFormulaImpl(NumericClass.get(100, 20)), ListFact.singleton(groupExpr));
                         groupExpr = GroupExpr.create(groupModeExprs, groupExpr, groupModeWhere.and(CompareWhere.equalsNull(lastAggrExprs, lastValues)), groupType, groupModeExprs);
                     } else // select last value
                         groupExpr = lastValues.get((PropertyDrawInstance<K>.LastReaderInstance)aggrReader);

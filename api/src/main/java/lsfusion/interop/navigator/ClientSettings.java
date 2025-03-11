@@ -41,7 +41,6 @@ public class ClientSettings implements Serializable {
     public double maxStickyLeft;
     public boolean jasperReportsIgnorePageMargins;
     public double cssBackwardCompatibilityLevel;
-    public boolean useClusterizeInPivot;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
@@ -51,7 +50,7 @@ public class ClientSettings implements Serializable {
                           boolean useBootstrap, String size, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
                           String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins,
-                          double cssBackwardCompatibilityLevel, boolean useClusterizeInPivot) {
+                          double cssBackwardCompatibilityLevel) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -84,6 +83,5 @@ public class ClientSettings implements Serializable {
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
-        this.useClusterizeInPivot = useClusterizeInPivot;
     }
 }
