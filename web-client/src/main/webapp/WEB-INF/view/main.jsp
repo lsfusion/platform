@@ -207,6 +207,7 @@
         <script>
             function init() {
                 //setClientLocaleParams
+                let intlOptions = Intl.DateTimeFormat().resolvedOptions();
                 setCookie('LSFUSION_CLIENT_TIME_ZONE', getClientTimeZone());
 
                 let momentLocale = moment();
