@@ -152,12 +152,7 @@ public class MainController {
             if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
                 LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
             } else {
-                String queryString = request.getQueryString();
-                if(queryString != null && queryString.startsWith("redirect:")) {
-                    return queryString;
-                } else {
-                    return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
-                }
+                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
             }
         }
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
