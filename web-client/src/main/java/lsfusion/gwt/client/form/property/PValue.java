@@ -184,15 +184,14 @@ public interface PValue {
         return getValue(value);
     }
 
-    static BigDecimal getBigDecimalValue(PValue value) {
+    static GIntervalValue getIntervalValue(PValue value) {
         return getValue(value);
     }
 
     static Long getIntervalValue(PValue o, boolean from) {
         assert o != null;
-        String object = getBigDecimalValue(o).toString();
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        GIntervalValue interval = getIntervalValue(o);
+        return from ? interval.from : interval.to;
     }
 
     static Boolean get3SBooleanValue(PValue value) {
@@ -245,7 +244,7 @@ public interface PValue {
     }
 
     static PValue getPValue(Long from, Long to) {
-        return toPValue(new BigDecimal(from + "." + to));
+        return toPValue(new GIntervalValue(from, to));
     }
 
     static PValue getPValue(Boolean value) { // 3state boolean
