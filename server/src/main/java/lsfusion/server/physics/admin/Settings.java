@@ -2742,6 +2742,17 @@ public class Settings implements Cloneable {
         this.removeClassesFallback = removeClassesFallback;
     }
 
+    // temporary fallback
+    private boolean noExecuteLocalEventsOnFormShowFallback = false;
+
+    public boolean isNoExecuteLocalEventsOnFormShowFallback() {
+        return noExecuteLocalEventsOnFormShowFallback;
+    }
+
+    public void setNoExecuteLocalEventsOnFormShowFallback(boolean noExecuteLocalEventsOnFormShowFallback) {
+        this.noExecuteLocalEventsOnFormShowFallback = noExecuteLocalEventsOnFormShowFallback;
+    }
+
     public void setUpdateSavePointsMinMultiplier(double updateSavePointsMinMultiplier) {
         this.updateSavePointsMinMultiplier = updateSavePointsMinMultiplier;
     }
