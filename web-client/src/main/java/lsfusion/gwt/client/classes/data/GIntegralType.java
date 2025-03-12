@@ -43,20 +43,23 @@ public abstract class GIntegralType extends GFormatType {
             return null;
 
         try {
-            return convertDouble(getFormat(pattern).parse(GwtClientUtils.editParse(s)));
+            return fromDoubleValue(getFormat(pattern).parse(GwtClientUtils.editParse(s)));
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
     }
 
-    public abstract PValue convertDouble(Double doubleValue);
-
     // render, edit
     @Override
     public String formatString(PValue value, String pattern) {
-        // there was doubleValue before, but not sure what for
-        return getFormat(pattern).format(PValue.getNumberValue(value));
+        if(value == null)
+            return "";
+
+        return getFormat(pattern).format(getDoubleValue(value));
     }
+
+    public abstract PValue fromDoubleValue(double doubleValue);
+    public abstract double getDoubleValue(PValue value);
 
     @Override
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
@@ -80,10 +83,13 @@ public abstract class GIntegralType extends GFormatType {
     }
 
     public PValue parseISOString(String value) throws ParseException {
-        return value.isEmpty() ? null : convertDouble(Double.valueOf(value));
+        return value.isEmpty() ? null : fromDoubleValue(Double.valueOf(value));
     }
 
     public String formatISOString(PValue value) {
-        return Double.toString(PValue.getNumberValue(value).doubleValue());
+        if (value == null)
+            return "";
+
+        return Double.toString(getDoubleValue(value));
     }
 }

@@ -4,14 +4,12 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.client.classes.data.ClientIntervalClass;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.interop.form.property.cell.IntervalValue;
 
 import javax.swing.*;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.EventObject;
-
-import static lsfusion.base.DateConverter.getIntervalPart;
 
 public class IntervalPropertyEditor extends JDateChooser implements PropertyEditor {
 
@@ -65,7 +63,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
             String text = dateEditor.getText();
             if (text.isEmpty())
                 return null;
-            BigDecimal parsedValue = (BigDecimal) intervalClass.parseString(text);
+            IntervalValue parsedValue = (IntervalValue) intervalClass.parseString(text);
             return parsedValue != null ? parsedValue : defaultValue;
         } catch (Exception e) {
             return defaultValue;
@@ -109,10 +107,11 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         @Override
         public Date getDate() {
             if (defaultValue != null) {
+                IntervalValue interval = IntervalValue.parseIntervalValue(defaultValue);
                 if (left)
-                    return new Date(getIntervalPart(defaultValue, true));
+                    return new Date(interval.from);
                 else if (right)
-                    return new Date(getIntervalPart(defaultValue, false));
+                    return new Date(interval.to);
             }
             return null;
         }
