@@ -20,8 +20,12 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    public PValue convertDouble(Double doubleValue) {
-        return PValue.getPValue(doubleValue.intValue());
+    public PValue fromDoubleValue(double doubleValue) {
+        return PValue.getPValue((int)doubleValue);
+    }
+    @Override
+    public double getDoubleValue(PValue value) {
+        return PValue.getIntValue(value);
     }
 
     @Override

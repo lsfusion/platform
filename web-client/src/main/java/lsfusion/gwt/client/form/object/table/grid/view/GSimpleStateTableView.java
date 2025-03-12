@@ -160,7 +160,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(value == null)
             return null;
         if(type instanceof GIntegralType)
-            return ((GIntegralType) type).convertDouble(toDouble(value));
+            return ((GIntegralType) type).fromDoubleValue(toDouble(value));
         if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
         if (type instanceof GADateType)
@@ -180,7 +180,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(value == null)
             return null;
         if(type instanceof GIntegralType)
-            return fromDouble((PValue.getNumberValue(value)).doubleValue());
+            return fromDouble(((GIntegralType) type).getDoubleValue(value));
         if(property != null && property.isPredefinedImage()) {
             AppBaseImage imageValue = PValue.getImageValue(value);
             if(imageToHTML)

@@ -1,8 +1,8 @@
 package lsfusion.base;
 
 import lsfusion.base.lambda.EFunction;
+import lsfusion.interop.form.property.cell.IntervalValue;
 
-import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -235,16 +235,11 @@ public class DateConverter {
         String[] dates = s.split(" - ");
         Long epochFrom = parseFunction.apply(dates[0]);
         Long epochTo = parseFunction.apply(dates[1]);
-        return epochFrom <= epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+        return epochFrom <= epochTo ? new IntervalValue(epochFrom, epochTo) : null;
     }
 
     public static String formatInterval(Object obj, Function<Long, String> formatFunction) {
-        return formatFunction.apply(getIntervalPart(obj, true)) + " - " + formatFunction.apply(getIntervalPart(obj, false));
-    }
-
-    public static Long getIntervalPart(Object o, boolean from) {
-        String object = String.valueOf(o);
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        IntervalValue interval = IntervalValue.parseIntervalValue(obj);
+        return formatFunction.apply(interval.from) + " - " + formatFunction.apply(interval.to);
     }
 }
