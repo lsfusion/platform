@@ -34,13 +34,9 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public PValue fromDoubleValue(double doubleValue) {
+    public PValue convertDouble(Double doubleValue) {
         return PValue.getPValue(doubleValue);
     }
-    public double getDoubleValue(PValue value) {
-        return PValue.getDoubleValue(value);
-    }
-
 
     @Override
     public String toString() {

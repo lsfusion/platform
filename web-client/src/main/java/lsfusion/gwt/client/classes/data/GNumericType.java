@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
-import lsfusion.gwt.client.form.property.cell.classes.GNumericDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.NumericCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
@@ -41,15 +40,6 @@ public class GNumericType extends GDoubleType {
     protected int getPrecision() {
         //as in server Settings
         return precision.isUnlimited() ? 127 : precision.value;
-    }
-
-    @Override
-    public PValue fromDoubleValue(double doubleValue) {
-        return PValue.getPValue(new GNumericDTO(doubleValue));
-    }
-    @Override
-    public double getDoubleValue(PValue value) {
-        return PValue.getNumericValue(value).value;
     }
 
     protected int getScale() {

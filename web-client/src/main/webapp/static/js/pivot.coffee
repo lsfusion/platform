@@ -229,7 +229,7 @@ callWithJQuery ($) ->
     rx = /(\d+)|(\D+)/g
     rd = /\d/
     rz = /^0/
-    naturalSort = (as, bs, attr, callbacks) =>
+    naturalSort = (as, bs) =>
         #nulls first
         return -1 if bs? and not as?
         return  1 if as? and not bs?
@@ -239,8 +239,8 @@ callWithJQuery ($) ->
         return  1 if typeof bs == "number" and isNaN(bs)
 
         #numbers and numbery strings group together
-        nas = if callbacks then callbacks.formatNumeric(attr, as) else +as
-        nbs = if callbacks then callbacks.formatNumeric(attr, bs) else +bs
+        nas = +as
+        nbs = +bs
         return -1 if nas < nbs
         return  1 if nas > nbs
 
@@ -254,8 +254,8 @@ callWithJQuery ($) ->
         return  1 if isNaN(nas) and not isNaN(nbs)
 
         #finally, "smart" string sorting per http://stackoverflow.com/a/4373421/112871
-        a = if callbacks then callbacks.formatValue(attr, as, true) else String(as)
-        b = if callbacks then callbacks.formatValue(attr, bs, true) else String(bs)
+        a = String(as)
+        b = String(bs)
         return 0 if a == b
         return (if a > b then 1 else -1) unless rd.test(a) and rd.test(b)
 
@@ -364,11 +364,11 @@ callWithJQuery ($) ->
                     return if v != (record[k] ? "null")
                 callback(record)
 
-        arrSort: (attrs, callbacks) =>
+        arrSort: (attrs) =>
             sortersArr = (getSort(@sorters, a) for a in attrs)
             (a,b) ->
                 for own i, sorter of sortersArr
-                    comparison = sorter(a[i], b[i], attrs[i], callbacks)
+                    comparison = sorter(a[i], b[i])
                     return comparison if comparison != 0
                 return 0
 
@@ -379,11 +379,11 @@ callWithJQuery ($) ->
                 switch @rowOrder
                     when "value_a_to_z"  then @rowKeys.sort (a,b) =>  naturalSort v(a,[]), v(b,[])
                     when "value_z_to_a" then @rowKeys.sort (a,b) => -naturalSort v(a,[]), v(b,[])
-                    else             @rowKeys.sort @arrSort(@rowAttrs, @callbacks)
+                    else             @rowKeys.sort @arrSort(@rowAttrs)
                 switch @colOrder
                     when "value_a_to_z"  then @colKeys.sort (a,b) =>  naturalSort v([],a), v([],b)
                     when "value_z_to_a" then @colKeys.sort (a,b) => -naturalSort v([],a), v([],b)
-                    else             @colKeys.sort @arrSort(@colAttrs, @callbacks)
+                    else             @colKeys.sort @arrSort(@colAttrs)
 
         getColKeys: () =>
             @sortKeys()
@@ -616,7 +616,7 @@ callWithJQuery ($) ->
     Pivot Table core: create PivotData object and call Renderer on it
     ###
 
-    $.fn.pivot = (input, inputOpts, locale="en", clusterize) ->
+    $.fn.pivot = (input, inputOpts, locale="en") ->
         locale = "en" if not locales[locale]?
         defaults =
             cols : [], rows: [], vals: []
@@ -643,7 +643,7 @@ callWithJQuery ($) ->
         try
             pivotData = new opts.dataClass(input, opts)
             try
-                result = opts.renderer(pivotData, opts.rendererOptions, clusterize)
+                result = opts.renderer(pivotData, opts.rendererOptions)
             catch e
                 console.error(e.stack) if console?
                 result = $("<span>").html opts.localeStrings.renderError
@@ -660,7 +660,7 @@ callWithJQuery ($) ->
     Pivot Table UI: calls Pivot Table core above with options set by user
     ###
 
-    $.fn.pivotUI = (input, inputOpts, overwrite = false, locale="en", clusterize) ->
+    $.fn.pivotUI = (input, inputOpts, overwrite = false, locale="en") ->
         locale = "en" if not locales[locale]?
         defaults =
             derivedAttributes: {}
@@ -720,7 +720,7 @@ callWithJQuery ($) ->
                         if recordsProcessed > 0
                             attrValues[attr]["null"] = recordsProcessed
                 for attr of attrValues
-                    value = if opts.callbacks then opts.callbacks.formatValue(attr, record[attr], true) else record[attr] ? "null"
+                    value = record[attr] ? "null"
                     attrValues[attr][value] ?= 0
                     attrValues[attr][value]++
                 recordsProcessed++
@@ -1221,7 +1221,7 @@ callWithJQuery ($) ->
                 drawSize = opts.attach()
                 subopts.rendererOptions.plotly = $.extend {}, subopts.rendererOptions.plotly, drawSize
 
-                pivotScrollDiv.pivot(materializedInput,subopts,locale, clusterize)
+                pivotScrollDiv.pivot(materializedInput,subopts,locale)
 
                 opts.afterRefresh() if opts.afterRefresh?
                 

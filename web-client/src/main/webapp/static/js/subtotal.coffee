@@ -15,14 +15,13 @@ callWithJQuery ($) ->
             
             @rowAttrGroups = convertAttrsToGroups @rowAttrs, opts.rendererOptions.rowSubtotalDisplay.splitPositions
             @rowAttrIndex = buildRowAttrsIndex @rowAttrGroups
-            @callbacks = opts.callbacks
                 
-        processKey = (callbacks, record, totals, keys, attrs, getAggregator) ->
+        processKey = (record, totals, keys, attrs, getAggregator) ->
             key = []
             addKey = false
             for attr in attrs
                 key.push record[attr] # ? "null"
-                flatKey = (if callbacks then callbacks.formatArray(attrs, key) else key).join String.fromCharCode(0)
+                flatKey = key.join String.fromCharCode(0)
                 if not totals[flatKey]
                     totals[flatKey] = getAggregator key.slice()
                     addKey = true
@@ -35,20 +34,20 @@ callWithJQuery ($) ->
             colKey = []
 
             @allTotal.push record
-            rowKey = processKey @callbacks, record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
+            rowKey = processKey record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
                 return @aggregator this, key, []
-            colKey = processKey @callbacks, record, @colTotals, @colKeys, @colAttrs, (key) =>
+            colKey = processKey record, @colTotals, @colKeys, @colAttrs, (key) =>
                 return @aggregator this, [], key
             m = rowKey.length-1
             n = colKey.length-1
             return if m < 0 or n < 0
             for i in [0..m]
                 fRowKey = rowKey.slice(0, i+1)
-                flatRowKey = (if @callbacks then @callbacks.formatArray(@rowAttrs, fRowKey) else fRowKey).join String.fromCharCode(0)
+                flatRowKey = fRowKey.join String.fromCharCode(0)
                 @tree[flatRowKey] = {} if not @tree[flatRowKey]
                 for j in [0..n]
                     fColKey = colKey.slice 0, j+1
-                    flatColKey = (if @callbacks then @callbacks.formatArray(@colAttrs, fColKey) else fColKey).join String.fromCharCode(0)
+                    flatColKey = fColKey.join String.fromCharCode(0)
                     @tree[flatRowKey][flatColKey] = @aggregator this, fRowKey, fColKey if not @tree[flatRowKey][flatColKey]
                     @tree[flatRowKey][flatColKey].push record
 
@@ -61,11 +60,11 @@ callWithJQuery ($) ->
                 switch @colOrder
                     when "value_a_to_z" then @colKeys.sort (a,b) =>  $.pivotUtilities.naturalSort v([],a), v([],b)
                     when "value_z_to_a" then @colKeys.sort (a,b) => -$.pivotUtilities.naturalSort v([],a), v([],b)
-                    else                     @colKeys.sort @arrSort(@colAttrs, @callbacks)
+                    else                     @colKeys.sort @arrSort(@colAttrs)
 
         rowAttrsSortPredicate: () =>
             groupPredicates = (@groupPredicate group for group in @rowAttrGroups)
-            @multiplePredicatesSort groupPredicates, @callbacks
+            @multiplePredicatesSort groupPredicates
 
         groupPredicate: (attrGroup) =>
             predicates = []
@@ -77,8 +76,8 @@ callWithJQuery ($) ->
                     lastKeyIndex = @rowAttrIndex[attrGroup[attrGroup.length-1]]
                     predicates.push @valuePredicate sortItem, lastKeyIndex
             if predicates.length == 0
-                predicates.push @defaultPredicate attrGroup, @rowAttrIndex, @callbacks
-            @multiplePredicatesSort predicates, @callbacks
+                predicates.push @defaultPredicate attrGroup, @rowAttrIndex      
+            @multiplePredicatesSort predicates
         
         rowAxisPredicate: (sortItem) =>
             index = @rowAttrIndex[sortItem.value]
@@ -97,18 +96,18 @@ callWithJQuery ($) ->
                 else
                     return -$.pivotUtilities.naturalSort(value(a[0..lastKeyIndex], colKey), value(b[0..lastKeyIndex], colKey))
             
-        defaultPredicate: (attrGroup, rowAttrIndex, callbacks) =>
+        defaultPredicate: (attrGroup, rowAttrIndex) =>
             (a, b) ->
                 for attr in attrGroup
                     i = rowAttrIndex[attr]
-                    result = $.pivotUtilities.naturalSort(a[i], b[i], attr, callbacks)
+                    result = $.pivotUtilities.naturalSort(a[i], b[i])
                     return result if result != 0
                 return 0
             
-        multiplePredicatesSort: (predicates, callbacks) =>
+        multiplePredicatesSort: (predicates) =>
             (a, b) ->
                 for predicate in predicates
-                    result = predicate(a, b, callbacks)
+                    result = predicate(a, b)
                     return result if result != 0
                 return 0
 
@@ -132,7 +131,7 @@ callWithJQuery ($) ->
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
 
 
-    SubtotalRenderer = (pivotData, opts, clusterize) ->
+    SubtotalRenderer = (pivotData, opts) ->
         defaults =
             table: clickCallback: null
             localeStrings: totals: "Totals", subtotalOf: "Subtotal of"
@@ -340,7 +339,7 @@ callWithJQuery ($) ->
         setAttributes = (e, attrs) ->
             e.setAttribute a, v for own a, v of attrs
 
-        processColKeys = (colAttrs, keysArr) ->
+        processColKeys = (keysArr) ->
             lastIdx = keysArr[0].length-1
             headers = children: []
             row = 0
@@ -348,43 +347,41 @@ callWithJQuery ($) ->
                 (val0, k0) => 
                     col = 0
                     k0.reduce(
-                        (acc, curVal, curIdx) =>
-                            curValString = if callbacks then callbacks.formatValue(colAttrs[curIdx], curVal, false) else curVal
-                            if not acc[curValString]
+                        (acc, curVal, curIdx) => 
+                            if not acc[curVal]
                                 key = k0.slice 0, col+1
-                                acc[curValString] =
+                                acc[curVal] =
                                     row: row
                                     col: col
                                     descendants: 0
                                     children: []
                                     value: curVal
                                     key: key 
-                                    flatKey: (if callbacks then callbacks.formatArray(colAttrs, key) else key).join String.fromCharCode(0)
+                                    flatKey: key.join String.fromCharCode(0) 
                                     firstLeaf: null 
                                     leaves: 0
                                     parent: if col isnt 0 then acc else null
                                     childrenSpan: 0
-                                acc.children.push curValString
+                                acc.children.push curVal
                             if col > 0 
                                 acc.descendants++
                             col++
                             if curIdx == lastIdx
                                 node = headers
                                 for i in [0..lastIdx-1] when lastIdx > 0
-                                    index = if callbacks then callbacks.formatValue(colAttrs[i], k0[i]) else k0[i]
-                                    node[index].leaves++
-                                    if not node[index].firstLeaf
-                                        node[index].firstLeaf = acc[curValString]
-                                    node = node[index]
+                                    node[k0[i]].leaves++
+                                    if not node[k0[i]].firstLeaf 
+                                        node[k0[i]].firstLeaf = acc[curVal]
+                                    node = node[k0[i]]
                                 return headers
-                            return acc[curValString]
+                            return acc[curVal]
                         headers)
                     row++
                     return headers
                 headers)
             return headers
 
-        processRowKeys = (rowAttrs, keysArr, className, splitPositions) ->
+        processRowKeys = (keysArr, className, splitPositions) ->
             lastIdx = keysArr[0].length-1
             headers = children: []
             row = 0
@@ -392,13 +389,11 @@ callWithJQuery ($) ->
                 (val0, k0) => 
                     col = 0
                     curElement = []
-                    curColumns = []
                     k0.reduce(
                         (acc, curVal, curIdx) => 
                             curElement.push curVal
-                            curColumns.push rowAttrs[curIdx]
                             if splitPositions.indexOf(curIdx) != -1
-                                flatCurElement = (if callbacks then callbacks.formatArray(curColumns, curElement) else curElement).join String.fromCharCode(0)
+                                flatCurElement = curElement.join String.fromCharCode(0)
                                 if not acc[flatCurElement] 
                                     key = k0.slice 0, curIdx+1
                                     acc[flatCurElement] =
@@ -409,7 +404,7 @@ callWithJQuery ($) ->
                                         values: curElement
                                         text: flatCurElement
                                         key: key 
-                                        flatKey: (if callbacks then callbacks.formatArray(rowAttrs, key) else key).join String.fromCharCode(0)
+                                        flatKey: key.join String.fromCharCode(0)
                                         firstLeaf: null 
                                         leaves: 0
                                         parent: if col isnt 0 then acc else null
@@ -426,8 +421,7 @@ callWithJQuery ($) ->
                                             node.firstLeaf = acc[flatCurElement]
                                         node = node.parent
                                     return headers 
-                                curElement = []
-                                curColumns = []
+                                curElement = [] 
                                 return acc[flatCurElement]
                             else 
                                 return acc
@@ -562,9 +556,9 @@ callWithJQuery ($) ->
                 return false
             return splitPositions.indexOf(index) != -1    
 
-        buildColHeader = (callbacks, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) ->
+        buildColHeader = (axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts, colsData) ->
             # DF Recurse
-            buildColHeader callbacks, axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData for chKey in h.children
+            buildColHeader axisHeaders, attrHeaders, h[chKey], rowAttrs, colAttrs, node, opts, colsData for chKey in h.children
             # Process
             ah = axisHeaders.ah[h.col]
             ah.attrHeaders.push h
@@ -605,20 +599,6 @@ callWithJQuery ($) ->
             th = createColAttrHeaderTH [], true, "pvtTotalLabel rowTotal", "", undefined, colsWidth,  
                 rowspan: span
             tr.appendChild th
-
-        buildRowHeaders = (tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, start, childrenCnt) ->
-            startTime = Date.now()
-            finish = 0
-            for i in [start...childrenCnt]
-                finish = i
-                chKey = rowKeyHeaders.children[i]
-                buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts
-                if not clusterize && (Date.now() - startTime) > 100 #100ms check
-                    break
-            if finish + 1 < childrenCnt
-                setTimeout ->
-                    buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, finish + 1, childrenCnt
-                , 0
 
         buildRowHeader = (tbody, axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, isLastChildList, opts) ->
             for i in [0...h.children.length]
@@ -694,75 +674,44 @@ callWithJQuery ($) ->
                 eventHandlers[event] = (e) -> handler(e, value, filters, pivotData)
             return eventHandlers
 
-        buildValues = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts) ->
-            if clusterize
-                addClass scrollDiv, "clusterize-scroll"
-                addClass tbody, "clusterize-content"
-                c = new Clusterize(
-                    rows: []
-                    scrollElem: scrollDiv
-                    contentElem: tbody
-                );
-                clusterizedRowsDiv = createElement 'div'
-            setTimeout ->
-                fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, 0)
-            , 0
-
-        fillData = (scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, start) ->
-            startTime = Date.now()
-            finish = 0
-            for i in [start...rowAttrHeaders.length]
-                finish = i
-                rh = rowAttrHeaders[i]
-                if rh
-                    rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
-                    if rh.children.length > 0
-                        rCls += " pvtRowSubtotal"
-                        rCls += if opts.rowSubtotalDisplay.hideOnExpand then " #{classRowHide}" else "  #{classRowShow}"
+        buildValues = (tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts) ->
+            for rh in rowAttrHeaders
+                rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classRowExpanded}"
+                if rh.children.length > 0
+                    rCls += " pvtRowSubtotal"
+                    rCls += if opts.rowSubtotalDisplay.hideOnExpand then " #{classRowHide}" else "  #{classRowShow}"
+                else
+                    rCls += " #{classRowShow}"
+                tr = if rh.sTr then rh.sTr else rh.tr
+                for ch in colAttrHeaders when ch.col is colAttrs.length-1 or (ch.children.length isnt 0 and colSubtotalIsEnabled opts.colSubtotalDisplay, ch.col)
+                    aggregator = tree[rh.flatKey][ch.flatKey] ? { value: (-> null), format: -> "" }
+                    val = aggregator.value()
+                    cls = " #{rCls} col#{ch.row} colcol#{ch.col} #{classColExpanded}"
+                    if ch.children.length > 0
+                        cls += " pvtColSubtotal"
+                        cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
                     else
-                        rCls += " #{classRowShow}"
-                    tr = if rh.sTr then rh.sTr else rh.tr
-                    for ch in colAttrHeaders when ch.col is colAttrs.length-1 or (ch.children.length isnt 0 and colSubtotalIsEnabled opts.colSubtotalDisplay, ch.col)
-                        aggregator = tree[rh.flatKey][ch.flatKey] ? { value: (-> null), format: -> "" }
-                        val = aggregator.value()
-                        cls = " #{rCls} col#{ch.row} colcol#{ch.col} #{classColExpanded}"
-                        if ch.children.length > 0
-                            cls += " pvtColSubtotal"
-                            cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
-                        else
-                            cls += " #{classColShow}"
-                        td = createValueTD val, rh.key, ch.key, aggregator, cls,
-                            "data-value": val
-                            "data-rownode": rh.node
-                            "data-colnode": ch.node,
-                            getTableEventHandlers val, rh.key, ch.key, rowAttrs, colAttrs, opts
+                        cls += " #{classColShow}"
+                    td = createValueTD val, rh.key, ch.key, aggregator, cls, 
+                        "data-value": val
+                        "data-rownode": rh.node
+                        "data-colnode": ch.node,
+                        getTableEventHandlers val, rh.key, ch.key, rowAttrs, colAttrs, opts
 
-                        tr.appendChild td
+                    tr.appendChild td
 
-
-                    if not hideRowsTotalsCol
-                        # buildRowTotal
-                        totalAggregator = rowTotals[rh.flatKey]
-                        val = totalAggregator.value()
-                        td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
-                            "data-value": val
-                            "data-row": "row#{rh.row}"
-                            "data-rowcol": "col#{rh.col}"
-                            "data-rownode": rh.node,
-                            getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
-                        tr.appendChild td
-                    if c
-                        c.append([tr.outerHTML])
-                        clusterizedRowsDiv.appendChild tr
-
-                if (Date.now() - startTime) > 100 #100ms check
-                    break
-
-            setTimeout ->
-                if (finish + 1) < rowAttrHeaders.length
-                    fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, finish + 1)
-                else if callbacks then callbacks.finishFillData(clusterizedRowsDiv)
-            , 0
+        
+                if not hideRowsTotalsCol            
+                    # buildRowTotal
+                    totalAggregator = rowTotals[rh.flatKey]
+                    val = totalAggregator.value()
+                    td = createValueTD val, rh.key, [], totalAggregator, "pvtTotal rowTotal #{rCls}",
+                        "data-value": val
+                        "data-row": "row#{rh.row}"
+                        "data-rowcol": "col#{rh.col}"
+                        "data-rownode": rh.node,
+                        getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
+                    tr.appendChild td
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
             tr = createElement "tr"
@@ -1128,14 +1077,12 @@ callWithJQuery ($) ->
                 colCnt += th.colSpan
             return colCnt
             
-        main = (rowAttrs, rowKeys, colAttrs, colKeys, clusterize) ->
-            if callbacks then callbacks.startFillData()
-
+        main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
             rowAttrHeaders = []
             colAttrHeaders = []
 
-            colKeyHeaders = processColKeys colAttrs, colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
-            rowKeyHeaders = processRowKeys rowAttrs, rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
+            colKeyHeaders = processColKeys colKeys if colAttrs.length isnt 0 and colKeys.length isnt 0
+            rowKeyHeaders = processRowKeys rowKeys, "pvtRowLabel", rowSplitPositions if rowAttrs.length isnt 0 and rowKeys.length isnt 0
 
             outerDiv = createElement "div", "subtotalouterdiv"
 
@@ -1156,7 +1103,7 @@ callWithJQuery ($) ->
                 if colKeyHeaders?
                     node = counter: 0
                     for chKey in colKeyHeaders.children
-                        buildColHeader callbacks, colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData
+                        buildColHeader colAxisHeaders, colAttrHeaders, colKeyHeaders[chKey], rowAttrs, colAttrs, node, opts, colsData 
                         overallSpan += colKeyHeaders[chKey].th.colSpan
 
                 if not hideRowsTotalsCol        
@@ -1195,14 +1142,11 @@ callWithJQuery ($) ->
                 if rowKeyHeaders?
                     node = counter: 0
                     childrenCnt = rowKeyHeaders.children.length
-                    if clusterize
-                        buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, 0, childrenCnt
-                    else
-                        setTimeout ->
-                            buildRowHeaders tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders, rowAttrs, node, clusterize, opts, 0, childrenCnt
-                        , 0
+                    for i in [0...childrenCnt]
+                        chKey = rowKeyHeaders.children[i]
+                        buildRowHeader tbody, rowAxisHeaders, rowAttrHeaders, rowKeyHeaders[chKey], rowAttrs, colAttrs, node, [i == childrenCnt - 1], opts 
 
-            buildValues scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, clusterize, opts
+            buildValues tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts
             if not hideColsTotalRow
                 tr = buildColTotalsHeader longestGroupLength(rowGroups), colAttrs
                 buildColTotals tr, colAttrHeaders, rowAttrs, colAttrs, opts if colAttrs.length > 0
@@ -1226,10 +1170,10 @@ callWithJQuery ($) ->
             
             return outerDiv
 
-        return main rowAttrs, rowKeys, colAttrs, colKeys, clusterize
+        return main rowAttrs, rowKeys, colAttrs, colKeys
 
     $.pivotUtilities.subtotal_renderers =
-        "TABLE"             : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, opts, clusterize
+        "TABLE"             : (pvtData, opts) -> SubtotalRenderer pvtData, opts
         "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
         "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
         "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
