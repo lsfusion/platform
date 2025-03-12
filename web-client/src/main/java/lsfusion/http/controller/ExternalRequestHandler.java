@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -39,7 +38,16 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             handleRequest(sessionObject, request, response);
         } catch (Exception e) {
             if(e instanceof AuthenticationException) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                if(((AuthenticationException) e).redirect) {
+                    try {
+                        LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+                        response.sendRedirect(MainController.getURLPreservingParameters("/login", null, request));
+                    } catch (IOException e1) {
+                        throw Throwables.propagate(e1);
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                }
             } else {
                 response.setStatus(nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
                 response.setContentType(ExternalUtils.getHtmlContentType(ExternalUtils.javaCharset).toString());
