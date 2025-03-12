@@ -19,12 +19,8 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public PValue fromDoubleValue(double doubleValue) {
-        return PValue.getPValue((long)doubleValue);
-    }
-    @Override
-    public double getDoubleValue(PValue value) {
-        return PValue.getLongValue(value);
+    public PValue convertDouble(Double doubleValue) {
+        return PValue.getPValue(doubleValue.longValue());
     }
 
     @Override

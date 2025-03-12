@@ -17,7 +17,6 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.MergeFunctionSet;
 import lsfusion.base.lambda.set.RemoveFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
@@ -61,7 +60,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 329;
+        return 328;
     }
 
     public static String getPlatformVersion() {
@@ -289,10 +288,6 @@ public class BaseUtils {
             return Instant.ofEpochMilli(inStream.readLong());
         }
 
-        if(objectType == 21) {
-            return new IntervalValue(inStream.readLong(), inStream.readLong());
-        }
-
         if (objectType == 14) {
             int len = inStream.readInt();
             return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
@@ -476,13 +471,6 @@ public class BaseUtils {
         if(object instanceof Instant) {
             outStream.writeByte(13);
             outStream.writeLong(((Instant) object).toEpochMilli());
-            return;
-        }
-
-        if(object instanceof IntervalValue) {
-            outStream.writeByte(21);
-            outStream.writeLong(((IntervalValue) object).from);
-            outStream.writeLong(((IntervalValue) object).to);
             return;
         }
 

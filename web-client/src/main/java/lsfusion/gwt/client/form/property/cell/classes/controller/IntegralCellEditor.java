@@ -55,8 +55,12 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
 
     @Override
     protected String tryFormatInputText(PValue value) {
-        if(isNative())
+        if(isNative()) {
+            if (value == null)
+                return "";
+
             return type.formatISOString(value);
+        }
 
         String result = super.tryFormatInputText(value);
 

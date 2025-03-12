@@ -32,8 +32,7 @@ public class GDateDTO implements Serializable {
     
     @Override
     public String toString() {
-        assert false;
-        return new java.sql.Date(year - 1900, month - 1, day).toString();
+        return GDateType.instance.formatString(PValue.getPValue(this), null);
     }
 
     @Override
