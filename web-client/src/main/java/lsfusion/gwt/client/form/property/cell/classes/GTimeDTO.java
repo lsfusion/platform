@@ -33,7 +33,8 @@ public class GTimeDTO implements Serializable {
 
     @Override
     public String toString() {
-        return GTimeType.instance.formatString(PValue.getPValue(this), null);
+        assert false;
+        return toJsDate().toString();
     }
 
     @Override

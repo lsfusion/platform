@@ -460,7 +460,7 @@
     rx = /(\d+)|(\D+)/g;
     rd = /\d/;
     rz = /^0/;
-    naturalSort = (as, bs) => {
+    naturalSort = (as, bs, attr, callbacks) => {
       var a, a1, b, b1, nas, nbs;
       if ((bs != null) && (as == null)) {
         //nulls first
@@ -477,8 +477,8 @@
         return 1;
       }
       //numbers and numbery strings group together
-      nas = +as;
-      nbs = +bs;
+      nas = callbacks ? callbacks.formatNumeric(attr, as) : +as;
+      nbs = callbacks ? callbacks.formatNumeric(attr, bs) : +bs;
       if (nas < nbs) {
         return -1;
       }
@@ -503,8 +503,8 @@
         return 1;
       }
       //finally, "smart" string sorting per http://stackoverflow.com/a/4373421/112871
-      a = String(as);
-      b = String(bs);
+      a = callbacks ? callbacks.formatValue(attr, as, true) : String(as);
+      b = callbacks ? callbacks.formatValue(attr, bs, true) : String(bs);
       if (a === b) {
         return 0;
       }
@@ -690,7 +690,7 @@
         });
       }
 
-      arrSort(attrs) {
+      arrSort(attrs, callbacks) {
         var a, sortersArr;
         sortersArr = (function() {
           var l, len1, results;
@@ -706,7 +706,7 @@
           for (i in sortersArr) {
             if (!hasProp.call(sortersArr, i)) continue;
             sorter = sortersArr[i];
-            comparison = sorter(a[i], b[i]);
+            comparison = sorter(a[i], b[i], attrs[i], callbacks);
             if (comparison !== 0) {
               return comparison;
             }
@@ -734,7 +734,7 @@
               });
               break;
             default:
-              this.rowKeys.sort(this.arrSort(this.rowAttrs));
+              this.rowKeys.sort(this.arrSort(this.rowAttrs, this.callbacks));
           }
           switch (this.colOrder) {
             case "value_a_to_z":
@@ -746,7 +746,7 @@
                 return -naturalSort(v([], a), v([], b));
               });
             default:
-              return this.colKeys.sort(this.arrSort(this.colAttrs));
+              return this.colKeys.sort(this.arrSort(this.colAttrs, this.callbacks));
           }
         }
       }
@@ -1060,7 +1060,7 @@
     /*
     Pivot Table core: create PivotData object and call Renderer on it
     */
-    $.fn.pivot = function(input, inputOpts, locale = "en") {
+    $.fn.pivot = function(input, inputOpts, locale = "en", clusterize) {
       var defaults, e, localeDefaults, localeStrings, opts, pivotData, result, x;
       if (locales[locale] == null) {
         locale = "en";
@@ -1091,7 +1091,7 @@
       try {
         pivotData = new opts.dataClass(input, opts);
         try {
-          result = opts.renderer(pivotData, opts.rendererOptions);
+          result = opts.renderer(pivotData, opts.rendererOptions, clusterize);
         } catch (error) {
           e = error;
           if (typeof console !== "undefined" && console !== null) {
@@ -1115,7 +1115,7 @@
     /*
     Pivot Table UI: calls Pivot Table core above with options set by user
     */
-    $.fn.pivotUI = function(input, inputOpts, overwrite = false, locale = "en") {
+    $.fn.pivotUI = function(input, inputOpts, overwrite = false, locale = "en", clusterize) {
       var a, aggrSelector, aggregator, attr, attrLength, attrValues, c, colOrderArrow, createPaxis, defaults, e, existingOpts, fillPaxis, i, initialRender, l, len1, localeDefaults, localeStrings, materializedInput, opts, ordering, pivotRendererBody, pivotRendererFooter, pivotRendererHeader, pivotScrollDiv, pivotTable, plotlyDefaults, pvtColumns, pvtColumnsDiv, pvtColumnsRow, pvtColumnsTable, pvtRows, pvtRowsDiv, pvtRowsTable, pvtUiContainer, recordsProcessed, ref, ref1, refresh, refreshDelayed, refreshPaxis, renderer, rendererControl, rendererControlDiv, resizeObserverRows, resizeObserverUnused, shownAttributes, shownInAggregators, shownInDragDrop, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, unusedDiv, unusedDivWrapper, x;
       if (locales[locale] == null) {
         locale = "en";
@@ -1191,7 +1191,7 @@
             }
           }
           for (attr in attrValues) {
-            value = (ref = record[attr]) != null ? ref : "null";
+            value = opts.callbacks ? opts.callbacks.formatValue(attr, record[attr], true) : (ref = record[attr]) != null ? ref : "null";
             if ((base = attrValues[attr])[value] == null) {
               base[value] = 0;
             }
@@ -1772,7 +1772,7 @@
           //plotly needs explicit sizes, and we have to do it during refresh, since draw element may not added to the dom yet
           drawSize = opts.attach();
           subopts.rendererOptions.plotly = $.extend({}, subopts.rendererOptions.plotly, drawSize);
-          pivotScrollDiv.pivot(materializedInput, subopts, locale);
+          pivotScrollDiv.pivot(materializedInput, subopts, locale, clusterize);
           if (opts.afterRefresh != null) {
             opts.afterRefresh();
           }

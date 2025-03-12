@@ -37,6 +37,7 @@ import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPrefer
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.session.ExternalHttpResponse;
 
@@ -44,6 +45,7 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,6 +93,16 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GZDateTimeDTO.class)
     public Instant convertDateTime(GZDateTimeDTO dto) {
         return Instant.ofEpochMilli(dto.instant);
+    }
+
+    @Converter(from = GNumericDTO.class)
+    public BigDecimal convertBigDecimal(GNumericDTO dto) {
+        return new BigDecimal(dto.value);
+    }
+
+    @Converter(from = GIntervalValue.class)
+    public IntervalValue convertIntervalValue(GIntervalValue dto) {
+        return new IntervalValue(dto.from, dto.to);
     }
 
     @Converter(from = GFont.class)

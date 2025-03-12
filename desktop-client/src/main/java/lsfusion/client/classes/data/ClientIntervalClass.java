@@ -8,9 +8,9 @@ import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.property.cell.IntervalValue;
 
 import java.awt.*;
-import java.math.BigDecimal;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParseException;
@@ -85,7 +85,7 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
 
         @Override
         public StringBuffer format(Object o, StringBuffer stringBuffer, FieldPosition fieldPosition) {
-            if (o instanceof BigDecimal)
+            if (o instanceof IntervalValue)
                 return new StringBuffer(intervalClass.formatString(o));
 
             return null;
