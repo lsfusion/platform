@@ -113,6 +113,8 @@ public class MainFrame implements EntryPoint {
     public static double v5 = 5.9999;
     public static double cssBackwardCompatibilityLevel;
 
+    public static boolean useClusterizeInPivot;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -687,6 +689,8 @@ public class MainFrame implements EntryPoint {
                 jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;
 
                 cssBackwardCompatibilityLevel = gClientSettings.cssBackwardCompatibilityLevel;
+
+                useClusterizeInPivot = gClientSettings.useClusterizeInPivot;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
