@@ -260,7 +260,7 @@ zipReportResources() {
     makeZipFile(TRUE);
 }
 
-TABLE resources();
+TABLE resources() NODEFAULT;
 reportResources = DATA FILE() TABLE resources;
 md5ReportResources = DATA STRING() TABLE resources;
 
