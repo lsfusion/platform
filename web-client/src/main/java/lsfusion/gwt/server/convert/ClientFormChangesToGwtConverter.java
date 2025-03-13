@@ -348,12 +348,13 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = LocalTime.class)
     public GTimeDTO convertTime(LocalTime time) {
-        return new GTimeDTO(time.getHour(), time.getMinute(), time.getSecond());
+        return new GTimeDTO(time.getHour(), time.getMinute(), time.getSecond(), time.getNano() / 1000000);
     }
 
     @Converter(from = LocalDateTime.class)
     public GDateTimeDTO convertDateTime(LocalDateTime dateTime) {
-        return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond());
+        return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(),
+                dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano() / 1000000);
     }
 
     @Converter(from = Instant.class)

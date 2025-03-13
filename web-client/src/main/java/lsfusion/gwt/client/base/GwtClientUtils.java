@@ -1638,12 +1638,12 @@ public class GwtClientUtils {
         return $wnd.createPlainDate(year,month, date);
     }-*/;
 
-    public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds);
+    public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds, int milliseconds)/*-{
+        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds, milliseconds);
     }-*/;
 
-    public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds);
+    public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds, int milliseconds)/*-{
+        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds, milliseconds);
     }-*/;
     public static native int getUTCYear(JsDate date)/*-{
         return date.getUTCFullYear();
@@ -1662,6 +1662,9 @@ public class GwtClientUtils {
     }-*/;
     public static native int getUTCSeconds(JsDate date)/*-{
         return date.getUTCSeconds();
+    }-*/;
+    public static native int getUTCMilliseconds(JsDate date)/*-{
+        return date.getUTCMilliseconds();
     }-*/;
 
     public static native String getClientTimeZone()/*-{

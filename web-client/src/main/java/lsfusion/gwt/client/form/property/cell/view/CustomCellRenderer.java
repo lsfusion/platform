@@ -181,11 +181,11 @@ public class CustomCellRenderer extends CellRenderer {
             toDateDTO: function (year, month, day) {
                 return @lsfusion.gwt.client.form.property.cell.classes.GDateDTO::new(III)(year, month, day);
             },
-            toTimeDTO: function (hour, minute, second) {
-                return @lsfusion.gwt.client.form.property.cell.classes.GTimeDTO::new(III)(hour, minute, second);
+            toTimeDTO: function (hour, minute, second, millisecond) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GTimeDTO::new(IIII)(hour, minute, second, millisecond);
             },
-            toDateTimeDTO: function (year, month, day, hour, minute, second) {
-                return @lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO::new(IIIIII)(year, month, day, hour, minute, second);
+            toDateTimeDTO: function (year, month, day, hour, minute, second, millisecond) {
+                return @lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO::new(IIIIIII)(year, month, day, hour, minute, second, millisecond);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();

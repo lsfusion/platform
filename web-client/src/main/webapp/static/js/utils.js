@@ -12,8 +12,8 @@ function createPlainDateCurrent() {
 function createPlainDate(year, month, date) {
     return new Date(year, month, date);
 }
-function createPlainDateTime(year, month, date, hours, minutes, seconds) {
-    return new Date(year, month, date, hours, minutes, seconds);
+function createPlainDateTime(year, month, date, hours, minutes, seconds, milliseconds) {
+    return new Date(year, month, date, hours, minutes, seconds, milliseconds);
 }
 function createPlainDateTimeUTC(year, month, date, hours, minutes, seconds) {
     return new Date(Date.UTC(year, month, date, hours, minutes, seconds));

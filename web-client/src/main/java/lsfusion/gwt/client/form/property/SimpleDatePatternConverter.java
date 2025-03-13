@@ -54,6 +54,8 @@ public class SimpleDatePatternConverter {
                 return count == 2 ? "99" : "9999";
             case 'a':
                 return "AA";
+            case 'S':
+                return repeat('9', count);
         }
         return repeat(symbol, count);
     }
