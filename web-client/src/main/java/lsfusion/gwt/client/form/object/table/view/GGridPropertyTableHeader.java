@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
@@ -132,8 +133,11 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
 
         this.renderedCaptionElement = renderTD(th, rerender,  sortDir, caption, captionElementClass, image, false, property, table.getUserHeaderHeight(), table.getGrid());
-        if(!rerender)
-            tippy = TooltipManager.initTooltip(new PopupOwner(table.getPopupOwnerWidget(), th), tooltipHelper);
+        if(!rerender) {
+            Element el = th.getFirstChildElement();
+            Widget owner = table.getPopupOwnerWidget();
+            tippy = TooltipManager.initTooltip(new PopupOwner(owner, el), tooltipHelper);
+        }
         renderedSortDir = sortDir;
         renderedCaption = caption;
         renderedCaptionElementClass = captionElementClass;

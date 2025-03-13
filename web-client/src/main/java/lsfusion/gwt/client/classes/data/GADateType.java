@@ -28,7 +28,7 @@ public abstract class GADateType extends GFormatType {
     @Override
     protected PValue getDefaultWidthValue() {
         if(wideFormattableDateTime == null)
-            wideFormattableDateTime = GwtClientUtils.createJsDate(1991,11,21,10,55,55);
+            wideFormattableDateTime = GwtClientUtils.createJsDate(1991,11,21,10,55,55,555);
         return fromJsDate(wideFormattableDateTime);
     }
 

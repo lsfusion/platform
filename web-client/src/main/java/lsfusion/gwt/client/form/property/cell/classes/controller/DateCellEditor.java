@@ -26,7 +26,8 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected String getSinglePattern() {
-        return replaceUnsupportedSymbols(type.getFormat(pattern).getPattern());
+        String singlePattern = replaceUnsupportedSymbols(type.getFormat(pattern).getPattern());
+        return singlePattern;
     }
 
     protected boolean isTimeEditor() {
