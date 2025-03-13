@@ -36,6 +36,18 @@ public class ThrowableWithStack {
             logger.error(prefix + ": " + (lsfStack.isEmpty() ? "" : '\n' + lsfStack), throwable);
     }
 
+    public String getString() {
+        if(isNoStackRequired())
+            return throwable.getMessage();
+        else
+            return ExceptionUtils.getExStackTrace(ExceptionUtils.toString(throwable), lsfStack);
+    }
+
+    @Override
+    public String toString() {
+        return getString();
+    }
+
     public RemoteException propagateRemote() throws RemoteException {
         ExecutionStackAspect.setExceptionStackString(lsfStack);
         throw ExceptionUtils.propagateRemoteException(throwable);

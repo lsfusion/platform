@@ -61,7 +61,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 329;
+        return 330;
     }
 
     public static String getPlatformVersion() {
@@ -2137,7 +2137,7 @@ public class BaseUtils {
 
     public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
-    public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Throwable> onFailedOrInterrupted) {
+    public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Future<T>> onFailedOrInterrupted) {
         if (timeout != null) {
             Future<T> future;
 
@@ -2151,10 +2151,7 @@ public class BaseUtils {
             try {
                 return future.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable e) {
-                future.cancel(true);
-
-                if(onFailedOrInterrupted != null)
-                    onFailedOrInterrupted.accept(e);
+                onFailedOrInterrupted.accept(future);
 
                 throw Throwables.propagate(e);
             }
@@ -2162,15 +2159,17 @@ public class BaseUtils {
             try {
                 return callable.call();
             } catch (Throwable e) {
-                if(onFailedOrInterrupted != null)
-                    onFailedOrInterrupted.accept(e);
+                onFailedOrInterrupted.accept(null);
 
                 throw Throwables.propagate(e);
             }
         }
     };
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
-        return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, null);
+        return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, future -> {
+            if(future != null)
+                future.cancel(true);
+        });
     }
 
     public static void writeObject(DataOutputStream outStream, Object object) throws IOException {

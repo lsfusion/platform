@@ -358,6 +358,7 @@ date '{system.events.date.exception}' = DATA DATETIME (Exception);
 fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
 lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
+asyncStackTrace '{system.events.async.stack.trace.exception}'= DATA TEXT (Exception);
 type '{system.events.type.exception}' = DATA STRING[250] (Exception);
 javaStackTrace '{system.events.er.trace.exception}' (Exception e) = CONCAT '\n', message(e), erTrace(e); 
 
@@ -788,7 +789,7 @@ FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
-    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace
+    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace
 ;
 
 DESIGN exceptions {

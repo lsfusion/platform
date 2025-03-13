@@ -1,20 +1,36 @@
 package lsfusion.server.base.controller.stack;
 
+import lsfusion.base.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
 public class NestedThreadException extends RuntimeException {
     private final ThrowableWithStack[] causes;
-    
+
     public NestedThreadException(ThrowableWithStack[] causes) {
-        super("Nested thread exception");
+        this("Nested thread exception", causes);
+    }
+
+    public NestedThreadException(String message, ThrowableWithStack[] causes) {
+        super(message);
         this.causes = causes;
     }
 
-    private abstract static class WriterOrPrintStream {
-        abstract void println(Object o);
-        
-        abstract void printStackTrace(Throwable t);
+    public NestedThreadException(Throwable cause, ThrowableWithStack[] causes) {
+        super(cause);
+        this.causes = causes;
+    }
+
+    public String getAsyncStacks() {
+        StringBuilder asyncStacks = new StringBuilder();
+        for(ThrowableWithStack cause : causes) {
+            if(asyncStacks.length() > 0)
+                asyncStacks.append("\n");
+            asyncStacks.append(cause.getString());
+        }
+        return asyncStacks.toString();
     }
 
     private static class WrapPrintStream extends WriterOrPrintStream {
@@ -79,5 +95,11 @@ public class NestedThreadException extends RuntimeException {
 
     public ThrowableWithStack[] getThrowables() {
         return causes;
+    }
+
+    private abstract static class WriterOrPrintStream {
+        abstract void println(Object o);
+
+        abstract void printStackTrace(Throwable t);
     }
 }

@@ -64,8 +64,8 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         if(e instanceof RemoteMessageException)
             return e.getMessage();
         
-        Pair<String, Pair<String, String>> actualStacks = RemoteInternalException.toString(e);
-        return actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.first, actualStacks.second.second);
+        Pair<String, RemoteInternalException.ExStacks> actualStacks = RemoteInternalException.toString(e);
+        return actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.javaStack, actualStacks.second.lsfStack)+'\n'+actualStacks.second.asyncStacks;
     }
 
     @Override

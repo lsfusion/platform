@@ -45,7 +45,7 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
         }
         // messages.internalServerError();
         String[] actualStacks = RemoteInternalDispatchException.toString(caught);
-        ErrorDialog.show(messages.error(), actualStacks[0], actualStacks[1], actualStacks[2], popupOwner);
+        ErrorDialog.show(messages.error(), actualStacks[0], actualStacks[1], actualStacks[2], actualStacks[3], popupOwner);
     }
 
     public static boolean isAuthException(Throwable caught) {
