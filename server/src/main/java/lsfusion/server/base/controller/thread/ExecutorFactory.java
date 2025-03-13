@@ -184,13 +184,15 @@ public class ExecutorFactory {
             } finally {
                 thread.set(null);
             }
-        }, timeout, serviceSupplier, e -> {
+        }, timeout, serviceSupplier, future -> {
             if(timeout != null) {
-                // thread already was interrupted with future.cancel(true)
-                try {
-                    ThreadUtils.interruptSQL(BL.getDbManager(), thread.result, true);
-                } catch (SQLException | SQLHandledException ex) {
-                    ServerLoggers.sqlSuppLog(ex);
+                Thread resultThread = thread.result;
+                if (resultThread != null) {
+                    try {
+                        ThreadUtils.interruptThread(BL.getDbManager(), resultThread);
+                    } catch (SQLException | SQLHandledException ex) {
+                        ServerLoggers.sqlSuppLog(ex);
+                    }
                 }
             }
         });

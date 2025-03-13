@@ -6,16 +6,15 @@ import lsfusion.server.data.sql.SQLSession;
 import java.sql.SQLException;
 
 public class SQLTimeoutException extends SQLHandledException {
-    public enum Type { INTERRUPT, CANCEL, TIMEOUT, TRANSACTTIMEOUT }
+    public SQLTimeoutException(Boolean isTransactTimeout, boolean isForcedCancel) {
+        this.isTransactTimeout = isTransactTimeout;
+        this.type = isForcedCancel ? Type.CANCEL : isTransactTimeout ? Type.TRANSACTTIMEOUT : Type.TIMEOUT;
+    }
 
     private final Boolean isTransactTimeout;
     public final Type type;
 
-    public SQLTimeoutException(Boolean isTransactTimeout, Boolean isForcedCancel) {
-        this.isTransactTimeout = isTransactTimeout;
-        this.type = isForcedCancel != null ? (isForcedCancel ? Type.INTERRUPT : Type.CANCEL) :
-                                                isTransactTimeout ? Type.TRANSACTTIMEOUT : Type.TIMEOUT;
-    }
+    public enum Type { CANCEL, TIMEOUT, TRANSACTTIMEOUT }
 
     @Override
     public String getMessage() {

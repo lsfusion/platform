@@ -252,7 +252,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             if (thread != null) {
                 Context context = getContext();
                 if (cancelable)
-                    ThreadUtils.interruptSQL(context.getLogicsInstance().getDbManager(), thread, false);
+                    ThreadUtils.interruptSQL(context.getLogicsInstance().getDbManager(), thread, null);
                 else
                     ThreadUtils.interruptThread(context, thread);
             }

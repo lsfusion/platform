@@ -23,7 +23,7 @@ public class ErrorDialog extends DialogModalWindow {
 
     private FlexTabbedPanel stacks = null;
 
-    public ErrorDialog(String caption, String messageHTML, String javaStack, String lsfStack) {
+    public ErrorDialog(String caption, String messageHTML, String javaStack, String lsfStack, String asyncStacks) {
         super(caption, false, ModalWindowSize.EXTRA_LARGE);
 
         ResizableComplexPanel body = new ResizableComplexPanel();
@@ -36,7 +36,7 @@ public class ErrorDialog extends DialogModalWindow {
         messageStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.9) + "px");
         messageStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.3) + "px");
 
-        if (javaStack != null || lsfStack != null) {
+        if (javaStack != null || lsfStack != null || asyncStacks != null) {
             stacks = new FlexTabbedPanel();
             if (javaStack != null) {
                 TextArea javaTA = new TextArea();
@@ -49,6 +49,12 @@ public class ErrorDialog extends DialogModalWindow {
                 GwtClientUtils.addClassNames(lsfTA, "dialog-error-stack", "form-control");
                 lsfTA.setText(lsfStack);
                 stacks.addTab(lsfTA, "LSF");
+            }
+            if (asyncStacks != null) {
+                TextArea asyncTA = new TextArea();
+                GwtClientUtils.addClassNames(asyncTA, "dialog-error-stack", "form-control");
+                asyncTA.setText(asyncStacks);
+                stacks.addTab(asyncTA, "Async");
             }
             stacks.selectTab(0);
             stacks.setVisible(false);
@@ -92,8 +98,8 @@ public class ErrorDialog extends DialogModalWindow {
         closeButton.setFocus(true);
     }
 
-    public static void show(String caption, String message, String javaStack, String lsfStack, PopupOwner popupOwner) {
-        new ErrorDialog(caption, message, javaStack, lsfStack).show(popupOwner);
+    public static void show(String caption, String message, String javaStack, String lsfStack, String asyncStacks, PopupOwner popupOwner) {
+        new ErrorDialog(caption, message, javaStack, lsfStack, asyncStacks).show(popupOwner);
     }
 
     @Override

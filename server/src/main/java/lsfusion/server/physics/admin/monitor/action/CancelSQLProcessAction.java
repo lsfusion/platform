@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.monitor.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -26,10 +27,8 @@ public class CancelSQLProcessAction extends InternalAction {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer processId = (Integer) findProperty("idSQLProcess[STRING[10]]").read(context, currentObject);
-            SQLSession.ExecutingStatement cancelStatement = SQLSession.getExecutingStatementSQL(processId);
-            if (cancelStatement != null)
-                cancelStatement.forcedCancel = true;
-            context.getSession().sql.executeDDL(context.getDbSyntax().getCancelActiveTaskQuery(processId));
+            if (!ThreadUtils.interruptThread(context.getDbManager(), SQLSession.getJavaSQLSession(processId)))
+                SQLSession.cancelExecutingStatement(context.getSession().sql, processId);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

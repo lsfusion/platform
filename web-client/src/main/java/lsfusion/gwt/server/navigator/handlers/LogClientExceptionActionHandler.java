@@ -93,7 +93,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
     public static Throwable fromWebServerToAppServer(Throwable throwable) {
         Throwable appThrowable;
         if (throwable instanceof RemoteInternalDispatchException) {
-            appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack);
+            appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack, ((RemoteInternalDispatchException) throwable).asyncStacks);
             ((RemoteInternalException)appThrowable).javaStack = ((RemoteInternalDispatchException) throwable).javaStack;
         } else if(throwable instanceof NonFatalHandledException) {
             appThrowable = new NonFatalRemoteClientException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);

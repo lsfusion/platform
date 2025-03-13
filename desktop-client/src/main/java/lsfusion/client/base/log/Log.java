@@ -113,15 +113,15 @@ public final class Log {
         if(remote instanceof RemoteInternalException)
             message += "\n" + getString("errors.contact.administrator");
 
-        Pair<String, String> exStacks = RemoteInternalException.getExStacks(remote);
-        error(message, null, null, null, exStacks.first, exStacks.second, false);
+        RemoteInternalException.ExStacks exStacks = RemoteInternalException.getExStacks(remote);
+        error(message, null, null, null, exStacks.javaStack, exStacks.lsfStack, exStacks.asyncStacks, false);
     }
 
     public static void messageWarning(String message, Color backgroundColor, List<String> titles, List<List<String>> data) {
-        error(message, backgroundColor, titles, data, "", null, true);
+        error(message, backgroundColor, titles, data, "", null, null, true);
     }
     
-    public static void error(String message, Color backgroundColor, List<String> titles, List<List<String>> data, String javaStack, String lsfStack, boolean warning) {
+    public static void error(String message, Color backgroundColor, List<String> titles, List<List<String>> data, String javaStack, String lsfStack, String asyncStacks, boolean warning) {
         if (ConnectionLostManager.isConnectionLost()) {
             return;
         }
@@ -179,15 +179,23 @@ public final class Log {
         JPanel textWithLine = new JPanel();
         textWithLine.setLayout(new BorderLayout(10, 10));
         textWithLine.add(new JSeparator(), BorderLayout.NORTH);
-        if (lsfStack != null) {
+        if (lsfStack != null || asyncStacks != null) {
             JTabbedPane stackPanes = new JTabbedPane();
             stackPanes.add("Java", javaStackInScroll);
-            
-            JTextArea lsfStackTA = new JTextArea(lsfStack, 7, 60);
-            lsfStackTA.setFont(logFont);
-            lsfStackTA.setForeground(getRequiredForeground());
-            stackPanes.add("LSF", new JScrollPane(lsfStackTA));
-            
+
+            if(lsfStack != null) {
+                JTextArea lsfStackTA = new JTextArea(lsfStack, 7, 60);
+                lsfStackTA.setFont(logFont);
+                lsfStackTA.setForeground(getRequiredForeground());
+                stackPanes.add("LSF", new JScrollPane(lsfStackTA));
+            }
+            if(asyncStacks != null) {
+                JTextArea asyncStackTA = new JTextArea(asyncStacks, 7, 60);
+                asyncStackTA.setFont(logFont);
+                asyncStackTA.setForeground(getRequiredForeground());
+                stackPanes.add("Async", new JScrollPane(asyncStackTA));
+            }
+
             textWithLine.add(stackPanes);
         } else {
             textWithLine.add(javaStackInScroll);
