@@ -420,6 +420,7 @@ DESIGN writeMessage {
             NEW left {
                 fill = 1;
                 NEW header {
+                    alignment = STRETCH;
                     MOVE PROPERTY(fromAddress(e));
                     MOVE PROPERTY(toAddress(e));
                     MOVE PROPERTY(ccAddress(e));
