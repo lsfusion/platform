@@ -82,12 +82,12 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GTimeDTO.class)
     public LocalTime convertTime(GTimeDTO dto) {
-        return LocalTime.of(dto.hour, dto.minute, dto.second);
+        return LocalTime.of(dto.hour, dto.minute, dto.second, dto.millisecond * 1000000);
     }
 
     @Converter(from = GDateTimeDTO.class)
     public LocalDateTime convertDateTime(GDateTimeDTO dto) {
-        return LocalDateTime.of(dto.year, dto.month, dto.day, dto.hour, dto.minute, dto.second);
+        return LocalDateTime.of(dto.year, dto.month, dto.day, dto.hour, dto.minute, dto.second, dto.millisecond * 1000000);
     }
 
     @Converter(from = GZDateTimeDTO.class)
