@@ -134,9 +134,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         this.renderedCaptionElement = renderTD(th, rerender,  sortDir, caption, captionElementClass, image, false, property, table.getUserHeaderHeight(), table.getGrid());
         if(!rerender) {
-            Element el = th.getFirstChildElement();
-            Widget owner = table.getPopupOwnerWidget();
-            tippy = TooltipManager.initTooltip(new PopupOwner(owner, el), tooltipHelper);
+            tippy = TooltipManager.initTooltip(new PopupOwner(table.getPopupOwnerWidget(), th.getFirstChildElement()), tooltipHelper);
         }
         renderedSortDir = sortDir;
         renderedCaption = caption;
