@@ -413,6 +413,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
 
             ClientType clientType = clientInfo.clientType;
+            assert clientType != ClientType.WEB_MOBILE;
             if (clientType == ClientType.WEB_DESKTOP) {
                 Boolean mobileMode = (Boolean) businessLogics.systemEventsLM.mobileMode.read(session);
                 if (mobileMode != null) {
