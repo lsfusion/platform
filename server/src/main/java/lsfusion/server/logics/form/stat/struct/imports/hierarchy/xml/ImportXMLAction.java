@@ -5,11 +5,13 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalAction;
 import lsfusion.server.logics.form.struct.FormEntity;
+import org.apache.commons.io.input.BOMInputStream;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
 
@@ -27,7 +29,7 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
     }
 
     public Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
-        Element rootNode = findRootNode(new SAXBuilder().build(file.getInputStream()).getRootElement(), root);
+        Element rootNode = findRootNode(new SAXBuilder().build(new InputStreamReader(new BOMInputStream(file.getInputStream()), charset)).getRootElement(), root);
         if(rootNode == null)
             throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
         return rootNode;
