@@ -105,7 +105,7 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias1, ..., objClassIdK objAlias
 
     - `charsetStr`
     
-        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `XML`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`.
+        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`. Для `XML` по умолчанию используется кодировка, указанная в заголовке. При её отсутствии - `UTF-8`.
 
 - `actionOperator`
 

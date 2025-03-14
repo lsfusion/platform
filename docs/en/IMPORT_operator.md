@@ -106,7 +106,7 @@ The first passed file is used to automatically determine a flat file format by i
 
     - `charsetStr`
     
-        A string literal that defines the encoding. Default value for `JSON`, `XML`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.
+        A string literal that defines the encoding. Default value for `JSON`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.For `XML` the encoding specified in the header is used by default. If it is absent, `UTF-8` is default.
 
 - `actionOperator`
 
