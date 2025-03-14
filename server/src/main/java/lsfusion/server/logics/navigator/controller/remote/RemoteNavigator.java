@@ -92,6 +92,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
@@ -968,7 +969,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw new RuntimeException("Ui is disabled. It can be enabled by using setting enableUI.");
 
         if(anonymous && enableUI == 1)
-            throw new AuthenticationException();
+            throw new AuthenticationException(getString("exceptions.user.must.be.authenticated"));
     }
 
     @Override

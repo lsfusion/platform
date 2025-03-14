@@ -59,6 +59,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -379,8 +380,31 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
+    private static void checkEnableApi(boolean anonymous, boolean forceAPI, boolean redirect) {
+        byte enableApi = Settings.get().getEnableAPI();
+        if(enableApi == 0) {
+            if(forceAPI)
+                enableApi = 1;
+            else
+                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        }
+
+        if(anonymous && enableApi == 1)
+            throw new AuthenticationException(getString("exceptions.user.must.be.authenticated"), redirect);
+    }
+
+    private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
+        writeRequestInfo(env, property.action, request, actionPathInfo);
+
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params));
+    }
+
+    protected AuthenticationException authException;
+
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
-        checkEnableApi(property, actionParam, script, request);
+        boolean isInteractive = property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT);
+
+        checkEnableApi(property, actionParam, script, request, isInteractive);
 
         RemoteNavigator.Notification runnable = new RemoteNavigator.Notification() {
             @Override
@@ -400,7 +424,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         if(request.needNotificationId)
             return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
-        else if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
+        else if(isInteractive) {
 
             int mode = Settings.get().getExternalUINotificationMode();
 
@@ -435,15 +459,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
-        writeRequestInfo(env, property.action, request, actionPathInfo);
-
-        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params));
-    }
-
-    protected AuthenticationException authException;
-
-    private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
+    private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request, boolean redirect) {
         boolean forceAPI = false;
         String annotation = property.action.annotation;
         if(annotation != null) {
@@ -458,20 +474,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        checkEnableApi(token.isAnonymous(), forceAPI);
-    }
-
-    private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
-        byte enableApi = Settings.get().getEnableAPI();
-        if(enableApi == 0) {
-            if(forceAPI)
-                enableApi = 1;
-            else
-                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
-        }
-
-        if(anonymous && enableApi == 1)
-            throw new AuthenticationException();
+        checkEnableApi(token.isAnonymous(), forceAPI, redirect);
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
