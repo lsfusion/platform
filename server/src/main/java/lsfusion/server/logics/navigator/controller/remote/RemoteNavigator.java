@@ -402,10 +402,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
+    private static int maxMobileWidthHeight = 570;
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
-
-            businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+            businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenWidth != null && clientInfo.screenHeight != null ? clientInfo.screenWidth + "x" + clientInfo.screenHeight : null, session, getConnection());
             businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
 
             if(clientInfo.initial) {
@@ -413,13 +413,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
 
             ClientType clientType = clientInfo.clientType;
-            if(clientType.isWeb()) {
+            if (clientType == ClientType.WEB_DESKTOP) {
                 Boolean mobileMode = (Boolean) businessLogics.systemEventsLM.mobileMode.read(session);
-                if(mobileMode != null) {
-                    clientType = mobileMode ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP;
+                if (mobileMode != null) {
+                    if (mobileMode) {
+                        clientType = ClientType.WEB_MOBILE;
+                    }
+                } else if (Math.min(clientInfo.screenHeight, clientInfo.screenWidth) <= maxMobileWidthHeight) {
+                    clientType = ClientType.WEB_MOBILE;
                 }
             }
-
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());
             this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
             this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;

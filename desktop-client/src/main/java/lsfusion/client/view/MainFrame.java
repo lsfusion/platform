@@ -78,10 +78,12 @@ public abstract class MainFrame extends JFrame {
 
                                         RemoteNavigatorInterface remoteNavigator = MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
 
-                                        String screenSize = null;
+                                        Integer width = null;
+                                        Integer height = null;
                                         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
                                         if(dimension != null) {
-                                            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+                                            width = (int) dimension.getWidth();
+                                            height = (int) dimension.getHeight();
                                         }
 
                                         GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
@@ -89,7 +91,7 @@ public abstract class MainFrame extends JFrame {
                                         DisplayMode dm = devices[0].getDefaultConfiguration().getDevice().getDisplayMode();
                                         double scale = dm.getWidth() / bounds.getWidth();
 
-                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, scale, ClientType.NATIVE_DESKTOP, false));
+                                        remoteNavigator.updateClientInfo(new ClientInfo(width, height, scale, ClientType.NATIVE_DESKTOP, false));
 
                                         return remoteNavigator;
                                     });

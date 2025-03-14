@@ -18,8 +18,4 @@ public enum ClientType {
                 throw new UnsupportedOperationException("Unsupported ClientType");
         }
     }
-
-    public boolean isWeb() {
-        return this == WEB_MOBILE || this == WEB_DESKTOP;
-    }
 }

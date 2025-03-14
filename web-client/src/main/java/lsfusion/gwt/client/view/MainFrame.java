@@ -69,7 +69,6 @@ public class MainFrame implements EntryPoint {
     public static boolean showDetailedInfo;
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
-    public static Boolean mobileMode;
     public static boolean suppressOnFocusChange;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
@@ -637,13 +636,12 @@ public class MainFrame implements EntryPoint {
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         double scale = getScale();
-        mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
 
         logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -657,8 +655,7 @@ public class MainFrame implements EntryPoint {
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
-                mobileMode = gClientSettings.mobileMode;
-                mobile = mobileMode != null ? mobileMode : mobile;
+                mobile = gClientSettings.mobile;
                 mobileAdjustment = mobile ? 1 : 0;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;

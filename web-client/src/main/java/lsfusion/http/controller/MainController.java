@@ -112,21 +112,27 @@ public class MainController {
     }
 
     public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
-        String screenSize = null;
+        String screenWidth = null;
+        String screenHeight = null;
         String scale = null;
 
         Cookie[] cookies = request.getCookies();
         if(cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("LSFUSION_SCREEN_SIZE")) {
-                    screenSize = cookie.getValue();
-                } else if(cookie.getName().equals("LSFUSION_SCALE")) {
+                if (cookie.getName().equals("LSFUSION_SCREEN_WIDTH")) {
+                    screenWidth = cookie.getValue();
+                } else if (cookie.getName().equals("LSFUSION_SCREEN_HEIGHT")) {
+                    screenHeight = cookie.getValue();
+                }else if(cookie.getName().equals("LSFUSION_SCALE")) {
                     scale = cookie.getValue();
                 }
             }
         }
-        if (screenSize != null) {
-            clientInfo.screenSize = screenSize;
+        if (screenWidth != null) {
+            clientInfo.screenWidth = Integer.parseInt(screenWidth);
+        }
+        if (screenHeight != null) {
+            clientInfo.screenHeight = Integer.parseInt(screenHeight);
         }
         if (scale != null) {
             clientInfo.scale = Double.parseDouble(scale);
@@ -463,7 +469,7 @@ public class MainController {
             sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
                     String result = navigatorProvider.createNavigator(sessionObject, request);
-                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true)));
+                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
                     return result;
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
