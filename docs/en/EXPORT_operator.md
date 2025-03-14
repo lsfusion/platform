@@ -122,7 +122,7 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
     - `charsetStr`
      
-        String literal that defines the encoding. 
+        String literal that defines the encoding. Default value for `JSON`, `XML`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.
 
 - `sheetProperty`
 
