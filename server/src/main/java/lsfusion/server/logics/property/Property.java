@@ -2869,10 +2869,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return true;
         }
     }
-    // assert that returns isValueFull property
-    public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, ValueUniqueType type) {
-        return isValueUnique(fixedExprs, type.isOptimistic());
-    }
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name
     private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number", "caption");
@@ -2882,10 +2878,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return false;
     }
 
-    // optimistic determines what to do when there is no statistics
-    public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+    public boolean isId() {
+        return getBaseLM().isId(this);
+    }
+
+    // assert that returns isValueFull property
+    public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, ValueUniqueType type) {
         if(!isValueFull(fixedExprs))
             return false;
+
+        if(getBaseLM().isUId(this))
+            return true;
 
         if(isNameValueUnique()) {
             String name = getName();
@@ -2896,7 +2899,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         // using selectStat (calculation logic), rather than going deep in the property types is better for 2 reasons:
         // 1. can use MATERIALIZED and its statistics
         // 2. can handle complex cases for example OVERRIDE empty ABSTRACT, ...
-        if(!optimistic) {
+        if(!type.isOptimistic()) {
             if(getInterfaceStat(fixedExprs).lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueUnique())))
                 return false;
         }

@@ -44,7 +44,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
+                if (mapImplMapping.size() != 1 || isNotId(mapImplement)) {
                     if (mapImplement.property.isDrillFull()) {
                         operandProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping)

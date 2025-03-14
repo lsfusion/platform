@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
@@ -66,12 +65,12 @@ public class LogFormEntity extends AutoFinalFormEntity {
         addGroupObject(logGroup);
 
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, LM.getRecognizeGroup());
+            addPropertyDraw(obj, LM.getIdGroup());
         }
 
         addPropertyDraw(logValueProperty, entities);
 
-        for (ActionOrPropertyClassImplement impl : getActionOrProperties(LM.getRecognizeGroup(), property.property.getValueClass(ClassType.logPolicy))) {
+        for (ActionOrPropertyClassImplement impl : getActionOrProperties(LM.getIdGroup(), property.property.getValueClass(ClassType.logPolicy))) {
             if(impl instanceof PropertyClassImplement) {
                 PropertyClassImplement<?> calcImpl = ((PropertyClassImplement)impl);
                 int paramCnt = logValueProperty.property.interfaces.size();

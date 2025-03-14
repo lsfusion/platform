@@ -43,7 +43,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         int i = 0;
         for (I pi : property.getReflectionOrderInterfaces()) {
             ObjectEntity paramObject = addSingleGroupObject(interfaceClasses.get(pi));
-            addPropertyDraw(paramObject, LM.getRecognizeGroup());
+            addPropertyDraw(paramObject, LM.getIdGroup());
             addValuePropertyDraw(LM, paramObject);
             paramObject.groupTo.setViewTypePanel();
 
@@ -91,8 +91,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         return design;
     }
 
-    protected boolean isNotRecognize(PropertyMapImplement<?, ?> mapImplement) {
-        return !LM.isRecognize(mapImplement.property);
+    protected boolean isNotId(PropertyMapImplement<?, ?> mapImplement) {
+        return !LM.isId(mapImplement.property);
     }
 
     @Override
