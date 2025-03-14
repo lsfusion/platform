@@ -103,9 +103,9 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias1, ..., objClassIdK objAlias
 
     Опция, указывающая кодировку файла, используемую при импорте.
 
-    `charsetStr`
+    - `charsetStr`
     
-        Cтроковый литерал, определяющий кодировку. 
+        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `XML`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`.
 
 - `actionOperator`
 
