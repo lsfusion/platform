@@ -2589,12 +2589,20 @@ public abstract class LogicsModule {
         return baseLM.baseGroup;
     }
 
-    public Group getRecognizeGroup() {
-        return baseLM.recognizeGroup;
+    public Group getIdGroup() {
+        return baseLM.idGroup;
     }
 
-    public boolean isRecognize(ActionOrProperty property) {
-        return getRecognizeGroup().hasChild(property);
+    public Group getUIdGroup() {
+        return baseLM.uidGroup;
+    }
+
+    public boolean isId(ActionOrProperty property) {
+        return getIdGroup().hasChild(property);
+    }
+
+    public boolean isUId(ActionOrProperty property) {
+        return getUIdGroup().hasChild(property);
     }
 
     public static class LocalPropertyData {

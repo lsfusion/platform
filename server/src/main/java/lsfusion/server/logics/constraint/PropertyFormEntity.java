@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
@@ -46,7 +45,7 @@ public class PropertyFormEntity extends AutoFinalFormEntity {
         if(properties.isEmpty()) {
             for(ObjectEntity object : objects)
                 addValuePropertyDraw(LM, object);
-            addPropertyDraw(LM.getRecognizeGroup(), property.usePrevHeur(), objects);
+            addPropertyDraw(LM.getIdGroup(), property.usePrevHeur(), objects);
         } else {
             for (PropertyMapImplement prop : properties) {
                 addPropertyDraw(prop.property, prop.mapping.join(mapObjects));
