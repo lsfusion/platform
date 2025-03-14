@@ -454,7 +454,7 @@ DESIGN writeMessage {
     }
 }
 
-writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, STRING replyMessage, STRING replyHeader) {
+writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, RICHTEXT message, STRING replyMessage, STRING replyHeader) {
     NEWSESSION {
         NEW e = Email {
             fromAddress(e) <- from;
@@ -462,6 +462,7 @@ writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, STR
             ccAddress(e) <- cc;
             bccAddress(e) <- bcc;
             subject(e) <- subject;
+            messageText() <- message;
             messageReply() <- replyMessage;
             DIALOG writeMessage OBJECTS e = e DOCKED NOMANAGESESSION DO {
                 message(e) <- CONCAT '', HTMLTEXT(messageText()),
@@ -477,12 +478,12 @@ writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, STR
 }
 
 writeMessage '{email.write.message}' (Account a) {
-    writeMessage((OVERRIDE fromAddress(a), name(a)), NULL, NULL, NULL, NULL, NULL, NULL);
+    writeMessage((OVERRIDE fromAddress(a), name(a)), NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 reply '{email.reply}' (Email re) {
     writeMessage(toAddress(re), fromAddress(re), ccAddress(re), bccAddress(re),
-                 (CONCAT ' ', 'Re:', subject(re)), message(re), dateTimeSent(re) + ', ' +  fromAddress(re));           
+                 (CONCAT ' ', 'Re:', subject(re)), NULL, message(re), dateTimeSent(re) + ', ' +  fromAddress(re));           
 }
 
 EXTEND FORM mail
