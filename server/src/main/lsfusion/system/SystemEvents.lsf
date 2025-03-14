@@ -456,7 +456,12 @@ maximumMemory '{system.events.maximum.memory.connection}' = DATA INTEGER (Connec
 freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
 javaVersion '{system.events.java.version.connection}' = DATA STRING[100] (Connection);
 is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
-screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connection);
+
+screenWidth = DATA INTEGER(Connection);
+screenHeight = DATA INTEGER(Connection);
+screenSize '{system.events.screen.size.connection}'(Connection c) = screenWidth(c) + 'x' + screenHeight(c);
+isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE min(screenWidth(c), screenHeight(c)) <= 570;
+
 scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
 lastActivity '{authentication.last.activity.user}' (CustomUser cu) = GROUP MAX lastActivity(Connection c) BY user(c);

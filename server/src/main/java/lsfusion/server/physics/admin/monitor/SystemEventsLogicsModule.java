@@ -1,7 +1,6 @@
 package lsfusion.server.physics.admin.monitor;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Pair;
 import lsfusion.interop.base.exception.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -66,7 +65,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP serverSize;
     public LP serverNavbar;
     public LP serverNavigatorPinMode;
-    public LP mobileMode;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -89,7 +87,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP freeMemoryConnection;
     public LP javaVersionConnection;
     public LP is64JavaConnection;
-    public LP screenSizeConnection;
+    public LP screenWidthConnection;
+    public LP screenHeightConnection;
+    public LP isMobileModeConnection;
     public LP scaleConnection;
     public LP clientTypeConnection;
     public LP<PropertyInterface> connectionStatusConnection;
@@ -181,7 +181,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         initCurrentSize = findAction("initCurrentSize[]");
 
         useBootstrap = findProperty("useBootstrap[]");
-        mobileMode = findProperty("mobileMode[]");
         contentWordWrap = findProperty("contentWordWrap[]");
         highlightDuplicateValue = findProperty("highlightDuplicateValue[]");
         serverTheme = findProperty("serverTheme[]");
@@ -211,7 +210,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         freeMemoryConnection = findProperty("freeMemory[Connection]");
         javaVersionConnection = findProperty("javaVersion[Connection]");
         is64JavaConnection = findProperty("is64Java[Connection]");
-        screenSizeConnection = findProperty("screenSize[Connection]");
+        screenWidthConnection = findProperty("screenWidth[Connection]");
+        screenHeightConnection = findProperty("screenHeight[Connection]");
+        isMobileModeConnection = findProperty("isMobileMode[Connection]");
         scaleConnection = findProperty("scale[Connection]");
         clientTypeConnection = findProperty("clientType[Connection]");
         connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
