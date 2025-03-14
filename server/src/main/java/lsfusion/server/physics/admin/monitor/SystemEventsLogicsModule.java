@@ -66,6 +66,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP serverSize;
     public LP serverNavbar;
     public LP serverNavigatorPinMode;
+    public LP mobileMode;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -180,6 +181,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         initCurrentSize = findAction("initCurrentSize[]");
 
         useBootstrap = findProperty("useBootstrap[]");
+        mobileMode = findProperty("mobileMode[]");
         contentWordWrap = findProperty("contentWordWrap[]");
         highlightDuplicateValue = findProperty("highlightDuplicateValue[]");
         serverTheme = findProperty("serverTheme[]");

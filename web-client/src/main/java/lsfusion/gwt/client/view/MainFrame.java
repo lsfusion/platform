@@ -637,6 +637,7 @@ public class MainFrame implements EntryPoint {
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         double scale = getScale();
+        mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
 
         logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
                 Window.Location.getParameter("exportName"));
@@ -657,7 +658,7 @@ public class MainFrame implements EntryPoint {
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
                 mobileMode = gClientSettings.mobileMode;
-                mobile = mobileMode != null ? mobileMode : Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
+                mobile = mobileMode != null ? mobileMode : mobile;
                 mobileAdjustment = mobile ? 1 : 0;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;

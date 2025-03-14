@@ -169,6 +169,7 @@ navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPin
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
 mobileMode '{service.mobile.mode}' = DATA TBOOLEAN(DesignEnv);
+mobileMode() = mobileMode(currentDesignEnv());
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
 contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(DesignEnv);
 highlightDuplicateValue '{service.highlight.duplicate.value}' = DATA TBOOLEAN (DesignEnv);
