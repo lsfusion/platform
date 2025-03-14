@@ -25,7 +25,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
     public abstract T getRootNode(RawFileData fileData, String root);
 
     public ImportHierarchicalAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
-        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset);
+        super(paramsCount, formEntity, charset);
 
         int shift = 0;
         ImOrderSet<PropertyInterface> interfaces = getOrderInterfaces();
@@ -41,7 +41,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
 
         ImportHierarchicalIterator iterator = new ImportHierarchicalIterator(wheres);
 
-        RawFileData file = readFile(context.getKeyValue(fileInterface), charset);
+        RawFileData file = readFile(context.getKeyValue(fileInterface), getCharset());
 
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
@@ -54,6 +54,10 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
             for(PropertyDrawEntity<?> property : properties)
                 importData.addProperty(property, property.getImportProperty(), true); // isExclusive can be false, it doesn't matter
         return importData;
+    }
+
+    protected String getCharset() {
+        return charset != null ? charset : ExternalUtils.defaultXMLJSONCharset;
     }
 
 }
