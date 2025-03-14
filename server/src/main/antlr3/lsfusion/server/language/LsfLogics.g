@@ -2828,6 +2828,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Form
 	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	            ('ATTR' { $attr = true; })?
 	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
+	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	            )
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; } (
 	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
