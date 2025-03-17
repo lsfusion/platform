@@ -40,6 +40,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             if(e instanceof AuthenticationException) {
                 if(((AuthenticationException) e).redirect) {
                     try {
+                        request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
                         LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
                         response.sendRedirect(MainController.getURLPreservingParameters("/login", null, request));
                     } catch (IOException e1) {
