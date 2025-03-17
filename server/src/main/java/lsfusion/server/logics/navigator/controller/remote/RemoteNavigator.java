@@ -402,7 +402,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static int maxMobileWidthHeight = 570;
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
             businessLogics.systemEventsLM.screenWidthConnection.change(clientInfo.screenWidth, session, getConnection());
