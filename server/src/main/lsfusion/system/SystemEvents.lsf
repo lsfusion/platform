@@ -569,6 +569,10 @@ onClientStarted () + {
     }
 }
 
+onStarted() + {
+    reportResources() <- NULL;
+    md5ReportResources() <- NULL;
+}
 onDesktopClientStarted() + {
     copyReportResources();
 }
