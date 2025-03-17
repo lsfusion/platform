@@ -460,3 +460,7 @@
 {
     cursor: pointer;
 }
+
+.nav-mobile .offcanvas {
+    max-width: 85%;
+}
