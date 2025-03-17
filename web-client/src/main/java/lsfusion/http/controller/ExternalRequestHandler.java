@@ -48,6 +48,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    writeResponse(response, e.getMessage());
                 }
             } else {
                 response.setStatus(nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
@@ -55,17 +56,20 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
 
                 //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once
                 if(!(e instanceof NoSuchObjectException) || retry) {
-                    String errString = getErrorMessage(e);
-                    try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
-                        response.getWriter().print(errString);
-                    } catch (IOException e1) {
-                        throw Throwables.propagate(e1);
-                    }
+                    writeResponse(response, getErrorMessage(e));
                 }
 
                 if (e instanceof RemoteException)  // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
                     throw (RemoteException) e;
             }
+        }
+    }
+
+    private void writeResponse(HttpServletResponse response, String message) {
+        try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
+            response.getWriter().print(message);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 
