@@ -54,7 +54,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         LocalePreferences localePreferences = clientSettings.localePreferences;
 
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
-                clientSettings.showDetailedInfoDelay, clientSettings.mobileMode, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
+                clientSettings.showDetailedInfoDelay, clientSettings.mobile, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
                 clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.locale.getLanguage(),
                 localePreferences.timeZone, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
@@ -97,7 +97,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
+        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {

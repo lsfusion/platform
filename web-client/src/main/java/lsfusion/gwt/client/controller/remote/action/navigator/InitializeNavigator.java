@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
 public class InitializeNavigator extends NavigatorPriorityAction<InitializeNavigatorResult>{
-    public String screenSize;
+    public Integer width;
+    public Integer height;
     public Double scale;
-    public boolean mobile;
 
     public InitializeNavigator() {
     }
 
-    public InitializeNavigator(String screenSize, Double scale, boolean mobile) {
-        this.screenSize = screenSize;
+    public InitializeNavigator(Integer width, Integer height, Double scale) {
+        this.width = width;
+        this.height = height;
         this.scale = scale;
-        this.mobile = mobile;
     }
 
 }

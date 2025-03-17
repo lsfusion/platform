@@ -404,8 +404,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
-
-            businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+            businessLogics.systemEventsLM.screenWidthConnection.change(clientInfo.screenWidth, session, getConnection());
+            businessLogics.systemEventsLM.screenHeightConnection.change(clientInfo.screenHeight, session, getConnection());
             businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
 
             if(clientInfo.initial) {
@@ -413,6 +413,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
 
             ClientType clientType = clientInfo.clientType;
+            assert clientType != ClientType.WEB_MOBILE;
+            if (clientType == ClientType.WEB_DESKTOP) {
+                if (businessLogics.systemEventsLM.isMobileModeConnection.read(session, getConnection()) != null)
+                    clientType = ClientType.WEB_MOBILE;
+            }
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());
             this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
             this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;

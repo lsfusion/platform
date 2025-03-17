@@ -14,7 +14,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
-    public Boolean mobileMode;
+    public boolean mobile;
     public boolean suppressOnFocusChange;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
@@ -53,7 +53,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     }
 
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
-                           Boolean mobileMode, boolean suppressOnFocusChange,
+                           boolean mobile, boolean suppressOnFocusChange,
                            boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String size, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String language, String timeZone, String dateFormat,
@@ -68,7 +68,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
-        this.mobileMode = mobileMode;
+        this.mobile = mobile;
         this.suppressOnFocusChange = suppressOnFocusChange;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;

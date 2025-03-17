@@ -217,7 +217,8 @@
 
                 setColorTheme();
 
-                setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
+                setCookie('LSFUSION_SCREEN_WIDTH', document.documentElement.clientWidth);
+                setCookie('LSFUSION_SCREEN_HEIGHT', document.documentElement.clientHeight);
                 setCookie('LSFUSION_SCALE', window.devicePixelRatio);
 
                 try {
