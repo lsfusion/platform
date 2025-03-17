@@ -5,8 +5,8 @@ import lsfusion.interop.connection.ClientType;
 import java.io.Serializable;
 
 public class ClientInfo implements Serializable {
-
-    public String screenSize;
+    public Integer screenWidth;
+    public Integer screenHeight;
     public Double scale;
     public ClientType clientType;
     public boolean initial;
@@ -14,8 +14,9 @@ public class ClientInfo implements Serializable {
     public ClientInfo() {
     }
 
-    public ClientInfo(String screenSize, Double scale, ClientType clientType, boolean initial) {
-        this.screenSize = screenSize;
+    public ClientInfo(Integer screenWidth, Integer screenHeight, Double scale, ClientType clientType, boolean initial) {
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
         this.scale = scale;
         this.clientType = clientType;
         this.initial = initial;

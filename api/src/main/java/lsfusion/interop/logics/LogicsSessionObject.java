@@ -48,7 +48,7 @@ public class LogicsSessionObject {
         boolean autoReconnectOnConnectionLost = json.optBoolean("autoReconnectOnConnectionLost");
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
         int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
-        Boolean mobileMode = !json.has("mobileMode") ? null : json.getBoolean("mobileMode");
+        boolean mobile = json.optBoolean("mobile");
         boolean suppressOnFocusChange = json.optBoolean("suppressOnFocusChange");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
@@ -103,7 +103,7 @@ public class LogicsSessionObject {
         boolean useClusterizeInPivot = json.optBoolean("useClusterizeInPivot");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobileMode, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobile, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings,
                 pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,

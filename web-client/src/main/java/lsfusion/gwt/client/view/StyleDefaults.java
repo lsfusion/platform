@@ -11,8 +11,6 @@ import java.util.Map;
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
 
 public class StyleDefaults {
-    public static int maxMobileWidthHeight = 570;
-
     private static int[] componentBackgroundRGB;
     
     private static int[] pivotGroupLevelDarkenStepRGB;
