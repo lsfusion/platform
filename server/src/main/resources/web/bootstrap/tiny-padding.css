@@ -12,7 +12,7 @@
 }
 
 .btn {
-    --bs-btn-padding-y: 0.05rem;
+    --bs-btn-padding-y: 0.0625rem; /*we need integers in the paddings so that the cell height in the table is calculated correctly. 0.0625rem is 1px*/
 }
 
 .nav {
@@ -49,10 +49,10 @@
 }
 
 .table>:not(caption)>*>* {
-    padding: 0.1rem 0.1rem;
+    padding: 0.09375rem 0.1rem; /* 0.09375rem is 1.5px padding-top + padding-bottom = 3*/
 }
 
 :root {
-    --border-padding: 0.1rem;
+    --border-padding: 0.09375rem; /* used in .arrow 0.09375rem is 1.5px margin-top + margin-bottom = 3*/
     --border-cont-padding: 0.15rem;
 }
