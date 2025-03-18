@@ -1296,13 +1296,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImMap<String, ImRevMap<String, String>> oldTableFieldToCN = getFieldToCNMaps(oldDBStructure);
         ImMap<String, ImRevMap<String, String>> newTableFieldToCN = getFieldToCNMaps(newDBStructure);
 
+        Set<String> oldTableDBNames = new HashSet<>();
+        for (DBTable table : oldDBStructure.tables.keySet()) {
+            oldTableDBNames.add(table.getName());
+        }
+        
         for (Map.Entry<DBTable, List<IndexData<String>>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
             DBTable oldTable = oldTableIndexes.getKey();
             List<IndexData<String>> oldIndexes = oldTableIndexes.getValue();
             DBTable newTable = newDBStructure.getTable(oldTable.getName()); // Здесь никак не учитываем возможное изменение имени
 
             if (newTable == null) {
-                dropTableIndexes(sql, oldTable, oldIndexes);
+                dropTableIndexes(sql, oldTable, oldIndexes, oldTableDBNames);
                 continue;
             }
 
@@ -1328,7 +1333,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, newIndexKeysSet, oldOptions, newOptions, Settings.get().isStartServerAnyWay());
                     }
                 } else {
-                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOptions, Settings.get().isStartServerAnyWay());
+                    String indexDBName = namingPolicy.transformIndexNameToDBName(sql.getOldIndexName(oldTable, oldIndex));
+                    // Backward compatibility check, issue: https://github.com/lsfusion/platform/issues/1401
+                    if (!oldTableDBNames.contains(indexDBName)) {
+                        sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOptions, Settings.get().isStartServerAnyWay());
+                    }
                 }
             }
         }
@@ -1378,10 +1387,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return MapFact.fromJavaMap(result);
     }
 
-    private void dropTableIndexes(SQLSession sql, DBTable table, List<IndexData<String>> indexes) throws SQLException {
+    private void dropTableIndexes(SQLSession sql, DBTable table, List<IndexData<String>> indexes, Set<String> oldTableDBNames) throws SQLException {
         for (IndexData<String> index : indexes) {
-            ImOrderSet<String> indexKeysSet = SetFact.fromJavaOrderSet(index.fields);
-            sql.dropIndex(table, table.keys, indexKeysSet, index.options, Settings.get().isStartServerAnyWay());
+            String indexDBName = namingPolicy.transformIndexNameToDBName(sql.getOldIndexName(table, index));
+            // Backward compatibility check, issue: https://github.com/lsfusion/platform/issues/1401
+            if (!oldTableDBNames.contains(indexDBName)) {
+                ImOrderSet<String> indexKeysSet = SetFact.fromJavaOrderSet(index.fields);
+                sql.dropIndex(table, table.keys, indexKeysSet, index.options, Settings.get().isStartServerAnyWay());
+            }
         }
     }
 
@@ -3229,7 +3242,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
                 DBTable table = tableInfo.getKey();
                 for (IndexData<Field> index : tableInfo.getValue()) {
-                    String name = sql.getIndexName(table, index);
+                    String name = namingPolicy.transformIndexNameToDBName(sql.getIndexName(table, index));
                     if (indexNames.containsKey(name)) {
                         final String formatStr = "Two indexes has the same database name: '%s'. " +
                                 "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
@@ -3254,7 +3267,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
                 DBTable indexTable = tableInfo.getKey();
                 for (IndexData<Field> index : tableInfo.getValue()) {
-                    String indexName = sql.getIndexName(indexTable, index);
+                    String indexName = namingPolicy.transformIndexNameToDBName(sql.getIndexName(indexTable, index));
+                    
                     if (tableNames.containsKey(indexName)) {
                         DBTable table = tableNames.get(indexName);
                         String reason = "Tables and indexes must have unique names. If a table and an index have identical names, the database cannot distinguish between them, leading to conflicts when executing queries";

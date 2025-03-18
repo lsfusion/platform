@@ -819,7 +819,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public String getIndexName(StoredTable table, DBManager.IndexData<Field> index) {
         return getIndexName(table, syntax, index.options.dbName, getOrderFields(table.keys, index.options, SetFact.fromJavaOrderSet(index.fields)), index.options.type.suffix());
     }
-
+    
+    public String getOldIndexName(StoredTable table, DBManager.IndexData<String> index) {
+        ImOrderMap<String, Boolean> orderFields = getOrderFields(table.keys, SetFact.fromJavaOrderSet(index.fields), index.options);
+        return getIndexName(table, orderFields, index.options.dbName, index.options.type.suffix(), false, false, syntax);
+    }
+    
     static String getIndexName(StoredTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
         return getIndexName(table, syntax, dbName, fields, suffix, false, false);
     }

@@ -15,4 +15,6 @@ public interface DBNamingPolicy {
     String transformActionOrPropertyCNToDBName(String canonicalName);
     
     String transformTableCNToDBName(String canonicalName);
+    
+    String transformIndexNameToDBName(String indexName);
 }
