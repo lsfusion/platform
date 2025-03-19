@@ -65,7 +65,12 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     public String transformTableCNToDBName(String canonicalName) {
         return cutToMaxLength(canonicalName.replace(CanonicalNameUtils.DELIMITER, '_'));
     }
-
+    
+    @Override
+    public String transformIndexNameToDBName(String indexName) {
+        return cutToMaxLength(indexName);
+    }
+    
     protected String cutToMaxLength(String s) {
         if (s.length() > maxIDLength) {
             s = s.substring(0, maxIDLength);
