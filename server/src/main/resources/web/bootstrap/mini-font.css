@@ -7,15 +7,15 @@
 }
 
 :root {
-    --bs-body-font-size: 0.75rem; /*we need integers in the font-size so that the cell height in the table is calculated correctly. 0.75rem is 12px*/
+    --bs-body-font-size: 0.8rem;
 }
 
 .form-control {
-    font-size: 0.75rem; /*we need integers in the font-size so that the cell height in the table is calculated correctly. 0.75rem is 12px*/
+    font-size: 0.8rem;
 }
 
 .form-select {
-    font-size: 0.75rem; /*we need integers in the font-size so that the cell height in the table is calculated correctly. 0.75rem is 12px*/
+    font-size: 0.8rem;
 }
 
 .btn-toolbar .btn {
