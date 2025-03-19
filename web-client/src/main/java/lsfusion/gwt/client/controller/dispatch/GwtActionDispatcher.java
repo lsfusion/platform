@@ -64,6 +64,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return null;
         }
 
+        public boolean canBeDispatched() {
+            return !getDispatcher().dispatchingPaused;
+        }
+
         @Override
         public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
             if (disableForbidDuplicate) {

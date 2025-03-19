@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GWTDispatch;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
@@ -16,6 +17,7 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public abstract class RemoteDispatchAsync implements ServerMessageProvider {
@@ -83,12 +85,23 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return true;
     }
 
+    protected <A extends RequestAction<R>, R extends Result> BooleanSupplier preProceed(A action, RequestAsyncCallback<R> callback) {
+        if(action instanceof GetAsyncValues)
+            return () -> true;
+
+        if(synchronizeRequests())
+            return null;
+
+        // ServerResponse can not be dispatched if paused (it will break the assertion), so we have sort of mixed synchronization (when requests can be executed in any order, but one request at a time)
+        return () -> !(callback instanceof GwtActionDispatcher.ServerResponseCallback) || ((GwtActionDispatcher.ServerResponseCallback) callback).canBeDispatched();
+    }
+
     public <A extends RequestAction<R>, R extends Result> long executeQueue(A action, RequestAsyncCallback<R> callback, boolean sync, boolean continueInvocation) {
         // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
         // otherwise there might be deadlock, when, for example, between ExecuteEventAction and continueServerInvocation there was changePageSize
         long requestIndex = fillQueuedAction(action);
-        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues || !synchronizeRequests());
+        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, preProceed(action, callback));
         if (continueInvocation) {
             q.add(0, queuedAction);
             waitingForContinueInvocation = false;
@@ -189,10 +202,10 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     private boolean pendingFlushCompletedRequests;
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
         q.forEach(queuedAction -> {
-            if (queuedAction.preProceeded != null && !queuedAction.preProceeded && queuedAction.finished) {
+            if (queuedAction.preProceed != null && queuedAction.finished && queuedAction.preProceed.getAsBoolean()) {
                 preProceed.run();
                 queuedAction.proceed(postProceed);
-                queuedAction.preProceeded = true;
+                queuedAction.preProceed = () -> false; // we don't need to proceed once again
             }
         });
 
@@ -214,7 +227,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             if (requestIndex >= 0)
                 lastReceivedRequestIndex = requestIndex;
 
-            if (action.preProceeded == null || !action.preProceeded) {
+            if (action.preProceed == null) {
                 preProceed.run();
                 action.proceed(postProceed);
             }
