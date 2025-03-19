@@ -1,10 +1,11 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import java.io.Serializable;
 
-public class GColorPreferences implements Serializable {
+public class GColorPreferences implements IsSerializable, Serializable {
     private ColorDTO selectedRowBackground;
     private ColorDTO selectedCellBackground;
     private ColorDTO focusedCellBackground;
