@@ -14,7 +14,7 @@ title: 'Для промышленной эксплуатации'
 
 ### Установка сервера приложений в качестве сервиса
 
--   Скачать файл `lsfusion-server-<version>.jar` нужной версии (например `lsfusion-server-6.0-beta1.jar`) с [центрального сервера](https://download.lsfusion.org/java/) в некоторую папку (далее будем называть эту папку `$FUSION_DIR$`).
+-   Скачать файл `lsfusion-server-<version>.jar` нужной версии (например `lsfusion-server-6.0-beta2.jar`) с [центрального сервера](https://download.lsfusion.org/java/) в некоторую папку (далее будем называть эту папку `$FUSION_DIR$`).
 
 -   Если сервер БД находится на другом компьютере, а также если на сервере БД включена авторизация (например, для Postgres, по методу md5 и пароль postgres не пустой), задать [параметры подключения к серверу БД](Launch_parameters.md#connectdb) (например, создав [файл настроек](Launch_parameters.md#filesettings) запуска в папке `$FUSION_DIR$`)
 
@@ -26,7 +26,7 @@ title: 'Для промышленной эксплуатации'
 
     - Linux
         ```shell script title="bash"   
-        java -cp ".:lsfusion-server-6.0-beta1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
+        java -cp ".:lsfusion-server-6.0-beta2.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
       <details>
       <summary>Пример скрипта для запуска службы в CentOS</summary>
@@ -42,7 +42,7 @@ title: 'Для промышленной эксплуатации'
         Environment="JAVA_HOME=/usr/java/latest"
         Environment="LSFUSION_HOME=/usr/lsfusion"
         Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
-        Environment="CLASSPATH=.:lsfusion-server-6.0-beta1.jar"
+        Environment="CLASSPATH=.:lsfusion-server-6.0-beta2.jar"
         
         ExecStart=/usr/bin/jsvc \
                 -home $JAVA_HOME \
@@ -69,7 +69,7 @@ title: 'Для промышленной эксплуатации'
 
     - Windows
         ```shell script title="cmd"
-        java -cp ".;lsfusion-server-6.0-beta1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
+        java -cp ".;lsfusion-server-6.0-beta2.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
 
 ### Установка веб-сервера (веб и десктоп-клиента) в качестве сервиса {#appservice}
@@ -80,19 +80,19 @@ title: 'Для промышленной эксплуатации'
 :::
 
 -   Добавить `--add-opens=java.base/java.util=ALL-UNNAMED` в параметры запуска Apache Tomcat, если используется версия Java выше 11.
--   Скачать файл `lsfusion-client-<version>.war` нужной версии с [центрального сервера](https://download.lsfusion.org/java/). Например, `lsfusion-client-6.0-beta1.war`. 
+-   Скачать файл `lsfusion-client-<version>.war` нужной версии с [центрального сервера](https://download.lsfusion.org/java/). Например, `lsfusion-client-6.0-beta2.war`. 
 -   Если сервер приложений находится на другом компьютере, а также если [параметры доступа к серверу приложений](Launch_parameters.md#accessapp) отличается от стандартных, задать [параметры подключения к серверу приложений](Launch_parameters.md#connectapp) (например, создав / отредактировав [файл настроек](Launch_parameters.md#filewebsettings) Tomcat) 
 -   Развернуть приложение на Tomcat. Наиболее простой способ - скопировать в папку webapps Tomcat. В этом случае файл можно сначала переименовать (например, в `lsfusion.war`), так как имя файла будет соответствовать контекстному пути, по которому будет доступно приложение. Если Tomcat использует порт `8080`, то веб-клиент будет доступен по адресу: `http://localhost:8080/<имя war-файла>`. Например, `http://localhost:8080/lsfusion`. Пустое имя контекста в Tomcat соответствует имени `ROOT`, то есть если имя файла - `ROOT.war`, то веб-клиент будет доступен по ссылке `http://localhost:8080/`. Десктоп-клиента можно скачать на странице авторизации по ссылке `Run Desktop Client` (через Java Web Start).
 
 ### Установка только десктоп-клиента (на компьютере клиента)
 
--   Скачать файл `lsfusion-client-<version>.jar` нужной версии с [центрального сервера](https://download.lsfusion.org/). Например, `lsfusion-client-6.0-beta1.jar`
+-   Скачать файл `lsfusion-client-<version>.jar` нужной версии с [центрального сервера](https://download.lsfusion.org/). Например, `lsfusion-client-6.0-beta2.jar`
 
 -   Создать ярлык на рабочем столе, при этом в качестве рабочего директория необходимо использовать директорий, в котором находится скачанный jar-файл клиента, а в качестве команды запуска - следующую строку:
 
     - bash
         ```shell script
-        java -jar lsfusion-client-6.0-beta1.jar
+        java -jar lsfusion-client-6.0-beta2.jar
         ```
 
 

@@ -13,9 +13,9 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Исполняемые exe файлы:
-**lsFusion 6.0-beta1** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
+**lsFusion 6.0-beta2** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-beta1-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-beta2-x64.exe)
 - <details>
   <summary>Предыдущие версии</summary>
 
