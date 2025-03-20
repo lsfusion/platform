@@ -53,6 +53,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         updateEvents(list);
     }
 
+    private void hide() {
+        if (popupObject != null)
+            hidePopup();
+    }
+
     @Override
     public void onResize() {
         if (calendar != null)
@@ -100,6 +105,17 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             }
         });
         calendar.render();
+
+        element.addEventListener('click', function(e) {
+            // Check if there is an element with class .fc-event in the path to determine that the click was not by event
+            var isEventClick = e.composedPath().some(function(el) {
+                return el.classList && el.classList.contains('fc-event');
+            });
+
+            if (!isEventClick)
+                thisObj.@GCalendar::hide()();
+        });
+
         return calendar;
 
         function changeCurrentEvent(newEvent, elementClicked) {
@@ -142,8 +158,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public final String title;
         public final String caption;
         public final BaseImage image;
-        public final String start;
-        public final String end;
+        public final JavaScriptObject start;
+        public final JavaScriptObject end;
         public final boolean editable;
         public final boolean durationEditable;
         public final boolean allDay;
@@ -244,7 +260,10 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (oldEvent.title == null || !oldEvent.title.equals(event.title))
             updateAction = addUpdateAction(calendarEvent -> updateCalendarProperty("title", event.title, calendarEvent), null);
 
-        if (oldEvent.start != null && !oldEvent.start.equals(event.start))
+        if (oldEvent.caption == null || !oldEvent.caption.equals(event.caption))
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("caption", event.caption, calendarEvent), updateAction);
+
+        if (oldEvent.start != null && !GwtClientUtils.jsDateEquals(oldEvent.start, event.start))
             updateAction = addUpdateAction(calendarEvent -> updateStart(event.start, calendarEvent), updateAction);
 
         if (oldEvent.end != null && !oldEvent.end.equals(event.end))
@@ -348,13 +367,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         event.setExtendedProp(propertyName, property);
     }-*/;
 
-    protected native void updateStart(String start, JavaScriptObject event)/*-{
+    protected native void updateStart(JavaScriptObject start, JavaScriptObject event)/*-{
         event.setStart(start, {
             maintainDuration: true  //if set to true, the event’s end will also be adjusted in order to keep the same duration
         });
     }-*/;
 
-    protected native void updateEnd(String end, JavaScriptObject event)/*-{
+    protected native void updateEnd(JavaScriptObject end, JavaScriptObject event)/*-{
         event.setEnd(end);
     }-*/;
 
@@ -371,7 +390,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return COLUMN_CLASS + (isCurrentKey ? " event-highlight" : "");
     }
 
-    protected native JavaScriptObject createEventAsJs(String title, String caption, BaseImage image, String start, String end, boolean editable, boolean durationEditable,
+    protected native JavaScriptObject createEventAsJs(String title, String caption, BaseImage image, JavaScriptObject start, JavaScriptObject end, boolean editable, boolean durationEditable,
                                                       boolean allDay, GGroupObjectValue key, String startFieldName, String endFieldName, int index, JavaScriptObject object,
                                                       boolean  isCurrentKey, String backgroundColor, String foregroundColor)/*-{
         return {
@@ -424,11 +443,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return title;
     }-*/;
 
-    protected native String getStart(JavaScriptObject object, String startEventFieldName)/*-{
+    protected native JavaScriptObject getStart(JavaScriptObject object, String startEventFieldName)/*-{
         return object[startEventFieldName];
     }-*/;
 
-    protected native String getEnd(JavaScriptObject object, String endEventFieldName, boolean allDay)/*-{
+    protected native JavaScriptObject getEnd(JavaScriptObject object, String endEventFieldName, boolean allDay)/*-{
         var end = object[endEventFieldName];
         if (allDay)
             end.setDate(end.getDate() + 1); //adding time to Date causes that it will be impossible to change event on calendar-view even if "allDay" option is "true"
