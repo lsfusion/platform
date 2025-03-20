@@ -40,6 +40,7 @@ public class ClientBindingToGwtConverter extends ObjectConverter {
                 new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
                         convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("window") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("showing") : null),

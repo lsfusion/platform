@@ -48,7 +48,7 @@ public class LogicsSessionObject {
         boolean autoReconnectOnConnectionLost = json.optBoolean("autoReconnectOnConnectionLost");
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
         int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
-        Boolean mobileMode = !json.has("mobileMode") ? null : json.getBoolean("mobileMode");
+        boolean mobile = json.optBoolean("mobile");
         boolean suppressOnFocusChange = json.optBoolean("suppressOnFocusChange");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
@@ -100,13 +100,15 @@ public class LogicsSessionObject {
         double maxStickyLeft = json.optDouble("maxStickyLeft");
         boolean jasperReportsIgnorePageMargins = json.optBoolean("jasperReportsIgnorePageMargins");
         double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
+        boolean useClusterizeInPivot = json.optBoolean("useClusterizeInPivot");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobileMode, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobile, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings,
+                pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,
-                cssBackwardCompatibilityLevel);
+                cssBackwardCompatibilityLevel, useClusterizeInPivot);
     }
 
     // Expect that only JSONObject and JSONArray will be passed as param

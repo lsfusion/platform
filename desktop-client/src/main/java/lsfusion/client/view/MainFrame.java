@@ -25,6 +25,7 @@ import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -49,7 +50,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
@@ -78,10 +78,12 @@ public abstract class MainFrame extends JFrame {
 
                                         RemoteNavigatorInterface remoteNavigator = MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
 
-                                        String screenSize = null;
+                                        Integer width = null;
+                                        Integer height = null;
                                         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
                                         if(dimension != null) {
-                                            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+                                            width = (int) dimension.getWidth();
+                                            height = (int) dimension.getHeight();
                                         }
 
                                         GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
@@ -89,7 +91,7 @@ public abstract class MainFrame extends JFrame {
                                         DisplayMode dm = devices[0].getDefaultConfiguration().getDevice().getDisplayMode();
                                         double scale = dm.getWidth() / bounds.getWidth();
 
-                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, scale, ClientType.NATIVE_DESKTOP, false));
+                                        remoteNavigator.updateClientInfo(new ClientInfo(width, height, scale, ClientType.NATIVE_DESKTOP, false));
 
                                         return remoteNavigator;
                                     });
@@ -193,7 +195,7 @@ public abstract class MainFrame extends JFrame {
 
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
-    public static BigDecimal wideFormattableDateTimeInterval;
+    public static IntervalValue wideFormattableDateTimeInterval;
 
     private static void setupTimePreferences(LocalePreferences localePreferences) {
 
@@ -211,8 +213,8 @@ public abstract class MainFrame extends JFrame {
         wideFormattableDateTimeInterval = createWideFormattableDateTimeInterval();
     }
 
-    private static BigDecimal createWideFormattableDateTimeInterval() {
-        return new BigDecimal(wideFormattableDateTime.getTime() + "." + wideFormattableDateTime.getTime());
+    private static IntervalValue createWideFormattableDateTimeInterval() {
+        return new IntervalValue(wideFormattableDateTime.getTime(), wideFormattableDateTime.getTime());
     }
 
     private static Date createWideFormattableDate() {

@@ -447,6 +447,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propertyRegexpMessages = regexpMessages.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueTooltips = valueTooltips.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
+                    NativeHashMap<GGroupObjectValue, PValue> propCustomOptions = propertyCustomOptions.get(property);
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
@@ -481,6 +482,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             PValue valueTooltip = propertyValueTooltips == null ? null : propertyValueTooltips.get(fullKey);
                             record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
+                            record.setPropertyCustomOptions(column.columnSID, propCustomOptions == null ? null : propCustomOptions.get(fullKey));
                         }
                     }
                 });
@@ -715,6 +717,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePropertyCustomOptionsValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
@@ -1344,6 +1353,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected String getValueTooltip(GPropertyDraw property, GridDataRecord record) {
             return record.getValueTooltip(columnSID);
+        }
+
+        @Override
+        protected PValue getPropertyCustomOptions(GPropertyDraw property, GridDataRecord record) {
+            return record.getPropertyCustomOptions(columnSID);
         }
     }
 

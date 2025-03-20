@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.time;
 
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -9,14 +10,13 @@ import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 
-public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
+public abstract class IntervalClass<T> extends TextBasedClass<IntervalValue> {
 
     public static IntervalClass getInstance(String type) {
         switch (type) {
@@ -38,7 +38,7 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
 
     @Override
     protected void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setBigDecimal(num, (BigDecimal) value);
+        statement.setBigDecimal(num, ((IntervalValue) value).toBigDecimal());
     }
 
     @Override
@@ -77,22 +77,22 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     protected abstract String formatUI(Long epoch);
 
     @Override
-    public BigDecimal parseString(String s) throws ParseException {
-        return (BigDecimal) parseInterval(s, this::parse);
+    public IntervalValue parseString(String s) throws ParseException {
+        return (IntervalValue) parseInterval(s, this::parse);
     }
 
     @Override
-    public BigDecimal parseUI(String value) throws ParseException {
-        return (BigDecimal) parseInterval(value, this::parseUIString);
+    public IntervalValue parseUI(String value) throws ParseException {
+        return (IntervalValue) parseInterval(value, this::parseUIString);
     }
 
     @Override
-    public String formatString(BigDecimal obj) {
+    public String formatString(IntervalValue obj) {
         return formatInterval(obj, this::format);
     }
 
     @Override
-    public String formatUI(BigDecimal obj) {
+    public String formatUI(IntervalValue obj) {
         return formatInterval(obj, this::formatUI);
     }
 
@@ -105,15 +105,14 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     }
 
     @Override
-    public BigDecimal read(Object value) {
-        int length = value instanceof String ? ((String) value).split("[.]").length : 0;
-        return value == null || length > 2  ? null : new BigDecimal(String.valueOf(value));
+    public IntervalValue read(Object value) {
+        return IntervalValue.parseIntervalValue(value);
     }
 
     @Override
-    public BigDecimal getDefaultValue() {
+    public IntervalValue getDefaultValue() {
         long time = new Date().getTime();
-        return new BigDecimal(time + "." + time);
+        return new IntervalValue(time, time);
     }
 
     @Override
@@ -123,6 +122,6 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
 
     @Override
     protected Class getReportJavaClass() {
-        return BigDecimal.class;
+        return IntervalValue.class;
     }
 }

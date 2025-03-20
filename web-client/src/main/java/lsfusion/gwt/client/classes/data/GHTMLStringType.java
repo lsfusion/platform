@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -22,15 +21,9 @@ public class GHTMLStringType extends GAStringType {
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new HTMLTextCellRenderer(property);
+        return new HTMLTextCellRenderer(property, false);
     }
 
-    //
-//    @Override
-//    public InputElement createTextInputElement() {
-//        return Document.get().createTextAreaElement().cast();
-//    }
-//
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         return new HTMLStringCellEditor(editManager, editProperty, inputList, inputListActions);

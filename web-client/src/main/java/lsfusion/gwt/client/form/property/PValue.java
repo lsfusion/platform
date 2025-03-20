@@ -1,8 +1,9 @@
 package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.cell.classes.*;
@@ -84,26 +85,34 @@ public interface PValue {
 
     // temporary usage in pivot
 
-    static Object getPivotValue(PValue value) {
+    static Object getPivotValue(GType renderType, PValue value) {
         if(!useUnsafeCast) { // for pivoting we need actual numbers to sum them up (that's the idea of pivoting)
+            if(value instanceof DisplayString)
+                return value; // however we can return displayString here and remove from getPivotPValue
+
             // this way we can add "no toString" check (plus there might be some problems with ordering because of toString, but somewhy I haven't found them)
-            if (value instanceof SerializableValue)
-                return ((SerializableValue) value).value;
+            if (value != null && renderType instanceof GIntegralType)
+                return ((GIntegralType) renderType).getDoubleValue(value);
+
+            return getValue(value);
+
 //            if (value instanceof SerializableValue && ((SerializableValue) value).value instanceof Number)
 //                return getNumberValue(value);
         }
         return value;
     }
-    static PValue getPivotPValue(Object value) {
+    static PValue getPivotPValue(GType renderType, Object value) {
         if(useUnsafeCast)
             return (PValue) value;
         else {
-            if(value instanceof DisplayString) {
-                return toPValue(((DisplayString) value).displayString);
-            } else {
-                // this way we can add "no toString" check
-                return toPValue((Serializable) value);
-            }
+            if(value instanceof DisplayString)
+                return (PValue) value; //; toPValue(((DisplayString) value).displayString);
+
+            if (value != null && renderType instanceof GIntegralType)
+                return ((GIntegralType) renderType).fromDoubleValue((Double) value);
+
+            // this way we can add "no toString" check
+            return toPValue((Serializable) value);
 //            if(value instanceof Number) // for pivoting we need actual numbers to sum them up (that's the idea of pivoting)
 //                return getPValue((Number)value);
 //            return (PValue) value;
@@ -126,7 +135,16 @@ public interface PValue {
         return getValue(value);
     }
 
-    static Number getNumberValue(PValue value) {
+    static Double getDoubleValue(PValue value) {
+        return getValue(value);
+    }
+    static Integer getIntValue(PValue value) {
+        return getValue(value);
+    }
+    static Long getLongValue(PValue value) {
+        return getValue(value);
+    }
+    static GNumericDTO getNumericValue(PValue value) {
         return getValue(value);
     }
 
@@ -166,15 +184,14 @@ public interface PValue {
         return getValue(value);
     }
 
-    static BigDecimal getBigDecimalValue(PValue value) {
+    static GIntervalValue getIntervalValue(PValue value) {
         return getValue(value);
     }
 
     static Long getIntervalValue(PValue o, boolean from) {
         assert o != null;
-        String object = getBigDecimalValue(o).toString();
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        GIntervalValue interval = getIntervalValue(o);
+        return from ? interval.from : interval.to;
     }
 
     static Boolean get3SBooleanValue(PValue value) {
@@ -201,7 +218,16 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static PValue getPValue(Number value) {
+    static PValue getPValue(double value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(int value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(long value) {
+        return toPValue(value);
+    }
+    static PValue getPValue(GNumericDTO value) {
         return toPValue(value);
     }
 
@@ -217,12 +243,8 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static PValue getPValue(BigDecimal value) {
-        return toPValue(value);
-    }
-
     static PValue getPValue(Long from, Long to) {
-        return getPValue(new BigDecimal(from + "." + to));
+        return toPValue(new GIntervalValue(from, to));
     }
 
     static PValue getPValue(Boolean value) { // 3state boolean

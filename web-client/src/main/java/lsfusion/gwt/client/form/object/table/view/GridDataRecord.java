@@ -134,6 +134,14 @@ public class GridDataRecord implements RowIndexHolder {
         return (String) getAttribute(column + "_valueTooltip");
     }
 
+    public void setPropertyCustomOptions(String column, PValue propertyCustomOptions) {
+        setAttribute(column + "_propertyCustomOptions", propertyCustomOptions);
+    }
+
+    public PValue getPropertyCustomOptions(String column) {
+        return (PValue) getAttribute(column + "_propertyCustomOptions");
+    }
+
     public void setForeground(String column, String color) {
         setAttribute(column + "_foreground", color);
     }

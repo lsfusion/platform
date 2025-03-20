@@ -1,9 +1,13 @@
 package lsfusion.server.base.controller.thread;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.controller.context.Context;
+import lsfusion.server.base.controller.stack.NestedThreadException;
+import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -54,22 +58,44 @@ public class ThreadUtils {
         interruptThread(context.getDbManager(), thread);
     }
 
-    public static void interruptThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
+    public static ConcurrentWeakHashMap<Thread, ThrowableWithStack> interruptThread = new ConcurrentWeakHashMap<>();
+
+    public static boolean interruptThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
+            ThrowableWithStack interrupt = new ThrowableWithStack(new InterruptedException());
+
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
+            interruptThread.put(thread, interrupt);
             thread.interrupt(); // it's better to do it before to prevent sql query execution
             ServerLoggers.exinfoLog("THREAD INTERRUPT ENDED " + thread);
+
+            return interruptSQL(dbManager, thread, interrupt);
         }
-        interruptSQL(dbManager, thread, true);
+        return false;
     }
 
     public static void sleep(long millis) {
         SystemUtils.sleep(millis);
     }
 
-    public static void interruptSQL(DBManager dbManager, Thread thread, boolean interrupt) throws SQLException, SQLHandledException {
-        if(thread != null)
-            SQLSession.cancelExecutingStatement(dbManager, thread, interrupt);
+    public static boolean interruptSQL(DBManager dbManager, Thread thread, ThrowableWithStack interrupt) throws SQLException, SQLHandledException {
+        return SQLSession.cancelExecutingStatement(dbManager, thread, interrupt);
+    }
+
+    public static void checkThreadInterrupted() {
+        if(Thread.interrupted()) {
+            Thread currentThread = Thread.currentThread();
+            currentThread.interrupt();
+            throwThreadInterrupt(interruptThread.remove(currentThread));
+        }
+    }
+
+    public static void throwThreadInterrupt(ThrowableWithStack reason) {
+        Exception exception = new InterruptedException();
+        if(reason != null)
+            exception = new NestedThreadException(exception, new ThrowableWithStack[]{reason});
+
+        throw Throwables.propagate(exception); // we want to keep interrupted as a root cause
     }
 
     public static ThreadGroup getRootThreadGroup( ) {

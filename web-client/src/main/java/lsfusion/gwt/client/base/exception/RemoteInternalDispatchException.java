@@ -9,12 +9,14 @@ public class RemoteInternalDispatchException extends DispatchException {
     }
     
     public String lsfStack;
+    public String asyncStacks;
     public String javaStack;
 
-    public RemoteInternalDispatchException(String message, String lsfStack) {
+    public RemoteInternalDispatchException(String message, String lsfStack, String asyncStacks) {
         super(message);
 
         this.lsfStack = lsfStack;
+        this.asyncStacks = asyncStacks;
     }
 
     // the same as in RemoteInternalException
@@ -24,11 +26,11 @@ public class RemoteInternalDispatchException extends DispatchException {
         SerializableThrowable throwable = new SerializableThrowable("", GExceptionManager.copyMessage(e));
         GExceptionManager.copyStackTraces(e, throwable);
         String[] exStacks = getExStacks(e);
-        return new String[] {throwable.getMessage(), exStacks[0], exStacks[1]};
+        return new String[] {throwable.getMessage(), exStacks[0], exStacks[1], exStacks[2]};
     }
     
     public static String[] getExStacks(Throwable e) {
-        return new String[] {getJavaStack(e), getLsfStack(e)};
+        return new String[] {getJavaStack(e), getLsfStack(e), getAsyncStacks(e)};
     }
 
     public static String getJavaStack(Throwable e) {
@@ -39,4 +41,7 @@ public class RemoteInternalDispatchException extends DispatchException {
         return e instanceof RemoteInternalDispatchException ? ((RemoteInternalDispatchException) e).lsfStack : null;
     }
 
+    public static String getAsyncStacks(Throwable e) {
+        return e instanceof RemoteInternalDispatchException ? ((RemoteInternalDispatchException) e).asyncStacks : null;
+    }
 }

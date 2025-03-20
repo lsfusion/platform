@@ -14,7 +14,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
-    public Boolean mobileMode;
+    public boolean mobile;
     public boolean suppressOnFocusChange;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
@@ -25,6 +25,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public Map<String, String> versionedColorThemesCss;
     public GColorPreferences colorPreferences;
     public String language;
+    public String timeZone;
     public String dateFormat;
     public String timeFormat;
     public Integer twoDigitYearStart;
@@ -45,25 +46,29 @@ public class GClientSettings implements Serializable, IsSerializable {
 
     public double cssBackwardCompatibilityLevel;
 
+    public boolean useClusterizeInPivot;
+
     @SuppressWarnings("unused")
     public GClientSettings() {
     }
 
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
-                           Boolean mobileMode, boolean suppressOnFocusChange,
+                           boolean mobile, boolean suppressOnFocusChange,
                            boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String size, Map<String, String> versionedColorThemesCss,
-                           GColorPreferences colorPreferences, String language, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
+                           GColorPreferences colorPreferences, String language, String timeZone, String dateFormat,
+                           String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
-                           double maxStickyLeft, boolean jasperReportsIgnorePageMargins, double cssBackwardCompatibilityLevel) {
+                           double maxStickyLeft, boolean jasperReportsIgnorePageMargins, double cssBackwardCompatibilityLevel,
+                           boolean useClusterizeInPivot) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
-        this.mobileMode = mobileMode;
+        this.mobile = mobile;
         this.suppressOnFocusChange = suppressOnFocusChange;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
@@ -74,6 +79,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.size = size;
         this.colorPreferences = colorPreferences;
         this.language = language;
+        this.timeZone = timeZone;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
         this.twoDigitYearStart = twoDigitYearStart;
@@ -88,5 +94,6 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
+        this.useClusterizeInPivot = useClusterizeInPivot;
     }
 }

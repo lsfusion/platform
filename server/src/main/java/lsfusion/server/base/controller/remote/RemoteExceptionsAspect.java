@@ -7,6 +7,7 @@ import lsfusion.interop.base.exception.RemoteServerException;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
+import lsfusion.server.base.controller.stack.NestedThreadException;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.BusinessLogics;
@@ -82,6 +83,7 @@ public class RemoteExceptionsAspect {
 
         RemoteInternalException result = new RemoteInternalException(ThreadLocalContext.localize("{exceptions.internal.server.error}")
                                     + ": " + ExceptionUtils.copyMessage(throwable), throwableWithStack.getLsfStack(),
+                                    throwable instanceof NestedThreadException ? ((NestedThreadException) throwable).getAsyncStacks() : "",
                                     throwable instanceof LSFStatusException ? ((LSFStatusException) throwable).status : null);
         ExceptionUtils.copyStackTraces(throwable, result);
         return result;

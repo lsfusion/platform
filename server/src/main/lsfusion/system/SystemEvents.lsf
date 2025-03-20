@@ -58,6 +58,17 @@ onClientStartedApply() {
     APPLY;
 }
 
+platformVersion = DATA TEXT();
+apiVersion = DATA INTEGER();
+revisionVersion = DATA INTEGER();
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();
+
+resetConnections() ABSTRACT();
+
+onInit() + {
+    synchronizeVersions();
+}
+
 isIconModuleAvailable = ABSTRACT BOOLEAN ();
 iconIfAvailable(STRING imagePath, STRING fontClasses) = imagePath + (IF isIconModuleAvailable() THEN ';' + fontClasses ELSE '');
 
@@ -76,7 +87,9 @@ defaultLogo() = iconIfAvailable('logo.png','lsfi lsfi-logo-vertical');
 logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
-logoAction() {}
+logoAction() {
+    MESSAGE CONCAT ' ', 'Current Version:', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+}
 logoActionClass = ABSTRACT STRING();
 logoHeader() = ABSTRACT STRING();
 
@@ -156,6 +169,7 @@ navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPin
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
 mobileMode '{service.mobile.mode}' = DATA TBOOLEAN(DesignEnv);
+mobileMode() = mobileMode(currentDesignEnv());
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
 contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(DesignEnv);
 highlightDuplicateValue '{service.highlight.duplicate.value}' = DATA TBOOLEAN (DesignEnv);
@@ -293,6 +307,9 @@ onWebClientInit() + {
     onWebClientInit('input.js') <- 31;
     onWebClientInit('air-datepicker.js') <- 32;
     onWebClientInit('air-datepicker.css') <- 33;
+
+    onWebClientInit('clusterize.js') <- 34;
+    onWebClientInit('clusterize.css') <- 35;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
@@ -342,6 +359,7 @@ date '{system.events.date.exception}' = DATA DATETIME (Exception);
 fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
 lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
+asyncStackTrace '{system.events.async.stack.trace.exception}'= DATA TEXT (Exception);
 type '{system.events.type.exception}' = DATA STRING[250] (Exception);
 javaStackTrace '{system.events.er.trace.exception}' (Exception e) = CONCAT '\n', message(e), erTrace(e); 
 
@@ -438,7 +456,12 @@ maximumMemory '{system.events.maximum.memory.connection}' = DATA INTEGER (Connec
 freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
 javaVersion '{system.events.java.version.connection}' = DATA STRING[100] (Connection);
 is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
-screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connection);
+
+screenWidth = DATA INTEGER(Connection);
+screenHeight = DATA INTEGER(Connection);
+screenSize '{system.events.screen.size.connection}'(Connection c) = screenWidth(c) + 'x' + screenHeight(c);
+isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE min(screenWidth(c), screenHeight(c)) <= 570;
+
 scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
 lastActivity '{authentication.last.activity.user}' (CustomUser cu) = GROUP MAX lastActivity(Connection c) BY user(c);
@@ -471,17 +494,6 @@ shutdown '{system.events.shutdown}' (Connection c)  {
         serverShutdown(c);
     }
 } CONFIRM;
-
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-revisionVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
-
-resetConnections() ABSTRACT();
-
-onInit() + {
-    synchronizeVersions();
-}
 
 onStarted() + { 
     writeDefaultCredentials();
@@ -557,6 +569,10 @@ onClientStarted () + {
     }
 }
 
+onStarted() + {
+    reportResources() <- NULL;
+    md5ReportResources() <- NULL;
+}
 onDesktopClientStarted() + {
     copyReportResources();
 }
@@ -783,7 +799,7 @@ FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
-    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace
+    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace
 ;
 
 DESIGN exceptions {

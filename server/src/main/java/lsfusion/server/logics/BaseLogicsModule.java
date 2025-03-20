@@ -132,8 +132,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public Group rootGroup;
     public Group publicGroup;
     public Group baseGroup;
-    public Group recognizeGroup;
-    
+    public Group idGroup;
+    public Group uidGroup;
+
     // properties
     public LP groeq2;
     public LP lsoeq2;
@@ -712,8 +713,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseGroup = addAbstractGroup("base", LocalizedString.create("base"), publicGroup);
         baseGroup.system = true;
 
-        recognizeGroup = addAbstractGroup("id", LocalizedString.create("id"), baseGroup);
-        recognizeGroup.system = true;
+        idGroup = addAbstractGroup("id", LocalizedString.create("id"), baseGroup);
+        idGroup.system = true;
+
+        uidGroup = addAbstractGroup("uid", LocalizedString.create("uid"), idGroup);
+        uidGroup.system = true;
     }
 
     private void addClassDataPropsToGroup() {

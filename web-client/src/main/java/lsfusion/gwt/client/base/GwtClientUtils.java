@@ -714,8 +714,8 @@ public class GwtClientUtils {
         return tippy;
     }
 
-    public static JavaScriptObject initTippyPopup(PopupOwner popupOwner, Element popupElement, String target, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
-        JavaScriptObject tippy = initTippy(popupOwner, 0, target, onHideAction, onShowAction, referenceElementSupplier);
+    public static JavaScriptObject initTippyPopup(PopupOwner popupOwner, Element popupElement, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippy(popupOwner, 0, trigger, onHideAction, onShowAction, referenceElementSupplier);
         updateTippyContent(tippy, popupElement);
         return tippy;
     }
@@ -753,7 +753,11 @@ public class GwtClientUtils {
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
-                    GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                    Scheduler.get().scheduleDeferred(() -> {
+                        if (!ownerWidget.isAttached()){
+                            GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+                        }
+                    });
                 }
             });
         }
@@ -831,17 +835,17 @@ public class GwtClientUtils {
                     {
                         name: 'flip',
                         options: {
-                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
-                        },
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right']
+                        }
                     },
                     {
                         name: 'preventOverflow',
                         options: {
                             altAxis: true,
-                            tether: false,
-                        },
-                    },
-                ],
+                            tether: false
+                        }
+                    }
+                ]
             },
             getReferenceClientRect: function() {
                 var referenceElement = null;
@@ -1618,6 +1622,14 @@ public class GwtClientUtils {
         return $wnd.createPlainDateMillis(milliseconds);
     }-*/;
 
+    public static native JsDate createJsDate(double milliseconds, String timeZone)/*-{
+        return timeZone != null ? $wnd.moment.tz(milliseconds, timeZone).local(true).toDate() : $wnd.createPlainDateMillis(milliseconds);
+    }-*/;
+
+    public static native JsDate applyTimeZone(JsDate date, String timeZone)/*-{
+        return timeZone != null ? $wnd.moment(date).tz(timeZone, true).toDate() : date;
+    }-*/;
+
     public static native JsDate createJsDate()/*-{
         return $wnd.createPlainDateCurrent();
     }-*/;
@@ -1626,12 +1638,12 @@ public class GwtClientUtils {
         return $wnd.createPlainDate(year,month, date);
     }-*/;
 
-    public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds);
+    public static native JsDate createJsDate(int year, int month, int date, int hours, int minutes, int seconds, int milliseconds)/*-{
+        return $wnd.createPlainDateTime(year, month, date, hours, minutes, seconds, milliseconds);
     }-*/;
 
-    public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
-        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds);
+    public static native JsDate createJsUTCDate(int year, int month, int date, int hours, int minutes, int seconds, int milliseconds)/*-{
+        return $wnd.createPlainDateTimeUTC(year, month, date, hours, minutes, seconds, milliseconds);
     }-*/;
     public static native int getUTCYear(JsDate date)/*-{
         return date.getUTCFullYear();
@@ -1650,6 +1662,13 @@ public class GwtClientUtils {
     }-*/;
     public static native int getUTCSeconds(JsDate date)/*-{
         return date.getUTCSeconds();
+    }-*/;
+    public static native int getUTCMilliseconds(JsDate date)/*-{
+        return date.getUTCMilliseconds();
+    }-*/;
+
+    public static native String getClientTimeZone()/*-{
+        return $wnd.getClientDateTimeFormat().timeZone;
     }-*/;
 
 

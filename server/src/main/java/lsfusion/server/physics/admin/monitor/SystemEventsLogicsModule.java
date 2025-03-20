@@ -1,7 +1,6 @@
 package lsfusion.server.physics.admin.monitor;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Pair;
 import lsfusion.interop.base.exception.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -88,7 +87,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP freeMemoryConnection;
     public LP javaVersionConnection;
     public LP is64JavaConnection;
-    public LP screenSizeConnection;
+    public LP screenWidthConnection;
+    public LP screenHeightConnection;
+    public LP isMobileModeConnection;
     public LP scaleConnection;
     public LP clientTypeConnection;
     public LP<PropertyInterface> connectionStatusConnection;
@@ -107,6 +108,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP dateException;
     public LP erTraceException;
     public LP lsfTraceException;
+    public LP asyncTraceException;
     public LP typeException;
     public LP clientClientException;
     public LP loginClientException;
@@ -208,7 +210,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         freeMemoryConnection = findProperty("freeMemory[Connection]");
         javaVersionConnection = findProperty("javaVersion[Connection]");
         is64JavaConnection = findProperty("is64Java[Connection]");
-        screenSizeConnection = findProperty("screenSize[Connection]");
+        screenWidthConnection = findProperty("screenWidth[Connection]");
+        screenHeightConnection = findProperty("screenHeight[Connection]");
+        isMobileModeConnection = findProperty("isMobileMode[Connection]");
         scaleConnection = findProperty("scale[Connection]");
         clientTypeConnection = findProperty("clientType[Connection]");
         connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
@@ -229,6 +233,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         dateException = findProperty("date[Exception]");
         erTraceException = findProperty("erTrace[Exception]");
         lsfTraceException = findProperty("lsfStackTrace[Exception]");
+        asyncTraceException = findProperty("asyncStackTrace[Exception]");
         typeException =  findProperty("type[Exception]");
         clientClientException = findProperty("client[ClientException]");
         loginClientException = findProperty("login[ClientException]");
@@ -269,12 +274,13 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String message = replaceNonUTFCharacters(t.getMessage());
         String errorType = t.getClass().getName();
 
-        Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
-        String javaStack = replaceNonUTFCharacters(exStacks.first);
-        String lsfStack = exStacks.second;
+        RemoteInternalException.ExStacks exStacks = RemoteInternalException.getExStacks(t);
+        String javaStack = replaceNonUTFCharacters(exStacks.javaStack);
+        String lsfStack = exStacks.lsfStack;
+        String asyncStacks = replaceNonUTFCharacters(exStacks.asyncStacks);
 
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
-        logger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack));
+        logger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack) + '\n' + asyncStacks);
 
         try (DataSession session = ThreadLocalContext.createSession()) {
             DataObject exceptionObject;
@@ -314,6 +320,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             typeException.change(errorType, session, exceptionObject);
             erTraceException.change(javaStack, session, exceptionObject);
             lsfTraceException.change(lsfStack, session, exceptionObject);
+            asyncTraceException.change(asyncStacks, session, exceptionObject);
             dateException.change(LocalDateTime.now(), session, exceptionObject);
 
             session.applyException(bl, stack);

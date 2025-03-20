@@ -126,6 +126,8 @@
                 //dateRangePicker
                 "static/js/external/moment-with-locales.min.js", //https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js // also used to define user date / time formats
                 "static/js/external/moment-jdateformatparser.min.js", //https://raw.githubusercontent.com/MadMG/moment-jdateformatparser/master/moment-jdateformatparser.min.js // also used to define user date / time formats
+                //need to format ZDateTime
+                "static/js/external/moment-timezone-with-data.min.js", //https://momentjs.com/downloads/moment-timezone-with-data.js
                 "static/js/external/daterangepicker.js",
                 "static/css/external/daterangepicker.css", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css
                 "static/css/datePicker.css",
@@ -133,6 +135,7 @@
                 //Quill
                 "static/js/external/quill.min.js", //https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js
                 "static/css/external/quill.bubble.css", //https://cdn.jsdelivr.net/npm/quill@2/dist/quill.bubble.css
+                "static/css/external/quill.snow.css", //https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css
                 "static/css/quillRichText.css",
 
                 //Ace code editor
@@ -204,7 +207,7 @@
         <script>
             function init() {
                 //setClientLocaleParams
-                let intlOptions = Intl.DateTimeFormat().resolvedOptions();
+                let intlOptions = getClientDateTimeFormat();
                 setCookie('LSFUSION_CLIENT_TIME_ZONE', intlOptions.timeZone);
 
                 let momentLocale = moment();
@@ -214,7 +217,8 @@
 
                 setColorTheme();
 
-                setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
+                setCookie('LSFUSION_SCREEN_WIDTH', document.documentElement.clientWidth);
+                setCookie('LSFUSION_SCREEN_HEIGHT', document.documentElement.clientHeight);
                 setCookie('LSFUSION_SCALE', window.devicePixelRatio);
 
                 try {

@@ -18,6 +18,7 @@ import lsfusion.server.base.MutableClosedObject;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
@@ -111,14 +112,13 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
 
-    public static class ExecutingStatement {
-
-        public final PreparedStatement statement;
-        public Boolean forcedCancel;
-
-        public ExecutingStatement(PreparedStatement statement) {
-            this.statement = statement;
+    public static Thread getJavaSQLSession(long processId) throws SQLException {
+        for(SQLSession sqlSession : sqlSessionMap.keySet()) {
+            ExecutingStatement executingStatement = sqlSession.executingStatement;
+            if(executingStatement != null && ((PGConnection)executingStatement.statement.getConnection()).getBackendPID() == processId)
+                return sqlSession.getActiveThread();
         }
+        return null;
     }
     private ExecutingStatement executingStatement;
 
@@ -144,13 +144,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return null;
     }
 
-    public static ExecutingStatement getExecutingStatementSQL(long processId) throws SQLException {
-        for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            ExecutingStatement executingStatement = sqlSession.executingStatement;
-            if(executingStatement != null && ((PGConnection)executingStatement.statement.getConnection()).getBackendPID() == processId)
-                return executingStatement;
+    // safe cancel
+    public static boolean cancelExecutingStatement(DBManager dbManager, Thread thread, ThrowableWithStack interrupt) throws SQLException, SQLHandledException {
+        // assert interrupt => Thread.interrupted
+        // having both thread and statement in executing statement is the only way to guarantee that we'll cancel the statement of the required processId
+        Result<Boolean> canceled = new Result(false);
+        SQLSession cancelSession = SQLSession.getSQLSessionJava(thread);
+        if(cancelSession != null) {
+            cancelSession.runSyncActiveThread(thread, () -> {
+                ExecutingStatement executingStatement = cancelSession.executingStatement;
+                if(executingStatement != null) {
+                    ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + thread + " PROCESS " + thread.getId() + " SQL " + ((PGConnection) executingStatement.statement.getConnection()).getBackendPID() + " QUERY " + executingStatement.statement.toString());
+
+                    // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
+                    executingStatement.interrupt = interrupt;
+                    executingStatement.forcedCancel = true;
+                    executingStatement.statement.cancel();
+                    canceled.set(true);
+                }
+            });
         }
-        return null;
+        return canceled.result;
     }
 
     public static Map<Integer, SQLThreadInfo> getSQLThreadMap() {
@@ -197,27 +211,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return executingStatement == null ? null : executingStatement.statement.toString();
     }
 
-    public static void cancelExecutingStatement(DBManager dbManager, Thread thread, boolean interrupt) throws SQLException, SQLHandledException {
-        // having both thread and statement in executing statement is the only way to guarantee that we'll cancel the statement of the required processId
-        SQLSession cancelSession = SQLSession.getSQLSessionJava(thread);
-        if(cancelSession != null) {
-            cancelSession.runSyncActiveThread(thread, () -> {
-                ExecutingStatement executingStatement = cancelSession.executingStatement;
-                if(executingStatement != null) {
-                    ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + thread + " PROCESS " + thread.getId() + " SQL " + ((PGConnection) executingStatement.statement.getConnection()).getBackendPID() + " QUERY " + executingStatement.statement.toString());
+    // forced unsafe cancel
+    public static void cancelExecutingStatement(SQLSession sql, Integer processId) throws SQLException {
+        sql.executeDDL(sql.syntax.getCancelActiveTaskQuery(processId));
+    }
 
-                    // we're trying to cancel executing statement, because ddl task might stop some query in pooled connection that is already used by some other thread
-                    executingStatement.forcedCancel = interrupt;
-                    executingStatement.statement.cancel();
-                }
-            });
-
-//                SQLSession sqlSession = dbManager.getStopSql();                
-//                ExConnection connection = cancelSession.getDebugConnection();
-//                if(connection != null)
-//                    int sqlProcessID = ((PGConnection) connection.sql).getBackendPID();
-//                sqlSession.executeDDL(sqlSession.syntax.getCancelActiveTaskQuery(sqlProcessID));
-        }
+    private Throwable handle(SQLException e, String message, ExConnection connection) {
+        return handle(e, message, false, connection, true, false, null);
     }
 
     public Integer getQueryTimeout() {
@@ -819,7 +819,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public String getIndexName(StoredTable table, DBManager.IndexData<Field> index) {
         return getIndexName(table, syntax, index.options.dbName, getOrderFields(table.keys, index.options, SetFact.fromJavaOrderSet(index.fields)), index.options.type.suffix());
     }
-
+    
+    public String getOldIndexName(StoredTable table, DBManager.IndexData<String> index) {
+        ImOrderMap<String, Boolean> orderFields = getOrderFields(table.keys, SetFact.fromJavaOrderSet(index.fields), index.options);
+        return getIndexName(table, orderFields, index.options.dbName, index.options.type.suffix(), false, false, syntax);
+    }
+    
     static String getIndexName(StoredTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
         return getIndexName(table, syntax, dbName, fields, suffix, false, false);
     }
@@ -1833,18 +1838,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     private Problem problemInTransaction = null;
 
-    private Throwable handle(SQLException e, String message, ExConnection connection) {
-        return handle(e, message, false, connection, true, null);
-    }
-
-    private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate, Boolean forcedCancel) {
+    private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate, boolean forcedCancel, ThrowableWithStack interrupt) {
         if(!(t instanceof SQLException))
             return t;
-        
-        SQLException e = (SQLException)t;            
+
+        SQLException e = (SQLException)t;
         if(message == null)
             message = "PREPARING STATEMENT";
-        
+
         if(isExplainTemporaryTablesEnabled())
             addFifo("E");
 
@@ -1865,7 +1866,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //      в частности проблема с AS если есть GROUP BY f(a) широкий тип AS узкий тип, то тип выведется узкий, а в вычислении SQL округления не будет и при UNION / GROUP BY можно получить дублмкаты
         // недетерминированные ORDER функции (GROUP LAST и т.п.)
         // нецелостной базой (значения классов в базе не правильные)
-        //      также при нарушении GROUP AGGR может возникать, так как GROUP AGGR тоже не детерминирован 
+        //      также при нарушении GROUP AGGR может возникать, так как GROUP AGGR тоже не детерминирован
         // неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses),
         // !!! также при нарушении checkSessionCount (тестится fifo.add логом)
         //еще может быть ситуация при материализации подзапросов, если она выполняется не в транзакции (скорее всего в длинных запросах)
@@ -1880,8 +1881,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(reason != null)
             handled = new SQLRetryException(reason);
 
-        if(syntax.isTimeout(e))
+        if(syntax.isTimeout(e)) {
+            if (forcedCancel && interrupt != null)
+                ThreadUtils.throwThreadInterrupt(interrupt);
+
             handled = new lsfusion.server.data.sql.exception.SQLTimeoutException(isTransactTimeout, forcedCancel);
+        }
 
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
@@ -1892,10 +1897,115 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled + message + (handled instanceof SQLUniqueViolationException ? " " + ExceptionUtils.getStackTrace() : ""));
             return handled;
         }
-        
+
         if(!suppressErrorLogging)
             logger.error(message + " " + e.getMessage());
         return e;
+    }
+
+    // SQLAnalyzeAspect
+    @StackMessage("{message.sql.execute}")
+    public <H> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
+        lockRead(owner);
+
+        long runTime = 0;
+        final Result<ReturnStatement> returnStatement = new Result<>();
+        PreparedStatement statement = null;
+        ExConnection connection = null;
+
+        final String string = command.getString();
+
+        Result<Throwable> firstException = new Result<>();
+        StaticExecuteEnvironment env = command.env;
+
+        Savepoint savepoint = null;
+        ExecutingStatement executingStatement = null;
+        try {
+            snapEnv.beforeConnection(this, owner);
+
+            connection = getConnection();
+
+            env.before(this, connection, string, owner);
+
+            lockConnection(snapEnv.needConnectionLock(), owner);
+
+            snapEnv.beforeStatement(this, connection, string, owner);
+
+            if(useDeadLockPriority && command.isDML()) {
+                assert isInTransaction();
+
+                // время со старта транзакции + половину времени предыдущих попыток
+                // 1-е чтобы у старых транзакций был больший приоритет, 2-е чтобы скажем в postgres deadlock timeout постепенно увеличивался, так как по его истечении больше проверок на deadlock не происходит, и жертвой будет опять таки старая транзнакция (этот же подход позволяет увеличивать у всех участников deadlock постепенно timeout пока одна из транзакций не пройдет)
+                long millisScore = System.currentTimeMillis() - transStartTime;
+                if(syntax.useFailedTimeInDeadlockPriority())
+                    millisScore += (transStartTime - applyStartTime) / 2;
+
+                long secondsScore = millisScore / 1000;
+                if(secondsScore > 0) {
+                    long currentPriority = Math.round(Math.log(secondsScore) / Math.log(2.0));
+                    if (deadLockPriority == null || deadLockPriority < currentPriority) // оптимизация
+                        setDeadLockPriority(connection, owner, currentPriority); // предполагается, что deadLockPriority очистит endTransaction
+                }
+            }
+
+            if(snapEnv.isUseSavePoint())
+                savepoint = connection.sql.setSavepoint();
+
+            Result<Integer> length = new Result<>();
+            statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement, length);
+            snapEnv.beforeExec(statement, this);
+
+            long started = System.currentTimeMillis();
+            executingStatement = new ExecutingStatement(statement);
+
+            String checkStatementSubstring = Settings.get().getCheckStatementSubstring();
+            if(checkStatementSubstring != null && !checkStatementSubstring.isEmpty() && statement.toString().contains(checkStatementSubstring)) {
+                String checkExcludeStatementSubstring = Settings.get().getCheckExcludeStatementSubstring();
+                if(checkExcludeStatementSubstring == null || !statement.toString().contains(checkExcludeStatementSubstring))
+                    ServerLoggers.handledExLog("FOUND STATEMENT : " + statement);
+            }
+
+            try {
+                try {
+                    this.executingStatement = executingStatement;
+
+                    ThreadUtils.checkThreadInterrupted();
+
+                    command.execute(statement, handler, this);
+                } finally {
+                    this.executingStatement = null;
+                }
+            } finally {
+                runTime = System.currentTimeMillis() - started;
+
+                connection.registerExecute(length.result, runTime);
+            }
+        } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null, executingStatement != null && executingStatement.forcedCancel, executingStatement != null ? executingStatement.interrupt : null);
+            firstException.set(t);
+
+            if(savepoint != null && t instanceof SQLHandledException && ((SQLHandledException)t).repeatCommand()) {
+                assert problemInTransaction == Problem.EXCEPTION;
+                final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
+                runSuppressed(() -> {
+                    fConnection.sql.rollback(fSavepoint);
+                    problemInTransaction = null;
+                }, firstException);
+                unregisterUseSavePoint();
+                savepoint = null;
+            }
+        } finally {
+            if(savepoint != null) {
+                if(problemInTransaction == null) { // if there was an exception in transaction, releaseSavepoint will fail anyway
+                    final ExConnection fConnection = connection;
+                    final Savepoint fSavepoint = savepoint;
+                    runSuppressed(() -> fConnection.sql.releaseSavepoint(fSavepoint), firstException);
+                }
+                unregisterUseSavePoint();
+            }
+        }
+
+        afterExStatementExecute(owner, env, snapEnv, connection, runTime, returnStatement, statement, string, command, handler, firstException);
     }
 
     public boolean suppressErrorLogging;
@@ -2183,110 +2293,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         SessionTable.saveToDBForDebug(SetFact.addExclSet(materializedTables, paramTables), this);
     }
 
-    // SQLAnalyzeAspect
-    @StackMessage("{message.sql.execute}")
-    public <H> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
-        lockRead(owner);
+    public static class ExecutingStatement {
 
-        long runTime = 0;
-        final Result<ReturnStatement> returnStatement = new Result<>();
-        PreparedStatement statement = null;
-        ExConnection connection = null;
+        public final PreparedStatement statement;
+        public boolean forcedCancel;
+        public ThrowableWithStack interrupt;
 
-        final String string = command.getString();
-
-        Result<Throwable> firstException = new Result<>();
-        StaticExecuteEnvironment env = command.env;
-
-        Savepoint savepoint = null;
-        ExecutingStatement executingStatement = null;
-        try {
-            snapEnv.beforeConnection(this, owner);
-
-            connection = getConnection();
-
-            env.before(this, connection, string, owner);
-
-            lockConnection(snapEnv.needConnectionLock(), owner);
-
-            snapEnv.beforeStatement(this, connection, string, owner);
-
-            if(useDeadLockPriority && command.isDML()) {
-                assert isInTransaction();
-
-                // время со старта транзакции + половину времени предыдущих попыток
-                // 1-е чтобы у старых транзакций был больший приоритет, 2-е чтобы скажем в postgres deadlock timeout постепенно увеличивался, так как по его истечении больше проверок на deadlock не происходит, и жертвой будет опять таки старая транзнакция (этот же подход позволяет увеличивать у всех участников deadlock постепенно timeout пока одна из транзакций не пройдет)
-                long millisScore = System.currentTimeMillis() - transStartTime;
-                if(syntax.useFailedTimeInDeadlockPriority())
-                    millisScore += (transStartTime - applyStartTime) / 2;
-
-                long secondsScore = millisScore / 1000;
-                if(secondsScore > 0) {
-                    long currentPriority = Math.round(Math.log(secondsScore) / Math.log(2.0));
-                    if (deadLockPriority == null || deadLockPriority < currentPriority) // оптимизация
-                        setDeadLockPriority(connection, owner, currentPriority); // предполагается, что deadLockPriority очистит endTransaction
-                }
-            }
-
-            if(snapEnv.isUseSavePoint())
-                savepoint = connection.sql.setSavepoint();
-
-            Result<Integer> length = new Result<>();
-            statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement, length);
-            snapEnv.beforeExec(statement, this);
-
-            long started = System.currentTimeMillis();
-            executingStatement = new ExecutingStatement(statement);
-
-            String checkStatementSubstring = Settings.get().getCheckStatementSubstring();
-            if(checkStatementSubstring != null && !checkStatementSubstring.isEmpty() && statement.toString().contains(checkStatementSubstring)) {
-                String checkExcludeStatementSubstring = Settings.get().getCheckExcludeStatementSubstring();
-                if(checkExcludeStatementSubstring == null || !statement.toString().contains(checkExcludeStatementSubstring))
-                    ServerLoggers.handledExLog("FOUND STATEMENT : " + statement);
-            }
-
-            try {
-                try {
-                    this.executingStatement = executingStatement;
-
-                    if(Thread.interrupted()) // since interruptThread usually interrupts thread, so we won't event send it
-                        throw new InterruptedException();
-
-                    command.execute(statement, handler, this);
-                } finally {
-                    this.executingStatement = null;
-                }
-            } finally {
-                runTime = System.currentTimeMillis() - started;
-
-                connection.registerExecute(length.result, runTime);
-            }
-        } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
-            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null, executingStatement != null ? executingStatement.forcedCancel : null);
-            firstException.set(t);
-
-            if(savepoint != null && t instanceof SQLHandledException && ((SQLHandledException)t).repeatCommand()) {
-                assert problemInTransaction == Problem.EXCEPTION;
-                final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
-                runSuppressed(() -> {
-                    fConnection.sql.rollback(fSavepoint);
-                    problemInTransaction = null;
-                }, firstException);
-                unregisterUseSavePoint();
-                savepoint = null;
-            }
-        } finally {
-            if(savepoint != null) {
-                if(problemInTransaction == null) { // if there was an exception in transaction, releaseSavepoint will fail anyway
-                    final ExConnection fConnection = connection;
-                    final Savepoint fSavepoint = savepoint;
-                    runSuppressed(() -> fConnection.sql.releaseSavepoint(fSavepoint), firstException);
-                }
-                unregisterUseSavePoint();
-            }
+        public ExecutingStatement(PreparedStatement statement) {
+            this.statement = statement;
         }
-
-        afterExStatementExecute(owner, env, snapEnv, connection, runTime, returnStatement, statement, string, command, handler, firstException);
     }
 
     private <H> void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, final SQLCommand<H> command, final H handler, Result<Throwable> firstException) throws SQLException, SQLHandledException {

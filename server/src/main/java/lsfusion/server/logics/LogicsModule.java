@@ -701,7 +701,7 @@ public abstract class LogicsModule {
                     directLI(addImportFAProp(importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, isPlain)))); // IMPORT type form...
             }        
         
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, SelectTop.NULL(), false, false, paramsCount, null, false, true, 0, false,
+        return addForAProp(LocalizedString.create("{logics.add}"), true, false, SelectTop.NULL(), false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
                         new Object[] {addJProp(baseLM.equals2, 1, baseLM.extension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
@@ -981,7 +981,7 @@ public abstract class LogicsModule {
 
     // ------------------- For action ----------------- //
 
-    protected LA addForAProp(LocalizedString caption, boolean ascending, boolean ordersNotNull, SelectTop<Integer> selectTop, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
+    protected LA addForAProp(LocalizedString caption, boolean descending, boolean ordersNotNull, SelectTop<Integer> selectTop, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(innerInterfaces, params);
 
@@ -992,7 +992,7 @@ public abstract class LogicsModule {
         PropertyMapImplement<?, PropertyInterface> ifProp = hasCondition? (PropertyMapImplement<?, PropertyInterface>) readImplements.get(resInterfaces) : null;
 
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                BaseUtils.<ImList<PropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + (hasCondition ? 1 : 0), implCnt - (hasElse ? 2 : 1) - (addClass != null ? 1: 0) - noInline)).toOrderExclSet().toOrderMap(!ascending);
+                BaseUtils.<ImList<PropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + (hasCondition ? 1 : 0), implCnt - (hasElse ? 2 : 1) - (addClass != null ? 1: 0) - noInline)).toOrderExclSet().toOrderMap(descending);
 
         PropertyInterface addedInterface = addClass!=null ? (PropertyInterface) readImplements.get(implCnt - (hasElse ? 3 : 2) - noInline) : null;
 
@@ -1124,7 +1124,7 @@ public abstract class LogicsModule {
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
                 contextSelector = new InputContextSelector<T>() {
                     public Pair<InputFilterEntity<?, T>, ImOrderMap<InputOrderEntity<?, T>, Boolean>> getFilterAndOrders() {
-                        if (valueProperty.tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
+                        if (valueProperty.disableInputList(MapFact.EMPTY()))
                             return null;
                         return new Pair<>(null, null);
                     }
@@ -1378,13 +1378,13 @@ public abstract class LogicsModule {
 
     // ------------------- Order property ----------------- //
 
-    protected <P extends PropertyInterface> LP addOProp(Group group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, SelectTop<Integer> selectTop, int exprCnt, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(Group group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean descending, boolean ordersNotNull, SelectTop<Integer> selectTop, int exprCnt, int partNum, Object... params) {
         ImOrderSet<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(interfaces, params);
 
         ImSet<PropertyInterfaceImplement<PropertyInterface>> partitions = listImplements.subList(0, partNum).toOrderSet().getSet();
         ImList<PropertyInterfaceImplement<PropertyInterface>> propsList = listImplements.subList(partNum, partNum + exprCnt);
-        ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + exprCnt, listImplements.size()).toOrderSet().toOrderMap(!ascending);
+        ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + exprCnt, listImplements.size()).toOrderSet().toOrderMap(descending);
 
         SelectTop<PropertyInterface> selectTopInterfaces = selectTop.genInterfaces();
         ImOrderSet<PropertyInterface> selectOrderInterfaces = selectTopInterfaces.getParamsOrderSet();
@@ -1429,26 +1429,26 @@ public abstract class LogicsModule {
 
     // ------------------- Ungroup property ----------------- //
 
-    protected <L extends PropertyInterface> LP addUGProp(Group group, boolean persistent, boolean over, LocalizedString caption, int intCount, boolean ascending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LP addUGProp(Group group, boolean persistent, boolean over, LocalizedString caption, int intCount, boolean descending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
         ImMap<L, PropertyInterfaceImplement<PropertyInterface>> groupImplement = ungroup.listInterfaces.mapOrderValues(listImplements::get);
         PropertyInterfaceImplement<PropertyInterface> restriction = listImplements.get(partNum);
-        ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
+        ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(descending);
 
         return mapLProp(group, persistent, PropertyFact.createUGProp(caption, innerInterfaces.getSet(),
                 new PropertyImplement<>(ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
-    protected <L extends PropertyInterface> LP addPGProp(Group group, boolean persistent, int roundlen, boolean roundfirst, LocalizedString caption, int intCount, List<ResolveClassSet> explicitInnerClasses, boolean ascending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LP addPGProp(Group group, boolean persistent, int roundlen, boolean roundfirst, LocalizedString caption, int intCount, List<ResolveClassSet> explicitInnerClasses, boolean descending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
         ImMap<L, PropertyInterfaceImplement<PropertyInterface>> groupImplement = ungroup.listInterfaces.mapOrderValues(listImplements::get);
         PropertyInterfaceImplement<PropertyInterface> proportion = listImplements.get(partNum);
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
+                listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(descending);
 
         return mapLProp(group, persistent, PropertyFact.createPGProp(caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces, explicitInnerClasses,
                 new PropertyImplement<>(ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
@@ -1993,7 +1993,7 @@ public abstract class LogicsModule {
                 new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
         );
 
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, SelectTop.NULL(), false, false, contextParams, cls, true, false, 0, false,
+        return addForAProp(LocalizedString.create("{logics.add}"), true, false, SelectTop.NULL(), false, false, contextParams, cls, true, false, 0, false,
                 BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
     }
 
@@ -2589,12 +2589,20 @@ public abstract class LogicsModule {
         return baseLM.baseGroup;
     }
 
-    public Group getRecognizeGroup() {
-        return baseLM.recognizeGroup;
+    public Group getIdGroup() {
+        return baseLM.idGroup;
     }
 
-    public boolean isRecognize(ActionOrProperty property) {
-        return getRecognizeGroup().hasChild(property);
+    public Group getUIdGroup() {
+        return baseLM.uidGroup;
+    }
+
+    public boolean isId(ActionOrProperty property) {
+        return getIdGroup().hasChild(property);
+    }
+
+    public boolean isUId(ActionOrProperty property) {
+        return getUIdGroup().hasChild(property);
     }
 
     public static class LocalPropertyData {

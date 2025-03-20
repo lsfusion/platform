@@ -949,7 +949,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
-        mobileMode = mobileMode(user),
+        mobile = isMobile(currentConnection()),
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
@@ -983,7 +983,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
-        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel');
+        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel'),
+        useClusterizeInPivot = valueSetting('useClusterizeInPivot');
 }
 
 getClientSettings() {
@@ -1016,7 +1017,7 @@ DESIGN customUser {
     }
 }
 
-pixelSize(Connection c) = INTEGER(splitPart(screenSize(c), 'x', 1)) * INTEGER(splitPart(screenSize(c), 'x', 2));
+pixelSize(Connection c) = screenWidth(c) * screenHeight(c);
 heuristicSize() += CASE
     WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelTinySize')) THEN Size.tiny
     WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelMiniSize')) THEN Size.mini

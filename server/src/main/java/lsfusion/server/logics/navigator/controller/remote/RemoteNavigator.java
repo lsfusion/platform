@@ -16,7 +16,6 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
@@ -405,8 +404,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
-
-            businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+            businessLogics.systemEventsLM.screenWidthConnection.change(clientInfo.screenWidth, session, getConnection());
+            businessLogics.systemEventsLM.screenHeightConnection.change(clientInfo.screenHeight, session, getConnection());
             businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
 
             if(clientInfo.initial) {
@@ -414,6 +413,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
 
             ClientType clientType = clientInfo.clientType;
+            assert clientType != ClientType.WEB_MOBILE;
+            if (clientType == ClientType.WEB_DESKTOP) {
+                if (businessLogics.systemEventsLM.isMobileModeConnection.read(session, getConnection()) != null)
+                    clientType = ClientType.WEB_MOBILE;
+            }
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());
             this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
             this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;
@@ -963,13 +967,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    public static void checkEnableUI(boolean anonymous) {
+    public static void checkEnableUI(AuthenticationToken token) {
         byte enableUI = Settings.get().getEnableUI();
         if(enableUI == 0)
             throw new RuntimeException("Ui is disabled. It can be enabled by using setting enableUI.");
 
-        if(anonymous && enableUI == 1)
-            throw new AuthenticationException(getString("exceptions.user.must.be.authenticated"));
+        RemoteConnection.checkAnonymous(true, token, enableUI);
     }
 
     @Override

@@ -91,6 +91,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -248,7 +249,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event, GBindingMode.NO, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GBindingMode bindPreview, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, bindPreview, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
+        form.addBinding(event, new GBindingEnv(null, bindPreview, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {
@@ -368,6 +369,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         valueTooltips.put(propertyDraw, values);
+    }
+
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        propertyCustomOptions.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -806,6 +811,7 @@ protected Double getUserFlex(int i) {
         protected abstract String getRegexp(GPropertyDraw property, T record);
         protected abstract String getRegexpMessage(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
+        protected abstract PValue getPropertyCustomOptions(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -1032,6 +1038,12 @@ protected Double getUserFlex(int i) {
             public String getValueTooltip() {
                 T row = (T) cell.getRow();
                 return column.getValueTooltip(property, row);
+            }
+
+            @Override
+            public PValue getPropertyCustomOptions() {
+                T row = (T) cell.getRow();
+                return column.getPropertyCustomOptions(property, row);
             }
 
             @Override

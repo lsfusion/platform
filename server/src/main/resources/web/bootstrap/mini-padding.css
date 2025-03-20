@@ -53,6 +53,7 @@
 }
 
 :root {
+    --bs-body-line-height: 1.4;
     --border-padding: 0.25rem;
     --border-cont-padding: 0.333rem;
 }

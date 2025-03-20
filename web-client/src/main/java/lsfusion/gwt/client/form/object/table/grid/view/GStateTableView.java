@@ -67,6 +67,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -113,7 +114,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
         StaticImageButton showAllButton = new StaticImageButton(ClientMessages.Instance.get().formGridPageSizeShowAll(), null);
         showAllButton.addClickHandler(event -> {
+            updateRendererState(true);
             pageSize = Integer.MAX_VALUE / 10; // /10 to prevent Integer overflow because in GroupObjectInstance we use "pageSize * 2"
+            showAllPressed();
             this.grid.changePageSize(pageSize);
         });
         messageAndButton.addCentered(showAllButton);
@@ -130,6 +133,9 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         addStretched(child); // we need to attach pageSize widget to make it work
 //
 //        add(new ResizableSimplePanel(this.pageSizeWidget)); // we need to attach pageSize widget to make it work
+    }
+
+    protected void showAllPressed() {
     }
 
     private final Widget drawWidget;
@@ -213,6 +219,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.regexpMessages.add(index, null);
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
+                this.propertyCustomOptions.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -454,6 +461,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.propertyCustomOptions.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
 
     }
@@ -668,6 +682,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return valueTooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellPropertyCustomOptions(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellPropertyCustomOptions = propertyCustomOptions.get(properties.indexOf(property));
+        if(cellPropertyCustomOptions == null)
+            return null;
+
+        return cellPropertyCustomOptions.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected String getGridElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellGridElementClass(property, rowKey, columnKey);
     }
@@ -714,6 +736,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getValueTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue valueTooltip = getCellValueTooltip(property, rowKey, columnKey);
         return valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip);
+    }
+
+    protected PValue getPropertyCustomOptions(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return getCellPropertyCustomOptions(property, rowKey, columnKey);
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

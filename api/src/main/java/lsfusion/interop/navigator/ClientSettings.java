@@ -18,7 +18,7 @@ public class ClientSettings implements Serializable {
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
-    public Boolean mobileMode;
+    public boolean mobile;
     public boolean suppressOnFocusChange;
     public boolean contentWordWrap;
     public boolean forbidDuplicateForms;
@@ -41,16 +41,17 @@ public class ClientSettings implements Serializable {
     public double maxStickyLeft;
     public boolean jasperReportsIgnorePageMargins;
     public double cssBackwardCompatibilityLevel;
+    public boolean useClusterizeInPivot;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
                           boolean useRequestTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
-                          Boolean mobileMode, boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
+                          boolean mobile, boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, String size, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
                           String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins,
-                          double cssBackwardCompatibilityLevel) {
+                          double cssBackwardCompatibilityLevel, boolean useClusterizeInPivot) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -62,7 +63,7 @@ public class ClientSettings implements Serializable {
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
-        this.mobileMode = mobileMode;
+        this.mobile = mobile;
         this.suppressOnFocusChange = suppressOnFocusChange;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
@@ -83,5 +84,6 @@ public class ClientSettings implements Serializable {
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
+        this.useClusterizeInPivot = useClusterizeInPivot;
     }
 }

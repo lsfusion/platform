@@ -1926,12 +1926,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
+        executeSessionEvents(BL, sessionEventFormEnv, stack);
+
         keepProps = BaseUtils.merge(SessionDataProperty.keepNested(true), keepProps);
 
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
-
-            executeSessionEvents(BL, sessionEventFormEnv, stack);
 
             // it was an odd behaviour to do not apply not nested properties in nested session
             copyDataTo(parentSession, SetFact.EMPTY());
@@ -1952,8 +1952,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 throw Throwables.propagate(e);
             }
         }
-
-        executeSessionEvents(BL, sessionEventFormEnv, stack);
 
         dataModifier.updateSourceChanges(); // вызываем все getPropertyChanges, чтобы notifySourceChange, так как иначе начнется транзакция и уже ничего не получится обновлять
 

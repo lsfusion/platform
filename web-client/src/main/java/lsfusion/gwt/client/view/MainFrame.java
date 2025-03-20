@@ -69,7 +69,6 @@ public class MainFrame implements EntryPoint {
     public static boolean showDetailedInfo;
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
-    public static Boolean mobileMode;
     public static boolean suppressOnFocusChange;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
@@ -90,6 +89,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean hasCapitalHyphensProblem; // first capital is not hyphenized
 
+    public static String timeZone;
     public static String dateFormat;
     public static String timeFormat;
     public static String dateTimeFormat;
@@ -111,6 +111,8 @@ public class MainFrame implements EntryPoint {
 
     public static double v5 = 5.9999;
     public static double cssBackwardCompatibilityLevel;
+
+    public static boolean useClusterizeInPivot;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -639,7 +641,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -653,8 +655,7 @@ public class MainFrame implements EntryPoint {
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
-                mobileMode = gClientSettings.mobileMode;
-                mobile = mobileMode != null ? mobileMode : Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
+                mobile = gClientSettings.mobile;
                 mobileAdjustment = mobile ? 1 : 0;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
@@ -667,6 +668,7 @@ public class MainFrame implements EntryPoint {
                 String language = gClientSettings.language;
                 Document.get().getDocumentElement().setAttribute("lang", language);
                 hasCapitalHyphensProblem = language != null && language.equals("en");
+                timeZone = gClientSettings.timeZone.equals(GwtClientUtils.getClientTimeZone()) ? null : gClientSettings.timeZone;
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
@@ -685,6 +687,8 @@ public class MainFrame implements EntryPoint {
                 jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;
 
                 cssBackwardCompatibilityLevel = gClientSettings.cssBackwardCompatibilityLevel;
+
+                useClusterizeInPivot = gClientSettings.useClusterizeInPivot;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

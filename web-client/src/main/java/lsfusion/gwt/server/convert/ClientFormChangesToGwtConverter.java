@@ -25,6 +25,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.session.ConvertFileValue;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -346,17 +348,28 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = LocalTime.class)
     public GTimeDTO convertTime(LocalTime time) {
-        return new GTimeDTO(time.getHour(), time.getMinute(), time.getSecond());
+        return new GTimeDTO(time.getHour(), time.getMinute(), time.getSecond(), time.getNano() / 1000000);
     }
 
     @Converter(from = LocalDateTime.class)
     public GDateTimeDTO convertDateTime(LocalDateTime dateTime) {
-        return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond());
+        return new GDateTimeDTO(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(),
+                dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano() / 1000000);
     }
 
     @Converter(from = Instant.class)
     public GZDateTimeDTO convertDateTime(Instant dateTime) {
         return new GZDateTimeDTO(dateTime.toEpochMilli());
+    }
+
+    @Converter(from = BigDecimal.class)
+    public GNumericDTO convertBigDecimal(BigDecimal bigDecimal) {
+        return new GNumericDTO(bigDecimal.doubleValue());
+    }
+
+    @Converter(from = IntervalValue.class)
+    public GIntervalValue convertIntervalValue(IntervalValue intervalValue) {
+        return new GIntervalValue(intervalValue.from, intervalValue.to);
     }
 
     @Converter(from = ClientAsync.class)

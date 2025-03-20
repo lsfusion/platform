@@ -87,4 +87,9 @@ public class MakeZipFileAction extends InternalAction {
             throw Throwables.propagate(e);
         }
     }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
+    }
 }

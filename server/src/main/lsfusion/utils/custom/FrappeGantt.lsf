@@ -4,6 +4,9 @@ REQUIRE SystemEvents;
 
 NAMESPACE Utils;
 
+// usage :
+// CUSTOM 'gantt' OPTIONS JSON FROM view_mode = 'Day'
+
 onWebClientInit() + {
     onWebClientInit('custom_frappe-gantt.css') <- 1;
     onWebClientInit('custom_frappe-gantt.js') <- 1;

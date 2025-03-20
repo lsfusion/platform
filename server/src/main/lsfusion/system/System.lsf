@@ -23,6 +23,7 @@ stat '{system.stat.class}' = DATA INTEGER (CustomObjectClass);
 
 GROUP NATIVE base '{system.group.base}' : public;
 GROUP NATIVE id '{system.group.id}' : base;
+GROUP NATIVE uid '{system.group.uid}' : id;
 
 GROUP drillDown '{system.group.drill.down}' : root;
 GROUP propertyPolicy '{system.group.property.policy}' : root;

@@ -12,6 +12,7 @@ import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ParamLazy;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
@@ -601,10 +602,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         AndObjectWhere[] siblings = siblings(wheres, maxWhere, numWheres);
         Where siblingWhere = toWhere(siblings, check);
         
-        if(numWheres > 5 && Thread.interrupted()) {
-            Thread.currentThread().interrupt();
-            throw Throwables.propagate(new InterruptedException());
-        }
+        if(numWheres > 5)
+            ThreadUtils.checkThreadInterrupted();
 
         OrObjectWhere[] maxWheres = ((AndWhere)wheres[maxWhere]).wheres.clone();
         for(int i=0;i<maxWheres.length;i++) {

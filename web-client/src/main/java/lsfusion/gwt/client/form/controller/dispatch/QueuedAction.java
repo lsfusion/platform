@@ -4,6 +4,8 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import net.customware.gwt.dispatch.shared.Result;
 
+import java.util.function.BooleanSupplier;
+
 public class QueuedAction<R extends Result> {
     public RequestAsyncCallback<R> callback;
 
@@ -14,12 +16,12 @@ public class QueuedAction<R extends Result> {
     private R result;
     private Throwable throwable;
 
-    public Boolean preProceeded;
+    public BooleanSupplier preProceed;
 
-    public QueuedAction(long requestIndex, RequestAsyncCallback callback, boolean preProceed) {
+    public QueuedAction(long requestIndex, RequestAsyncCallback callback, BooleanSupplier preProceed) {
         this.requestIndex = requestIndex;
         this.callback = callback;
-        this.preProceeded = preProceed ? false : null;
+        this.preProceed = preProceed;
     }
 
     public void succeeded(R result) {

@@ -2742,6 +2742,17 @@ public class Settings implements Cloneable {
         this.removeClassesFallback = removeClassesFallback;
     }
 
+    // temporary fallback
+    private boolean noExecuteLocalEventsOnFormShowFallback = false;
+
+    public boolean isNoExecuteLocalEventsOnFormShowFallback() {
+        return noExecuteLocalEventsOnFormShowFallback;
+    }
+
+    public void setNoExecuteLocalEventsOnFormShowFallback(boolean noExecuteLocalEventsOnFormShowFallback) {
+        this.noExecuteLocalEventsOnFormShowFallback = noExecuteLocalEventsOnFormShowFallback;
+    }
+
     public void setUpdateSavePointsMinMultiplier(double updateSavePointsMinMultiplier) {
         this.updateSavePointsMinMultiplier = updateSavePointsMinMultiplier;
     }
@@ -3492,5 +3503,15 @@ public class Settings implements Cloneable {
 
     public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
         this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
+    }
+
+    public boolean useClusterizeInPivot = false;
+
+    public boolean isUseClusterizeInPivot() {
+        return useClusterizeInPivot;
+    }
+
+    public void setUseClusterizeInPivot(boolean useClusterizeInPivot) {
+        this.useClusterizeInPivot = useClusterizeInPivot;
     }
 }

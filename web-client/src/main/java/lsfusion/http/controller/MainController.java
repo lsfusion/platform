@@ -112,21 +112,27 @@ public class MainController {
     }
 
     public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
-        String screenSize = null;
+        String screenWidth = null;
+        String screenHeight = null;
         String scale = null;
 
         Cookie[] cookies = request.getCookies();
         if(cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("LSFUSION_SCREEN_SIZE")) {
-                    screenSize = cookie.getValue();
-                } else if(cookie.getName().equals("LSFUSION_SCALE")) {
+                if (cookie.getName().equals("LSFUSION_SCREEN_WIDTH")) {
+                    screenWidth = cookie.getValue();
+                } else if (cookie.getName().equals("LSFUSION_SCREEN_HEIGHT")) {
+                    screenHeight = cookie.getValue();
+                }else if(cookie.getName().equals("LSFUSION_SCALE")) {
                     scale = cookie.getValue();
                 }
             }
         }
-        if (screenSize != null) {
-            clientInfo.screenSize = screenSize;
+        if (screenWidth != null) {
+            clientInfo.screenWidth = Integer.parseInt(screenWidth);
+        }
+        if (screenHeight != null) {
+            clientInfo.screenHeight = Integer.parseInt(screenHeight);
         }
         if (scale != null) {
             clientInfo.scale = Double.parseDouble(scale);
@@ -145,41 +151,8 @@ public class MainController {
         return "push-notification";
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String processLogin(ModelMap model, HttpServletRequest request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
-                //LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
-            } else {
-                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
-            }
-        }
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-
-        model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
-        model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
-        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        addNoAuthStandardModelAttributes(model, request, serverSettings);
-
-        try {
-            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
-                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, null, request)));
-            model.addAttribute("urls", oauth2AuthenticationUrls);
-        } catch (Throwable e) {
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
-        }
-
-        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
-        addUserDataAttributes(model, request);
-        if (checkVersionError.result != null) {
-            model.addAttribute("error", checkVersionError.result);
-            checkVersionError.set(null);
-            return "restricted";
-        } else {
-            return "login";
-        }
+    public static String getDirectUrl(String url, HttpServletRequest request) {
+        return getDirectUrl(url, (String)null, request);
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
@@ -288,12 +261,8 @@ public class MainController {
         addResourcesAttributes(model, serverSettings, true, serverSettings != null ? serverSettings.noAuthResourcesBeforeSystem : null, serverSettings != null ? serverSettings.noAuthResourcesAfterSystem : null);
     }
 
-    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
-        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
+    public static String getDirectUrl(String url, String query, HttpServletRequest request) {
+        return getDirectUrl(url, null, query, request);
     }
 
     private void addResourcesAttributes(ModelMap model, ServerSettings serverSettings, boolean noAuth, List<Pair<String, RawFileData>> resourcesBeforeSystem, List<Pair<String, RawFileData>> resourcesAfterSystem) {
@@ -316,42 +285,8 @@ public class MainController {
         return logicsProvider.getServerSettings(request, noCache);
     }
 
-    @RequestMapping(value = "/main", method = RequestMethod.GET)
-    public String processMain(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getServerSettings(request, false);
-
-        addStandardModelAttributes(model, request, serverSettings);
-
-        model.addAttribute("logicsName", getLogicsName(serverSettings));
-        model.addAttribute("lsfParams", getLsfParams(serverSettings));
-
-        String sessionId;
-        LogicsSessionObject.InitSettings initSettings;
-        try {
-            Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
-            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
-                try {
-                    String result = navigatorProvider.createNavigator(sessionObject, request);
-                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true)));
-                    return result;
-                } catch (RemoteMessageException e) {
-                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
-                    throw e;
-                }
-            });
-            initSettings = rInitSettings.result;
-        } catch (AuthenticationException authenticationException) {
-            return getRedirectUrl("/logout", null, request);
-        } catch (Throwable e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("redirectURL", getDirectUrl("/main", null, null, request));
-            return "app-not-available";
-        }
-
-        model.addAttribute("sessionID", sessionId);
-        addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
-
-        return "main";
+    public static String getDirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {
+        return getDirectUrl(url, paramsToRemove, null, request);
     }
 
     private List<WebAction> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
@@ -421,10 +356,10 @@ public class MainController {
         return serverSettings != null ? serverSettings.logicsName : null;
     }
 
-    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String localizedString = ServerMessages.getString(request, "run.desktop.client");
-        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + getDirectUrl("/exec", null, "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
+    // to redirect on the page
+    public static String getDirectUrl(String url, List<String> paramsToRemove, String query, HttpServletRequest request) {
+        assert url.startsWith("/");
+        return request.getContextPath() + getURLPreservingParameters(url, query, paramsToRemove, request);
     }
 
     private Map<String, String> getLsfParams(ServerSettings serverSettings) {
@@ -467,12 +402,99 @@ public class MainController {
         return queryString;
     }
 
-    public static String getDirectUrl(String url, List<String> paramsToRemove, String query, HttpServletRequest request) {
-        return request.getContextPath() + getURLPreservingParameters(url, query, paramsToRemove, request);
+    // to return in spring controller
+    public static String getRedirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {
+        assert url.startsWith("/");
+        return "redirect:" + getURLPreservingParameters(url, paramsToRemove, request);
     }
 
-    public static String getRedirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {
-        return "redirect:" + getURLPreservingParameters(url, paramsToRemove, request);
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    public String processLogin(ModelMap model, HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
+//                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+            } else {
+                return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            }
+        }
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
+
+        model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
+        model.addAttribute("registrationPage", getDirectUrl("/registration", request));
+        model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", request));
+        addNoAuthStandardModelAttributes(model, request, serverSettings);
+
+        try {
+            clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
+                    getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), request)));
+            model.addAttribute("urls", oauth2AuthenticationUrls);
+        } catch (Throwable e) {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
+        }
+
+        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        addUserDataAttributes(model, request);
+        if (checkVersionError.result != null) {
+            model.addAttribute("error", checkVersionError.result);
+            checkVersionError.set(null);
+            return "restricted";
+        } else {
+            return "login";
+        }
+    }
+
+    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
+        model.addAttribute("title", getTitle(serverSettings));
+        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
+        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+        model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), request));
+        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
+    }
+
+    @RequestMapping(value = "/main", method = RequestMethod.GET)
+    public String processMain(ModelMap model, HttpServletRequest request) {
+        ServerSettings serverSettings = getServerSettings(request, false);
+
+        addStandardModelAttributes(model, request, serverSettings);
+
+        model.addAttribute("logicsName", getLogicsName(serverSettings));
+        model.addAttribute("lsfParams", getLsfParams(serverSettings));
+
+        String sessionId;
+        LogicsSessionObject.InitSettings initSettings;
+        try {
+            Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
+            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+                try {
+                    String result = navigatorProvider.createNavigator(sessionObject, request);
+                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
+                    return result;
+                } catch (RemoteMessageException e) {
+                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
+                    throw e;
+                }
+            });
+            initSettings = rInitSettings.result;
+        } catch (AuthenticationException authenticationException) {
+            return getRedirectUrl("/logout", null, request);
+        } catch (Throwable e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("redirectURL", getDirectUrl("/main", request));
+            return "app-not-available";
+        }
+
+        model.addAttribute("sessionID", sessionId);
+        addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
+
+        return "main";
+    }
+
+    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String localizedString = ServerMessages.getString(request, "run.desktop.client");
+        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
+                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
     }
 
     public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {

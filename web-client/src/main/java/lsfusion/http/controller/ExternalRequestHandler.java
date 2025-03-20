@@ -77,8 +77,8 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         if(e instanceof RemoteMessageException)
             return e.getMessage();
         
-        Pair<String, Pair<String, String>> actualStacks = RemoteInternalException.toString(e);
-        return actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.first, actualStacks.second.second);
+        Pair<String, RemoteInternalException.ExStacks> actualStacks = RemoteInternalException.toString(e);
+        return actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.javaStack, actualStacks.second.lsfStack)+'\n'+actualStacks.second.asyncStacks;
     }
 
     @Override
@@ -98,7 +98,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             sendResponse(response, (ExternalUtils.ResultExternalResponse) responseHttpEntity);
         else if(responseHttpEntity instanceof ExternalUtils.RedirectExternalResponse) {
             ExternalUtils.RedirectExternalResponse redirect = (ExternalUtils.RedirectExternalResponse) responseHttpEntity;
-            response.sendRedirect(MainController.getDirectUrl(redirect.url, REDIRECT_PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
+            response.sendRedirect(MainController.getDirectUrl("/" + redirect.url, REDIRECT_PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
         } else {
             response.setContentType("text/html");
             response.getWriter().print(((ExternalUtils.HtmlExternalResponse) responseHttpEntity).html);

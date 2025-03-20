@@ -51,13 +51,14 @@ public class FormPropertyOptions {
     private List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions;
     private String eventId;
     private String integrationSID;
-    private Boolean order;
+    private Boolean descending;
     private Boolean filter;
     private Boolean pivotColumn;
     private Boolean pivotRow;
     private Boolean pivotMeasure;
     private Boolean sticky;
     private Boolean sync;
+    private PropertyObjectEntity propertyCustomOptions;
 
     // for pivoting
     public String formula;
@@ -433,12 +434,12 @@ public class FormPropertyOptions {
     }
 
 
-    public Boolean getOrder() {
-        return order;
+    public Boolean getDescending() {
+        return descending;
     }
 
-    public void setOrder(Boolean order) {
-        this.order = order;
+    public void setDescending(Boolean descending) {
+        this.descending = descending;
     }
 
     public Boolean getFilter() {
@@ -489,6 +490,14 @@ public class FormPropertyOptions {
         this.sync = sync;
     }
 
+    public void setPropertyCustomOptions(PropertyObjectEntity propertyCustomOptions) {
+        this.propertyCustomOptions = propertyCustomOptions;
+    }
+
+    public PropertyObjectEntity getPropertyCustomOptions() {
+        return propertyCustomOptions;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -533,7 +542,7 @@ public class FormPropertyOptions {
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
         merged.setExtNull(nvl(overrides.getExtNull(), extNull));
 
-        merged.setOrder(nvl(overrides.getOrder(), order));
+        merged.setDescending(nvl(overrides.getDescending(), descending));
         merged.setFilter(nvl(overrides.getFilter(), filter));
 
         merged.setPivotColumn(nvl(overrides.getPivotColumn(), pivotColumn));
@@ -542,6 +551,8 @@ public class FormPropertyOptions {
 
         merged.setSticky(nvl(overrides.getSticky(), sticky));
         merged.setSync(nvl(overrides.getSync(), sync));
+
+        merged.setPropertyCustomOptions(nvl(overrides.getPropertyCustomOptions(), propertyCustomOptions));
 
         return merged;
     }

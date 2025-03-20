@@ -202,6 +202,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).regexpReader;
             case PropertyReadType.REGEXPMESSAGE:
                 return clientForm.getProperty(inStream.readInt()).regexpMessageReader;
+            case PropertyReadType.PROPERTY_CUSTOM_OPTIONS:
+                return clientForm.getProperty(inStream.readInt()).propertyCustomOptionsReader;
             default:
                 throw new IOException();
         }

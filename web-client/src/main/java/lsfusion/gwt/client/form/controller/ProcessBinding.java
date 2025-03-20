@@ -24,6 +24,7 @@ public class ProcessBinding {
                                       Function<EventTarget, GGroupObject> bindingGroupObjectFunction,
                                       BiFunction<GBindingEnv, Boolean, Boolean> bindPreview,
                                       Function<GBindingEnv, Boolean> bindDialog,
+                                      Function<GBindingEnv, Boolean> bindWindow,
                                       TriFunction<GBindingEnv, GGroupObject, Boolean, Boolean> bindGroup,
                                       BiFunction<GBindingEnv, Event, Boolean> bindEditing,
                                       BiFunction<GBindingEnv, Boolean, Boolean> bindShowing,
@@ -48,6 +49,7 @@ public class ProcessBinding {
                 GBindingEnv bindingEnv = bindingEvent.env;
                 if(bindPreview.apply(bindingEnv, preview) &&
                         bindDialog.apply(bindingEnv) &&
+                        bindWindow.apply(bindingEnv) &&
                         bindGroup.apply(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
                         bindEditing.apply(bindingEnv, event) &&
                         bindShowing.apply(bindingEnv, binding.showing()) &&

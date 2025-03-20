@@ -160,7 +160,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(value == null)
             return null;
         if(type instanceof GIntegralType)
-            return ((GIntegralType) type).convertDouble(toDouble(value));
+            return ((GIntegralType) type).fromDoubleValue(toDouble(value));
         if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
         if (type instanceof GADateType)
@@ -180,7 +180,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(value == null)
             return null;
         if(type instanceof GIntegralType)
-            return fromDouble((PValue.getNumberValue(value)).doubleValue());
+            return fromDouble(((GIntegralType) type).getDoubleValue(value));
         if(property != null && property.isPredefinedImage()) {
             AppBaseImage imageValue = PValue.getImageValue(value);
             if(imageToHTML)
@@ -454,6 +454,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getValueTooltip(column.property, object, column.columnKey);
     }
 
+    protected JavaScriptObject getPropertyCustomOptions(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+
+        return convertToJSValue(GJSONType.instance, null, false, getPropertyCustomOptions(column.property, object, column.columnKey));
+    }
+
     private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
         Column column = getColumn(property);
         if(column == null)
@@ -491,6 +499,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected String getValueTooltip(String property, JavaScriptObject object) {
         return getValueTooltip(property, getJsObjects(object));
+    }
+
+    protected JavaScriptObject getPropertyCustomOptions(String property, JavaScriptObject object) {
+        return getPropertyCustomOptions(property, getJsObjects(object));
     }
 
     protected JavaScriptObject getValue(String property, JavaScriptObject object) {
@@ -826,6 +838,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getValueTooltip: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValueTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getPropertyCustomOptions: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getPropertyCustomOptions(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getValue: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
