@@ -16,7 +16,6 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
@@ -93,6 +92,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
@@ -961,13 +961,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    public static void checkEnableUI(boolean anonymous) {
+    public static void checkEnableUI(AuthenticationToken token) {
         byte enableUI = Settings.get().getEnableUI();
         if(enableUI == 0)
             throw new RuntimeException("Ui is disabled. It can be enabled by using setting enableUI.");
 
-        if(anonymous && enableUI == 1)
-            throw new AuthenticationException();
+        RemoteConnection.checkAnonymous(true, token, enableUI);
     }
 
     @Override

@@ -120,7 +120,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) {
-        RemoteNavigator.checkEnableUI(token.isAnonymous());
+        RemoteNavigator.checkEnableUI(token);
         checkClientVersion(navigatorInfo);
         
         return navigatorsManager.createNavigator(getStack(), token, navigatorInfo);
