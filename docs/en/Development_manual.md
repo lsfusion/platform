@@ -32,13 +32,13 @@ Note that IDEA remembers the downloaded/specified application server file in its
 
 ### Install desktop client
 
--   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, https://download.lsfusion.org/java/lsfusion-client-6.0-beta1.jnlp), which when run will automatically install the client using Java Web Start technology.
+-   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, https://download.lsfusion.org/java/lsfusion-client-6.0-beta2.jnlp), which when run will automatically install the client using Java Web Start technology.
 
 ### Install Web Client
 
 - Install [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) version 9.
 - Add `--add-opens=java.base/java.util=ALL-UNNAMED` to the Apache Tomcat startup parameters if Java version higher than 11 is used.
-- Download [web-client](https://download.lsfusion.org/java/lsfusion-client-6.0-beta1.war) of lsFusion platform.
+- Download [web-client](https://download.lsfusion.org/java/lsfusion-client-6.0-beta2.war) of lsFusion platform.
 - Place the war file in Apache Tomcat webapps folder, for example, with the name lsfusion.war.
 - The web client will be available at http://localhost:8080/lsfusion.
 
@@ -46,7 +46,7 @@ Note that IDEA remembers the downloaded/specified application server file in its
 
 ### Installing an application server via IDE {#existingide}
 
--   Download the `lsfusion-server-<version>.jar` file of the required version (for example, `lsfusion-server-6.0-beta1.jar`) from the [central server](https://download.lsfusion.org/java/) to the folder of the required project module (we will call this folder `$FUSION_DIR$`).
+-   Download the `lsfusion-server-<version>.jar` file of the required version (for example, `lsfusion-server-6.0-beta2.jar`) from the [central server](https://download.lsfusion.org/java/) to the folder of the required project module (we will call this folder `$FUSION_DIR$`).
 -   If the database server is located on another computer, and if authorization is enabled on the database server (for example, for Postgres, using the md5 method and if the postgres password is not empty), set the [database server connection parameters](Launch_parameters.md#connectdb) (e.g., by creating a startup [settings file](Launch_parameters.md#filesettings) in the project folder)
 -   Add the downloaded file as a dependency of the required project module (`File > Project Structure > Modules > module name > Dependencies tab > +`) 
 -   Create a [startup configuration](IDE.md#configuration) (when creating a new lsFusion project, this and the upper two sections are done automatically). If the platform is loaded as a library, instead of creating a configuration you can use a Spring bean with the `logicsInstance` ID from the `lsfusion.xml` configuration file, and its `start()` and `stop()` methods, responsible for starting and stopping the application server, respectively.
@@ -71,7 +71,7 @@ For an existing maven project, server installation and loading can (and should) 
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>logics</artifactId>
-        <version>6.0-beta1</version>
+        <version>6.0-beta2</version>
     </parent>
     ```
     The first option (with parent) is good in that:
