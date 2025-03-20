@@ -3,14 +3,15 @@ package lsfusion.interop.base.exception;
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public class AuthenticationException extends RemoteMessageException {
+    public boolean redirect;
 
-    // not authenticated
-    public AuthenticationException() {
-        super(getString("exceptions.user.must.be.authenticated"));
+    public AuthenticationException(String message) {
+        this(message, false);
     }
 
-    // token problems (expiration, invalid, etc)
-    public AuthenticationException(String message) {
+    public AuthenticationException(String message, boolean redirect) {
         super(message);
+
+        this.redirect = redirect;
     }
 }

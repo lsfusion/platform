@@ -413,7 +413,7 @@ public class MainController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) {
             if (auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous()) {
-                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+//                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
             } else {
                 return getRedirectUrl("/main", null, request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
             }
