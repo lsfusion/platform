@@ -420,12 +420,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(request.needNotificationId)
             return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
         else if(isInteractive) {
-
             int mode = Settings.get().getExternalUINotificationMode();
 
-            boolean serverNotification = mode >= 1;
-            if(serverNotification) {
-                boolean pendNotification = mode == 2;
+            boolean pendNotification = false;
+            boolean redirectPushNotification = true;
+            if(mode >= 1) { // server notificatio
+                pendNotification = mode == 2;
 
                 boolean foundNavigator = true;
                 if (this instanceof RemoteNavigator)
@@ -434,11 +434,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(request.sessionId, runnable, pendNotification);
 
                 if (foundNavigator)
-                    return new RedirectExternalResponse("push-notification", null);
+                    pendNotification = true;
                 else
-                    return new RedirectExternalResponse("", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable));
-            } else
-                return new RedirectExternalResponse("push-notification", RemoteNavigator.pushGlobalNotification(runnable));
+                    redirectPushNotification = false;
+            }
+            return new RedirectExternalResponse(redirectPushNotification ? "push-notification" : "", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable), CallHTTPAction.getExplicitParams(property, request.params));
         } else {
             try {
                 try (ExecSession execSession = getExecSession()) {

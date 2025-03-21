@@ -61,7 +61,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 332;
+        return 333;
     }
 
     public static String getPlatformVersion() {
@@ -740,6 +740,13 @@ public class BaseUtils {
     public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
         List<B> result = new ArrayList<>(list1);
         result.addAll(list2);
+        return result;
+    }
+
+    public static <B> List<B> mergeList(List<? extends B> list1, B[] list2) {
+        List<B> result = new ArrayList<>(list1);
+        for(B element : list2)
+            result.add(element);
         return result;
     }
 

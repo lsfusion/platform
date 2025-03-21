@@ -246,7 +246,7 @@ public class ExternalUtils {
         } else if(execResult instanceof lsfusion.interop.session.HtmlExternalResponse) {
             return new HtmlExternalResponse(((lsfusion.interop.session.HtmlExternalResponse) execResult).html);
         } else if(execResult instanceof lsfusion.interop.session.RedirectExternalResponse)
-            return new RedirectExternalResponse(((lsfusion.interop.session.RedirectExternalResponse) execResult).url, ((lsfusion.interop.session.RedirectExternalResponse) execResult).notification);
+            return new RedirectExternalResponse(((lsfusion.interop.session.RedirectExternalResponse) execResult).url, ((lsfusion.interop.session.RedirectExternalResponse) execResult).notification, ((lsfusion.interop.session.RedirectExternalResponse) execResult).usedParams);
 
         return new ExternalUtils.ResultExternalResponse("Something went wrong", StandardCharsets.UTF_8, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
@@ -672,10 +672,12 @@ public class ExternalUtils {
 
         public final String url;
         public final Integer notification;
+        public final String[] usedParams;
 
-        public RedirectExternalResponse(String url, Integer notification) {
+        public RedirectExternalResponse(String url, Integer notification, String[] usedParams) {
             this.url = url;
             this.notification = notification;
+            this.usedParams = usedParams;
         }
     }
 }
