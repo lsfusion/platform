@@ -1747,14 +1747,6 @@ public class ClientFormController implements AsyncListener {
                 formScheduler.shutdown();
             }
         }
-        RemoteFormInterface closeRemoteForm = remoteForm;
-        closeService.submit(() -> {
-            try {
-                closeRemoteForm.close();
-            } catch (RemoteException ignored) {
-            }
-        });
-        remoteForm = null;
     }
 
     public void updateFormCaption() {
@@ -1772,6 +1764,19 @@ public class ClientFormController implements AsyncListener {
         if(!formHidden) {
             onFormHidden();
             formHidden = true;
+        }
+    }
+
+    public void destroyForm() {
+        if(remoteForm != null) {
+            RemoteFormInterface closeRemoteForm = remoteForm;
+            closeService.submit(() -> {
+                try {
+                    closeRemoteForm.close();
+                } catch (RemoteException ignored) {
+                }
+            });
+            remoteForm = null;
         }
     }
 

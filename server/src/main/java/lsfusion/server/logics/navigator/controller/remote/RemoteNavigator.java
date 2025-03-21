@@ -80,6 +80,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -596,24 +597,17 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
-        if (getInvocationsCount() > 1) {
-            return returnRemoteChangesResponse(requestIndex, pendingActions);
-        }
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
+        if (!paused && getInvocationsCount() <= 1)
+            pendingActions.add(0, getNavigatorChangesAction(requestIndex));
 
-        List<ClientAction> resultActions = new ArrayList<>();
-
-        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
-
-        resultActions.add(new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges));
-
-        resultActions.addAll(pendingActions);
-
-        return returnRemoteChangesResponse(requestIndex, resultActions);
+        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
     }
 
-    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions) {
-        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+    @NotNull
+    private ProcessNavigatorChangesClientAction getNavigatorChangesAction(long requestIndex) {
+        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
+        return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
     }
 
     public byte[] getNavigatorChangesByteArray(boolean refresh) {

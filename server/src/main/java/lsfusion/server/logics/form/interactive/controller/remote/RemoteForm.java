@@ -83,6 +83,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -904,52 +905,62 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     // именно непосредственно перед возвращением результата, иначе closeLater может сработать сильно раньше
-    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedHideForm, ExecutionStack stack) {
-        if (delayedHideForm) {
-            ServerLoggers.remoteLifeLog("FORM DELAYED HIDE : " + this);
-            try {
-                form.syncLikelyOnClose(false, stack);
-            } catch (SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e);
-            }
-            deactivateAndCloseLater(false);
-        }
-
-        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
-    }
 
     private boolean delayedHideFormSent;
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
         boolean delayedGetRemoteChanges = false;
         boolean delayedHideForm = false;
+        List<DestroyFormClientAction> delayedDestroyForms = null;
         for(ClientAction action : pendingActions) {
             delayedGetRemoteChanges = delayedGetRemoteChanges || action instanceof AsyncGetRemoteChangesClientAction;
             delayedHideForm = delayedHideForm || action instanceof HideFormClientAction;
-        }        
-
-        if(delayedHideForm) {
-            delayedHideFormSent = true;
+            if(action instanceof DestroyFormClientAction) {
+                if(delayedDestroyForms == null)
+                    delayedDestroyForms = new ArrayList<>();
+                delayedDestroyForms.add((DestroyFormClientAction) action);
+            }
         }
+
+        if(delayedHideForm)
+            delayedHideFormSent = true;
 
         // the first check can cause some undesirable effects when we have sync call and after there is an async call
         // (for example there is difference in web and desktop client behaviour: DIALOG some change that requires a lot of time to update form, from which the call is made - then that form will have "gained focus" event, in web that call will be before continue, and in desktop after)
         // in that case sync call will get no data, and all the work async call will do the work (in upper example, in web there will be no busy dialog, and in desktop there will be oone)
         // however so far it doesn't seem to be a problem (to solve it we have to pass if the call is sync / async and delay getting remote changes only for async changes)
-        if (getInvocationsCount() > 1 || delayedGetRemoteChanges) {
-            return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
+        if (!paused && getInvocationsCount() <= 1 && !delayedGetRemoteChanges)
+            pendingActions.addAll(0, getFormChangesActions(requestIndex, stack, forceLocalEvents));
+
+        if(delayedDestroyForms != null) {
+            if (paused) // delaying destroy to allow actions after hide to be handled properly
+                pendingActions.removeAll(delayedDestroyForms);
+            else {
+                ServerLoggers.remoteLifeLog("FORM DELAYED DESTROY : " + this);
+                try {
+                    form.syncLikelyOnClose(false, stack);
+                } catch (SQLException | SQLHandledException e) {
+                    throw Throwables.propagate(e);
+                }
+                deactivateAndCloseLater(false);
+            }
         }
 
+        ServerResponse result = new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
+        pendingActions.clear();
+        if(delayedDestroyForms != null && paused) // delaying destroy, first check - optimization
+            pendingActions.addAll(delayedDestroyForms);
+
+        return result;
+    }
+
+    @NotNull
+    private List<ClientAction> getFormChangesActions(long requestIndex, ExecutionStack stack, boolean forceLocalEvents) {
         List<ClientAction> resultActions = new ArrayList<>();
-
         byte[] formChanges = getFormChangesByteArray(stack, getRemoteContext(), forceLocalEvents, resultActions);
-
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
-
-        resultActions.addAll(pendingActions);
-
-        return returnRemoteChangesResponse(requestIndex, resultActions, delayedHideForm, stack);
+        return resultActions;
     }
 
     public byte[] getFormChangesByteArray(ExecutionStack stack, FormInstanceContext context) {

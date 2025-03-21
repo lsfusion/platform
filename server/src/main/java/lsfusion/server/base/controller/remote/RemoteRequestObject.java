@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Optional.fromNullable;
 
@@ -175,7 +174,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
-    protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents);
+    protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused);
 
     protected ServerResponse processPausableRMIRequest(final long requestIndex, long lastReceivedRequestIndex, final EExecutionStackRunnable runnable) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, runnable, false);
@@ -188,11 +187,17 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             protected ServerResponse callInvocation() throws Throwable {
                 ExecutionStack stack = getStack();
                 runnable.run(stack);
-                return prepareResponse(requestIndex, delayedActions, stack, forceLocalEvents);
+                return prepareResponse(requestIndex, delayedActions, stack, forceLocalEvents, false);
             }
 
             @Override
-            protected ServerResponse handleFinished() throws RemoteException {
+            protected ServerResponse handlePaused() {
+                delayedMessageAction = null;
+                return prepareResponse(requestIndex, delayedActions, null, false, true);
+            }
+
+            @Override
+            protected ServerResponse handleFinished() {
                 unlockNextRmiRequest();
                 return super.handleFinished();
             }

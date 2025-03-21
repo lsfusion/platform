@@ -1,9 +1,15 @@
 package lsfusion.gwt.client.action;
 
-public class GHideFormAction extends GExecuteAction {
+public class GDestroyFormAction extends GExecuteAction {
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
-    public GHideFormAction() {}
+    public GDestroyFormAction() {}
+
+    public int closeDelay;
+
+    public GDestroyFormAction(int closeDelay) {
+        this.closeDelay = closeDelay;
+    }
 
     @Override
     public void execute(GActionDispatcher dispatcher) throws Throwable {

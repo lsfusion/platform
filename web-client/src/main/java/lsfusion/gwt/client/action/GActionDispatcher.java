@@ -15,6 +15,8 @@ public interface GActionDispatcher {
 
     void execute(GHideFormAction action);
 
+    void execute(GDestroyFormAction action);
+
     void execute(GProcessFormChangesAction action);
 
     void execute(GProcessNavigatorChangesAction action);

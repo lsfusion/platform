@@ -69,6 +69,10 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         getFormController().hideForm();
     }
 
+    public void execute(DestroyFormClientAction action) {
+        getFormController().destroyForm();
+    }
+
     public void execute(ProcessFormChangesClientAction action) {
         try {
             getFormController().applyFormChanges(action.requestIndex, action.formChanges, false);

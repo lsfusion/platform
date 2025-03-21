@@ -1,7 +1,6 @@
 package lsfusion.server.base.controller.remote.ui;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
@@ -147,7 +146,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * @return
      * @throws RemoteException
      */
-    protected ServerResponse handleFinished() throws RemoteException {
+    protected ServerResponse handleFinished() {
         return invocationResult;
     }
 
@@ -156,24 +155,9 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         throw t.propagateRemote();
     }
 
-    /**
-     * основной поток
-     */
     @Override
-    protected final ServerResponse handlePaused() throws RemoteException {
-        try {
-            ServerResponse result = new ServerResponse(requestIndex, delayedActions.toArray(new ClientAction[delayedActions.size()]), true);
-            delayedActions.clear();
-            delayedMessageAction = null;
-
-            return result;
-        } catch (Exception e) {
-            throw ExceptionUtils.propagateRemoteException(e);
-        }
-    }
-
-    public long getRequestIndex() {
-        return requestIndex;
+    protected ServerResponse handlePaused() {
+        return null;
     }
 
     @Override

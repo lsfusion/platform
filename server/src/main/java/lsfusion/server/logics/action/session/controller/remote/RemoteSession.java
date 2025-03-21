@@ -68,7 +68,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
         return null;
     }
 
