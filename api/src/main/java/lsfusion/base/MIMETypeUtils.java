@@ -45,6 +45,9 @@ public class MIMETypeUtils {
 
     public static String MIMETypeForFileExtension(String extension) {
         loadMappings();
+        if (extension == null || extension.isEmpty()) {
+            return "application/octet-stream";
+        }
         String mimeType = extensionToMIMETypeMap.get(extension);
         return mimeType == null ? "application/" + extension : mimeType;
     }
