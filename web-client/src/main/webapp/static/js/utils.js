@@ -169,6 +169,10 @@ function plainEquals(object1, object2, ignoreField) {
     return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1Key !== ignoreField && object1[object1Key] !== object2[object1Key]}) !== undefined));
 }
 
+function jsDateEquals(date1, date2) {
+    return date1 === date2 ? true : date1.getTime() === date2.getTime();
+}
+
 function containsLineBreak(value) {
     return value.indexOf("\n") >= 0;
 }

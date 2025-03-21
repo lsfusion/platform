@@ -1702,6 +1702,10 @@ public class GwtClientUtils {
         return $wnd.plainEquals(object1, object2, ignoreField);
     }-*/;
 
+    public static native boolean jsDateEquals(JavaScriptObject date1, JavaScriptObject date2)/*-{
+        return $wnd.jsDateEquals(date1, date2);
+    }-*/;
+
     public static native void registerServiceWorker(Consumer<JavaScriptObject> onMessage, JavaScriptObject message)/*-{
         $wnd.registerServiceWorker(function (message) {
             onMessage.@java.util.function.Consumer::accept(*)(message);
