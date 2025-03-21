@@ -38,6 +38,8 @@ public interface ClientActionDispatcher {
 
     void execute(HideFormClientAction action);
 
+    void execute(DestroyFormClientAction action);
+
     void execute(ProcessFormChangesClientAction action);
 
     void execute(ProcessNavigatorChangesClientAction action);

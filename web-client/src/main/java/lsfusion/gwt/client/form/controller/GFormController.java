@@ -1673,12 +1673,14 @@ public class GFormController implements EditManager {
         return getTargetAndPreview(element, event) != null;
     }
 
-    protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+    protected void onFormHidden(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
         formsController.removeFormContainer(formContainer);
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);
         }
+    }
 
+    protected void onFormDestroyed(int closeDelay) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwner()) {
@@ -1693,10 +1695,18 @@ public class GFormController implements EditManager {
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
-    public void hideForm(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+    public void hideForm(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
         if(!formHidden) {
-            onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
+            onFormHidden(asyncFormController, editFormCloseReason);
             formHidden = true;
+        }
+    }
+
+    private boolean formDestroyed;
+    public void destroyForm(int closeDelay) {
+        if(!formDestroyed) {
+            onFormDestroyed(closeDelay);
+            formDestroyed = true;
         }
     }
 

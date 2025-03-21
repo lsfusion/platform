@@ -321,6 +321,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GDestroyFormAction action) {
+    }
+
+    @Override
     public void execute(GProcessFormChangesAction action) {
     }
 

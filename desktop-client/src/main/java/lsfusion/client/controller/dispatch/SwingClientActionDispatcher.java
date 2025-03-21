@@ -560,6 +560,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(HideFormClientAction action) {
     }
 
+    public void execute(DestroyFormClientAction action) {
+    }
+
     public void execute(ProcessFormChangesClientAction action) {
     }
 

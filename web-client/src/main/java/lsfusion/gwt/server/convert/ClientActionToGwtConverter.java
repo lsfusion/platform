@@ -132,8 +132,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = HideFormClientAction.class)
     public GHideFormAction convertAction(HideFormClientAction action, final String formID, final MainDispatchServlet servlet) {
+        return new GHideFormAction();
+    }
+
+    @Converter(from = DestroyFormClientAction.class)
+    public GDestroyFormAction convertAction(DestroyFormClientAction action, final String formID, final MainDispatchServlet servlet) {
         servlet.getFormProvider().scheduleRemoveFormSessionObject(formID, action.closeNotConfirmedDelay);
-        return new GHideFormAction(action.closeConfirmedDelay);
+        return new GDestroyFormAction(action.closeConfirmedDelay);
     }
 
     @Converter(from = MessageClientAction.class)
