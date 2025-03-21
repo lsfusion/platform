@@ -143,6 +143,11 @@ public abstract class CallHTTPAction extends CallAction {
         return mExplicitParams.immutableRev();
     }
 
+    public static String[] getExplicitParams(LAP<?, ?> property, ExternalRequest.Param[] params) {
+        ImRevMap<String, ExternalRequest.Param> explicitParams = getExplicitParams(params, property.getInterfaceNames());
+        return explicitParams.keys().toArray(new String[explicitParams.size()]);
+    }
+
     public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params) throws ParseException, SQLException, SQLHandledException {
         ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
         ImOrderSet<String> names = property.getInterfaceNames();
