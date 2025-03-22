@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.Result;
@@ -107,6 +108,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GDestroyFormAction action) {
         form.destroyForm(action.closeDelay);
+    }
+
+    @Override
+    protected void changeProperty(String property, JavaScriptObject value) {
+        form.changeProperty(property, value);
     }
 
     @Override

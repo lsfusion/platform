@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -75,6 +76,10 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (!MainFrame.mobile) {
             formsController.setFullScreenMode(true);
         }
+    }
+
+    @Override
+    protected void changeProperty(String property, JavaScriptObject value) {
     }
 
     @Override

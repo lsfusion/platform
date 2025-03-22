@@ -124,7 +124,7 @@ public class CustomCellRenderer extends CellRenderer {
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
-        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(property.getExternalChangeType(), value),
+        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(property, value),
                 renderValueSupplier != null ? (oldValue, changeValue) -> {
                     GType renderType = property.getRenderType(rendererType);
                     return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, property, true, oldValue)));
@@ -153,7 +153,7 @@ public class CustomCellRenderer extends CellRenderer {
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
-                    value = @GSimpleStateTableView::UNDEFINED;
+                    value = @GwtClientUtils::UNDEFINED;
                 return @CustomCellRenderer::changeValue(*)(element, updateContext, value, property, renderValueSupplier);
             },
             changeValue: function (value) { // deprecated

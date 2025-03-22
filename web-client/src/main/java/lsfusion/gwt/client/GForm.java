@@ -47,8 +47,6 @@ public class GForm implements Serializable {
     public GFormUserPreferences userPreferences;
     public Set<GGroupObject> inputGroupObjects;
 
-    public ArrayList<GFontWidthString> usedFonts = new ArrayList<>();
-    
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
             if (groupObject.ID == id) {
@@ -79,23 +77,12 @@ public class GForm implements Serializable {
     }
 
     public GPropertyDraw getProperty(int id) {
-        GPropertyDraw prop;
-        if (idProps == null) {
-            idProps = new HashMap<>();
-            prop = null;
-        } else {
-            prop = idProps.get(id);
-        }
-
-        if (prop == null) {
-            for (GPropertyDraw property : propertyDraws) {
-                if (property.ID == id) {
-                    prop = property;
-                    break;
-                }
+        for (GPropertyDraw property : propertyDraws) {
+            if (property.ID == id) {
+                return property;
             }
         }
-        return prop;
+        return null;
     }
 
     public GPropertyDraw getProperty(String propertyFormName) {

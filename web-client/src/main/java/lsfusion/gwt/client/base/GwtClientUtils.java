@@ -30,6 +30,14 @@ import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GwtClientUtils {
 
+    private static native JavaScriptObject createUndefined()/*-{
+        return { name : "UNDEFINED" };
+    }-*/;
+    public static final JavaScriptObject UNDEFINED = createUndefined();
+    public static boolean isUndefined(JavaScriptObject object) { // can be wrapped, todo: check
+        return object == UNDEFINED;
+    }
+
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
 
@@ -1588,6 +1596,9 @@ public class GwtClientUtils {
     }-*/;
     public static native JavaScriptObject call(JavaScriptObject object, JsArray<JavaScriptObject> params)/*-{
         return object.apply(object, params);
+    }-*/;
+    public static native int getParamsCount(JavaScriptObject object)/*-{
+        return object.length;
     }-*/;
     public static native JavaScriptObject newObject()/*-{
         return {};

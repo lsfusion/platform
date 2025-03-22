@@ -24,13 +24,8 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
-import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
@@ -42,7 +37,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -143,8 +137,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         rowValues.push(fromObject(key));
         return rowValues;
     }
+    public static PValue convertFromJSUndefValue(GPropertyDraw property, JavaScriptObject value) {
+        return convertFromJSUndefValue(property.getExternalChangeType(), value);
+    }
     public static PValue convertFromJSUndefValue(GType type, JavaScriptObject value) {
-        if(GwtClientUtils.isString(value, UNDEFINED))
+        if(GwtClientUtils.isUndefined(value))
             return PValue.UNDEFINED;
 
         return convertFromJSValue(type, value);
@@ -306,7 +303,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
         PValue[] mappedValues = new PValue[newValues.length];
         for (int i = 0; i < newValues.length; i++)
-            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(getColumn(columns[i]).property.getExternalChangeType(), newValues[i]);
+            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(getColumn(columns[i]).property, newValues[i]);
         changeProperties(columns, objects, mappedValues);
     }
 
@@ -314,25 +311,18 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(new String[]{column}, new JavaScriptObject[]{object}, new PValue[]{newValue});
     }
 
-    public static final String UNDEFINED = "undefined";
-
     protected void changeProperties(String[] columns, JavaScriptObject[] objects, PValue[] newValues) {
         int length = columns.length;
         GPropertyDraw[] properties = new GPropertyDraw[length];
         GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
-        GEventSource[] eventSources = new GEventSource[length];
-        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
 
         for (int i = 0; i < length; i++) {
             Column column = getColumn(columns[i]);
             properties[i] = column.property;
             fullKeys[i] = GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey);
-            eventSources[i] = GEventSource.CUSTOM;
-            PValue newValue = newValues[i];
-            pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
         }
 
-        Consumer<Long> onExec = changeRequestIndex -> {
+        form.executePropertyEventAction(properties, fullKeys, newValues, changeRequestIndex -> {
             for (int i = 0; i < length; i++) {
                 GPropertyDraw property = properties[i];
                 if(newValues[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
@@ -340,12 +330,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
                 }
             }
-        };
-        String actionSID = GEditBindingMap.changeOrGroupChange();
-        if(length == 1 && newValues[0] == PValue.UNDEFINED)
-            form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], eventSources[0], onExec);
-        else
-            onExec.accept(form.asyncExecutePropertyEventAction(actionSID, null, null, properties, eventSources, fullKeys, pushAsyncResults));
+        });
     }
 
     protected String getCaption(String property) {
@@ -768,7 +753,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     if(newValue === undefined) { //object passed, newValue not passed
                         //guess if object is object or newValue
                         if (@GSimpleStateTableView::isChangeObject(*)(object)) {
-                            newValue = @GSimpleStateTableView::UNDEFINED;
+                            newValue = @GwtClientUtils::UNDEFINED;
                         } else {
                             newValue = object;
                             object = null;
@@ -776,7 +761,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     }
                 } else {
                     if(newValue === undefined)
-                        newValue = @GSimpleStateTableView::UNDEFINED;
+                        newValue = @GwtClientUtils::UNDEFINED;
                     object = null;
                 }
 
