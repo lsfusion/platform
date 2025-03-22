@@ -425,6 +425,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GFilterGroupAction action) {
     }
 
+    protected abstract void changeProperty(String property, JavaScriptObject value);
+
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
 
@@ -532,20 +534,55 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             flush();
         }
 
-        private void executeJSFunction(GClientWebAction action) {
-            JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
-            ArrayList<Object> types = action.types;
-            for (int i = 0; i < types.size(); i++) {
-                arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), null, true, PValue.convertFileValue(action.values.get(i))));
+        private native JavaScriptObject getController() /*-{
+            var thisObj = this;
+            return {
+                changeProperty: function (propertyName, value) {
+                    if(value === undefined) // not passed, so it's an action
+                        value = @GwtClientUtils::UNDEFINED;
+                    return thisObj.@JSExecutor::changeProperty(*)(propertyName, value);
+                }
             }
-            String function = action.resource;
-            PValue currentActionResult = null;
+        }-*/;
+
+        private native JavaScriptObject getOnResult(GClientWebAction action) /*-{
+            var thisObj = this;
+            return function (value) {
+                return thisObj.@JSExecutor::onJSFunctionExecuted(*)(action, value);
+            }
+        }-*/;
+
+        private void changeProperty(String propertyName, JavaScriptObject value) {
+            GwtActionDispatcher.this.changeProperty(propertyName, value);
+        }
+        private void onJSFunctionExecuted(GClientWebAction action, JavaScriptObject result) {
+            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)));
+        }
+
+        private void executeJSFunction(GClientWebAction action) {
+            JavaScriptObject result = null;
+            boolean async = false;
             try {
-                currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
-                        GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
+                JavaScriptObject fnc = GwtClientUtils.getGlobalField(action.resource);
+
+                int fncParams = GwtClientUtils.getParamsCount(fnc);
+
+                JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
+                ArrayList<Object> types = action.types;
+                for (int i = 0; i < types.size(); i++) {
+                    arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), null, true, PValue.convertFileValue(action.values.get(i))));
+                }
+                arguments.push(getController());
+
+                if(fncParams > arguments.length()) { // takes onResult
+                    async = true;
+                    arguments.push(getOnResult(action));
+                }
+
+                result = GwtClientUtils.call(fnc, arguments);
             } finally {
-                // we need to call onActionExecuted to set isExecuting = false, otherwise js-actions will not be executed until the page reloads
-                onActionExecuted(action, PValue.convertFileValueBack(currentActionResult));
+                if(!async)
+                    onJSFunctionExecuted(action, result);
             }
         }
     }

@@ -2117,7 +2117,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void executePropertyEditAction(Column column, Integer rowIndex) {
         GPropertyDraw property = column.property;
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(keys.get(rowIndex), column.columnKey);
-        form.executePropertyEventAction(property, fullKey, GEditBindingMap.EDIT_OBJECT, null, GEventSource.EDIT, requestIndex -> {});
+        form.executePropertyEventAction(property, fullKey, GEditBindingMap.EDIT_OBJECT, GEventSource.EDIT, requestIndex -> {});
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {

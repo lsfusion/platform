@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -58,6 +59,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
@@ -585,6 +587,10 @@ public class GFormController implements EditManager {
         return null;
     }
 
+    public GPropertyDraw getProperty(String propertyFormName) {
+        return form.getProperty(propertyFormName);
+    }
+
     public GPropertyDraw getProperty(int id) {
         return form.getProperty(id);
     }
@@ -1017,10 +1023,26 @@ public class GFormController implements EditManager {
     }
 
     public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
-        executePropertyEventAction(handler, editContext, editContext, actionSID, null, eventSource, requestIndex -> setLoading(editContext, requestIndex));
+        executePropertyEventAction(handler, editContext, editContext, actionSID, eventSource, requestIndex -> setLoading(editContext, requestIndex));
     }
 
-    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
+    public void executePropertyEventAction(GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, PValue[] newValues, Consumer<Long> onExec) {
+        int length = properties.length;
+        GEventSource[] eventSources = new GEventSource[length];
+        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
+        for (int i = 0; i < length; i++) {
+            eventSources[i] = GEventSource.CUSTOM;
+            PValue newValue = newValues[i];
+            pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
+        }
+        String actionSID = GEditBindingMap.changeOrGroupChange();
+        if(length == 1 && pushAsyncResults[0] == null) // execute action / event
+            executePropertyEventAction(properties[0], fullKeys[0], actionSID, eventSources[0], onExec);
+        else // change properties with value
+            onExec.accept(asyncExecutePropertyEventAction(actionSID, null, null, properties, eventSources, fullKeys, pushAsyncResults));
+    }
+
+    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
         executePropertyEventAction(null, null, new ExecContext() {
             @Override
             public GPropertyDraw getProperty() {
@@ -1031,14 +1053,15 @@ public class GFormController implements EditManager {
             public GGroupObjectValue getFullKey() {
                 return fullKey;
             }
-        }, actionSID, pushAsyncInput, eventSource, onExec);
+        }, actionSID, eventSource, onExec);
     }
 
-    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
-        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), handler, editContext, execContext, actionSID, pushAsyncInput, eventSource, onExec);
+    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), handler, editContext, execContext, actionSID, null, eventSource, onExec);
     }
 
-    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
+    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GUserInputResult value, GEventSource eventSource, Consumer<Long> onExec) {
+        GPushAsyncInput pushAsyncInput = value != null ? new GPushAsyncInput(value) : null;
         if (asyncEventExec != null)
             asyncEventExec.exec(this, handler, editContext, execContext, actionSID, pushAsyncInput, eventSource, onExec);
         else
@@ -1127,8 +1150,7 @@ public class GFormController implements EditManager {
 
     private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
         GInputListAction contextAction = getContextAction(inputListActions, value);
-        executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec,
-                handler, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, eventSource, onExec);
+        executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec, handler, editContext, editContext, actionSID, value, eventSource, onExec);
     }
 
     private GInputListAction getContextAction(GInputListAction[] inputListActions, GUserInputResult value) {
@@ -1294,8 +1316,19 @@ public class GFormController implements EditManager {
     public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
-                setLoadingValueAt(propertyID, editContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
+                setLoadingValueAt(getProperty(propertyID), editContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
         }, onExec);
+    }
+
+    // for global form custom change in the controller
+    public void changeProperty(String propertyName, JavaScriptObject value) {
+        GGroupObjectValue fullKey = GGroupObjectValue.EMPTY; // we'll read selected keys
+        GPropertyDraw property = getProperty(propertyName);
+        PValue pValue = GSimpleStateTableView.convertFromJSUndefValue(property, value);
+        executePropertyEventAction(new GPropertyDraw[]{property}, new GGroupObjectValue[]{fullKey}, new PValue[] {pValue}, requestIndex -> {
+            if(pValue != PValue.UNDEFINED)
+                setLoadingValueAt(property, fullKey, pValue, requestIndex);
+        });
     }
 
     public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
@@ -1461,8 +1494,7 @@ public class GFormController implements EditManager {
         getPropertyController(propertyDraw).focusProperty(propertyDraw);
     }
 
-    public void setLoadingValueAt(int propertyID, GGroupObjectValue fullKey, PValue value, long requestIndex) {
-        GPropertyDraw property = getProperty(propertyID);
+    public void setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullKey, PValue value, long requestIndex) {
         GGroupObjectValue fullCurrentKey = getFullCurrentKey(property, fullKey);
         Pair<GGroupObjectValue, PValue> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
