@@ -373,6 +373,19 @@ public class GFormController implements EditManager {
             filterViews.computeIfAbsent(filterGroup.groupObject, k -> new ArrayList<>()).add(filterWidget);
     }
 
+    private native JavaScriptObject initController() /*-{
+        var thisObj = this;
+        return {
+            changeProperty: function (propertyName, value) {
+                if(value === undefined) // not passed, so it's an action
+                    value = @GwtClientUtils::UNDEFINED;
+                return thisObj.@GFormController::changePropertyCustom(*)(propertyName, value);
+            }
+        }
+    }-*/;
+
+    public final JavaScriptObject controller = initController();
+
     public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
         List<Widget> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null)
@@ -1321,7 +1334,7 @@ public class GFormController implements EditManager {
     }
 
     // for global form custom change in the controller
-    public void changeProperty(String propertyName, JavaScriptObject value) {
+    public void changePropertyCustom(String propertyName, JavaScriptObject value) {
         GGroupObjectValue fullKey = GGroupObjectValue.EMPTY; // we'll read selected keys
         GPropertyDraw property = getProperty(propertyName);
         PValue pValue = GSimpleStateTableView.convertFromJSUndefValue(property, value);

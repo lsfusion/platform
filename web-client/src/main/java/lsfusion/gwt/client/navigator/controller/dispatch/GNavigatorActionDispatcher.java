@@ -79,7 +79,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void changeProperty(String property, JavaScriptObject value) {
+    protected JavaScriptObject getController() {
+        return null;
     }
 
     @Override

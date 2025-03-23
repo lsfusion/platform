@@ -111,8 +111,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void changeProperty(String property, JavaScriptObject value) {
-        form.changeProperty(property, value);
+    protected JavaScriptObject getController() {
+        return form.controller;
     }
 
     @Override
