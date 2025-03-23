@@ -1,6 +1,7 @@
 package lsfusion.gwt.client;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -40,8 +41,9 @@ public class GForm implements Serializable {
     public List<List<GPropertyDraw>> pivotRows = new ArrayList<>();
     public List<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
-    private transient HashMap<Integer, GPropertyDraw> idProps;
-    private transient HashMap<Integer, GObject> idObjects;
+    // caches for faster form changes transformation
+    private final transient NativeHashMap<Integer, GPropertyDraw> idProps = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GObject> idObjects = new NativeHashMap<>();
 
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
@@ -66,9 +68,14 @@ public class GForm implements Serializable {
     }
 
     public GObject getObject(int id) {
+        GObject cache = idObjects.get(id);
+        if(cache != null)
+            return cache;
+
         for (GGroupObject groupObject : groupObjects) {
             for (GObject object : groupObject.objects) {
                 if (object.ID == id) {
+                    idObjects.put(id, object);
                     return object;
                 }
             }
@@ -77,8 +84,13 @@ public class GForm implements Serializable {
     }
 
     public GPropertyDraw getProperty(int id) {
+        GPropertyDraw cache = idProps.get(id);
+        if(cache != null)
+            return cache;
+
         for (GPropertyDraw property : propertyDraws) {
             if (property.ID == id) {
+                idProps.put(id, property);
                 return property;
             }
         }
