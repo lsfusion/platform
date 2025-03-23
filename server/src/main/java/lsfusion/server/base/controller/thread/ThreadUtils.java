@@ -86,16 +86,15 @@ public class ThreadUtils {
         if(Thread.interrupted()) {
             Thread currentThread = Thread.currentThread();
             currentThread.interrupt();
-            throwThreadInterrupt(interruptThread.remove(currentThread));
+            throw Throwables.propagate(getThreadInterrupt(interruptThread.remove(currentThread)));
         }
     }
 
-    public static void throwThreadInterrupt(ThrowableWithStack reason) {
-        Exception exception = new InterruptedException();
+    public static Exception getThreadInterrupt(ThrowableWithStack reason) {
+        Exception exception = new InterruptedException(); // we want to keep interrupted as a root cause
         if(reason != null)
             exception = new NestedThreadException(exception, new ThrowableWithStack[]{reason});
-
-        throw Throwables.propagate(exception); // we want to keep interrupted as a root cause
+        return exception;
     }
 
     public static ThreadGroup getRootThreadGroup( ) {

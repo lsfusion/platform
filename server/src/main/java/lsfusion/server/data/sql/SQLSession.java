@@ -1883,7 +1883,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(syntax.isTimeout(e)) {
             if (forcedCancel && interrupt != null)
-                ThreadUtils.throwThreadInterrupt(interrupt);
+                return ThreadUtils.getThreadInterrupt(interrupt);
 
             handled = new lsfusion.server.data.sql.exception.SQLTimeoutException(isTransactTimeout, forcedCancel);
         }
