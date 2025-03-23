@@ -49,7 +49,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         super(form, grid, tableContainer);
 
         Element drawElement = getDrawElement();
-        this.controller = getController(drawElement);
+        this.controller = getController(drawElement, form.controller);
         GwtClientUtils.setZeroZIndex(drawElement);
     }
 
@@ -745,7 +745,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return $wnd.replaceObjectFieldInArray(list, testFunction, propertyName, newValue);
     }-*/;
 
-    protected native JavaScriptObject getController(Element element)/*-{
+    protected native JavaScriptObject getController(Element element, JavaScriptObject formController)/*-{
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue, type, index) {
@@ -897,7 +897,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             previewEvent: function (element, event) {
                 return thisObj.@GSimpleStateTableView::previewEvent(*)(element, event);
-            }
+            },
+            form: formController
         };
     }-*/;
 

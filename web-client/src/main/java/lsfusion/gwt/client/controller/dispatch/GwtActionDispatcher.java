@@ -425,7 +425,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GFilterGroupAction action) {
     }
 
-    protected abstract void changeProperty(String property, JavaScriptObject value);
+    protected abstract JavaScriptObject getController();
 
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
@@ -534,17 +534,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             flush();
         }
 
-        private native JavaScriptObject getController() /*-{
-            var thisObj = this;
-            return {
-                changeProperty: function (propertyName, value) {
-                    if(value === undefined) // not passed, so it's an action
-                        value = @GwtClientUtils::UNDEFINED;
-                    return thisObj.@JSExecutor::changeProperty(*)(propertyName, value);
-                }
-            }
-        }-*/;
-
         private native JavaScriptObject getOnResult(GClientWebAction action) /*-{
             var thisObj = this;
             return function (value) {
@@ -552,8 +541,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }-*/;
 
-        private void changeProperty(String propertyName, JavaScriptObject value) {
-            GwtActionDispatcher.this.changeProperty(propertyName, value);
+        private JavaScriptObject getController() {
+            return GwtActionDispatcher.this.getController();
         }
         private void onJSFunctionExecuted(GClientWebAction action, JavaScriptObject result) {
             onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)));

@@ -142,14 +142,14 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable(), updateContext.getForm().controller);
     }
 
     protected static boolean previewEvent(Element element, Event event, UpdateContext updateContext) {
         return updateContext.previewEvent(element, event);
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable, JavaScriptObject formController)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
@@ -220,7 +220,8 @@ public class CustomCellRenderer extends CellRenderer {
             },
             previewEvent: function (element, event) {
                 return @CustomCellRenderer::previewEvent(*)(element, event, updateContext);
-            }
+            },
+            form: formController
         }
     }-*/;
 
