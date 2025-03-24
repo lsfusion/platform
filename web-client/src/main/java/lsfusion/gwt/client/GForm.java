@@ -1,7 +1,6 @@
 package lsfusion.gwt.client;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
