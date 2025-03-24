@@ -42,11 +42,11 @@ public class GForm implements Serializable {
     public List<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
     // caches for faster form changes transformation
-    private final transient NativeHashMap<Integer, GPropertyDraw> idProps = new NativeHashMap<>();
-    private final transient NativeHashMap<Integer, GObject> idObjects = new NativeHashMap<>();
-    private final transient NativeHashMap<Integer, GGroupObject> idGroupObjects = new NativeHashMap<>();
-    private final transient NativeHashMap<Integer, GContainer> idContainers = new NativeHashMap<>();
-    private final transient NativeHashMap<Integer, GComponent> idComponents = new NativeHashMap<>();
+    private final transient HashMap<Integer, GPropertyDraw> idProps = new HashMap<>();
+    private final transient HashMap<Integer, GObject> idObjects = new HashMap<>();
+    private final transient HashMap<Integer, GGroupObject> idGroupObjects = new HashMap<>();
+    private final transient HashMap<Integer, GContainer> idContainers = new HashMap<>();
+    private final transient HashMap<Integer, GComponent> idComponents = new HashMap<>();
 
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
