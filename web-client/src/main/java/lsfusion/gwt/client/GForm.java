@@ -44,14 +44,22 @@ public class GForm implements Serializable {
     // caches for faster form changes transformation
     private final transient NativeHashMap<Integer, GPropertyDraw> idProps = new NativeHashMap<>();
     private final transient NativeHashMap<Integer, GObject> idObjects = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GGroupObject> idGroupObjects = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GContainer> idContainers = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GComponent> idComponents = new NativeHashMap<>();
 
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
     public Set<GGroupObject> inputGroupObjects;
 
     public GGroupObject getGroupObject(int id) {
+        GGroupObject cache = idGroupObjects.get(id);
+        if(cache != null)
+            return cache;
+
         for (GGroupObject groupObject : groupObjects) {
             if (groupObject.ID == id) {
+                idGroupObjects.put(id, groupObject);
                 return groupObject;
             }
         }
@@ -107,11 +115,23 @@ public class GForm implements Serializable {
     }
     
     public GContainer findContainerByID(int id) {
-        return mainContainer.findContainerByID(id);
+        GContainer cache = idContainers.get(id);
+        if(cache != null)
+            return cache;
+
+        GContainer result = mainContainer.findContainerByID(id);
+        idContainers.put(id, result);
+        return result;
     }
 
     public GComponent findComponentByID(int id) {
-        return mainContainer.findComponentByID(id);
+        GComponent cache = idComponents.get(id);
+        if(cache != null)
+            return cache;
+
+        GComponent result = mainContainer.findComponentByID(id);
+        idComponents.put(id, result);
+        return result;
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {
