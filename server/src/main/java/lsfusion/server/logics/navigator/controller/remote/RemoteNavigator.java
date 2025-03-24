@@ -601,7 +601,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         if (!paused && getInvocationsCount() <= 1)
             pendingActions.add(0, getNavigatorChangesAction(requestIndex));
 
-        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
+        ServerResponse result = new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
+        pendingActions.clear();
+        return result;
     }
 
     @NotNull
