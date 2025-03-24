@@ -281,7 +281,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 commandLine.addArgument(tempDB);
                 commandLine.addArgument(fileBackup);
                 if(isMultithread) {
-                    commandLine.addArgument("--format d");
+                    commandLine.addArgument("--format=d");
                 }
 
                 Map<String, String> env = new HashMap<>(System.getenv());
