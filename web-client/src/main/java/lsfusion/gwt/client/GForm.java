@@ -1,6 +1,7 @@
 package lsfusion.gwt.client;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -36,20 +37,20 @@ public class GForm implements Serializable {
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
     public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<>();
 
-    public List<List<GPropertyDraw>> pivotColumns = new ArrayList<>();
-    public List<List<GPropertyDraw>> pivotRows = new ArrayList<>();
-    public List<GPropertyDraw> pivotMeasures = new ArrayList<>();
+    public ArrayList<ArrayList<GPropertyDraw>> pivotColumns = new ArrayList<>();
+    public ArrayList<ArrayList<GPropertyDraw>> pivotRows = new ArrayList<>();
+    public ArrayList<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
     // caches for faster form changes transformation
-    private final transient HashMap<Integer, GPropertyDraw> idProps = new HashMap<>();
-    private final transient HashMap<Integer, GObject> idObjects = new HashMap<>();
-    private final transient HashMap<Integer, GGroupObject> idGroupObjects = new HashMap<>();
-    private final transient HashMap<Integer, GContainer> idContainers = new HashMap<>();
-    private final transient HashMap<Integer, GComponent> idComponents = new HashMap<>();
+    private final transient NativeHashMap<Integer, GPropertyDraw> idProps = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GObject> idObjects = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GGroupObject> idGroupObjects = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GContainer> idContainers = new NativeHashMap<>();
+    private final transient NativeHashMap<Integer, GComponent> idComponents = new NativeHashMap<>();
 
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
-    public Set<GGroupObject> inputGroupObjects;
+    public HashSet<GGroupObject> inputGroupObjects;
 
     public GGroupObject getGroupObject(int id) {
         GGroupObject cache = idGroupObjects.get(id);
@@ -143,19 +144,19 @@ public class GForm implements Serializable {
         return result;
     }
 
-    public List<List<GPropertyDraw>> getPivotColumns(GGroupObject group) {
+    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns(GGroupObject group) {
         return getPivotProperties(group, pivotColumns);
     }
 
-    public List<List<GPropertyDraw>> getPivotRows(GGroupObject group) {
+    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows(GGroupObject group) {
         return getPivotProperties(group, pivotRows);
     }
 
     // copy of GroupObjectEntity method
-    public List<List<GPropertyDraw>> getPivotProperties(GGroupObject group, List<List<GPropertyDraw>> properties) {
-        List<List<GPropertyDraw>> result = new ArrayList<>();
-        for (List<GPropertyDraw> propertyEntry : properties) {
-            List<GPropertyDraw> resultEntry = new ArrayList<>();
+    public ArrayList<ArrayList<GPropertyDraw>> getPivotProperties(GGroupObject group, ArrayList<ArrayList<GPropertyDraw>> properties) {
+        ArrayList<ArrayList<GPropertyDraw>> result = new ArrayList<>();
+        for (ArrayList<GPropertyDraw> propertyEntry : properties) {
+            ArrayList<GPropertyDraw> resultEntry = new ArrayList<>();
             for(GPropertyDraw property : propertyEntry) {
                 if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
                     resultEntry.add(property);
@@ -166,8 +167,8 @@ public class GForm implements Serializable {
         return result;
     }
 
-    public List<GPropertyDraw> getPivotMeasures(GGroupObject group) {
-        List<GPropertyDraw> result = new ArrayList<>();
+    public ArrayList<GPropertyDraw> getPivotMeasures(GGroupObject group) {
+        ArrayList<GPropertyDraw> result = new ArrayList<>();
         for (GPropertyDraw property : pivotMeasures) {
             if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
                 result.add(property);

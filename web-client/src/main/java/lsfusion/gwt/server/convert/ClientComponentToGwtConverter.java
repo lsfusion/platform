@@ -690,13 +690,18 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
             form.pivotMeasures.add(convertOrCast(property));
         }
 
+        form.inputGroupObjects = new HashSet<>();
+        for (ClientGroupObject groupObject : clientForm.inputGroupObjects) {
+            form.inputGroupObjects.add(convertOrCast(groupObject));
+        }
+
         return form;
     }
 
-    private List<List<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
-        List<List<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
+    private ArrayList<ArrayList<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
+        ArrayList<ArrayList<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
         for (List<ClientPropertyDraw> pivotPropertiesEntry : pivotPropertiesList) {
-            List<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
+            ArrayList<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
             for(ClientPropertyDraw property : pivotPropertiesEntry) {
                 gPivotPropertiesEntry.add(convertOrCast(property));
             }

@@ -5,6 +5,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -47,16 +48,14 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public GForm createForm(MainDispatchServlet servlet, RemoteFormInterface remoteForm, FormClientData clientData, String sessionID) throws IOException {
         // 0, 1, 3 are indices from FormClientAction.methodNames array
         ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, clientData);
+        Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
+        for(Integer inputObject : clientData.inputGroupObjects)
+            inputGroupObjects.add(clientForm.getGroupObject(inputObject));
+        clientForm.inputGroupObjects = inputGroupObjects;
 
         FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, sessionID);
 
         GForm gForm = new ClientComponentToGwtConverter(servlet, formSessionObject).convertOrCast(clientForm);
-
-        Set<Integer> inputObjects = clientData.inputGroupObjects;
-        gForm.inputGroupObjects = new HashSet<>();
-        for(Integer inputObject : inputObjects) {
-            gForm.inputGroupObjects.add(gForm.getGroupObject(inputObject));
-        }
 
         gForm.sID = clientData.formSID;
         gForm.canonicalName = clientData.formSID;
