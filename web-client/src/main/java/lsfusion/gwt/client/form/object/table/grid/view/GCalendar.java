@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -53,11 +54,6 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         updateEvents(list);
     }
 
-    private void hide() {
-        if (popupObject != null)
-            hidePopup();
-    }
-
     @Override
     public void onResize() {
         if (calendar != null)
@@ -67,6 +63,10 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     protected native void resize(JavaScriptObject calendar)/*-{
         calendar.updateSize();
     }-*/;
+
+    private static void mouseDown(Element element) {
+        FocusUtils.focusOut(element, FocusUtils.Reason.MOUSENAVIGATE);
+    }
 
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
         var thisObj = this;
@@ -106,14 +106,17 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         });
         calendar.render();
 
-        element.addEventListener('click', function(e) {
-            // Check if there is an element with class .fc-event in the path to determine that the click was not by event
-            var isEventClick = e.composedPath().some(function(el) {
-                return el.classList && el.classList.contains('fc-event');
-            });
-
-            if (!isEventClick)
-                thisObj.@GCalendar::hide()();
+        // the problem is that in onPointerDown there is heuristics:
+        // prevent links from being visited if there's an eventual drag.
+        // also prevents selection in older browsers (maybe?).
+        // not necessary for touch, besides, browser would complain about passiveness.
+//        if (!ev.isTouch) {
+//            ev.origEvent.preventDefault()
+//        }
+        // and this preventDefault prevents focus change, which leads to the problems with the popups for example (no focus out)
+        // so we'll just emulate default behaviour
+        element.addEventListener('mousedown', function(e) {
+            @GCalendar::mouseDown(*)(e.target);
         });
 
         return calendar;
