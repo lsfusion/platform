@@ -15,6 +15,8 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.countMatches;
@@ -114,5 +116,12 @@ public class GNumericType extends GDoubleType {
     @Override
     public boolean isId() {
         return this.scale.getValue() == 0;
+    }
+
+    // Formats double value into BigDecimal to avoid floating-point rounding errors in GIntegralType.formatString.
+    // for example 1121232.63 is displayed as 1121232.6299999999
+    @Override
+    protected Number formatValue(double value) {
+        return BigDecimal.valueOf(value).setScale(getScale(), RoundingMode.HALF_UP);
     }
 }

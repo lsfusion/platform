@@ -52,10 +52,11 @@ public abstract class GIntegralType extends GFormatType {
     // render, edit
     @Override
     public String formatString(PValue value, String pattern) {
-        if(value == null)
-            return "";
+        return value == null ? "" : getFormat(pattern).format(formatValue(getDoubleValue(value)));
+    }
 
-        return getFormat(pattern).format(getDoubleValue(value));
+    protected Number formatValue(double value) {
+        return value;
     }
 
     public abstract PValue fromDoubleValue(double doubleValue);
