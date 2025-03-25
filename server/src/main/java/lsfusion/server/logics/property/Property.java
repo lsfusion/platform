@@ -2142,7 +2142,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         // if cost-per-row * numberRows > max read count, won't read
         boolean lowCost = getSelectCost(fixedExprs).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
         if(!lowCost)
-            return false;
+            return true;
 
         Type type = getType();
         return (type instanceof TextClass || type instanceof AJSONClass);
