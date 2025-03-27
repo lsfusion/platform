@@ -18,7 +18,8 @@ public class LSFHttpSessionRequestCache {
 	 * Stores the current request, provided the configuration properties allow it.
 	 */
 	public void saveRequest(HttpServletRequest request) {
-		StringBuffer requestURL = new StringBuffer(request.getRequestURI());
+		StringBuilder requestURL = new StringBuilder(request.getServletPath()).append(request.getPathInfo() != null ? request.getPathInfo() : "");
+
 		String queryString = request.getQueryString();
 		if (!BaseUtils.isRedundantString(queryString)) {
 			requestURL.append('?').append(queryString);
