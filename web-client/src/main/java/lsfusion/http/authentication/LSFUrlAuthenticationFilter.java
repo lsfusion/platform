@@ -29,12 +29,12 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
             String redirectUrl;
             try {
                 SecurityContextHolder.getContext().setAuthentication(MainController.getAuthentication(request, userName, password, authenticationProvider));
-                redirectUrl = request.getRequestURI();
+                redirectUrl = MainController.getURLPreservingParameters(request.getRequestURI(), Arrays.asList("user", "password"), request);
             } catch (Exception e) {
                 request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-                redirectUrl = "login";
+                redirectUrl = MainController.getDirectUrl("/login", Arrays.asList("user", "password"), request);
             }
-            response.sendRedirect(MainController.getURLPreservingParameters(redirectUrl, Arrays.asList("user", "password"), request));
+            response.sendRedirect(redirectUrl);
             return;
         }
         filterChain.doFilter(request, response);

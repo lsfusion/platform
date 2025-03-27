@@ -43,8 +43,6 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                         request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
                         LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
 
-                        // todo. тут для редиректа нужен ContextPath. без него редирект с localhost:8080/app/exec/... приводит к localhost:8080/login
-//                            но я не понимаю почему в других местах, где используется response.sendRedirect такого не происходит.
                         response.sendRedirect(MainController.getDirectUrl("/login", request));
                     } catch (IOException e1) {
                         throw Throwables.propagate(e1);

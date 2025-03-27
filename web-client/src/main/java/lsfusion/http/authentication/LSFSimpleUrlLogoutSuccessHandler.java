@@ -37,6 +37,8 @@ public class LSFSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHand
 
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
+        // there is no need to getDirectUrl here, because the spring inside will work out the path itself.
+        // use getCachedRequest is needed in order to save url parameters
         return LSFAuthenticationFailureHandler.getCachedRequest("/login", request);
     }
 }
