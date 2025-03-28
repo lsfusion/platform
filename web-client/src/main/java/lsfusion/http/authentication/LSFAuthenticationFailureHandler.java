@@ -15,10 +15,10 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         saveException(request, exception);
 
-        getRedirectStrategy().sendRedirect(request, response, getCachedRequest("/login", request, response));
+        getRedirectStrategy().sendRedirect(request, response, getCachedRequest("/login", request));
     }
 
-    public static String getCachedRequest(String defaultURL, HttpServletRequest request, HttpServletResponse response) {
+    public static String getCachedRequest(String defaultURL, HttpServletRequest request) {
         String redirectUrl;
         String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
 
