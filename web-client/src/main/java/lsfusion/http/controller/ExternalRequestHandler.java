@@ -39,14 +39,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         } catch (Exception e) {
             if(e instanceof AuthenticationException) {
                 if(((AuthenticationException) e).redirect) {
-                    try {
-                        request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-                        LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
-
-                        response.sendRedirect(MainController.getDirectUrl("/login", request));
-                    } catch (IOException e1) {
-                        throw Throwables.propagate(e1);
-                    }
+                    processFailedAuthentication(request, response, e, null);
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     writeResponse(response, e.getMessage());
@@ -63,6 +56,17 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 if (e instanceof RemoteException)  // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
                     throw (RemoteException) e;
             }
+        }
+    }
+
+    public static void processFailedAuthentication(HttpServletRequest request, HttpServletResponse response, Exception e, List<String> paramsToRemove) {
+        try {
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
+            LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+
+            response.sendRedirect(MainController.getDirectUrl("/login", paramsToRemove, request));
+        } catch (IOException e1) {
+            throw Throwables.propagate(e1);
         }
     }
 
