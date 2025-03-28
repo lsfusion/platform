@@ -153,8 +153,15 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
 
 - The `compose.yaml` setting (optional):
     - If you want to change the startup settings (e.g., use a different container version or customize environment variables), edit the `compose.yaml` file according to the [Docker documentation](https://docs.docker.com/get-started/overview/).
+    - Application server startup parameters can also be set using the container's environment variables - in the environment attribute. For example, to change the server locale to Russian, write:
+      ```yml
+      environment:
+        - USER_SETLANGUAGE=ru
+        - USER_SETCOUTRY=RU
+      ```
+      When searching for startup parameters in environment variables, Spring automatically converts them to uppercase and replaces dots with underscores. In the example above, the values of the environment variables will be substituted into the appropriate parameters: `user.setLanguage` and `user.setCountry`.       
     - Available lsFusion container images:
-        - [Server](https://hub.docker.com/r/lsfusion/server/tags)
+        - [Server](https://hub.docker.com/r/lsfusion/server/tags)                                            ````
         - [Client](https://hub.docker.com/r/lsfusion/client/tags)
 
 - Starting the containers:
