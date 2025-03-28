@@ -1,5 +1,6 @@
 package lsfusion.http.authentication;
 
+import lsfusion.http.controller.ExternalRequestHandler;
 import lsfusion.http.controller.MainController;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
