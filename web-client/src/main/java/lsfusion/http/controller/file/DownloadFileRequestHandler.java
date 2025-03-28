@@ -32,7 +32,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             staticFile = true;
         else {
             response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-            response.setHeader("Location", MainController.getURLPreservingParameters("/exec?action=getResource&p=" + pathInfo.replaceFirst("/", ""), null, request));
+            response.setHeader("Location", MainController.getDirectUrl("/exec?action=getResource&p=" + pathInfo.replaceFirst("/", ""), request));
             return;
         }
         String fileName = pathInfo.substring(prefix.length());

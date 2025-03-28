@@ -14,7 +14,6 @@ import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
-import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProvider;
@@ -382,6 +381,17 @@ public class MainController {
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {
         return getURLPreservingParameters(url, null, paramsToRemove, request);
     }
+
+/*
+    needed contextPath (need getDirectURL):
+        - In all links on the browser page
+        - HttpServletResponse.sendRedirect
+
+    contextPath is not needed:
+        - getRedirectStrategy().sendRedirect
+        - determineTargetUrl
+        - "redirect:"
+*/
     public static String getURLPreservingParameters(String url, String query, List<String> paramsToRemove, HttpServletRequest request) {
         String requestQuery = getQueryPreservingParameters(paramsToRemove, request);
         if(query != null) {
