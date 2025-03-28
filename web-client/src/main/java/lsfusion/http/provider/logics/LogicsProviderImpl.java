@@ -52,12 +52,12 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     @Override
     public void afterPropertiesSet() throws Exception {
         String host = servletContext.getInitParameter(hostKey);
-        String hostProperty = getSystemProperty("app.registry.server");
+        String hostProperty = getSystemProperty("app.server");
         if (hostProperty != null)
             host = hostProperty;
 
         String port = servletContext.getInitParameter(portKey);
-        String portProperty = getSystemProperty("app.registry.port");
+        String portProperty = getSystemProperty("app.port");
         if (portProperty != null)
             port = portProperty;
 
