@@ -132,8 +132,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
     T parseFile(RawFileData value, String extension, String charset);
 
-    T parsePaste(String value) throws ParseException;
-
     T read(Object value); // it is also a sort of parsing, but some "really close" types instead of strings
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
@@ -147,8 +145,14 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName); // returns String or FileData (not null), null's encode'it depending on type
     RawFileData formatFile(T value, String charset);
 
-    T parseUI(String value) throws ParseException;
-    String formatUI(T object);
+    T parseUI(String value, String pattern) throws ParseException;
+    String formatUI(T object, String pattern);
+    default T parseUI(String value) throws ParseException {
+        return parseUI(value, null);
+    }
+    default String formatUI(T object) {
+        return formatUI(object, null);
+    }
 
     String formatString(T value); // Returns null if passed null (files are base64 encoded)
     String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString

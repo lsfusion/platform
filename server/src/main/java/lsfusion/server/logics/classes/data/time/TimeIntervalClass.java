@@ -42,8 +42,8 @@ public class TimeIntervalClass extends IntervalClass<LocalTime> {
     }
 
     @Override
-    protected Long parseUIString(String date) throws ParseException {
-        return localDateTimeToUTCEpoch(TimeClass.instance.parseIntervalUI(date).atDate(dateEpoch));
+    protected Long parseUIString(String date, String pattern) throws ParseException {
+        return localDateTimeToUTCEpoch(TimeClass.instance.parseIntervalUI(date, pattern).atDate(dateEpoch));
     }
 
     @Override
@@ -52,8 +52,8 @@ public class TimeIntervalClass extends IntervalClass<LocalTime> {
     }
 
     @Override
-    protected String formatUI(Long epoch) {
-        return TimeClass.instance.formatIntervalUI(epochToLocalDateTime(epoch).toLocalTime());
+    protected String formatUI(Long epoch, String pattern) {
+        return TimeClass.instance.formatIntervalUI(epochToLocalDateTime(epoch).toLocalTime(), pattern);
     }
 
     @Override

@@ -1086,7 +1086,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                                 return value.first;
 
                             try {
-                                return type.parsePaste(value.second);
+                                // actually this method is used only when INPUT type does not coincide with the render type (otherwise parsing is made on the client)
+                                // so we won't use any pattern here
+                                return type.parseUI(value.second);
                             } catch (ParseException e) {
                                 return null;
                             }

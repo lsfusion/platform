@@ -128,7 +128,7 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     }
 
     @Override
-    public String formatUI(T object) {
+    public String formatUI(T object, String pattern) {
         if(object == null)
             return null;
         return getRawFileData(object).convertString();

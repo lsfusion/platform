@@ -892,6 +892,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return column.getValue(rowValue);
     }
 
+    public String getPatternAt(int row, int col) {
+        GridColumn column = getGridColumn(col);
+        GridDataRecord rowValue = getRowValue(row);
+        if (column == null || rowValue == null) {
+            return null;
+        }
+        return column.getPattern(rowValue);
+    }
+
     private int getMaxColumnsCount(List<List<String>> table) {
         if(table.isEmpty())
             return 0;
@@ -907,21 +916,32 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void pasteData(Cell cell, Element renderElement, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
-        final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), new PopupOwner(getPopupOwnerWidget()), chosenOption -> {
                 if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                    final int selectedColumn = cell.getColumnIndex();
+                    final int selectedRow = cell.getRowIndex();
+
                     int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
                     final ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
                     final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
                     for (int i = 0; i < columnsToInsert; i++) {
-                        GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
-                        propertyList.add(propertyDraw);
+                        propertyList.add(getProperty(selectedColumn + i));
                         columnKeys.add(getColumnKey(selectedColumn + i));
                     }
 
-                    form.pasteExternalTable(propertyList, columnKeys, table);
+                    int rowsToInsert = table.size();
+                    final List<List<String>> patterns = new ArrayList<>();
+                    for (int j = 0; j < rowsToInsert; j++) {
+                        ArrayList<String> rowPatterns = new ArrayList<>();
+                        for (int i = 0; i < columnsToInsert; i++) {
+                            rowPatterns.add(getPatternAt(selectedRow + j, selectedColumn + i));
+                        }
+                        patterns.add(rowPatterns);
+                    }
+
+                    form.pasteExternalTable(propertyList, columnKeys, table, patterns);
                 }
             });
             return;
@@ -1340,6 +1360,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
         @Override
         protected String getPattern(GPropertyDraw property, GridDataRecord record) {
+            return getPattern(record);
+        }
+        protected String getPattern(GridDataRecord record) {
             return record.getPattern(columnSID);
         }
         @Override

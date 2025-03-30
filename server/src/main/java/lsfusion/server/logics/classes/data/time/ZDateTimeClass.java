@@ -175,17 +175,16 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     @Override
-    public Instant parseUI(String s) throws ParseException {
-        LocalDateTime localDateTime = DateTimeClass.instance.parseUI(s);
-        return localDateTime.atZone(getZoneId()).toInstant();
+    public Instant parseUI(String s, String pattern) throws ParseException {
+        return DateTimeClass.instance.parseUI(s, pattern).atZone(getZoneId()).toInstant();
     }
 
     @Override
-    public String formatUI(Instant value) {
+    public String formatUI(Instant value, String pattern) {
         if(value == null)
             return null;
 
-        return DateTimeClass.instance.formatUI(value.atZone(getZoneId()).toLocalDateTime());
+        return DateTimeClass.instance.formatUI(value.atZone(getZoneId()).toLocalDateTime(), pattern);
     }
 
     public String getSID() {

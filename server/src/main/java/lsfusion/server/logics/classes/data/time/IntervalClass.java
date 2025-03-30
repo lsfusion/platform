@@ -5,6 +5,7 @@ import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.FormatClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
@@ -16,7 +17,7 @@ import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 
-public abstract class IntervalClass<T> extends TextBasedClass<IntervalValue> {
+public abstract class IntervalClass<T> extends FormatClass<IntervalValue> {
 
     public static IntervalClass getInstance(String type) {
         switch (type) {
@@ -72,9 +73,9 @@ public abstract class IntervalClass<T> extends TextBasedClass<IntervalValue> {
     }
 
     protected abstract Long parse(String date) throws ParseException;
-    protected abstract Long parseUIString(String date) throws ParseException;
+    protected abstract Long parseUIString(String date, String pattern) throws ParseException;
     protected abstract String format(Long epoch);
-    protected abstract String formatUI(Long epoch);
+    protected abstract String formatUI(Long epoch, String pattern);
 
     @Override
     public IntervalValue parseString(String s) throws ParseException {
@@ -82,8 +83,8 @@ public abstract class IntervalClass<T> extends TextBasedClass<IntervalValue> {
     }
 
     @Override
-    public IntervalValue parseUI(String value) throws ParseException {
-        return (IntervalValue) parseInterval(value, this::parseUIString);
+    public IntervalValue parseUI(String value, String pattern) throws ParseException {
+        return (IntervalValue) parseInterval(value, date -> parseUIString(date, pattern));
     }
 
     @Override
@@ -92,8 +93,8 @@ public abstract class IntervalClass<T> extends TextBasedClass<IntervalValue> {
     }
 
     @Override
-    public String formatUI(IntervalValue obj) {
-        return formatInterval(obj, this::formatUI);
+    public String formatUI(IntervalValue obj, String pattern) {
+        return formatInterval(obj, epoch -> formatUI(epoch, pattern));
     }
 
     protected abstract String getSQLFrom(String source);
