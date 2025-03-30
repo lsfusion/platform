@@ -623,14 +623,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public PValue parsePaste(String s, GType parseType) {
+    public PValue parsePaste(String s, GType parseType, String pattern) {
         if (s == null) {
             return null;
         }
         if(parseType == null)
             return null;
         try {
-            return parseType.parseString(s, getPattern());
+            return parseType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }

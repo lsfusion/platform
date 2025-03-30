@@ -159,6 +159,10 @@ tailedPolygon(STRING text) = FORMULA 'ST_GeomFromText(\'POLYGON((\' || $1 || \')
 tailPolygon(STRING text) = text + ',' + left(text, strpos(text, ',') - 1); 
 polygon(STRING text) = tailedPolygon(tailPolygon(text));
 
+// if used needs postgis extension to be installed in the OS, and regiistered with:
+// onStarted() +{
+//    INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS postgis;';
+//}
 point(DOUBLE latitude, DOUBLE longitude) = FORMULA 'ST_MakePoint($1, $2)';
 
 intersects(geometry1, geometry2) = FORMULA NULL BOOLEAN 'CASE WHEN NULLIF(ST_Intersects($1,$2), FALSE) THEN 1 ELSE NULL END'; 

@@ -207,11 +207,6 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T parsePaste(String value) throws ParseException {
-        return parseUI(value);
-    }
-
-    @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         return OverJDBField.createField(fieldName, 'C', 253, 0);
     }
@@ -243,12 +238,12 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T parseUI(String value) throws ParseException {
+    public T parseUI(String value, String pattern) throws ParseException {
         return parseString(value);
     }
 
     @Override
-    public String formatUI(T object) {
+    public String formatUI(T object, String pattern) {
         return formatString(object);
     }
 

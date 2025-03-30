@@ -564,14 +564,14 @@ public class PropertyDrawView extends BaseComponentView {
 
         type.fillReportDrawField(reportField);
 
-        String reportPattern = getReportPattern();
+        String reportPattern = getPattern();
         if(reportPattern != null)
             reportField.pattern = reportPattern;
 
         return reportField;
     }
 
-    private String getReportPattern() {
+    public String getPattern() {
         return pattern != null ? pattern.getSourceString() : null;
     }
 

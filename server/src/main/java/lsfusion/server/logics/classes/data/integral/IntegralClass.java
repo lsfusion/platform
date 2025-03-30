@@ -7,10 +7,7 @@ import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextBasedClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
@@ -24,8 +21,11 @@ import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 // класс который можно сравнивать
-public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> implements DBType {
+public abstract class IntegralClass<T extends Number> extends FormatClass<T> implements DBType {
 
     public int getReportMinimumWidth() { return 30; }
     public int getReportPreferredWidth() { return 50; }
@@ -195,6 +195,30 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     public void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles) {
         if(object != null)
             cell.setCellValue(object.doubleValue());
+    }
+
+    @Override
+    public T parseUI(String value, String pattern) throws ParseException {
+        try {
+            return read(getFormat(pattern).parse(value));
+        } catch (java.text.ParseException e) {
+            throw ParseException.propagateWithMessage("Error parsing : " + value, e);
+        }
+    }
+
+    @Override
+    public String formatUI(T value, String pattern) {
+        if(value == null)
+            return null;
+
+        return getFormat(pattern).format(value);
+    }
+
+    private NumberFormat getFormat(String pattern) {
+        if(pattern != null)
+            return new DecimalFormat(pattern);
+
+        return NumberFormat.getInstance();
     }
 
     @Override

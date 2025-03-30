@@ -35,8 +35,8 @@ public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
     }
 
     @Override
-    protected Long parseUIString(String date) throws lsfusion.server.logics.classes.data.ParseException {
-        return ZDateTimeClass.instance.parseIntervalUI(date).toEpochMilli();
+    protected Long parseUIString(String date, String pattern) throws lsfusion.server.logics.classes.data.ParseException {
+        return ZDateTimeClass.instance.parseIntervalUI(date, pattern).toEpochMilli();
     }
 
     @Override
@@ -45,8 +45,8 @@ public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
     }
 
     @Override
-    protected String formatUI(Long epoch) {
-        return ZDateTimeClass.instance.formatIntervalUI(Instant.ofEpochMilli(epoch));
+    protected String formatUI(Long epoch, String pattern) {
+        return ZDateTimeClass.instance.formatIntervalUI(Instant.ofEpochMilli(epoch), pattern);
     }
 
     @Override

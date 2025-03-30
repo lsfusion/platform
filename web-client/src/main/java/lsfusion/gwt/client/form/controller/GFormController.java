@@ -901,22 +901,25 @@ public class GFormController implements EditManager {
         });
     }
 
-    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table) {
+    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns) {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
 
-        for (List<String> sRow : table) {
+        for (int j = 0; j < table.size(); j++) {
+            List<String> sRow = table.get(j);
+            List<String> pRow = patterns.get(j);
             ArrayList<Object> valueRow = new ArrayList<>();
             ArrayList<String> rawValueRow = new ArrayList<>();
 
             for (int i = 0, propertyColumns = propertyList.size(); i < propertyColumns; i++) {
                 GPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
+                String pCell = i < pRow.size() ? pRow.get(i) : null;
 
                 GType externalType = property.getExternalChangeType();
-                if(externalType == null)
+                if (externalType == null)
                     externalType = property.getPasteType();
-                valueRow.add(PValue.convertFileValueBack(property.parsePaste(sCell, externalType)));
+                valueRow.add(PValue.convertFileValueBack(property.parsePaste(sCell, externalType, pCell)));
                 rawValueRow.add(sCell);
             }
             values.add(valueRow);
@@ -934,8 +937,9 @@ public class GFormController implements EditManager {
     public void pasteValue(ExecuteEditContext editContext, String sValue) {
         GPropertyDraw property = editContext.getProperty();
         GType externalType = property.getExternalChangeType();
+        String pattern = editContext.getUpdateContext().getPattern();
         if(externalType != null) {
-            changeProperty(editContext, property.parsePaste(sValue, externalType), GEventSource.PASTE, null);
+            changeProperty(editContext, property.parsePaste(sValue, externalType, pattern), GEventSource.PASTE, null);
         } else {
             ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
             propertyList.add(property);
@@ -945,8 +949,12 @@ public class GFormController implements EditManager {
             row.add(sValue);
             List<List<String>> table = new ArrayList<>();
             table.add(row);
+            ArrayList<String> rowPattern = new ArrayList<>();
+            rowPattern.add(pattern);
+            List<List<String>> tablePattern = new ArrayList<>();
+            tablePattern.add(rowPattern);
 
-            pasteExternalTable(propertyList, columnKeys, table);
+            pasteExternalTable(propertyList, columnKeys, table, tablePattern);
         }
     }
 
