@@ -71,7 +71,7 @@ class CustomInput {
             inputElement.onchange = function () {
                 let date = new Date(this.value);
                 if (date.getTime() !== new Date(value).getTime())
-                    controller.changeValue(!isNaN(date) ? controller.toDateDTO(date.getFullYear(), date.getMonth() + 1, date.getDate()) : null);
+                    controller.change(!isNaN(date) ? date : null);
             }
         }
     }
