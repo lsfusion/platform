@@ -65,6 +65,12 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
     cursor: pointer;
 }
 
+/* we make images and videos keep aspect ratio by default as a most common use case, despite the fact that the browse has different default behaviour - fill */
+.prop-size-value > img,
+.prop-size-value > video {
+    object-fit: contain;
+}
+
 .prop-display-flex, .prop-display-flex.form-control, .prop-display-flex.btn {
     display: flex;
 }
