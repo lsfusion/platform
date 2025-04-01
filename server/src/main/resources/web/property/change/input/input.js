@@ -70,7 +70,7 @@ class CustomInput {
         return (inputElement, value) => {
             inputElement.onchange = function () {
                 let date = new Date(this.value);
-                if (date.getTime() !== new Date(value).getTime())
+                if (date.getTime() !== value?.getTime())
                     controller.change(!isNaN(date) ? date : null);
             }
         }
@@ -90,7 +90,7 @@ class CustomInputRange extends CustomInput {
         return (inputElement, value) => {
             inputElement.onchange = function () {
                 if (value !== parseInt(this.value))
-                    controller.changeValue(parseInt(this.value));
+                    controller.change(parseInt(this.value));
             }
         }
     }
@@ -102,8 +102,7 @@ class CustomInputMonth extends CustomInput {
     }
 
     parseValueFunction(value) {
-        let valueDate = new Date(value);
-        return value != null ? valueDate.getFullYear() + '-' + super.getTwoDigitsValue(valueDate.getMonth() + 1) : null;
+        return value != null ? value.getFullYear() + '-' + super.getTwoDigitsValue(value.getMonth() + 1) : null;
     }
 }
 
@@ -116,7 +115,7 @@ class CustomInputWeek extends CustomInput {
         return (inputElement, value) => {
             inputElement.onchange = function () {
                 if ((value == null ? "" : value).toString() !== this.value)
-                    controller.changeValue(this.value);
+                    controller.change(this.value);
             }
         };
 
@@ -127,6 +126,10 @@ class CustomInputDate extends CustomInput {
     constructor() {
         super("date");
     }
+
+    parseValueFunction(value) {
+        return value != null ? value.getFullYear() + "-" + super.getTwoDigitsValue(value.getMonth() + 1) + "-" + super.getTwoDigitsValue(value.getDate()) : null;
+    }
 }
 
 class CustomInputTime extends CustomInput {
@@ -136,16 +139,22 @@ class CustomInputTime extends CustomInput {
 
     //use only hh:mm format. If use hh:mm:ss format, when seconds is 0, then input cut of the seconds part.
     parseValueFunction(value) {
-        let valueParts = value != null ? value.toString().split(':') : 0;
-        return valueParts.length === 3 ? value.toString().replace(':' + valueParts[2], '') : value;
+        return value != null ? super.getTwoDigitsValue(value.getHours()) + ':' + super.getTwoDigitsValue(value.getMinutes()) : null;
     }
 
     onEventFunction(controller) {
         return (inputElement, value) => {
             inputElement.onchange = function () {
-                let timeParts = this.value.split(':');
-                if ((value == null ? "" : value).toString() !== this.value)
-                    controller.changeValue(timeParts.length === 2 ? controller.toTimeDTO(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0) : null);
+                let [hours, minutes] = inputElement.value?.split(':').map(Number) || [];
+                if (hours == null || minutes == null) {
+                    controller.change(null);
+                } else {
+                    let newTime = new Date(value);
+                    newTime.setHours(hours, minutes, 0, 0);
+
+                    if (value?.getHours() !== hours || value?.getMinutes() !== minutes)
+                        controller.change(newTime);
+                }
             }
         };
     }
@@ -156,20 +165,8 @@ class CustomInputDateTime extends CustomInput {
         super("datetime-local");
     }
 
-    onEventFunction(controller) {
-        return (inputElement, value) => {
-            inputElement.onchange = function () {
-                let date = new Date(this.value);
-                if (date.getTime() !== new Date(value).getTime())
-                    controller.changeValue(!isNaN(date) ? controller.toDateTimeDTO(date.getFullYear(), date.getMonth() + 1, date.getDate(),
-                        date.getHours(), date.getMinutes(), date.getSeconds()) : null);
-            }
-        };
-    }
-
     parseValueFunction(value) {
-        let valueDate = new Date(value);
-        return value != null ? valueDate.getFullYear() + '-' + super.getTwoDigitsValue(valueDate.getMonth() + 1) + '-' +
-            super.getTwoDigitsValue(valueDate.getDate()) + 'T' + valueDate.getHours() + ':' + super.getTwoDigitsValue(valueDate.getMinutes()) : null;
+        return value != null ? value.getFullYear() + '-' + super.getTwoDigitsValue(value.getMonth() + 1) + '-' +
+            super.getTwoDigitsValue(value.getDate()) + 'T' + super.getTwoDigitsValue(value.getHours()) + ':' + super.getTwoDigitsValue(value.getMinutes()) : null;
     }
 }
