@@ -157,7 +157,7 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
       ```yml
       environment:
         - USER_SETLANGUAGE=ru
-        - USER_SETCOUTRY=RU
+        - USER_SETCOUNTRY=RU
       ```
       When searching for startup parameters in environment variables, Spring automatically converts them to uppercase and replaces dots with underscores. In the example above, the values of the environment variables will be substituted into the appropriate parameters: `user.setLanguage` and `user.setCountry`.       
     - Available lsFusion container images:
