@@ -52,6 +52,7 @@ Math.sum[?,?]
 | `DOUBLE`              | `DOUBLE`          |
 | `NUMERIC[ , ]`        | `NUMERIC`         |
 | `BOOLEAN`             | `BOOLEAN`         |
+| `TBOOLEAN`            | `TBOOLEAN`        |
 | `DATE`                | `DATE`            |
 | `DATETIME`            | `DATETIME`        |
 | `TIME`                | `TIME`            |
@@ -63,7 +64,7 @@ Math.sum[?,?]
 | `TEXT`                | `STRING`          |
 | `RICHTEXT`            | `STRING`          |
 | `COLOR`               | `COLOR`           |
-| `FILE,RAWFILE...`     | `FILE,RAWFILE...` |
+| `FILE`, `RAWFILE`, ...| `FILE`, `RAWFILE`, ... |
 
 :::info
 В некоторых случаях элементом сигнатуры свойства может являться не одиночный класс, а множество классов. В этом случае каноническое имя будет иметь более сложный вид.

@@ -52,6 +52,7 @@ Since the signature of properties/actions do not have to contain only custom cla
 | `DOUBLE`                | `DOUBLE`          |
 | `NUMERIC[ , ]`          | `NUMERIC`         |
 | `BOOLEAN`               | `BOOLEAN`         |
+| `TBOOLEAN`              | `TBOOLEAN`        |
 | `DATE`                  | `DATE`            |
 | `DATETIME`              | `DATETIME`        |
 | `TIME`                  | `TIME`            |
@@ -63,7 +64,7 @@ Since the signature of properties/actions do not have to contain only custom cla
 | `TEXT`                  | `STRING`          |
 | `RICHTEXT`              | `STRING`          |
 | `COLOR`                 | `COLOR`           |
-| `FILE,RAWFILE...`       | `FILE,RAWFILE...` |
+| `FILE`, `RAWFILE`, ...  | `FILE`, `RAWFILE`, ... |
 
 
 :::info
