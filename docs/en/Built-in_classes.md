@@ -11,7 +11,7 @@ title: 'Built-in classes'
 |`DOUBLE`             |64-bit floating point number  |`5.0d`, `2.35D`|
 |`NUMERIC[ , ]`       |Number with fixed width and precision|`5.0`, `2.35`|
 |`BOOLEAN`            |Logical data type         |`TRUE`, `NULL`|
-|`TBOOLEAN`           |Logical data type (3-state)    |`TTRUE`, `TFALSE`, `NULL`|
+|`TBOOLEAN`           |Three-state data type         |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Date                          |`13_07_1982`|
 |`DATETIME`           |Date and time                 |`13_07_1982_18:00`|
 |`TIME`               |Time                          |`18:00`|
@@ -113,12 +113,13 @@ It is sometimes necessary to use some value for a built-in class which will diff
 
 |Class name                |Default value|
 |--------------------------|-------------|
-|Numerical classes         |0            |
-|Strings                   |The empty string|
-|`DATE, TIME, DATETIME`    |The current date / time / date and time|
-|`BOOLEAN`                 |TRUE         |
+|Numerical classes         |`0`          |
+|Strings                   |`''` (empty string)|
+|`DATE`, `TIME`, `DATETIME`|The current date / time / date and time|
+|`BOOLEAN`                 |`TRUE`       |
+|`TBOOLEAN`                |`TTRUE`      |
 |`COLOR`                   |White        |
-|`JSON`                    |{}           |
+|`JSON`                    |`{}`         |
 |Files of a specific type  |Empty file   |
 |`FILE`                    |Empty file with empty extension|
 |`NAMEDFILE`               |Empty file with empty name and extension|
@@ -149,5 +150,5 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`|`exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
 |`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
+|`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`|
 |[User classes](User_classes.md)|`exportObject`|

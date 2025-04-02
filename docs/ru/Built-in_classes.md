@@ -11,7 +11,7 @@ title: 'Встроенные классы'
 |`DOUBLE`             |Восьмибайтное число с плавающей точкой|`5.0d`, `2.35D`|
 |`NUMERIC[ , ]`       |Число с фиксированной разрядностью и точностью|`5.0`, `2.35`|
 |`BOOLEAN`            |Логический тип данных     |`TRUE`, `NULL`|
-|`TBOOLEAN`            |Логический тип данных (3-значения)    |`TTRUE`, `TFALSE`, `NULL`|
+|`TBOOLEAN`           |Расширенный логический тип данных |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Дата                      |`13_07_1982`|
 |`DATETIME`           |Дата и время              |`13_07_1982_18:00`|
 |`TIME`               |Время                     |`18:00`|
@@ -113,19 +113,20 @@ ELSE
 
 |Имя класса            |Значение по умолчанию|
 |----------------------|---------------------|
-|Числовые классы       |0                    |
-|Строки                |Пустая строка        |
-|`DATE, TIME, DATETIME`|Текущие дата, время, дата / время|
-|`BOOLEAN`             |TRUE                 |
+|Числовые классы       |`0`                  |
+|Строковые классы      |`''` (пустая строка) |
+|`DATE`, `TIME`, `DATETIME`|Текущие дата, время, дата / время|
+|`BOOLEAN`             |`TRUE`               |
+|`TBOOLEAN`            |`TTRUE`              |
 |`COLOR`               |Белый цвет           |
-|`JSON`                |{}                   |
+|`JSON`                |`{}`                 |
 |Файлы конкретного типа|Пустой файл          |
 |`FILE`                |Пустой файл с пустым расширением|
 |`NAMEDFILE`           |Пустой файл с пустым именем и расширением|
 
 ## Расширения файлов конкретного типа {#extension}
 
-При преобразовании файлов конкретного типа (`JSONFILE`, `XMLFILE`, ...) к файлу динамического типа (`FILE`, `NAMEDFILE`), как явном, так и неявном (например при [импорте данных](Data_import_IMPORT.md) без указании формата или при [взаимодействии с внешними системами](Access_to_an_external_system_EXTERNAL.md)) расширение результирующего файла определяется следующим образом:
+При преобразовании файлов конкретного типа (`JSONFILE`, `XMLFILE`, ...) к файлу динамического типа (`FILE`, `NAMEDFILE`), как явном, так и неявном (например при [импорте данных](Data_import_IMPORT.md) без указания формата или при [взаимодействии с внешними системами](Access_to_an_external_system_EXTERNAL.md)) расширение результирующего файла определяется следующим образом:
 
 |Имя класса |Расширение   |
 |-----------|-------------|
@@ -149,5 +150,5 @@ ELSE
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
 |`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
+|`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`|
 |[Пользовательские классы](User_classes.md)|`exportObject`|
