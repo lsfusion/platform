@@ -1,7 +1,7 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -14,6 +14,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -89,15 +91,18 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setChangeKey(Object changeKey) {
         if(changeKey instanceof LocalizedString) {
-            ScriptingLogicsModule.KeyStrokeOptions keyStrokeOptions = ScriptingLogicsModule.parseKeyStrokeOptions(changeKey.toString());
-            target.changeKey = BaseUtils.isRedundantString((keyStrokeOptions.keyStroke)) ? null : new KeyInputEvent(KeyStroke.getKeyStroke(keyStrokeOptions.keyStroke), keyStrokeOptions.bindingModesMap);
-            target.changeKeyPriority = keyStrokeOptions.priority;
+            ScriptingLogicsModule.KeyStrokeOptions kso = ScriptingLogicsModule.parseKeyStrokeOptions(changeKey.toString());
+            target.changeKey = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap),
+                    kso.priority);
         } else {
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
         }
     }
+
+    //todo: remove?
     public void setChangeKeyPriority(int priority) {
-        target.changeKeyPriority = priority;
+        if(target.changeKey != null)
+            target.changeKey.priority = priority;
     }
 
     public void setShowChangeKey(boolean showChangeKey) {
@@ -106,15 +111,18 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setChangeMouse(Object changeMouse) {
         if(changeMouse instanceof LocalizedString) {
-            ScriptingLogicsModule.KeyStrokeOptions keyStrokeOptions = ScriptingLogicsModule.parseKeyStrokeOptions(changeMouse.toString());
-            target.changeMouse = BaseUtils.isRedundantString(keyStrokeOptions.keyStroke) ? null : new MouseInputEvent(keyStrokeOptions.keyStroke, keyStrokeOptions.bindingModesMap);
-            target.changeMousePriority = keyStrokeOptions.priority;
+            ScriptingLogicsModule.KeyStrokeOptions kso = ScriptingLogicsModule.parseKeyStrokeOptions(changeMouse.toString());
+            target.changeMouse = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new MouseInputEvent(kso.keyStroke, kso.bindingModesMap),
+                    kso.priority);
         } else {
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeMouse, PropertyDrawExtraType.CHANGEMOUSE, getVersion());
         }
     }
+
+    //todo: remove?
     public void setChangeMousePriority(int priority) {
-        target.changeMousePriority = priority;
+        if(target.changeMouse != null)
+        target.changeMouse.priority = priority;
     }
 
     public void setShowChangeMouse(boolean showChangeMouse) {

@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
@@ -704,15 +705,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(propertyView.captionHeight == null)
                 propertyView.setCaptionHeight(captionHeight);
             if (propertyView.changeKey == null)
-                propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey, keyBindingsModes) : null;
-            if (propertyView.changeKeyPriority == null)
-                propertyView.changeKeyPriority = changeKeyPriority;
+                propertyView.changeKey = changeKey != null ? new InputBindingEvent(new KeyInputEvent(changeKey, keyBindingsModes), changeKeyPriority) : null;
             if (propertyView.showChangeKey == null)
                 propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
             if (propertyView.changeMouse == null)
-                propertyView.changeMouse = changeMouse != null ? new MouseInputEvent(changeMouse, mouseBindingsModes) : null;
-            if (propertyView.changeMousePriority == null)
-                propertyView.changeMousePriority = changeMousePriority;
+                propertyView.changeMouse = changeMouse != null ? new InputBindingEvent(new MouseInputEvent(changeMouse, mouseBindingsModes), changeMousePriority) : null;
             if (propertyView.showChangeMouse == null)
                 propertyView.showChangeMouse = BaseUtils.nvl(showChangeMouse, true);
 

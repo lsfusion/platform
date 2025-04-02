@@ -12,10 +12,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormScheduler;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.*;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -637,10 +634,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {
-        property.changeKey = keyStroke != null ? new KeyInputEvent(keyStroke) : null;
+        property.changeKey = new InputBindingEvent(keyStroke != null ? new KeyInputEvent(keyStroke) : null, null);
     }
     public void setChangeMouse(PropertyDrawView property, String mouseStroke) {
-        property.changeMouse = new MouseInputEvent(mouseStroke);
+        property.changeMouse = new InputBindingEvent(new MouseInputEvent(mouseStroke), null);
     }
 
     protected void setComponentSID(ContainerView container, String sid, Version version) {

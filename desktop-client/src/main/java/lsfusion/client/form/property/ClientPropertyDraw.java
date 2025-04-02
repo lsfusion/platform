@@ -25,8 +25,8 @@ import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -128,11 +128,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean noSort;
     public Compare defaultCompare;
 
-    public KeyInputEvent changeKey;
-    public Integer changeKeyPriority;
+    public InputBindingEvent changeKey;
     public boolean showChangeKey;
-    public MouseInputEvent changeMouse;
-    public Integer changeMousePriority;
+    public InputBindingEvent changeMouse;
     public boolean showChangeMouse;
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
@@ -238,15 +236,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Compare[] getFilterCompares() {
         return baseType.getFilterCompares();
-    }
-
-    public KeyInputEvent getChangeKey() {
-        return changeKey;
-    }
-
-    public void setChangeKey(KeyInputEvent key) {
-        this.changeKey = key;
-        updateDependency(this, "changeKey");
     }
 
     public boolean getShowChangeKey() {
@@ -570,10 +559,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         captionCharHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
-        changeKeyPriority = pool.readInt(inStream);
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
-        changeMousePriority = pool.readInt(inStream);
         showChangeMouse = inStream.readBoolean();
 
         drawAsync = inStream.readBoolean();
@@ -804,7 +791,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     private String getChangeKeyCaption() {
-        return SwingUtils.getKeyStrokeCaption(changeKey.keyStroke);
+        return SwingUtils.getKeyStrokeCaption(((KeyInputEvent) changeKey.inputEvent).keyStroke);
     }
 
     public String getChangeCaption() {

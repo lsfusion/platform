@@ -438,21 +438,15 @@ public abstract class CellRenderer {
         GInputBindingEvent changeKey = updateContext.getChangeKey();
         if(isNew || !equalsChangeKeyState(renderedState, changeKey)) {
             renderedState.changeKey = changeKey;
-            if(changeKey != null) {
-                Pair<GFormController.BindingExec, Widget> bindingEntry = controller.bindingsMap.get(property);
-                controller.removeDynamicBindings(property, false);
-                controller.addBinding(changeKey.inputEvent, changeKey.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
-            }
+            if(changeKey != null)
+                controller.addDynamicBinding(changeKey, property, false);
         }
 
         GInputBindingEvent changeMouse = updateContext.getChangeMouse();
         if(isNew || !equalsChangeMouseState(renderedState, changeMouse)) {
             renderedState.changeMouse = changeMouse;
-            if(changeMouse != null) {
-                Pair<GFormController.BindingExec, Widget> bindingEntry = controller.bindingsMap.get(property);
-                controller.removeDynamicBindings(property, true);
-                controller.addBinding(changeMouse.inputEvent, changeMouse.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
-            }
+            if(changeMouse != null)
+                controller.addDynamicBinding(changeMouse, property, true);
         }
 
         if(needToRenderToolbarContent())

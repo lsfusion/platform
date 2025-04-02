@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.FormChangeEvent;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -803,30 +804,26 @@ public class ScriptingFormEntity {
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
 
-            KeyInputEvent keyInputEvent = null;
-            Integer keyPriority = null;
+            InputBindingEvent keyInputEvent = null;
             if (info.keyEvent != null) {
                 ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(info.keyEvent);
-                keyInputEvent = new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap);
-                if (keyInputEvent.keyStroke == null) {
+                keyInputEvent = new InputBindingEvent(new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap), kso.priority);
+                if (((KeyInputEvent)keyInputEvent.inputEvent).keyStroke == null) {
                     LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
                 }
-                keyPriority = kso.priority;
             }
 
-            MouseInputEvent mouseInputEvent = null;
-            Integer mousePriority = null;
+            InputBindingEvent mouseInputEvent = null;
             if (info.mouseEvent != null) {
                 ScriptingLogicsModule.KeyStrokeOptions mso = parseKeyStrokeOptions(info.mouseEvent);
-                mouseInputEvent = new MouseInputEvent(mso.keyStroke, mso.bindingModesMap);
-                mousePriority = mso.priority;
+                mouseInputEvent = new InputBindingEvent(new MouseInputEvent(mso.keyStroke, mso.bindingModesMap), mso.priority);
             }
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
             checkPropertyParameters(info.property, mappingObjects);
             RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
                     new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
-                    info.caption, keyInputEvent, keyPriority, info.showKey, mouseInputEvent, mousePriority, info.showMouse);
+                    info.caption, keyInputEvent, info.showKey, mouseInputEvent, info.showMouse);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, info.isDefault, version);
             } else {

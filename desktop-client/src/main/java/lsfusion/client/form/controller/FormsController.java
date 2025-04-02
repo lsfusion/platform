@@ -26,6 +26,7 @@ import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.FormClientData;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -92,9 +93,9 @@ public class FormsController implements ColorThemeChangeListener {
     private final Map<InputEvent, List<ClientFormController.Binding>> bindings = new HashMap<>();
     private final List<ClientFormController.Binding> keySetBindings = new ArrayList<>();
 
-    public void addBindings(ClientNavigatorElement element, InputEvent inputEvent, Integer priority) {
-        if (inputEvent != null) {
-            bindings.put(inputEvent, Collections.singletonList(new ClientFormController.Binding(null, nvl(priority, 0)) {
+    public void addBindings(ClientNavigatorElement element, InputBindingEvent bindingEvent) {
+        if (bindingEvent != null) {
+            bindings.put(bindingEvent.inputEvent, Collections.singletonList(new ClientFormController.Binding(null, nvl(bindingEvent.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     if (element instanceof ClientNavigatorAction) {

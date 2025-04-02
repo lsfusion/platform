@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.base.AppServerImage;
@@ -66,11 +67,9 @@ public abstract class NavigatorElement {
     public Property propertyElementClass;
     public String elementClass;
 
-    public KeyInputEvent changeKey;
-    public Integer changeKeyPriority;
+    public InputBindingEvent changeKey;
     public Boolean showChangeKey;
-    public MouseInputEvent changeMouse;
-    public Integer changeMousePriority;
+    public InputBindingEvent changeMouse;
     public Boolean showChangeMouse;
 
     private final String canonicalName;
@@ -269,15 +268,13 @@ public abstract class NavigatorElement {
     public void setChangeKey(String code, boolean showChangeKey) {
         ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions(code);
         KeyStroke changeKey = KeyStroke.getKeyStroke(options.keyStroke);
-        this.changeKey = new KeyInputEvent(changeKey, options.bindingModesMap);
-        this.changeKeyPriority = options.priority;
+        this.changeKey = new InputBindingEvent(new KeyInputEvent(changeKey, options.bindingModesMap), options.priority);
         this.showChangeKey = showChangeKey;
     }
 
     public void setChangeMouse(String code, boolean showChangeMouse) {
         ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions(code);
-        this.changeMouse = new MouseInputEvent(options.keyStroke, options.bindingModesMap);
-        this.changeMousePriority = options.priority;
+        this.changeMouse = new InputBindingEvent(new MouseInputEvent(options.keyStroke, options.bindingModesMap), options.priority);
         this.showChangeMouse = showChangeMouse;
     }
 
@@ -324,10 +321,8 @@ public abstract class NavigatorElement {
         }
 
         BaseUtils.writeObject(outStream, changeKey);
-        SerializationUtil.writeInt(outStream, changeKeyPriority);
         outStream.writeBoolean(nvl(showChangeKey, true));
         BaseUtils.writeObject(outStream, changeMouse);
-        SerializationUtil.writeInt(outStream, changeMousePriority);
         outStream.writeBoolean(nvl(showChangeMouse, true));
 
         AppServerImage.serialize(getImage(context), outStream);
