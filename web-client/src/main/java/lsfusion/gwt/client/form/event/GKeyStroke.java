@@ -3,13 +3,15 @@ package lsfusion.gwt.client.form.event;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
-import java.util.function.BooleanSupplier;
+import java.util.*;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
@@ -347,5 +349,304 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isAlt(NativeEvent event) {
         return event.getKeyCode() == KEY_ALT || event.getAltKey();
+    }
+
+    //possible it's not full support of all KeyStroke cases at server (see KeyStrokeConverter)
+    public static GInputBindingEvent convertToGInputBindingEvent(String value) {
+        if(value != null) {
+            GKeyStroke keyStroke;
+            GBindingEnv env;
+            MatchResult m = RegExp.compile("([^;]*);(.*)").exec(value);
+            if(m != null) {
+                keyStroke = getKeyStroke(m.getGroup(1));
+                Map<String, String> optionsMap = getOptionsMap(m.getGroup(2));
+                Map<String, GBindingMode> bindingModes = getBindingModesMap(optionsMap);
+                env = new GBindingEnv(getPriority(optionsMap), bindingModes.get("preview"),
+                        bindingModes.get("dialog"), bindingModes.get("window"), bindingModes.get("group"), bindingModes.get("editing"),
+                        bindingModes.get("showing"), bindingModes.get("panel"), bindingModes.get("cell"));
+            } else {
+                keyStroke = getKeyStroke(value);
+                env = new GBindingEnv(0, GBindingMode.AUTO, GBindingMode.AUTO, GBindingMode.AUTO, GBindingMode.AUTO,
+                        GBindingMode.AUTO, GBindingMode.AUTO, GBindingMode.AUTO, GBindingMode.AUTO);
+            }
+            return new GInputBindingEvent(new GKeyInputEvent(keyStroke), env);
+        }
+        return null;
+    }
+
+    private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "window", "group", "editing", "showing", "panel", "cell");
+    private static Map<String, GBindingMode> getBindingModesMap(Map<String, String> optionsMap) {
+        Map<String, GBindingMode> bindingModes = new HashMap<>();
+        for(Map.Entry<String, String> option : optionsMap.entrySet()) {
+            if(supportedBindings.contains(option.getKey())) {
+                GBindingMode bindingMode;
+                switch (option.getValue()) {
+                    case "all":
+                        bindingMode = GBindingMode.ALL;
+                        break;
+                    case "only":
+                        bindingMode = GBindingMode.ONLY;
+                        break;
+                    case "no":
+                        bindingMode = GBindingMode.NO;
+                        break;
+                    case "input":
+                        bindingMode = GBindingMode.INPUT;
+                        break;
+                    default:
+                        bindingMode = GBindingMode.AUTO;
+                        break;
+                }
+                bindingModes.put(option.getKey(), bindingMode);
+            }
+        }
+        return bindingModes;
+    }
+
+    private static Integer getPriority(Map<String, String> optionsMap) {
+        String priority = optionsMap.get("priority");
+        if(priority != null) {
+            try {
+                return Integer.parseInt(optionsMap.getOrDefault("priority", null));
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, String> getOptionsMap(String values) {
+        Map<String, String> options = new HashMap<>();
+        RegExp pattern = RegExp.compile("([^=;]*)=([^=;]*)", "g");
+        MatchResult match;
+        while ((match = pattern.exec(values)) != null) {
+            options.put(match.getGroup(1), match.getGroup(2));
+        }
+        return options;
+    }
+
+    private static Set<String> modifiers = new HashSet<>(Arrays.asList("alt", "ctrl", "shift"));
+    private static GKeyStroke getKeyStroke(String value) {
+        boolean alt = false;
+        boolean ctrl = false;
+        boolean shift = false;
+        String keyCode;
+
+        String[] parts = value.split(" ");
+        if (parts.length == 2 && modifiers.contains(parts[0].toLowerCase())) {
+            switch (parts[0].toLowerCase()) {
+                case "alt": alt = true; break;
+                case "ctrl": ctrl = true; break;
+                case "shift": shift = true; break;
+            }
+            keyCode = parts[1];
+        } else {
+            keyCode = parts[0];
+        }
+        Integer intKeyCode = getIntKeyCode(keyCode);
+        return intKeyCode != null ? new GKeyStroke(intKeyCode, alt, ctrl, shift) : null;
+    }
+
+    private static Integer getIntKeyCode(String value) {
+        switch (value) {
+            case "A":
+                return 65;
+            case "B":
+                return 66;
+            case "C":
+                return 67;
+            case "D":
+                return 68;
+            case "E":
+                return 69;
+            case "F":
+                return 70;
+            case "G":
+                return 71;
+            case "H":
+                return 72;
+            case "I":
+                return 73;
+            case "J":
+                return 74;
+            case "K":
+                return 75;
+            case "L":
+                return 76;
+            case "M":
+                return 77;
+            case "N":
+                return 78;
+            case "O":
+                return 79;
+            case "P":
+                return 80;
+            case "Q":
+                return 81;
+            case "R":
+                return 82;
+            case "S":
+                return 83;
+            case "T":
+                return 84;
+            case "U":
+                return 85;
+            case "V":
+                return 86;
+            case "W":
+                return 87;
+            case "X":
+                return 88;
+            case "Y":
+                return 89;
+            case "Z":
+                return 90;
+            case "0":
+                return 48;
+            case "1":
+                return 49;
+            case "2":
+                return 50;
+            case "3":
+                return 51;
+            case "4":
+                return 52;
+            case "5":
+                return 53;
+            case "6":
+                return 54;
+            case "7":
+                return 55;
+            case "8":
+                return 56;
+            case "9":
+                return 57;
+            case "NUM_0":
+                return 96;
+            case "NUM_1":
+                return 97;
+            case "NUM_2":
+                return 98;
+            case "NUM_3":
+                return 99;
+            case "NUM_4":
+                return 100;
+            case "NUM_5":
+                return 101;
+            case "NUM_6":
+                return 102;
+            case "NUM_7":
+                return 103;
+            case "NUM_8":
+                return 104;
+            case "NUM_9":
+                return 105;
+            case "NUM_MULTIPLY":
+                return 106;
+            case "NUM_PLUS":
+                return 107;
+            case "NUM_MINUS":
+                return 109;
+            case "NUM_PERIOD":
+                return 110;
+            case "NUM_DIVISION":
+                return 111;
+            case "ALT":
+                return 18;
+            case "BACKSPACE":
+                return 8;
+            case "CTRL":
+                return 17;
+            case "DELETE":
+                return 46;
+            case "DOWN":
+                return 40;
+            case "END":
+                return 35;
+            case "ENTER":
+                return 13;
+            case "ESCAPE":
+                return 27;
+            case "HOME":
+                return 36;
+            case "LEFT":
+                return 37;
+            case "PAGEDOWN":
+                return 34;
+            case "PAGEUP":
+                return 33;
+            case "RIGHT":
+                return 39;
+            case "SHIFT":
+                return 16;
+            case "TAB":
+                return 9;
+            case "UP":
+                return 38;
+            case "F1":
+                return 112;
+            case "F2":
+                return 113;
+            case "F3":
+                return 114;
+            case "F4":
+                return 115;
+            case "F5":
+                return 116;
+            case "F6":
+                return 117;
+            case "F7":
+                return 118;
+            case "F8":
+                return 119;
+            case "F9":
+                return 120;
+            case "F10":
+                return 121;
+            case "F11":
+                return 122;
+            case "F12":
+                return 123;
+            case "WIN_KEY_FF_LINUX":
+                return 0;
+            case "MAC_ENTER":
+                return 3;
+            case "PAUSE":
+                return 19;
+            case "CAPS_LOCK":
+                return 20;
+            case "SPACE":
+                return 32;
+            case "PRINT_SCREEN":
+                return 44;
+            case "INSERT":
+                return 45;
+            case "NUM_CENTER":
+                return 12;
+            case "WIN_KEY":
+                return 224;
+            case "WIN_KEY_LEFT_META":
+                return 91;
+            case "WIN_KEY_RIGHT":
+                return 92;
+            case "CONTEXT_MENU":
+                return 93;
+            case "MAC_FF_META":
+                return 224;
+            case "NUMLOCK":
+                return 144;
+            case "SCROLL_LOCK":
+                return 145;
+            case "FIRST_MEDIA_KEY":
+                return 166;
+            case "LAST_MEDIA_KEY":
+                return 183;
+            case "WIN_IME":
+                return 229;
+            case "OPEN_BRACKET":
+                return 219;
+            case "CLOSE_BRACKET":
+                return 221;
+        }
+        return null;
     }
 }

@@ -20,10 +20,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GBindingEnv;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
-import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -553,6 +550,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getPropertyCustomOptions(property);
         }
 
+        @Override
+        protected GInputBindingEvent getChangeKey(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getChangeKey(property);
+        }
+
+        @Override
+        protected GInputBindingEvent getChangeMouse(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getChangeMouse(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -670,6 +677,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePropertyCustomOptionsValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeKeyValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeMouseValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -947,6 +966,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propPropertyCustomOptions != null)
                             propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
                         objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
+
+                        PValue changeKey = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propChangeKeys = changeKeys.get(property);
+                        if (propChangeKeys != null)
+                            changeKey = propChangeKeys.get(key);
+                        objectRecord.setChangeKey(property, changeKey == null ? null : PValue.getBindingValue(changeKey));
+
+                        PValue changeMouse = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propChangeMouses = changeMouses.get(property);
+                        if (propChangeMouses != null)
+                            changeMouse = propChangeMouses.get(key);
+                        objectRecord.setChangeMouse(property, changeMouse == null ? null : PValue.getBindingValue(changeMouse));
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

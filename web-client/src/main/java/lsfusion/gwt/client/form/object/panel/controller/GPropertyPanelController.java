@@ -56,6 +56,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> tooltips;
     private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
     private NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions;
+    private NativeHashMap<GGroupObjectValue, PValue> changeKeys;
+    private NativeHashMap<GGroupObjectValue, PValue> changeMouses;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -200,6 +202,17 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(propertyCustomOptions != null) {
             propertyCustomOption = propertyCustomOptions.get(columnKey);
         }
+
+        PValue changeKey = null;
+        if(changeKeys != null) {
+            changeKey = changeKeys.get(columnKey);
+        }
+
+        PValue changeMouse = null;
+        if(changeMouses != null) {
+            changeMouse = changeMouses.get(columnKey);
+        }
+
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -213,7 +226,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 regexp == null ? property.regexp : PValue.getStringValue(regexp),
                 regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip),
-                propertyCustomOption);
+                propertyCustomOption,
+                PValue.getBindingValue(changeKey),
+                PValue.getBindingValue(changeMouse));
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
@@ -372,5 +387,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions) {
         this.propertyCustomOptions = propertyCustomOptions;
+    }
+
+    public void setPropertyChangeKeys(NativeHashMap<GGroupObjectValue, PValue> changeKeys) {
+        this.changeKeys = changeKeys;
+    }
+
+    public void setPropertyChangeMouses(NativeHashMap<GGroupObjectValue, PValue> changeMouses) {
+        this.changeMouses = changeMouses;
     }
 }

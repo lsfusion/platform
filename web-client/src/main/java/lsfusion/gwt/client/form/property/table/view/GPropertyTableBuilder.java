@@ -104,7 +104,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     // pivot (render&update), footer (render&update, update)
     public static void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
         RendererType rendererType = updateContext.getRendererType();
-        property.getCellRenderer(rendererType).update(getRenderSizedElement(element, property, rendererType), updateContext);
+        property.getCellRenderer(rendererType).update(null, getRenderSizedElement(element, property, rendererType), updateContext);
     }
 
     @Override

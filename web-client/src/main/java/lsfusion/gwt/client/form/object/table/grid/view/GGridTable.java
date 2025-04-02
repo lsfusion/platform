@@ -20,6 +20,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -448,6 +449,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueTooltips = valueTooltips.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                     NativeHashMap<GGroupObjectValue, PValue> propCustomOptions = propertyCustomOptions.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyChangeKeys = changeKeys.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyChangeMouses = changeMouses.get(property);
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
@@ -483,6 +486,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
                             record.setPropertyCustomOptions(column.columnSID, propCustomOptions == null ? null : propCustomOptions.get(fullKey));
+                            PValue changeKey = propertyChangeKeys == null ? null : propertyChangeKeys.get(fullKey);
+                            record.setChangeKey(column.columnSID, changeKey == null ? null : PValue.getBindingValue(changeKey));
+                            PValue changeMouse = propertyChangeMouses == null ? null : propertyChangeMouses.get(fullKey);
+                            record.setChangeMouse(column.columnSID, changeMouse == null ? null : PValue.getBindingValue(changeMouse));
                         }
                     }
                 });
@@ -724,6 +731,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePropertyCustomOptionsValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeKeyValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeMouseValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
@@ -1381,6 +1402,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected PValue getPropertyCustomOptions(GPropertyDraw property, GridDataRecord record) {
             return record.getPropertyCustomOptions(columnSID);
+        }
+
+        @Override
+        protected GInputBindingEvent getChangeKey(GPropertyDraw property, GridDataRecord record) {
+            return record.getChangeKey(columnSID);
+        }
+
+        @Override
+        protected GInputBindingEvent getChangeMouse(GPropertyDraw property, GridDataRecord record) {
+            return record.getChangeMouse(columnSID);
         }
     }
 

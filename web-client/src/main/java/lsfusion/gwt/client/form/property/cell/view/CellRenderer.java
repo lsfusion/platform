@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
@@ -9,6 +10,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -326,6 +328,12 @@ public abstract class CellRenderer {
     private static boolean equalsHighlightDuplicateValueState(RenderedState state, boolean highlightDuplicateValue) {
         return state.highlightDuplicateValue == highlightDuplicateValue;
     }
+    private static boolean equalsChangeKeyState(RenderedState state, GInputBindingEvent changeKey) {
+        return GwtClientUtils.nullEquals(state.changeKey, changeKey);
+    }
+    private static boolean equalsChangeMouseState(RenderedState state, GInputBindingEvent changeMouse) {
+        return GwtClientUtils.nullEquals(state.changeMouse, changeMouse);
+    }
     private static boolean equalsDynamicState(RenderedState state, PValue value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
@@ -342,7 +350,7 @@ public abstract class CellRenderer {
         return GwtClientUtils.nullEquals(state.valueElementClass, valueElementClass);
     }
 
-    public void update(Element element, UpdateContext updateContext) {
+    public void update(GFormController controller, Element element, UpdateContext updateContext) {
         boolean selected = updateContext.isSelectedLink();
         if(selected)
             renderEditSelected(element, property);
@@ -427,6 +435,26 @@ public abstract class CellRenderer {
             BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element), highlightDuplicateValue ? "duplicate-cell" : null, "duplicate");
         }
 
+        GInputBindingEvent changeKey = updateContext.getChangeKey();
+        if(isNew || !equalsChangeKeyState(renderedState, changeKey)) {
+            renderedState.changeKey = changeKey;
+            if(changeKey != null) {
+                Pair<GFormController.BindingExec, Widget> bindingEntry = controller.bindingsMap.get(property);
+                controller.removeDynamicBindings(property, false);
+                controller.addBinding(changeKey.inputEvent, changeKey.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
+            }
+        }
+
+        GInputBindingEvent changeMouse = updateContext.getChangeMouse();
+        if(isNew || !equalsChangeMouseState(renderedState, changeMouse)) {
+            renderedState.changeMouse = changeMouse;
+            if(changeMouse != null) {
+                Pair<GFormController.BindingExec, Widget> bindingEntry = controller.bindingsMap.get(property);
+                controller.removeDynamicBindings(property, true);
+                controller.addBinding(changeMouse.inputEvent, changeMouse.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
+            }
+        }
+
         if(needToRenderToolbarContent())
             renderToolbarContent(element, updateContext, renderedState, cleared);
     }
@@ -464,6 +492,9 @@ public abstract class CellRenderer {
         public boolean highlightDuplicateValue;
 
         public String valueTooltip;
+
+        public GInputBindingEvent changeKey;
+        public GInputBindingEvent changeMouse;
 
         public boolean rerender;
 

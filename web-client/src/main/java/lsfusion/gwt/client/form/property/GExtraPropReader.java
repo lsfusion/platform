@@ -35,10 +35,14 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updateRegexpMessageValues(this, values);
         } else if (readerType == TOOLTIP) {
             controller.updateTooltipValues(this, values);
-        }else if (readerType == VALUETOOLTIP) {
+        } else if (readerType == VALUETOOLTIP) {
             controller.updateValueTooltipValues(this, values);
-        }else if (readerType == PROPERTY_CUSTOM_OPTIONS) {
+        } else if (readerType == PROPERTY_CUSTOM_OPTIONS) {
             controller.updatePropertyCustomOptionsValues(this, values);
+        } else if (readerType == CHANGEKEY) {
+            controller.updateChangeKeyValues(this, values);
+        } else if (readerType == CHANGEMOUSE) {
+            controller.updateChangeMouseValues(this, values);
         }
     }
 
@@ -63,6 +67,10 @@ public class GExtraPropReader extends GExtraPropertyReader {
             return "VALUETOOLTIP";
         } else if (readerType == PROPERTY_CUSTOM_OPTIONS) {
             return "PROPERTY_CUSTOM_OPTIONS";
+        } else if (readerType == CHANGEKEY) {
+            return "CHANGEKEY";
+        } else if (readerType == CHANGEMOUSE) {
+            return "CHANGEMOUSE";
         }
         return null;
     }

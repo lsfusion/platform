@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.InlineComponentViewWidget;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -51,7 +52,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption,
+                       GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label);
             image = null;
@@ -59,7 +61,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         // we don't need image in value
         super.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
-                regexp, regexpMessage, valueTooltip, propertyCustomOption);
+                regexp, regexpMessage, valueTooltip, propertyCustomOption, changeKey, changeMouse);
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

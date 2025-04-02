@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 
@@ -140,6 +141,22 @@ public class GridDataRecord implements RowIndexHolder {
 
     public PValue getPropertyCustomOptions(String column) {
         return (PValue) getAttribute(column + "_propertyCustomOptions");
+    }
+
+    public void setChangeKey(String column, GInputBindingEvent changeKey) {
+        setAttribute(column + "_changeKey", changeKey);
+    }
+
+    public GInputBindingEvent getChangeKey(String column) {
+        return (GInputBindingEvent) getAttribute(column + "_changeKey");
+    }
+
+    public void setChangeMouse(String column, GInputBindingEvent changeKey) {
+        setAttribute(column + "_changeMouse", changeKey);
+    }
+
+    public GInputBindingEvent getChangeMouse(String column) {
+        return (GInputBindingEvent) getAttribute(column + "_changeMouse");
     }
 
     public void setForeground(String column, String color) {

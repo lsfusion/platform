@@ -92,6 +92,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> changeKeys = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> changeMouses = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -373,6 +375,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         propertyCustomOptions.put(propertyDraw, values);
+    }
+
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        changeKeys.put(propertyDraw, values);
+    }
+
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        changeMouses.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -812,6 +822,8 @@ protected Double getUserFlex(int i) {
         protected abstract String getRegexpMessage(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
         protected abstract PValue getPropertyCustomOptions(GPropertyDraw property, T record);
+        protected abstract GInputBindingEvent getChangeKey(GPropertyDraw property, T record);
+        protected abstract GInputBindingEvent getChangeMouse(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -1044,6 +1056,18 @@ protected Double getUserFlex(int i) {
             public PValue getPropertyCustomOptions() {
                 T row = (T) cell.getRow();
                 return column.getPropertyCustomOptions(property, row);
+            }
+
+            @Override
+            public GInputBindingEvent getChangeKey() {
+                T row = (T) cell.getRow();
+                return column.getChangeKey(property, row);
+            }
+
+            @Override
+            public GInputBindingEvent getChangeMouse() {
+                T row = (T) cell.getRow();
+                return column.getChangeMouse(property, row);
             }
 
             @Override

@@ -389,6 +389,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
         propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
         propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
+        propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
+        propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {

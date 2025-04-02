@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -76,9 +77,10 @@ public abstract class PanelRenderer {
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption,
+                       GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
         this.value.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
-                regexp, regexpMessage, valueTooltip, propertyCustomOption);
+                regexp, regexpMessage, valueTooltip, propertyCustomOption, changeKey, changeMouse);
     }
 
     private String caption;

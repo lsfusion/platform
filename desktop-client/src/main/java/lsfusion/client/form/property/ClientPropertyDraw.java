@@ -72,6 +72,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader tooltipReader = new ExtraPropReader(TOOLTIP);
     public ExtraPropReader valueTooltipReader = new ExtraPropReader(VALUETOOLTIP);
     public ExtraPropReader propertyCustomOptionsReader = new ExtraPropReader(PROPERTY_CUSTOM_OPTIONS);
+    public ExtraPropReader changeKeyReader = new ExtraPropReader(CHANGEKEY);
+    public ExtraPropReader changeMouseReader = new ExtraPropReader(CHANGEMOUSE);
 
     public boolean boxed;
 

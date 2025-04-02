@@ -87,9 +87,14 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setValueFlex(flex);
     }
 
-    public void setChangeKey(ScriptingLogicsModule.KeyStrokeOptions changeKey) {
-        target.changeKey = BaseUtils.isRedundantString(changeKey.keyStroke) ? null : new KeyInputEvent(KeyStroke.getKeyStroke(changeKey.keyStroke), changeKey.bindingModesMap);
-        target.changeKeyPriority = changeKey.priority;
+    public void setChangeKey(Object changeKey) {
+        if(changeKey instanceof LocalizedString) {
+            ScriptingLogicsModule.KeyStrokeOptions keyStrokeOptions = ScriptingLogicsModule.parseKeyStrokeOptions(changeKey.toString());
+            target.changeKey = BaseUtils.isRedundantString((keyStrokeOptions.keyStroke)) ? null : new KeyInputEvent(KeyStroke.getKeyStroke(keyStrokeOptions.keyStroke), keyStrokeOptions.bindingModesMap);
+            target.changeKeyPriority = keyStrokeOptions.priority;
+        } else {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
+        }
     }
     public void setChangeKeyPriority(int priority) {
         target.changeKeyPriority = priority;
@@ -99,9 +104,14 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.showChangeKey = showChangeKey;
     }
 
-    public void setChangeMouse(ScriptingLogicsModule.KeyStrokeOptions changeMouse) {
-        target.changeMouse = BaseUtils.isRedundantString(changeMouse.keyStroke) ? null : new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
-        target.changeMousePriority = changeMouse.priority;
+    public void setChangeMouse(Object changeMouse) {
+        if(changeMouse instanceof LocalizedString) {
+            ScriptingLogicsModule.KeyStrokeOptions keyStrokeOptions = ScriptingLogicsModule.parseKeyStrokeOptions(changeMouse.toString());
+            target.changeMouse = BaseUtils.isRedundantString(keyStrokeOptions.keyStroke) ? null : new MouseInputEvent(keyStrokeOptions.keyStroke, keyStrokeOptions.bindingModesMap);
+            target.changeMousePriority = keyStrokeOptions.priority;
+        } else {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeMouse, PropertyDrawExtraType.CHANGEMOUSE, getVersion());
+        }
     }
     public void setChangeMousePriority(int priority) {
         target.changeMousePriority = priority;
