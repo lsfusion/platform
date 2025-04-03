@@ -14,6 +14,7 @@
         <csrf disabled="true"/>
 
         <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
+        <custom-filter after="FORM_LOGIN_FILTER" ref="urlAuthenticationFilter"/>
     </http>
 
     <!-- main subdomains (i.e resources), however now it's not needed since saveDownload is used (and thus 2 mechanisms listed below) -->
@@ -80,6 +81,12 @@
         <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
 
         <custom-filter position="PRE_AUTH_FILTER" ref="urlAuthenticationFilter"/>
+
+        <!--
+            set this filter for /login only because at oauth2 authorization oauth2 provider redirects to /login.
+            and at this point oauth2ToLSFTokenFilter will convert OAuth2AuthenticationToken to LSFAuthenticationToken and set authentication.
+        -->
+        <custom-filter position="LAST" ref="oauth2ToLSFTokenFilter"/>
     </http>
 
     <!-- Security beans -->
