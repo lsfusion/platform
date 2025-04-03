@@ -162,7 +162,7 @@ public interface PValue {
     }
 
     static GInputBindingEvent getBindingValue(PValue value) {
-        return GKeyStroke.convertToGInputBindingEvent(getValue(value));
+        return getValue(value);
     }
 
     static String getColorStringValue(PValue value) {

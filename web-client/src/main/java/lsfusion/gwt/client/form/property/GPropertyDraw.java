@@ -354,6 +354,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return result;
     }
 
+    public String getKeyBindingText(GInputBindingEvent changeKey) {
+        return ((GKeyInputEvent) changeKey.inputEvent).keyStroke.toString();
+    }
+
     public boolean hasMouseBinding() {
         for(GInputBindingEvent bindingEvent : bindingEvents)
             if(bindingEvent.inputEvent instanceof GMouseInputEvent)
@@ -368,6 +372,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent;
             }
         return result;
+    }
+
+    public String getMouseBindingText(GInputBindingEvent changeMouse) {
+        return ((GMouseInputEvent) changeMouse.inputEvent).mouseEvent;
     }
 
     public boolean drawAsync;
@@ -647,12 +655,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return type != null && renderType.getClass() == type.getClass() && !(renderType instanceof GJSONType) && !(renderType instanceof GFileType);
     }
 
-    public String getPanelCaption(String caption) {
+    public String getPanelCaption(String caption, GInputBindingEvent changeKey, GInputBindingEvent changeMouse) { //сюды перадаваць dynamicEventCaption
         if(caption == null)
             return null;
 
-        String eventCaption = getEventCaption(showChangeKey && hasKeyBinding() ? getKeyBindingText() : null,
-                showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null);
+        String keyEventCaption = changeKey != null ? getKeyBindingText(changeKey) : showChangeKey && hasKeyBinding() ? getKeyBindingText() : null;
+        String mouseEventCaption = changeMouse != null ? getMouseBindingText(changeMouse) : showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null;
+        String eventCaption = getEventCaption(keyEventCaption, mouseEventCaption);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 

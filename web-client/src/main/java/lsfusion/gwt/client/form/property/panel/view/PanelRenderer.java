@@ -92,7 +92,11 @@ public abstract class PanelRenderer {
     }
 
     protected void updateCaption() {
-        setLabelText(property.getPanelCaption(caption));
+        updateCaption(null, null);
+    }
+
+    public void updateCaption(GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
+        setLabelText(property.getPanelCaption(caption, changeKey, changeMouse));
     }
 
     private String captionElementClass;

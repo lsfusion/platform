@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -17,7 +18,6 @@ import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GPropertyPanelController implements ActionOrPropertyValueController {
@@ -203,14 +203,14 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             propertyCustomOption = propertyCustomOptions.get(columnKey);
         }
 
-        PValue changeKey = null;
+        GInputBindingEvent changeKey = null;
         if(changeKeys != null) {
-            changeKey = changeKeys.get(columnKey);
+            changeKey = PValue.getBindingValue(changeKeys.get(columnKey));
         }
 
-        PValue changeMouse = null;
+        GInputBindingEvent changeMouse = null;
         if(changeMouses != null) {
-            changeMouse = changeMouses.get(columnKey);
+            changeMouse = PValue.getBindingValue(changeMouses.get(columnKey));
         }
 
         renderer.update(values.get(columnKey),
@@ -227,11 +227,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip),
                 propertyCustomOption,
-                PValue.getBindingValue(changeKey),
-                PValue.getBindingValue(changeMouse));
+                changeKey,
+                changeMouse);
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
+        if(changeKey != null || changeMouse != null)
+            renderer.updateCaption(changeKey, changeMouse);
         if (cellCaptionElementClasses != null)
             renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
 

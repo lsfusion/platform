@@ -2,6 +2,9 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.form.event.InputBindingEvent;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
@@ -19,6 +22,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -46,11 +50,13 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
@@ -254,6 +260,13 @@ public class FormChanges {
             super(type);
         }
     }
+    public static class NeedInputEvent extends ConvertData {
+        private boolean mouse;
+        public NeedInputEvent(Type type, boolean mouse) {
+            super(type);
+            this.mouse = mouse;
+        }
+    }
 
     public static byte[] serializeConvertFileValue(Object value, ExecutionContext context) throws IOException {
         return serializeConvertFileValue(value, context.getRemoteContext());
@@ -286,6 +299,13 @@ public class FormChanges {
 
         if(value instanceof String && convertData instanceof NeedImage) {
             return AppServerImage.getAppImage(((NeedImage) convertData).imageSupplier.apply((String)value).get(context));
+        }
+
+        if(value instanceof String && convertData instanceof NeedInputEvent) {
+            ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions((String) value);
+            return new InputBindingEvent(((NeedInputEvent) convertData).mouse ?
+                    new MouseInputEvent(options.keyStroke, options.bindingModesMap) : new KeyInputEvent(KeyStroke.getKeyStroke(options.keyStroke), options.bindingModesMap),
+                    options.priority);
         }
 
         if(value instanceof String)
@@ -407,12 +427,20 @@ public class FormChanges {
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
             return new NeedImage(readType.get(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, context.view));
+        } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && (reader.getTypeID() == PropertyDrawExtraType.CHANGEKEY.getPropertyReadType())) {
+            return getNeedInputEvent(readType.get(), false);
+        } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && (reader.getTypeID() == PropertyDrawExtraType.CHANGEMOUSE.getPropertyReadType())) {
+            return getNeedInputEvent(readType.get(), true);
         }
         return null;
     }
 
     private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw, FormInstanceContext context) {
         return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, context.view.get(propertyDraw)));
+    }
+
+    private static NeedInputEvent getNeedInputEvent(Type type, boolean mouse) {
+        return new NeedInputEvent(type, mouse);
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

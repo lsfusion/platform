@@ -17,12 +17,14 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.MergeFunctionSet;
 import lsfusion.base.lambda.set.RemoveFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
@@ -324,6 +326,10 @@ public class BaseUtils {
             return new StringWithFiles.Resource(new RawFileData(inStream, fileLength), name);
         }
 
+        if(objectType == 22) {
+            return deserializeInputBindingEvent(inStream);
+        }
+
         throw new IOException();
     }
 
@@ -538,6 +544,12 @@ public class BaseUtils {
             return;
         }
 
+        if(object instanceof InputBindingEvent) {
+            outStream.writeByte(22);
+            serializeInputBindingEvent(outStream, (InputBindingEvent) object);
+            return;
+        }
+
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
@@ -610,6 +622,40 @@ public class BaseUtils {
         BigInteger intNumber = new BigInteger(numberArray);
         int scale = inStream.readInt();
         return new BigDecimal(intNumber, scale);
+    }
+
+    public static void serializeInputBindingEvent(DataOutputStream outStream, InputBindingEvent bindingEvent) throws IOException {
+        outStream.writeInt(bindingEvent.inputEvent.bindingModes != null ? bindingEvent.inputEvent.bindingModes.size() : 0);
+        if(bindingEvent.inputEvent.bindingModes != null) {
+            for (Map.Entry<String, BindingMode> bindingMode : bindingEvent.inputEvent.bindingModes.entrySet()) {
+                outStream.writeUTF(bindingMode.getKey());
+                outStream.writeByte(bindingMode.getValue().serialize());
+            }
+        }
+
+        outStream.writeInt(bindingEvent.inputEvent instanceof KeyInputEvent ? 1 : 0);
+        if(bindingEvent.inputEvent instanceof KeyInputEvent) {
+            outStream.writeUTF(((KeyInputEvent) bindingEvent.inputEvent).keyStroke.toString());
+        } else {
+            outStream.writeUTF(((MouseInputEvent) bindingEvent.inputEvent).mouseEvent);
+        }
+
+        serializeObject(outStream, bindingEvent.priority);
+    }
+
+    public static InputBindingEvent deserializeInputBindingEvent(DataInputStream inStream) throws IOException {
+        int bindingModesSize = inStream.readInt();
+        Map<String, BindingMode> bindingModes = new HashMap<>();
+        for(int i = 0; i < bindingModesSize; i++) {
+            bindingModes.put(inStream.readUTF(), BindingMode.deserialize(inStream));
+        }
+        InputEvent inputEvent;
+        if(inStream.readInt() == 1) {
+            inputEvent = new KeyInputEvent(KeyStroke.getKeyStroke(inStream.readUTF()), bindingModes);
+        } else {
+            inputEvent = new MouseInputEvent(inStream.readUTF(), bindingModes);
+        }
+        return new InputBindingEvent(inputEvent, (Integer) deserializeObject(inStream));
     }
 
     public static boolean startsWith(char[] string, int off, char[] check) {
