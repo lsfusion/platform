@@ -26,7 +26,7 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
         String userName = request.getParameter("user");
         String password = request.getParameter("password");
 
-        if (authenticationProvider != null && userName != null && password != null) {
+        if (userName != null && password != null) {
             try {
                 SecurityContextHolder.getContext().setAuthentication(MainController.getAuthentication(request, userName, password, authenticationProvider));
                 response.sendRedirect(MainController.getURLPreservingParameters(request.getRequestURI(), Arrays.asList("user", "password"), request));

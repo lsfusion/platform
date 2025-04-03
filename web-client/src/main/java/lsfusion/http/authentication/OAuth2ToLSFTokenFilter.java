@@ -3,7 +3,7 @@ package lsfusion.http.authentication;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.http.controller.MainController;
+import lsfusion.http.controller.ExternalRequestHandler;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.RemoteMessageException;
@@ -45,8 +45,6 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
         this.clientRegistrations = clientRegistrations;
     }
 
-    public OAuth2ToLSFTokenFilter() {}
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -83,7 +81,7 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
             lsfAuthentication = new LSFAuthenticationToken(username, null, authLocale.first, authLocale.second);
         } catch (org.springframework.security.authentication.LockedException | RemoteMessageException e) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-            response.sendRedirect(MainController.getDirectUrl("/login", request));
+            ExternalRequestHandler.processFailedAuthentication(request, response, e, null);
             lsfAuthentication = null;
         } catch (AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
