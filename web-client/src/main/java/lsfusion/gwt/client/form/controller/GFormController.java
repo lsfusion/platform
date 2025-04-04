@@ -1922,8 +1922,9 @@ public class GFormController implements EditManager {
             Binding binding = bindings.get(i);
             if (property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
                 removeBinding(i);
-                if(inputBindingEvent != null)
-                    addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
+                if(inputBindingEvent == null)
+                    inputBindingEvent = GInputBindingEvent.dumb;
+                addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
             }
         }
     }

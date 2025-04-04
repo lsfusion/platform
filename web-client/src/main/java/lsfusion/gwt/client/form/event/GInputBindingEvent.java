@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.event;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
 import java.io.Serializable;
 
 public class GInputBindingEvent implements Serializable {
     public GInputEvent inputEvent;
     public GBindingEnv env;
+
+    public static GInputBindingEvent dumb = new GInputBindingEvent(null, null);
 
     public GInputBindingEvent() {
     }
