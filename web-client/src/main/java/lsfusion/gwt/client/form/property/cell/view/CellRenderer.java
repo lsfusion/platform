@@ -328,12 +328,6 @@ public abstract class CellRenderer {
     private static boolean equalsHighlightDuplicateValueState(RenderedState state, boolean highlightDuplicateValue) {
         return state.highlightDuplicateValue == highlightDuplicateValue;
     }
-    private static boolean equalsChangeKeyState(RenderedState state, GInputBindingEvent changeKey) {
-        return GwtClientUtils.nullEquals(state.changeKey, changeKey);
-    }
-    private static boolean equalsChangeMouseState(RenderedState state, GInputBindingEvent changeMouse) {
-        return GwtClientUtils.nullEquals(state.changeMouse, changeMouse);
-    }
     private static boolean equalsDynamicState(RenderedState state, PValue value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
@@ -435,20 +429,6 @@ public abstract class CellRenderer {
             BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element), highlightDuplicateValue ? "duplicate-cell" : null, "duplicate");
         }
 
-        GInputBindingEvent changeKey = updateContext.getChangeKey();
-        if(isNew || !equalsChangeKeyState(renderedState, changeKey)) {
-            renderedState.changeKey = changeKey;
-            if(changeKey != null || !isNew)
-                controller.addDynamicBinding(changeKey, property, false);
-        }
-
-        GInputBindingEvent changeMouse = updateContext.getChangeMouse();
-        if(isNew || !equalsChangeMouseState(renderedState, changeMouse)) {
-            renderedState.changeMouse = changeMouse;
-            if(changeMouse != null || !isNew)
-                controller.addDynamicBinding(changeMouse, property, true);
-        }
-
         if(needToRenderToolbarContent())
             renderToolbarContent(element, updateContext, renderedState, cleared);
     }
@@ -486,9 +466,6 @@ public abstract class CellRenderer {
         public boolean highlightDuplicateValue;
 
         public String valueTooltip;
-
-        public GInputBindingEvent changeKey;
-        public GInputBindingEvent changeMouse;
 
         public boolean rerender;
 

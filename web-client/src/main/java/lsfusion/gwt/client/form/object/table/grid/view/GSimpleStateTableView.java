@@ -451,14 +451,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = getColumn(property);
         if(column == null)
             return null;
-        return getChangeKey(column.property, object, column.columnKey);
+        return getChangeKey(column.property, column.columnKey);
     }
 
     protected String getChangeMouse(String property, GGroupObjectValue object) {
         Column column = getColumn(property);
         if(column == null)
             return null;
-        return getChangeMouse(column.property, object, column.columnKey);
+        return getChangeMouse(column.property, column.columnKey);
     }
 
     private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {

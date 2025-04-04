@@ -713,6 +713,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getCaptionElementClass(captionElementClasses.get(property), property, columnKey);
     }
 
+    protected GInputBindingEvent getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> propChangeKeys = changeKeys.get(property);
+        return propChangeKeys != null ? PValue.getBindingValue(propChangeKeys.get(columnKey)) : null;
+    }
+
+    protected GInputBindingEvent getChangeMouse(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> propChangeMouses = changeMouses.get(property);
+        return propChangeMouses != null ? PValue.getBindingValue(propChangeMouses.get(columnKey)) : null;
+    }
+
     protected AppBaseImage getPropertyImage(GPropertyDraw property, GGroupObjectValue columnKey) {
         return getPropertyImage(cellImages.get(property), property, columnKey);
     }
@@ -822,8 +832,6 @@ protected Double getUserFlex(int i) {
         protected abstract String getRegexpMessage(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
         protected abstract PValue getPropertyCustomOptions(GPropertyDraw property, T record);
-        protected abstract GInputBindingEvent getChangeKey(GPropertyDraw property, T record);
-        protected abstract GInputBindingEvent getChangeMouse(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -1056,18 +1064,6 @@ protected Double getUserFlex(int i) {
             public PValue getPropertyCustomOptions() {
                 T row = (T) cell.getRow();
                 return column.getPropertyCustomOptions(property, row);
-            }
-
-            @Override
-            public GInputBindingEvent getChangeKey() {
-                T row = (T) cell.getRow();
-                return column.getChangeKey(property, row);
-            }
-
-            @Override
-            public GInputBindingEvent getChangeMouse() {
-                T row = (T) cell.getRow();
-                return column.getChangeMouse(property, row);
             }
 
             @Override

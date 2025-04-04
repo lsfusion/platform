@@ -106,18 +106,6 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public PValue getPropertyCustomOptions(GPropertyDraw property) {
         return (PValue) getAttribute(property.sID + "_propertyCustomOptions");
     }
-    public void setChangeKey(GPropertyDraw property, GInputBindingEvent changeKey) {
-        setAttribute(property.sID + "_changeKey", changeKey);
-    }
-    public GInputBindingEvent getChangeKey(GPropertyDraw property) {
-        return (GInputBindingEvent) getAttribute(property.sID + "_changeKey");
-    }
-    public void setChangeMouse(GPropertyDraw property, GInputBindingEvent changeMouse) {
-        setAttribute(property.sID + "_changeMouse", changeMouse);
-    }
-    public GInputBindingEvent getChangeMouse(GPropertyDraw property) {
-        return (GInputBindingEvent) getAttribute(property.sID + "_changeMouse");
-    }
     public void setForeground(GPropertyDraw property, String foreground) {
         setAttribute(property.sID + "_foreground", foreground);
     }

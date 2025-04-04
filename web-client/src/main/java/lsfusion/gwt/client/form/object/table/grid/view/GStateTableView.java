@@ -776,14 +776,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return getCellPropertyCustomOptions(property, rowKey, columnKey);
     }
 
-    protected String getChangeKey(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        PValue changeKey = getCellChangeKey(property, rowKey, columnKey);
-        return PValue.getStringValue(changeKey);
+    protected String getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellChangeKey = changeKeys.get(properties.indexOf(property));
+        return cellChangeKey == null ? null : PValue.getStringValue(cellChangeKey.get(columnKey));
     }
 
-    protected String getChangeMouse(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        PValue changeMouse = getCellChangeMouse(property, rowKey, columnKey);
-        return PValue.getStringValue(changeMouse);
+    protected String getChangeMouse(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellChangeMouse = changeMouses.get(properties.indexOf(property));
+        return cellChangeMouse == null ? null : PValue.getStringValue(cellChangeMouse.get(columnKey));
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

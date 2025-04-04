@@ -203,16 +203,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             propertyCustomOption = propertyCustomOptions.get(columnKey);
         }
 
-        GInputBindingEvent changeKey = null;
-        if(changeKeys != null) {
-            changeKey = PValue.getBindingValue(changeKeys.get(columnKey));
-        }
-
-        GInputBindingEvent changeMouse = null;
-        if(changeMouses != null) {
-            changeMouse = PValue.getBindingValue(changeMouses.get(columnKey));
-        }
-
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -226,14 +216,17 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 regexp == null ? property.regexp : PValue.getStringValue(regexp),
                 regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip),
-                propertyCustomOption,
-                changeKey,
-                changeMouse);
+                propertyCustomOption);
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
-        if(changeKeys != null || changeMouses != null)
-            renderer.updateCaption(changeKey, changeMouse);
+
+        if(changeKeys != null)
+            renderer.setChangeKey(PValue.getBindingValue(changeKeys.get(columnKey)));
+
+        if(changeMouses != null)
+            renderer.setChangeMouse(PValue.getBindingValue(changeMouses.get(columnKey)));
+
         if (cellCaptionElementClasses != null)
             renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
 

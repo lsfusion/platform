@@ -52,8 +52,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption,
-                       GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label);
             image = null;
@@ -61,7 +60,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         // we don't need image in value
         super.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
-                regexp, regexpMessage, valueTooltip, propertyCustomOption, changeKey, changeMouse);
+                regexp, regexpMessage, valueTooltip, propertyCustomOption);
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

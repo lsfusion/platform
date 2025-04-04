@@ -77,10 +77,9 @@ public abstract class PanelRenderer {
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption,
-                       GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
         this.value.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
-                regexp, regexpMessage, valueTooltip, propertyCustomOption, changeKey, changeMouse);
+                regexp, regexpMessage, valueTooltip, propertyCustomOption);
     }
 
     private String caption;
@@ -91,11 +90,25 @@ public abstract class PanelRenderer {
         }
     }
 
-    protected void updateCaption() {
-        updateCaption(null, null);
+    private GInputBindingEvent changeKey;
+    public void setChangeKey(GInputBindingEvent changeKey) {
+        if (!GwtSharedUtils.nullEquals(this.changeKey, changeKey)) {
+            this.changeKey = changeKey;
+            form.addDynamicBinding(changeKey, property, false);
+            updateCaption();
+        }
     }
 
-    public void updateCaption(GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
+    private GInputBindingEvent changeMouse;
+    public void setChangeMouse(GInputBindingEvent changeMouse) {
+        if (!GwtSharedUtils.nullEquals(this.changeMouse, changeMouse)) {
+            this.changeMouse = changeMouse;
+            form.addDynamicBinding(changeMouse, property, true);
+            updateCaption();
+        }
+    }
+
+    public void updateCaption() {
         setLabelText(property.getPanelCaption(caption, changeKey, changeMouse));
     }
 

@@ -130,16 +130,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     @Override
-    public GInputBindingEvent getChangeKey() {
-        return changeKey;
-    }
-
-    @Override
-    public GInputBindingEvent getChangeMouse() {
-        return changeMouse;
-    }
-
-    @Override
     public String getForeground() {
         return foreground != null ? foreground.toString() : null;
     }
@@ -341,8 +331,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption,
-                       GInputBindingEvent changeKey, GInputBindingEvent changeMouse) {
+                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
         this.value = value;
         this.loading = loading;
         this.image = image;
@@ -357,8 +346,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         this.regexpMessage = regexpMessage;
         this.valueTooltip = valueTooltip;
         this.propertyCustomOption = propertyCustomOption;
-        this.changeKey = changeKey;
-        this.changeMouse = changeMouse;
 
         update();
     }

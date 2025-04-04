@@ -59,10 +59,6 @@ public interface UpdateContext {
 
     default PValue getPropertyCustomOptions() { return null; }
 
-    default GInputBindingEvent getChangeKey() { return null; }
-
-    default GInputBindingEvent getChangeMouse() { return null; }
-
     default String getGridElementClass() {
         return null;
     }
