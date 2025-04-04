@@ -655,6 +655,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             header.setTooltip(property.getTooltip(nvl(getPropertyTooltip(property, columnKey), columnCaption)));
         } else
             assert property.ignoreHasHeaders || columnCaption == null || columnCaption.isEmpty();
+
+        form.addDynamicBinding(getChangeKey(property, columnKey), property, false);
+        form.addDynamicBinding(getChangeMouse(property, columnKey), property, true);
     }
 
     protected void updatePropertyFooter(int index) {

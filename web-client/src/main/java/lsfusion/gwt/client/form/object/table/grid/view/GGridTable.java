@@ -484,9 +484,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
                             record.setPropertyCustomOptions(column.columnSID, propCustomOptions == null ? null : propCustomOptions.get(fullKey));
-
-                            form.addDynamicBinding(getChangeKey(property, columnKey), property, false);
-                            form.addDynamicBinding(getChangeMouse(property, columnKey), property, true);
                         }
                     }
                 });
@@ -736,14 +733,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateChangeKeyValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
-        dataUpdated = true;
+        captionsUpdated = true;
     }
 
     @Override
     public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateChangeMouseValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
-        dataUpdated = true;
+        captionsUpdated = true;
     }
 
     @Override
