@@ -22,7 +22,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -56,7 +56,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
@@ -302,10 +301,7 @@ public class FormChanges {
         }
 
         if(value instanceof String && convertData instanceof NeedInputEvent) {
-            ScriptingLogicsModule.KeyStrokeOptions options = parseKeyStrokeOptions((String) value);
-            return new InputBindingEvent(((NeedInputEvent) convertData).mouse ?
-                    new MouseInputEvent(options.keyStroke, options.bindingModesMap) : new KeyInputEvent(KeyStroke.getKeyStroke(options.keyStroke), options.bindingModesMap),
-                    options.priority);
+            return KeyStrokeConverter.parseInputBindingEvent((String) value, ((NeedInputEvent) convertData).mouse);
         }
 
         if(value instanceof String)

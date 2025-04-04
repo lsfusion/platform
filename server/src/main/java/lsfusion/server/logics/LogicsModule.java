@@ -16,9 +16,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
-import lsfusion.interop.form.event.BindingMode;
-import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
@@ -1961,8 +1959,7 @@ public abstract class LogicsModule {
         setFormActions(action);
 
         action.setImage(AppServerImage.DELETE);
-        KeyStroke changeKey = KeyStrokes.getDeleteActionKeyStroke();
-        action.drawOptions.setChangeKey(changeKey);
+        action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getDeleteActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
     }
 
@@ -2028,8 +2025,7 @@ public abstract class LogicsModule {
         setFormActions(action);
 
         action.setImage(AppServerImage.ADD);
-        KeyStroke changeKey = KeyStrokes.getAddActionKeyStroke();
-        action.drawOptions.setChangeKey(changeKey);
+        action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getAddActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
 
         if(objectEntity != null) {
@@ -2068,10 +2064,9 @@ public abstract class LogicsModule {
         bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);
         bindingModes.put("editing", BindingMode.NO);
-        KeyStroke changeKey = KeyStrokes.getEditActionKeyStroke();
-        action.drawOptions.setChangeKey(changeKey, bindingModes);
+        action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getEditActionKeyStroke(), bindingModes), null));
         action.drawOptions.setShowChangeKey(false);
-        action.drawOptions.setChangeMouse(MouseInputEvent.DBLCLK, bindingModes);
+        action.drawOptions.setChangeMouse(new InputBindingEvent(new MouseInputEvent(MouseInputEvent.DBLCLK, bindingModes), null));
         action.drawOptions.setShowChangeMouse(false);
     }
 

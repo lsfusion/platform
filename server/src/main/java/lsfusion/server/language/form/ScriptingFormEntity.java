@@ -24,6 +24,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.language.form.object.ScriptingGroupObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -65,7 +66,6 @@ import javax.swing.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 
 public class ScriptingFormEntity {
@@ -804,20 +804,12 @@ public class ScriptingFormEntity {
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
 
-            InputBindingEvent keyInputEvent = null;
-            if (info.keyEvent != null) {
-                ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(info.keyEvent);
-                keyInputEvent = new InputBindingEvent(new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap), kso.priority);
-                if (((KeyInputEvent)keyInputEvent.inputEvent).keyStroke == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
-                }
+            InputBindingEvent keyInputEvent = KeyStrokeConverter.parseInputBindingEvent(info.keyEvent, false);
+            if (info.keyEvent != null && keyInputEvent != null && keyInputEvent.inputEvent != null && ((KeyInputEvent)keyInputEvent.inputEvent).keyStroke == null) {
+                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
             }
 
-            InputBindingEvent mouseInputEvent = null;
-            if (info.mouseEvent != null) {
-                ScriptingLogicsModule.KeyStrokeOptions mso = parseKeyStrokeOptions(info.mouseEvent);
-                mouseInputEvent = new InputBindingEvent(new MouseInputEvent(mso.keyStroke, mso.bindingModesMap), mso.priority);
-            }
+            InputBindingEvent mouseInputEvent = KeyStrokeConverter.parseInputBindingEvent(info.mouseEvent, true);
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
             checkPropertyParameters(info.property, mappingObjects);

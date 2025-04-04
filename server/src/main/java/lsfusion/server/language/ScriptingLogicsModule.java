@@ -33,6 +33,7 @@ import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.ActionSettings;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.language.form.FormPropertyOptions;
 import lsfusion.server.language.form.ScriptingFormEntity;
 import lsfusion.server.language.form.design.ScriptingFormView;
@@ -1427,21 +1428,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setChangeKey(LAP lap, String code, Boolean showChangeKey) {
         ActionOrProperty actionOrProperty = lap.getActionOrProperty();
-
-        KeyStrokeOptions options = parseKeyStrokeOptions(code);
-        KeyStroke changeKey = KeyStroke.getKeyStroke(options.keyStroke);
-        actionOrProperty.drawOptions.setChangeKey(changeKey, options.bindingModesMap);
-        actionOrProperty.drawOptions.setChangeKeyPriority(options.priority);
+        actionOrProperty.drawOptions.setChangeKey(KeyStrokeConverter.parseInputBindingEvent(code, false));
         if (showChangeKey != null)
             actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
     }
 
     public void setChangeMouse(LAP lap, String code, Boolean showChangeMouse) {
         ActionOrProperty actionOrProperty = lap.getActionOrProperty();
-
-        KeyStrokeOptions options = parseKeyStrokeOptions(code);
-        actionOrProperty.drawOptions.setChangeMouse(options.keyStroke, options.bindingModesMap);
-        actionOrProperty.drawOptions.setChangeMousePriority(options.priority);
+        actionOrProperty.drawOptions.setChangeMouse(KeyStrokeConverter.parseInputBindingEvent(code, true));
         if (showChangeMouse != null)
             actionOrProperty.drawOptions.setShowChangeMouse(showChangeMouse);
     }

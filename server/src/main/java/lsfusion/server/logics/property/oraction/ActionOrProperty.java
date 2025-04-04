@@ -15,10 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.InputBindingEvent;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
@@ -60,7 +57,6 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -660,13 +656,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Compare defaultCompare;
 
         // для всех
-        private KeyStroke changeKey;
-        private Map<String, BindingMode> keyBindingsModes;
-        private Integer changeKeyPriority;
+        private InputBindingEvent changeKey;
         private Boolean showChangeKey;
-        private String changeMouse;
-        private Map<String, BindingMode> mouseBindingsModes;
-        private Integer changeMousePriority;
+        private InputBindingEvent changeMouse;
         private Boolean showChangeMouse;
 
         // для всех
@@ -705,11 +697,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(propertyView.captionHeight == null)
                 propertyView.setCaptionHeight(captionHeight);
             if (propertyView.changeKey == null)
-                propertyView.changeKey = changeKey != null ? new InputBindingEvent(new KeyInputEvent(changeKey, keyBindingsModes), changeKeyPriority) : null;
+                propertyView.changeKey = changeKey;
             if (propertyView.showChangeKey == null)
                 propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
             if (propertyView.changeMouse == null)
-                propertyView.changeMouse = changeMouse != null ? new InputBindingEvent(new MouseInputEvent(changeMouse, mouseBindingsModes), changeMousePriority) : null;
+                propertyView.changeMouse = changeMouse;
             if (propertyView.showChangeMouse == null)
                 propertyView.showChangeMouse = BaseUtils.nvl(showChangeMouse, true);
 
@@ -760,15 +752,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setEventID(options.eventID);
             
             if(changeKey == null)
-                setChangeKey(options.changeKey, options.keyBindingsModes);
-            if(changeKeyPriority == null)
-                setChangeKeyPriority(options.changeKeyPriority);
+                setChangeKey(options.changeKey);
             if(showChangeKey == null)
                 setShowChangeKey(options.showChangeKey);
             if(changeMouse == null)
-                setChangeMouse(options.changeMouse, options.mouseBindingsModes);
-            if(changeMousePriority == null)
-                setChangeMousePriority(options.changeMousePriority);
+                setChangeMouse(options.changeMouse);
             if(showChangeMouse == null)
                 setShowChangeMouse(options.showChangeMouse);
 
@@ -843,34 +831,16 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.eventID = eventID;
         }
 
-        public void setChangeKey(KeyStroke changeKey) {
-            setChangeKey(changeKey, null);
-        }
-
-        public void setChangeKey(KeyStroke changeKey, Map<String, BindingMode> bindingsModes) {
+        public void setChangeKey(InputBindingEvent changeKey) {
             this.changeKey = changeKey;
-            this.keyBindingsModes = bindingsModes;
-        }
-
-        public void setChangeKeyPriority(Integer changeKeyPriority) {
-            this.changeKeyPriority = changeKeyPriority;
         }
 
         public void setShowChangeKey(Boolean showChangeKey) {
             this.showChangeKey = showChangeKey;
         }
 
-        public void setChangeMouse(String changeMouse) {
+        public void setChangeMouse(InputBindingEvent changeMouse) {
             this.changeMouse = changeMouse;
-        }
-
-        public void setChangeMouse(String changeMouse, Map<String, BindingMode> bindingsModes) {
-            this.changeMouse = changeMouse;
-            this.mouseBindingsModes = bindingsModes;
-        }
-
-        public void setChangeMousePriority(Integer changeMousePriority) {
-            this.changeMousePriority = changeMousePriority;
         }
 
         public void setShowChangeMouse(Boolean showChangeMouse) {

@@ -2,9 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.InputBindingEvent;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
@@ -12,10 +10,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import javax.swing.*;
 import java.awt.*;
-
-import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -91,9 +86,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setChangeKey(Object changeKey) {
         if(changeKey instanceof LocalizedString) {
-            ScriptingLogicsModule.KeyStrokeOptions kso = ScriptingLogicsModule.parseKeyStrokeOptions(changeKey.toString());
-            target.changeKey = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap),
-                    kso.priority);
+            target.changeKey = KeyStrokeConverter.parseInputBindingEvent(changeKey.toString(), false);
         } else {
             if (target.changeKey == null) {
                 //dumb value will be replaced with a dynamic one
@@ -115,9 +108,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setChangeMouse(Object changeMouse) {
         if(changeMouse instanceof LocalizedString) {
-            ScriptingLogicsModule.KeyStrokeOptions kso = ScriptingLogicsModule.parseKeyStrokeOptions(changeMouse.toString());
-            target.changeMouse = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new MouseInputEvent(kso.keyStroke, kso.bindingModesMap),
-                    kso.priority);
+            target.changeMouse = KeyStrokeConverter.parseInputBindingEvent(changeMouse.toString(), true);
         } else {
             if (target.changeMouse == null) {
                 //dumb value will be replaced with a dynamic one.
