@@ -1902,6 +1902,7 @@ public class GFormController implements EditManager {
 
     private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
     private final ArrayList<Binding> bindings = new ArrayList<>();
+    public Map<GPropertyDraw, Pair<BindingExec, Widget>> bindingsMap = new HashMap<>();
 
     public interface BindingCheck {
         boolean check(Event event);
@@ -1910,6 +1911,7 @@ public class GFormController implements EditManager {
         void exec(Event event);
     }
     public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
+        bindingsMap.put(propertyDraw, new Pair<>(bindingExec, widget));
         ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
             result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, propertyDraw, bindingExec, widget, propertyDraw.groupObject));
@@ -1917,13 +1919,16 @@ public class GFormController implements EditManager {
     }
 
     public void addDynamicBinding(GInputBindingEvent inputBindingEvent, GPropertyDraw property, boolean mouse) {
-        for(int i = bindingEvents.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < bindingEvents.size(); i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
-            Binding binding = bindings.get(i);
-            if(property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
-                removeBindings(property, mouse);
-                addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
+            if (property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
+                removeBinding(i);
+                //addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
             }
+        }
+        if(inputBindingEvent != null) {
+            Pair<BindingExec, Widget> bindingEntry = bindingsMap.get(property);
+            addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
         }
     }
 
@@ -1971,15 +1976,6 @@ public class GFormController implements EditManager {
     public void removeBinding(int index) {
         bindingEvents.remove(index);
         bindings.remove(index);
-    }
-
-    public void removeBindings(GPropertyDraw property, boolean mouse) {
-        for(int i = bindingEvents.size() - 1; i >= 0; i--) {
-            GBindingEvent event = bindingEvents.get(i);
-            if(event.property != null && event.property.equals(property) && event.mouse == mouse) {
-                removeBinding(i);
-            }
-        }
     }
 
     public void addEnterBindings(GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {

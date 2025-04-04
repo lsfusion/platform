@@ -232,7 +232,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
-        if(changeKey != null || changeMouse != null)
+        if(changeKeys != null || changeMouses != null)
             renderer.updateCaption(changeKey, changeMouse);
         if (cellCaptionElementClasses != null)
             renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));

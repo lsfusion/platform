@@ -438,14 +438,14 @@ public abstract class CellRenderer {
         GInputBindingEvent changeKey = updateContext.getChangeKey();
         if(isNew || !equalsChangeKeyState(renderedState, changeKey)) {
             renderedState.changeKey = changeKey;
-            if(changeKey != null)
+            if(changeKey != null || !isNew)
                 controller.addDynamicBinding(changeKey, property, false);
         }
 
         GInputBindingEvent changeMouse = updateContext.getChangeMouse();
         if(isNew || !equalsChangeMouseState(renderedState, changeMouse)) {
             renderedState.changeMouse = changeMouse;
-            if(changeMouse != null)
+            if(changeMouse != null || !isNew)
                 controller.addDynamicBinding(changeMouse, property, true);
         }
 
