@@ -95,6 +95,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.changeKey = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap),
                     kso.priority);
         } else {
+            if (target.changeKey == null) {
+                //dumb value will be replaced with a dynamic one
+                target.changeKey = InputBindingEvent.dumb;
+            }
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
         }
     }
@@ -115,6 +119,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.changeMouse = isRedundantString(kso.keyStroke) ? null : new InputBindingEvent(new MouseInputEvent(kso.keyStroke, kso.bindingModesMap),
                     kso.priority);
         } else {
+            if (target.changeMouse == null) {
+                //dumb value will be replaced with a dynamic one.
+                target.changeMouse = InputBindingEvent.dumb;
+            }
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeMouse, PropertyDrawExtraType.CHANGEMOUSE, getVersion());
         }
     }

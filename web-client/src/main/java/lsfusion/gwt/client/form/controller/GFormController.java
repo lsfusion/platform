@@ -1902,7 +1902,6 @@ public class GFormController implements EditManager {
 
     private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
     private final ArrayList<Binding> bindings = new ArrayList<>();
-    public Map<GPropertyDraw, Pair<BindingExec, Widget>> bindingsMap = new HashMap<>();
 
     public interface BindingCheck {
         boolean check(Event event);
@@ -1911,7 +1910,6 @@ public class GFormController implements EditManager {
         void exec(Event event);
     }
     public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
-        bindingsMap.put(propertyDraw, new Pair<>(bindingExec, widget));
         ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
             result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, propertyDraw, bindingExec, widget, propertyDraw.groupObject));
@@ -1921,14 +1919,12 @@ public class GFormController implements EditManager {
     public void addDynamicBinding(GInputBindingEvent inputBindingEvent, GPropertyDraw property, boolean mouse) {
         for (int i = 0; i < bindingEvents.size(); i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
+            Binding binding = bindings.get(i);
             if (property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
                 removeBinding(i);
-                //addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
+                if(inputBindingEvent != null)
+                    addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
             }
-        }
-        if(inputBindingEvent != null) {
-            Pair<BindingExec, Widget> bindingEntry = bindingsMap.get(property);
-            addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, bindingEntry.first, bindingEntry.second, property.groupObject);
         }
     }
 
@@ -1944,7 +1940,8 @@ public class GFormController implements EditManager {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, GPropertyDraw property, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event::isEvent, env, property, event instanceof GMouseInputEvent, null, pressed, component, groupObject);
+        //event != null - dumb check (see InputBindingEvent.dumb)
+        return addBinding(e -> event != null && event.isEvent(e), env, property, event instanceof GMouseInputEvent, null, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event, env, null, false, enabled, pressed, component, groupObject);

@@ -36,7 +36,7 @@ public class ClientBindingToGwtConverter extends ObjectConverter {
     }
 
     public GInputBindingEvent convertBinding(InputBindingEvent event) {
-        Map<String, BindingMode> bindingModes = event != null ? event.inputEvent.bindingModes : null;
+        Map<String, BindingMode> bindingModes = event.inputEvent != null ? event.inputEvent.bindingModes : null;
         return new GInputBindingEvent(convertOrCast(event.inputEvent),
                 new GBindingEnv(event.priority != null && event.priority.equals(0) ? null : event.priority,
                         convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
