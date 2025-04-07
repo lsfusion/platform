@@ -96,7 +96,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //todo: remove?
+    //deprecated
     public void setChangeKeyPriority(int priority) {
         if(target.changeKey != null)
             target.changeKey.priority = priority;
@@ -118,7 +118,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //todo: remove?
+    //deprecated
     public void setChangeMousePriority(int priority) {
         if(target.changeMouse != null)
         target.changeMouse.priority = priority;
