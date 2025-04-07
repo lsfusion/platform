@@ -1,6 +1,15 @@
+.btn.btn-arrow-right,
+.btn.btn-arrow-left {
+    --btn-edge-divisor: 3.5;
+    --btn-full-half-divisor: 4;
+}
 
 .btn {
-    padding: 0.125rem 0.875rem;
+    --btn-padding-x: 0.125rem;
+    --btn-padding-y: 0.875rem;
+    --btn-line-height: 1.5;
+
+    padding: var(--btn-padding-x) var(--btn-padding-y);
     border-radius: var(--button-border-radius);
     background: var(--component-background-color);
     border: var(--border-width) solid var(--component-border-color);
@@ -91,4 +100,14 @@ button:focus {
 .property-toolbar-item:hover {
     --border-toolbar-item-padding : 0px;
     border: 1px solid var(--component-hover-border-color);
+}
+
+.btn-check {
+    position: absolute;
+    clip: rect(0, 0, 0, 0);
+    pointer-events: none;
+}
+
+.btn-check:checked + .btn {
+    background: var(--selection-color);
 }
