@@ -2525,7 +2525,7 @@ public class GFormController implements EditManager {
         if(isEdited(element))
             return;
 
-        property.getCellRenderer(updateContext.getRendererType()).update(this, element, updateContext);
+        property.getCellRenderer(updateContext.getRendererType()).update(element, updateContext);
     }
 
     public boolean isEdited(Element element) {

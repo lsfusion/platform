@@ -344,7 +344,7 @@ public abstract class CellRenderer {
         return GwtClientUtils.nullEquals(state.valueElementClass, valueElementClass);
     }
 
-    public void update(GFormController controller, Element element, UpdateContext updateContext) {
+    public void update(Element element, UpdateContext updateContext) {
         boolean selected = updateContext.isSelectedLink();
         if(selected)
             renderEditSelected(element, property);
