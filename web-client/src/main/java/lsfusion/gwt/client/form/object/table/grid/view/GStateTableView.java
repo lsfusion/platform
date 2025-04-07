@@ -68,6 +68,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> changeKeys = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> changeMouses = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -220,6 +222,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
                 this.propertyCustomOptions.add(index, null);
+                this.changeKeys.add(index, null);
+                this.changeMouses.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -468,6 +472,20 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.changeKeys.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.changeMouses.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
 
     }
@@ -642,6 +660,22 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return placeholder.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellChangeKey(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> changeKey = changeKeys.get(properties.indexOf(property));
+        if(changeKey == null)
+            return null;
+
+        return changeKey.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected PValue getCellChangeMouse(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> changeMouse = changeMouses.get(properties.indexOf(property));
+        if(changeMouse == null)
+            return null;
+
+        return changeMouse.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected PValue getCellPattern(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> pattern = patterns.get(properties.indexOf(property));
         if(pattern == null)
@@ -740,6 +774,16 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected PValue getPropertyCustomOptions(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellPropertyCustomOptions(property, rowKey, columnKey);
+    }
+
+    protected String getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellChangeKey = changeKeys.get(properties.indexOf(property));
+        return cellChangeKey == null ? null : PValue.getStringValue(cellChangeKey.get(columnKey));
+    }
+
+    protected String getChangeMouse(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellChangeMouse = changeMouses.get(properties.indexOf(property));
+        return cellChangeMouse == null ? null : PValue.getStringValue(cellChangeMouse.get(columnKey));
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

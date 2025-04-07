@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 

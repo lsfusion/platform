@@ -1,10 +1,8 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.interop.form.event.InputBindingEvent;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
@@ -12,7 +10,6 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
@@ -87,24 +84,44 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setValueFlex(flex);
     }
 
-    public void setChangeKey(ScriptingLogicsModule.KeyStrokeOptions changeKey) {
-        target.changeKey = BaseUtils.isRedundantString(changeKey.keyStroke) ? null : new KeyInputEvent(KeyStroke.getKeyStroke(changeKey.keyStroke), changeKey.bindingModesMap);
-        target.changeKeyPriority = changeKey.priority;
+    public void setChangeKey(Object changeKey) {
+        if(changeKey instanceof LocalizedString) {
+            target.changeKey = KeyStrokeConverter.parseInputBindingEvent(changeKey.toString(), false);
+        } else {
+            if (target.changeKey == null) {
+                //dumb value will be replaced with a dynamic one
+                target.changeKey = InputBindingEvent.dumb;
+            }
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
+        }
     }
+
+    //deprecated
     public void setChangeKeyPriority(int priority) {
-        target.changeKeyPriority = priority;
+        if(target.changeKey != null)
+            target.changeKey.priority = priority;
     }
 
     public void setShowChangeKey(boolean showChangeKey) {
         target.showChangeKey = showChangeKey;
     }
 
-    public void setChangeMouse(ScriptingLogicsModule.KeyStrokeOptions changeMouse) {
-        target.changeMouse = BaseUtils.isRedundantString(changeMouse.keyStroke) ? null : new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
-        target.changeMousePriority = changeMouse.priority;
+    public void setChangeMouse(Object changeMouse) {
+        if(changeMouse instanceof LocalizedString) {
+            target.changeMouse = KeyStrokeConverter.parseInputBindingEvent(changeMouse.toString(), true);
+        } else {
+            if (target.changeMouse == null) {
+                //dumb value will be replaced with a dynamic one.
+                target.changeMouse = InputBindingEvent.dumb;
+            }
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeMouse, PropertyDrawExtraType.CHANGEMOUSE, getVersion());
+        }
     }
+
+    //deprecated
     public void setChangeMousePriority(int priority) {
-        target.changeMousePriority = priority;
+        if(target.changeMouse != null)
+        target.changeMouse.priority = priority;
     }
 
     public void setShowChangeMouse(boolean showChangeMouse) {

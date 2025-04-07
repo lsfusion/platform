@@ -11,6 +11,7 @@ import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -892,9 +893,9 @@ public class SwingUtils {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(value), null);
     }
 
-    public static String getEventCaption(KeyInputEvent changeKey, boolean showChangeKey, MouseInputEvent changeMouse, boolean showChangeMouse) {
-        String keyEventCaption = showChangeKey && changeKey != null ? SwingUtils.getKeyStrokeCaption(changeKey.keyStroke) : null;
-        String mouseEventCaption = showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null;
+    public static String getEventCaption(InputBindingEvent changeKey, boolean showChangeKey, InputBindingEvent changeMouse, boolean showChangeMouse) {
+        String keyEventCaption = showChangeKey && changeKey != null && changeKey.inputEvent instanceof KeyInputEvent ? SwingUtils.getKeyStrokeCaption(((KeyInputEvent)changeKey.inputEvent).keyStroke) : null;
+        String mouseEventCaption = showChangeMouse && changeMouse != null && changeMouse.inputEvent instanceof MouseInputEvent ? ((MouseInputEvent)changeMouse.inputEvent).mouseEvent : null;
         return keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
     }
 }

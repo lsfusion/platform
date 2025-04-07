@@ -66,4 +66,8 @@ public class PropertyReadType {
     public final static byte CELL_GRIDELEMENTCLASS = 31;
 
     public final static byte PROPERTY_CUSTOM_OPTIONS = 32;
+
+    public final static byte CHANGEKEY = 33;
+
+    public final static byte CHANGEMOUSE = 34;
 }

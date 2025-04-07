@@ -218,8 +218,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     private void addBindings(FormsController formsController, ClientNavigatorElement element) {
-        formsController.addBindings(element, element.changeKey, element.changeKeyPriority);
-        formsController.addBindings(element, element.changeMouse, element.changeMousePriority);
+        formsController.addBindings(element, element.changeKey);
+        formsController.addBindings(element, element.changeMouse);
         for(ClientNavigatorElement child : element.children) {
             addBindings(formsController, child);
         }

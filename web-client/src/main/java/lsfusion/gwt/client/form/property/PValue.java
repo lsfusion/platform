@@ -5,11 +5,12 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 import static lsfusion.gwt.client.base.view.ColorUtils.convertToFontInfo;
 
@@ -158,6 +159,10 @@ public interface PValue {
 
     static GFont getFontValue(PValue value) {
         return convertToFontInfo(getValue(value));
+    }
+
+    static GInputBindingEvent getBindingValue(PValue value) {
+        return getValue(value);
     }
 
     static String getColorStringValue(PValue value) {

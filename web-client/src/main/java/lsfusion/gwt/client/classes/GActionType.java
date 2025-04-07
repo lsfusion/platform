@@ -63,7 +63,7 @@ public class GActionType extends GDataType {
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        String panelCaption = propertyDraw.getPanelCaption(propertyDraw.caption);
+        String panelCaption = propertyDraw.getPanelCaption(propertyDraw.caption, null, null);
         return panelCaption != null ? panelCaption : "";
     }
 

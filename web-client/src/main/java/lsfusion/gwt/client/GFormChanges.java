@@ -169,6 +169,10 @@ public class GFormChanges {
                 return form.getProperty(readerId).valueTooltipReader;
             case GPropertyReadType.PROPERTY_CUSTOM_OPTIONS:
                 return form.getProperty(readerId).propertyCustomOptionsReader;
+            case GPropertyReadType.CHANGEKEY:
+                return form.getProperty(readerId).changeKeyReader;
+            case GPropertyReadType.CHANGEMOUSE:
+                return form.getProperty(readerId).changeMouseReader;
             default:
                 return null;
         }
@@ -216,5 +220,7 @@ public class GFormChanges {
         public final static byte GRID_VALUECLASS = 30;
         public final static byte CELL_GRIDELEMENTCLASS = 31;
         public final static byte PROPERTY_CUSTOM_OPTIONS = 32;
+        public final static byte CHANGEKEY = 33;
+        public final static byte CHANGEMOUSE = 34;
     }
 }

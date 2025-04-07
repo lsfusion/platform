@@ -20,10 +20,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GBindingEnv;
-import lsfusion.gwt.client.form.event.GBindingMode;
-import lsfusion.gwt.client.form.event.GMouseInputEvent;
-import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -670,6 +667,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePropertyCustomOptionsValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeKeyValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeMouseValues(propertyDraw, values);
         dataUpdated = true;
     }
 

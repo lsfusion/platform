@@ -474,8 +474,8 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            addBinding(filterGroup.groupObject, comboBox, filter, filter.keyInputEvent, filter.keyPriority);
-            addBinding(filterGroup.groupObject, comboBox, filter, filter.mouseInputEvent, filter.mousePriority);
+            addBinding(filterGroup.groupObject, comboBox, filter, filter.keyInputEvent);
+            addBinding(filterGroup.groupObject, comboBox, filter, filter.mouseInputEvent);
         }
 
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -503,9 +503,9 @@ public class ClientFormController implements AsyncListener {
         addFilterView(filterGroup, comboBox);
     }
 
-    private void addBinding(ClientGroupObject groupObject, ComboBoxWidget comboBox, ClientRegularFilter filter, InputEvent inputEvent, Integer priority) {
-        if(inputEvent != null) {
-            addBinding(inputEvent, new Binding(groupObject, nvl(priority, 0)) {
+    private void addBinding(ClientGroupObject groupObject, ComboBoxWidget comboBox, ClientRegularFilter filter, InputBindingEvent bindingEvent) {
+        if(bindingEvent != null) {
+            addBinding(bindingEvent.inputEvent, new Binding(groupObject, nvl(bindingEvent.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
@@ -534,13 +534,13 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        addBinding(filterGroup.groupObject, checkBox, singleFilter.keyInputEvent, singleFilter.keyPriority);
-        addBinding(filterGroup.groupObject, checkBox, singleFilter.mouseInputEvent, singleFilter.mousePriority);
+        addBinding(filterGroup.groupObject, checkBox, singleFilter.keyInputEvent);
+        addBinding(filterGroup.groupObject, checkBox, singleFilter.mouseInputEvent);
     }
 
-    private void addBinding(ClientGroupObject groupObject, SingleFilterBox checkBox, InputEvent inputEvent, Integer priority) {
-        if(inputEvent != null) {
-            addBinding(inputEvent, new Binding(groupObject, nvl(priority, 0)) {
+    private void addBinding(ClientGroupObject groupObject, SingleFilterBox checkBox, InputBindingEvent bindingEvent) {
+        if(bindingEvent != null) {
+            addBinding(bindingEvent.inputEvent, new Binding(groupObject, nvl(bindingEvent.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
@@ -2048,15 +2048,15 @@ public class ClientFormController implements AsyncListener {
     public void addPropertyBindings(ClientPropertyDraw propertyDraw, Supplier<Binding> bindingSupplier) {
         if(propertyDraw.changeKey != null) {
             Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeKeyPriority != null)
-                binding.priority = propertyDraw.changeKeyPriority;
-            addBinding(propertyDraw.changeKey, binding);
+            if(propertyDraw.changeKey.priority != null)
+                binding.priority = propertyDraw.changeKey.priority;
+            addBinding(propertyDraw.changeKey.inputEvent, binding);
         }
         if(propertyDraw.changeMouse != null) {
             Binding binding = bindingSupplier.get();
-            if(propertyDraw.changeMousePriority != null)
-                binding.priority = propertyDraw.changeMousePriority;
-            addBinding(propertyDraw.changeMouse, binding);
+            if(propertyDraw.changeMouse.priority != null)
+                binding.priority = propertyDraw.changeMouse.priority;
+            addBinding(propertyDraw.changeMouse.inputEvent, binding);
         }
     }
 

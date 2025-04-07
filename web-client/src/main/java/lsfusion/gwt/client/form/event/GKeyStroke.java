@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
-import java.util.function.BooleanSupplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.event.dom.client.KeyCodes.*;

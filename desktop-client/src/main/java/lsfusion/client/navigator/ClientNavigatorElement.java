@@ -8,8 +8,7 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import javax.swing.*;
@@ -32,11 +31,9 @@ public abstract class ClientNavigatorElement {
     public String caption;
     public boolean hide;
 
-    public KeyInputEvent changeKey;
-    public Integer changeKeyPriority;
+    public InputBindingEvent changeKey;
     public boolean showChangeKey;
-    public MouseInputEvent changeMouse;
-    public Integer changeMousePriority;
+    public InputBindingEvent changeMouse;
     public boolean showChangeMouse;
 
     public String elementClass;
@@ -75,10 +72,8 @@ public abstract class ClientNavigatorElement {
         }
 
         changeKey = BaseUtils.readObject(inStream);
-        changeKeyPriority = SerializationUtil.readInt(inStream);
         showChangeKey = inStream.readBoolean();
         changeMouse = BaseUtils.readObject(inStream);
-        changeMousePriority = SerializationUtil.readInt(inStream);
         showChangeMouse = inStream.readBoolean();
 
         appImage = IOUtils.readAppImage(inStream);

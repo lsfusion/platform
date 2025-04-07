@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.FormChangeEvent;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -23,6 +24,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.language.form.object.ScriptingGroupObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -64,7 +66,6 @@ import javax.swing.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 
 public class ScriptingFormEntity {
@@ -803,30 +804,18 @@ public class ScriptingFormEntity {
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
 
-            KeyInputEvent keyInputEvent = null;
-            Integer keyPriority = null;
-            if (info.keyEvent != null) {
-                ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(info.keyEvent);
-                keyInputEvent = new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap);
-                if (keyInputEvent.keyStroke == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
-                }
-                keyPriority = kso.priority;
+            InputBindingEvent keyInputEvent = KeyStrokeConverter.parseInputBindingEvent(info.keyEvent, false);
+            if (info.keyEvent != null && keyInputEvent != null && keyInputEvent.inputEvent != null && ((KeyInputEvent)keyInputEvent.inputEvent).keyStroke == null) {
+                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
             }
 
-            MouseInputEvent mouseInputEvent = null;
-            Integer mousePriority = null;
-            if (info.mouseEvent != null) {
-                ScriptingLogicsModule.KeyStrokeOptions mso = parseKeyStrokeOptions(info.mouseEvent);
-                mouseInputEvent = new MouseInputEvent(mso.keyStroke, mso.bindingModesMap);
-                mousePriority = mso.priority;
-            }
+            InputBindingEvent mouseInputEvent = KeyStrokeConverter.parseInputBindingEvent(info.mouseEvent, true);
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
             checkPropertyParameters(info.property, mappingObjects);
             RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
                     new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
-                    info.caption, keyInputEvent, keyPriority, info.showKey, mouseInputEvent, mousePriority, info.showMouse);
+                    info.caption, keyInputEvent, info.showKey, mouseInputEvent, info.showMouse);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, info.isDefault, version);
             } else {

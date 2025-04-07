@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -89,8 +90,26 @@ public abstract class PanelRenderer {
         }
     }
 
-    protected void updateCaption() {
-        setLabelText(property.getPanelCaption(caption));
+    private GInputBindingEvent changeKey;
+    public void setChangeKey(GInputBindingEvent changeKey) {
+        if (!GwtSharedUtils.nullEquals(this.changeKey, changeKey)) {
+            this.changeKey = changeKey;
+            form.addDynamicBinding(changeKey, property, false);
+            updateCaption();
+        }
+    }
+
+    private GInputBindingEvent changeMouse;
+    public void setChangeMouse(GInputBindingEvent changeMouse) {
+        if (!GwtSharedUtils.nullEquals(this.changeMouse, changeMouse)) {
+            this.changeMouse = changeMouse;
+            form.addDynamicBinding(changeMouse, property, true);
+            updateCaption();
+        }
+    }
+
+    public void updateCaption() {
+        setLabelText(property.getPanelCaption(caption, changeKey, changeMouse));
     }
 
     private String captionElementClass;

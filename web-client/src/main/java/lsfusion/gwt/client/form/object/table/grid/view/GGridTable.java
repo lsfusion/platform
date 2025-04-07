@@ -20,6 +20,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -726,6 +727,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         super.updatePropertyCustomOptionsValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
+    }
+
+    @Override
+    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeKeyValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        captionsUpdated = true;
+    }
+
+    @Override
+    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateChangeMouseValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        captionsUpdated = true;
     }
 
     @Override

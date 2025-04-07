@@ -190,9 +190,9 @@ TREE treeSelector
 |`charWidth`|Ширина ячейки значения свойства в символах|Целочисленный литерал|зависит от свойства|`10`|
 |`valueFlex`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|Клавиша, при нажатии которой будет начато редактирование свойства. Принцип задания аналогичен заданию параметра в [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|Строковый литерал|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
-|`changeKeyPriority`|todo|Целочисленный литерал|`NULL`|`1000`|
+|`changeKeyPriority`|**deprecated since version 6, используйте параметр `priority` в `changeKey`**|Целочисленный литерал|`NULL`|`1000`|
 |`changeMouse`|todo|Строковый литерал|`NULL`|`'DBLCLK'`|
-|`changeMousePriority`|todo|Целочисленный литерал|`NULL`|`1000`|
+|`changeMousePriority`|**deprecated since version 6, используйте параметр `priority` в `changeMouse`**|Целочисленный литерал|`NULL`|`1000`|
 |`showChangeKey`|Указание того, что в заголовок свойства будет включено название сочетания клавиш, по которому будет начато редактирование|Дополненный логический литерал|`TRUE`|`TRUE`<br/>`FALSE`|
 |`focusable`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
