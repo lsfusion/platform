@@ -25,6 +25,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
@@ -50,6 +51,8 @@ import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientFormChangesToGwtConverter extends ObjectConverter {
+    private static final ClientBindingToGwtConverter bindingConverter = ClientBindingToGwtConverter.getInstance();
+
     private static final class InstanceHolder {
         private static final ClientFormChangesToGwtConverter instance = new ClientFormChangesToGwtConverter();
     }
@@ -231,6 +234,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         if (value instanceof StringWithFiles) {
             StringWithFiles stringWithFiles = (StringWithFiles) value;
             return new GStringWithFiles(stringWithFiles.prefixes, convertFileValue(stringWithFiles.files, servletContext, serverSettings, sessionObject), stringWithFiles.rawString);
+        }
+
+        if(value instanceof InputBindingEvent) {
+            return bindingConverter.convertBinding((InputBindingEvent) value);
         }
 
         return value;

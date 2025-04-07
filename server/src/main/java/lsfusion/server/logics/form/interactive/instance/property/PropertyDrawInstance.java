@@ -187,6 +187,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyTooltip;
     public final PropertyObjectInstance<?> propertyValueTooltip;
     public final PropertyObjectInstance<?> propertyCustomOptions;
+    public final PropertyObjectInstance<?> propertyChangeKey;
+    public final PropertyObjectInstance<?> propertyChangeMouse;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -209,6 +211,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance tooltipReader;
     public ExtraReaderInstance valueTooltipReader;
     public ExtraReaderInstance propertyCustomOptionsReader;
+    public ExtraReaderInstance changeKeyReader;
+    public ExtraReaderInstance changeMouseReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
@@ -244,6 +248,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyTooltip = propertyExtras.get(PropertyDrawExtraType.TOOLTIP);
         propertyValueTooltip = propertyExtras.get(PropertyDrawExtraType.VALUETOOLTIP);
         propertyCustomOptions = propertyExtras.get(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS);
+        propertyChangeKey = propertyExtras.get(PropertyDrawExtraType.CHANGEKEY);
+        propertyChangeMouse = propertyExtras.get(PropertyDrawExtraType.CHANGEMOUSE);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -266,6 +272,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         tooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.TOOLTIP, propertyTooltip);
         valueTooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUETOOLTIP, propertyValueTooltip);
         propertyCustomOptionsReader = new ExtraReaderInstance(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, propertyCustomOptions);
+        changeKeyReader = new ExtraReaderInstance(PropertyDrawExtraType.CHANGEKEY, propertyChangeKey);
+        changeMouseReader = new ExtraReaderInstance(PropertyDrawExtraType.CHANGEMOUSE, propertyChangeMouse);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 

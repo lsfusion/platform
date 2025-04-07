@@ -204,6 +204,10 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).regexpMessageReader;
             case PropertyReadType.PROPERTY_CUSTOM_OPTIONS:
                 return clientForm.getProperty(inStream.readInt()).propertyCustomOptionsReader;
+            case PropertyReadType.CHANGEKEY:
+                return clientForm.getProperty(inStream.readInt()).changeKeyReader;
+            case PropertyReadType.CHANGEMOUSE:
+                return clientForm.getProperty(inStream.readInt()).changeMouseReader;
             default:
                 throw new IOException();
         }

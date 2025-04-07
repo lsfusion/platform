@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -17,7 +18,6 @@ import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GPropertyPanelController implements ActionOrPropertyValueController {
@@ -56,6 +56,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> tooltips;
     private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
     private NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions;
+    private NativeHashMap<GGroupObjectValue, PValue> changeKeys;
+    private NativeHashMap<GGroupObjectValue, PValue> changeMouses;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -200,6 +202,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(propertyCustomOptions != null) {
             propertyCustomOption = propertyCustomOptions.get(columnKey);
         }
+
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -217,6 +220,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
+
+        if(changeKeys != null)
+            renderer.setChangeKey(PValue.getBindingValue(changeKeys.get(columnKey)));
+
+        if(changeMouses != null)
+            renderer.setChangeMouse(PValue.getBindingValue(changeMouses.get(columnKey)));
+
         if (cellCaptionElementClasses != null)
             renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
 
@@ -372,5 +382,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions) {
         this.propertyCustomOptions = propertyCustomOptions;
+    }
+
+    public void setPropertyChangeKeys(NativeHashMap<GGroupObjectValue, PValue> changeKeys) {
+        this.changeKeys = changeKeys;
+    }
+
+    public void setPropertyChangeMouses(NativeHashMap<GGroupObjectValue, PValue> changeMouses) {
+        this.changeMouses = changeMouses;
     }
 }

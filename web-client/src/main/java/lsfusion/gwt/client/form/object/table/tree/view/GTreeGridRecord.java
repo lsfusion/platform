@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;

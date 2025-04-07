@@ -1912,9 +1912,23 @@ public class GFormController implements EditManager {
     public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
         ArrayList<Integer> result = new ArrayList<>();
         for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, bindingExec, widget, propertyDraw.groupObject));
+            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, propertyDraw, bindingExec, widget, propertyDraw.groupObject));
         return result;
     }
+
+    public void addDynamicBinding(GInputBindingEvent inputBindingEvent, GPropertyDraw property, boolean mouse) {
+        for (int i = 0; i < bindingEvents.size(); i++) {
+            GBindingEvent bindingEvent = bindingEvents.get(i);
+            Binding binding = bindings.get(i);
+            if (property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
+                removeBinding(i);
+                if(inputBindingEvent == null)
+                    inputBindingEvent = GInputBindingEvent.dumb;
+                addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
+            }
+        }
+    }
+
     public void removePropertyBindings(ArrayList<Integer> indices) {
         for(int index : indices)
             removeBinding(index);
@@ -1926,8 +1940,15 @@ public class GFormController implements EditManager {
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
+    public int addBinding(GInputEvent event, GBindingEnv env, GPropertyDraw property, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        //event != null - dumb check (see InputBindingEvent.dumb)
+        return addBinding(e -> event != null && event.isEvent(e), env, property, event instanceof GMouseInputEvent, null, pressed, component, groupObject);
+    }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
+        return addBinding(event, env, null, false, enabled, pressed, component, groupObject);
+    }
+    public int addBinding(BindingCheck event, GBindingEnv env, GPropertyDraw property, boolean mouse, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(new GBindingEvent(event, env, property, component, mouse), new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component == null || isShowing(component);

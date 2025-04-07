@@ -91,10 +91,6 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setDefaultCompare(defaultCompare);
     }
 
-    public void setChangeMouse(String changeMouse) {
-        getActionOrProperty().drawOptions.setChangeMouse(changeMouse);
-    }
-
     public void setPattern(LocalizedString pattern) {
         getActionOrProperty().drawOptions.setPattern(pattern);
     }

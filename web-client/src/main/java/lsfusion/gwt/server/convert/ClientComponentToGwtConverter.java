@@ -190,10 +190,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
         if (clientFilter.keyInputEvent != null)
-            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.keyInputEvent, clientFilter.keyPriority));
+            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.keyInputEvent));
         filter.showKey = clientFilter.showKey;
         if (clientFilter.mouseInputEvent != null)
-            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.mouseInputEvent, clientFilter.mousePriority));
+            filter.bindingEvents.add(bindingConverter.convertBinding(clientFilter.mouseInputEvent));
         filter.showMouse = clientFilter.showMouse;
         return filter;
     }
@@ -352,10 +352,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
             propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
         if(clientPropertyDraw.changeKey != null)
-            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority));
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeKey));
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
         if(clientPropertyDraw.changeMouse != null)
-            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeMouse));
         propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
 
         propertyDraw.inline = clientPropertyDraw.inline;
@@ -389,6 +389,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
         propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
         propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
+        propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
+        propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {

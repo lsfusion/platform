@@ -447,6 +447,20 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return convertToJSValue(GJSONType.instance, null, false, getPropertyCustomOptions(column.property, object, column.columnKey));
     }
 
+    protected String getChangeKey(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getChangeKey(column.property, column.columnKey);
+    }
+
+    protected String getChangeMouse(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getChangeMouse(column.property, column.columnKey);
+    }
+
     private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
         Column column = getColumn(property);
         if(column == null)
@@ -488,6 +502,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected JavaScriptObject getPropertyCustomOptions(String property, JavaScriptObject object) {
         return getPropertyCustomOptions(property, getJsObjects(object));
+    }
+
+    protected String getChangeKey(String property, JavaScriptObject object) {
+        return getChangeKey(property, getJsObjects(object));
+    }
+
+    protected String getChangeMouse(String property, JavaScriptObject object) {
+        return getChangeMouse(property, getJsObjects(object));
     }
 
     protected JavaScriptObject getValue(String property, JavaScriptObject object) {
@@ -826,6 +848,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getPropertyCustomOptions: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPropertyCustomOptions(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getChangeKey: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getChangeKey(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getChangeMouse: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getChangeMouse(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getValue: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

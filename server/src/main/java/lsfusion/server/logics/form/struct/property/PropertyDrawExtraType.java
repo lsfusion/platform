@@ -325,6 +325,38 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "PROPERTY_CUSTOM_OPTIONS";
         }
+    },
+    CHANGEKEY {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.CHANGEKEY;
+        }
+
+        @Override
+        public String getText() {
+            return "CHANGEKEY";
+        }
+    },
+    CHANGEMOUSE {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.CHANGEMOUSE;
+        }
+
+        @Override
+        public String getText() {
+            return "CHANGEMOUSE";
+        }
     }
     ;
 

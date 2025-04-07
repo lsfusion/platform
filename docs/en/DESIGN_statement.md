@@ -191,9 +191,9 @@ To access design components, you can use their names or address property compone
 |`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
 |`valueFlex` |todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
-|`changeKeyPriority`|todo|Integer literal|`NULL`|`'1000'`|
+|`changeKeyPriority`|**deprecated since version 6, use parameter `priority` in `changeKey`**|Integer literal|`NULL`|`'1000'`|
 |`changeMouse`|todo|String literal|`NULL`|`'DBLCLK'`|
-|`changeMousePriority`|todo|Integer literal|`NULL`|`'1000'`|
+|`changeMousePriority`|**deprecated since version 6, use parameter `priority` in `changeMouse`**|Integer literal|`NULL`|`'1000'`|
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`focusable`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|

@@ -45,10 +45,10 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.children = new ArrayList<>();
 
         if(clientElement.changeKey != null)
-            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeKey, clientElement.changeKeyPriority));
+            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeKey));
         element.showChangeKey = clientElement.showChangeKey;
         if(clientElement.changeMouse != null)
-            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeMouse, clientElement.changeMousePriority));
+            element.bindingEvents.add(bindingConverter.convertBinding(clientElement.changeMouse));
         element.showChangeMouse = clientElement.showChangeMouse;
 
         element.image = createImage(clientElement.appImage, false);

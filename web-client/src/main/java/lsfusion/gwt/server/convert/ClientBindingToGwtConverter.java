@@ -5,6 +5,7 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 
@@ -34,10 +35,10 @@ public class ClientBindingToGwtConverter extends ObjectConverter {
         return new GMouseInputEvent(convertOrCast(mouseInputEvent.mouseEvent));
     }
 
-    public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority) {
-        Map<String, BindingMode> bindingModes = event != null ? event.bindingModes : null;
-        return new GInputBindingEvent(convertOrCast(event),
-                new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
+    public GInputBindingEvent convertBinding(InputBindingEvent event) {
+        Map<String, BindingMode> bindingModes = event.inputEvent != null ? event.inputEvent.bindingModes : null;
+        return new GInputBindingEvent(convertOrCast(event.inputEvent),
+                new GBindingEnv(event.priority != null && event.priority.equals(0) ? null : event.priority,
                         convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("window") : null),

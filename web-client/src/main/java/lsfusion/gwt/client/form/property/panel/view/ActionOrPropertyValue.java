@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -42,6 +43,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     private String regexpMessage;
     private String valueTooltip;
     private PValue propertyCustomOption;
+    private GInputBindingEvent changeKey;
+    private GInputBindingEvent changeMouse;
 
     public PValue getValue() {
         return value;
