@@ -146,8 +146,6 @@
                 <entry key="editBooleanOnSingleClick" value="${settings.editBooleanOnSingleClick:}"/>
                 <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
-                <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
-                <entry key="tsVectorDictionaryLanguage" value="${settings.tsVectorDictionaryLanguage:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
                 <entry key="userFiltersManualApplyMode" value="${settings.userFiltersManualApplyMode:}"/>
                 <entry key="defaultAutoImageRankingThreshold" value="${settings.defaultAutoImageRankingThreshold:}"/>
@@ -1037,6 +1035,7 @@
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
         <property name="lsfStrLiteralsLanguage" value="${logics.lsfStrLiteralsLanguage:#{null}}"/>
         <property name="lsfStrLiteralsCountry" value="${logics.lsfStrLiteralsCountry:#{null}}"/>
+        <property name="searchLanguage" value="${logics.searchLanguage:#{null}}"/>
         <property name="pdfEncoding" value="${logics.pdfEncoding:#{null}}"/>
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>

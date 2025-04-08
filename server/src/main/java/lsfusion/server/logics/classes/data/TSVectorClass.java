@@ -1,11 +1,11 @@
 package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.Array;
@@ -117,7 +117,7 @@ public class TSVectorClass extends DataClass<Array> implements DBType {
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if(typeFrom instanceof StringClass) {
-            String language = Settings.get().getTsVectorDictionaryLanguage();
+            String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
             return "to_tsvector('" + language + "'::regconfig, " + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);

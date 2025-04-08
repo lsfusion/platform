@@ -194,7 +194,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
-    
+
+    private String searchLanguage = "english";
+
     private String setTimezone;
     private String setLanguage;
     private String setCountry;
@@ -658,6 +660,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void setLsfStrLiteralsCountry(String lsfStrLiteralsCountry) {
         this.lsfStrLiteralsCountry = lsfStrLiteralsCountry;
+    }
+
+    public String getSearchLanguage() {
+        return searchLanguage;
+    }
+
+    public void setSearchLanguage(String searchLanguage) {
+        this.searchLanguage = searchLanguage;
     }
     
     private ReversedI18NDictionary dictionary;

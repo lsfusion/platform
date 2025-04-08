@@ -1295,7 +1295,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         // SELECT t, highl(t) WHERE z(t) ORDER BY rank(t) LIMIR act
-        String language = Settings.get().getFilterMatchLanguage();
+        String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
         SQLSyntax syntax = sql.syntax;
         String match = "'" + value + "'";
 

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.where.classes.data.MatchWhere;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
@@ -97,7 +98,7 @@ public class TSQueryClass extends DataClass<String> implements DBType {
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if(typeFrom instanceof StringClass) {
-            String language = Settings.get().getTsVectorDictionaryLanguage();
+            String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
             return MatchWhere.getPrefixSearchQuery(syntax, value, language);
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);

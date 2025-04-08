@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.where.classes.data;
 
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.compile.CompileSource;
@@ -58,7 +59,7 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
 
         boolean isTSVectorType = operator1.getType(compile.keyType) instanceof TSVectorClass;
         boolean isTSQueryType = operator2.getType(compile.keyType) instanceof TSQueryClass;
-        String language = Settings.get().getFilterMatchLanguage();
+        String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
         String matchString = getMatch(compile.syntax, source, match, language, isTSVectorType, isTSQueryType);
         if (isTSVectorType || isTSQueryType)
             return matchString;
