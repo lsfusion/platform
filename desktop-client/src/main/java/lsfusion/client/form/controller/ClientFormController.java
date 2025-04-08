@@ -2018,19 +2018,19 @@ public class ClientFormController implements AsyncListener {
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
         if(binding.bindPreview == null)
-            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindPreview = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
-            binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindDialog = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindWindow == null)
-            binding.bindWindow = ks.bindingModes != null ? ks.bindingModes.getOrDefault("window", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindWindow = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("window", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
-            binding.bindGroup = ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindGroup = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("group", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindEditing == null)
-            binding.bindEditing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindEditing = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("editing", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindShowing == null)
-            binding.bindShowing = ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindShowing = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("showing", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindPanel == null)
-            binding.bindPanel = ks.bindingModes != null ? ks.bindingModes.getOrDefault("panel", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindPanel = ks != null && ks.bindingModes != null ? ks.bindingModes.getOrDefault("panel", BindingMode.AUTO) : BindingMode.AUTO;
         groupBindings.add(binding);
     }
 
