@@ -195,7 +195,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
 
-    private String searchLanguage = "english";
+    private String searchLanguage;
 
     private String setTimezone;
     private String setLanguage;
@@ -294,6 +294,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     Locale.setDefault(LocalePreferences.getLocale(setLanguage, setCountry));
                 }
 
+                if(searchLanguage == null) {
+                    searchLanguage = getHeuristicSearchLanguage();
+                }
+
                 TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(setTimezone);
                 if (timeZone != null) {
                     TimeZone.setDefault(timeZone);
@@ -314,6 +318,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 throw new RuntimeException("Error initializing BusinessLogics: ", e);
             }
         }
+    }
+
+    private static Map<String, String> languagesMap = new HashMap<String, String>() {{
+        put("en", "english"); put("be", "belarusian"); put("pl", "polish"); put("ru", "russian");
+        put("uk", "ukrainian"); put("uz", "uzbek"); put("zh", "chinese");
+    }};
+    private String getHeuristicSearchLanguage() {
+        return languagesMap.get(Locale.getDefault().getLanguage());
     }
 
     public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
