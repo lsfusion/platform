@@ -269,8 +269,6 @@ onWebClientInit() + {
         onWebClientInit('select2.js') <- 10;
         onWebClientInit('select2.min.css') <- 11;
         onWebClientInit('select2-bootstrap-5-theme.css') <- 12;
-
-        onWebClientInit('bootstrap-arrow-buttons.css') <- 13;
     } ELSE {
         onWebClientInit('table.css') <- 1;
         onWebClientInit('table-border.css') <- 2;
@@ -310,6 +308,8 @@ onWebClientInit() + {
 
     onWebClientInit('clusterize.js') <- 34;
     onWebClientInit('clusterize.css') <- 35;
+    
+    onWebClientInit('arrow-buttons.css') <- 36;    
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
