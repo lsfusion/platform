@@ -4,12 +4,12 @@
     --btn-full-half-divisor: 4;
     --bs-border-width: var(--border-width);
     --bs-btn-font-size: var(--excel-font-size);
-    --bs-btn-padding-y: 0.875rem;
-    --bs-btn-padding-x: 0.125rem;
     --bs-btn-line-height: 1.5;
 }
 
 .btn {
+    --bs-btn-padding-y: 0.875rem;
+    --bs-btn-padding-x: 0.125rem;
     padding: var(--bs-btn-padding-x) var(--bs-btn-padding-y);
     border-radius: var(--button-border-radius);
     background: var(--component-background-color);
