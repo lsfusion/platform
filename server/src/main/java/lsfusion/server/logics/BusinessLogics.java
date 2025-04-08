@@ -307,6 +307,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
                         timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
 
+                if(pdfEncoding == null) {
+                    pdfEncoding = getHeuristicPdfEncoding();
+                }
                 if(pdfEncoding != null) {
                     JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", pdfEncoding);
                 }
@@ -321,11 +324,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private static Map<String, String> languagesMap = new HashMap<String, String>() {{
-        put("en", "english"); put("be", "belarusian"); put("pl", "polish"); put("ru", "russian");
-        put("uk", "ukrainian"); put("uz", "uzbek"); put("zh", "chinese");
+        put("fr", "french"); put("de", "german"); put("it", "italian");
+        put("ru", "russian"); put("pt", "portuguese"); put("es", "spanish");
     }};
     private String getHeuristicSearchLanguage() {
-        return languagesMap.get(Locale.getDefault().getLanguage());
+        return languagesMap.getOrDefault(Locale.getDefault().getLanguage(), "english");
+    }
+
+    private static Map<String, String> pdfEncodingsMap = new HashMap<String, String>() {{
+        put("be", "cp1251"); put("pl", "cp1250"); put("ru", "cp1251"); put("uk", "cp1251"); put("uz", "1254");
+    }};
+    private String getHeuristicPdfEncoding() {
+        return pdfEncodingsMap.get(Locale.getDefault().getLanguage());
     }
 
     public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
