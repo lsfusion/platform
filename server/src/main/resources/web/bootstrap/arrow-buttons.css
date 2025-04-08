@@ -3,8 +3,10 @@
   position: relative;
 
   --btn-full-height: calc(var(--bs-btn-padding-y) * 2 + (var(--bs-btn-font-size) * var(--bs-btn-line-height)));
-  --btn-full-half-height: calc(var(--btn-full-height) / 2);
-  --btn-edge-size: calc(var(--btn-full-height) / 1.4142135624);
+  --btn-full-half-divisor: 2;
+  --btn-full-half-height: calc(var(--btn-full-height) / var(--btn-full-half-divisor));
+  --btn-edge-divisor: 1.4142135624;
+  --btn-edge-size: calc(var(--btn-full-height) / var(--btn-edge-divisor));
 
   --btn-btn-arrow-padding-x: calc(max(var(--bs-btn-padding-x), var(--btn-full-half-height)));
   --btn-content-shift: calc(var(--btn-btn-arrow-padding-x) + var(--btn-full-half-height));
