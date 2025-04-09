@@ -21,12 +21,14 @@ public class CopyReportResourcesClientAction implements ClientAction {
         this.md5 = md5;
     }
 
-    public final File jasperFontsTempDir = new File(SystemUtils.getUserDir(), "jasper-fonts");
+    private File getJasperFontsTempDir() {
+        return new File(SystemUtils.getUserDir(), "jasper-fonts");
+    }
 
     @Override
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         try {
-            File jar = new File(jasperFontsTempDir, md5 + ".jar");
+            File jar = new File(getJasperFontsTempDir(), md5 + ".jar");
             if (zipFile == null) {
                 boolean exists = jar.exists();
                 if (exists)
@@ -50,7 +52,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
     }
 
     private void safeDeleteOldFiles(String jar) {
-        File[] listFiles = jasperFontsTempDir.listFiles(f -> !f.getName().equals(jar));
+        File[] listFiles = getJasperFontsTempDir().listFiles(f -> !f.getName().equals(jar));
         if (listFiles != null) {
             for (File file : listFiles) {
                 BaseUtils.safeDelete(file);
