@@ -98,11 +98,11 @@
                 //map
                 "static/css/external/leaflet.css", //https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
                 "static/css/external/leaflet.draw.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
-                "static/css/external/MarkerCluster.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css
-                "static/css/external/MarkerCluster.Default.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css
+                "static/css/external/MarkerCluster.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css
+                "static/css/external/MarkerCluster.Default.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css
                 "static/js/external/leaflet.js", //https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
                 "static/js/external/leaflet.draw.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
-                "static/js/external/leaflet.markercluster.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js
+                "static/js/external/leaflet.markercluster.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js
                 "static/js/external/leaflet.polylineDecorator.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js
 
                 //support yandex map tile in leaflet
