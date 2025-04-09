@@ -39,7 +39,7 @@ public abstract class PanelRenderer {
     private TooltipManager.TooltipHelper tooltipHelper = null;
 
     protected void finalizeInit() {
-        setCaption(property.caption);
+        setCaption(nvl(value.controller.getCaption(columnKey), property.caption));
         setCaptionElementClass(property.captionElementClass);
         setComment(property.comment);
         setCommentElementClass(property.commentElementClass);

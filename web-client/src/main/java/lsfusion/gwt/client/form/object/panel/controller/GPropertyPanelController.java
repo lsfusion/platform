@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -219,7 +218,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 propertyCustomOption);
 
         if (captions != null)
-            renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
+            renderer.setCaption(getCaption(columnKey));
 
         if(changeKeys != null)
             renderer.setChangeKey(PValue.getBindingValue(changeKeys.get(columnKey)));
@@ -276,6 +275,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, PValue> captions) {
         this.captions = captions;
+    }
+
+    @Override
+    public String getCaption(GGroupObjectValue columnKey) {
+        return captions != null ? GGridPropertyTable.getDynamicCaption(captions.get(columnKey)) : null;
     }
 
     public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, PValue> readOnly) {
