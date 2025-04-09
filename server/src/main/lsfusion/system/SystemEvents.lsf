@@ -799,7 +799,7 @@ FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
-    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace
+    PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace SHOWIF asyncStackTrace(e) != ''
 ;
 
 DESIGN exceptions {
@@ -808,11 +808,21 @@ DESIGN exceptions {
             fill = 1;
             MOVE BOX(e);
             NEW textContainer {
-                tabbed = TRUE;
+                horizontal = TRUE;
                 fill = 1;
-                MOVE PROPERTY(javaStackTrace(e));
-                MOVE PROPERTY(lsfStackTrace(e));
-                MOVE PROPERTY(asyncStackTrace(e));
+
+                MOVE PROPERTY(javaStackTrace(e)) {
+                    fill = 1;
+                    panelCaptionVertical = TRUE;
+                }
+                MOVE PROPERTY(lsfStackTrace(e)) {
+                    fill = 1;
+                    panelCaptionVertical = TRUE;
+                }
+                MOVE PROPERTY(asyncStackTrace(e)) {
+                    fill = 1;
+                    panelCaptionVertical = TRUE;
+                }
             }
             MOVE TOOLBARBOX;
         }
