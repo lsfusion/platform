@@ -110,6 +110,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     private ArrayList<JavaScriptObject> lines = new ArrayList<>(); // later also should be
     private JavaScriptObject mapOptions;
     private JavaScriptObject viewOptions;
+    private JavaScriptObject markerClusterOptions;
     @Override
     protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
@@ -229,6 +230,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         } : null;
     }-*/;
 
+    // example: {"markerClusterOptions": {"spiderfyDistanceMultiplier": 5}}
+    protected native static JavaScriptObject getMarkerClusterOptions(JavaScriptObject customOptions)/*-{
+        return customOptions != null ? customOptions.markerClusterOptions : null;
+    }-*/;
+
     protected native boolean hasFitBoundsProperty(JavaScriptObject object)/*-{
         return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
     }-*/;
@@ -236,6 +242,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native JavaScriptObject updateMap(JavaScriptObject map, JavaScriptObject markerClusters, String tileProvider, JavaScriptObject customOptions)/*-{
         var newMapOptions = @GMap::getMapOptions(*)(customOptions);
         var newViewOptions = @GMap::getViewOptions(*)(customOptions);
+        var newMarkerClusterOptions = @GMap::getMarkerClusterOptions(*)(customOptions);
 
         if (!$wnd.deepEquals(this.@GMap::mapOptions, newMapOptions)) {
             var L = $wnd.L;
@@ -280,6 +287,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         if (!$wnd.deepEquals(this.@GMap::viewOptions, newViewOptions)) {
             @GMap::setView(*)(map, newViewOptions);
             this.@GMap::viewOptions = newViewOptions;
+        }
+        
+        if (!$wnd.deepEquals(this.@GMap::markerClusterOptions, newMarkerClusterOptions)) {
+            markerClusters.options = Object.assign(markerClusters.options, newMarkerClusterOptions ? newMarkerClusterOptions : {});
+            this.@GMap::markerClusterOptions = newMarkerClusterOptions;
         }
     }-*/;
 
