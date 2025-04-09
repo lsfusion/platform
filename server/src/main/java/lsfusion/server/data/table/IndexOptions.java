@@ -1,6 +1,7 @@
 package lsfusion.server.data.table;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataInputStream;
@@ -14,7 +15,7 @@ public class IndexOptions {
     public String dbName;
 
     public IndexOptions(boolean order, IndexType type, String dbName) {
-        this(order, type, Settings.get().getFilterMatchLanguage(), dbName);
+        this(order, type, ThreadLocalContext.getBusinessLogics().getSearchLanguage(), dbName);
     }
 
     private IndexOptions(boolean order, IndexType type, String language, String dbName) {

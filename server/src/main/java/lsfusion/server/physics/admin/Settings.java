@@ -2972,26 +2972,6 @@ public class Settings implements Cloneable {
     public void setSessionConfigTimeout(int sessionConfigTimeout) {
         this.sessionConfigTimeout = sessionConfigTimeout;
     }
-
-    private String filterMatchLanguage = "english";
-
-    public String getFilterMatchLanguage() {
-        return filterMatchLanguage;
-    }
-
-    public void setFilterMatchLanguage(String filterMatchLanguage) {
-        this.filterMatchLanguage = filterMatchLanguage;
-    }
-
-    private String tsVectorDictionaryLanguage = "english";
-
-    public String getTsVectorDictionaryLanguage() {
-        return tsVectorDictionaryLanguage;
-    }
-
-    public void setTsVectorDictionaryLanguage(String tsVectorDictionaryLanguage) {
-        this.tsVectorDictionaryLanguage = tsVectorDictionaryLanguage;
-    }
     
     private int trueSerializableAttempts = 0;
     private boolean recalculateMaterializationsMixedSerializable = false; // when running not in transaction - first read in READ_COMMITED mismatched materialization, and then read + update in REPEATABLE_READ only mismatched

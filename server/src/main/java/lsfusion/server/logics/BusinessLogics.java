@@ -194,7 +194,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String lsfStrLiteralsLanguage;
     private String lsfStrLiteralsCountry;
-    
+
+    private String searchLanguage;
+
     private String setTimezone;
     private String setLanguage;
     private String setCountry;
@@ -292,6 +294,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     Locale.setDefault(LocalePreferences.getLocale(setLanguage, setCountry));
                 }
 
+                if(searchLanguage == null) {
+                    searchLanguage = getHeuristicSearchLanguage();
+                }
+
                 TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(setTimezone);
                 if (timeZone != null) {
                     TimeZone.setDefault(timeZone);
@@ -301,6 +307,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
                         timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
 
+                if(pdfEncoding == null) {
+                    pdfEncoding = getHeuristicPdfEncoding();
+                }
                 if(pdfEncoding != null) {
                     JRPropertiesUtil.getInstance(DefaultJasperReportsContext.getInstance()).setProperty("net.sf.jasperreports.default.pdf.encoding", pdfEncoding);
                 }
@@ -312,6 +321,22 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 throw new RuntimeException("Error initializing BusinessLogics: ", e);
             }
         }
+    }
+
+    private static Map<String, String> languagesMap = new HashMap<String, String>() {{
+        put("fr", "french"); put("de", "german"); put("it", "italian");
+        put("ru", "russian"); put("pt", "portuguese"); put("es", "spanish");
+    }};
+    private String getHeuristicSearchLanguage() {
+        return languagesMap.getOrDefault(Locale.getDefault().getLanguage(), "english");
+    }
+
+    private static Map<String, String> pdfEncodingsMap = new HashMap<String, String>() {{
+        put("pl", "cp1250"); put("cz", "cp1250"); put("sk", "cp1250");put("sl", "cp1250"); put("hu", "cp1250"); put("sq", "cp1250");
+        put("be", "cp1251"); put("ru", "cp1251"); put("uk", "cp1251"); put("uz", "1254");
+    }};
+    private String getHeuristicPdfEncoding() {
+        return pdfEncodingsMap.get(Locale.getDefault().getLanguage());
     }
 
     public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
@@ -658,6 +683,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void setLsfStrLiteralsCountry(String lsfStrLiteralsCountry) {
         this.lsfStrLiteralsCountry = lsfStrLiteralsCountry;
+    }
+
+    public String getSearchLanguage() {
+        return searchLanguage;
+    }
+
+    public void setSearchLanguage(String searchLanguage) {
+        this.searchLanguage = searchLanguage;
     }
     
     private ReversedI18NDictionary dictionary;
