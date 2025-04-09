@@ -33,6 +33,7 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.ParseException;
 import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -391,11 +392,16 @@ public class ExternalUtils {
     }
 
     // body
-    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException, FileUploadException {
+    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues) throws MessagingException, IOException, FileUploadException {
         String contentDispositionHeader = getHeaderValue(headerNames, headerValues, CONTENT_DISPOSITION_HEADER);
         String name = null; String filename = null;
         if(contentDispositionHeader != null) {
-            ContentDisposition contentDisposition = new ContentDisposition(contentDispositionHeader);
+            ContentDisposition contentDisposition;
+           try {
+                contentDisposition = new ContentDisposition(contentDispositionHeader);
+            } catch (ParseException e) { // backward compatibility to parse filename=x.f
+                contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
+            }
             name = contentDisposition.getParameter("name");
             filename = contentDisposition.getParameter("filename");
         }
