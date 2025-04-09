@@ -332,7 +332,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private static Map<String, String> pdfEncodingsMap = new HashMap<String, String>() {{
-        put("be", "cp1251"); put("pl", "cp1250"); put("ru", "cp1251"); put("uk", "cp1251"); put("uz", "1254");
+        put("pl", "cp1250"); put("cz", "cp1250"); put("sk", "cp1250");put("sl", "cp1250"); put("hu", "cp1250"); put("sq", "cp1250");
+        put("be", "cp1251"); put("ru", "cp1251"); put("uk", "cp1251"); put("uz", "1254");
     }};
     private String getHeuristicPdfEncoding() {
         return pdfEncodingsMap.get(Locale.getDefault().getLanguage());
