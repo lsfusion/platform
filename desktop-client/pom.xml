@@ -123,10 +123,6 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.sun.mail</groupId>
-                    <artifactId>javax.mail</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.olap4j</groupId>
                     <artifactId>olap4j</artifactId>
                 </exclusion>
