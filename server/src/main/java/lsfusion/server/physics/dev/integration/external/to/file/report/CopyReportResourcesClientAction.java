@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.file.report;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
@@ -20,7 +21,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
         this.md5 = md5;
     }
 
-    public final File jasperFontsTempDir = new File(System.getProperty("java.io.tmpdir"), "jasper-fonts");
+    public final File jasperFontsTempDir = new File(SystemUtils.getUserDir(), "jasper-fonts");
 
     @Override
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
