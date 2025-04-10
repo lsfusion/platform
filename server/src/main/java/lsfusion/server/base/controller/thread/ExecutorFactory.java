@@ -175,7 +175,7 @@ public class ExecutorFactory {
         });
     }
 
-    public static <T> T executeWithTimeout(BusinessLogics BL, Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier) {
+    public static <T> T executeWithTimeout(BusinessLogics BL, Callable<T> callable, Long timeout, Supplier<ExecutorService> serviceSupplier) {
         final Result<Thread> thread = new Result<>();
         return BaseUtils.executeWithTimeout(() -> {
             thread.set(Thread.currentThread());

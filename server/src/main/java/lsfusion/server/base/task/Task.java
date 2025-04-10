@@ -85,7 +85,7 @@ public abstract class Task {
 
     // не так важно какой
     public void dependProceeded(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, Logger logger,
-                                final Task taskProceeded, TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) {
+                                final Task taskProceeded, TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Long propertyTimeout) {
         int newDepends;
         synchronized (this) {
             newDepends = dependsToProceed - 1;
@@ -98,7 +98,7 @@ public abstract class Task {
     }
 
     public void execute(final BusinessLogics BL, final Executor executor, final ExecutionContext context, final Object monitor, final AtomicInteger taskCount, final Logger logger,
-                        final TaskBlockingQueue taskQueue, final ThrowableConsumer throwableConsumer, final Integer propertyTimeout) {
+                        final TaskBlockingQueue taskQueue, final ThrowableConsumer throwableConsumer, final Long propertyTimeout) {
         logTaskCount(logger, taskCount.incrementAndGet());
         executor.execute(new PriorityRunnable() {
             protected void aspectRun() {
@@ -139,7 +139,7 @@ public abstract class Task {
     }
 
     public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, final Logger logger,
-                        TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
+                        TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Long propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
         long start = System.currentTimeMillis();
         if (isStartLoggable()) {
             String caption = getCaption();

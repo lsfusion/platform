@@ -256,9 +256,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             if(script != null && !script.isEmpty())
                 script = String.format("run() {%s;\n};", script);
             boolean ignoreExceptions = propertyValues.get("ignoreExceptions") != null;
-            Integer timeout = (Integer) propertyValues.get("timeout");
-            if(timeout != null)
-                timeout = timeout * 1000;
+            Integer timeoutSeconds = (Integer) propertyValues.get("timeout");
+            Long timeout = timeoutSeconds != null ? (long) timeoutSeconds * 1000 : null;
             String parameter = (String) propertyValues.get("parameter");
             List<String> params = new ArrayList<>();
             if(parameter != null)
@@ -596,14 +595,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         public LA LA;
         public String script;
         public boolean ignoreExceptions;
-        public Integer timeout;
+        public Long timeout;
         public List<String> params;
         
         public String getCaption() {
             return (script == null ? (localize(LA.action.caption) + " (" + LA.action.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
         }
 
-        public ScheduledTaskDetail(LA LA, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {
+        public ScheduledTaskDetail(LA LA, String script, boolean ignoreExceptions, Long timeout, List<String> params) {
             this.LA = LA;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;
