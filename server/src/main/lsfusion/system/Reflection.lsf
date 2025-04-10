@@ -67,8 +67,8 @@ TABLE action (Action);
 
 parent '{reflection.parent.action.or.property}' = DATA PropertyGroup (ActionOrProperty);
 number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty) CHARWIDTH 8;
-canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING (Property) IN id;
-canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING (Action) IN id;
+canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING (Property) IN id INDEXED;
+canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING (Action) IN id INDEXED;
 canonicalName '{reflection.canonical.name.action.or.property}' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
 caption '{reflection.caption.action.or.property}' = DATA ISTRING[250] (ActionOrProperty) IN base;
 annotation '{reflection.annotation.action.or.property}' = DATA STRING[100] (ActionOrProperty);
@@ -121,10 +121,11 @@ DESIGN options {
     } 
 }
 
-canonicalNameWithPostfix(ActionOrProperty aop) = CONCAT '_', canonicalName(aop), IF aop IS Action THEN 'action' ELSE 'property';
+canonicalNameWithPostfix(ActionOrProperty aop) = canonicalName(aop) + '_' + (IF aop IS Action THEN 'action' ELSE 'property') MATERIALIZED INDEXED;
 actionOrPropertyCanonicalNameWithPostfix '{reflection.property}' (cn) = GROUP AGGR ActionOrProperty aop WHERE aop IS ActionOrProperty BY canonicalNameWithPostfix(aop);
 propertyCanonicalName '{reflection.property}' (cn) = GROUP AGGR Property property WHERE property IS Property BY canonicalName(property);
 actionCanonicalName '{reflection.action}' (cn) = GROUP AGGR Action property WHERE property IS Action BY canonicalName(property);
+INDEX tableSID(Property property), dbName(property);
 propertyTable '{reflection.property}' (string, sID) = GROUP AGGR Property property WHERE stored(property) BY tableSID(property), dbName(property);
 
 quantity '{reflection.quantity.property}' = DATA INTEGER (Property);
