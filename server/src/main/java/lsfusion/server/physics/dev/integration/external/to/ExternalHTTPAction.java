@@ -18,8 +18,8 @@ public class ExternalHTTPAction extends CallHTTPAction {
     }
 
     @Override
-    protected Integer getDefaultTimeout() {
-        return 1800000; //30 minutes
+    protected Long getDefaultTimeout() {
+        return 1800000L; //30 minutes
     }
 
     @Override

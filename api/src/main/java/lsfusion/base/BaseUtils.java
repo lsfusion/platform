@@ -63,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 334;
+        return 335;
     }
 
     public static String getPlatformVersion() {
@@ -2190,7 +2190,7 @@ public class BaseUtils {
 
     public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
-    public static <T> T executeWithTimeout(Callable<T> callable, Integer timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Future<T>> onFailedOrInterrupted) {
+    public static <T> T executeWithTimeout(Callable<T> callable, Long timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Future<T>> onFailedOrInterrupted) {
         if (timeout != null) {
             Future<T> future;
 
@@ -2218,7 +2218,7 @@ public class BaseUtils {
             }
         }
     };
-    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+    public static Object executeWithTimeout(Callable<Object> callable, Long timeout) {
         return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, future -> {
             if(future != null)
                 future.cancel(true);

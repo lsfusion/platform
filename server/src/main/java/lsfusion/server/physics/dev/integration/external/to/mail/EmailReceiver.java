@@ -449,7 +449,7 @@ public class EmailReceiver {
         return (LocalDateTime) BaseUtils.executeWithTimeout(() -> {
             Date sentDate = message.getSentDate();
             return sentDate == null ? null : sqlTimestampToLocalDateTime(new Timestamp(sentDate.getTime()));
-        }, 60000);
+        }, 60000L);
     }
 
     private static RawFileData getEMLByteArray(Message msg) throws IOException, MessagingException {
