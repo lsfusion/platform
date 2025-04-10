@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ExternalHttpUtils {
 
-    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Integer timeout, boolean insecureSSL, byte[] body,
+    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Long timeout, boolean insecureSSL, byte[] body,
                                                    Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
 
 //        connectionString = URIUtil.encodeQuery(connectionString);

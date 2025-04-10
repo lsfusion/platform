@@ -33,7 +33,7 @@ public class TaskRunner {
         runTask(task, ServerLoggers.startLogger, null, null, null, null);
     }
 
-    public void runTask(PublicTask task, Logger logger, Integer threadCount, Integer propertyTimeout, ExecutionContext<ClassPropertyInterface> context, Runnable onInterrupted) {
+    public void runTask(PublicTask task, Logger logger, Integer threadCount, Long propertyTimeout, ExecutionContext<ClassPropertyInterface> context, Runnable onInterrupted) {
         Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 

@@ -10,14 +10,14 @@ import java.util.Map;
 public class HttpClientAction implements ClientAction {
     public ExternalHttpMethod method;
     public String connectionString;
-    public Integer timeout;
+    public Long timeout;
     public Boolean insecureSSL;
     public byte[] body;
     public Map<String, String> headers;
     public Map<String, String> cookies;
     public CookieStore cookieStore;
 
-    public HttpClientAction(ExternalHttpMethod method, String connectionString, Integer timeout, boolean insecureSSL,
+    public HttpClientAction(ExternalHttpMethod method, String connectionString, Long timeout, boolean insecureSSL,
                             byte[] body, Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) {
         this.method = method;
         this.connectionString = connectionString;

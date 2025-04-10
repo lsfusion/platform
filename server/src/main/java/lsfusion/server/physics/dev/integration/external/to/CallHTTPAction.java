@@ -282,7 +282,7 @@ public abstract class CallHTTPAction extends CallAction {
                     }
                 }
 
-                Integer timeout = nvl((Integer) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
+                Long timeout = nvl((Long) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
                 ExternalHttpResponse response;
@@ -342,7 +342,7 @@ public abstract class CallHTTPAction extends CallAction {
         return FlowResult.FINISH;
     }
 
-    protected Integer getDefaultTimeout() {
+    protected Long getDefaultTimeout() {
         return null;
     };
 
