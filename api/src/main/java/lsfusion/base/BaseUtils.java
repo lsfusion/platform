@@ -2218,6 +2218,10 @@ public class BaseUtils {
             }
         }
     };
+    //backward compatibility
+    public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
+        return executeWithTimeout(callable, timeout != null ? timeout.longValue() : null);
+    }
     public static Object executeWithTimeout(Callable<Object> callable, Long timeout) {
         return executeWithTimeout(callable, timeout, Executors::newSingleThreadExecutor, future -> {
             if(future != null)
