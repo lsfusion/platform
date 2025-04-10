@@ -267,11 +267,6 @@ md5ReportResources = DATA STRING() TABLE resources;
 copyReportResources (FILE zipFile, STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CopyReportResources';
 
 copyReportResources() {
-    IF NOT reportResources() THEN {
-        zipReportResources();
-        reportResources() <- zipped();
-        md5ReportResources() <- md5(reportResources());
-    }
     copyReportResources(reportResources(), md5ReportResources());
 }
 
