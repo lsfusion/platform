@@ -426,6 +426,7 @@ DESIGN fullChat {
                         showIf = NOT isWeb();
                         fill = 1;
                         MOVE PROPERTY(message()) {
+                            caption = '';
                             fill = 1; 
                             panelCaptionVertical = TRUE;
                         }   
@@ -461,7 +462,6 @@ DESIGN fullChat {
                             font = 'bold 24';
                         }
                         MOVE PROPERTY(notificate()) {
-                            font = 'bold 24';
                             alignment = START;
                         }
                     }
@@ -675,7 +675,7 @@ changeInputFile () {
 EXTEND FORM fullChat
     PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' SHOWIF isWeb() 
                ON CHANGE changeInputMessage()
-    PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE changeInputFile()
+    PROPERTIES SHOWIF isWeb() inputFile = '' CUSTOM 'inputFile' ON CHANGE changeInputFile()
 ;
 
 DESIGN fullChat {

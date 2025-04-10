@@ -30,7 +30,7 @@
 .chat-reply-content {
     border-left: 2px solid;
     padding-left: 4px;
-    margin: 4px;
+    margin-left: 4px;
     border-color: blue;
     cursor: pointer;
     flex: 1;
@@ -60,7 +60,6 @@
 
 .chat-attachments {
     display: flex;
-    margin: 4px;
 }
 
 a.chat-message-attachment {
@@ -110,5 +109,10 @@ div[lsfusion-container="chat"] .data-grid-cell {
     flex: 1;
     align-self: stretch;
     max-height: 300px;
-    min-height: 90px;
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+}
+
+.chat-message-input .ql-container.ql-bubble {
+    height: 100%;
 }
