@@ -1,6 +1,5 @@
 package lsfusion.server.physics.dev.integration.external.to.file.report;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
@@ -43,7 +42,7 @@ public class CopyReportResourcesClientAction implements ClientAction {
                 return null;
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            return e.getMessage();
         }
     }
 
