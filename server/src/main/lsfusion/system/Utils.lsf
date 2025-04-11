@@ -264,10 +264,14 @@ TABLE resources() NODEFAULT;
 reportResources = DATA FILE() TABLE resources;
 md5ReportResources = DATA STRING() TABLE resources;
 
+needCopyReportResources = DATA LOCAL BOOLEAN();
+checkCopyReportResources (STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CheckCopyReportResources';
 copyReportResources (FILE zipFile, STRING md5)  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.report.CopyReportResources';
 
 copyReportResources() {
-    copyReportResources(reportResources(), md5ReportResources());
+    checkCopyReportResources(md5ReportResources());
+    IF needCopyReportResources() THEN
+        copyReportResources(reportResources(), md5ReportResources());
 }
 
 // --------------------------------------------- Numeric operations --------------------------------- //
