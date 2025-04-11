@@ -12,16 +12,18 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 public class CopyReportResourcesClientAction implements ClientAction {
+    public final String logicsName;
     public final FileData zipFile;
     public final String md5;
 
-    public CopyReportResourcesClientAction(FileData zipFile, String md5) {
+    public CopyReportResourcesClientAction(String logicsName, FileData zipFile, String md5) {
+        this.logicsName = logicsName;
         this.zipFile = zipFile;
         this.md5 = md5;
     }
 
     private File getJasperFontsTempDir() {
-        return new File(SystemUtils.getUserDir(), "jasper-fonts");
+        return new File(new File(SystemUtils.getUserDir(), logicsName), "jasper-fonts");
     }
 
     @Override
