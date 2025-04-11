@@ -102,9 +102,9 @@ cmdOut '{utils.cmd.std.out}' = DATA LOCAL STRING ();
 cmdErr '{utils.cmd.std.err}' = DATA LOCAL STRING ();
 cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient, BOOLEAN wait)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
 cmd '{utils.cmd}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, NULL, wait); }
-cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL, NULL ); }
+cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL, TRUE ); }
 cmdClient '{utils.cmd.client}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, TRUE, wait); }
-cmdClient '{utils.cmd.client}' (TEXT command)  {cmdClient(command, NULL); }
+cmdClient '{utils.cmd.client}' (TEXT command)  {cmdClient(command, TRUE); }
 
 pingError '{utils.ping.error}' = DATA LOCAL STRING ();
 ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingAction' (TEXT, BOOLEAN);
