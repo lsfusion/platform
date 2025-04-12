@@ -22,7 +22,10 @@ import bibliothek.gui.dock.support.mode.ModeSettings;
 import bibliothek.gui.dock.title.DockTitle;
 import bibliothek.gui.dock.util.color.ColorManager;
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.SystemUtils;
+import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
@@ -69,6 +72,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -688,5 +693,43 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     public NavigatorController getNavigatorController() {
         return navigatorController;
+    }
+
+    public Object copyReportResources(String logicsName, FileData zipFile, String md5) {
+        try {
+            File jar = new File(getJasperFontsTempDir(logicsName), md5 + ".jar");
+            if (zipFile == null) {
+                boolean exists = jar.exists();
+                if (exists)
+                    setContextClassLoader(jar);
+                return exists;
+            } else {
+                zipFile.getRawFile().write(jar);
+                setContextClassLoader(jar);
+                //If server restarts while the client is running, the jar file cannot be deleted before setContextClassLoader with new jar.
+                //Need first execute setContextClassLoader with new jar and only then delete old jar.
+                safeDeleteOldFiles(logicsName, jar.getName());
+                return null;
+            }
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    private void setContextClassLoader(File jar) throws IOException {
+        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{jar.toURI().toURL()}, Thread.currentThread().getContextClassLoader()));
+    }
+
+    private void safeDeleteOldFiles(String logicsName, String jar) {
+        File[] listFiles = getJasperFontsTempDir(logicsName).listFiles(f -> !f.getName().equals(jar));
+        if (listFiles != null) {
+            for (File file : listFiles) {
+                BaseUtils.safeDelete(file);
+            }
+        }
+    }
+
+    private File getJasperFontsTempDir(String logicsName) {
+        return new File(new File(SystemUtils.getUserDir(), logicsName), "jasper-fonts");
     }
 }

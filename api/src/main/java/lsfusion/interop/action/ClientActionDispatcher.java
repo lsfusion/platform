@@ -84,6 +84,8 @@ public interface ClientActionDispatcher {
 
     void execute(ClientWebAction action);
 
+    Object execute(CopyReportResourcesClientAction action);
+
     EventBus getEventBus();
 
     void addCleanListener(ICleanListener daemonTask);

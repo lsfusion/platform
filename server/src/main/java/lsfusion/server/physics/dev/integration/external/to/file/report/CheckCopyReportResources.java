@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file.report;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.action.CopyReportResourcesClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
