@@ -57,10 +57,9 @@ inTime (DATETIME date, ScheduleDetail d)= inTime(toTime(date), d);
 
 isDayOff = ABSTRACT BOOLEAN (DATE);
 inHolidays (DATETIME date, ScheduleDetail d) =
-    CASE WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyHolidays AND isDayOff(toDate(date)) THEN TRUE
-         WHEN d IS ScheduleDetail AND holidays(d) AND holidays(d)==Holidays.onlyWeekdays AND NOT isDayOff(toDate(date)) THEN TRUE
-         WHEN d IS ScheduleDetail AND NOT holidays(d) AND date IS DATETIME THEN TRUE
-         ELSE NULL;         
+    (CASE WHEN holidays(d) AND holidays(d)==Holidays.onlyHolidays THEN isDayOff(toDate(date))
+         WHEN holidays(d) AND holidays(d)==Holidays.onlyWeekdays THEN NOT isDayOff(toDate(date))
+         WHEN NOT holidays(d) AND date IS DATETIME THEN TRUE) IF d IS ScheduleDetail;         
 
 in (DATETIME dt, ScheduleDetail s) = inDOY(dt,s) AND inDOW(dt,s) AND inTime(dt,s) AND inHolidays(dt,s); 
 in (DATETIME dt, Schedule s) = GROUP SUM 1 IF in(dt, ScheduleDetail d) BY schedule(d);
