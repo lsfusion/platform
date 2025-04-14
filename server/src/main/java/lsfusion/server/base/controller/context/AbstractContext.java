@@ -22,7 +22,6 @@ import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -210,7 +209,6 @@ public abstract class AbstractContext implements Context {
     public Object[] requestUserInteraction(ClientAction... actions) {
         // the problem is that we shouldn't pauseDispatching when it's delay call (not request), and vice a versa
         // usually in server we manage it manually (for now), but for backward compatibility, adding this check
-        String[] messages = new String[actions.length];
         for (int i = 0; i < actions.length; i++) {
             ClientAction action = actions[i];
             if(action instanceof MessageClientAction)

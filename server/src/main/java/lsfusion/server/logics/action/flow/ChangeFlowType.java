@@ -15,6 +15,7 @@ public class ChangeFlowType {
     public static final ChangeFlowType READONLYCHANGE = new ChangeFlowType(); // has changes in this session (no other opening forms, because in that case security policy will work)
     public static final ChangeFlowType INTERACTIVEFORM = new ChangeFlowType(); // has opening interactive forms inside
     public static final ChangeFlowType INTERACTIVEWAIT = new ChangeFlowType(); // has interaction that waits for the user action
+    public static final ChangeFlowType INTERACTIVEAPI = new ChangeFlowType(); // has interaction that needs ui in the api (not handled with processClientAction)
     public static final ChangeFlowType HASSESSIONUSAGES = new ChangeFlowType(); // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
     public static final ChangeFlowType NEEDMORESESSIONUSAGES = new ChangeFlowType(); // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
     public static final ChangeFlowType INTERNALASYNC = new ChangeFlowType(); // checks if InternalClientAction is async

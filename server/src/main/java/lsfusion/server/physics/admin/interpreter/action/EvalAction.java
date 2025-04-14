@@ -84,7 +84,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     }
     @Override
     public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
-        if(type == ChangeFlowType.INTERACTIVEWAIT)
+        if(type == ChangeFlowType.INTERACTIVEAPI)
             return false; // in the executeExternal usage it's better to be optimistic
         return true;
     }

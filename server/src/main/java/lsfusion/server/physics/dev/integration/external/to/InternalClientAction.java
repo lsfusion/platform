@@ -100,7 +100,7 @@ public class InternalClientAction extends CallAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
-        if (type == ChangeFlowType.INTERNALASYNC || type == ChangeFlowType.INTERACTIVEWAIT)
+        if (type == ChangeFlowType.INTERNALASYNC || type == ChangeFlowType.INTERACTIVEWAIT || type == ChangeFlowType.INTERACTIVEAPI)
             return !syncType;
 
         return super.hasFlow(type, recursiveAbstracts);
