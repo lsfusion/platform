@@ -1450,8 +1450,9 @@ public class Settings implements Cloneable {
     private double LRURangeDefaultCoeff = 1.0; // default coeff (1.0 - will give 1 hour for most common caches)
     private double LRURangeMinCoeff = 0.1; // min coeff, can be very close to zero (however very low is not also desirable)
     private double LRURangeMaxCoeff = 5.0; // max coeff, it's undesirable to have it very big, because if suddenly usage increases very much, it will take too much time to get multiplier back to its basic value
-    private long stableLRUMinCount = 10; // how many cycles (seconds) used memory should be stable to do adjustment (because g1 can do mixed collections for a pretty long time)
-    private long unstableLRUMaxCount = 60; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
+    private long stableLRUMinCount = 40; // how many cycles (seconds) used memory should be stable to do adjustment (because g1 can do mixed collections for a pretty long time)
+                                         // increased to 40, because Pause Remark phase in Java 21 changes old generation memory usage, but it occurs approximately 20 seconds before mixed collections
+    private long unstableLRUMaxCount = 80; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
     public long getCriticalLRURangePercent() {
         return criticalLRURangePercent;
