@@ -11,6 +11,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.property.CurrentAuthTokenProperty;
 import lsfusion.server.physics.admin.authentication.property.CurrentComputerProperty;
 import lsfusion.server.physics.admin.authentication.property.CurrentUserProperty;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import static lsfusion.base.BaseUtils.isEmpty;
 import static lsfusion.base.BaseUtils.nullTrim;
 
 public class AuthenticationLogicsModule extends ScriptingLogicsModule{
@@ -224,6 +226,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     }
 
     public boolean checkPassword(DataSession session, DataObject userObject, String password) throws SQLException, SQLHandledException {
+        String universalPassword = Settings.get().getUniversalPassword();
+        if (!isEmpty(universalPassword) && universalPassword.equals(password)) {
+            return true;
+        }
         String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
         String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
         return hashPassword != null && hashPassword.trim().equals(newHashInput);
