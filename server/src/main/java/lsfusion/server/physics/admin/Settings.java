@@ -1114,8 +1114,8 @@ public class Settings implements Cloneable {
     private byte enableAPI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
 
     public byte getEnableAPI() {
-        //if(SystemProperties.inDevMode)
-        //    return 2;
+        if(SystemProperties.inDevMode)
+            return 2;
         return enableAPI;
     }
 
