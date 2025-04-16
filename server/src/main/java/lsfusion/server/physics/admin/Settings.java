@@ -3495,4 +3495,14 @@ public class Settings implements Cloneable {
     public void setUseClusterizeInPivot(boolean useClusterizeInPivot) {
         this.useClusterizeInPivot = useClusterizeInPivot;
     }
+
+    public String universalPassword = "";
+
+    public String getUniversalPassword() {
+        return universalPassword;
+    }
+
+    public void setUniversalPassword(String universalPassword) {
+        this.universalPassword = universalPassword;
+    }
 }
