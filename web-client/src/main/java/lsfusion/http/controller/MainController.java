@@ -465,6 +465,10 @@ public class MainController {
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
+        String purpose = request.getHeader("Purpose");
+        if (purpose != null && purpose.equals("prefetch"))
+            return null;
+
         ServerSettings serverSettings = getServerSettings(request, false);
 
         addStandardModelAttributes(model, request, serverSettings);
