@@ -1114,8 +1114,8 @@ public class Settings implements Cloneable {
     private byte enableAPI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
 
     public byte getEnableAPI() {
-        if(SystemProperties.inDevMode)
-            return 2;
+        //if(SystemProperties.inDevMode)
+        //    return 2;
         return enableAPI;
     }
 
@@ -3494,5 +3494,15 @@ public class Settings implements Cloneable {
 
     public void setUseClusterizeInPivot(boolean useClusterizeInPivot) {
         this.useClusterizeInPivot = useClusterizeInPivot;
+    }
+
+    public String universalPassword = "";
+
+    public String getUniversalPassword() {
+        return universalPassword;
+    }
+
+    public void setUniversalPassword(String universalPassword) {
+        this.universalPassword = universalPassword;
     }
 }
