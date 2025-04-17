@@ -464,7 +464,7 @@ public class MainController {
     }
 
     private Set<String> waitingTabs = new HashSet<>();
-    private Map<String, Pair<String, LogicsSessionObject.InitSettings>> tabResultMap = new HashMap<>();
+    private Map<String, Pair<String, LogicsSessionObject.InitSettings>> tabResults = new HashMap<>();
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
         String purpose = request.getHeader("Purpose");
@@ -484,21 +484,21 @@ public class MainController {
             Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
             String tabId = getTabId(request);
             if (waitingTabs.contains(tabId)) {
-                while (!tabResultMap.containsKey(tabId)) {
+                while (!tabResults.containsKey(tabId)) {
                     Thread.sleep(1000);
                 }
-                Pair<String, LogicsSessionObject.InitSettings> tabResult = tabResultMap.get(tabId);
+                Pair<String, LogicsSessionObject.InitSettings> tabResult = tabResults.get(tabId);
                 sessionId = tabResult.first;
                 initSettings = tabResult.second;
-                //tabResultMap.remove(tabId);
             } else {
                 waitingTabs.add(tabId);
+                tabResults.remove(tabId);
                 sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                     try {
                         String result = navigatorProvider.createNavigator(sessionObject, request);
                         rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
                         waitingTabs.remove(tabId);
-                        tabResultMap.put(tabId, Pair.create(result, rInitSettings.result));
+                        tabResults.put(tabId, Pair.create(result, rInitSettings.result));
                         return result;
                     } catch (RemoteMessageException e) {
                         request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
