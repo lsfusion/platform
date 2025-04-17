@@ -875,14 +875,15 @@ public class ReportGenerator {
     }
 
     public static RawFileData exportToFileByteArray(ReportGenerationData reportData, FormPrintType staticType, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        File reportFile = null;
         try {
-            try {
-                return new RawFileData(exportToFile(reportData, staticType, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics));
-            } finally {
-                JRVirtualizationHelper.clearThreadVirtualizer();
-            }
+            reportFile = exportToFile(reportData, staticType, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics);
+            return new RawFileData(reportFile);
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        } finally {
+            BaseUtils.safeDelete(reportFile);
+            JRVirtualizationHelper.clearThreadVirtualizer();
         }
     }
 }
