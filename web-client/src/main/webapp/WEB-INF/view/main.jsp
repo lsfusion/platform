@@ -221,6 +221,11 @@
                 setCookie('LSFUSION_SCREEN_HEIGHT', document.documentElement.clientHeight);
                 setCookie('LSFUSION_SCALE', window.devicePixelRatio);
 
+                if (!sessionStorage.getItem("LSFUSION_TAB")) {
+                    sessionStorage.setItem("LSFUSION_TAB", getCookie("JSESSIONID") + "_" + Date.now().toString());
+                }
+                setCookie("LSFUSION_TAB", sessionStorage.getItem("LSFUSION_TAB"));
+
                 try {
                     navigator.serviceWorker.ready.then((registration) => {
                         registration.active.postMessage({

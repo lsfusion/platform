@@ -463,6 +463,8 @@ public class MainController {
         model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
     }
 
+    private Set<String> waitingTabs = new HashSet<>();
+    private Map<String, Pair<String, LogicsSessionObject.InitSettings>> tabResultMap = new HashMap<>();
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
         String purpose = request.getHeader("Purpose");
@@ -480,17 +482,31 @@ public class MainController {
         LogicsSessionObject.InitSettings initSettings;
         try {
             Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
-            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
-                try {
-                    String result = navigatorProvider.createNavigator(sessionObject, request);
-                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
-                    return result;
-                } catch (RemoteMessageException e) {
-                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
-                    throw e;
+            String tabId = getTabId(request);
+            if (waitingTabs.contains(tabId)) {
+                while (!tabResultMap.containsKey(tabId)) {
+                    Thread.sleep(1000);
                 }
-            });
-            initSettings = rInitSettings.result;
+                Pair<String, LogicsSessionObject.InitSettings> tabResult = tabResultMap.get(tabId);
+                sessionId = tabResult.first;
+                initSettings = tabResult.second;
+                //tabResultMap.remove(tabId);
+            } else {
+                waitingTabs.add(tabId);
+                sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+                    try {
+                        String result = navigatorProvider.createNavigator(sessionObject, request);
+                        rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
+                        waitingTabs.remove(tabId);
+                        tabResultMap.put(tabId, Pair.create(result, rInitSettings.result));
+                        return result;
+                    } catch (RemoteMessageException e) {
+                        request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
+                        throw e;
+                    }
+                });
+                initSettings = rInitSettings.result;
+            }
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -503,6 +519,18 @@ public class MainController {
         addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
 
         return "main";
+    }
+
+    private String getTabId(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if(cookie.getName().equals("LSFUSION_TAB")) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
