@@ -1,7 +1,6 @@
 package lsfusion.interop.session;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -203,10 +202,13 @@ public class ExternalUtils {
 
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
+        String secFetchMode = getHeaderValue(headerNames, headerValues, "sec-fetch-mode");
+        boolean isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");;
+
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), params.toArray(new ExternalRequest.Param[params.size()]),
-                headerNames, headerValues, cookieNames,
-                cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, returnMultiType, needNotificationId);
+                headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort,
+                contextPath, servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body,
+                signature, returnMultiType, needNotificationId, isInteractiveClient);
 
         lsfusion.interop.session.ExternalResponse execResult = null;
         String path = servletPath + pathInfo;
