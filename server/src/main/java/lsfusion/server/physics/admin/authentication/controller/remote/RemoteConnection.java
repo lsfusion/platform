@@ -393,15 +393,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw new AuthenticationException(getString("exceptions.user.must.be.authenticated"), redirect);
     }
 
-    private boolean isInteractiveClient(ExternalRequest request) {
-        String secFetchMode = ExternalUtils.getHeaderValue(request.headerNames, request.headerValues, "sec-fetch-mode");
-        return secFetchMode != null && secFetchMode.equals("navigate");
-    }
-
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
         boolean isInteractive = property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI);
 
-        if(isInteractive && isInteractiveClient(request))
+        if(isInteractive && request.isInteractiveClient)
             RemoteNavigator.checkEnableUI(token);
 
         checkEnableApi(property, actionParam, script, request, isInteractive);
