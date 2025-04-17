@@ -15,6 +15,7 @@ import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
+import lsfusion.http.provider.form.FormProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -51,6 +52,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static lsfusion.gwt.server.navigator.handlers.InitializeNavigatorHandler.SUCCEEDED_REQUESTS;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -60,12 +62,14 @@ public class MainController {
     private final LSFRemoteAuthenticationProvider authenticationProvider;
     private final LSFClientRegistrationRepository clientRegistrationRepository;
     private final NavigatorProvider navigatorProvider;
+    private final FormProvider formProvider;
 
-    public MainController(LogicsProvider logicsProvider, LSFRemoteAuthenticationProvider authenticationProvider, LSFClientRegistrationRepository clientRegistrationRepository, NavigatorProvider navigatorProvider) {
+    public MainController(LogicsProvider logicsProvider, LSFRemoteAuthenticationProvider authenticationProvider, LSFClientRegistrationRepository clientRegistrationRepository, NavigatorProvider navigatorProvider, FormProvider formProvider) {
         this.logicsProvider = logicsProvider;
         this.authenticationProvider = authenticationProvider;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.navigatorProvider = navigatorProvider;
+        this.formProvider = formProvider;
     }
 
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
@@ -484,6 +488,23 @@ public class MainController {
                 try {
                     String result = navigatorProvider.createNavigator(sessionObject, request);
                     rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
+
+                    HttpSession httpSession = request.getSession();
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            try {
+                                Set<String> succeededRequests = (Set<String>) httpSession.getAttribute(SUCCEEDED_REQUESTS);
+                                if(succeededRequests == null || !succeededRequests.contains(result)) {
+                                    formProvider.removeFormSessionObjects(result);
+                                    navigatorProvider.removeNavigatorSessionObject(result);
+                                }
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }, 20000);
+
                     return result;
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
