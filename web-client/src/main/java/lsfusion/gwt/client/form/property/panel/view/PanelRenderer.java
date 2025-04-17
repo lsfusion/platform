@@ -39,7 +39,7 @@ public abstract class PanelRenderer {
     private TooltipManager.TooltipHelper tooltipHelper = null;
 
     protected void finalizeInit() {
-        setCaption(nvl(value.controller.getCaption(columnKey), property.caption));
+        setCaption(property.caption);
         setCaptionElementClass(property.captionElementClass);
         setComment(property.comment);
         setCommentElementClass(property.commentElementClass);
@@ -87,6 +87,7 @@ public abstract class PanelRenderer {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
             updateCaption();
+            TooltipManager.updateContent(tippy, tooltipHelper, caption);
         }
     }
 

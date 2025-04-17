@@ -50,11 +50,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
             }
 
             @Override
-            public String getCaption(GGroupObjectValue columnKey) {
-                return null;
-            }
-
-            @Override
             public void setLoading(GGroupObjectValue columnKey, PValue value) {
                 throw new UnsupportedOperationException();
             }

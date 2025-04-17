@@ -218,7 +218,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 propertyCustomOption);
 
         if (captions != null)
-            renderer.setCaption(getCaption(columnKey));
+            renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
 
         if(changeKeys != null)
             renderer.setChangeKey(PValue.getBindingValue(changeKeys.get(columnKey)));
@@ -275,11 +275,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, PValue> captions) {
         this.captions = captions;
-    }
-
-    @Override
-    public String getCaption(GGroupObjectValue columnKey) {
-        return captions != null ? GGridPropertyTable.getDynamicCaption(captions.get(columnKey)) : null;
     }
 
     public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, PValue> readOnly) {

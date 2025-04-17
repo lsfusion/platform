@@ -11,6 +11,4 @@ public interface ActionOrPropertyValueController {
 
     void startEditing(GGroupObjectValue columnKey);
     void stopEditing(GGroupObjectValue columnKey);
-
-    String getCaption(GGroupObjectValue columnKey);
 }
