@@ -21,13 +21,14 @@ public class ExternalRequest implements Serializable {
     public ExternalRequest(Param[] params, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
                            String contentType, String sessionId) {
-        this(new String[0], params, new String[0], new String[0], null, null, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false);
+        this(new String[0], params, new String[0], new String[0], null, null, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false, false);
     }
     public ExternalRequest(String[] returnNames, Param[] params,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
-                           String contentType, String sessionId, byte[] body, String signature, String returnMultiType, boolean needNotificationId) {
+                           String contentType, String sessionId, byte[] body, String signature, String returnMultiType,
+                           boolean needNotificationId, boolean isInteractiveClient) {
         this.returnNames = returnNames;
         this.returnMultiType = returnMultiType;
         this.params = params;
@@ -51,6 +52,7 @@ public class ExternalRequest implements Serializable {
         this.body = body;
         this.signature = signature;
         this.needNotificationId = needNotificationId;
+        this.isInteractiveClient = isInteractiveClient;
     }
 
     public static Param getUrlParam(String value, String charsetName, String name) {
@@ -95,6 +97,7 @@ public class ExternalRequest implements Serializable {
     public final String signature;
 
     public final boolean needNotificationId;
+    public final boolean isInteractiveClient;
 
     public static final ExternalRequest EMPTY = new ExternalRequest(new Param[0]);
 
