@@ -394,7 +394,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
-        boolean isInteractive = property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI) && request.isInteractiveClient;
+        boolean isInteractive = request.isInteractiveClient && property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI);
 
         if(isInteractive)
             RemoteNavigator.checkEnableUI(token);
