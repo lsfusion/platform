@@ -338,7 +338,7 @@ public class ExternalUtils {
         return null;
     }
 
-    public static String getHeaderValue(String[] headerNames, String[] headerValues, String header) {
+    private static String getHeaderValue(String[] headerNames, String[] headerValues, String header) {
         for(int i = 0; i < headerNames.length; i++) {
             if(headerNames[i].equalsIgnoreCase(header))
                 return headerValues[i];
