@@ -175,6 +175,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
+        MainDispatchServlet.logger.error("CHECK navigator");
         NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
         MainDispatchServlet.logger.error("Removing navigator " + sessionID + "...");
         currentLogicsAndNavigators.remove(sessionID);

@@ -145,6 +145,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     @Override
     public void removeFormSessionObjects(String sessionID) throws SessionInvalidatedException {
+        MainDispatchServlet.logger.error("CHECK form");
         Collection<String> formSessionIDs = new HashSet<>(currentForms.keySet());
         for (String formSessionID : formSessionIDs) {
             if (currentForms.get(formSessionID).navigatorID.equals(sessionID)) {

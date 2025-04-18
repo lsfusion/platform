@@ -10,6 +10,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -19,6 +20,7 @@ import lsfusion.http.provider.form.FormProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
+import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -50,9 +52,10 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static lsfusion.gwt.server.navigator.handlers.InitializeNavigatorHandler.SUCCEEDED_REQUESTS;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -489,21 +492,22 @@ public class MainController {
                     String result = navigatorProvider.createNavigator(sessionObject, request);
                     rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
 
-                    HttpSession httpSession = request.getSession();
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            try {
-                                Set<String> succeededRequests = (Set<String>) httpSession.getAttribute(SUCCEEDED_REQUESTS);
-                                if(succeededRequests == null || !succeededRequests.contains(result)) {
-                                    formProvider.removeFormSessionObjects(result);
-                                    navigatorProvider.removeNavigatorSessionObject(result);
-                                }
-                            } catch (RemoteException e) {
-                                throw new RuntimeException(e);
+                    NavigatorSessionObject navigatorSessionObject = navigatorProvider.getNavigatorSessionObject(result);
+                    Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                        try {
+                            MainDispatchServlet.logger.error("CHECK 20 seconds");
+                            boolean initialized = navigatorSessionObject.initialized;
+                            if (!initialized) {
+                                MainDispatchServlet.logger.error("CHECK not initialized " + result);
+                                navigatorProvider.removeNavigatorSessionObject(result);
+                                formProvider.removeFormSessionObjects(result);
+                            } else {
+                                MainDispatchServlet.logger.error("CHECK initialized " + result);
                             }
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
                         }
-                    }, 20000);
+                    }, 20, TimeUnit.SECONDS);
 
                     return result;
                 } catch (RemoteMessageException e) {

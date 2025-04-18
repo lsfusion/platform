@@ -94,16 +94,9 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }
 
-    public static String SUCCEEDED_REQUESTS = "LSFUSION_SUCCEEDED_REQUESTS";
-
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
-        Set<String> succeededRequests = (Set<String>) servlet.getRequest().getSession().getAttribute(SUCCEEDED_REQUESTS);
-        if (succeededRequests == null)
-            succeededRequests = new HashSet<>();
-        succeededRequests.add(action.sessionID);
-        servlet.getRequest().getSession().setAttribute(SUCCEEDED_REQUESTS, succeededRequests);
-
+        getNavigatorSessionObject(action).initialized = true;
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
