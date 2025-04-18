@@ -7,5 +7,6 @@ import java.rmi.RemoteException;
 public class SessionInvalidatedException extends RemoteException {
 
     public SessionInvalidatedException(String message) {
+        super(message);
     }
 }
