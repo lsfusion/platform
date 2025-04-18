@@ -38,6 +38,7 @@ import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.HttpClientAction;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.net.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -255,7 +256,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
-        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)));
+        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension), Base64.encodeBase64String(action.file.getBytes()));
     }
 
     @Converter(from = HttpClientAction.class)

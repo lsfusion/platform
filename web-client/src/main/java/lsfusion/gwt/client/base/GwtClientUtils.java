@@ -159,10 +159,31 @@ public class GwtClientUtils {
         }
     }
 
-    public static void downloadFile(String fileUrl) {
-        if (fileUrl != null)
-            fileDownload(getAppDownloadURL(fileUrl));
+    public static void writeFile(String fileUrl, String filePath, String fileBase64) {
+        if(fileUrl != null) {
+            if (isElectron()) {
+                saveFile(filePath, fileBase64);
+            } else {
+                fileDownload(getAppDownloadURL(fileUrl));
+            }
+        }
     }
+
+    /*--- electron methods ---*/
+
+    public static native boolean isElectron() /*-{
+        return navigator.userAgent.toLowerCase().indexOf('electron') !== -1 && typeof $wnd.electronAPI !== 'undefined';
+    }-*/;
+
+    public static native void saveFile(String path, String fileBase64) /*-{
+        $wnd.electronAPI.saveFile(path, fileBase64).then(function(result) {
+            if (result.success) {
+                $wnd.alert("File saved");
+            } else {
+                $wnd.alert("Error: " + result.error);
+            }
+        });
+    }-*/;
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
