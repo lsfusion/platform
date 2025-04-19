@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -464,10 +465,15 @@ public class MainController {
     }
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
-    public String processMain(ModelMap model, HttpServletRequest request) {
-        String purpose = request.getHeader("Purpose");
-        if (purpose != null && purpose.equals("prefetch"))
-            return null;
+    public String processMain(ModelMap model, HttpServletRequest request,
+                                         HttpServletResponse response) {
+//        this way it is really faster, when we start creating navigator when user still type (however later maybe it's better to parameterize this)
+//        String secPurpose = request.getHeader("Sec-Purpose");
+//        String legacyPurpose = request.getHeader("Purpose");
+//        if ("prefetch".equals(secPurpose) || "prefetch".equals(legacyPurpose)) {
+//            response.setStatus(HttpStatus.NO_CONTENT.value());
+//            return null;
+//        }
 
         ServerSettings serverSettings = getServerSettings(request, false);
 
