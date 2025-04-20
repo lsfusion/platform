@@ -313,7 +313,7 @@ public class MainFrame implements EntryPoint {
         return hasAttribute;
     }
 
-    public void initializeFrame(NavigatorInfo result, PopupOwner popupOwner) {
+    public void initializeFrame(NavigatorInfo result, PopupOwner popupOwner, boolean prefetching) {
         assert currentForm == null;
         currentForm = null;
 
@@ -367,6 +367,11 @@ public class MainFrame implements EntryPoint {
 //                saveAndClean(windowsController);
 //            });
 //        }
+        if(prefetching)
+            GwtClientUtils.addPrefetchCompleteListener(() -> {
+                if(navigatorDispatchAsync != null)
+                    navigatorDispatchAsync.executePriority(new NavigatorShown(), new PriorityErrorHandlingCallback<>(popupOwner));
+            });
 
         Window.addWindowClosingHandler(event -> {
             if(!disableConfirmDialog) {
@@ -641,7 +646,10 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+
+        boolean prefetching = GwtClientUtils.isPrefetching();
+
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale, prefetching), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -690,7 +698,7 @@ public class MainFrame implements EntryPoint {
 
                 useClusterizeInPivot = gClientSettings.useClusterizeInPivot;
 
-                initializeFrame(result.navigatorInfo, popupOwner);
+                initializeFrame(result.navigatorInfo, popupOwner, prefetching);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
             }
         });

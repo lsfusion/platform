@@ -464,13 +464,15 @@ public class MainController {
         model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
     }
 
+    public static boolean isPrefetch(HttpServletRequest request) {
+        return "prefetch".equals(request.getHeader("Sec-Purpose")) || "prefetch".equals(request.getHeader("Purpose"));
+    }
+
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request,
                                          HttpServletResponse response) {
 //        this way it is really faster, when we start creating navigator when user still type (however later maybe it's better to parameterize this)
-//        String secPurpose = request.getHeader("Sec-Purpose");
-//        String legacyPurpose = request.getHeader("Purpose");
-//        if ("prefetch".equals(secPurpose) || "prefetch".equals(legacyPurpose)) {
+//        if (isPrefetch(request)) {
 //            response.setStatus(HttpStatus.NO_CONTENT.value());
 //            return null;
 //        }

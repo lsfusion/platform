@@ -96,6 +96,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
+        getNavigatorSessionObject(action).initialized = action.prefetching ? 1 : 2;
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
