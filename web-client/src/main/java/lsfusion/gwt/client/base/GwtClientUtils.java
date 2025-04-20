@@ -50,6 +50,16 @@ public class GwtClientUtils {
         }
     }
 
+    public static native boolean isPrefetching()/*-{
+        return $doc.prerendering;
+    }-*/;
+
+    public static native boolean addPrefetchCompleteListener(Runnable runnable)/*-{
+        $doc.addEventListener('prerenderingchange', function () {
+            runnable.@java.lang.Runnable::run()();
+        }, { once: true });
+    }-*/;
+
     public static String getPageUrlPreservingParameters(String pageUrl) {
         return getWebAppBaseURL() + pageUrl + Window.Location.getQueryString();
     }

@@ -38,6 +38,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // session scoped - one for one browser (! not tab)
@@ -103,7 +106,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        we don't need client locale here, because it was already updated when authenticating
 //        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
 //        if(clientLocale == null)
-//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
+//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
@@ -124,6 +127,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
         addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
+        scheduleCheckInitialized(sessionID, MainController.isPrefetch(request));
         return sessionID;
     }
 
@@ -175,9 +179,31 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
-        NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
         MainDispatchServlet.logger.error("Removing navigator " + sessionID + "...");
-        currentLogicsAndNavigators.remove(sessionID);
+        removeNavigatorSessionObject(currentLogicsAndNavigators, sessionID);
+    }
+
+    public void scheduleCheckInitialized(String sessionId, boolean isPrefetch) {
+        scheduleCheckInitialized(currentLogicsAndNavigators, sessionId, isPrefetch);
+    }
+    private static final ScheduledExecutorService checkInitializedExecutor = Executors.newScheduledThreadPool(5);
+    private static void scheduleCheckInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, boolean isPrefetch) {
+        checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 1), 1, TimeUnit.MINUTES);
+        if(isPrefetch) // google has prefetch 5 minutes grace period
+            checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 2), 5, TimeUnit.MINUTES);
+    }
+
+    private static void checkInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, int status) {
+        try {
+            NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionId);
+            if(navigatorSessionObject != null && navigatorSessionObject.initialized < status)
+                removeNavigatorSessionObject(currentLogicsAndNavigators, sessionId);
+        } catch (Exception e) {
+        }
+    }
+
+    private static void removeNavigatorSessionObject(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionID) throws RemoteException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
         navigatorSessionObject.remoteNavigator.close();
     }
 
