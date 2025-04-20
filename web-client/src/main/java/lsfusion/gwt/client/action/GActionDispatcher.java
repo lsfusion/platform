@@ -35,7 +35,11 @@ public interface GActionDispatcher {
 
     void execute(GOpenFileAction action);
 
+    String execute(GReadAction action);
+
     void execute(GWriteAction action);
+
+    String execute(GRunCommandAction action);
 
     String execute(GLoadLinkAction action);
 

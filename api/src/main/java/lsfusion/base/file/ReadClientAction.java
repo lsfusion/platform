@@ -5,10 +5,10 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 
 public class ReadClientAction implements ClientAction {
-    String sourcePath;
-    boolean isDynamicFormatFileClass;
-    boolean isBlockingFileRead;
-    boolean isDialog;
+    public final String sourcePath;
+    public final boolean isDynamicFormatFileClass;
+    public final boolean isBlockingFileRead;
+    public final boolean isDialog;
 
     public ReadClientAction(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) {
         this.sourcePath = sourcePath;

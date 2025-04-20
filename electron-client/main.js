@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -20,7 +21,17 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-ipcMain.handle('save-file', async (event, { filePath, content }) => {
+ipcMain.handle('read-file', async (event, { filePath }) => {
+    try {
+        const buffer = fs.readFileSync(filePath);
+        const base64 = buffer.toString('base64');
+        return { content: base64 };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+ipcMain.handle('write-file', async (event, { filePath, content }) => {
     try {
         const buffer = Buffer.from(content, 'base64');
         fs.writeFileSync(filePath, buffer);
@@ -28,4 +39,18 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
     } catch (err) {
         return { error: err.message };
     }
+});
+
+ipcMain.handle('run-command', async (event, command) => {
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject({ error: error.message });
+            }
+            if (stderr) {
+                reject({ error: stderr });
+            }
+            resolve({ output: stdout });
+        });
+    });
 });

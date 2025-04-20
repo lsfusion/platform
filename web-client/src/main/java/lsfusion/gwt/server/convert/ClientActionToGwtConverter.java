@@ -6,6 +6,7 @@ import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -253,10 +254,22 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
+    //todo: isDynamicFormatFileClass, isBlockingFileRead, isDialog
+    @Converter(from = ReadClientAction.class)
+    public GReadAction convertAction(ReadClientAction action) {
+        return new GReadAction(action.sourcePath);
+    }
+
     //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
         return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension), Base64.encodeBase64String(action.file.getBytes()));
+    }
+
+    //todo: directory, wait
+    @Converter(from = RunCommandClientAction.class)
+    public GRunCommandAction convertAction(RunCommandClientAction action) {
+        return new GRunCommandAction(action.command);
     }
 
     @Converter(from = HttpClientAction.class)

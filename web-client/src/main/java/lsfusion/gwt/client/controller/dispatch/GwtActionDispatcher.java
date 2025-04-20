@@ -370,8 +370,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public String execute(GReadAction action) {
+        return GwtClientUtils.readFile(action.sourcePath);
+    }
+
+    @Override
     public void execute(GWriteAction action) {
         GwtClientUtils.writeFile(action.fileUrl, action.filePath, action.fileBase64);
+    }
+
+    @Override
+    public String execute(GRunCommandAction action) {
+        return GwtClientUtils.runCommand(action.command);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

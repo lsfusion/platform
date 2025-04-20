@@ -159,28 +159,64 @@ public class GwtClientUtils {
         }
     }
 
-    public static void writeFile(String fileUrl, String filePath, String fileBase64) {
-        if(fileUrl != null) {
-            if (isElectron()) {
-                saveFile(filePath, fileBase64);
-            } else {
-                fileDownload(getAppDownloadURL(fileUrl));
-            }
+    public static String readFile(String sourcePath) {
+        if (isElectron() && sourcePath != null) {
+            readFileElectron(sourcePath);
         }
+        return null;
+    }
+
+    public static void writeFile(String fileUrl, String filePath, String fileBase64) {
+        if (isElectron()) {
+            if(filePath != null)
+                writeFileElectron(filePath, fileBase64);
+        } else {
+            if(fileUrl != null)
+                fileDownload(getAppDownloadURL(fileUrl));
+        }
+    }
+
+    public static String runCommand(String command) {
+        if (isElectron() && command != null) {
+            runCommandElectron(command);
+        }
+        return null;
     }
 
     /*--- electron methods ---*/
 
-    public static native boolean isElectron() /*-{
+    private static native boolean isElectron() /*-{
         return navigator.userAgent.toLowerCase().indexOf('electron') !== -1 && typeof $wnd.electronAPI !== 'undefined';
     }-*/;
 
-    public static native void saveFile(String path, String fileBase64) /*-{
-        $wnd.electronAPI.saveFile(path, fileBase64).then(function(result) {
-            if (result.success) {
-                $wnd.alert("File saved");
+    private static native void readFileElectron(String path) /*-{
+        $wnd.electronAPI.readFile(path).then(function(result) {
+            if (result.content) {
+                //todo: read file is async, so we can only write to console or show alert
+                console.log("📄 File content (Base64):", result.content);
+                $wnd.alert("File content: " + atob(result.content));
             } else {
+                $wnd.alert("Error reading file: " + result.error);
+            }
+        });
+    }-*/;
+
+    private static native void writeFileElectron(String path, String fileBase64) /*-{
+        $wnd.electronAPI.writeFile(path, fileBase64).then(function (result) {
+            if (!result.success) {
                 $wnd.alert("Error: " + result.error);
+            }
+        });
+    }-*/;
+
+    private static native void runCommandElectron(String command) /*-{
+        $wnd.electronAPI.runCommand(command).then(function(result) {
+            if (result && result.output) {
+                $wnd.alert("Command output: " + result.output);
+            } else if (result && result.error) {
+                $wnd.alert("Error running command: " + result.error);
+            } else {
+                $wnd.alert("Unknown response from command");
             }
         });
     }-*/;
