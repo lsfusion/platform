@@ -4,10 +4,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.action.MessageClientType;
-import lsfusion.interop.action.ResetServerSettingsCacheClientAction;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -220,7 +217,8 @@ public abstract class AbstractContext implements Context {
     public void aspectDelayUserInteraction(ClientAction action, String message) {
         if(message != null)
             systemLogger.info("Server message: " + message);
-        else if (!(action instanceof ResetServerSettingsCacheClientAction)) //todo. temporary fix. problem on empty DB is that ResetServerSettingsCacheClientAction is called when there is no client context yet.
+        else if (!(action instanceof ResetServerSettingsCacheClientAction //todo. temporary fix. problem on empty DB is that ResetServerSettingsCacheClientAction is called when there is no client context yet.
+                || action instanceof ChangeColorThemeClientAction)) // todo. temporary fix. it seems that during synchronizeDB color theme can be changed somehow
             throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
     }
 
