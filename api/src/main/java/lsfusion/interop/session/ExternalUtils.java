@@ -202,8 +202,11 @@ public class ExternalUtils {
 
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
-        String secFetchMode = getHeaderValue(headerNames, headerValues, "sec-fetch-mode");
-        boolean isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");;
+        boolean isInteractiveClient = false;
+        if(sessionId != null) { // supports interactive client
+            String secFetchMode = getHeaderValue(headerNames, headerValues, "sec-fetch-mode");
+            isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");            ;
+        }
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), params.toArray(new ExternalRequest.Param[params.size()]),
                 headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort,
