@@ -34,9 +34,11 @@ public class WriteDefaultSettingsAction extends InternalAction {
 
             List<List<Object>> data = new ArrayList<>();
             for (Field field : attributes) {
-                String name = field.getName();
-                String value = String.valueOf(PropertyUtils.getSimpleProperty(settings, field.getName()));
-                data.add(Arrays.asList(name, value));
+                if (!field.isSynthetic()) {
+                    String name = field.getName();
+                    String value = String.valueOf(PropertyUtils.getSimpleProperty(settings, field.getName()));
+                    data.add(Arrays.asList(name, value));
+                }
             }
 
             List<ImportProperty<?>> props = new ArrayList<>();
