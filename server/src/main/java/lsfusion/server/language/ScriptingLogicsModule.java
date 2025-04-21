@@ -1199,7 +1199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addSettingsToActionOrProperty(LAP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
                                               ActionOrPropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        property.getActionOrProperty().annotation = ps.annotation;
+        property.getActionOrProperty().annotations = ps.annotations;
 
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checks.checkDistinctParameters(paramNames);
