@@ -71,7 +71,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     private int ID = 0;
     protected String canonicalName;
-    public String annotation;
+    public ImSet<String> annotations;
     public ImRevMap<T, String> paramNames;
 
     private boolean local = false;
@@ -100,7 +100,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public boolean hasAnnotation(String annotation) {
-        return this.annotation != null && this.annotation.equals(annotation);
+        return annotations != null && annotations.contains(annotation);
     }
 
     public LocalizedString localizedToString() {

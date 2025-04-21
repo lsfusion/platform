@@ -2895,7 +2895,7 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	stickySetting [property]
 	|	syncSetting [property]
 	|   imageSetting [property]
-	|   '@@' ann = ID { ps.annotation = $ann.text; }
+	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
     ;
 
 semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
