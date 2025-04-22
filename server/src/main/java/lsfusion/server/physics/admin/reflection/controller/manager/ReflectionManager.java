@@ -572,13 +572,14 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                         }
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
-                    
+
+                    String annotations = actionOrProperty.annotations != null ? actionOrProperty.annotations.toString(" ") : null;
                     dataProperty.add(asList(actionOrProperty.getCanonicalName(), fieldSID, ThreadLocalContext.localize(actionOrProperty.caption),
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isLoggable() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotations.toString(" "),
+                            returnClass, classProperty, complexityProperty, tableSID, annotations,
                             (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
                 }
             }
