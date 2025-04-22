@@ -27,15 +27,20 @@
                     } else {
                         timeToReconnect = 5;
                         window.location.href = "${redirectURL}";
+                        clear();
                     }
 
                     document.getElementById("reconnectTime").innerHTML = timeToReconnect;
                 }, 1000);
             } else {
                 button.innerHTML = "<%= ServerMessages.getString(request, "app.server.unavailable.timer.start") %>";
-                clearInterval(interval);
-                interval = null;
+                clear();
             }
+        }
+
+        function clear() {
+            clearInterval(interval);
+            interval = null;
         }
     </script>
 </head>
