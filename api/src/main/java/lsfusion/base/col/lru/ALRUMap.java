@@ -1,7 +1,7 @@
 package lsfusion.base.col.lru;
 
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.lambda.Processor;
 
@@ -54,7 +54,7 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
     protected abstract S[] createSegments(int size);
     protected abstract S createSegment(int cap, float loadFactor);
     
-    static final WeakIdentityHashSet<ALRUMap> allMaps = new WeakIdentityHashSet<>(); 
+    private static final ConcurrentIdentityWeakHashSet<ALRUMap> allMaps = new ConcurrentIdentityWeakHashSet<>();
 
     public ALRUMap(int initialCapacity, float loadFactor, int concurrencyLevel, Strategy expireStrategy) {
         if (initialCapacity < 0)

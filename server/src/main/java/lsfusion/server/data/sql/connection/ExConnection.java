@@ -15,7 +15,7 @@ import java.sql.Statement;
 
 public class ExConnection {
     public Connection sql;
-    public SQLTemporaryPool temporary;
+    public final SQLTemporaryPool temporary;
 
     public ExConnection(Connection sql, SQLTemporaryPool temporary) {
         this.sql = sql;
