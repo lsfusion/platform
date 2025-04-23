@@ -811,17 +811,21 @@ DESIGN exceptions {
             NEW textContainer {
                 horizontal = TRUE;
                 fill = 1;
+                height = 100;
 
                 MOVE PROPERTY(javaStackTrace(e)) {
-                    fill = 1;
+                    alignment = START;
+                    valueHeight = -1;
                     panelCaptionVertical = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
-                    fill = 1;
+                    alignment = START;
+                    valueHeight = -1;
                     panelCaptionVertical = TRUE;
                 }
                 MOVE PROPERTY(asyncStackTrace(e)) {
-                    fill = 1;
+                    alignment = START;
+                    valueHeight = -1;
                     panelCaptionVertical = TRUE;
                 }
             }
