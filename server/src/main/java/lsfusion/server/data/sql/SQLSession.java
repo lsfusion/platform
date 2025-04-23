@@ -584,12 +584,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
         assert isInTransaction() || transactionTables.isEmpty();
-        try {
-            if(Settings.get().isApplyVolatileStats())
-                pushVolatileStats(owner);
-            if(isExplainTemporaryTablesEnabled())
-                addFifo("ST");
-            if(inTransaction++ == 0) {
+        if(inTransaction == 0) {
+            try {
+                if(Settings.get().isApplyVolatileStats())
+                    pushVolatileStats(owner);
+                if(isExplainTemporaryTablesEnabled())
+                    addFifo("ST");
+
                 transStartTime = System.currentTimeMillis();
 
                 needPrivate();
@@ -601,10 +602,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 this.useDeadLockPriority = useDeadLockPriority;
                 this.applyStartTime = applyStartTime;
+            } catch (Throwable t) {
+                unlockWrite();
+
+                if(t instanceof SQLException)
+                    handleAndPropagate((SQLException) t, "START TRANSACTION");
+                else
+                    throw Throwables.propagate(t);
             }
-        } catch (SQLException e) {
-            handleAndPropagate(e, "START TRANSACTION");
         }
+        inTransaction++;
     }
 
     public void handleAndPropagate(SQLException e, String message) throws SQLException, SQLHandledException {

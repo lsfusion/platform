@@ -178,16 +178,24 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         closeConnection(connection.sql);
     }
 
-    protected void prepareConnection(Connection connection) {
-    }
-
     private AtomicInteger connectionsCount = new AtomicInteger();
 
+    private Connection safeStartConnection(int count) throws SQLException {
+        try {
+            return startConnection();
+        } catch (SQLException e) {
+            if(count < Settings.get().getNewConnectionAttempts()) {
+                ServerLoggers.sqlSuppLog(e);
+                return safeStartConnection(count + 1);
+            }
+
+            throw e;
+        }
+    }
     public Connection newConnection() throws SQLException {
         long l = System.currentTimeMillis();
 
-        Connection newConnection = startConnection();
-        prepareConnection(newConnection);
+        Connection newConnection = safeStartConnection(0);
         SQLSession.setACID(newConnection, false, getSyntax());
 
         logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());

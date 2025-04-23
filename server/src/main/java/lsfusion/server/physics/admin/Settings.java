@@ -70,6 +70,7 @@ public class Settings implements Cloneable {
     private Boolean changeActionOnSingleClick = true;
 
     private int freeConnections = 12;
+    private int newConnectionAttempts = 3;
     private int freeAPISessions = 12;
     private boolean reinitAPISession = false;
 
@@ -491,6 +492,14 @@ public class Settings implements Cloneable {
 
     public void setFreeConnections(int freeConnections) {
         this.freeConnections = freeConnections;
+    }
+
+    public int getNewConnectionAttempts() {
+        return newConnectionAttempts;
+    }
+
+    public void setNewConnectionAttempts(int newConnectionAttempts) {
+        this.newConnectionAttempts = newConnectionAttempts;
     }
 
     public int getFreeAPISessions() {
