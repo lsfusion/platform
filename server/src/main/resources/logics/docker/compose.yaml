@@ -17,7 +17,7 @@ services:
       - docker-server:/lsfusion
 
   server:
-    image: lsfusion/server:6.0-SNAPSHOT
+    image: lsfusion/server:6.0
     depends_on:
       - db
       - logics
@@ -28,7 +28,7 @@ services:
       - DB_PASSWORD=11111
 
   client:
-    image: lsfusion/client:6.0-SNAPSHOT
+    image: lsfusion/client:6.0
     depends_on:
       - server
     volumes:
