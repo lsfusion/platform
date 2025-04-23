@@ -81,15 +81,9 @@ import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
 import lsfusion.server.physics.admin.monitor.sql.SQLThreadInfo;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.DBTable;
-import org.apache.commons.collections.Buffer;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
@@ -588,12 +582,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 if(Settings.get().isApplyVolatileStats())
                     pushVolatileStats(owner);
-                if(isExplainTemporaryTablesEnabled())
-                    addFifo("ST");
 
                 transStartTime = System.currentTimeMillis();
 
                 needPrivate();
+
+                if(isExplainTemporaryTablesEnabled())
+                    addTTLog("ST", owner);
+
                 if(serializable) {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();
                     privateConnection.sql.setTransactionIsolation(trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ);
@@ -680,7 +676,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //                            returnUsed(transactionTable, sessionTablesMap);
                         WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
                         if(isExplainTemporaryTablesEnabled())
-                            addFifo("TRANSRET " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner);
+                            addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
@@ -701,7 +697,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         if(isExplainTemporaryTablesEnabled())
-            addFifo("RBACK");
+            addTTLog("RBACK", owner);
 
         runSuppressed(() -> endTransaction(owner, true), firstException);
 
@@ -727,7 +723,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         afterCommit.run();
 
         if(isExplainTemporaryTablesEnabled())
-            addFifo("CMT");
+            addTTLog("CMT", owner);
 
         endTransaction(owner, false);
     }
@@ -1200,18 +1196,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         transactionTotalSessionTablesCount = null;
     }
 
-    public static Buffer fifoTC = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
-    public static void outFifoTC() throws IOException {
-        String filename = "e:\\outTC.txt";
-        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
-        for (Object ff : fifoTC) {
-            outputWriter.write(ff+"");
-            outputWriter.newLine();
-        }
-        outputWriter.flush();
-        outputWriter.close();
-    }
-
     private void rollbackTransactionSessionTablesCount() { // assert lockWrite
         for(Map.Entry<String, Integer> tableCount : transactionSessionTablesCount.entrySet()) {
             if(tableCount.getValue() == null) {
@@ -1226,22 +1210,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             totalSessionTablesCount = transactionTotalSessionTablesCount;
     }
 
-    public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(10000));
-    public void addFifo(String log) {
-        fifo.add(log + " " + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+    public void addTTLog(String log, OperationOwner owner) {
+        assert privateConnection != null;
+        privateConnection.temporary.addLog(log, null, owner);
     }
-    public static void outFifo(String filename) throws IOException {
-        // "e:\\out.txt";
-        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
-        for (Object ff : fifo) {
-            outputWriter.write(ff+"");
-            outputWriter.newLine();
-        }
-        outputWriter.flush();
-        outputWriter.close();
-        fifo.clear();
-     }
-    
+    public void addTTLog(String log, String table, TableOwner owner, OperationOwner opOwner) {
+        assert privateConnection != null;
+        privateConnection.temporary.addLog(log + " " + owner, table, opOwner);
+    }
+    public void addTTDSLog(String log, OperationOwner opOwner) {
+//        privateConnection.temporary.addFifo()
+    }
+
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         lockRead(opOwner);
         String table;
@@ -1267,7 +1247,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 temporaryTablesLock.unlock();
             }
             if(isExplainTemporaryTablesEnabled())
-                addFifo("GET " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner);
+                addTTLog("GET", table, owner, opOwner);
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
@@ -1301,7 +1281,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
                 if(isExplainTemporaryTablesEnabled())
-                    addFifo("RU " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner);
+                    addTTLog("RU " + force, entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner, opOwner);
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, null, (tableOwner == null ? TableOwner.none : tableOwner));
                 logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
@@ -1337,7 +1317,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             Result<Throwable> firstException = new Result<>();
             if(isExplainTemporaryTablesEnabled())
-                addFifo("RETURN " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner);
+                addTTLog("RETURN " + truncate, table, owner, opOwner);
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
                 runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
@@ -1371,13 +1351,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 needPrivate();
 
-                registerChange(table.getName(), owner, -1, TableChange.ADD);
+                String tableName = table.getName();
+                registerChange(tableName, owner, -1, TableChange.ADD);
 
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
                 if(isExplainTemporaryTablesEnabled())
-                    addFifo("RGET " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner);
-                WeakReference<TableOwner> prevOwner = sessionTablesMap.put(table.getName(), value);
-                sessionDebugInfo.put(table.getName(), owner.getDebugInfo());
+                    addTTLog("RGET", tableName, owner, opOwner);
+                WeakReference<TableOwner> prevOwner = sessionTablesMap.put(tableName, value);
+                sessionDebugInfo.put(tableName, owner.getDebugInfo());
 
                 if(assertNotExists) {
                     // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
@@ -1853,8 +1834,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(message == null)
             message = "PREPARING STATEMENT";
 
-        if(isExplainTemporaryTablesEnabled())
-            addFifo("E");
+        if(isExplainTemporaryTablesEnabled()) {
+            if(syntax.isTableDoesNotExist(e) && privateConnection != null) {
+                Pattern pattern = Pattern.compile("relation\\s+\"([^\"]+)\"");
+                Matcher matcher = pattern.matcher(e.getMessage());
+
+                if (matcher.find())
+                    privateConnection.temporary.outLog(matcher.group(1));
+            }
+
+            addTTLog("E", null);
+        }
 
         boolean inTransaction = isInTransaction();
         if(inTransaction && syntax.hasTransactionSavepointProblem())
