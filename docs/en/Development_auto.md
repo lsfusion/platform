@@ -8,9 +8,9 @@ On this page you can download installers that install everything needed for deve
 
 ### Windows
 
-**lsFusion 6.0-beta2** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
+**lsFusion 6.0** (OpenJDK **21.0.6**, PostgreSQL **17.4**, Tomcat **9.0.104**, IntelliJ IDEA Community Edition **2025.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-dev-6.0-beta2-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-dev-6.0-x64.exe)
 
 <details>
 <summary><strong>Older versions</strong></summary>
