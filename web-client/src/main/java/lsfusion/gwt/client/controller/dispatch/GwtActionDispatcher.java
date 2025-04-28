@@ -35,6 +35,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
@@ -370,18 +371,36 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public String execute(GReadAction action) {
-        return GwtClientUtils.readFile(action.sourcePath);
+    public GReadResult execute(GReadAction action) {
+        if(isElectron() && action.sourcePath != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            GwtClientUtils.readFileElectron(action.sourcePath, createReadCallback(fileBase64 -> {
+                continueDispatching(new GReadResult(fileBase64, action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result);
+            }));
+        }
+        return null;
     }
 
     @Override
     public void execute(GWriteAction action) {
-        GwtClientUtils.writeFile(action.fileUrl, action.filePath, action.fileBase64);
+        if (isElectron()) {
+            if(action.filePath != null)
+                writeFileElectron(action.filePath, action.fileBase64);
+        } else {
+            if(action.fileUrl != null)
+                fileDownload(getAppDownloadURL(action.fileUrl));
+        }
     }
 
     @Override
-    public String execute(GRunCommandAction action) {
-        return GwtClientUtils.runCommand(action.command);
+    public GRunCommandActionResult execute(GRunCommandAction action) {
+        if (isElectron() && action.command != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            runCommandElectron(action.command, createRunCommandCallback((cmdOut, cmdErr, exitValue) -> continueDispatching(new GRunCommandActionResult(cmdOut, cmdErr, exitValue), result)));
+        }
+        return null;
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

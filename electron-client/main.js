@@ -5,8 +5,6 @@ const { exec } = require('child_process');
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1000,
-        height: 700,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -14,7 +12,7 @@ function createWindow() {
         },
         icon: path.join(__dirname, 'logo.png')
     });
-
+    win.maximize();
     win.setMenuBarVisibility(false);
     win.loadURL('http://127.0.0.1:8888/main');
 }
@@ -42,15 +40,13 @@ ipcMain.handle('write-file', async (event, { filePath, content }) => {
 });
 
 ipcMain.handle('run-command', async (event, command) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         exec(command, (error, stdout, stderr) => {
-            if (error) {
-                reject({ error: error.message });
-            }
-            if (stderr) {
-                reject({ error: stderr });
-            }
-            resolve({ output: stdout });
+            resolve({
+                output: stdout,
+                error: stderr,
+                exitValue: error ? error.code : 0
+            });
         });
     });
 });

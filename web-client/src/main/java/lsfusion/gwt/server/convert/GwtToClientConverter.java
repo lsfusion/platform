@@ -1,6 +1,9 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.ReadUtils;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
@@ -9,6 +12,8 @@ import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
+import lsfusion.gwt.client.action.GReadResult;
+import lsfusion.gwt.client.action.GRunCommandActionResult;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
@@ -26,6 +31,7 @@ import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.action.RunCommandActionResult;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventClose;
@@ -40,6 +46,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.session.ExternalHttpResponse;
+import org.olap4j.impl.Base64;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -239,5 +246,16 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GFormEventClose.class)
     public FormEventClose convertFormScheduler(GFormEventClose formEventClose) {
         return new FormEventClose(formEventClose.ok);
+    }
+
+    @Converter(from = GReadResult.class)
+    public ReadUtils.ReadResult convertReadResult(GReadResult readResult) {
+        RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
+        return new ReadUtils.ReadResult(readResult.extension != null ? new FileData(file, readResult.extension) : file, "file");
+    }
+
+    @Converter(from = GRunCommandActionResult.class)
+    public RunCommandActionResult convertReadResult(GRunCommandActionResult runCommandActionResult) {
+        return new RunCommandActionResult(runCommandActionResult.cmdOut, runCommandActionResult.cmdErr, runCommandActionResult.exitValue);
     }
 }

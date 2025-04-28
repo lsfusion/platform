@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.action;
 
-public class GRunCommandAction extends GExecuteAction {
+public class GRunCommandAction implements GAction {
     public String command;
 
     @SuppressWarnings("UnusedDeclaration")
@@ -11,7 +11,7 @@ public class GRunCommandAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws Throwable {
-        dispatcher.execute(this);
+    public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
+        return dispatcher.execute(this);
     }
 }

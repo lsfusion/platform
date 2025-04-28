@@ -159,49 +159,37 @@ public class GwtClientUtils {
         }
     }
 
-    public static String readFile(String sourcePath) {
-        if (isElectron() && sourcePath != null) {
-            readFileElectron(sourcePath);
-        }
-        return null;
-    }
-
-    public static void writeFile(String fileUrl, String filePath, String fileBase64) {
-        if (isElectron()) {
-            if(filePath != null)
-                writeFileElectron(filePath, fileBase64);
-        } else {
-            if(fileUrl != null)
-                fileDownload(getAppDownloadURL(fileUrl));
-        }
-    }
-
-    public static String runCommand(String command) {
-        if (isElectron() && command != null) {
-            runCommandElectron(command);
-        }
-        return null;
-    }
-
     /*--- electron methods ---*/
 
-    private static native boolean isElectron() /*-{
+    public static native boolean isElectron() /*-{
         return navigator.userAgent.toLowerCase().indexOf('electron') !== -1 && typeof $wnd.electronAPI !== 'undefined';
     }-*/;
 
-    private static native void readFileElectron(String path) /*-{
+    public static native void readFileElectron(String path, JavaScriptObject onSuccess) /*-{
         $wnd.electronAPI.readFile(path).then(function(result) {
             if (result.content) {
-                //todo: read file is async, so we can only write to console or show alert
-                console.log("📄 File content (Base64):", result.content);
-                $wnd.alert("File content: " + atob(result.content));
+                onSuccess(result.content);
             } else {
                 $wnd.alert("Error reading file: " + result.error);
             }
         });
     }-*/;
 
-    private static native void writeFileElectron(String path, String fileBase64) /*-{
+    public interface ReadCallback<T> {
+        void onSuccess(T result);
+    }
+
+    public static JavaScriptObject createReadCallback(final ReadCallback<String> callback) {
+        return nativeCreateReadCallback(callback);
+    }
+
+    private static native JavaScriptObject nativeCreateReadCallback(ReadCallback<String> callback) /*-{
+        return function(content) {
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.ReadCallback::onSuccess(Ljava/lang/Object;)(content);
+        };
+    }-*/;
+
+    public static native void writeFileElectron(String path, String fileBase64) /*-{
         $wnd.electronAPI.writeFile(path, fileBase64).then(function (result) {
             if (!result.success) {
                 $wnd.alert("Error: " + result.error);
@@ -209,16 +197,28 @@ public class GwtClientUtils {
         });
     }-*/;
 
-    private static native void runCommandElectron(String command) /*-{
-        $wnd.electronAPI.runCommand(command).then(function(result) {
-            if (result && result.output) {
-                $wnd.alert("Command output: " + result.output);
-            } else if (result && result.error) {
-                $wnd.alert("Error running command: " + result.error);
+    public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
+        $wnd.electronAPI.runCommand(command).then(function (result) {
+            if (result) {
+                onResult(result.output, result.error, result.exitValue);
             } else {
                 $wnd.alert("Unknown response from command");
             }
         });
+    }-*/;
+
+    public interface RunCommandCallback {
+        void onResult(String cmdOut, String cmdErr, int exitValue);
+    }
+
+    public static JavaScriptObject createRunCommandCallback(final RunCommandCallback callback) {
+        return nativeCreateRunCommandCallback(callback);
+    }
+
+    private static native JavaScriptObject nativeCreateRunCommandCallback(RunCommandCallback callback) /*-{
+        return function(cmdOut, cmdErr, exitValue) {
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.RunCommandCallback::onResult(*)(cmdOut, cmdErr, exitValue);
+        };
     }-*/;
 
     public static native JavaScriptObject openWindow(String url)/*-{

@@ -254,10 +254,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
-    //todo: isDynamicFormatFileClass, isBlockingFileRead, isDialog
+    //todo: isBlockingFileRead, isDialog
     @Converter(from = ReadClientAction.class)
     public GReadAction convertAction(ReadClientAction action) {
-        return new GReadAction(action.sourcePath);
+        return new GReadAction(action.sourcePath, action.isDynamicFormatFileClass);
     }
 
     //it is actually downloading the file, not opening it in the browser
