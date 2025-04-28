@@ -16,6 +16,8 @@ public class FormClientAction extends ExecuteClientAction {
     public boolean forbidDuplicate;
     public String formId;
 
+    public boolean delayedHideForm;
+
     public FormClientAction(boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, ShowFormType showFormType, String formId) {
         this.clientData = clientData;
         this.remoteForm = remoteForm;

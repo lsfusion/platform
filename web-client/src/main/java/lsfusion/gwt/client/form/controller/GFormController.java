@@ -856,23 +856,26 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext,
+                         final WindowHiddenHandler handler, String formId, boolean delayedHideForm) {
         boolean isDockedModal = showFormType.isDockedModal();
-        if (isDockedModal)
+        if (isDockedModal && !delayedHideForm)
             ((FormDockable)formContainer).block();
 
         FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
             if(isDockedModal) {
-                ((FormDockable)formContainer).unblock();
+                if(!delayedHideForm) {
+                    ((FormDockable) formContainer).unblock();
 
-                formsController.selectTab((FormDockable) formContainer);
+                    formsController.selectTab((FormDockable) formContainer);
+                }
             } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();
         }, formId);
 
-        if (isDockedModal)
+        if (isDockedModal && !delayedHideForm)
             ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
     }
 

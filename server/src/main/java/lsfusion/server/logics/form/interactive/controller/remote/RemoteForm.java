@@ -920,6 +920,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if(delayedDestroyForms == null)
                     delayedDestroyForms = new ArrayList<>();
                 delayedDestroyForms.add((DestroyFormClientAction) action);
+            } else if(action instanceof FormClientAction && delayedHideForm) {
+                ((FormClientAction) action).delayedHideForm = true;
             }
         }
 
