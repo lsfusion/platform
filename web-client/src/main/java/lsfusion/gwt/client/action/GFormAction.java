@@ -9,18 +9,15 @@ public class GFormAction extends GExecuteAction {
     public boolean forbidDuplicate;
     public String formId;
 
-    public boolean delayedHideForm;
-
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GFormAction() {}
 
-    public GFormAction(GShowFormType showFormType, GForm form, boolean forbidDuplicate, String formId, boolean delayedHideForm) {
+    public GFormAction(GShowFormType showFormType, GForm form, boolean forbidDuplicate, String formId) {
         this.showFormType = showFormType;
         this.form = form;
         this.forbidDuplicate = forbidDuplicate;
         this.formId = formId;
-        this.delayedHideForm = delayedHideForm;
     }
 
     public void execute(GActionDispatcher dispatcher) throws Throwable {

@@ -857,26 +857,25 @@ public class GFormController implements EditManager {
     }
 
     public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext,
-                         final WindowHiddenHandler handler, String formId, boolean delayedHideForm) {
+                         final WindowHiddenHandler handler, String formId) {
         boolean isDockedModal = showFormType.isDockedModal();
-        if (isDockedModal && !delayedHideForm)
-            ((FormDockable)formContainer).block();
+        FormDockable contextFormDockable = isDockedModal ? (FormDockable) (formHidden ? formContainer.getContextForm() : this).formContainer : null;
+        if (contextFormDockable != null)
+            contextFormDockable.block();
 
         FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
-            if(isDockedModal) {
-                if(!delayedHideForm) {
-                    ((FormDockable) formContainer).unblock();
+            if(contextFormDockable != null) {
+                contextFormDockable.unblock();
 
-                    formsController.selectTab((FormDockable) formContainer);
-                }
+                formsController.selectTab(contextFormDockable);
             } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();
         }, formId);
 
-        if (isDockedModal && !delayedHideForm)
-            ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
+        if (contextFormDockable != null)
+            contextFormDockable.setBlockingForm((FormDockable) blockingForm);
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {
@@ -1750,7 +1749,7 @@ public class GFormController implements EditManager {
     }
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
-    private boolean formHidden;
+    public boolean formHidden;
     public void hideForm(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
         if(!formHidden) {
             onFormHidden(asyncFormController, editFormCloseReason);
