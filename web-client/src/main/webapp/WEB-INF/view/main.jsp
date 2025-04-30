@@ -41,6 +41,20 @@
 
         <lsf:writeResources resources="${resourcesBeforeSystem}"/>
 
+        <script>
+            // save Node.js variables for electron
+            window._nodeRequire = window.require;
+            window._nodeModule = window.module;
+            window._nodeExports = window.exports;
+            window._nodeProcess = window.process;
+
+            // disable Node.js variables
+            window.require = undefined;
+            window.module = undefined;
+            window.exports = undefined;
+            window.process = undefined;
+        </script>
+
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 "static/js/external/jquery-3.7.1.min.js",
                 "static/js/external/jquery-ui.min.js",

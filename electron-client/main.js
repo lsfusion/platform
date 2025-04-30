@@ -1,14 +1,11 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow} = require('electron');
 const path = require('path');
-const fs = require('fs');
-const { exec } = require('child_process');
 
 function createWindow() {
     const win = new BrowserWindow({
         webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: true,
+            contextIsolation: false,
         },
         icon: path.join(__dirname, 'logo.png')
     });
@@ -18,62 +15,3 @@ function createWindow() {
 }
 
 app.whenReady().then(createWindow);
-
-ipcMain.handle('read-file', async (event, { filePath }) => {
-    try {
-        const buffer = fs.readFileSync(filePath);
-        const base64 = buffer.toString('base64');
-        return { content: base64 };
-    } catch (err) {
-        return { error: err.message };
-    }
-});
-
-ipcMain.handle('delete-file', async (event, filePath) => {
-    try {
-        fs.unlinkSync(filePath);
-        return { success: true };
-    } catch (err) {
-        return { error: err.message };
-    }
-});
-
-ipcMain.handle('file-exists', async (event, filePath) => {
-    try {
-        const exists = fs.existsSync(filePath);
-        return { exists: exists };
-    } catch (err) {
-        return { error: err.message };
-    }
-});
-
-ipcMain.handle('make-dir', async (event, dirPath) => {
-    try {
-        fs.mkdirSync(dirPath, { recursive: true });
-        return { success: true };
-    } catch (err) {
-        return { error: err.message };
-    }
-});
-
-ipcMain.handle('write-file', async (event, { filePath, content }) => {
-    try {
-        const buffer = Buffer.from(content, 'base64');
-        fs.writeFileSync(filePath, buffer);
-        return { success: true };
-    } catch (err) {
-        return { error: err.message };
-    }
-});
-
-ipcMain.handle('run-command', async (event, command) => {
-    return new Promise((resolve) => {
-        exec(command, (error, stdout, stderr) => {
-            resolve({
-                output: stdout,
-                error: stderr,
-                exitValue: error ? error.code : 0
-            });
-        });
-    });
-});

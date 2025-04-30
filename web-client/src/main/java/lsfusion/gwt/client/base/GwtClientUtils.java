@@ -162,60 +162,72 @@ public class GwtClientUtils {
     /*--- electron methods ---*/
 
     public static native boolean isElectron() /*-{
-        return navigator.userAgent.toLowerCase().indexOf('electron') !== -1 && typeof $wnd.electronAPI !== 'undefined';
+        return navigator.userAgent.toLowerCase().indexOf('electron') !== -1;
     }-*/;
 
-    public interface SingleParamCallback<T> {
-        void onResult(T result);
+    public static void restoreNodeGlobals() {
+        if(isElectron())
+            restoreNodeGlobalsElectron();
     }
 
-    public static native JavaScriptObject createSingleParamCallback(SingleParamCallback callback) /*-{
-        return function(result) {
-            callback.@lsfusion.gwt.client.base.GwtClientUtils.SingleParamCallback::onResult(Ljava/lang/Object;)(result);
-        };
+    private static native void restoreNodeGlobalsElectron() /*-{
+        window.require = $wnd._nodeRequire;
+        window.module = $wnd._nodeModule;
+        window.exports = $wnd._nodeExports;
+        window.process = $wnd._nodeProcess;
     }-*/;
 
-    public static native void readFileElectron(String path, JavaScriptObject onSuccess) /*-{
-        $wnd.electronAPI.readFile(path).then(function(result) {
-            if(result.error != null) {
-                $wnd.alert("Error reading file: " + result.error);
-            }
-            onSuccess(result.content);
-        });
+    public static native String readFileElectron(String path) /*-{
+        var fs = require('fs');
+        try {
+            return fs.readFileSync(path).toString('base64');
+        } catch (e) {
+            throw new Error("Error reading file: " + e.message);
+        }
     }-*/;
 
-    public static native void deleteFileElectron(String path, JavaScriptObject onResult) /*-{
-        $wnd.electronAPI.deleteFile(path).then(function (result) {
-            onResult(result.success ? null : result.error);
-        });
+    public static native String deleteFileElectron(String path) /*-{
+        var fs = require('fs');
+        try {
+            fs.unlinkSync(path);
+            return null;
+        } catch (e) {
+            return e.message;
+        }
     }-*/;
 
-    public static native void fileExistsElectron(String path, JavaScriptObject onResult) /*-{
-        $wnd.electronAPI.fileExists(path).then(function (result) {
-            if(result.error != null) {
-                $wnd.alert("Error file exists: " + result.error);
-            }
-            onResult(result.exists != null ? result.exists : false);
-        });
+    public static native boolean fileExistsElectron(String path) /*-{
+        var fs = require('fs');
+        try {
+            return fs.existsSync(path);
+        } catch (e) {
+            throw new Error("Error file exists check: " + e.message);
+        }
     }-*/;
 
-    public static native void makeDirElectron(String path, JavaScriptObject onResult) /*-{
-        $wnd.electronAPI.makeDir(path).then(function (result) {
-            onResult(result.success ? null : result.error);
-        });
+    public static native String makeDirElectron(String path) /*-{
+        var fs = require('fs');
+        try {
+            fs.mkdirSync(path, { recursive: true });
+            return null;
+        } catch (e) {
+            return e.message;
+        }
     }-*/;
 
-    public static native void writeFileElectron(String path, String fileBase64) /*-{
-        $wnd.electronAPI.writeFile(path, fileBase64).then(function (result) {
-            if (!result.success) {
-                $wnd.alert("Error: " + result.error);
-            }
-        });
+    public static native void writeFileElectron(String path, String base64) /*-{
+        var fs = require('fs');
+        try {
+            fs.writeFileSync(path, Buffer.from(base64, 'base64'));
+        } catch (e) {
+            throw new Error("Error writing file: " + e.message);
+        }
     }-*/;
 
     public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
-        $wnd.electronAPI.runCommand(command).then(function (result) {
-            onResult(result.output, result.error, result.exitValue);
+        var child_process = require('child_process');
+        child_process.exec(command, function (error, stdout, stderr) {
+            onResult(stdout, stderr, error ? error.code : 0);
         });
     }-*/;
 

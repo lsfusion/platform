@@ -167,6 +167,8 @@ public class MainFrame implements EntryPoint {
         });
 
         initializeLogicsAndNavigator(popupOwner);
+
+        GwtClientUtils.restoreNodeGlobals();
     }
 
     private static boolean ignoreException(Throwable exception) {

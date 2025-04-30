@@ -372,44 +372,38 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GReadResult execute(GReadAction action) {
-        if(isElectron() && action.sourcePath != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            GwtClientUtils.readFileElectron(action.sourcePath, createSingleParamCallback((SingleParamCallback<String>) fileBase64 ->
-                    continueDispatching(new GReadResult(fileBase64, action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result)
-            ));
+        if(isElectron()) {
+            return new GReadResult(GwtClientUtils.readFileElectron(action.sourcePath), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null);
+        } else {
+            throw new UnsupportedOperationException("readFile is supported only in electron");
         }
-        return null;
     }
 
     @Override
     public String execute(GDeleteFileAction action) {
-        if(isElectron() && action.source != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            GwtClientUtils.deleteFileElectron(action.source, createSingleParamCallback(error -> continueDispatching(error, result)));
+        if (isElectron()) {
+            return GwtClientUtils.deleteFileElectron(action.source);
+        } else {
+            throw new UnsupportedOperationException("deleteFile is supported only in electron");
         }
-        return null;
     }
 
     @Override
     public boolean execute(GFileExistsAction action) {
-        if(isElectron() && action.source != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            GwtClientUtils.fileExistsElectron(action.source, createSingleParamCallback(exists -> continueDispatching(exists, result)));
+        if (isElectron()) {
+            return GwtClientUtils.fileExistsElectron(action.source);
+        } else {
+            throw new UnsupportedOperationException("fileExists is supported only in electron");
         }
-        return false;
     }
 
     @Override
     public String execute(GMkDirAction action) {
-        if(isElectron() && action.source != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            GwtClientUtils.makeDirElectron(action.source, createSingleParamCallback(error -> continueDispatching(error, result)));
+        if (isElectron()) {
+            return GwtClientUtils.makeDirElectron(action.source);
+        } else {
+            throw new UnsupportedOperationException("mkDir is supported only in electron");
         }
-        return null;
     }
 
     @Override
@@ -425,12 +419,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GRunCommandActionResult execute(GRunCommandAction action) {
-        if (isElectron() && action.command != null) {
+        if (isElectron()) {
             pauseDispatching();
             Result<Object> result = new Result<>();
             runCommandElectron(action.command, createRunCommandCallback((cmdOut, cmdErr, exitValue) -> continueDispatching(new GRunCommandActionResult(cmdOut, cmdErr, exitValue), result)));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("runCommand is supported only in electron");
         }
-        return null;
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
