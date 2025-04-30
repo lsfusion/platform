@@ -267,6 +267,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GFileExistsAction(action.source);
     }
 
+    @Converter(from = MkdirClientAction.class)
+    public GMkDirAction convertAction(MkdirClientAction action) {
+        return new GMkDirAction(action.source);
+    }
+
     //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {

@@ -47,6 +47,15 @@ ipcMain.handle('file-exists', async (event, filePath) => {
     }
 });
 
+ipcMain.handle('make-dir', async (event, dirPath) => {
+    try {
+        fs.mkdirSync(dirPath, { recursive: true });
+        return { success: true };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
 ipcMain.handle('write-file', async (event, { filePath, content }) => {
     try {
         const buffer = Buffer.from(content, 'base64');

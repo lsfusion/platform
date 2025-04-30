@@ -41,6 +41,8 @@ public interface GActionDispatcher {
 
     boolean execute(GFileExistsAction action);
 
+    String execute(GMkDirAction action);
+
     void execute(GWriteAction action);
 
     GRunCommandActionResult execute(GRunCommandAction action);

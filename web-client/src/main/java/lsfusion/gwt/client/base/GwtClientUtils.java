@@ -199,6 +199,12 @@ public class GwtClientUtils {
         });
     }-*/;
 
+    public static native void makeDirElectron(String path, JavaScriptObject onResult) /*-{
+        $wnd.electronAPI.makeDir(path).then(function (result) {
+            onResult(result.success ? null : result.error);
+        });
+    }-*/;
+
     public static native void writeFileElectron(String path, String fileBase64) /*-{
         $wnd.electronAPI.writeFile(path, fileBase64).then(function (result) {
             if (!result.success) {
@@ -209,11 +215,7 @@ public class GwtClientUtils {
 
     public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
         $wnd.electronAPI.runCommand(command).then(function (result) {
-            if (result) {
-                onResult(result.output, result.error, result.exitValue);
-            } else {
-                onResult(null, "Unknown response from command", -1);
-            }
+            onResult(result.output, result.error, result.exitValue);
         });
     }-*/;
 

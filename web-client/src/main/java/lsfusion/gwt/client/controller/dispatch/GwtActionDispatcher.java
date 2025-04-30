@@ -403,6 +403,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public String execute(GMkDirAction action) {
+        if(isElectron() && action.source != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            GwtClientUtils.makeDirElectron(action.source, createSingleParamCallback(error -> continueDispatching(error, result)));
+        }
+        return null;
+    }
+
+    @Override
     public void execute(GWriteAction action) {
         if (isElectron()) {
             if(action.filePath != null)
