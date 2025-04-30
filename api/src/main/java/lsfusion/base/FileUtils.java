@@ -1,17 +1,16 @@
-package lsfusion.server.physics.dev.integration.external.to.file;
+package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
-import lsfusion.interop.action.RunCommandActionResult;
 import org.apache.commons.net.ftp.FTPFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,8 +27,7 @@ import java.util.stream.Stream;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
 
-//lsfusion.base.FileUtils is copy of this one
-//todo: Replace all usages to lsfusion.base.FileUtils (available since 6.1)
+//copy of lsfusion.server.physics.dev.integration.external.to.file.FileUtils
 
 public class FileUtils {
 

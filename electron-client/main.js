@@ -29,6 +29,24 @@ ipcMain.handle('read-file', async (event, { filePath }) => {
     }
 });
 
+ipcMain.handle('delete-file', async (event, filePath) => {
+    try {
+        fs.unlinkSync(filePath);
+        return { success: true };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+ipcMain.handle('file-exists', async (event, filePath) => {
+    try {
+        const exists = fs.existsSync(filePath);
+        return { exists: exists };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
 ipcMain.handle('write-file', async (event, { filePath, content }) => {
     try {
         const buffer = Buffer.from(content, 'base64');

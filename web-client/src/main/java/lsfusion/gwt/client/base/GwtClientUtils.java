@@ -165,28 +165,38 @@ public class GwtClientUtils {
         return navigator.userAgent.toLowerCase().indexOf('electron') !== -1 && typeof $wnd.electronAPI !== 'undefined';
     }-*/;
 
+    public interface SingleParamCallback<T> {
+        void onResult(T result);
+    }
+
+    public static native JavaScriptObject createSingleParamCallback(SingleParamCallback callback) /*-{
+        return function(result) {
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.SingleParamCallback::onResult(Ljava/lang/Object;)(result);
+        };
+    }-*/;
+
     public static native void readFileElectron(String path, JavaScriptObject onSuccess) /*-{
         $wnd.electronAPI.readFile(path).then(function(result) {
-            if (result.content) {
-                onSuccess(result.content);
-            } else {
+            if(result.error != null) {
                 $wnd.alert("Error reading file: " + result.error);
             }
+            onSuccess(result.content);
         });
     }-*/;
 
-    public interface ReadCallback<T> {
-        void onSuccess(T result);
-    }
+    public static native void deleteFileElectron(String path, JavaScriptObject onResult) /*-{
+        $wnd.electronAPI.deleteFile(path).then(function (result) {
+            onResult(result.success ? null : result.error);
+        });
+    }-*/;
 
-    public static JavaScriptObject createReadCallback(final ReadCallback<String> callback) {
-        return nativeCreateReadCallback(callback);
-    }
-
-    private static native JavaScriptObject nativeCreateReadCallback(ReadCallback<String> callback) /*-{
-        return function(content) {
-            callback.@lsfusion.gwt.client.base.GwtClientUtils.ReadCallback::onSuccess(Ljava/lang/Object;)(content);
-        };
+    public static native void fileExistsElectron(String path, JavaScriptObject onResult) /*-{
+        $wnd.electronAPI.fileExists(path).then(function (result) {
+            if(result.error != null) {
+                $wnd.alert("Error file exists: " + result.error);
+            }
+            onResult(result.exists != null ? result.exists : false);
+        });
     }-*/;
 
     public static native void writeFileElectron(String path, String fileBase64) /*-{
@@ -202,7 +212,7 @@ public class GwtClientUtils {
             if (result) {
                 onResult(result.output, result.error, result.exitValue);
             } else {
-                $wnd.alert("Unknown response from command");
+                onResult(null, "Unknown response from command", -1);
             }
         });
     }-*/;
@@ -211,11 +221,7 @@ public class GwtClientUtils {
         void onResult(String cmdOut, String cmdErr, int exitValue);
     }
 
-    public static JavaScriptObject createRunCommandCallback(final RunCommandCallback callback) {
-        return nativeCreateRunCommandCallback(callback);
-    }
-
-    private static native JavaScriptObject nativeCreateRunCommandCallback(RunCommandCallback callback) /*-{
+    public static native JavaScriptObject createRunCommandCallback(RunCommandCallback callback) /*-{
         return function(cmdOut, cmdErr, exitValue) {
             callback.@lsfusion.gwt.client.base.GwtClientUtils.RunCommandCallback::onResult(*)(cmdOut, cmdErr, exitValue);
         };

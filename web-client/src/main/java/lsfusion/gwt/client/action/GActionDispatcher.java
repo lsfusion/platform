@@ -37,6 +37,10 @@ public interface GActionDispatcher {
 
     GReadResult execute(GReadAction action);
 
+    String execute(GDeleteFileAction action);
+
+    boolean execute(GFileExistsAction action);
+
     void execute(GWriteAction action);
 
     GRunCommandActionResult execute(GRunCommandAction action);

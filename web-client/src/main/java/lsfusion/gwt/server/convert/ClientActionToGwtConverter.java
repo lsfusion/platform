@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.ReadClientAction;
-import lsfusion.base.file.WriteClientAction;
+import lsfusion.base.file.*;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
@@ -258,6 +255,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ReadClientAction.class)
     public GReadAction convertAction(ReadClientAction action) {
         return new GReadAction(action.sourcePath, action.isDynamicFormatFileClass);
+    }
+
+    @Converter(from = DeleteFileClientAction.class)
+    public GDeleteFileAction convertAction(DeleteFileClientAction action) {
+        return new GDeleteFileAction(action.source);
+    }
+
+    @Converter(from = FileExistsClientAction.class)
+    public GFileExistsAction convertAction(FileExistsClientAction action) {
+        return new GFileExistsAction(action.source);
     }
 
     //it is actually downloading the file, not opening it in the browser

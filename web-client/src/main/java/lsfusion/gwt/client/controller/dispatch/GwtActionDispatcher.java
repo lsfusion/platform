@@ -375,11 +375,31 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if(isElectron() && action.sourcePath != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            GwtClientUtils.readFileElectron(action.sourcePath, createReadCallback(fileBase64 -> {
-                continueDispatching(new GReadResult(fileBase64, action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result);
-            }));
+            GwtClientUtils.readFileElectron(action.sourcePath, createSingleParamCallback((SingleParamCallback<String>) fileBase64 ->
+                    continueDispatching(new GReadResult(fileBase64, action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result)
+            ));
         }
         return null;
+    }
+
+    @Override
+    public String execute(GDeleteFileAction action) {
+        if(isElectron() && action.source != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            GwtClientUtils.deleteFileElectron(action.source, createSingleParamCallback(error -> continueDispatching(error, result)));
+        }
+        return null;
+    }
+
+    @Override
+    public boolean execute(GFileExistsAction action) {
+        if(isElectron() && action.source != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            GwtClientUtils.fileExistsElectron(action.source, createSingleParamCallback(exists -> continueDispatching(exists, result)));
+        }
+        return false;
     }
 
     @Override
