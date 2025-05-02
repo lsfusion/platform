@@ -514,8 +514,12 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String query = request.getQueryString(); //we use generateJnlp without params because linux mint cut from url '%5'
+        String runDesktopQuery = "\\{contextPath}/exec?" + (BaseUtils.isEmpty(query) ? "" : (query + "&")) + "action=Security.generateJnlp";
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
-        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
+        return serverSettings != null ? serverSettings.jnlpUrls
+                .replaceAll("\\{runDesktopQuery}", runDesktopQuery)
+                .replaceAll("\\{run.desktop.client}", localizedString)
                 : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
     }
 
