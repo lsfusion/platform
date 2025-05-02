@@ -859,7 +859,8 @@ public class GFormController implements EditManager {
     public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext,
                          final WindowHiddenHandler handler, String formId) {
         boolean isDockedModal = showFormType.isDockedModal();
-        FormDockable contextFormDockable = isDockedModal ? (FormDockable) (formHidden ? formContainer.getContextForm() : this).formContainer : null;
+        GFormController formDockableController = getFormDockableController();
+        FormDockable contextFormDockable = isDockedModal && formDockableController != null ? (FormDockable) formDockableController.formContainer : null;
         if (contextFormDockable != null)
             contextFormDockable.block();
 
@@ -876,6 +877,11 @@ public class GFormController implements EditManager {
 
         if (contextFormDockable != null)
             contextFormDockable.setBlockingForm((FormDockable) blockingForm);
+    }
+
+    public GFormController getFormDockableController() {
+        GFormController contextForm = formContainer.getContextForm();
+        return formHidden ? (contextForm != null ? contextForm.getFormDockableController() : null) : this;
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {

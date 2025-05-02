@@ -47,7 +47,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GFormAction action) {
-        if (action.showFormType.isDockedModal() && !canShowDockedModal() && !form.formHidden) {
+        GFormController formDockableController = form.getFormDockableController();
+        if (action.showFormType.isDockedModal() && formDockableController != null && formDockableController.isWindow()) {
             action.showFormType = GModalityShowFormType.MODAL;
         }
 
