@@ -43,6 +43,10 @@ public interface GActionDispatcher {
 
     String execute(GMkDirAction action);
 
+    String execute(GMoveFileAction action);
+
+    GListFilesResult execute(GListFilesAction action);
+
     void execute(GWriteAction action);
 
     GRunCommandActionResult execute(GRunCommandAction action);

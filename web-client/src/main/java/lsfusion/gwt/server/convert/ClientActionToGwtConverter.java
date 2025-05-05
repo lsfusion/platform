@@ -272,6 +272,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GMkDirAction(action.source);
     }
 
+    @Converter(from = MoveFileClientAction.class)
+    public GMoveFileAction convertAction(MoveFileClientAction action) {
+        return new GMoveFileAction(action.source, action.destination);
+    }
+
+    @Converter(from = ListFilesClientAction.class)
+    public GListFilesAction convertAction(ListFilesClientAction action) {
+        return new GListFilesAction(action.source, action.recursive);
+    }
+
     //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {

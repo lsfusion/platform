@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -28,6 +26,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.LogClientException
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -403,6 +402,46 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return GwtClientUtils.makeDirElectron(action.source);
         } else {
             throw new UnsupportedOperationException("mkDir is supported only in electron");
+        }
+    }
+
+    @Override
+    public String execute(GMoveFileAction action) {
+        if (isElectron()) {
+            return GwtClientUtils.moveFileElectron(action.source, action.destination);
+        } else {
+            throw new UnsupportedOperationException("moveFile is supported only in electron");
+        }
+    }
+
+    @Override
+    public GListFilesResult execute(GListFilesAction action) {
+        if (isElectron()) {
+            Object result = listFilesElectron(action.source, action.recursive);
+            if(result instanceof JsArrayMixed) {
+                JsArrayString names = ((JsArrayMixed) result).getObject(0).cast();
+                JsArrayBoolean dirs = ((JsArrayMixed) result).getObject(1).cast();
+                JsArray modified = ((JsArrayMixed) result).getObject(2).cast();
+                JsArrayNumber sizes = ((JsArrayMixed) result).getObject(3).cast();
+
+                int length = names.length();
+                String[] namesArray = new String[length];
+                Boolean[] dirsArray = new Boolean[length];
+                GDateTimeDTO[] modifiedArray = new GDateTimeDTO[length];
+                Long[] sizesArray = new Long[length];
+
+                for (int i = 0; i < length; i++) {
+                    namesArray[i] = names.get(i);
+                    dirsArray[i] = dirs.get(i) ? true : null;
+                    modifiedArray[i] = GDateTimeDTO.fromJsDate((JsDate) modified.get(i));
+                    sizesArray[i] = (long) sizes.get(i);
+                }
+                return new GListFilesResult(null, namesArray, dirsArray, modifiedArray, sizesArray);
+            } else {
+                return new GListFilesResult((String) result, null, null, null, null);
+            }
+        } else {
+            throw new UnsupportedOperationException("listFiles is supported only in electron");
         }
     }
 

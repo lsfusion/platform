@@ -12,6 +12,7 @@ import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
+import lsfusion.gwt.client.action.GListFilesResult;
 import lsfusion.gwt.client.action.GReadResult;
 import lsfusion.gwt.client.action.GRunCommandActionResult;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -58,6 +59,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -252,6 +254,20 @@ public class GwtToClientConverter extends ObjectConverter {
     public ReadUtils.ReadResult convertReadResult(GReadResult readResult) {
         RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
         return new ReadUtils.ReadResult(readResult.extension != null ? new FileData(file, readResult.extension) : file, "file");
+    }
+
+    @Converter(from = GListFilesResult.class)
+    public Object convertListFilesResult(GListFilesResult readResult) {
+        if(readResult.error == null) {
+            LocalDateTime[] modifiedDateTime = new LocalDateTime[readResult.modifiedDateTime.length];
+            for(int i = 0; i < readResult.modifiedDateTime.length; ++i) {
+                modifiedDateTime[i] = convertDateTime(readResult.modifiedDateTime[i]);
+            }
+
+            return Arrays.asList(readResult.names, readResult.isDirectory, modifiedDateTime, readResult.fileSize);
+        } else {
+            return readResult.error;
+        }
     }
 
     @Converter(from = GRunCommandActionResult.class)

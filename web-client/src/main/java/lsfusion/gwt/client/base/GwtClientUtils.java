@@ -215,6 +215,52 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native String moveFileElectron(String fromPath, String toPath) /*-{
+        var fs = require('fs');
+        try {
+            fs.renameSync(fromPath, toPath);
+            return null;
+        } catch (e) {
+            return e.message;
+        }
+    }-*/;
+
+    public static native Object listFilesElectron(String source, boolean recursive) /*-{
+        try {
+            var fs = require('fs');
+            var path = require('path');
+
+            var names = [];
+            var isDirectory = [];
+            var modifiedDateTime = [];
+            var fileSize = [];
+
+            function listDir(dir) {
+                var files = fs.readdirSync(dir);
+                for (var i = 0; i < files.length; i++) {
+                    var fullPath = path.join(dir, files[i]);
+                    var stats = fs.statSync(fullPath);
+
+                    names.push(fullPath);
+                    isDirectory.push(stats.isDirectory());
+                    modifiedDateTime.push(stats.mtime);
+                    fileSize.push(stats.isFile() ? stats.size : 0);
+
+                    if (recursive && stats.isDirectory()) {
+                        listDir(fullPath);
+                    }
+                }
+            }
+
+            listDir(source);
+
+            return [names, isDirectory, modifiedDateTime, fileSize];
+
+        } catch (e) {
+            return e.message;
+        }
+    }-*/;
+
     public static native void writeFileElectron(String path, String base64) /*-{
         var fs = require('fs');
         try {
