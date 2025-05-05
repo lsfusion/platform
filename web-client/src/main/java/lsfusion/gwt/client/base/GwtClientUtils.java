@@ -225,6 +225,16 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native String copyFileElectron(String fromPath, String toPath) /*-{
+        var fs = require('fs');
+        try {
+            fs.copyFileSync(fromPath, toPath);
+            return null;
+        } catch (e) {
+            return e.message;
+        }
+    }-*/;
+
     public static native Object listFilesElectron(String source, boolean recursive) /*-{
         try {
             var fs = require('fs');
@@ -268,6 +278,31 @@ public class GwtClientUtils {
         } catch (e) {
             throw new Error("Error writing file: " + e.message);
         }
+    }-*/;
+
+    public static native void getAvailablePrinters(JavaScriptObject onResult) /*-{
+        var printer = require('pdf-to-printer');
+        try {
+            printer.getPrinters().then(function(printers) {
+                var printerNames = '';
+                for (var i = 0; i < printers.length; i++) {
+                    printerNames += printers[i].name + '\n';
+                }
+                onResult(printerNames);
+            });
+        } catch (e) {
+            throw new Error("Error getAvailablePrinters: " + e.message);
+        }
+    }-*/;
+
+    public interface AvailablePrintersCallback {
+        void onResult(String printerNames);
+    }
+
+    public static native JavaScriptObject createAvailablePrintersCallback(AvailablePrintersCallback callback) /*-{
+        return function(printerNames) {
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.AvailablePrintersCallback::onResult(*)(printerNames);
+        };
     }-*/;
 
     public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{

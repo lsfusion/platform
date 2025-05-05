@@ -50,6 +50,7 @@
     "object-keys": "^1.1.1",
     "once": "^1.4.0",
     "p-cancelable": "^2.1.1",
+    "pdf-to-printer": "^5.6.0",
     "pend": "^1.2.0",
     "progress": "^2.0.3",
     "pump": "^3.0.2",

@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
+import lsfusion.base.printer.GetAvailablePrintersClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
@@ -277,15 +278,24 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GMoveFileAction(action.source, action.destination);
     }
 
+    @Converter(from = CopyFileClientAction.class)
+    public GCopyFileAction convertAction(CopyFileClientAction action) {
+        return new GCopyFileAction(action.source, action.destination);
+    }
+
     @Converter(from = ListFilesClientAction.class)
     public GListFilesAction convertAction(ListFilesClientAction action) {
         return new GListFilesAction(action.source, action.recursive);
     }
 
-    //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
         return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension), Base64.encodeBase64String(action.file.getBytes()));
+    }
+
+    @Converter(from = GetAvailablePrintersClientAction.class)
+    public GGetAvailablePrintersAction convertAction(GetAvailablePrintersClientAction action) {
+        return new GGetAvailablePrintersAction();
     }
 
     //todo: directory, wait

@@ -45,11 +45,15 @@ public interface GActionDispatcher {
 
     String execute(GMoveFileAction action);
 
+    String execute(GCopyFileAction action);
+
     GListFilesResult execute(GListFilesAction action);
 
     void execute(GWriteAction action);
 
     GRunCommandActionResult execute(GRunCommandAction action);
+
+    String execute(GGetAvailablePrintersAction action);
 
     String execute(GLoadLinkAction action);
 

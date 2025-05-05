@@ -415,6 +415,15 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public String execute(GCopyFileAction action) {
+        if (isElectron()) {
+            return GwtClientUtils.copyFileElectron(action.source, action.destination);
+        } else {
+            throw new UnsupportedOperationException("copyFile is supported only in electron");
+        }
+    }
+
+    @Override
     public GListFilesResult execute(GListFilesAction action) {
         if (isElectron()) {
             Object result = listFilesElectron(action.source, action.recursive);
@@ -451,7 +460,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if(action.filePath != null)
                 writeFileElectron(action.filePath, action.fileBase64);
         } else {
-            if(action.fileUrl != null)
+            if(action.fileUrl != null) //it is actually downloading the file, not opening it in the browser
                 fileDownload(getAppDownloadURL(action.fileUrl));
         }
     }
@@ -465,6 +474,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return null;
         } else {
             throw new UnsupportedOperationException("runCommand is supported only in electron");
+        }
+    }
+
+    @Override
+    public String execute(GGetAvailablePrintersAction action) {
+        if (isElectron()) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            getAvailablePrinters(createAvailablePrintersCallback(printerNames -> continueDispatching(printerNames, result)));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("getAvailablePrinters is supported only in electron");
         }
     }
 
