@@ -47,8 +47,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GFormAction action) {
-        GFormController formDockableController = form.getFormDockableController();
-        if (action.showFormType.isDockedModal() && formDockableController != null && formDockableController.isWindow()) {
+        if (action.showFormType.isDockedModal() && !canShowDockedModal()) {
             action.showFormType = GModalityShowFormType.MODAL;
         }
 
@@ -61,8 +60,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEventHandler != null ? editEventHandler.event : null,
-                    editContext, onClose, action.formId);
+            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEventHandler != null ? editEventHandler.event : null, editContext, onClose, action.formId);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;

@@ -856,11 +856,8 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext,
-                         final WindowHiddenHandler handler, String formId) {
-        boolean isDockedModal = showFormType.isDockedModal();
-        GFormController formDockableController = getFormDockableController();
-        FormDockable contextFormDockable = isDockedModal && formDockableController != null ? (FormDockable) formDockableController.formContainer : null;
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
+        FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
         if (contextFormDockable != null)
             contextFormDockable.block();
 
@@ -879,9 +876,26 @@ public class GFormController implements EditManager {
             contextFormDockable.setBlockingForm((FormDockable) blockingForm);
     }
 
-    public GFormController getFormDockableController() {
-        GFormController contextForm = formContainer.getContextForm();
-        return formHidden ? (contextForm != null ? contextForm.getFormDockableController() : null) : this;
+    private FormDockable getFormDockableContainer(boolean isDockedModal) {
+        if (isDockedModal) {
+            return (FormDockable) getContextContainer();
+        } else {
+            return null;
+        }
+    }
+
+    private FormContainer getContextContainer() {
+        GFormController contextForm = getContextForm();
+        return contextForm != null ? contextForm.formContainer : null;
+    }
+
+    private GFormController getContextForm() {
+        if (formHidden) {
+            GFormController contextForm = formContainer.getContextForm();
+            return contextForm != null ? contextForm.getContextForm() : null;
+        } else {
+            return this;
+        }
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {
@@ -1755,7 +1769,7 @@ public class GFormController implements EditManager {
     }
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
-    public boolean formHidden;
+    private boolean formHidden;
     public void hideForm(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
         if(!formHidden) {
             onFormHidden(asyncFormController, editFormCloseReason);
@@ -1776,7 +1790,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isWindow() {
-        return formContainer instanceof ModalForm;
+        return nvl(getContextContainer(), formContainer) instanceof ModalForm;
     }
 
     public boolean isDialog() {
