@@ -514,9 +514,12 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String directUrl = getDirectUrl("/exec", "action=Security.generateJnlp", request); //we use generateJnlp without params because linux mint cut from url '%5'
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
-        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
+        return serverSettings != null ? serverSettings.jnlpUrls
+                .replaceAll("\\{runDesktopQuery}", directUrl)
+                .replaceAll("\\{run.desktop.client}", localizedString)
+                : "<a href=" + directUrl + ">" + localizedString + "</a>";
     }
 
     public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {
