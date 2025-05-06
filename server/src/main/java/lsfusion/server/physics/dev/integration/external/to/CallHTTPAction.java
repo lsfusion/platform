@@ -343,8 +343,8 @@ public abstract class CallHTTPAction extends CallAction {
     }
 
     protected Long getDefaultTimeout() {
-        return null;
-    };
+        return 1800000L; //30 minutes
+    }
 
     protected abstract UrlProcessor createUrlProcessor(String connectionString, boolean noExec);
     interface UrlProcessor {
