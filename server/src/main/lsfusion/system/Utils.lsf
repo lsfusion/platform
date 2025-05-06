@@ -184,6 +184,7 @@ onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\
 encode (RAWFILE f, STRING encoding) = FORMULA TEXT 'encode(($1),($2))';
 decode (STRING s, STRING encoding) = FORMULA RAWFILE 'decode(($1),($2))';
 encodeBase64 (RAWFILE f) = encode(f, 'base64');
+encodeBase64Unchunked (RAWFILE f) = replace(encode(f, 'base64'), '\n', '');
 decodeBase64 (STRING s) = decode(s, 'base64');
 
 encode (STRING f, STRING encoding) = encode(RAWFILE(f), encoding);
@@ -191,8 +192,11 @@ encode (FILE f, STRING encoding) = encode(RAWFILE(f), encoding);
 encode (NAMEDFILE f, STRING encoding) = encode(RAWFILE(f), encoding);
 
 encodeBase64 (STRING f) = encodeBase64(RAWFILE(f));
+encodeBase64Unchunked (STRING f) = encodeBase64Unchunked(RAWFILE(f));
 encodeBase64 (FILE f) = encodeBase64(RAWFILE(f));
+encodeBase64Unchunked (FILE f) = encodeBase64Unchunked(RAWFILE(f));
 encodeBase64 (NAMEDFILE f) = encodeBase64(RAWFILE(f));
+encodeBase64Unchunked (NAMEDFILE f) = encodeBase64Unchunked(RAWFILE(f));
 
 encodeBytes = FORMULA TEXT 'encode(($1),($2))';
 encodeBytesBase64(bytes) = encodeBytes(bytes, 'base64');
