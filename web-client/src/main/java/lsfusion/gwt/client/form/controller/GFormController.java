@@ -857,23 +857,45 @@ public class GFormController implements EditManager {
     }
 
     public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
-        boolean isDockedModal = showFormType.isDockedModal();
-        if (isDockedModal)
-            ((FormDockable)formContainer).block();
+        FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
+        if (contextFormDockable != null)
+            contextFormDockable.block();
 
         FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
-            if(isDockedModal) {
-                ((FormDockable)formContainer).unblock();
+            if(contextFormDockable != null) {
+                contextFormDockable.unblock();
 
-                formsController.selectTab((FormDockable) formContainer);
+                formsController.selectTab(contextFormDockable);
             } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();
         }, formId);
 
-        if (isDockedModal)
-            ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
+        if (contextFormDockable != null)
+            contextFormDockable.setBlockingForm((FormDockable) blockingForm);
+    }
+
+    private FormDockable getFormDockableContainer(boolean isDockedModal) {
+        if (isDockedModal) {
+            return (FormDockable) getContextContainer();
+        } else {
+            return null;
+        }
+    }
+
+    private FormContainer getContextContainer() {
+        GFormController contextForm = getContextForm();
+        return contextForm != null ? contextForm.formContainer : null;
+    }
+
+    private GFormController getContextForm() {
+        if (formHidden) {
+            GFormController contextForm = formContainer.getContextForm();
+            return contextForm != null ? contextForm.getContextForm() : null;
+        } else {
+            return this;
+        }
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {
@@ -1768,7 +1790,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isWindow() {
-        return formContainer instanceof ModalForm;
+        return nvl(getContextContainer(), formContainer) instanceof ModalForm;
     }
 
     public boolean isDialog() {
