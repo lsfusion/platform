@@ -194,8 +194,6 @@ public class LogicsSessionObject {
             int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
             String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
-            if (jnlpUrls != null && contextPath != null)
-                jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSON(json.opt("lsfParams")) : null;
