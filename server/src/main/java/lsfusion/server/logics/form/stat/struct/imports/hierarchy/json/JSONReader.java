@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.hierarchy.json;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 
 public class JSONReader {
 
-    public static Object readRootObject(RawFileData file, String root, String charset) throws IOException, JSONException {
+    public static Object readRootObject(RawFileData file, String root, String charset) throws JSONException {
         Object rootNode = JSONReader.readObject(file, charset);
         if (root != null) {
             rootNode = JSONReader.findRootNode(rootNode, null, root);
@@ -29,10 +30,12 @@ public class JSONReader {
         writeObject(object, printWriter);
     }
 
-    public static Object readObject(RawFileData file, String charset) throws IOException, JSONException {
+    public static Object readObject(RawFileData file, String charset) {
         try (InputStream is = file.getInputStream()) {
             final BufferedReader rd = new BufferedReader(new InputStreamReader(new BOMInputStream(is), charset));
             return readObject(rd);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 

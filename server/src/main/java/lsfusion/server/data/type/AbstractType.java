@@ -140,14 +140,14 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public RawFileData formatFile(T value, String charset) {
+    public FileData formatFile(T value, String charset) {
         if(value == null)
             return null;
         return readPropNotNull(value, charset);
     }
 
-    public RawFileData readPropNotNull(T value, String charset) {
-        return new RawFileData(formatString(value), charset);
+    public FileData readPropNotNull(T value, String charset) {
+        return new FileData(new RawFileData(formatString(value), charset), "dat");
     }
 
     public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {

@@ -2,12 +2,14 @@ package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,11 +33,9 @@ public abstract class UserEventAction extends SystemExplicitAction {
         this.fromInterface = orderInterfaces.get(0);
     }
     
-    protected List<JSONObject> readJSON(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        Object json = context.getKeyObject(fromInterface);
-        if (json instanceof String) {
-            json = JSONReader.readObject((String) json);
-        } 
+    protected List<JSONObject> readJSON(ExecutionContext<ClassPropertyInterface> context) {
+        ObjectValue jsonObjectValue = context.getKeyValue(fromInterface);
+        Object json = InternalAction.readJSON(jsonObjectValue, (DataClass)fromInterface.interfaceClass);
         if (json instanceof JSONObject) {
             return Collections.singletonList((JSONObject) json);
         } else if (json instanceof JSONArray) {
