@@ -456,12 +456,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GWriteAction action) {
-        if (isElectron()) {
-            if(action.filePath != null)
-                writeFileElectron(action.filePath, action.fileBase64);
-        } else {
-            if(action.fileUrl != null) //it is actually downloading the file, not opening it in the browser
-                fileDownload(getAppDownloadURL(action.fileUrl));
+        if (action.fileUrl != null) {
+            String downloadURL = getAppDownloadURL(action.fileUrl);
+            if (isElectron()) {
+                writeFileElectron(downloadURL, action.filePath);
+            } else { //it is actually downloading the file, not opening it in the browser
+                fileDownload(downloadURL);
+            }
         }
     }
 
@@ -482,10 +483,37 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (isElectron()) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            getAvailablePrinters(createAvailablePrintersCallback(printerNames -> continueDispatching(printerNames, result)));
+            getAvailablePrinters(createSingleParamCallback(printerNames -> continueDispatching(printerNames, result)));
             return null;
         } else {
             throw new UnsupportedOperationException("getAvailablePrinters is supported only in electron");
+        }
+    }
+
+    @Override
+    public byte[] execute(GTcpAction action) {
+        if (isElectron()) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            sendTcpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes), action.timeout, createSingleParamCallback(new SingleParamCallback() {
+                @Override
+                public void onResult(Object response) {
+                    byte[] bytes = arrayBufferToBytes((ArrayBuffer) response);
+                    continueDispatching(new GTcpResult(bytes), result);
+                }
+            }));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("EXTERNAL TCP is supported only in electron");
+        }
+    }
+
+    @Override
+    public void execute(GUdpAction action) {
+        if (isElectron()) {
+            sendUdpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes));
+        } else {
+            throw new UnsupportedOperationException("EXTERNAL UDP is supported only in electron");
         }
     }
 

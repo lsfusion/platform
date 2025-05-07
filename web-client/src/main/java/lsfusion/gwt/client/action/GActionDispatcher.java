@@ -55,6 +55,10 @@ public interface GActionDispatcher {
 
     String execute(GGetAvailablePrintersAction action);
 
+    byte[] execute(GTcpAction action);
+
+    void execute(GUdpAction action);
+
     String execute(GLoadLinkAction action);
 
     void execute(GBeepAction action);

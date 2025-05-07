@@ -11,10 +11,7 @@ import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
-import lsfusion.gwt.client.action.GExternalHttpResponse;
-import lsfusion.gwt.client.action.GListFilesResult;
-import lsfusion.gwt.client.action.GReadResult;
-import lsfusion.gwt.client.action.GRunCommandActionResult;
+import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
@@ -273,5 +270,10 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GRunCommandActionResult.class)
     public RunCommandActionResult convertReadResult(GRunCommandActionResult runCommandActionResult) {
         return new RunCommandActionResult(runCommandActionResult.cmdOut, runCommandActionResult.cmdErr, runCommandActionResult.exitValue);
+    }
+
+    @Converter(from = GTcpResult.class)
+    public byte[] convertReadResult(GTcpResult tcpResult) {
+        return tcpResult.response;
     }
 }

@@ -33,9 +33,7 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.session.HttpClientAction;
+import lsfusion.interop.session.*;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.net.util.Base64;
 
@@ -290,7 +288,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
-        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension), Base64.encodeBase64String(action.file.getBytes()));
+        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension));
     }
 
     @Converter(from = GetAvailablePrintersClientAction.class)
@@ -302,6 +300,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = RunCommandClientAction.class)
     public GRunCommandAction convertAction(RunCommandClientAction action) {
         return new GRunCommandAction(action.command);
+    }
+
+    @Converter(from = TcpClientAction.class)
+    public GTcpAction convertAction(TcpClientAction action) {
+        return new GTcpAction(action.fileBytes, action.host, action.port, action.timeout);
+    }
+
+    @Converter(from = UdpClientAction.class)
+    public GUdpAction convertAction(UdpClientAction action) {
+        return new GUdpAction(action.fileBytes, action.host, action.port);
     }
 
     @Converter(from = HttpClientAction.class)

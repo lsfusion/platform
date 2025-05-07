@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -271,13 +272,40 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static native void writeFileElectron(String path, String base64) /*-{
+    public static native void writeFileElectron(String url, String targetPath) /*-{
         var fs = require('fs');
-        try {
-            fs.writeFileSync(path, Buffer.from(base64, 'base64'));
-        } catch (e) {
-            throw new Error("Error writing file: " + e.message);
-        }
+        var http = require('http');
+        var https = require('https');
+
+        var fullUrl = new URL(window.location.origin + url);
+        var protocol = fullUrl.protocol === 'https:' ? https : http;
+
+        var file = fs.createWriteStream(targetPath);
+
+        var cookies = document.cookie;
+
+        var options = {
+            hostname: fullUrl.hostname,
+            port: fullUrl.port || (fullUrl.protocol === 'https:' ? 443 : 80),
+            path: fullUrl.pathname + fullUrl.search,
+            method: 'GET',
+            headers: {
+                'Cookie': cookies
+            }
+        };
+
+        var req = protocol.request(options, function(response) {
+            response.pipe(file);
+            file.on('finish', function() {
+                file.close();
+            });
+        });
+
+        req.on('error', function(err) {
+            fs.unlink(targetPath, function() {});
+        });
+
+        req.end();
     }-*/;
 
     public static native void getAvailablePrinters(JavaScriptObject onResult) /*-{
@@ -293,16 +321,6 @@ public class GwtClientUtils {
         } catch (e) {
             throw new Error("Error getAvailablePrinters: " + e.message);
         }
-    }-*/;
-
-    public interface AvailablePrintersCallback {
-        void onResult(String printerNames);
-    }
-
-    public static native JavaScriptObject createAvailablePrintersCallback(AvailablePrintersCallback callback) /*-{
-        return function(printerNames) {
-            callback.@lsfusion.gwt.client.base.GwtClientUtils.AvailablePrintersCallback::onResult(*)(printerNames);
-        };
     }-*/;
 
     public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
@@ -321,6 +339,72 @@ public class GwtClientUtils {
             callback.@lsfusion.gwt.client.base.GwtClientUtils.RunCommandCallback::onResult(*)(cmdOut, cmdErr, exitValue);
         };
     }-*/;
+
+    public static native void sendTcpElectron(String host, int port, ArrayBuffer fileBytes, Integer timeoutMillis, JavaScriptObject onResult) /*-{
+        var net = require('net');
+        var buffer = require('buffer');
+
+        var client = new net.Socket();
+        var response = buffer.Buffer.alloc(0);
+        var isCallbackCalled = false;
+
+        if(timeoutMillis) {
+            var timeout = setTimeout(function () {
+                if (!isCallbackCalled) {
+                    isCallbackCalled = true;
+                    client.destroy();
+                    onResult(buffer.Buffer.from('Timeout'));
+                }
+            }, timeoutMillis);
+        }
+
+        var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
+        client.connect(port, host, function() {
+            client.write(bytes);
+        });
+
+        client.on('data', function(data) {
+            response = buffer.Buffer.concat([response, data]);
+        });
+
+        client.on('end', function() {
+            clearTimeout(timeout);
+            if (!isCallbackCalled) {
+                isCallbackCalled = true;
+                var arrayBuffer = response.buffer.slice(response.byteOffset, response.byteOffset + response.byteLength);
+                onResult(arrayBuffer);
+            }
+        });
+
+        client.on('error', function(err) {
+            clearTimeout(timeout);
+            if (!isCallbackCalled) {
+                isCallbackCalled = true;
+                onResult(buffer.Buffer.from(err.message));
+            }
+        });
+    }-*/;
+
+    public static native void sendUdpElectron(String host, int port, ArrayBuffer fileBytes) /*-{
+        var dgram = require('dgram');
+        var buffer = require('buffer');
+
+        var client = dgram.createSocket('udp4');
+        var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
+        client.send(bytes, 0, bytes.length, port, host);
+    }-*/;
+
+    public interface SingleParamCallback {
+        void onResult(Object response);
+    }
+
+    public static native JavaScriptObject createSingleParamCallback(SingleParamCallback callback) /*-{
+        return function(response) {
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.SingleParamCallback::onResult(*)(response);
+        };
+    }-*/;
+
+    /*--- electron methods ---*/
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
