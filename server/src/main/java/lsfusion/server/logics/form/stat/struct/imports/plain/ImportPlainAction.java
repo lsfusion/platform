@@ -134,7 +134,7 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
         Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
         for(int i=0,size=fileInterfaces.size();i<size;i++) {
             GroupObjectEntity fileObject = fileInterfaces.getKey(i);
-            files.put(fileObject == GroupObjectEntity.NULL ? null : fileObject, readFile(context.getKeyValue(fileInterfaces.getValue(i)), charset));
+            files.put(fileObject == GroupObjectEntity.NULL ? null : fileObject, readRawFile(context.getKeyValue(fileInterfaces.getValue(i)), charset));
         }
         return files;
     }

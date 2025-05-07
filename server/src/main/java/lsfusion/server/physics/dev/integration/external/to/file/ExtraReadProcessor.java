@@ -7,6 +7,7 @@ import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.ExtraReadInterface;
+import lsfusion.server.logics.classes.data.file.TableClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import org.apache.commons.io.FileUtils;
 
@@ -41,7 +42,7 @@ public class ExtraReadProcessor implements ExtraReadInterface {
     @Override
     public void copyToFile(String type, String query, File file) throws SQLException, IOException {
         switch (type) {
-            case "jdbc":
+            case TableClass.extension:
                 copyJDBCToFile(query, file);
                 break;
             case "mdb":

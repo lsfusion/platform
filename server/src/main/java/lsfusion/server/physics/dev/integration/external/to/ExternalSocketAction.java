@@ -3,7 +3,9 @@ package lsfusion.server.physics.dev.integration.external.to;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -31,14 +33,15 @@ public abstract class ExternalSocketAction extends CallAction {
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         try {
-            Object file = context.getKeyObject(paramInterfaces.single());
-            if (file instanceof RawFileData) {
+            PropertyInterface paramInterface = paramInterfaces.single();
+            FileData file = readFile(context.getKeyValue(paramInterface), paramTypes.get(paramInterface), ExternalUtils.resultCharset.toString());
+            if (file != null) {
                 String connectionString = getTransformedText(context, queryInterface);
                 if (connectionString != null) {
                     Pattern pattern = Pattern.compile("(.*):(\\d+)");
                     Matcher matcher = pattern.matcher(connectionString);
                     if (matcher.matches()) {
-                        byte[] fileBytes = ((RawFileData) file).getBytes();
+                        byte[] fileBytes = file.getRawFile().getBytes();
                         String host = matcher.group(1);
                         Integer port = Integer.parseInt(matcher.group(2));
                         send(context, host, port, fileBytes);

@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -26,6 +27,8 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
+import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.TableClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -53,15 +56,12 @@ public abstract class CallDBAction extends CallAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        List<Object> results = readJDBC(context, connectionString != null ? replaceParams(context, getTransformedText(context, connectionString)) : null, context.getDbManager());
-
-        for (int i = 0; i < targetPropList.size(); i++)
-            targetPropList.get(i).change(results.get(i), context);
+        readJDBC(context, connectionString != null ? replaceParams(context, getTransformedText(context, connectionString)) : null, context.getDbManager());
 
         return FlowResult.FINISH;
     }
 
-    protected abstract List<Object> readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException;
+    protected abstract void readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException;
 
     private ImMap<String, ParseInterface> replaceParams(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner, List<String> tempTables) throws IOException, SQLException {
         int tableParamNum = 0;
@@ -74,11 +74,12 @@ public abstract class CallDBAction extends CallAction {
             ParseInterface parse = null;
 
             if (paramValue instanceof DataObject) {
-                DataClass paramClass = (DataClass) ((DataObject) paramValue).objectClass;
-                if (paramClass instanceof DynamicFormatFileClass) {
-                    FileData fileData = (FileData) paramValue.getValue();
+                DataObject paramObject = (DataObject) paramValue;
+                DataClass paramClass = (DataClass) getFileClass(paramObject, paramTypes.get(param));
+                if (paramClass instanceof FileClass) {
+                    FileData fileData = readFile(paramObject, paramClass, null);
                     String extension = fileData.getExtension();
-                    if (extension.equals("jdbc")) { // значит таблица
+                    if (extension.equals(TableClass.extension)) { // значит таблица
                         JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileData.getRawFile());
 
                         String table = "ti_" + tableParamNum; // создаем временную таблицу с сгенерированным именем
@@ -87,7 +88,8 @@ public abstract class CallDBAction extends CallAction {
                         parse = SessionTable.getParseInterface(table);
                     }
                 }
-                if (parse == null) parse = paramValue.getParse(paramClass.getType(), syntax);
+                if (parse == null)
+                    parse = paramValue.getParse(paramClass.getType(), syntax);
             } else
                 parse = AbstractParseInterface.SAFENULL; // // here it turns out that there is no type, but it is not needed (STRUCT's have no sense, the external SQL command itself is responsible for casting types, all safe respectively neither writeParam nor getType can / should not be called)
 
@@ -96,7 +98,7 @@ public abstract class CallDBAction extends CallAction {
         return mParamObjects.immutable();
     }
 
-    protected List<Object> readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner) throws SQLException, SQLHandledException, IOException, ExecutionException {
+    protected void readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner) throws SQLException, SQLHandledException, IOException, ExecutionException {
         conn.setReadOnly(false);
 
         String exec = (String) context.getKeyObject(this.exec);
@@ -118,18 +120,23 @@ public abstract class CallDBAction extends CallAction {
 
                 boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) parsed.statement::execute).get();
 
-                List<Object> results = new ArrayList<>();
+                int resultNum = 0;
                 while (true) {
-                    if (isResultSet)
-                        results.add(new FileData(JDBCTable.serialize(parsed.statement.getResultSet()), "jdbc"));
-                    else {
+                    if(resultNum >= targetPropList.size())
+                        break;
+                    LP targetProp = targetPropList.get(resultNum++);
+
+                    if (isResultSet) {
+                        writeResult(targetProp, JDBCTable.serialize(parsed.statement.getResultSet()), TableClass.extension, context, ExternalUtils.resultCharset.toString());
+                    } else {
                         int updateCount = parsed.statement.getUpdateCount();
-                        if (updateCount == -1) break;
-                        else results.add(updateCount);
+                        if (updateCount == -1)
+                            break;
+
+                        targetProp.change(updateCount, context);
                     }
                     isResultSet = parsed.statement.getMoreResults();
                 }
-                return results;
             } catch (InterruptedException e) {
                 parsed.statement.cancel();
                 throw Throwables.propagate(e);

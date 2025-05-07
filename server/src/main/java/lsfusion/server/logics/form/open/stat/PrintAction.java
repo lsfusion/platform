@@ -134,7 +134,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             } else if (exportFile != null || (!Settings.get().isGenerateReportsOnWebServer() && context.isWeb())) {
                 RawFileData report = exportToFileByteArray(reportData, staticType, sheetName, password);
                 if(exportFile != null)
-                    writeResult(exportFile, staticType, context, report, ExternalUtils.printCharset.toString());
+                    writeResult(exportFile, staticType, context, report, ExternalUtils.resultCharset.toString());
                 else {
                     context.requestUserInteraction(new ReportClientAction(autoPrint, autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
                 }

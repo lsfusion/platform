@@ -28,7 +28,7 @@ public class InternalDBAction extends CallDBAction {
         super(1, params, targetPropList); //command + params
     }
 
-    public List<Object> readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
+    public void readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
         OperationOwner owner = OperationOwner.unknown;
 
         DataAdapter adapter = dbManager.getAdapter();
@@ -39,7 +39,7 @@ public class InternalDBAction extends CallDBAction {
         boolean prevReadOnly = conn.isReadOnly();
 
         try {
-            return readJDBC(context, conn, syntax, owner);
+            readJDBC(context, conn, syntax, owner);
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         } finally {

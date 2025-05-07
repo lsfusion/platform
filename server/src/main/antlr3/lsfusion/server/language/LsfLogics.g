@@ -4136,7 +4136,7 @@ expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns
 orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedOrderProp($gobj.sid, $expr.property);
+		$action = self.addScriptedOrderProp($gobj.sid, $expr.property, context);
 	}
 }
     :   'ORDER'
@@ -4158,7 +4158,7 @@ readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
  filterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterProp($gobj.sid, $expr.property);
+ 		$action = self.addScriptedFilterProp($gobj.sid, $expr.property, context);
  	}
  }
      :   'FILTER'
@@ -4180,7 +4180,7 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
  filterGroupActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterGroupProp($fg.sid, $expr.property);
+ 		$action = self.addScriptedFilterGroupProp($fg.sid, $expr.property, context);
  	}
  }
 
@@ -4206,7 +4206,7 @@ readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynam
  }
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterPropertyProp(propertyDraw, $expr.property);
+ 		$action = self.addScriptedFilterPropertyProp(propertyDraw, $expr.property, context);
  	}
  }
 

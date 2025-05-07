@@ -1,5 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
@@ -10,6 +12,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -28,12 +31,13 @@ public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
         if (filterEventProperty == null) {
             filterEventProperty = getDefaultToProperty(context.getBL());
         }
-        Object writeObject = null;
+        String writeObject = null;
         if (!objects.isEmpty()) {
             // always writing JSON array for proper import into orders/filters form
             writeObject = new JSONArray(objects).toString();
         }
-        filterEventProperty.change(writeObject, context.getSession());
+        Charset jsonCharset = ExternalUtils.jsonCharset;
+        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : null, "json", context, jsonCharset.toString());
     }
 
     public abstract List<JSONObject> createJSON(T items);

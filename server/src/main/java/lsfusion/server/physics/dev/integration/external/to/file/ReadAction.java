@@ -4,10 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -59,14 +58,10 @@ public class ReadAction extends SystemAction {
                 if (clientAction) {
                     readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
                 } else {
-                    readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false, extraReadProcessor);
+                    readResult = ReadUtils.readFile(sourcePath, isBlockingFileRead, false, extraReadProcessor);
                 }
-                if (readResult != null) {
-                    if (isDynamicFormatFileClass)
-                        targetProp.change((FileData) readResult.fileBytes, context);
-                    else
-                        targetProp.change((RawFileData) readResult.fileBytes, context);
-                }
+                if (readResult != null)
+                    writeResult(targetProp, readResult.fileData.getRawFile(), readResult.fileData.getExtension(), context, ExternalUtils.resultCharset.toString());
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }

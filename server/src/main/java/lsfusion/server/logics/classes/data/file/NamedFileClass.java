@@ -75,8 +75,8 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    public RawFileData readPropNotNull(NamedFileData value, String charset) {
-        return value.getRawFile();
+    public FileData readPropNotNull(NamedFileData value, String charset) {
+        return value.getFileData();
     }
 
     @Override

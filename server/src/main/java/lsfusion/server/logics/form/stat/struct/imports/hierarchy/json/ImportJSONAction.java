@@ -19,7 +19,7 @@ public class ImportJSONAction extends ImportHierarchicalAction<JSONNode> {
     public JSONNode getRootNode(RawFileData fileData, String root) {
         try {
             return JSONNode.getJSONNode(JSONReader.readRootObject(fileData, root, getCharset()), true);
-        } catch (IOException | JSONException e) {
+        } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
     }

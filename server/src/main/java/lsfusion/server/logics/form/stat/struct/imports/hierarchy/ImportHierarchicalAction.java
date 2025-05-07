@@ -41,7 +41,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
 
         ImportHierarchicalIterator iterator = new ImportHierarchicalIterator(wheres);
 
-        RawFileData file = readFile(context.getKeyValue(fileInterface), getCharset());
+        RawFileData file = readRawFile(context.getKeyValue(fileInterface), getCharset());
 
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);

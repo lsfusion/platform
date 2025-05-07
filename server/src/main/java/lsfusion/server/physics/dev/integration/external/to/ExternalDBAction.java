@@ -25,7 +25,7 @@ public class ExternalDBAction extends CallDBAction {
         super(2, params, targetPropList); //connection string, command + params
     }
 
-    public List<Object> readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
+    public void readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
         if (connectionString.equals("LOCAL"))
             throw new UnsupportedOperationException("EXTERNAL SQL 'LOCAL' is not supported, Use INTERNAL DB instead");
 
@@ -45,7 +45,7 @@ public class ExternalDBAction extends CallDBAction {
         }
 
         try {
-            return readJDBC(context, conn, syntax, OperationOwner.unknown);
+            readJDBC(context, conn, syntax, OperationOwner.unknown);
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         } finally {

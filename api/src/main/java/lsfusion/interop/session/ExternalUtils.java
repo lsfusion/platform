@@ -60,7 +60,7 @@ public class ExternalUtils {
     // "bytes-to-string" charsets
     public static Charset fileCharset = StandardCharsets.UTF_8; // when "data" files are converted to strings (should match cast)
     public static Charset resourceCharset = StandardCharsets.UTF_8; // when "disk" (usually "resource") files are converted (read) to strings
-    public static Charset printCharset = StandardCharsets.UTF_8; // when "printed" files are converted to string
+    public static Charset resultCharset = StandardCharsets.UTF_8; // when result ("disk" or "printed") files are converted to / from string
     public static Charset downloadCharset = StandardCharsets.UTF_8; // when file ("disk" or "data" or "printed") is downloaded to the client
     public static Charset jsonCharset = StandardCharsets.UTF_8; // when json file comes from the "unknown" place (i.e javascript client, url.openStream, etc.)
 
