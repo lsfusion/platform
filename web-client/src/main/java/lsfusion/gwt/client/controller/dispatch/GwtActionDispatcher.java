@@ -477,14 +477,30 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private native void unloadResource(String resourcePath, String resourceName, String extension)/*-{
-            if(extension === 'css') {
+            if (extension === 'js') {
+                var scripts = $wnd.document.head.getElementsByTagName("script");
+                for (var i = 0; i < scripts.length; i++) {
+                    var script = scripts[i];
+                    if (script.src.indexOf(resourcePath) > 0)
+                        script.parentNode.removeChild(script);
+                }
+            } else if (extension === 'css') {
                 var links = $wnd.document.head.getElementsByTagName("link");
                 for (var i = 0; i < links.length; i++) {
                     var link = links[i];
-                    if (link.href.indexOf(resourcePath) > 0) {
+                    if (link.href.indexOf(resourcePath) > 0)
                         link.parentNode.removeChild(link);
-                    }
                 }
+            } else if (extension === 'ttf' || extension === 'otf') {
+                var fonts = document.fonts;
+                for (var i = 0; i < fonts.size; i++) {
+                    var font = fonts.values().next().value;
+                    if (font.family === resourceName)
+                        fonts['delete'](font);
+                }
+            } else {
+                if ($wnd.lsfFiles != null && $wnd.lsfFiles[resourceName] != null)
+                    delete $wnd.lsfFiles[resourceName];
             }
         }-*/;
 

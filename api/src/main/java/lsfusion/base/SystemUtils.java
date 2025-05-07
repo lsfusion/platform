@@ -282,14 +282,22 @@ public class SystemUtils {
     }
 
     public static String registerFont(ClientWebAction action) {
+        return registerFont(((RawFileData) action.resource));
+    }
+
+    public static String registerFont(RawFileData resource) {
         try {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
+            Font font = Font.createFont(Font.TRUETYPE_FONT, resource.getInputStream());
             ge.registerFont(font);
             return font.getFamily();
         } catch (FontFormatException | IOException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public static boolean isFont(String extension) {
+        return BaseUtils.equalsIgnoreCase(extension, "ttf") || BaseUtils.equalsIgnoreCase(extension, "otf");
     }
 
     public static void registerLibrary(ClientWebAction action) {

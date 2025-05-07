@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.http.controller.MainController;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,12 +44,19 @@ public class ServerUtils {
         List<MainController.WebAction> versionedResources = new ArrayList<>();
         for (String resource : resources) {
             String version = versions.get(resource);
+            String extension = resource.substring(resource.lastIndexOf(".") + 1);
+            String resourceName = Paths.get(resource).getFileName().toString();
             if (version == null) {
-                version = SystemUtils.generateID(IOUtils.toByteArray(servletContext.getResourceAsStream("/" + resource)));
+                byte[] resourceData = IOUtils.toByteArray(servletContext.getResourceAsStream("/" + resource));
+                version = SystemUtils.generateID(resourceData);
+
+                if (SystemUtils.isFont(extension))
+                    resourceName = SystemUtils.registerFont(new RawFileData(resourceData));
+
                 versions.put(resource, version);
             }
 
-            versionedResources.add(new MainController.WebAction(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1), false));
+            versionedResources.add(new MainController.WebAction(resource + "?version=" + version, extension, resourceName, false));
         }
         return versionedResources;
     }
