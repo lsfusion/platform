@@ -271,7 +271,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     .getPayload()
                     .getSubject();
         } catch (Exception e) {
-            throw new AuthenticationException(e.getMessage());
+            throw new AuthenticationException(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
         }
 
 //        u.setId(Long.parseLong((String) body.get("userId")));
