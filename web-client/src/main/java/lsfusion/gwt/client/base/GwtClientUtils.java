@@ -323,6 +323,72 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native void printArrayBufferElectron(ArrayBuffer fileBytes, String printerName) /*-{
+        var fs = require('fs');
+        var os = require('os');
+        var path = require('path');
+        var printer = require('pdf-to-printer');
+        var buffer = require('buffer');
+
+        try {
+            var tempDir = os.tmpdir();
+            var tempPath = path.join(tempDir, 'temp-print-file');
+
+            var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
+            fs.writeFileSync(tempPath, bytes);
+
+            var options = printerName ? { printer: printerName } : undefined;
+            printer.print(tempPath, options).then(function() {
+                fs.unlinkSync(tempPath);
+            });
+        } catch (e) {
+            fs.unlinkSync(tempPath);
+            throw new Error('Error printing file: ' + e.message);
+        }
+    }-*/;
+
+    public static native void printFileElectron(String filePath, String printerName) /*-{
+        var printer = require('pdf-to-printer');
+
+        var options = printerName ? { printer: printerName } : undefined;
+        printer.print(filePath, options);
+    }-*/;
+
+    public static native void printTextElectron(String text, String printerName) /*-{
+        var fs = require('fs');
+        var os = require('os');
+        var path = require('path');
+        var PDFDocument = require('pdfkit');
+        var printer = require('pdf-to-printer');
+
+        try {
+            var tempDir = os.tmpdir();
+            var tempPath = path.join(tempDir, 'temp-print-file.pdf');
+
+            var doc = new PDFDocument();
+            var stream = fs.createWriteStream(tempPath);
+            doc.pipe(stream);
+            doc.text(text);
+            doc.end();
+
+            stream.on('finish', function() {
+                var options = printerName ? { printer: printerName } : undefined;
+                printer.print(tempPath, options).then(
+                    function() {
+                        fs.unlinkSync(tempPath);
+                    },
+                    function(err) {
+                        console.error('Error printing PDF:', err.message);
+                        fs.unlinkSync(tempPath);
+                    }
+                );
+            });
+
+        } catch (e) {
+            throw new Error('Error printing PDF: ' + e.message);
+        }
+    }-*/;
+
     public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
         var child_process = require('child_process');
         child_process.exec(command, function (error, stdout, stderr) {
@@ -392,6 +458,56 @@ public class GwtClientUtils {
         var client = dgram.createSocket('udp4');
         var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
         client.send(bytes, 0, bytes.length, port, host);
+    }-*/;
+
+    public static native void writeToSocketElectron(String host, int port, String text, String charset) /*-{
+        var net = require('net');
+
+        var client = new net.Socket();
+        client.connect(port, host, function() {
+            client.write(text, charset);
+        });
+    }-*/;
+
+    public static native void pingElectron(String host, JavaScriptObject onResult) /*-{
+        var net = require('net');
+
+        var client = new net.Socket();
+        client.connect(80, host, function () {
+            onResult(null);
+        });
+
+        client.on('error', function(err) {
+            onResult(err.message);
+        });
+    }-*/;
+
+    public static native void writeToComPortElectron(String portName, int baudRate, ArrayBuffer fileBytes, JavaScriptObject onResult) /*-{
+        var serialPort = require('serialport');
+        var buffer = require('buffer');
+
+        var port = new serialPort.SerialPort({
+            path: portName,
+            baudRate: baudRate,
+            autoOpen: false
+        });
+
+        port.open(function (err) {
+            if (err) {
+                onResult("Error opening port: " + err.message);
+                return;
+            }
+
+            var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
+            port.write(bytes, function (err) {
+                if (err) {
+                    onResult("Error writing to port: " + err.message);
+                    port.close();
+                } else {
+                    onResult(null);
+                }
+            });
+        });
     }-*/;
 
     public interface SingleParamCallback {

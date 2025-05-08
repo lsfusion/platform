@@ -1,4 +1,7 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.file;
+
+import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GActionDispatcher;
 
 public class GDeleteFileAction implements GAction {
     public String source;

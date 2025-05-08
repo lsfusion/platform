@@ -1,4 +1,7 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.net;
+
+import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GActionDispatcher;
 
 public class GTcpAction implements GAction {
     public byte[] fileBytes;

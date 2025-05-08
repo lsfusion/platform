@@ -1,6 +1,15 @@
 package lsfusion.gwt.client.action;
 
 import com.google.gwt.http.client.RequestException;
+import lsfusion.gwt.client.action.file.*;
+import lsfusion.gwt.client.action.net.GPingAction;
+import lsfusion.gwt.client.action.net.GTcpAction;
+import lsfusion.gwt.client.action.net.GUdpAction;
+import lsfusion.gwt.client.action.com.GWriteToComPortAction;
+import lsfusion.gwt.client.action.net.GWriteToSocketAction;
+import lsfusion.gwt.client.action.printer.GGetAvailablePrintersAction;
+import lsfusion.gwt.client.action.printer.GPrintFileAction;
+import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 
 public interface GActionDispatcher {
     void execute(GFormAction action);
@@ -55,9 +64,19 @@ public interface GActionDispatcher {
 
     String execute(GGetAvailablePrintersAction action);
 
+    void execute(GPrintFileAction action);
+
+    String execute(GWriteToPrinterAction action);
+
     byte[] execute(GTcpAction action);
 
     void execute(GUdpAction action);
+
+    void execute(GWriteToSocketAction action);
+
+    String execute(GPingAction action);
+
+    String execute(GWriteToComPortAction action);
 
     String execute(GLoadLinkAction action);
 

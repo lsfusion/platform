@@ -1,9 +1,7 @@
-package lsfusion.server.physics.dev.integration.external.to.equ.com;
+package lsfusion.base.com;
 
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
-
-//todo: Replace all usages to lsfusion.base.com.SerialPortEventListener (available since 6.1)
 
 public interface SerialPortEventListener {
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.file;
 
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 

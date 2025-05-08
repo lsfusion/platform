@@ -1,4 +1,4 @@
-package lsfusion.server.physics.dev.integration.external.to.equ.com;
+package lsfusion.base.com;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
@@ -6,18 +6,13 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 import com.google.common.base.Throwables;
 import jssc.SerialPortException;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.physics.admin.log.ServerLoggers;
-import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
-//todo: Replace all usages to lsfusion.base.com.SerialPortHandler2 (available since 6.1)
+import static lsfusion.base.BaseUtils.systemLogger;
 
 public class SerialPortHandler2 {
-
-    protected static final Logger logger = ServerLoggers.systemLogger;
-
     private static Map<String, SerialPort> serialPortMap = new HashMap<>();
 
     public static String writeBytes(String comPort, Integer baudRate, byte[] bytes) {
@@ -52,7 +47,7 @@ public class SerialPortHandler2 {
                         serialPort.removeDataListener();
                         serialPort.closePort();
                     } catch (Exception e) {
-                        logger.error("Error releasing scanner: ", e);
+                        systemLogger.error("Error releasing scanner: ", e);
                         t = e;
                     }
                 }
@@ -87,7 +82,7 @@ public class SerialPortHandler2 {
             serialPort = SerialPort.getCommPort(comPort);
             boolean opened = serialPort.openPort();
             if (!opened) {
-                throw new RuntimeException("Не удалось открыть порт " + comPort + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
+                throw new RuntimeException("Can't open port " + comPort + ". Try to close all other applications using this port and restart the client.");
             }
         }
         return serialPort;

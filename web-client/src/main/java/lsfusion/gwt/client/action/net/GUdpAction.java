@@ -1,4 +1,7 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.net;
+
+import lsfusion.gwt.client.action.GActionDispatcher;
+import lsfusion.gwt.client.action.GExecuteAction;
 
 public class GUdpAction extends GExecuteAction {
     public byte[] fileBytes;

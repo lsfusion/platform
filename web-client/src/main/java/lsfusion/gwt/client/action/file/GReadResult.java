@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.file;
 
 import java.io.Serializable;
 

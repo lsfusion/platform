@@ -1,4 +1,7 @@
-package lsfusion.gwt.client.action;
+package lsfusion.gwt.client.action.file;
+
+import lsfusion.gwt.client.action.GActionDispatcher;
+import lsfusion.gwt.client.action.GExecuteAction;
 
 public class GWriteAction extends GExecuteAction {
     public String fileUrl;

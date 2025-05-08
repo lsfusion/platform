@@ -10,6 +10,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.action.com.GWriteToComPortAction;
+import lsfusion.gwt.client.action.file.*;
+import lsfusion.gwt.client.action.net.*;
+import lsfusion.gwt.client.action.printer.GGetAvailablePrintersAction;
+import lsfusion.gwt.client.action.printer.GPrintFileAction;
+import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -491,17 +497,33 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GPrintFileAction action) {
+        if (isElectron()) {
+            if(action.fileData != null)
+                printArrayBufferElectron(bytesToArrayBuffer(action.fileData), action.printerName);
+            else
+                printFileElectron(action.filePath, action.printerName);
+        } else {
+            throw new UnsupportedOperationException("Print file is supported only in electron");
+        }
+    }
+
+    @Override
+    public String execute(GWriteToPrinterAction action) {
+        if (isElectron()) {
+            printTextElectron(action.text, action.printerName);
+            return null;
+        } else {
+            throw new UnsupportedOperationException("WriteToPrinter is supported only in electron");
+        }
+    }
+
+    @Override
     public byte[] execute(GTcpAction action) {
         if (isElectron()) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            sendTcpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes), action.timeout, createSingleParamCallback(new SingleParamCallback() {
-                @Override
-                public void onResult(Object response) {
-                    byte[] bytes = arrayBufferToBytes((ArrayBuffer) response);
-                    continueDispatching(new GTcpResult(bytes), result);
-                }
-            }));
+            sendTcpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes), action.timeout, createSingleParamCallback(response -> continueDispatching(new GTcpResult(arrayBufferToBytes((ArrayBuffer) response)), result)));
             return null;
         } else {
             throw new UnsupportedOperationException("EXTERNAL TCP is supported only in electron");
@@ -514,6 +536,39 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             sendUdpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes));
         } else {
             throw new UnsupportedOperationException("EXTERNAL UDP is supported only in electron");
+        }
+    }
+
+    @Override
+    public void execute(GWriteToSocketAction action) {
+        if (isElectron()) {
+            writeToSocketElectron(action.ip, action.port, action.text, action.charset);
+        } else {
+            throw new UnsupportedOperationException("WriteToSocket is supported only in electron");
+        }
+    }
+
+    @Override
+    public String execute(GPingAction action) {
+        if (isElectron()) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            pingElectron(action.host, createSingleParamCallback(response -> continueDispatching(response, result)));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("Ping is supported only in electron");
+        }
+    }
+
+    @Override
+    public String execute(GWriteToComPortAction action) {
+        if (isElectron()) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            writeToComPortElectron(action.comPort, action.baudRate, bytesToArrayBuffer(action.file), createSingleParamCallback(response -> continueDispatching(response, result)));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("WriteToComPort is supported only in electron");
         }
     }
 
