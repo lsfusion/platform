@@ -293,7 +293,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact());
         if (!token.isAnonymous() && !token.string.contains(".")) {
-            exInfoLogger.error("Generated jwt token without dot: " + token);
+            exInfoLogger.error("Generated jwt token without dot: " + token.string);
         }
 
         return token;
