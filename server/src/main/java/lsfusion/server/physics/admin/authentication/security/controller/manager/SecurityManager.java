@@ -271,7 +271,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     .getPayload()
                     .getSubject();
         } catch (Exception e) {
-            throw new AuthenticationException(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
+            exInfoLogger.error(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
+            return null; // ignore exception and assume that token is anonymous
         }
 
 //        u.setId(Long.parseLong((String) body.get("userId")));
@@ -287,10 +288,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .expiration(new Date(System.currentTimeMillis() +
                         (tokenExpiration != null ? tokenExpiration : Settings.get().getAuthTokenExpiration()) * 1000 * 60))
                 .build();
-        return new AuthenticationToken(Jwts.builder()
+        AuthenticationToken token = new AuthenticationToken(Jwts.builder()
                 .claims(claims)
                 .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
                 .compact());
+        if (!token.isAnonymous() && !token.string.contains(".")) {
+            exInfoLogger.error("Generated jwt token without dot: " + token);
+        }
+
+        return token;
     }
 
     public String signData(String message) {
