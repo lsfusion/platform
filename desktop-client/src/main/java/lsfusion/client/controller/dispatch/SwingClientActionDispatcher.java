@@ -47,7 +47,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -55,7 +54,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javax.swing.BorderFactory.createEmptyBorder;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
@@ -325,67 +323,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         return pageCount;
     }
 
-    public Object execute(RuntimeClientAction action) {
-        try {
-            Process p = Runtime.getRuntime().exec(action.command, action.environment, (action.directory == null ? null : new File(action.directory)));
-
-            if (action.input != null && action.input.length > 0) {
-                OutputStream inStream = p.getOutputStream();
-                inStream.write(action.input);
-            }
-
-            if (action.waitFor) {
-                p.waitFor();
-            }
-
-            InputStream outStream = p.getInputStream();
-            InputStream errStream = p.getErrorStream();
-
-            byte[] output = new byte[outStream.available()];
-            outStream.read(output);
-
-            byte[] error = new byte[errStream.available()];
-            outStream.read(error);
-
-            return new RuntimeClientActionResult(output, error);
-
-        } catch (IOException | InterruptedException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public void execute(ExportFileClientAction action) throws IOException {
         Map<String, RawFileData> chosenFiles = FileDialogUtils.showSaveFileDialog(action.files);
         for(Map.Entry<String, RawFileData> fileEntry : chosenFiles.entrySet()) {
             fileEntry.getValue().write(fileEntry.getKey());
-        }
-    }
-
-    public Object execute(ImportFileClientAction action) {
-
-        try {
-
-            File file = new File(action.fileName);
-            FileInputStream fileStream;
-
-            try {
-                fileStream = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                return new ImportFileClientActionResult(false, "");
-            }
-
-            byte[] fileContent = new byte[fileStream.available()];
-            fileStream.read(fileContent);
-            fileStream.close();
-
-            if (action.erase) {
-                BaseUtils.safeDelete(file);
-            }
-
-            return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
-
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
         }
     }
 
@@ -396,50 +337,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             ClientObjectClass defaultClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inputStream);
             ClientObjectClass resultClass = ClassDialog.dialogObjectClass(getDialogParentContainer(), baseClass, defaultClass, action.concrete);
             return resultClass != null ? resultClass.getID() : null;
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public Object execute(MessageFileClientAction action) {
-
-        try {
-
-            File file = new File(action.fileName);
-            FileInputStream fileStream = null;
-
-            try {
-                fileStream = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                if (action.mustExist) {
-                    throw Throwables.propagate(e);
-                } else {
-                    return null;
-                }
-            }
-
-            byte[] fileContent = new byte[fileStream.available()];
-            fileStream.read(fileContent);
-            fileStream.close();
-
-            if (action.erase) {
-                BaseUtils.safeDelete(file);
-            }
-
-            String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
-            if (action.multiplier > 0) {
-                fileText = ((Double) (Double.parseDouble(fileText) * 100)).toString();
-            }
-
-            if (action.mask != null) {
-                fileText = new DecimalFormat(action.mask).format((Double) (Double.parseDouble(fileText)));
-            }
-
-            JOptionPane.showMessageDialog(getDialogParentContainer(), fileText,
-                                          action.caption, JOptionPane.INFORMATION_MESSAGE);
-
-            return true;
-
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -539,17 +436,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 desktop.browse(uri);
             }
         } catch (IOException | URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public void execute(AudioClientAction action) {
-        try {
-            Clip clip = AudioSystem.getClip();
-            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(action.audio));
-            clip.open(inputStream);
-            clip.start();
-        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
