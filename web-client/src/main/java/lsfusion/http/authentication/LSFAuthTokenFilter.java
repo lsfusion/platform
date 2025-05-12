@@ -32,7 +32,11 @@ public class LSFAuthTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", new AuthenticationToken(header.substring(7)), Locale.getDefault());
+        AuthenticationToken token = new AuthenticationToken(header.substring(7));
+        if (!token.isAnonymous() && !token.string.contains(".")) {
+            logger.error("Generated jwt token without dot: " + token);
+        }
+        LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", token, Locale.getDefault());
         Authentication authResult = authenticationManager.authenticate(auth);
 
         SecurityContextHolder.getContext().setAuthentication(authResult);

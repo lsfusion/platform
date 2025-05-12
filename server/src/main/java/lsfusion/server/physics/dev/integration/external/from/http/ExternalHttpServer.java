@@ -54,6 +54,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static lsfusion.server.physics.admin.log.ServerLoggers.exInfoLogger;
+
 public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
@@ -321,6 +323,9 @@ public class ExternalHttpServer extends MonitorServer {
             if (authHeader != null) {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
+                    if (!token.isAnonymous() && !token.string.contains(".")) {
+                        exInfoLogger.error("Bearer jwt token without dot: " + token);
+                    }
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
                     String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
                     if (credentials.length == 2)
