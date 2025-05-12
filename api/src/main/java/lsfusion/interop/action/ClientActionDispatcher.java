@@ -12,13 +12,7 @@ public interface ClientActionDispatcher {
 
     Integer execute(ReportClientAction action);
 
-    Object execute(RuntimeClientAction action);
-
     void execute(ExportFileClientAction action) throws IOException;
-
-    Object execute(ImportFileClientAction action);
-
-    Object execute(MessageFileClientAction action);
 
     Object execute(ChooseClassClientAction action);
 
@@ -31,8 +25,6 @@ public interface ClientActionDispatcher {
     void execute(OpenFileClientAction action);
 
     void execute(OpenUriClientAction action);
-
-    void execute(AudioClientAction action);
 
     void execute(RunEditReportClientAction action);
 
