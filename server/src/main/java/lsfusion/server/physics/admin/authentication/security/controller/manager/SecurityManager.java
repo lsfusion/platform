@@ -293,7 +293,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
                 .compact());
         if (!token.isAnonymous() && !token.string.contains(".")) {
-            exInfoLogger.error("Generated jwt token without dot: " + token);
+            exInfoLogger.error("Generated jwt token without dot: " + token.string);
         }
 
         return token;

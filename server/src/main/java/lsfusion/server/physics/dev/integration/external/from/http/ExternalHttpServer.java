@@ -324,7 +324,7 @@ public class ExternalHttpServer extends MonitorServer {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
                     if (!token.isAnonymous() && !token.string.contains(".")) {
-                        exInfoLogger.error("Bearer jwt token without dot: " + token);
+                        exInfoLogger.error("Bearer jwt token without dot: " + token.string);
                     }
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
                     String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
