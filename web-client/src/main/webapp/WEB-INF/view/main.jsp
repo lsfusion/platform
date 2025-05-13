@@ -41,6 +41,7 @@
 
         <lsf:writeResources resources="${resourcesBeforeSystem}"/>
 
+        <%--reset and restore node globals same as in GwtActionDispatcher--%>
         <script>
             // save Node.js variables for electron
             window._nodeRequire = window.require;
@@ -211,6 +212,14 @@
 
         <lsf:writeResources resources="${versionedResources}"/>
         <lsf:writeResources resources="${resourcesAfterSystem}"/>
+
+        <script>
+            // restore Node.js variables
+            window.require = window._nodeRequire
+            window.module = window._nodeModule;
+            window.exports = window._nodeExports;
+            window.process = window._nodeProcess;
+        </script>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>

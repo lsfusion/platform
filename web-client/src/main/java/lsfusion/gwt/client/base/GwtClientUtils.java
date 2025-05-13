@@ -166,12 +166,32 @@ public class GwtClientUtils {
         return navigator.userAgent.toLowerCase().indexOf('electron') !== -1;
     }-*/;
 
+    public static void resetNodeGlobals() {
+        if(isElectron())
+            resetNodeGlobalsElectron();
+    }
+
+    private static native void resetNodeGlobalsElectron() /*-{
+        // save Node.js variables for electron
+        $wnd._nodeRequire = window.require;
+        $wnd._nodeModule = window.module;
+        $wnd._nodeExports = window.exports;
+        $wnd._nodeProcess = window.process;
+
+        // disable Node.js variables
+        window.require = undefined;
+        window.module = undefined;
+        window.exports = undefined;
+        window.process = undefined;
+    }-*/;
+
     public static void restoreNodeGlobals() {
         if(isElectron())
             restoreNodeGlobalsElectron();
     }
 
     private static native void restoreNodeGlobalsElectron() /*-{
+        // restore Node.js variables
         window.require = $wnd._nodeRequire;
         window.module = $wnd._nodeModule;
         window.exports = $wnd._nodeExports;

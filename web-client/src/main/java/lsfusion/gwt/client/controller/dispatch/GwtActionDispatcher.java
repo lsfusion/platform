@@ -669,7 +669,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     onFileExecuted(action);
                 } else {
                     resources.put(resource, null);
-                    executeFile(action, resource, action.originalResourceName, action.fileExtension);
+                    try {
+                        //reset and restore node globals same as in main.jsp
+                        GwtClientUtils.resetNodeGlobals();
+                        executeFile(action, resource, action.originalResourceName, action.fileExtension);
+                    } finally {
+                        GwtClientUtils.restoreNodeGlobals();
+                    }
                 }
             }
         }
