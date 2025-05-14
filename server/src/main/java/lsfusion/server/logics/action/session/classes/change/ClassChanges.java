@@ -142,7 +142,7 @@ public class ClassChanges {
         return new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(sql, env).keyOrderSet().mapMergeOrderSetValues(readClasses -> readClasses.mapValues(id -> baseClass.findConcreteClassID((Long) id, -1)));
     }
 
-    public String logSession(Result<Integer> rAddedCount, Result<Integer> rRemovedCount) {
+    public String logSession(Result<Integer> rAddedCount, Result<Integer> rRemovedCount, boolean log) {
         String result = "";
 
         int addedCount = 0;
@@ -150,11 +150,14 @@ public class ClassChanges {
         StringBuilder added = new StringBuilder();
         StringBuilder removed = new StringBuilder();
         for(ChangedDataClasses dataNewsInfo : changedClasses.values()) {
-            for (CustomClass addEntry : dataNewsInfo.add)
-                added.append((added.length() == 0) ? "" : ", ").append(addEntry.getCanonicalName());
+            if (log) {
+                for (CustomClass addEntry : dataNewsInfo.add)
+                    added.append((added.length() == 0) ? "" : ", ").append(addEntry.getCanonicalName());
+
+                for (CustomClass removeEntry : dataNewsInfo.remove)
+                    removed.append((removed.length() == 0) ? "" : ", ").append(removeEntry.getCanonicalName());
+            }
             addedCount += dataNewsInfo.add.size();
-            for (CustomClass removeEntry : dataNewsInfo.remove)
-                removed.append((removed.length() == 0) ? "" : ", ").append(removeEntry.getCanonicalName());
             removedCount += dataNewsInfo.remove.size();
         }
 

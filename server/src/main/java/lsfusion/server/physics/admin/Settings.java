@@ -3429,6 +3429,14 @@ public class Settings implements Cloneable {
         this.createSessionObjects = createSessionObjects;
     }
 
+    private boolean logChangesSession = false;
+    public boolean isLogChangesSession() {
+        return logChangesSession;
+    }
+    public void setLogChangesSession(boolean logChangesSession) {
+        this.logChangesSession = logChangesSession;
+    }
+
     //backward compatibility for camelCases css rules refactoring
     public double cssBackwardCompatibilityLevel = -1;
 
