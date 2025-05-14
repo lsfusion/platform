@@ -73,13 +73,11 @@ public class ExternalHttpUtils {
 
         HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties();
 
-        if(timeout != null) {
-            RequestConfig.Builder configBuilder = RequestConfig.custom();
-            configBuilder.setConnectTimeout(timeout, TimeUnit.MILLISECONDS);
-            configBuilder.setConnectionRequestTimeout(timeout, TimeUnit.MILLISECONDS);
-            configBuilder.setResponseTimeout(timeout, TimeUnit.MILLISECONDS);
-            requestBuilder.setDefaultRequestConfig(configBuilder.build());
-        }
+        RequestConfig.Builder configBuilder = RequestConfig.custom();
+        configBuilder.setConnectTimeout(timeout, TimeUnit.MILLISECONDS);
+        configBuilder.setConnectionRequestTimeout(timeout, TimeUnit.MILLISECONDS);
+        configBuilder.setResponseTimeout(timeout, TimeUnit.MILLISECONDS);
+        requestBuilder.setDefaultRequestConfig(configBuilder.build());
 
         if (insecureSSL) {
             try {
