@@ -1638,21 +1638,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void logSession(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        Integer changed = data.size();
-        String dataChanged = "";
-        for(Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
-            String canonicalName = entry.getKey().getCanonicalName();
-            if(canonicalName != null)
-                dataChanged += canonicalName + ": " + entry.getValue().getCount() + "\n";
-        }
-
+        boolean logChangesSession = Settings.get().isLogChangesSession();
         Result<Integer> addedCount = new Result<>();
         Result<Integer> removedCount = new Result<>();
-        String result = classChanges.logSession(addedCount, removedCount);        
-        if(!result.isEmpty())
-            dataChanged += result;
+        String classChangesLog = classChanges.logSession(addedCount, removedCount, logChangesSession);
 
-        BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
+        if (logChangesSession) {
+            String dataChanged = "";
+            for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()) {
+                String canonicalName = entry.getKey().getCanonicalName();
+                if (canonicalName != null)
+                    dataChanged += canonicalName + ": " + entry.getValue().getCount() + "\n";
+            }
+
+            if (!classChangesLog.isEmpty())
+                dataChanged += classChangesLog;
+
+            BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
+        }
+
         currentSession.change(applyObject, DataSession.this);
         Long cn = sql.contextProvider.getCurrentConnection();
         if(cn != null)
@@ -1667,7 +1671,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         BL.systemEventsLM.quantityAddedClassesSession.change(addedCount.result, DataSession.this, applyObject);
         BL.systemEventsLM.quantityRemovedClassesSession.change(removedCount.result, DataSession.this, applyObject);
-        BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
+        BL.systemEventsLM.quantityChangedClassesSession.change(data.size(), DataSession.this, applyObject);
     }
 
     public void refresh() throws SQLException, SQLHandledException {
