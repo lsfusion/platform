@@ -323,13 +323,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         return pageCount;
     }
 
-    public void execute(ExportFileClientAction action) throws IOException {
-        Map<String, RawFileData> chosenFiles = FileDialogUtils.showSaveFileDialog(action.files);
-        for(Map.Entry<String, RawFileData> fileEntry : chosenFiles.entrySet()) {
-            fileEntry.getValue().write(fileEntry.getKey());
-        }
-    }
-
     public Object execute(ChooseClassClientAction action) {
         try {
             DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(action.classes));
