@@ -12,8 +12,6 @@ public interface ClientActionDispatcher {
 
     Integer execute(ReportClientAction action);
 
-    void execute(ExportFileClientAction action) throws IOException;
-
     Object execute(ChooseClassClientAction action);
 
     void execute(UserChangedClientAction action);
