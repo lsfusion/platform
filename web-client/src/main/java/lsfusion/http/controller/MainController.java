@@ -308,7 +308,7 @@ public class MainController {
                 extension = rExtension.result;
                 isUrl = true;
             }
-            versionedResources.add(new WebAction(url, extension, resourceName, isUrl));
+            versionedResources.add(new WebAction(url, resourceName, extension, isUrl));
         }
         return versionedResources;
     }
@@ -322,13 +322,15 @@ public class MainController {
         }
     }
 
+    //  The WebAction class is a declarative variant of GClientWebAction
     public static class WebAction {
         public final String resource;
-        public final String extension;
         public final String resourceName;
+        public final String extension;
+
         public final boolean isUrl;
 
-        public WebAction(String resource, String extension, String resourceName, boolean isUrl) {
+        public WebAction(String resource, String resourceName, String extension, boolean isUrl) {
             this.resource = resource;
             this.extension = extension;
             this.isUrl = isUrl;

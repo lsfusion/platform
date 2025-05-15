@@ -56,7 +56,7 @@ public class ServerUtils {
                 versions.put(resource, version);
             }
 
-            versionedResources.add(new MainController.WebAction(resource + "?version=" + version, extension, resourceName, false));
+            versionedResources.add(new MainController.WebAction(resource + "?version=" + version, resourceName, extension, false));
         }
         return versionedResources;
     }

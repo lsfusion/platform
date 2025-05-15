@@ -463,7 +463,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if(!action.isFileUrl)
                 resource = GwtClientUtils.getAppStaticWebURL(resource);
             if(action.remove) {
-                unloadResource(resource, action.originalResourceName, action.fileExtension);
+                unloadResource(resource, action.resourceName, action.extension);
                 resources.remove(resource);
                 onFileExecuted(action);
             } else {
@@ -471,7 +471,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     onFileExecuted(action);
                 } else {
                     resources.put(resource, null);
-                    executeFile(action, resource, action.originalResourceName, action.fileExtension);
+                    executeFile(action, resource, action.resourceName, action.extension);
                 }
             }
         }
@@ -505,7 +505,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }-*/;
 
         // should be pretty similar to WriteResourcesJSPTag
-        private native void executeFile(GClientWebAction action, String resourcePath, String originalResourceName, String extension)/*-{
+        private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String extension)/*-{
             var thisObj = this;
 
             if (extension === 'js') {
@@ -522,13 +522,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
             } else if (extension === 'ttf' || extension === 'otf') {
-                var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
+                var fontFace = new FontFace(resourceName, 'url(' + resourcePath + ')');
                 fontFace.load().then(function (loaded_face) {
                     document.fonts.add(fontFace);
                     thisObj.@JSExecutor::onFileExecuted(*)(action);
                 });
             } else {
-                $wnd.lsfFiles[originalResourceName] = resourcePath;
+                $wnd.lsfFiles[resourceName] = resourcePath;
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
             }
         }-*/;
