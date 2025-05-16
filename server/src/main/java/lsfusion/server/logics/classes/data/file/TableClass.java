@@ -39,9 +39,11 @@ public class TableClass extends StaticFormatFileClass {
         return DataType.TABLE;
     }
 
+    public static final String extension = "table";
+
     @Override
     public String getExtension() {
-        return "table";
+        return extension;
     }
 
     @Override

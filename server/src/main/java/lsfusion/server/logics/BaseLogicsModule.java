@@ -1173,8 +1173,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new OrderAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    public LA addOrderAProp(GroupObjectEntity object, DataClass fromType) {
+        return addAction(null, new LA<>(new OrderAction(object, fromType)));
     }
 
     @IdentityStrongLazy
@@ -1183,8 +1183,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new FilterAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    public LA addFilterAProp(GroupObjectEntity object, DataClass fromType) {
+        return addAction(null, new LA<>(new FilterAction(object, fromType)));
     }
 
     @IdentityStrongLazy
@@ -1193,8 +1193,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterGroupAProp(Integer filterGroup, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    public LA<?> addFilterGroupAProp(Integer filterGroup, DataClass fromType) {
+        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromType)));
     }
 
     @IdentityStrongLazy
@@ -1203,8 +1203,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, DataClass fromType) {
+        return addAction(null, new LA<>(new FilterPropertyAction(property, fromType)));
     }
 
     @IdentityStrongLazy

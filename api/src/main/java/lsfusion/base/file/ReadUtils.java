@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 public abstract class ReadUtils {
 
-    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog, ExtraReadInterface extraReadProcessor) throws IOException, SQLException {
+    public static ReadResult readFile(String sourcePath, boolean isBlockingFileRead, boolean isDialog, ExtraReadInterface extraReadProcessor) throws IOException, SQLException {
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
             if(sourcePath == null) {
@@ -67,29 +67,21 @@ public abstract class ReadUtils {
                         throw new RuntimeException(String.format("READ %s is not supported", filePath.type));
                     }
             }
-            Object fileBytes; // RawFileData or FileData
+            RawFileData rawFileData;
             if (file.exists()) {
                 if (isBlockingFileRead) {
                     try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
                         try (java.nio.channels.FileLock lock = channel.lock()) {
-                            if (isDynamicFormatFileClass) {
-                                fileBytes = new FileData(readBytesFromChannel(channel), extension);
-                            } else {
-                                fileBytes = readBytesFromChannel(channel);
-                            }
+                            rawFileData = readBytesFromChannel(channel);
                         }
                     }
                 } else {
-                    if (isDynamicFormatFileClass) {
-                        fileBytes = new FileData(new RawFileData(file), extension);
-                    } else {
-                        fileBytes = new RawFileData(file);
-                    }
+                    rawFileData = new RawFileData(file);
                 }
             } else {
                 throw new RuntimeException("Read Error. File not found: " + sourcePath);
             }
-            return new ReadResult(fileBytes, filePath.type);
+            return new ReadResult(new FileData(rawFileData, extension), filePath.type);
         } finally {
             BaseUtils.safeDelete(localFile);
         }
@@ -209,11 +201,11 @@ public abstract class ReadUtils {
     }
 
     public static class ReadResult implements Serializable {
-        public final Object fileBytes; // RawFileData or FileData
-        String type;
+        public final FileData fileData;
+        public final String type;
 
-        public ReadResult(Object fileBytes, String type) {
-            this.fileBytes = fileBytes;
+        public ReadResult(FileData fileData, String type) {
+            this.fileData = fileData;
             this.type = type;
         }
     }

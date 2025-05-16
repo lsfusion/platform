@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct;
 
 import lsfusion.interop.form.print.FormStaticType;
+import lsfusion.server.logics.classes.data.file.TableClass;
 
 public enum FormIntegrationType implements FormStaticType {
     XLS, XLSX, DBF, CSV, XML, JSON, TABLE;
@@ -20,7 +21,7 @@ public enum FormIntegrationType implements FormStaticType {
             case DBF:
                 return "dbf";
             case TABLE:
-                return "jdbc";
+                return TableClass.extension;
         }
         throw new UnsupportedOperationException();
     }

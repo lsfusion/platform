@@ -43,6 +43,6 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {
-        exportFile.change(exportFile.property.getType().parseFile(singleFile, staticType.getExtension(), charset), context);
+        writeResult(exportFile, singleFile, staticType.getExtension(), context, charset);
     }
 }
