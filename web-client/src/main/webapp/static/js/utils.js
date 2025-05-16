@@ -85,7 +85,7 @@ var getSingleRanges = function (wnd, rangeToday, rangeYesterday, rangeSevenDaysA
 }
 
 var lsfParams = {};
-var lsfFiles = {};
+var lsfFiles = window.lsfFiles || {};
 
 // cookies
 function getCookie(name) {

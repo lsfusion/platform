@@ -1,10 +1,7 @@
 package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
-import lsfusion.base.ServerMessages;
+import lsfusion.base.*;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -292,21 +289,26 @@ public class MainController {
     private List<WebAction> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
         List<WebAction> versionedResources = new ArrayList<>();
         for (Pair<String, RawFileData> resource : resources) {
-            String fullPath = resource.first;
+            String resourceName = resource.first;
             String extension;
 
             String url;
             boolean isUrl = false;
-            if (resource.second != null) { // resource file
-                extension = BaseUtils.getFileExtension(fullPath);
-                url = extension.equals("html") ? resource.second.convertString() : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth);
+            RawFileData resourceData = resource.second;
+            if (resourceData != null) { // resource file
+                extension = BaseUtils.getFileExtension(resourceName);
+
+                if (SystemUtils.isFont(extension))
+                    resourceName = SystemUtils.registerFont(resourceData);
+
+                url = extension.equals("html") ? resourceData.convertString() : FileUtils.saveWebFile(resourceName, resourceData, serverSettings, noAuth);
             } else { // url
                 Result<String> rExtension = new Result<>();
-                url = ClientActionToGwtConverter.convertUrl(fullPath, rExtension);
+                url = ClientActionToGwtConverter.convertUrl(resourceName, rExtension);
                 extension = rExtension.result;
                 isUrl = true;
             }
-            versionedResources.add(new WebAction(url, extension, isUrl));
+            versionedResources.add(new WebAction(url, resourceName, extension, isUrl));
         }
         return versionedResources;
     }
@@ -320,15 +322,19 @@ public class MainController {
         }
     }
 
+    //  The WebAction class is a declarative variant of GClientWebAction
     public static class WebAction {
         public final String resource;
+        public final String resourceName;
         public final String extension;
+
         public final boolean isUrl;
 
-        public WebAction(String resource, String extension, boolean isUrl) {
+        public WebAction(String resource, String resourceName, String extension, boolean isUrl) {
             this.resource = resource;
             this.extension = extension;
             this.isUrl = isUrl;
+            this.resourceName = resourceName;
         }
     }
 

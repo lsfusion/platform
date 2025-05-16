@@ -1,6 +1,7 @@
 package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.SystemUtils;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
@@ -32,6 +33,16 @@ public class WriteResourcesJSPTag extends TagSupport {
                         out.print("<link rel='stylesheet' type='text/css' href='" + s + "' />");
                     } else if (extension.equals("html")) { //to add tags to header.
                         out.print(s);
+                    } else if (SystemUtils.isFont(extension)) {
+                        out.print("<script>"
+                                + "var fontFace = new FontFace('" + webAction.resourceName + "', 'url(" + s + ")');"
+                                + "fontFace.load().then(function(loadedFace) {"
+                                + "    document.fonts.add(loadedFace);"
+                                + "    }"
+                                + ");"
+                                + "</script>");
+                    } else {
+                        out.print("<script>window.lsfFiles = window.lsfFiles || {}; window.lsfFiles['" + webAction.resourceName + "'] = '" + s + "';</script>");
                     }
                 }
             } catch (IOException e) {
