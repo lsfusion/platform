@@ -335,6 +335,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.hasEditObjectAction = clientPropertyDraw.hasEditObjectAction;
         propertyDraw.hasChangeAction = clientPropertyDraw.hasChangeAction;
+        propertyDraw.hasUserChangeAction = clientPropertyDraw.hasUserChangeAction;
 
         propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
 

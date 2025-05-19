@@ -88,7 +88,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
-    private OrderedMap<String, LocalizedString> contextMenuBindings;
+    private OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings;
     private Map<String, ActionObjectSelector> eventActions;
 
     public boolean isSelector;
@@ -420,7 +420,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if (contextMenuBindings == null) {
             contextMenuBindings = new OrderedMap<>();
         }
-        contextMenuBindings.put(actionSID, caption);
+        contextMenuBindings.put(actionSID, new ActionOrProperty.ContextMenuBinding(caption, null));
     }
 
     // VALUE, INTERVAL or SELECTOR
@@ -462,13 +462,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {
         return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keySet()), getKeyBindings(context).valueIt());
     }
-    public OrderedMap<String, LocalizedString> getContextMenuBindings(FormInstanceContext context) {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getBindingProperty(context).getContextMenuBindings();
+    public OrderedMap<String, ActionOrProperty.ContextMenuBinding> getContextMenuBindings(FormInstanceContext context) {
+        ImOrderMap<String, ActionOrProperty.ContextMenuBinding> propertyContextMenuBindings = getBindingProperty(context).getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
 
-        OrderedMap<String, LocalizedString> result = new OrderedMap<>();
+        OrderedMap<String, ActionOrProperty.ContextMenuBinding> result = new OrderedMap<>();
         for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
             result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
         }

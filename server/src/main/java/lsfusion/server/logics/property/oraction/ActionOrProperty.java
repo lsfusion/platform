@@ -40,6 +40,7 @@ import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -58,6 +59,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -228,7 +230,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
 
-        setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
+        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), PropertyDrawView::hasUserChangeAction));
         setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
@@ -303,6 +305,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return canonicalName != null;
     }
 
+    public static class ContextMenuBinding {
+        public final LocalizedString caption;
+        public final BiPredicate<PropertyDrawView, FormInstanceContext> show;
+
+        public ContextMenuBinding(LocalizedString caption, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
+            this.caption = caption;
+            this.show = show;
+        }
+
+        public boolean show(PropertyDrawView propertyDraw, FormInstanceContext context) {
+            return show == null || show.test(propertyDraw, context);
+        }
+    }
+
     // для всех    
     private String mouseBinding;
     private Object keyBindings;
@@ -332,16 +348,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
     }
 
-    @NFLazy
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
+        setContextMenuAction(actionSID, new ContextMenuBinding(caption, null));
+    }
+
+    @NFLazy
+    public void setContextMenuAction(String actionSID, ContextMenuBinding contextMenuBinding) {
         if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
             contextMenuBindings = MapFact.mOrderMap(MapFact.override());
         }
-        ((MOrderMap<String, LocalizedString>)contextMenuBindings).add(actionSID, caption);
+        ((MOrderMap<String, ContextMenuBinding>)contextMenuBindings).add(actionSID, contextMenuBinding);
     }
 
-    public ImOrderMap<String, LocalizedString> getContextMenuBindings() {
-        return (ImOrderMap<String, LocalizedString>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+    public ImOrderMap<String, ContextMenuBinding> getContextMenuBindings() {
+        return (ImOrderMap<String, ContextMenuBinding>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
     }
 
     @NFLazy
