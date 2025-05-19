@@ -104,9 +104,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType getPasteType() {
         return getValueType();
     }
-    public GType getEventType() {
-        return getCellType();
-    }
 
     public GType cellType;
     public GType valueType;
@@ -286,16 +283,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasEditObjectAction;
     public boolean hasChangeAction; // programmatic or user
-    public boolean hasUserChangeAction() { // user
-        if(!hasChangeAction)
-            return false;
-
-        if (getEventType() instanceof GHTMLTextType)
-            return externalChangeType instanceof GHTMLTextType;
-
-        // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
-        return customRenderFunction == null || externalChangeType == null;
-    }
+    public boolean hasUserChangeAction; // programmatic or user
 
     public boolean hasExternalChangeActionForRendering(RendererType rendererType) {
         return canUseChangeValueForRendering(externalChangeType, rendererType);
@@ -488,7 +476,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.changeOrGroupChange();
         }
 
-        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction(), customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction, customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input
