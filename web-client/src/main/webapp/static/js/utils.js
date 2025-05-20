@@ -30,13 +30,13 @@ var getRanges = function (wnd, rangeIntervalToday, rangeIntervalYesterday, range
     for (let i = 0; i < preDefinedDateRangesNames.length; i++) {
         let preDefinedDateRangesName = preDefinedDateRangesNames[i];
         if (preDefinedDateRangesName === 'rangeIntervalToday')
-            ranges[rangeIntervalToday] = [wnd.moment(), wnd.moment()];
+            ranges[rangeIntervalToday] = [wnd.moment().startOf('day'), wnd.moment().endOf('day')];
         else if (preDefinedDateRangesName === 'rangeIntervalYesterday')
-            ranges[rangeIntervalYesterday] = [wnd.moment().subtract(1, 'days'), wnd.moment().subtract(1, 'days')];
+            ranges[rangeIntervalYesterday] = [wnd.moment().subtract(1, 'days').startOf('day'), wnd.moment().subtract(1, 'days').endOf('day')];
         else if (preDefinedDateRangesName === 'rangeLast7Days')
-            ranges[rangeLast7Days] = [wnd.moment().subtract(6, 'days'), wnd.moment()];
+            ranges[rangeLast7Days] = [wnd.moment().subtract(6, 'days').startOf('day'), wnd.moment().endOf('day')];
         else if (preDefinedDateRangesName === 'rangeLast30Days')
-            ranges[rangeLast30Days] = [wnd.moment().subtract(29, 'days'), wnd.moment()];
+            ranges[rangeLast30Days] = [wnd.moment().subtract(29, 'days').startOf('day'), wnd.moment().endOf('day')];
         else if (preDefinedDateRangesName === 'rangeThisMonth')
             ranges[rangeThisMonth] = [wnd.moment().startOf('month'), wnd.moment().endOf('month')];
         else if (preDefinedDateRangesName === 'rangeToMonthEnd')
@@ -44,7 +44,7 @@ var getRanges = function (wnd, rangeIntervalToday, rangeIntervalYesterday, range
         else if (preDefinedDateRangesName === 'rangePreviousMonth')
             ranges[rangePreviousMonth] = [wnd.moment().subtract(1, 'month').startOf('month'), wnd.moment().subtract(1, 'month').endOf('month')];
         else if (preDefinedDateRangesName === 'rangeMonthStartToCurrentDate')
-            ranges[rangeMonthStartToCurrentDate] = [wnd.moment().startOf('month'), wnd.moment()];
+            ranges[rangeMonthStartToCurrentDate] = [wnd.moment().startOf('month'), wnd.moment().endOf('day')];
         else if (preDefinedDateRangesName === 'rangeThisYear')
             ranges[rangeThisYear] = [wnd.moment().startOf('year'), wnd.moment().endOf('year')];
         else if (preDefinedDateRangesName === 'rangeToYearEnd')
