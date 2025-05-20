@@ -65,6 +65,9 @@
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
+        <!--disable X-Frame-Options=DENY for mobile-client-->
+        <headers><frame-options disabled="true"/></headers>
+
         <oauth2-login login-page="/login"
                       authentication-success-handler-ref="successLoginHandler"
                       authentication-failure-handler-ref="failureLoginHandler"
