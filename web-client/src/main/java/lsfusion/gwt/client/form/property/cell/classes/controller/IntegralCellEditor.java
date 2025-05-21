@@ -45,8 +45,9 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
 
         if (inputText.isEmpty() || (onCommit && "-".equals(inputText)))
             return null;
-
-        inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
+        for(String replace : new String[] {" ", GIntegralType.UNBREAKABLE_SPACE, "\r", "\n"}) {
+            inputText = inputText.replace(replace, "");
+        }
         if (!onCommit && "-".equals(inputText))
             return PValue.getPValue(0);
 
