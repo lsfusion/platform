@@ -97,7 +97,7 @@ FORM stocks 'Stocks'
 ### Syntax
 
 ```
-[EXTEND] FILTERGROUP groupName
+[EXTEND] FILTERGROUP groupName [NONULL]
     FILTER caption1 expression1 [keystroke1] [DEFAULT]
     ...
     FILTER captionN expressionN [keystrokeN] [DEFAULT]
@@ -116,6 +116,10 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 - `groupName` 
 
     Internal name of a filter group. [Simple ID](IDs.md#id). If the `EXTEND` keyword is specified, the platform will search the form for the created filter group with the specified name — otherwise a new filter group with the specified name will be created.
+
+- `NONULL`
+
+    When the `NONULL` keyword is specified, the `(All)` filter is not added to the group. The `(All)` filter allows no filters to be applied. This option can only be set when declaring `FILTERGROUP` (not in `EXTEND`).
 
 - `caption1, ..., captionN`
 

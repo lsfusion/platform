@@ -18,13 +18,16 @@ public class RegularFilterGroupEntity extends IdentityObject {
 
     private NFProperty<Integer> defaultFilterIndex = NFFact.property();
 
+    public boolean noNull;
+
     // конструктор нельзя удалять - нужен для сериализации
     public RegularFilterGroupEntity() {
     }
 
-    public RegularFilterGroupEntity(int iID, Version version) {
-        ID = iID;
-        defaultFilterIndex.set(-1, version);
+    public RegularFilterGroupEntity(int ID, boolean noNull, Version version) {
+        this.ID = ID;
+        this.defaultFilterIndex.set(-1, version);
+        this.noNull = noNull;
     }
 
     public void addFilter(RegularFilterEntity filter, Version version) {

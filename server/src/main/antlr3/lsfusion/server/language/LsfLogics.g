@@ -1261,14 +1261,15 @@ scheduleFormEventDeclaration returns [int period, boolean fixed]
 filterGroupDeclaration
 @init {
 	String filterGroupSID = null;
+	boolean noNull = false;
 	List<RegularFilterInfo> filters = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, noNull, filters, self.getVersion());
 	}
 }
-	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; } ('NONULL' { noNull = true; })?
 		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )*
 	;
 

@@ -46,6 +46,8 @@ public class RegularFilterGroupView extends BaseComponentView {
         outStream.writeInt(entity.getDefault());
 
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
+
+        outStream.writeBoolean(entity.noNull);
     }
 
     @Override
