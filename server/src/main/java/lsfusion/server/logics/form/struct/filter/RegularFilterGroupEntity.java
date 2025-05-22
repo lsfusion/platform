@@ -26,7 +26,7 @@ public class RegularFilterGroupEntity extends IdentityObject {
 
     public RegularFilterGroupEntity(int ID, boolean noNull, Version version) {
         this.ID = ID;
-        this.defaultFilterIndex.set(-1, version);
+        this.defaultFilterIndex.set(noNull ? 0 : -1, version);
         this.noNull = noNull;
     }
 
