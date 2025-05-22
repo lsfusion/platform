@@ -314,7 +314,8 @@ public class GFormController implements EditManager {
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
         final ListBox filterBox = new ListBox();
         filterBox.setMultipleSelect(false);
-        filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
+        if (!filterGroup.noNull)
+            filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {

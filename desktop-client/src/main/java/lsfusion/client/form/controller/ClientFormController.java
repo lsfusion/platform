@@ -471,7 +471,8 @@ public class ClientFormController implements AsyncListener {
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
         final ComboBoxWidget comboBox = new ComboBoxWidget();
-        comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
+        if(!filterGroup.noNull)
+            comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
             addBinding(filterGroup.groupObject, comboBox, filter, filter.keyInputEvent);

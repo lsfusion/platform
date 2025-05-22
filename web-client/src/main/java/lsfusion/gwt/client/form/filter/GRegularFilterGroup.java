@@ -9,5 +9,5 @@ public class GRegularFilterGroup extends GComponent {
     public ArrayList<GRegularFilter> filters = new ArrayList<>();
     public int defaultFilterIndex;
     public GGroupObject groupObject;
-//    public OrderedMap<ClientPropertyDraw, Boolean> nullOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+    public boolean noNull;
 }
