@@ -147,7 +147,7 @@ Classpath сервера по умолчанию устанавливается 
 #### Нестабильные версии
 Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) <platform version>`.
 
-Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.0-SNAPSHOT`.
+Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.1-SNAPSHOT`.
 
 </TabItem>
 </Tabs>

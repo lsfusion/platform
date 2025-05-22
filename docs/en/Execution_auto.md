@@ -148,7 +148,7 @@ Platform components are also updated separately from each other. To do this, you
 #### Unstable versions
 Upgrade platform to a SNAPSHOT version : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) <platform version>`.
 
-For example, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.0-SNAPSHOT`.
+For example, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.1-SNAPSHOT`.
 
 </TabItem>
 </Tabs>
