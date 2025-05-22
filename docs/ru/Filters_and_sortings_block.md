@@ -96,7 +96,7 @@ FORM stocks 'Склады'
 ### Синтаксис
 
 ```
-[EXTEND] FILTERGROUP groupName
+[EXTEND] FILTERGROUP groupName [NONULL]
     FILTER caption1 expression1 [keystroke1] [DEFAULT]
     ...
     FILTER captionN expressionN [keystrokeN] [DEFAULT]
@@ -115,6 +115,10 @@ FORM stocks 'Склады'
 - `groupName`
 
     Внутреннее имя группы фильтров. [Простой идентификатор](IDs.md#id). При указании ключевого слова `EXTEND` будет осуществлен поиск на форме уже созданной группы фильтров с таким именем, иначе будет создана новая группа фильтров с указанным именем.
+
+- `NONULL`
+
+    При указании ключевого слова `NONULL` в группу не добавляется фильтр `(Все)`. фильтр `(Все)` позволяет не применять ни один из фильтров. Опция может быть задана только при объявлении `FILTERGROUP` (не в `EXTEND`).
 
 - `caption1, ..., captionN`
 
