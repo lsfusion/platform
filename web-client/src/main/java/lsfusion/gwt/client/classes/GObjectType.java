@@ -5,6 +5,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
@@ -15,8 +16,6 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import java.text.ParseException;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.*;
-
-//import lsfusion.gwt.shared.form.view.filter.GCompare;
 
 public class GObjectType extends GType {
     public static final GObjectType instance = new GObjectType();
@@ -48,5 +47,11 @@ public class GObjectType extends GType {
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeObjectCaption();
+    }
+
+    @Override
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+        // to be able to filter objects if key0 is known. If return null, the filter input field will be read-only
+        return new LongCellEditor(editManager, editProperty);
     }
 }
