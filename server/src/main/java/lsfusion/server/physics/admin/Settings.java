@@ -1619,6 +1619,16 @@ public class Settings implements Cloneable {
         this.explainTopAllocatedBytesThreshold = explainTopAllocatedBytesThreshold;
     }
 
+    private boolean ignoreIncorrectJWTTokens = false;
+
+    public boolean isIgnoreIncorrectJWTTokens() {
+        return ignoreIncorrectJWTTokens;
+    }
+
+    public void setIgnoreIncorrectJWTTokens(boolean ignoreIncorrectJWTTokens) {
+        this.ignoreIncorrectJWTTokens = ignoreIncorrectJWTTokens;
+    }
+
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
     private boolean useRecalculateClassesInsteadOfInconsisentExpr = true;
 
