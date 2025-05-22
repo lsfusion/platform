@@ -742,10 +742,24 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B, V> OrderedMap<B, V> merge(OrderedMap<K1, ? extends V> map1, OrderedMap<K2, ? extends V> map2) {
+        if (map2 == null || map2.isEmpty())
+            return (OrderedMap<B, V>) map1;
+        if (map1 == null || map1.isEmpty())
+            return (OrderedMap<B, V>) map2;
+
+        OrderedMap<B, V> result = new OrderedMap(map1);
+        for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
+            V prevValue = result.put(entry2.getKey(), entry2.getValue());
+            assert prevValue == null || prevValue.equals(entry2.getValue());
+        }
+        return result;
+    }
+
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> merge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
-        if(map2.isEmpty())
+        if(map2 == null || map2.isEmpty())
             return (Map<B, V>) map1;
-        if(map1.isEmpty())
+        if(map1 == null || map1.isEmpty())
             return (Map<B, V>) map2;
 
         Map<B, V> result = new HashMap<>(map1);
@@ -762,7 +776,21 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B> List<B> merge(List<K1> list1, List<K2> list2) {
+        if (list2 == null)
+            return (List<B>) list1;
+        if (list1 == null)
+            return (List<B>) list2;
+        List<B> result = new ArrayList<>(list1);
+        result.addAll(list2);
+        return result;
+    }
+
     public static <B, K1 extends B, K2 extends B> Collection<B> merge(Collection<K1> col1, Collection<K2> col2) {
+        if (col2 == null)
+            return (List<B>) col1;
+        if (col1 == null)
+            return (List<B>) col2;
         Collection<B> result = new ArrayList<>(col1);
         result.addAll(col2);
         return result;
