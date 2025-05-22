@@ -271,8 +271,12 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     .getPayload()
                     .getSubject();
         } catch (Exception e) {
-            exInfoLogger.error(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
-            return null; // ignore exception and assume that token is anonymous
+            if(!Settings.get().isIgnoreIncorrectJWTTokens())
+                throw new AuthenticationException(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
+            else {
+                exInfoLogger.error(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
+                return null; // ignore exception and assume that token is anonymous
+            }
         }
 
 //        u.setId(Long.parseLong((String) body.get("userId")));
