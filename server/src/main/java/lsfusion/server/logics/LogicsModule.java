@@ -2539,19 +2539,6 @@ public abstract class LogicsModule {
         return paramClasses == null ? Collections.nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
     }
 
-    // для обратной совместимости
-    public void addFormFixedFilter(FormEntity form, FilterEntity filter) {
-        form.addFixedFilter(filter, getVersion());
-    }
-
-    public RegularFilterGroupEntity newRegularFilterGroupEntity(int id) {
-        return new RegularFilterGroupEntity(id, getVersion());
-    }
-
-    public void addFormHintsIncrementTable(FormEntity form, LP... lps) {
-        form.addHintsIncrementTable(getVersion(), lps);
-    }
-
     public int getModuleComplexity() {
         return 1;
     }

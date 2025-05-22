@@ -779,12 +779,12 @@ public class ScriptingFormEntity {
         }
     }
     
-    public void addScriptedRegularFilterGroup(String sid, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedRegularFilterGroup(String sid, boolean noNull, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFRegularFilterGroup(sid, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "filter group", sid);
         }
 
-        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID(), version);
+        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID(), noNull, version);
         regularFilterGroup.setSID(sid);
 
         addRegularFilters(regularFilterGroup, filters, version, false);
