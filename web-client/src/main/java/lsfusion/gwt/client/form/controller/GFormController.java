@@ -283,7 +283,7 @@ public class GFormController implements EditManager {
         for (final GRegularFilterGroup filterGroup : form.regularFilterGroups) {
             if (filterGroup.filters.size() == 1) {
                 createSingleFilterComponent(filterGroup, filterGroup.filters.iterator().next());
-            } else {
+            } else if (filterGroup.filters.size() > 1) {
                 createMultipleFilterComponent(filterGroup);
             }
         }

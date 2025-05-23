@@ -425,7 +425,7 @@ public class ClientFormController implements AsyncListener {
         for (final ClientRegularFilterGroup filterGroup : form.regularFilterGroups) {
             if (filterGroup.filters.size() == 1) {
                 createSingleFilterComponent(filterGroup, BaseUtils.single(filterGroup.filters));
-            } else {
+            } else if (filterGroup.filters.size() > 1) {
                 createMultipleFilterComponent(filterGroup);
             }
         }
