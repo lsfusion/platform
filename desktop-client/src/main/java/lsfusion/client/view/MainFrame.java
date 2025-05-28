@@ -2,6 +2,7 @@ package lsfusion.client.view;
 
 import com.google.common.base.Throwables;
 import com.jhlabs.image.BlurFilter;
+import com.lowagie.text.FontFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
@@ -180,6 +181,9 @@ public abstract class MainFrame extends JFrame {
             instance = frame; // it's important to set this field before onDesktopClientStarted because it is used when getting eventbus for example
             
             MainController.changeColorTheme(clientSettings.colorTheme);
+
+            //need to allow JRPDFExporter using system fonts
+            FontFactory.registerDirectories();
 
             frame.executeNavigatorAction("SystemEvents.onClientStartedApply[]", 0, null, null);
         } catch (Throwable e) {
