@@ -23,7 +23,9 @@ import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.sql.exception.HandledException;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
@@ -40,6 +42,7 @@ import lsfusion.server.logics.property.caches.MapCacheAspect;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -331,8 +334,13 @@ public class AutoHintsAspect {
                             long baseLimit = catchHint.getLimitHintIncrementStat();
                             long maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
-                            long limit = BaseUtils.max(maxCountUsed, baseLimit) * complexity * complexity / limitComplexity / limitComplexity; // возможно надо будет все же экспоненту сделать 
-                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // тут может быть проблема с интервалами (см. Property.allowHintIncrement)
+                            long limit = BaseUtils.max(maxCountUsed, baseLimit) * complexity * complexity / limitComplexity / limitComplexity; // возможно надо будет все же экспоненту сделать
+                            StatKeys<KeyExpr> changedStats = null;
+                            if (changed.isFalse() ||
+                                    (((changedStats = changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE)).getRows().lessEquals(new Stat(limit)))
+                                    && changedStats.getCost().lessEquals(new Cost(new Stat((long) (limit * Settings.get().getLimitHintIncrementCostCoeff())))))) {
+                                if(Settings.get().isExplainCompile())
+                                    ServerLoggers.explainCompileLogger.info("MATERIALIZE CHANGES : " + property + " STATS " + changedStats + " LIMIT " + limit + " (max used: " + maxCountUsed + ")");
                                 throw new HintException(new IncrementHint(property, true));
                             }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
