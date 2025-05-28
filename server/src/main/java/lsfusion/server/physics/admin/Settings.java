@@ -161,6 +161,7 @@ public class Settings implements Cloneable {
     private double limitComplexityGrowthCoeff = 1.5;
 
     private long limitHintIncrementStat = 200;
+    private double limitHintIncrementCostCoeff = 10;
 
     private int limitHintNoUpdateComplexity = 10000;
 
@@ -791,6 +792,14 @@ public class Settings implements Cloneable {
 
     public void setLimitHintIncrementStat(long limitHintIncrementStat) {
         this.limitHintIncrementStat = limitHintIncrementStat;
+    }
+
+    public double getLimitHintIncrementCostCoeff() {
+        return limitHintIncrementCostCoeff;
+    }
+
+    public void setLimitHintIncrementCostCoeff(double limitHintIncrementCostCoeff) {
+        this.limitHintIncrementCostCoeff = limitHintIncrementCostCoeff;
     }
 
     private int adjustRecursionStat = 1000;
