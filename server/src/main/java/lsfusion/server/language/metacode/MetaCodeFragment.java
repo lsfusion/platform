@@ -51,6 +51,7 @@ public class MetaCodeFragment {
             return transformParamToken(actualParams, token);
         
         List<String> parts = splitToken(token);
+        boolean startsWithTripleHash = token.startsWith("###");
         boolean isStringLiteral = false;
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < parts.size(); i++) {
@@ -59,7 +60,10 @@ public class MetaCodeFragment {
             boolean capitalize = false;
             if (part.startsWith("#")) {
                 assert i > 0;
-                capitalize = (result.length() > 0) || (i == 1 && parts.get(0).isEmpty()); // when there is ###param, forcing its capitalization
+                // We skip capitalization when all left-hand parts are empty and the token itself does not begin with `###`.
+                // See github issue #1442: "### operator: capitalization is skipped when left part is empty"
+                // https://github.com/lsfusion/platform/issues/1442
+                capitalize = result.length() > 0 || startsWithTripleHash;
                 part = part.substring(1);
             }
 
