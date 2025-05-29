@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>platform-base</artifactId>
+        <version>7.0-SNAPSHOT</version>
+        <relativePath>../build/platform-base/pom.xml</relativePath>
+    </parent>
+
+    <groupId>lsfusion.platform</groupId>
+    <artifactId>ai</artifactId>
+    <packaging>jar</packaging>
+    <name>AI</name>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <properties>
+        <jackson.version>2.15.2</jackson.version>
+        <openai.version>1.6.1</openai.version>
+        <pinecone.version>4.0.1</pinecone.version>
+        <langchain4j.version>1.0.0</langchain4j.version>
+    </properties>
+
+    <dependencies>
+        <!-- OpenAI Java SDK -->
+        <dependency>
+            <groupId>com.openai</groupId>
+            <artifactId>openai-java</artifactId>
+            <version>${openai.version}</version>
+        </dependency> <!-- ([mvnrepository.com](https://mvnrepository.com/artifact/com.openai/openai-java?utm_source=chatgpt.com)) -->
+
+        <!-- Pinecone Java Client -->
+        <dependency>
+            <groupId>io.pinecone</groupId>
+            <artifactId>pinecone-client</artifactId>
+            <version>${pinecone.version}</version>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency> <!-- ([mvnrepository.com](https://mvnrepository.com/artifact/io.pinecone/pinecone-client?utm_source=chatgpt.com)) -->
+
+        <!-- Jackson for JSON serialization -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
+
+        <!-- Core LangChain4j functionality -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency> <!-- ([central.sonatype.com](https://central.sonatype.com/artifact/dev.langchain4j/langchain4j?utm_source=chatgpt.com)) -->
+
+        <!-- OpenAI integration for LangChain4j -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency> <!-- ([mvnrepository.com](https://mvnrepository.com/artifact/dev.langchain4j/langchain4j-open-ai)) -->
+    </dependencies>
+
+    <!-- and in <dependencyManagement> to force it everywhere: -->
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            <dependency>-->
+<!--                <groupId>com.google.guava</groupId>-->
+<!--                <artifactId>guava</artifactId>-->
+<!--                <version>31.1-jre</version>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
+
+</project>
