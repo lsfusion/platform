@@ -57,7 +57,18 @@ DocumentType 'Document type' = DATA Type (Document);
 DocumentValue 'Document cost' = DATA INTEGER (Document);
 ```
 
-There is also the special operation `###`. It is equivalent to operation `##`, except that in the second of the concatenated literals, the first character, if a letter, is converted to uppercase.
+There is also the special operation `###`. It is equivalent to operation `##`, except that in the second of the concatenated lexemes, the first character, if a letter, is converted to uppercase.
+
+:::info
+When you use the `###` operation there is one special case. If all lexemes to the left of the current `###` become empty after parameter substitution and the entire concatenation does not start with `###`, the first letter of the next lexeme is not converted to upper case.
+```
+prefix###name -> name // when prefix is empty
+```
+To force capitalization in this situation, place a leading `###` in front of the whole concatenation:
+```
+###prefix###name -> Name // when prefix is empty
+```
+:::
 
 ### Examples
 
