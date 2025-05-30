@@ -1947,6 +1947,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         boolean fallbackToFilterSelected = multi || forceSelect;
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
+        ImSet<?> mapNameInterfaces = name.mapping.filterValuesRev(innerMapInterfaces).keys();
         ImSet<W> mapWhereInterfaces = where.mapping.filterValuesRev(innerMapInterfaces).keys();
 
         if(multi) {
@@ -1962,9 +1963,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return null;
 
         InputContextPropertyListEntity readContextEntity = null;
-        if(!hasAlotValues) {
+        if(!hasAlotValues && mapNameInterfaces.isEmpty()) { // if there are no external params in name
             Property readValuesProperty = null;
-            if (mapWhereInterfaces.isEmpty())
+            if (mapWhereInterfaces.isEmpty()) // if there are no external params in where
                 readValuesProperty = where.property;
             else if(customClass != null) {
                 IsClassProperty classProperty = customClass.getProperty();
