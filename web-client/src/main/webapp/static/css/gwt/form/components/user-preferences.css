@@ -4,6 +4,10 @@
     margin-top: 1px;
 }
 
+.user-preferences-dual-list {
+    height: 50%;
+}
+
 .user-preferences-dual-list .dragdrop-selected {
     opacity: 1.0;
 }

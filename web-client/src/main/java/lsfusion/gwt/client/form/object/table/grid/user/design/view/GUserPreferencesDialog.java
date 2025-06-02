@@ -125,6 +125,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         addFooterWidget(cancelButton);
 
         FlexPanel preferencesPanel = new FlexPanel(true);
+        preferencesPanel.setHeight("100%");
         preferencesPanel.add(columnsDualListBox);
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnSettingsPanel));
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
