@@ -137,12 +137,12 @@ public class RAGRetrieve {
     /**
      * Parses a JSON array of { key, value } into a Map<String,String>
      */
-    public static Map<String, String> parseKeyValueToMap(String json) throws JsonProcessingException {
+    public static LinkedHashMap<String, String> parseKeyValueToMap(String json) throws JsonProcessingException {
         Map<String, List<Map<String, String>>> list = AIAgent.M.readValue(
                 json,
                 new TypeReference<Map<String, List<Map<String, String>>>>() {}
         );
-        Map<String, String> result = new LinkedHashMap<>();
+        LinkedHashMap<String, String> result = new LinkedHashMap<>();
         for (Map<String, String> m : list.get(arrayField)) {
             result.put(m.get(keyField), m.get(valueField));
         }
