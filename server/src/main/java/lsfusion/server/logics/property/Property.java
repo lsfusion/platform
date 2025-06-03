@@ -2137,6 +2137,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
 
     public boolean disableInputList(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        if(hasAnnotation("noinputlist"))
+            return true;
+
         if(hasAnnotation("inputlist"))
             return false;
 
