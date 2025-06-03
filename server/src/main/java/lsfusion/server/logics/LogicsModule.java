@@ -1116,7 +1116,7 @@ public abstract class LogicsModule {
         InputContextSelector<T> contextSelector = null;
         assert contextList != null || contextFilter == null;
         if(contextList == null) {
-            if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+            if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList && !valueProperty.isExplicitNull()) { // && // if string and not disabled
                 contextList = new InputPropertyListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
