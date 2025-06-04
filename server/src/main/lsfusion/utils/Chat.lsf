@@ -547,11 +547,13 @@ DESIGN shortChat {
     REMOVE TOOLBARBOX;
 }  
 
-showOnStart()  { 
+showOnStart()  {
     IF countUnreadMessages(currentUser()) > 0 THEN {
-        deliveredNotificationAction(currentUser());
-        APPLY;
-        SHOW shortChat NOMANAGESESSION;
+        NEWSESSION {
+            deliveredNotificationAction(currentUser());
+            APPLY;
+            SHOW shortChat NOMANAGESESSION;
+        }
     }
 }
 
