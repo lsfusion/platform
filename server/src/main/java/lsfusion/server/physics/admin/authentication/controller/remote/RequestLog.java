@@ -1,11 +1,11 @@
 package lsfusion.server.physics.admin.authentication.controller.remote;
 
 import lsfusion.server.physics.admin.log.LogInfo;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
 
 public class RequestLog {
-    private final boolean detailLog;
     private final LogInfo logInfo;
     private final String path;
     private final String method;
@@ -21,7 +21,6 @@ public class RequestLog {
     private final String errorMessage;
 
     private RequestLog(Builder builder) {
-        this.detailLog = builder.detailLog;
         this.logInfo = builder.logInfo;
         this.path = builder.path;
         this.method = builder.method;
@@ -40,24 +39,27 @@ public class RequestLog {
     @Override
     public String toString() {
         return "\nREQUEST:\n" +
-                (detailLog ? (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") : "") +
-                "\tREQUEST_PATH: " + path + "\n" +
-                "\tREQUEST_METHOD: " + method + "\n" +
-                (detailLog ? (extraValue != null ? extraValue + "\n" : ""): "") +
-                (detailLog ? RemoteConnection.getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" : "") +
-                (detailLog ? RemoteConnection.getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" : "") +
-                (detailLog ? (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") : "") +
-                (detailLog ? (requestExtraValue != null ? requestExtraValue + "\n" : "") : "") +
+                (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
+                (path != null ? "\tREQUEST_PATH: " + path + "\n" : "") +
+                (method != null ? "\tREQUEST_METHOD: " + method + "\n" : "") +
+                (extraValue != null ? extraValue + "\n" : "") +
+                (requestHeaders != null && !requestHeaders.isEmpty()? getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" : "") +
+                (requestCookies != null && !requestCookies.isEmpty()? getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" : "") +
+                (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") +
+                (requestExtraValue != null ? requestExtraValue + "\n" : "") +
                 "RESPONSE:\n" +
-                (detailLog ? RemoteConnection.getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" : "") +
-                (detailLog ? RemoteConnection.getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" : "") +
-                "\tRESPONSE_STATUS_HTTP: " + (responseStatus != null ? responseStatus : "") + "\n" +
-                (detailLog ? (responseExtraValue != null ? responseExtraValue : "") : "") +
-                (errorMessage != null ? "\n\tERROR: "  + errorMessage + "\n" : "");
+                (responseHeaders != null && !responseHeaders.isEmpty() ? getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" : "") +
+                (responseCookies != null && !responseCookies.isEmpty() ? getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" : "") +
+                (responseStatus != null ? "\tRESPONSE_STATUS_HTTP: " + responseStatus + "\n" : "") +
+                (responseExtraValue != null ? responseExtraValue : "") +
+                (errorMessage != null ? "\nERROR: "  + errorMessage + "\n" : "");
+    }
+
+    public static String getLogMapValues(String caption, Map<String, String> map) {
+        return "\t" + caption + (map != null ? "\n\t\t" + StringUtils.join(map.entrySet().iterator(), "\n\t\t") : "");
     }
 
     public static class Builder {
-        private boolean detailLog = false;
         private LogInfo logInfo = null;
         private String path = null;
         private String method = null;
@@ -73,11 +75,6 @@ public class RequestLog {
         private String errorMessage = null;
 
         public Builder() {}
-
-        public Builder detailLog(boolean detailLog) {
-            this.detailLog = detailLog;
-            return this;
-        }
 
         public Builder logInfo (LogInfo logInfo) {
             this.logInfo = logInfo;

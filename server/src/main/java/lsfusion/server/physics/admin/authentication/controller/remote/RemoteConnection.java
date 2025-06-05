@@ -617,8 +617,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         RequestLog.Builder logBuilder = null;
 
         if (Settings.get().isLogFromExternalSystemRequests())
-            logBuilder = new RequestLog.Builder().detailLog(Settings.get().isLogFromExternalSystemRequestsDetail())
-                    .logInfo(logInfo).path(request.servletPath).method(request.method)
+            logBuilder = new RequestLog.Builder().path(request.servletPath).method(request.method);
+
+        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        if (detailLog && logBuilder != null)
+            logBuilder.logInfo(logInfo)
                     .extraValue("\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
                     .requestHeaders(BaseUtils.toStringMap(request.headerNames, request.headerValues))
                     .requestCookies(BaseUtils.toStringMap(request.cookieNames, request.cookieValues))
@@ -635,10 +638,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
-                    logBuilder.responseHeaders(BaseUtils.toStringMap(result.headerNames, result.headerValues))
-                            .responseCookies(BaseUtils.toStringMap(result.cookieNames, result.cookieValues))
-                            .responseStatus(String.valueOf(result.statusHttp))
-                            .responseExtraValue("\tOBJECTS:\n\t\t" + result.response);
+
+                    logBuilder.responseStatus(String.valueOf(result.statusHttp));
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(result.headerNames, result.headerValues))
+                                .responseCookies(BaseUtils.toStringMap(result.cookieNames, result.cookieValues))
+                                .responseExtraValue("\tOBJECTS:\n\t\t" + result.response);
                 }
             }
             return execResult;
@@ -662,10 +667,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         public void close() throws SQLException {
         }
-    }
-
-    public static String getLogMapValues(String caption, Map<String, String> map) {
-        return "\t" + caption + (map != null ? "\n\t\t" + StringUtils.join(map.entrySet().iterator(), "\n\t\t") : "");
     }
 
     public static boolean successfulResponse(int responseStatusCode) {

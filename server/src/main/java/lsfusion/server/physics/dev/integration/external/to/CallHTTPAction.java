@@ -223,10 +223,9 @@ public abstract class CallHTTPAction extends CallAction {
         boolean noExec = isNoExec(connectionString);
 
         RequestLog.Builder logBuilder = null;
-        if (!noExec && Settings.get().isLogToExternalSystemRequests()){
-            logBuilder = new RequestLog.Builder().detailLog(Settings.get().isLogToExternalSystemRequestsDetail())
-                    .logInfo(ThreadLocalContext.getLogInfo(Thread.currentThread())).path(connectionString).method(method.name());
-        }
+        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        if (!noExec && Settings.get().isLogToExternalSystemRequests())
+            logBuilder = new RequestLog.Builder().path(connectionString).method(method.name());
 
         boolean successfulResponse = false;
         try {
@@ -291,10 +290,10 @@ public abstract class CallHTTPAction extends CallAction {
                 Long timeout = nvl((Long) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
-                if (logBuilder != null) {
-                    logBuilder.requestHeaders(headers).requestCookies(cookies)
+                if (detailLog && logBuilder != null)
+                    logBuilder.logInfo(ThreadLocalContext.getLogInfo(Thread.currentThread()))
+                            .requestHeaders(headers).requestCookies(cookies)
                             .requestExtraValue((bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null));
-                }
 
                 ExternalHttpResponse response;
                 if (clientAction) {
@@ -329,8 +328,10 @@ public abstract class CallHTTPAction extends CallAction {
                 successfulResponse = RemoteConnection.successfulResponse(statusCode);
 
                 if (logBuilder != null) {
-                    logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues)).responseCookies(responseCookies)
-                            .responseStatus(responseStatus).responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
+                    logBuilder.responseStatus(responseStatus);
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues)).responseCookies(responseCookies)
+                            .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
                 if (!successfulResponse)
                     throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
