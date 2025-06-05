@@ -614,38 +614,46 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected abstract ExecSession getExecSession() throws SQLException;
 
     private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
-        String requestLogMessage = Settings.get().isLogFromExternalSystemRequests() ? getExternalSystemRequestsLog(logInfo, request.servletPath, request.method,
-                "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
+        RequestLog.Builder logBuilder = null;
+
+        if (Settings.get().isLogFromExternalSystemRequests())
+            logBuilder = new RequestLog.Builder().path(request.servletPath).method(request.method);
+
+        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        if (detailLog && logBuilder != null)
+            logBuilder.logInfo(logInfo)
+                    .extraValue("\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
+                    .requestHeaders(BaseUtils.toStringMap(request.headerNames, request.headerValues))
+                    .requestCookies(BaseUtils.toStringMap(request.cookieNames, request.cookieValues))
+                    .requestBody(request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null);
+
         boolean successfulResponse = false;
         try {
             ExternalResponse execResult = responseCallable.call();
 
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
-            if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
+            if (logBuilder != null) {
                 ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
 
-                    requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
-                            BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
-                            request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null,
-                            null,
-                            BaseUtils.toStringMap(result.headerNames, result.headerValues),
-                            BaseUtils.toStringMap(result.cookieNames, result.cookieValues),
-                            String.valueOf(result.statusHttp),
-                            "\tOBJECTS:\n\t\t" + result.response);
+                    logBuilder.responseStatus(String.valueOf(result.statusHttp));
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(result.headerNames, result.headerValues))
+                                .responseCookies(BaseUtils.toStringMap(result.cookieNames, result.cookieValues))
+                                .responseExtraValue("\tOBJECTS:\n\t\t" + result.response);
                 }
             }
             return execResult;
         } catch (Throwable t) {
-            if (requestLogMessage != null)
-                requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
+            if (logBuilder != null)
+                logBuilder.errorMessage(t.getMessage());
 
             throw Throwables.propagate(t);
         } finally {
-            logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+            logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, logBuilder, successfulResponse);
         }
     }
 
@@ -661,38 +669,13 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public static String getExternalSystemRequestsLog (LogInfo logInfo, String path, String method, String extraValue) {
-        return "\nREQUEST:\n" +
-                (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
-                "\tREQUEST_PATH: " + path + "\n" +
-                "\tREQUEST_METHOD: " + method + "\n" +
-                (extraValue != null ? "\n" + extraValue + "\n" : "");
-    }
-
-    public static String getExternalSystemRequestsLogDetail (Map<String, String> requestHeaders, Map<String, String> requestCookies, String requestBody,
-                                                             String requestExtraValue, Map<String, String> responseHeaders, Map<String, String> responseCookies,
-                                                             String responseStatus, String responseExtraValue) {
-        return getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" +
-                getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" +
-                (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") +
-                (requestExtraValue != null ? requestExtraValue + "\n" : "") +
-                "RESPONSE:\n" +
-                getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" +
-                getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" +
-                "\tRESPONSE_STATUS_HTTP: " + responseStatus + "\n" +
-                (responseExtraValue != null ? responseExtraValue : "");
-    }
-
-    private static String getLogMapValues(String caption, Map<String, String> map) {
-        return "\t" + caption + "\n\t\t" + StringUtils.join(map.entrySet().iterator(), "\n\t\t");
-    }
-
     public static boolean successfulResponse(int responseStatusCode) {
         return responseStatusCode >= 200 && responseStatusCode < 300;
     }
 
-    public static void logExternalSystemRequest (Logger logger, String message, boolean successfulResponse) {
-        if (message != null) {
+    public static void logExternalSystemRequest (Logger logger, RequestLog.Builder logBuilder, boolean successfulResponse) {
+        if (logBuilder != null) {
+            String message = logBuilder.build().toString();
             if (successfulResponse)
                 logger.info(message);
             else
