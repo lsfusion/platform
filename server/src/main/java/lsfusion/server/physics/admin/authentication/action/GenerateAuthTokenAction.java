@@ -31,7 +31,7 @@ public class GenerateAuthTokenAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         AuthenticationToken token = context.getSecurityManager()
-                .generateToken((String) context.getKeyObject(userLoginInterface), (Integer) context.getKeyObject(tokenExpirationInterface));
+                .generateToken((String) context.getKeyObject(userLoginInterface), (Integer) context.getKeyObject(tokenExpirationInterface), false);
         authLM.resultAuthToken.change(token.string, context);
     }
 }

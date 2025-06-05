@@ -1,8 +1,12 @@
 package lsfusion.http.authentication;
 
 import lsfusion.base.ServerUtils;
+import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.logics.LogicsProvider;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import javax.servlet.ServletContext;
@@ -10,8 +14,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Random;
 
 public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
@@ -42,6 +48,35 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
             localeCookie.setMaxAge(0);
         }
         response.addCookie(localeCookie);
+
+        if (authentication instanceof LSFAuthenticationToken) {
+            LSFAuthenticationToken lsfAuthentication = (LSFAuthenticationToken) authentication;
+            if (lsfAuthentication.use2FA()) {
+                SecurityContextHolder.clearContext();
+                String username = authentication.getName();
+                String code = String.format("%06d", new Random().nextInt(1000000));
+
+                HttpSession session = request.getSession();
+
+                session.setAttribute("2fa_user", authentication);
+                session.setAttribute("2fa_code", code);
+
+                JSONArray jsonArray = new JSONArray();
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("username", username);
+                jsonObject.put("code", code);
+                jsonArray.put(jsonObject);
+
+                JSONObject jsonResponse = MainController.sendRequest(logicsProvider, jsonArray, request, "Authentication.send2FACode");
+
+                //todo
+                if (jsonResponse.has("error"))
+                   System.out.println("ERROR: " + jsonResponse.getString("error"));
+
+                response.sendRedirect(MainController.getDirectUrl("/login", request));
+                return;
+            }
+        }
 
         String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
         if (savedRequest != null) {

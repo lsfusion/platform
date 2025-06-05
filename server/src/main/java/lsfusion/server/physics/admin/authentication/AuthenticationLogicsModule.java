@@ -77,6 +77,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP oauth2UserNameAttributeName;
     public LP oauth2ClientName;
 
+    public LP use2FA;
+
     public LP language;
     public LP country;
     public LP timeZone;
@@ -187,6 +189,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         oauth2UserInfoUri = findProperty("userInfoUri[OAuth2]");
         oauth2UserNameAttributeName = findProperty("userNameAttributeName[OAuth2]");
         oauth2ClientName = findProperty("clientName[OAuth2]");
+
+        use2FA = findProperty("use2FA[]");
 
         language = findProperty("language[CustomUser]");
         country = findProperty("country[CustomUser]");

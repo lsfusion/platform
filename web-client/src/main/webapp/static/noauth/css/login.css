@@ -235,3 +235,22 @@ details summary::-webkit-details-marker {
     font-size: 0.5em;
     opacity: 0.5;
 }
+
+.footer form input.cancel-two-factor {
+    font-size: 12px;
+    background: none;
+    border: none;
+    color: #2069b4;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0;
+    text-transform: none;
+    font-weight: unset;
+    width: unset;
+    height: unset;
+}
+
+.footer form[id=cancel-2fa-form] {
+    display: flex;
+    flex-direction: column;
+}

@@ -45,6 +45,7 @@
     <http pattern="/forgot-password" security="none"/>
     <http pattern="/change-password" security="none"/>
     <http pattern="/registration" security="none"/>
+    <http pattern="/2fa" security="none"/>
 
     <http pattern="/push-notification" security="none"/>
 

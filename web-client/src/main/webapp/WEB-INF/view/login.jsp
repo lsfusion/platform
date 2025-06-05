@@ -27,7 +27,7 @@
         <lsf:writeResources resources="${resourcesAfterSystem}"/>
 
     </head>
-    <body onload="document.loginForm.username.focus();">
+    <body onload="if (document.loginForm && document.loginForm.username) document.loginForm.username.focus();">
         <div class="main">
             <div class="header">
                 <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
@@ -42,58 +42,84 @@
                     String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
                 %>
 
-                <form id="login-form"
-                      name="loginForm"
-                      method="POST"
-                      action="login_check<%=queryString%>" >
-                    <fieldset>
-                        <div class="label-and-field">
-                            <label for="username"><%= ServerMessages.getString(request, "login.or.email") %></label>
-                            <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
-                        </div>
-                        <div class="label-and-field">
-                            <div class="password-labels-container">
-                                <label for="password"><%= ServerMessages.getString(request, "password") %></label>
-                                <a class="link" href="${forgotPasswordPage}" tabindex="1"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                <c:if test="${empty sessionScope['2fa_code']}">
+                    <form id="login-form"
+                          name="loginForm"
+                          method="POST"
+                          action="login_check<%=queryString%>" >
+                        <fieldset>
+                            <div class="label-and-field">
+                                <label for="username"><%= ServerMessages.getString(request, "login.or.email") %></label>
+                                <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
                             </div>
-                            <input type="password" id="password" name="password" class="round full-width-box"/>
+                            <div class="label-and-field">
+                                <div class="password-labels-container">
+                                    <label for="password"><%= ServerMessages.getString(request, "password") %></label>
+                                    <a class="link" href="${forgotPasswordPage}" tabindex="1"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                                </div>
+                                <input type="password" id="password" name="password" class="round full-width-box"/>
+                            </div>
+                            <input name="submit" type="submit" class="action-button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
+                        </fieldset>
+                    </form>
+                    <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                        <%
+                            if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
+                                session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
+                            }
+                        %>
+                        <div class="error-block round">
+                                ${SPRING_SECURITY_LAST_EXCEPTION}
                         </div>
-                        <input name="submit" type="submit" class="action-button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
-                    </fieldset>
-                </form>
-                <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                    <%
-                        if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
-                            session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
-                        }
-                    %>
-                    <div class="error-block round">
-                            ${SPRING_SECURITY_LAST_EXCEPTION}
-                    </div>
-                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                </c:if>
-                <c:if test="${! disableRegistration}">
-                    <div class="reg-block">
-                        <%= ServerMessages.getString(request, "no.account") %>
-                        &#32;
-                        <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
-                    </div>
-                </c:if>
-                <c:if test="${not empty urls}">
-                    <div class="oauth-block">
-                        <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
-                        <div class="oauth-links">
-                            <c:forEach var="url" items="${urls}">
-                                <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
-                            </c:forEach>
+                        <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                    </c:if>
+                    <c:if test="${! disableRegistration}">
+                        <div class="reg-block">
+                            <%= ServerMessages.getString(request, "no.account") %>
+                            &#32;
+                            <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
                         </div>
-                    </div>
+                    </c:if>
+                    <c:if test="${not empty urls}">
+                        <div class="oauth-block">
+                            <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
+                            <div class="oauth-links">
+                                <c:forEach var="url" items="${urls}">
+                                    <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
+                </c:if>
+                <c:if test="${not empty sessionScope['2fa_code']}">
+                    <form id="submit-2fa-form" method="POST" action="2fa<%=queryString%>">
+                        <div class="label-and-field">
+                            <label for="code"><%= ServerMessages.getString(request, "two.fa.code") %></label>
+                            <input class="full-width-box" id="code" type="text" name="code" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric" />
+
+                            <c:if test="${not empty sessionScope['2fa_error']}">
+                                <div style="color:red;"><%= ServerMessages.getString(request, "two.fa.error") %></div>
+                                <c:remove var="2fa_error" scope="session"/>
+                            </c:if>
+                        </div>
+
+                        <input type="submit" class="action-button round blue" value="<%= ServerMessages.getString(request, "password.new.confirm") %>">
+                    </form>
                 </c:if>
             </div>
             <div class="footer">
-                <div class="desktop-link link">
-                    ${jnlpUrls}
-                </div>
+                <c:if test="${empty sessionScope['2fa_code']}">
+                    <div class="desktop-link link">
+                        ${jnlpUrls}
+                    </div>
+                </c:if>
+                <c:if test="${not empty sessionScope['2fa_code']}">
+                    <form id="cancel-2fa-form" method="POST" action="2fa<%=queryString%>">
+                        <input type="hidden" name="cancel" value="true"/>
+
+                        <input type="submit" class="cancel-two-factor main-page-link" value="<%= ServerMessages.getString(request, "login.page") %>" >
+                    </form>
+                </c:if>
                 <div class="client-version">
                     ${apiVersion}
                 </div>

@@ -150,6 +150,8 @@ clientName 'Client name' = DATA STRING (OAuth2);
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
+use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
+
 webClientSecretKey 'Web-client secret key' = DATA STRING (); 
 
 writeDefaultCredentials() {
@@ -312,6 +314,22 @@ changePassword(JSONFILE input) {
             EXPORT FROM success = '{password.changed}';
         } ELSE {
             EXPORT FROM error = '{password.reset.token.invalid}';
+        }
+    }
+} @@api @@noauth;
+
+send2FACode(JSONFILE input) {
+    IMPORT FROM input FIELDS STRING username, STRING code DO {
+        TRY {
+            FOR login(CustomUser cu) == username DO {
+                EMAIL
+                    SUBJECT '$I{2FACodeSubject.html}'
+                    TO email(cu)
+                    BODY '$I{2FACodeBody.html}';
+            }
+            EXPORT FROM success = 'ok';
+        } CATCH {
+            EXPORT FROM error = messageCaughtException();
         }
     }
 } @@api @@noauth;
@@ -552,6 +570,7 @@ FORM customUsers '{authentication.users}'
                       userInfoUri,
                       userNameAttributeName,
                       clientName
+    PROPERTIES() use2FA
     PROPERTIES () webClientSecretKey
 ;
 
@@ -600,6 +619,10 @@ DESIGN customUsers {
                     headerHeight = 50;
                     }
                 }
+            }
+            NEW twoFactorAuth {
+                caption = '2FA';
+                MOVE PROPERTY(use2FA());
             }
             NEW WEBAUTH {
                 caption = 'WEB-AUTH';

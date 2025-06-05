@@ -34,8 +34,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -176,7 +178,7 @@ public class MainController {
         jsonObject.put("email", email);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
+        JSONObject jsonResponse = sendRequest(logicsProvider, user, request, "Authentication.registerUser");
         if (jsonResponse.has("success")) {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
@@ -215,7 +217,7 @@ public class MainController {
         jsonObject.put("userNameOrEmail", usernameOrEmail);
         jsonArray.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
+        JSONObject jsonResponse = sendRequest(logicsProvider, jsonArray, request, "Authentication.resetPassword");
         if (jsonResponse.has("success")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
                     + " " + jsonResponse.optString("email"));
@@ -242,7 +244,7 @@ public class MainController {
         jsonObject.put("token", token);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.changePassword");
+        JSONObject jsonResponse = sendRequest(logicsProvider, user, request, "Authentication.changePassword");
         if (jsonResponse.has("success")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
@@ -313,7 +315,7 @@ public class MainController {
         return versionedResources;
     }
 
-    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method) {
+    public static JSONObject sendRequest(LogicsProvider logicsProvider, JSONArray jsonArray, HttpServletRequest request, String method) {
         try {
             return logicsProvider.runRequest(request,
                     (sessionObject, retry) -> new JSONObject(sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(jsonArray.toString())}, sessionObject, method + "[JSONFILE]")));
@@ -460,6 +462,40 @@ public class MainController {
         } else {
             return "login";
         }
+    }
+
+    @RequestMapping(value = "/2fa", method = RequestMethod.POST)
+    public void process2FA(HttpServletRequest request, HttpServletResponse response,
+                           @RequestParam(required = false) String code, @RequestParam(required = false) String cancel) throws IOException {
+        HttpSession session = request.getSession(false);
+
+        if (cancel != null) {
+            clear2FAAttributes(session);
+            response.sendRedirect(getDirectUrl("/login", request));
+            return;
+        }
+
+        String expected = (String) session.getAttribute("2fa_code");
+        Authentication auth = (Authentication) session.getAttribute("2fa_user");
+
+        if (expected != null && expected.equals(code) && auth != null) {
+            clear2FAAttributes(session);
+
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+
+        } else {
+            session.setAttribute("2fa_error", true);
+        }
+
+        response.sendRedirect(getDirectUrl("/login", request));
+    }
+
+    private void clear2FAAttributes(HttpSession session) {
+        session.removeAttribute("2fa_code");
+        session.removeAttribute("2fa_user");
     }
 
     private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
