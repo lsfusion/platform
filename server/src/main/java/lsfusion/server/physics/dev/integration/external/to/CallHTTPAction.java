@@ -36,6 +36,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+import lsfusion.server.physics.admin.authentication.controller.remote.RequestLog;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -221,7 +222,11 @@ public abstract class CallHTTPAction extends CallAction {
 
         boolean noExec = isNoExec(connectionString);
 
-        String requestLogMessage = !noExec && Settings.get().isLogToExternalSystemRequests() ? RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
+        RequestLog.Builder logBuilder = null;
+        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        if (!noExec && Settings.get().isLogToExternalSystemRequests())
+            logBuilder = new RequestLog.Builder().path(connectionString).method(method.name());
+
         boolean successfulResponse = false;
         try {
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
@@ -285,6 +290,11 @@ public abstract class CallHTTPAction extends CallAction {
                 Long timeout = nvl((Long) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
+                if (detailLog && logBuilder != null)
+                    logBuilder.logInfo(ThreadLocalContext.getLogInfo(Thread.currentThread()))
+                            .requestHeaders(headers).requestCookies(cookies)
+                            .requestExtraValue((bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null));
+
                 ExternalHttpResponse response;
                 if (clientAction) {
                     response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore));
@@ -317,26 +327,22 @@ public abstract class CallHTTPAction extends CallAction {
                 String responseStatus = statusCode + " " + response.statusText;
                 successfulResponse = RemoteConnection.successfulResponse(statusCode);
 
-                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
-                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
-                            cookies,
-                            null,
-                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
-                            BaseUtils.toStringMap(headerNames, headerValues),
-                            responseCookies,
-                            responseStatus,
-                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
+                if (logBuilder != null) {
+                    logBuilder.responseStatus(responseStatus);
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues)).responseCookies(responseCookies)
+                            .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
                 if (!successfulResponse)
                     throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
             }
         } catch (Exception e) {
-            if (requestLogMessage != null)
-                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
+            if (logBuilder != null)
+                logBuilder.errorMessage(e.getMessage());
 
             throw Throwables.propagate(e);
         } finally {
-            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, logBuilder, successfulResponse);
         }
 
         return FlowResult.FINISH;
