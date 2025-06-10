@@ -555,8 +555,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             Result<Object> result = new Result<>();
             pingElectron(action.host, createSingleParamCallback(response -> continueDispatching(response, result)));
             return null;
+        } else if (isAndroid()) {
+            return pingAndroid(action.host);
         } else {
-            throw new UnsupportedOperationException("Ping is supported only in electron");
+            throw new UnsupportedOperationException("Ping is supported only in desktop (electron) / mobile (android) client");
         }
     }
 

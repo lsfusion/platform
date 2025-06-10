@@ -540,7 +540,19 @@ public class GwtClientUtils {
         };
     }-*/;
 
-    /*--- electron methods ---*/
+    /*--- electron methods end ---*/
+
+    /*--- android methods ---*/
+
+    public static native boolean isAndroid() /*-{
+        return $wnd.AndroidBridge !== undefined;
+    }-*/;
+
+    public static native String pingAndroid(String host) /*-{
+        return $wnd.AndroidBridge.ping(host);
+    }-*/;
+
+    /*--- android methods end ---*/
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
