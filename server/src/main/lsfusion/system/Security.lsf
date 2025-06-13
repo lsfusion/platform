@@ -505,9 +505,8 @@ vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 generateJnlpUrls () {
 
     LOCAL desktopURL = STRING();
-    desktopURL() <- CONCAT '', 
-        '<a href="C:\\IdeaProjects\\desktop-client\\dist\\desktop-client.exe">\{run.desktop.client\} (Electron debug)</a><br/>',
-        '<a href="\{contextPath\}\\download\\desktop-client.exe">\{run.desktop.client\} (Electron)</a><br/>';
+    desktopURL() <- CONCAT '',
+        '<a href="\{contextPath\}\\download\\flutter-client.exe">\{run.desktop.client\} (Flutter)</a><br/>';
     
     LOCAL execURL = STRING();
     //we use generateJnlp without params because linux mint cut from url '%5'

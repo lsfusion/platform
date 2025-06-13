@@ -4,13 +4,13 @@ import lsfusion.gwt.client.action.GActionDispatcher;
 import lsfusion.gwt.client.action.GExecuteAction;
 
 public class GPrintFileAction extends GExecuteAction {
-    public byte[] fileData;
+    public String fileData;
     public String filePath;
     public String printerName;
 
     public GPrintFileAction() {}
 
-    public GPrintFileAction(byte[] fileData, String filePath, String printerName) {
+    public GPrintFileAction(String fileData, String filePath, String printerName) {
         this.fileData = fileData;
         this.filePath = filePath;
         this.printerName = printerName;

@@ -10,6 +10,7 @@ import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import org.olap4j.impl.Base64;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -27,7 +28,11 @@ public class ExternalTCPAction extends ExternalSocketAction {
         Integer timeout = (Integer) context.getBL().LM.timeoutTcp.read(context);
         byte[] response;
         if (clientAction) {
-            response = (byte[]) context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
+            Object result = context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
+            if(result instanceof byte[])
+                response = (byte[]) result;
+            else
+                response = Base64.decode((String) result);
         } else {
             Socket socket = null;
             ConnectionService connectionService = context.getConnectionService();

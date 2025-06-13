@@ -51,6 +51,7 @@ import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.*;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.xerces.impl.dv.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -313,7 +314,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = PrintFileClientAction.class)
     public GPrintFileAction convertAction(PrintFileClientAction action) {
-        return new GPrintFileAction(action.fileData != null ? action.fileData.getBytes() : null, action.filePath, action.printerName);
+        return new GPrintFileAction(action.fileData != null ? Base64.encode(action.fileData.getBytes()) : null, action.filePath, action.printerName);
     }
 
     @Converter(from = WriteToPrinterClientAction.class)
@@ -329,12 +330,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = TcpClientAction.class)
     public GTcpAction convertAction(TcpClientAction action) {
-        return new GTcpAction(action.fileBytes, action.host, action.port, action.timeout);
+        return new GTcpAction(Base64.encode(action.fileBytes), action.host, action.port, action.timeout);
     }
 
     @Converter(from = UdpClientAction.class)
     public GUdpAction convertAction(UdpClientAction action) {
-        return new GUdpAction(action.fileBytes, action.host, action.port);
+        return new GUdpAction(Base64.encode(action.fileBytes), action.host, action.port);
     }
 
     @Converter(from = WriteToSocketClientAction.class)
@@ -349,7 +350,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = WriteToComPortClientAction.class)
     public GWriteToComPortAction convertAction(WriteToComPortClientAction action) {
-        return new GWriteToComPortAction(action.file.getBytes(), action.comPort, action.baudRate);
+        return new GWriteToComPortAction(Base64.encode(action.file.getBytes()), action.comPort, action.baudRate);
     }
 
     @Converter(from = HttpClientAction.class)

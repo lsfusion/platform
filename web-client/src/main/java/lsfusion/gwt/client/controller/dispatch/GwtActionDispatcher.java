@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
 import com.google.gwt.core.client.*;
+import com.google.gwt.json.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -41,6 +42,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.executeFlutter;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
@@ -377,86 +379,121 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GReadResult execute(GReadAction action) {
-        if(isElectron()) {
-            return new GReadResult(GwtClientUtils.readFileElectron(action.sourcePath), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "readFile", new String[] {action.sourcePath}, res -> {
+                String errorValue = getJSONError(res);
+                continueDispatching(errorValue != null ?
+                        new GReadResult(errorValue, null, null) :
+                        new GReadResult(null, getJSONStringResult(res), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result);
+            });
+            return null;
         } else {
-            throw new UnsupportedOperationException("readFile is supported only in electron");
+            throw new UnsupportedOperationException("ReadFile is supported only in flutter client");
         }
     }
 
     @Override
     public String execute(GDeleteFileAction action) {
-        if (isElectron()) {
-            return GwtClientUtils.deleteFileElectron(action.source);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "deleteFile", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
         } else {
-            throw new UnsupportedOperationException("deleteFile is supported only in electron");
+            throw new UnsupportedOperationException("DeleteFile is supported only in flutter client");
         }
     }
 
     @Override
     public boolean execute(GFileExistsAction action) {
-        if (isElectron()) {
-            return GwtClientUtils.fileExistsElectron(action.source);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "fileExists", new String[]{action.source}, res -> {
+                Boolean exists = getJSONBoolean(res, "result");
+                continueDispatching(exists != null && exists, result);
+            });
+            return false;
         } else {
-            throw new UnsupportedOperationException("fileExists is supported only in electron");
+            throw new UnsupportedOperationException("FileExists is supported only in flutter client");
         }
     }
 
     @Override
     public String execute(GMkDirAction action) {
-        if (isElectron()) {
-            return GwtClientUtils.makeDirElectron(action.source);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "makeDir", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
         } else {
-            throw new UnsupportedOperationException("mkDir is supported only in electron");
+            throw new UnsupportedOperationException("MakeDir is supported only in flutter client");
         }
     }
 
     @Override
     public String execute(GMoveFileAction action) {
-        if (isElectron()) {
-            return GwtClientUtils.moveFileElectron(action.source, action.destination);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "moveFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
         } else {
-            throw new UnsupportedOperationException("moveFile is supported only in electron");
+            throw new UnsupportedOperationException("MoveFile is supported only in flutter client");
         }
     }
 
     @Override
     public String execute(GCopyFileAction action) {
-        if (isElectron()) {
-            return GwtClientUtils.copyFileElectron(action.source, action.destination);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "copyFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
         } else {
-            throw new UnsupportedOperationException("copyFile is supported only in electron");
+            throw new UnsupportedOperationException("CopyFile is supported only in flutter client");
         }
     }
 
     @Override
     public GListFilesResult execute(GListFilesAction action) {
-        if (isElectron()) {
-            Object result = listFilesElectron(action.source, action.recursive);
-            if(result instanceof JsArrayMixed) {
-                JsArrayString names = ((JsArrayMixed) result).getObject(0).cast();
-                JsArrayBoolean dirs = ((JsArrayMixed) result).getObject(1).cast();
-                JsArray modified = ((JsArrayMixed) result).getObject(2).cast();
-                JsArrayNumber sizes = ((JsArrayMixed) result).getObject(3).cast();
-
-                int length = names.length();
-                String[] namesArray = new String[length];
-                Boolean[] dirsArray = new Boolean[length];
-                GDateTimeDTO[] modifiedArray = new GDateTimeDTO[length];
-                Long[] sizesArray = new Long[length];
-
-                for (int i = 0; i < length; i++) {
-                    namesArray[i] = names.get(i);
-                    dirsArray[i] = dirs.get(i) ? true : null;
-                    modifiedArray[i] = GDateTimeDTO.fromJsDate((JsDate) modified.get(i));
-                    sizesArray[i] = (long) sizes.get(i);
-                }
-                return new GListFilesResult(null, namesArray, dirsArray, modifiedArray, sizesArray);
-            } else {
-                return new GListFilesResult((String) result, null, null, null, null);
-            }
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "listFiles", new Object[]{action.source, action.recursive}, res -> continueDispatching(getListFilesResult(new JSONObject(res).get("result")), result));
+            return null;
         } else {
-            throw new UnsupportedOperationException("listFiles is supported only in electron");
+            throw new UnsupportedOperationException("ListFiles is supported only in flutter client");
+        }
+    }
+
+    private GListFilesResult getListFilesResult(JSONValue res) {
+        try {
+            JSONArray result =res.isArray();
+            String[] namesArray = new String[result.size()];
+            Boolean[] dirsArray = new Boolean[result.size()];
+            GDateTimeDTO[] modifiedArray = new GDateTimeDTO[result.size()];
+            Long[] sizesArray = new Long[result.size()];
+
+            for (int i = 0; i < result.size(); i++) {
+                JSONObject entry = result.get(i).isObject();
+                namesArray[i] = entry.get("path").isString().stringValue();
+                dirsArray[i] = entry.get("isDirectory").isBoolean().booleanValue() ? true : null;
+                modifiedArray[i] = GDateTimeDTO.fromJsDate(JsDate.create(entry.get("modifiedDateTime").isString().stringValue()));
+                sizesArray[i] = (long) entry.get("fileSize").isNumber().doubleValue();
+            }
+            return new GListFilesResult(null, namesArray, dirsArray, modifiedArray, sizesArray);
+        } catch (Exception e) {
+            return new GListFilesResult(e.getMessage(), null, null, null, null);
         }
     }
 
@@ -464,8 +501,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GWriteAction action) {
         if (action.fileUrl != null) {
             String downloadURL = getAppDownloadURL(action.fileUrl);
-            if (isElectron()) {
-                writeFileElectron(downloadURL, action.filePath);
+            JavaScriptObject flutter = getFlutterObject();
+            if (flutter != null) { //todo: status 401 from RestAuthenticationEntryPoint
+                executeFlutter(flutter, "writeFile", new Object[]{getFullUrl(downloadURL), action.filePath},res -> {});
             } else { //it is actually downloading the file, not opening it in the browser
                 fileDownload(downloadURL);
             }
@@ -474,103 +512,146 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GRunCommandActionResult execute(GRunCommandAction action) {
-        if (isElectron()) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            runCommandElectron(action.command, createRunCommandCallback((cmdOut, cmdErr, exitValue) -> continueDispatching(new GRunCommandActionResult(cmdOut, cmdErr, exitValue), result)));
+            executeFlutter(flutter, "runCommand", new String[]{action.command}, res -> continueDispatching(new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")), result));
             return null;
         } else {
-            throw new UnsupportedOperationException("runCommand is supported only in electron");
+            throw new UnsupportedOperationException("RunCommand is supported only in flutter-client");
         }
     }
 
     @Override
     public String execute(GGetAvailablePrintersAction action) {
-        if (isElectron()) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            getAvailablePrinters(createSingleParamCallback(printerNames -> continueDispatching(printerNames, result)));
+            executeFlutter(flutter, "getAvailablePrinters", new String[] {}, res -> continueDispatching(getJSONStringResult(res), result));
             return null;
         } else {
-            throw new UnsupportedOperationException("getAvailablePrinters is supported only in electron");
+            throw new UnsupportedOperationException("GetAvailablePrinters is supported only in flutter-client");
         }
     }
 
     @Override
     public void execute(GPrintFileAction action) {
-        if (isElectron()) {
-            if(action.fileData != null)
-                printArrayBufferElectron(bytesToArrayBuffer(action.fileData), action.printerName);
-            else
-                printFileElectron(action.filePath, action.printerName);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "print", new String[] {action.fileData, action.filePath, null, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
         } else {
-            throw new UnsupportedOperationException("Print file is supported only in electron");
+            throw new UnsupportedOperationException("PrintFile is supported only in flutter-client");
         }
     }
 
     @Override
     public String execute(GWriteToPrinterAction action) {
-        if (isElectron()) {
-            printTextElectron(action.text, action.printerName);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "print", new String[] {null, null, action.text, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
             return null;
         } else {
-            throw new UnsupportedOperationException("WriteToPrinter is supported only in electron");
+            throw new UnsupportedOperationException("PrintText is supported only in flutter-client");
         }
     }
 
     @Override
-    public byte[] execute(GTcpAction action) {
-        if (isElectron()) {
+    public String execute(GTcpAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            sendTcpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes), action.timeout, createSingleParamCallback(response -> continueDispatching(new GTcpResult(arrayBufferToBytes((ArrayBuffer) response)), result)));
+            executeFlutter(flutter, "sendTCP", new Object[]{action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)},res -> continueDispatching(getJSONStringResult(res), result));
             return null;
         } else {
-            throw new UnsupportedOperationException("EXTERNAL TCP is supported only in electron");
+            throw new UnsupportedOperationException("EXTERNAL TCP is supported only in flutter client");
         }
     }
 
     @Override
     public void execute(GUdpAction action) {
-        if (isElectron()) {
-            sendUdpElectron(action.host, action.port, bytesToArrayBuffer(action.fileBytes));
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, "sendUDP", new Object[]{action.host, action.port, action.fileBytes}, res -> {});
         } else {
-            throw new UnsupportedOperationException("EXTERNAL UDP is supported only in electron");
+            throw new UnsupportedOperationException("EXTERNAL UDP is supported only in flutter client");
         }
     }
 
     @Override
     public void execute(GWriteToSocketAction action) {
-        if (isElectron()) {
-            writeToSocketElectron(action.ip, action.port, action.text, action.charset);
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, "writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, res -> {});
         } else {
-            throw new UnsupportedOperationException("WriteToSocket is supported only in electron");
+            throw new UnsupportedOperationException("WriteToSocket is supported only in flutter client");
         }
     }
 
     @Override
     public String execute(GPingAction action) {
-        if (isElectron()) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            pingElectron(action.host, createSingleParamCallback(response -> continueDispatching(response, result)));
+            executeFlutter(flutter, "ping", new String[] {action.host}, res -> continueDispatching(getJSONStringResult(res), result));
             return null;
-        } else if (isAndroid()) {
-            return pingAndroid(action.host);
         } else {
-            throw new UnsupportedOperationException("Ping is supported only in desktop (electron) / mobile (android) client");
+            throw new UnsupportedOperationException("Ping is supported only in flutter client");
+        }
+    }
+
+    private String getJSONStringResult(JavaScriptObject res) {
+        return getJSONString(res, "result");
+    }
+
+    private String getJSONError(JavaScriptObject res) {
+        return getJSONString(res, "error");
+    }
+
+    private String getJSONString(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isString().stringValue();
+        } else {
+            return null;
+        }
+    }
+
+    private int getJSONInt(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? 0 : (int) json.isNumber().doubleValue();
+        } else {
+            return 0;
+        }
+    }
+
+    private Boolean getJSONBoolean(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isBoolean().booleanValue();
+        } else {
+            return null;
         }
     }
 
     @Override
     public String execute(GWriteToComPortAction action) {
-        if (isElectron()) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
             pauseDispatching();
             Result<Object> result = new Result<>();
-            writeToComPortElectron(action.comPort, action.baudRate, bytesToArrayBuffer(action.file), createSingleParamCallback(response -> continueDispatching(response, result)));
+            executeFlutter(flutter, "writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, res -> continueDispatching(getJSONStringResult(res), result));
             return null;
         } else {
-            throw new UnsupportedOperationException("WriteToComPort is supported only in electron");
+            throw new UnsupportedOperationException("WriteToComPort is supported only in flutter client");
         }
     }
 
@@ -671,13 +752,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     onFileExecuted(action);
                 } else {
                     resources.put(resource, null);
-                    try {
-                        //reset and restore node globals same as in main.jsp
-                        GwtClientUtils.resetNodeGlobals();
-                        executeFile(action, resource, action.originalResourceName, action.fileExtension);
-                    } finally {
-                        GwtClientUtils.restoreNodeGlobals();
-                    }
+                    executeFile(action, resource, action.originalResourceName, action.fileExtension);
                 }
             }
         }

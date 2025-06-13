@@ -4,14 +4,14 @@ import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GActionDispatcher;
 
 public class GTcpAction implements GAction {
-    public byte[] fileBytes;
+    public String fileBytes;
     public String host;
     public Integer port;
     public Integer timeout;
 
     public GTcpAction() {}
 
-    public GTcpAction(byte[] fileBytes, String host, Integer port, Integer timeout) {
+    public GTcpAction(String fileBytes, String host, Integer port, Integer timeout) {
         this.fileBytes = fileBytes;
         this.host = host;
         this.port = port;
@@ -19,7 +19,7 @@ public class GTcpAction implements GAction {
     }
 
     @Override
-    public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
+    public String dispatch(GActionDispatcher dispatcher) throws Throwable {
         return dispatcher.execute(this);
     }
 }

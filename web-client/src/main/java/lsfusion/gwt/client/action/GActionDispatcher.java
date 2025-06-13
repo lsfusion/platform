@@ -68,7 +68,7 @@ public interface GActionDispatcher {
 
     String execute(GWriteToPrinterAction action);
 
-    byte[] execute(GTcpAction action);
+    String execute(GTcpAction action);
 
     void execute(GUdpAction action);
 

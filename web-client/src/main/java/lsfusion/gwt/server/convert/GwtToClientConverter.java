@@ -253,6 +253,8 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GReadResult.class)
     public ReadUtils.ReadResult convertReadResult(GReadResult readResult) {
+        if(readResult.error != null)
+            throw new RuntimeException(readResult.error);
         RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
         return new ReadUtils.ReadResult(readResult.extension != null ? new FileData(file, readResult.extension) : file, "file");
     }

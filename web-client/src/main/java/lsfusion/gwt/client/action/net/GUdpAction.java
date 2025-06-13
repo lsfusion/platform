@@ -4,13 +4,13 @@ import lsfusion.gwt.client.action.GActionDispatcher;
 import lsfusion.gwt.client.action.GExecuteAction;
 
 public class GUdpAction extends GExecuteAction {
-    public byte[] fileBytes;
+    public String fileBytes;
     public String host;
     public Integer port;
 
     public GUdpAction() {}
 
-    public GUdpAction(byte[] fileBytes, String host, Integer port) {
+    public GUdpAction(String fileBytes, String host, Integer port) {
         this.fileBytes = fileBytes;
         this.host = host;
         this.port = port;

@@ -110,6 +110,14 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.base.GwtClientUtils::isTDorTH(*)(element);
             }
         }
+
+        var isFlutter = $wnd.Flutter !== undefined;
+        var isWindowsFlutter = $wnd.chrome !== undefined && $wnd.chrome.webview !== undefined && $wnd.chrome.webview.postMessage !== undefined;
+        if(isFlutter || isWindowsFlutter) {
+            $wnd.flutterCallback = function (command, data, id) {
+                @lsfusion.gwt.client.base.GwtClientUtils::onFlutterCallback(*)(data, id);
+            };
+        }
     }-*/;
 
     public static InputElement createInputElement(String type) {
@@ -160,399 +168,62 @@ public class GwtClientUtils {
         }
     }
 
-    /*--- electron methods ---*/
+    /*--- flutter methods ---*/
 
-    public static native boolean isElectron() /*-{
-        return navigator.userAgent.toLowerCase().indexOf('electron') !== -1;
+    public static native JavaScriptObject getFlutterObject() /*-{
+        if ($wnd.chrome !== undefined && $wnd.chrome.webview !== undefined)
+            return $wnd.chrome.webview; //windows
+        else if ($wnd.Flutter !== undefined)
+            return $wnd.Flutter; //android, macos, ios
+        return null;
     }-*/;
 
-    public static void resetNodeGlobals() {
-        if(isElectron())
-            resetNodeGlobalsElectron();
+    public static void onFlutterCallback(JavaScriptObject data, String id) {
+        AsyncCallback<JavaScriptObject> callback = flutterCallbacks.remove(id);
+        if (callback != null) {
+            callback.done(data);
+        }
     }
 
-    private static native void resetNodeGlobalsElectron() /*-{
-        // save Node.js variables for electron
-        $wnd._nodeRequire = window.require;
-        $wnd._nodeModule = window.module;
-        $wnd._nodeExports = window.exports;
-        $wnd._nodeProcess = window.process;
+    private static final Map<String, AsyncCallback<JavaScriptObject>> flutterCallbacks = new HashMap<>();
 
-        // disable Node.js variables
-        window.require = undefined;
-        window.module = undefined;
-        window.exports = undefined;
-        window.process = undefined;
-    }-*/;
-
-    public static void restoreNodeGlobals() {
-        if(isElectron())
-            restoreNodeGlobalsElectron();
+    public interface AsyncCallback<T> {
+        void done(T result);
     }
 
-    private static native void restoreNodeGlobalsElectron() /*-{
-        // restore Node.js variables
-        window.require = $wnd._nodeRequire;
-        window.module = $wnd._nodeModule;
-        window.exports = $wnd._nodeExports;
-        window.process = $wnd._nodeProcess;
-    }-*/;
-
-    public static native String readFileElectron(String path) /*-{
-        var fs = require('fs');
-        try {
-            return fs.readFileSync(path).toString('base64');
-        } catch (e) {
-            throw new Error("Error reading file: " + e.message);
-        }
-    }-*/;
-
-    public static native String deleteFileElectron(String path) /*-{
-        var fs = require('fs');
-        try {
-            fs.unlinkSync(path);
-            return null;
-        } catch (e) {
-            return e.message;
-        }
-    }-*/;
-
-    public static native boolean fileExistsElectron(String path) /*-{
-        var fs = require('fs');
-        try {
-            return fs.existsSync(path);
-        } catch (e) {
-            throw new Error("Error file exists check: " + e.message);
-        }
-    }-*/;
-
-    public static native String makeDirElectron(String path) /*-{
-        var fs = require('fs');
-        try {
-            fs.mkdirSync(path, { recursive: true });
-            return null;
-        } catch (e) {
-            return e.message;
-        }
-    }-*/;
-
-    public static native String moveFileElectron(String fromPath, String toPath) /*-{
-        var fs = require('fs');
-        try {
-            fs.renameSync(fromPath, toPath);
-            return null;
-        } catch (e) {
-            return e.message;
-        }
-    }-*/;
-
-    public static native String copyFileElectron(String fromPath, String toPath) /*-{
-        var fs = require('fs');
-        try {
-            fs.copyFileSync(fromPath, toPath);
-            return null;
-        } catch (e) {
-            return e.message;
-        }
-    }-*/;
-
-    public static native Object listFilesElectron(String source, boolean recursive) /*-{
-        try {
-            var fs = require('fs');
-            var path = require('path');
-
-            var names = [];
-            var isDirectory = [];
-            var modifiedDateTime = [];
-            var fileSize = [];
-
-            function listDir(dir) {
-                var files = fs.readdirSync(dir);
-                for (var i = 0; i < files.length; i++) {
-                    var fullPath = path.join(dir, files[i]);
-                    var stats = fs.statSync(fullPath);
-
-                    names.push(fullPath);
-                    isDirectory.push(stats.isDirectory());
-                    modifiedDateTime.push(stats.mtime);
-                    fileSize.push(stats.isFile() ? stats.size : 0);
-
-                    if (recursive && stats.isDirectory()) {
-                        listDir(fullPath);
-                    }
-                }
-            }
-
-            listDir(source);
-
-            return [names, isDirectory, modifiedDateTime, fileSize];
-
-        } catch (e) {
-            return e.message;
-        }
-    }-*/;
-
-    public static native void writeFileElectron(String url, String targetPath) /*-{
-        var fs = require('fs');
-        var http = require('http');
-        var https = require('https');
-
-        var fullUrl = new URL(window.location.origin + url);
-        var protocol = fullUrl.protocol === 'https:' ? https : http;
-
-        var file = fs.createWriteStream(targetPath);
-
-        var cookies = document.cookie;
-
-        var options = {
-            hostname: fullUrl.hostname,
-            port: fullUrl.port || (fullUrl.protocol === 'https:' ? 443 : 80),
-            path: fullUrl.pathname + fullUrl.search,
-            method: 'GET',
-            headers: {
-                'Cookie': cookies
-            }
-        };
-
-        var req = protocol.request(options, function(response) {
-            response.pipe(file);
-            file.on('finish', function() {
-                file.close();
-            });
-        });
-
-        req.on('error', function(err) {
-            fs.unlink(targetPath, function() {});
-        });
-
-        req.end();
-    }-*/;
-
-    public static native void getAvailablePrinters(JavaScriptObject onResult) /*-{
-        var printer = require('pdf-to-printer');
-        try {
-            printer.getPrinters().then(function(printers) {
-                var printerNames = '';
-                for (var i = 0; i < printers.length; i++) {
-                    printerNames += printers[i].name + '\n';
-                }
-                onResult(printerNames);
-            });
-        } catch (e) {
-            throw new Error("Error getAvailablePrinters: " + e.message);
-        }
-    }-*/;
-
-    public static native void printArrayBufferElectron(ArrayBuffer fileBytes, String printerName) /*-{
-        var fs = require('fs');
-        var os = require('os');
-        var path = require('path');
-        var printer = require('pdf-to-printer');
-        var buffer = require('buffer');
-
-        try {
-            var tempDir = os.tmpdir();
-            var tempPath = path.join(tempDir, 'temp-print-file');
-
-            var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
-            fs.writeFileSync(tempPath, bytes);
-
-            var options = printerName ? { printer: printerName } : undefined;
-            printer.print(tempPath, options).then(function() {
-                fs.unlinkSync(tempPath);
-            });
-        } catch (e) {
-            fs.unlinkSync(tempPath);
-            throw new Error('Error printing file: ' + e.message);
-        }
-    }-*/;
-
-    public static native void printFileElectron(String filePath, String printerName) /*-{
-        var printer = require('pdf-to-printer');
-
-        var options = printerName ? { printer: printerName } : undefined;
-        printer.print(filePath, options);
-    }-*/;
-
-    public static native void printTextElectron(String text, String printerName) /*-{
-        var fs = require('fs');
-        var os = require('os');
-        var path = require('path');
-        var PDFDocument = require('pdfkit');
-        var printer = require('pdf-to-printer');
-
-        try {
-            var tempDir = os.tmpdir();
-            var tempPath = path.join(tempDir, 'temp-print-file.pdf');
-
-            var doc = new PDFDocument();
-            var stream = fs.createWriteStream(tempPath);
-            doc.pipe(stream);
-            doc.text(text);
-            doc.end();
-
-            stream.on('finish', function() {
-                var options = printerName ? { printer: printerName } : undefined;
-                printer.print(tempPath, options).then(
-                    function() {
-                        fs.unlinkSync(tempPath);
-                    },
-                    function(err) {
-                        console.error('Error printing PDF:', err.message);
-                        fs.unlinkSync(tempPath);
-                    }
-                );
-            });
-
-        } catch (e) {
-            throw new Error('Error printing PDF: ' + e.message);
-        }
-    }-*/;
-
-    public static native void runCommandElectron(String command, JavaScriptObject onResult) /*-{
-        var child_process = require('child_process');
-        child_process.exec(command, function (error, stdout, stderr) {
-            onResult(stdout, stderr, error ? error.code : 0);
-        });
-    }-*/;
-
-    public interface RunCommandCallback {
-        void onResult(String cmdOut, String cmdErr, int exitValue);
+    public static void executeFlutter(JavaScriptObject flutter, String command, Object[] arguments, AsyncCallback<JavaScriptObject> callback) {
+        String id = String.valueOf(System.currentTimeMillis());
+        flutterCallbacks.put(id, callback);
+        executeFlutterNative(flutter, command, arguments, id);
     }
 
-    public static native JavaScriptObject createRunCommandCallback(RunCommandCallback callback) /*-{
-        return function(cmdOut, cmdErr, exitValue) {
-            callback.@lsfusion.gwt.client.base.GwtClientUtils.RunCommandCallback::onResult(*)(cmdOut, cmdErr, exitValue);
-        };
-    }-*/;
+    private static native void executeFlutterNative(JavaScriptObject flutter, String command, Object[] arguments, String id) /*-{
+        var convertedArgs = [];
 
-    public static native void sendTcpElectron(String host, int port, ArrayBuffer fileBytes, Integer timeoutMillis, JavaScriptObject onResult) /*-{
-        var net = require('net');
-        var buffer = require('buffer');
-
-        var client = new net.Socket();
-        var response = buffer.Buffer.alloc(0);
-        var isCallbackCalled = false;
-
-        if(timeoutMillis) {
-            var timeout = setTimeout(function () {
-                if (!isCallbackCalled) {
-                    isCallbackCalled = true;
-                    client.destroy();
-                    onResult(buffer.Buffer.from('Timeout'));
+        for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments[i];
+            if (typeof arg === 'object' && arg !== null) {
+                if (arg.toString && !isNaN(Number(arg.toString()))) {
+                    convertedArgs.push(Number(arg.toString()));
                 }
-            }, timeoutMillis);
+                else if (Array.isArray(arg)) {
+                    convertedArgs.push(arg);
+                }
+                else {
+                    convertedArgs.push(arg);
+                }
+            } else {
+                convertedArgs.push(arg);
+            }
         }
-
-        var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
-        client.connect(port, host, function() {
-            client.write(bytes);
-        });
-
-        client.on('data', function(data) {
-            response = buffer.Buffer.concat([response, data]);
-        });
-
-        client.on('end', function() {
-            clearTimeout(timeout);
-            if (!isCallbackCalled) {
-                isCallbackCalled = true;
-                var arrayBuffer = response.buffer.slice(response.byteOffset, response.byteOffset + response.byteLength);
-                onResult(arrayBuffer);
-            }
-        });
-
-        client.on('error', function(err) {
-            clearTimeout(timeout);
-            if (!isCallbackCalled) {
-                isCallbackCalled = true;
-                onResult(buffer.Buffer.from(err.message));
-            }
-        });
+        flutter.postMessage(JSON.stringify({command: command, arguments: convertedArgs, id: id}));
     }-*/;
 
-    public static native void sendUdpElectron(String host, int port, ArrayBuffer fileBytes) /*-{
-        var dgram = require('dgram');
-        var buffer = require('buffer');
-
-        var client = dgram.createSocket('udp4');
-        var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
-        client.send(bytes, 0, bytes.length, port, host);
+    public static native String getFullUrl(String url) /*-{
+        return window.location.origin + url;
     }-*/;
 
-    public static native void writeToSocketElectron(String host, int port, String text, String charset) /*-{
-        var net = require('net');
-
-        var client = new net.Socket();
-        client.connect(port, host, function() {
-            client.write(text, charset);
-        });
-    }-*/;
-
-    public static native void pingElectron(String host, JavaScriptObject onResult) /*-{
-        var net = require('net');
-
-        var client = new net.Socket();
-        client.connect(80, host, function () {
-            onResult(null);
-        });
-
-        client.on('error', function(err) {
-            onResult(err.message);
-        });
-    }-*/;
-
-    public static native void writeToComPortElectron(String portName, int baudRate, ArrayBuffer fileBytes, JavaScriptObject onResult) /*-{
-        var serialPort = require('serialport');
-        var buffer = require('buffer');
-
-        var port = new serialPort.SerialPort({
-            path: portName,
-            baudRate: baudRate,
-            autoOpen: false
-        });
-
-        port.open(function (err) {
-            if (err) {
-                onResult("Error opening port: " + err.message);
-                return;
-            }
-
-            var bytes = buffer.Buffer.from(new Uint8Array(fileBytes));
-            port.write(bytes, function (err) {
-                if (err) {
-                    onResult("Error writing to port: " + err.message);
-                    port.close();
-                } else {
-                    onResult(null);
-                }
-            });
-        });
-    }-*/;
-
-    public interface SingleParamCallback {
-        void onResult(Object response);
-    }
-
-    public static native JavaScriptObject createSingleParamCallback(SingleParamCallback callback) /*-{
-        return function(response) {
-            callback.@lsfusion.gwt.client.base.GwtClientUtils.SingleParamCallback::onResult(*)(response);
-        };
-    }-*/;
-
-    /*--- electron methods end ---*/
-
-    /*--- android methods ---*/
-
-    public static native boolean isAndroid() /*-{
-        return $wnd.AndroidBridge !== undefined;
-    }-*/;
-
-    public static native String pingAndroid(String host) /*-{
-        return $wnd.AndroidBridge.ping(host);
-    }-*/;
-
-    /*--- android methods end ---*/
+    /*--- flutter methods end ---*/
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
