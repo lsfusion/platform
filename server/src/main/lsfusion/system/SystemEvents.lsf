@@ -426,15 +426,15 @@ TABLE connectionNavigatorElement (Connection, NavigatorElement);
 
 computer '{system.events.computer.connection}' = DATA Computer (Connection);
 hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
-
 remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Connection);
+
+scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 webHost '{system.events.web.host.connection}' = DATA STRING (Connection);
 webPort '{system.events.web.port.connection}' = DATA INTEGER (Connection);
 contextPath '{system.events.context.path.connection}' = DATA STRING (Connection);
 servletPath '{system.events.context.path.connection}' = DATA STRING (Connection);
 pathInfo '{system.events.path.info.connection}' = DATA STRING (Connection);
 query '{system.events.query.connection}' = DATA STRING (Connection);
-scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 
 origin(Connection c) = scheme(c) + '://' + webHost(c) + ':' + webPort(c); 
 webPath(Connection c) = origin(c) + contextPath(c);
@@ -526,9 +526,12 @@ EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
 @defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
 currentConnection = NATIVE Connection ();
-originUrl(STRING relativeUrl) = originUrl(currentConnection(), relativeUrl);
-contextUrl(STRING relativeUrl) = contextUrl(currentConnection(), relativeUrl);
-originUrl(LINK relativeLink) = originUrl(currentConnection(), relativeLink);
+currentOrigin() = IF currentConnection() THEN origin(currentConnection()) ELSE origin();
+currentWebPath() = IF currentConnection() THEN webPath(currentConnection()) ELSE webPath();
+
+currentOriginUrl(STRING relativeUrl) = IF currentConnection() THEN originUrl(currentConnection(), relativeUrl) ELSE originUrl(relativeUrl);
+currentContextUrl(STRING relativeUrl) = IF currentConnection() THEN contextUrl(currentConnection(), relativeUrl) ELSE contextUrl(relativeUrl);
+currentOriginUrl(LINK relativeLink) = IF currentConnection() THEN originUrl(currentConnection(), relativeLink) ELSE originUrl(relativeLink);
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
@@ -1001,7 +1004,7 @@ share(STRING url, STRING text, STRING title) {
 }
 
 shareAction(STRING relativeUrl) {
-    share(contextUrl(relativeUrl), 'The link to share the form', 'Share');
+    share(currentContextUrl(relativeUrl), 'The link to share the form', 'Share');
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

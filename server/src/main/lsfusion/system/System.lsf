@@ -55,7 +55,6 @@ headers = DATA LOCAL NESTED TEXT(TEXT);
 cookies = DATA LOCAL NESTED TEXT(TEXT);    
 headersTo = DATA LOCAL NESTED TEXT(TEXT);
 cookiesTo = DATA LOCAL NESTED TEXT(TEXT);
-query = DATA LOCAL NESTED TEXT();
 params = DATA LOCAL NESTED TEXT(TEXT, INTEGER);
 params(TEXT name) = params(name, 0);
 fileParams = DATA LOCAL NESTED NAMEDFILE (TEXT, INTEGER);
@@ -66,15 +65,23 @@ body = DATA LOCAL NESTED RAWFILE();
 appHost = DATA LOCAL NESTED TEXT();
 appPort = DATA LOCAL NESTED INTEGER();
 exportName = DATA LOCAL NESTED TEXT();
-scheme = DATA LOCAL NESTED TEXT();
 method = DATA LOCAL NESTED TEXT();
+
+scheme = DATA LOCAL NESTED TEXT();
 webHost = DATA LOCAL NESTED TEXT();
 webPort = DATA LOCAL NESTED INTEGER();
 contextPath = DATA LOCAL NESTED TEXT();
 servletPath = DATA LOCAL NESTED TEXT();
 pathInfo = DATA LOCAL NESTED TEXT();
-webPath() = scheme() + '://' + webHost() + ':' + webPort() + contextPath();
+query = DATA LOCAL NESTED TEXT();
+
+origin() = scheme() + '://' + webHost() + ':' + webPort(); 
+webPath() = origin() + contextPath();
 url() = webPath() + servletPath() + pathInfo();
+
+originUrl(STRING relativeUrl) = origin() + relativeUrl;
+contextUrl(STRING relativeUrl) = CONCAT '&', webPath() + relativeUrl, notEmpty(query());
+originUrl(LINK relativeLink) = LINK(originUrl(STRING(relativeLink)));
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
