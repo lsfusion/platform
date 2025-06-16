@@ -415,7 +415,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.notNull = notNull;
     }
 
-    public void setSelect(String select) {
-        target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
+    public void setSelect(Object select) {
+        if(select instanceof LocalizedString) {
+            target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
+        } else if(select instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) select).property.isExplicitNull()) {
+            target.entity.customRenderFunction = PropertyDrawEntity.NOSELECT;
+        } else {
+            throw new UnsupportedOperationException("Unsupported value: " + select);
+        }
     }
 }
