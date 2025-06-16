@@ -152,11 +152,15 @@ public class RAGRetrieve {
     /**
      * 1) Embed with OpenAI → 2) Query Pinecone → 3) Sort and return.
      */
-    public static List<Map<String,Object>> retrieveDocs(String query) {
+    public static List<Map<String,Object>> retrieveDocs(String query, boolean includeSystem) {
         List<Float> vec = getEmbedding(query);
 
         List<Map<String,Object>> out = new ArrayList<>();
         for (Map.Entry<String, Integer> e : TOP_K.entrySet()) {
+            if(e.getKey().equals(SOURCETYPE_SYSTEM)) {
+                if(!includeSystem)
+                    continue;
+            }
 
             QueryResponseWithUnsignedIndices resp = index.query(
                     /*topK=*/           e.getValue(),
@@ -178,7 +182,7 @@ public class RAGRetrieve {
                 out.add(result);
             }
         }
-        out.sort(Comparator.comparingDouble(d -> -(Double)d.get("score")));
+        out.sort(Comparator.comparingDouble(d -> -(Float)d.get("score")));
         return out;
     }
 
@@ -192,22 +196,25 @@ public class RAGRetrieve {
         return emb.data().get(0).embedding().stream().map(Double::floatValue).collect(Collectors.toList());
     }
 
+    public static final String RETRIEVE_FN = "retrieve_docs";
+    public static final String RETRIEVE_FN_PARAM = "query";
+
     @NotNull
     public static CustomFunction getRetrieveFunction() {
         // built-in retrieve_docs
 
         FunctionDefinition function = FunctionDefinition.builder()
                 .name("retrieve_docs")
-                .description("Fetch prioritized chunks from docs, how-tos, and articles")
+                .description("Fetch prioritized chunks from your RAG store—documentation, how-tos, tutorials and articles—based on a single search query")
                 .parameters(
                         FunctionParameters.builder()
                                 // строковый примитив можно создать через textNode
                                 .putAdditionalProperty("type", JsonValue.from("object"))
                                 // inline-схема properties
                                 .putAdditionalProperty("properties", JsonValue.from(
-                                        Collections.singletonMap("query", AIAgent.M.createObjectNode()
+                                        Collections.singletonMap(RETRIEVE_FN_PARAM, AIAgent.M.createObjectNode()
                                                         .put("type", "string")
-                                                        .put("description", "Search query")
+                                                        .put("description", "Search query describing the topic or problem you need more information on")
                                                 )
                                 ))
                                 // inline-массив required
@@ -218,6 +225,6 @@ public class RAGRetrieve {
                 .build();
         return new CustomFunction(ChatCompletionTool.builder()
                 .function(function)
-                .build(), args -> retrieveDocs((String) args.get("query")));
+                .build(), args -> retrieveDocs((String) args.get("query"), false));
     }
 }

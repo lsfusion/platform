@@ -70,6 +70,13 @@ public class AIAgent {
                         }
 
                         String rj = M.writeValueAsString(result);
+                        history.add(
+                                ChatCompletionMessageParam.ofAssistant(
+                                        ChatCompletionAssistantMessageParam.builder()
+                                                .toolCalls(Collections.singletonList(tc))
+                                                .build()
+                                )
+                        );
                         history.add(ChatCompletionMessageParam.ofTool(ChatCompletionToolMessageParam.builder()
                                 .toolCallId(tc.id())
                                 .content(rj)
@@ -93,7 +100,7 @@ public class AIAgent {
         allFunctions.addAll(customs);
         allFunctions.add(RAGRetrieve.getRetrieveFunction());
 
-        String docsJson = M.writeValueAsString(RAGRetrieve.retrieveDocs(prompt));
-        return request(Prompts.FIRST_RETRIEVE_DOCS + docsJson + "\n" + Prompts.AFTER_RETRIVE_PROMPT + prompt, allFunctions, jsonSchema);
+        String docsJson = M.writeValueAsString(RAGRetrieve.retrieveDocs(prompt, true));
+        return request(Prompts.RETRIEVE_DOCS_ON_DEMAND + "\n" + Prompts.FIRST_RETRIEVE_DOCS + docsJson + "\n" + Prompts.AFTER_RETRIVE_PROMPT + prompt, allFunctions, jsonSchema);
     }
 }
