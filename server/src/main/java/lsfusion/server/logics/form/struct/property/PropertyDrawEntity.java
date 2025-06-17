@@ -830,7 +830,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
 
-            PropertyObjectEntity.Select select;
+            Property.MapSelect<?> mapSelect;
             boolean changeValue = false;
             ActionObjectEntity<?> explicitChange = getExplicitEventActionEntity(CHANGE, context);
             if(explicitChange != null) {
@@ -840,10 +840,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     return null;
 
                 changeValue = true;
-                select = explicitChange.getSelectProperty(context, forceSelect, forceFilter, property);
+                mapSelect = explicitChange.getSelectProperty(forceSelect, property);
             } else
-                select = property.getSelectProperty(context, forceSelect, forceFilter);
+                mapSelect = property.getSelectProperty(forceSelect);
 
+            PropertyObjectEntity.Select select = ActionOrPropertyObjectEntity.getSelectProperty(context, forceFilter, mapSelect);
             if(select != null) {
                 String selectType = null;
                 if (select.type == PropertyObjectEntity.Select.Type.MULTI) {

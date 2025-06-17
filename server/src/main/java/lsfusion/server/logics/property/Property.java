@@ -103,6 +103,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -1856,6 +1857,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         PropertyMapImplement<?, T> get(boolean filterSelected);
     }
 
+    public static class MapSelect<T extends PropertyInterface> {
+        public final Select<T> select;
+        public final ImRevMap<T, ObjectEntity> mapping;
+
+        public MapSelect(Select<T> select, ImRevMap<T, ObjectEntity> mapping) {
+            this.select = select;
+            this.mapping = mapping;
+        }
+    }
     public static class Select<T extends PropertyInterface> {
         public final SelectProperty<T> property;
 

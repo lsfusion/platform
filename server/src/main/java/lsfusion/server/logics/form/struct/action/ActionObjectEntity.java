@@ -2,13 +2,10 @@ package lsfusion.server.logics.form.struct.action;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
-import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -21,11 +18,8 @@ import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-
-import java.util.function.Supplier;
 
 public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
 
@@ -55,34 +49,8 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping, readOnly);
     }
 
-    public <X extends PropertyInterface> PropertyObjectEntity.Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected, PropertyObjectEntity<X> drawProperty) { // false - filter selected,
-        AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(true);
-        if(asyncExec instanceof AsyncMapInput) {
-            AsyncMapInput<P> asyncMapInput = (AsyncMapInput<P>) asyncExec;
-
-            if(asyncMapInput.list instanceof InputContextPropertyListEntity && asyncMapInput.strict) {
-                // setting oldValue
-                PropertyInterfaceImplement<P> oldValue = asyncMapInput.oldValue;
-                boolean drawnValue = false;
-                if (oldValue == null) {
-                    drawnValue = true;
-                    ImSet<ObjectEntity> allObjects = mapping.valuesSet().merge(drawProperty.mapping.valuesSet());
-                    if (allObjects.size() > mapping.size()) { // optimization, when we don't have extra objects, just use existing
-                        ImRevMap<ObjectEntity, PropertyInterface> objectInterfaces = allObjects.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
-                        return getSelectProperty(context, forceSelect, forceFilterSelected, objectInterfaces.reverse(), asyncMapInput.map(mapping.join(objectInterfaces)), drawProperty.getImplement(objectInterfaces), drawnValue);
-                    } else
-                        oldValue = drawProperty.property.getIdentityImplement(drawProperty.mapping.crossValuesRev(mapping));
-                }
-
-                return getSelectProperty(context, forceSelect, forceFilterSelected, mapping, asyncMapInput, oldValue, drawnValue);
-            }
-        }
-        return null;
-    }
-
-    private static <X extends PropertyInterface, Z extends PropertyInterface, Y extends PropertyInterface> PropertyObjectEntity.Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected, ImRevMap<X, ObjectEntity> mapping, AsyncMapInput<X> input, PropertyInterfaceImplement<X> value, boolean drawnValue) { // false - filter selected,
-        InputContextPropertyListEntity<Z, X> list = (InputContextPropertyListEntity<Z, X>) input.list;
-        return getSelectProperty(context, forceFilterSelected, Property.getSelectProperty(forceSelect, mapping.keys(), list.getSelectViewEntity(), list.getSelectFilterEntity(), list.getSelectOrderEntities(), value, drawnValue), mapping);
+    public Property.MapSelect<?> getSelectProperty(boolean forceSelect, PropertyObjectEntity<?> drawProperty) {
+        return property.getSelectProperty(forceSelect, mapping, drawProperty);
     }
 
     public AsyncEventExec getAsyncEventExec(FormInstanceContext context, ActionOrProperty securityProperty, PropertyDrawEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
