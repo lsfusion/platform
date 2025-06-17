@@ -52,7 +52,7 @@ public class RequestLog {
                 (responseCookies != null && !responseCookies.isEmpty() ? getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" : "") +
                 (responseStatus != null ? "\tRESPONSE_STATUS_HTTP: " + responseStatus + "\n" : "") +
                 (responseExtraValue != null ? responseExtraValue : "") +
-                (errorMessage != null ? "\nERROR: "  + errorMessage + "\n" : "");
+                (errorMessage != null ? "\tERROR: "  + errorMessage + "\n" : "");
     }
 
     public static String getLogMapValues(String caption, Map<String, String> map) {
