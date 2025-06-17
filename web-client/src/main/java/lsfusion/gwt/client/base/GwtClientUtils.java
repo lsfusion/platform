@@ -1844,9 +1844,12 @@ public class GwtClientUtils {
 
     public static String escapeSeparator(String value, GCompare compare) {
         if (value != null) {
+            boolean isContainsOrMatch = (compare == GCompare.CONTAINS || compare == GCompare.MATCH);
+            if (isContainsOrMatch)
+                value = value.replace("\\", "\\\\");
             if (compare.escapeSeparator())
                 value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
-            if (compare == GCompare.CONTAINS)
+            if (isContainsOrMatch)
                 value = value.replace("%", "\\%").replace("_", "\\_");
         }
         return value;
