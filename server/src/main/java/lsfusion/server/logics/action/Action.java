@@ -734,12 +734,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                     ImSet<ObjectEntity> allObjects = mapping.valuesSet().merge(drawProperty.mapping.valuesSet());
                     if (allObjects.size() > mapping.size()) { // optimization, when we don't have extra objects, just use existing
                         ImRevMap<ObjectEntity, PropertyInterface> objectInterfaces = allObjects.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
-                        return new Property.MapSelect<>(getSelectProperty(forceSelect, objectInterfaces.valuesSet(), asyncMapInput.map(mapping.join(objectInterfaces)), drawProperty.getImplement(objectInterfaces), drawnValue), objectInterfaces.reverse());
+                        return Property.createMapSelect(getSelectProperty(forceSelect, objectInterfaces.valuesSet(), asyncMapInput.map(mapping.join(objectInterfaces)), drawProperty.getImplement(objectInterfaces), drawnValue), objectInterfaces.reverse());
                     } else
                         oldValue = drawProperty.property.getIdentityImplement(drawProperty.mapping.crossValuesRev(mapping));
                 }
 
-                return new Property.MapSelect<>(getSelectProperty(forceSelect, mapping.keys(), asyncMapInput, oldValue, drawnValue), mapping);
+                return Property.createMapSelect(getSelectProperty(forceSelect, mapping.keys(), asyncMapInput, oldValue, drawnValue), mapping);
             }
         }
         return null;
