@@ -97,7 +97,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         }
     }
     public Property.MapSelect<P> getSelectProperty(boolean forceSelect) { // false - filter selected,
-        return new Property.MapSelect<>(property.getSelectProperty(ListFact.EMPTY(), forceSelect), mapping);
+        return Property.createMapSelect(property.getSelectProperty(ListFact.EMPTY(), forceSelect), mapping);
     }
 
     public boolean isValueUnique(GroupObjectEntity grid, Property.ValueUniqueType uniqueType) {

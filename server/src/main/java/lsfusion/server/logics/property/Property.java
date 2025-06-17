@@ -1866,6 +1866,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             this.mapping = mapping;
         }
     }
+    public static <T extends PropertyInterface> MapSelect<T> createMapSelect(Select<T> select, ImRevMap<T, ObjectEntity> mapping) {
+        if(select != null)
+            return new MapSelect<>(select, mapping);
+        return null;
+    }
     public static class Select<T extends PropertyInterface> {
         public final SelectProperty<T> property;
 
