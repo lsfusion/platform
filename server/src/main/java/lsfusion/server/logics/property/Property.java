@@ -2016,14 +2016,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             where = (PropertyMapImplement<W, I>) PropertyFact.createUnion(innerInterfaces, PropertyFact.createNotNull(where), selected); // assert that selected is boolean (but maybe createUnionNotNull should be used)
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
-        LogicsModule.IntegrationForm<I> integrationForm = getSelectForm(baseLM, innerInterfaces, null, innerMapInterfaces, name, selected, where, orders, true);
+        LogicsModule.IntegrationForm<I> integrationForm = getSelectForm(baseLM, innerInterfaces, null, innerMapInterfaces, name, selected, where, orders, true, false);
 
         LP<?> jsonProp = baseLM.addFinalJSONFormProp(LocalizedString.NONAME, integrationForm);
 
         return jsonProp.getImplement(integrationForm.getOrderInterfaces(mapPropertyInterfaces));
     }
 
-    public static <I extends PropertyInterface, W extends PropertyInterface> LogicsModule.IntegrationForm<I> getSelectForm(BaseLogicsModule baseLM, ImSet<I> innerInterfaces, ImMap<I, ValueClass> innerClasses, ImSet<I> innerMapInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean needObjects) {
+    public static <I extends PropertyInterface, W extends PropertyInterface> LogicsModule.IntegrationForm<I> getSelectForm(BaseLogicsModule baseLM, ImSet<I> innerInterfaces, ImMap<I, ValueClass> innerClasses, ImSet<I> innerMapInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean needObjects, boolean interactive) {
         ImOrderSet<I> orderMapInterfaces = innerMapInterfaces.toOrderSet(); // getOrderInterfaces().mapOrder(mapPropertyInterfaces);
         // CLASSES
 //            ImList<ValueClass> classes = null; //getInterfaceClasses(ClassType.tryEditPolicy) + customClass;
@@ -2063,7 +2063,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImList<ValueClass> orderClasses = null;
         if(innerClasses != null)
             orderClasses = orderInterfaces.mapList(innerClasses);
-        return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where);
+        return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where, interactive);
     }
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {

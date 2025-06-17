@@ -82,7 +82,6 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -760,9 +759,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return idGenerator.idShift();
     }
 
-    public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) {
+    public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean interactive) {
         try {
-            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where);
+            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
             addAutoFormEntityFinalized(integrationForm.form);
             return integrationForm;
         } catch (FormEntity.AlreadyDefined e) {

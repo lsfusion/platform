@@ -11,6 +11,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -30,9 +31,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
 
+    private final boolean interactive;
+
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
-                                                               PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+                                                               PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, boolean interactive, Version version) {
         super(LocalizedString.NONAME, version);
+
+        this.interactive = interactive;
 
         ImMap<P, ValueClass> interfaceClasses;
         if(innerClasses == null) { // export / json
@@ -124,28 +129,37 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         finalizeInit(version);
 
-        // for interactive view
-        DefaultFormView formView = (DefaultFormView) getNFRichDesign(version);
+        if(interactive) {
+            // for interactive view
+            DefaultFormView formView = (DefaultFormView) getNFRichDesign(version);
 
 //        OBJECTS {
 //            border = FALSE;
 //            class = '';
 //        }
-        formView.objectsContainer.setBorder(false);
-        formView.objectsContainer.setElementClass(null);
+            formView.objectsContainer.setBorder(false);
+            formView.objectsContainer.setElementClass(null);
 
 //        BOX(i) {
 //            caption = NULL;
 //        }
 //        REMOVE TOOLBARBOX(i);
 
-        if(groupObject != null) {
-            ContainerView boxContainer = formView.getBoxContainer(groupObject);
-            boxContainer.setCaption(null);
+            if (groupObject != null) {
+                ContainerView boxContainer = formView.getBoxContainer(groupObject);
+                boxContainer.setCaption(null);
 
-            ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
-            formView.removeComponent(toolbarBoxContainer, version);
+                ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
+                formView.removeComponent(toolbarBoxContainer, version);
+            }
         }
+    }
+
+    @Override
+    public FormView createDefaultRichDesign(Version version) {
+        if(interactive)
+            return super.createDefaultRichDesign(version);
+        return null;
     }
 
     @Override
