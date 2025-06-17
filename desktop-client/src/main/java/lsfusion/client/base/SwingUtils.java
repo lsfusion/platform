@@ -879,12 +879,16 @@ public class SwingUtils {
     }
 
     public static Object escapeSeparator(Object value, Compare compare) {
+        boolean isContainsOrMatch = (compare == Compare.CONTAINS || compare == Compare.MATCH);
         if(value instanceof String && compare != null) {
+            String stringValue = (String) value;
+            if (isContainsOrMatch)
+                stringValue = stringValue.replace("\\", "\\\\");
             if(compare.escapeSeparator())
-                value = ((String) value).replace(MainController.matchSearchSeparator, "\\" + MainController.matchSearchSeparator);
-            if(compare == Compare.CONTAINS)
-                value = ((String) value).replace("%", "\\%").replace("_", "\\_");
-            return value;
+                stringValue = stringValue.replace(MainController.matchSearchSeparator, "\\" + MainController.matchSearchSeparator);
+            if(isContainsOrMatch)
+                stringValue = stringValue.replace("%", "\\%").replace("_", "\\_");
+            return stringValue;
         }
         return value;
     }
