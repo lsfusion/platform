@@ -295,6 +295,10 @@ public class ThreadLocalContext {
         return get().getConnectionContext();
     }
 
+    public static LogInfo getLogInfo() {
+        return get().getLogInfo();
+    }
+
     public static Object requestUserInteraction(ClientAction action) {
         return get().requestUserInteraction(action);
     }

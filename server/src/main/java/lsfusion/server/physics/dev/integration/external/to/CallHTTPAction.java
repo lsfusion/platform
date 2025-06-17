@@ -223,7 +223,7 @@ public abstract class CallHTTPAction extends CallAction {
         boolean noExec = isNoExec(connectionString);
 
         RequestLog.Builder logBuilder = null;
-        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        boolean detailLog = Settings.get().isLogToExternalSystemRequestsDetail();
         if (!noExec && Settings.get().isLogToExternalSystemRequests())
             logBuilder = new RequestLog.Builder().path(connectionString).method(method.name());
 
@@ -291,7 +291,7 @@ public abstract class CallHTTPAction extends CallAction {
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
                 if (detailLog && logBuilder != null)
-                    logBuilder.logInfo(ThreadLocalContext.getLogInfo(Thread.currentThread()))
+                    logBuilder.logInfo(ThreadLocalContext.getLogInfo())
                             .requestHeaders(headers).requestCookies(cookies)
                             .requestExtraValue((bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null));
 
@@ -330,8 +330,9 @@ public abstract class CallHTTPAction extends CallAction {
                 if (logBuilder != null) {
                     logBuilder.responseStatus(responseStatus);
                     if (detailLog)
-                        logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues)).responseCookies(responseCookies)
-                            .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues))
+                                    .responseCookies(responseCookies)
+                                    .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
                 if (!successfulResponse)
                     throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));

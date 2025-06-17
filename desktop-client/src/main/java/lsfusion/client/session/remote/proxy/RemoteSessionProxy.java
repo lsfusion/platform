@@ -16,7 +16,7 @@ public class RemoteSessionProxy<T extends RemoteSessionInterface> extends Remote
     @Override
     public ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        ExternalResponse result = target.exec(action, request);
+        ExternalResponse result = super.exec(action, request);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
@@ -24,7 +24,7 @@ public class RemoteSessionProxy<T extends RemoteSessionInterface> extends Remote
     @Override
     public ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        ExternalResponse result = target.eval(action, paramScript, request);
+        ExternalResponse result = super.eval(action, paramScript, request);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }
