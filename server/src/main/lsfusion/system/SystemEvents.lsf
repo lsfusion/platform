@@ -529,9 +529,14 @@ currentConnection = NATIVE Connection ();
 currentOrigin() = IF currentConnection() THEN origin(currentConnection()) ELSE origin();
 currentWebPath() = IF currentConnection() THEN webPath(currentConnection()) ELSE webPath();
 
-currentOriginUrl(STRING relativeUrl) = IF currentConnection() THEN originUrl(currentConnection(), relativeUrl) ELSE originUrl(relativeUrl);
-currentContextUrl(STRING relativeUrl) = IF currentConnection() THEN contextUrl(currentConnection(), relativeUrl) ELSE contextUrl(relativeUrl);
-currentOriginUrl(LINK relativeLink) = IF currentConnection() THEN originUrl(currentConnection(), relativeLink) ELSE originUrl(relativeLink);
+currentOriginUrl(STRING relativeUrl) = IF currentConnection() THEN originUrl(currentConnection(), relativeUrl) ELSE apiOriginUrl(relativeUrl);
+currentContextUrl(STRING relativeUrl) = IF currentConnection() THEN contextUrl(currentConnection(), relativeUrl) ELSE apiOriginUrl(relativeUrl);
+currentOriginUrl(LINK relativeLink) = IF currentConnection() THEN originUrl(currentConnection(), relativeLink) ELSE apiOriginUrl(relativeLink);
+
+// deprecated, current * should be used instead
+originUrl(STRING relativeUrl) = currentOriginUrl(relativeUrl);
+contextUrl(STRING relativeUrl) = currentContextUrl(relativeUrl);
+originUrl(LINK relativeLink) = currentOriginUrl(relativeLink);
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
