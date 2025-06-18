@@ -616,12 +616,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         RequestLog.Builder logBuilder = null;
 
         if (Settings.get().isLogFromExternalSystemRequests())
-            logBuilder = new RequestLog.Builder().path(request.servletPath).method(request.method);
+            logBuilder = new RequestLog.Builder().requestQuery(request.getRequestQuery()).method(request.method);
 
         boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
         if (detailLog && logBuilder != null)
             logBuilder.logInfo(logInfo)
-                    .requestQuery(request.query)
                     .extraValue("\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
                     .requestHeaders(BaseUtils.toStringMap(request.headerNames, request.headerValues))
                     .requestCookies(BaseUtils.toStringMap(request.cookieNames, request.cookieValues))

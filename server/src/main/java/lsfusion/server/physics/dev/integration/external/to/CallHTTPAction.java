@@ -226,7 +226,7 @@ public abstract class CallHTTPAction extends CallAction {
         RequestLog.Builder logBuilder = null;
         boolean detailLog = Settings.get().isLogToExternalSystemRequestsDetail();
         if (!noExec && Settings.get().isLogToExternalSystemRequests())
-            logBuilder = new RequestLog.Builder().path(connectionString).method(method.name());
+            logBuilder = new RequestLog.Builder().requestQuery(connectionString).method(method.name());
 
         boolean successfulResponse = false;
         try {
@@ -293,7 +293,6 @@ public abstract class CallHTTPAction extends CallAction {
 
                 if (detailLog && logBuilder != null)
                     logBuilder.logInfo(ThreadLocalContext.getLogInfo())
-                            .requestQuery(new URL(connectionString).getQuery())
                             .requestHeaders(headers)
                             .requestCookies(cookies)
                             .requestBody(body != null ? new String(body, ExternalUtils.getLoggingCharsetFromContentType(contentType)) : null);

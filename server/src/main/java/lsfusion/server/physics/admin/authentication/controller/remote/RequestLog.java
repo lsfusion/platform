@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class RequestLog {
     private final LogInfo logInfo;
-    private final String path;
     private final String method;
     private final String requestQuery;
     private final String extraValue;
@@ -22,7 +21,6 @@ public class RequestLog {
 
     private RequestLog(Builder builder) {
         this.logInfo = builder.logInfo;
-        this.path = builder.path;
         this.method = builder.method;
         this.requestQuery = builder.requestQuery;
         this.extraValue = builder.extraValue;
@@ -40,7 +38,6 @@ public class RequestLog {
     public String toString() {
         return "\nREQUEST:\n" +
                 (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
-                (path != null ? "\tREQUEST_PATH: " + path + "\n" : "") +
                 (method != null ? "\tREQUEST_METHOD: " + method + "\n" : "") +
                 (requestQuery != null ? "\tREQUEST_QUERY: " + requestQuery + "\n" : "") +
                 (extraValue != null ? extraValue + "\n" : "") +
@@ -61,7 +58,6 @@ public class RequestLog {
 
     public static class Builder {
         private LogInfo logInfo = null;
-        private String path = null;
         private String method = null;
         private String requestQuery = null;
         private String extraValue = null;
@@ -78,10 +74,6 @@ public class RequestLog {
 
         public Builder logInfo (LogInfo logInfo) {
             this.logInfo = logInfo;
-            return this;
-        }
-        public Builder path (String path) {
-            this.path = path;
             return this;
         }
         public Builder method (String method) {
