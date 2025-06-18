@@ -7,13 +7,12 @@ import java.util.Map;
 
 public class RequestLog {
     private final LogInfo logInfo;
-    private final String path;
     private final String method;
+    private final String requestQuery;
     private final String extraValue;
     private final Map<String, String> requestHeaders;
     private final Map<String, String> requestCookies;
     private final String requestBody;
-    private final String requestExtraValue;
     private final Map<String, String> responseHeaders;
     private final Map<String, String> responseCookies;
     private final String responseStatus;
@@ -22,13 +21,12 @@ public class RequestLog {
 
     private RequestLog(Builder builder) {
         this.logInfo = builder.logInfo;
-        this.path = builder.path;
         this.method = builder.method;
+        this.requestQuery = builder.requestQuery;
         this.extraValue = builder.extraValue;
         this.requestHeaders = builder.requestHeaders;
         this.requestCookies = builder.requestCookies;
         this.requestBody = builder.requestBody;
-        this.requestExtraValue = builder.requestExtraValue;
         this.responseHeaders = builder.responseHeaders;
         this.responseCookies = builder.responseCookies;
         this.responseStatus = builder.responseStatus;
@@ -40,13 +38,12 @@ public class RequestLog {
     public String toString() {
         return "\nREQUEST:\n" +
                 (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
-                (path != null ? "\tREQUEST_PATH: " + path + "\n" : "") +
                 (method != null ? "\tREQUEST_METHOD: " + method + "\n" : "") +
+                (requestQuery != null ? "\tREQUEST_QUERY: " + requestQuery + "\n" : "") +
                 (extraValue != null ? extraValue + "\n" : "") +
                 (requestHeaders != null && !requestHeaders.isEmpty()? getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" : "") +
                 (requestCookies != null && !requestCookies.isEmpty()? getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" : "") +
                 (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") +
-                (requestExtraValue != null ? requestExtraValue + "\n" : "") +
                 "RESPONSE:\n" +
                 (responseHeaders != null && !responseHeaders.isEmpty() ? getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" : "") +
                 (responseCookies != null && !responseCookies.isEmpty() ? getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" : "") +
@@ -61,13 +58,12 @@ public class RequestLog {
 
     public static class Builder {
         private LogInfo logInfo = null;
-        private String path = null;
         private String method = null;
+        private String requestQuery = null;
         private String extraValue = null;
         private Map<String, String> requestHeaders = null;
         private Map<String, String> requestCookies = null;
         private String requestBody = null;
-        private String requestExtraValue = null;
         private Map<String, String> responseHeaders = null;
         private Map<String, String> responseCookies = null;
         private String responseStatus = null;
@@ -80,12 +76,12 @@ public class RequestLog {
             this.logInfo = logInfo;
             return this;
         }
-        public Builder path (String path) {
-            this.path = path;
-            return this;
-        }
         public Builder method (String method) {
             this.method = method;
+            return this;
+        }
+        public Builder requestQuery (String requestQuery) {
+            this.requestQuery = requestQuery;
             return this;
         }
         public Builder extraValue (String extraValue) {
@@ -102,10 +98,6 @@ public class RequestLog {
         }
         public Builder requestBody (String requestBody) {
             this.requestBody = requestBody;
-            return this;
-        }
-        public Builder requestExtraValue (String requestExtraValue) {
-            this.requestExtraValue = requestExtraValue;
             return this;
         }
         public Builder responseHeaders (Map<String, String> responseHeaders) {

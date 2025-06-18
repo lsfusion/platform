@@ -71,6 +71,22 @@ public class ExternalRequest implements Serializable {
         return new NamedFileData(fileData, BaseUtils.getFileName(fileName != null ? fileName : "file"));
     }
 
+    public String getOrigin() {
+        return scheme + "://" + webHost + ":" + webPort;
+    }
+
+    public String getWebPath() {
+        return getOrigin() + contextPath;
+    }
+
+    public String getURL() {
+        return getWebPath() + servletPath + pathInfo;
+    }
+
+    public String getRequestQuery() {
+        return getURL() + (query != null && !query.isEmpty() ?  "?" + query : "");
+    }
+
     public Param[] params;
 
     public final String[] headerNames;
