@@ -1249,11 +1249,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(RegularFilterGroupEntity regularFilterGroup : getRegularFilterGroupsIt())
             regularFilterGroup.finalizeAroundInit();
 
-        try {
-            getRichDesign().finalizeAroundInit();
-        } catch (ScriptParsingException e) {
-            throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
-        }
+        finalizeDesignAroundInit();
+    }
+
+    protected void finalizeDesignAroundInit() {
+        getRichDesign().finalizeAroundInit();
     }
 
     public void prereadAutoIcons(ConnectionContext context) {

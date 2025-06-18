@@ -10,6 +10,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -160,6 +161,31 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         if(interactive)
             return super.createDefaultRichDesign(version);
         return null;
+    }
+
+    @Override
+    protected void finalizeDesignAroundInit() {
+        if(interactive)
+            super.finalizeDesignAroundInit();
+    }
+
+    @Override
+    public void prereadAutoIcons(ConnectionContext context) {
+        if(interactive)
+            super.prereadAutoIcons(context);
+    }
+
+    @Override
+    public LocalizedString getCaption() {
+        if(interactive)
+            return super.getCaption();
+        return getInitCaption();
+    }
+
+    @Override
+    public void prereadEventActions() {
+        if(interactive)
+            super.prereadEventActions();
     }
 
     @Override
