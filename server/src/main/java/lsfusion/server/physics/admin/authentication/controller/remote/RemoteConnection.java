@@ -621,7 +621,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
         if (detailLog && logBuilder != null)
             logBuilder.logInfo(logInfo)
-                    .extraValue("\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
+                    .requestQuery(request.query)
+                    .extraValue("\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
                     .requestHeaders(BaseUtils.toStringMap(request.headerNames, request.headerValues))
                     .requestCookies(BaseUtils.toStringMap(request.cookieNames, request.cookieValues))
                     .requestBody(request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null);

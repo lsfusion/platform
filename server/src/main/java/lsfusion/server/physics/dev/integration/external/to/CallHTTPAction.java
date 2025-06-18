@@ -47,6 +47,7 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -235,8 +236,6 @@ public abstract class CallHTTPAction extends CallAction {
             if(noExec)
                 targetPropList.single().change(connectionString, context);
             else {
-                String bodyUrl = null;
-
                 Map<String, String> headers = new HashMap<>();
                 if (headersProperty != null) {
                     MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
@@ -249,11 +248,12 @@ public abstract class CallHTTPAction extends CallAction {
                 CookieStore cookieStore = new BasicCookieStore();
 
                 byte[] body = null;
+                String contentType = null;
                 if (method.hasBody()) {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
                     Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
-                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
+                    String bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
                     if(bodyUrl != null) {
                         bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
                         if (!rNotUsedParams.result.isEmpty()) {
@@ -280,7 +280,8 @@ public abstract class CallHTTPAction extends CallAction {
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamHeadersList, contentDisposition, forceContentType, bodyCharset);
                     if (entity != null) { // no body
                         body = IOUtils.readBytesFromHttpEntity(entity);
-                        headers.put("Content-Type", entity.getContentType());
+                        contentType = entity.getContentType();
+                        headers.put("Content-Type", contentType);
 
                         if(contentDisposition.result != null && !headers.containsKey(ExternalUtils.CONTENT_DISPOSITION_HEADER))
                             headers.put(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition.result);
@@ -292,8 +293,10 @@ public abstract class CallHTTPAction extends CallAction {
 
                 if (detailLog && logBuilder != null)
                     logBuilder.logInfo(ThreadLocalContext.getLogInfo())
-                            .requestHeaders(headers).requestCookies(cookies)
-                            .requestExtraValue((bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null));
+                            .requestQuery(new URL(connectionString).getQuery())
+                            .requestHeaders(headers)
+                            .requestCookies(cookies)
+                            .requestBody(body != null ? new String(body, ExternalUtils.getLoggingCharsetFromContentType(contentType)) : null);
 
                 ExternalHttpResponse response;
                 if (clientAction) {
