@@ -3175,6 +3175,16 @@ public class Settings implements Cloneable {
         this.logToExternalSystemRequests = logToExternalSystemRequests;
     }
 
+    private int explainTemporaryTablesLogSize = 1000;
+
+    public int getExplainTemporaryTablesLogSize() {
+        return explainTemporaryTablesLogSize;
+    }
+
+    public void setExplainTemporaryTablesLogSize(int explainTemporaryTablesLogSize) {
+        this.explainTemporaryTablesLogSize = explainTemporaryTablesLogSize;
+    }
+
     private boolean disableAsyncValuesInterrupt = false;
 
     public boolean isDisableAsyncValuesInterrupt() {
