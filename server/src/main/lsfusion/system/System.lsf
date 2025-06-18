@@ -79,9 +79,10 @@ origin() = scheme() + '://' + webHost() + ':' + webPort();
 webPath() = origin() + contextPath();
 url() = webPath() + servletPath() + pathInfo();
 
-originUrl(STRING relativeUrl) = origin() + relativeUrl;
-contextUrl(STRING relativeUrl) = CONCAT '&', webPath() + relativeUrl, notEmpty(query());
-originUrl(LINK relativeLink) = LINK(originUrl(STRING(relativeLink)));
+// temporary, will be renamed without api
+apiOriginUrl(STRING relativeUrl) = origin() + relativeUrl;
+apiContextUrl(STRING relativeUrl) = CONCAT '&', webPath() + relativeUrl, notEmpty(query());
+apiOriginUrl(LINK relativeLink) = LINK(apiOriginUrl(STRING(relativeLink)));
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
