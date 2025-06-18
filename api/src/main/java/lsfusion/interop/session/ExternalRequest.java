@@ -63,7 +63,7 @@ public class ExternalRequest implements Serializable {
         return new Param(value, true, charsetName, name);
     }
 
-    public static Param getBodyParam(Object value, String charsetName, String name, String fileName) {
+    public static Param getBodyParam(FileData value, String charsetName, String name, String fileName) {
         return new Param(value, false, charsetName, name, fileName);
     }
 
