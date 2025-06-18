@@ -349,28 +349,6 @@ public class ExternalUtils {
         return null;
     }
 
-    private static ExternalRequest.Param getRequestParam(String paramName, String fileName, Object object, ContentType contentType, boolean convertedToString) {
-        assert object instanceof byte[] || (object instanceof String && convertedToString);
-        Charset charset = getBodyCharset(contentType);
-
-        String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
-        boolean isText = contentType != null && isTextContentType(contentType);
-        Object value;
-        if (isText && extension == null) { // in fact we can remove this branch, because even for text/plain we can use FileData
-            if(!convertedToString)
-                object = new String((byte[]) object, charset);
-            value = object;
-        } else { // FILE
-            RawFileData file;
-            if(isText && convertedToString) //humanReadable
-                file = new RawFileData((String)object, charset);
-            else
-                file = new RawFileData((byte[])object);
-            value = new FileData(file, extension != null ? extension : "file");
-        }
-        return ExternalRequest.getBodyParam(value, charset.toString(), paramName, fileName);
-    }
-
     public static Charset getLoggingCharsetFromContentType(String contentType) {
         return getBodyCharset(parseContentType(contentType));
     }
@@ -436,22 +414,13 @@ public class ExternalUtils {
                     String fieldFileName = fileItem.getName();
                     if(fieldFileName == null)
                         fieldFileName = fieldName;
-                    ContentType partContentType = parseContentType(fileItem.getContentType());
-                    if (!fileItem.isFormField()) // actually it seems that simple true can be here (but apparently it doesn't matter)
-                        mParamsList.addAll(getListFromInputStream(fieldName, fieldFileName, fileItem.get(), partContentType));
-                    else
-                        mParamsList.add(getRequestParam(fieldName, fieldFileName, fileItem.getString(), partContentType, true)); // multipart автоматически text/* возвращает как String
+                    mParamsList.addAll(getListFromInputStream(fieldName, fieldFileName, fileItem.get(), parseContentType(fileItem.getContentType())));
                 }
             } else { // using javax.mail
                 MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart bodyPart = multipart.getBodyPart(i);
-                    Object param = bodyPart.getContent();
-                    ContentType partContentType = parseContentType(bodyPart.getContentType());
-                    if (param instanceof InputStream)
-                        mParamsList.addAll(getListFromInputStream(paramName, fileName, IOUtils.readBytesFromStream((InputStream) param), partContentType));
-                    else
-                        mParamsList.add(getRequestParam(paramName, fileName, param, partContentType, true)); // multipart автоматически text/* возвращает как String
+                    mParamsList.addAll(getListFromInputStream(paramName, fileName, IOUtils.readBytesFromStream(bodyPart.getInputStream()), parseContentType(bodyPart.getContentType())));
                 }
             }
         } else if(mimeType != null && mimeType.equalsIgnoreCase(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())) {
@@ -459,8 +428,12 @@ public class ExternalUtils {
             List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
             for(NameValuePair param : params)
                 mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString(), param.getName()));
-        } else if (mimeType != null || bytes.length > 0)
-            mParamsList.add(getRequestParam(paramName, fileName, bytes, contentType, false));
+        } else if (mimeType != null || bytes.length > 0) {
+            String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
+            if(extension == null)
+                extension = "file";
+            mParamsList.add(ExternalRequest.getBodyParam(new FileData(new RawFileData(bytes), extension), getBodyCharset(contentType).toString(), paramName, fileName));
+        }
 
         return mParamsList.immutableList();
     }
