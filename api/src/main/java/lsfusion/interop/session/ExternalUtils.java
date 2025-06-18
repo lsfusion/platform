@@ -354,18 +354,19 @@ public class ExternalUtils {
         Charset charset = getBodyCharset(contentType);
 
         String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
+        boolean isText = contentType != null && isTextContentType(contentType);
         Object value;
-        if(extension != null) { // FILE
-            RawFileData file;
-            if(isTextContentType(contentType) && convertedToString) //humanReadable
-                file = new RawFileData((String)object, charset);
-            else
-                file = new RawFileData((byte[])object);
-            value = new FileData(file, extension);
-        } else {
+        if (isText && extension == null) { // in fact we can remove this branch, because even for text/plain we can use FileData
             if(!convertedToString)
                 object = new String((byte[]) object, charset);
             value = object;
+        } else { // FILE
+            RawFileData file;
+            if(isText && convertedToString) //humanReadable
+                file = new RawFileData((String)object, charset);
+            else
+                file = new RawFileData((byte[])object);
+            value = new FileData(file, extension != null ? extension : "file");
         }
         return ExternalRequest.getBodyParam(value, charset.toString(), paramName, fileName);
     }

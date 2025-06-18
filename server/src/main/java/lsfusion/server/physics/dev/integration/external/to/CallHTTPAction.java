@@ -30,6 +30,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
+import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -184,7 +185,7 @@ public abstract class CallHTTPAction extends CallAction {
                 value = (valueClass != null ? valueClass.getType().parseHTTP(param) : param.value);
 
             if(valueClass == null && value != null)
-                valueClass = value instanceof String ? StringClass.instance : CustomStaticFormatFileClass.get();
+                valueClass = value instanceof String ? StringClass.instance : DynamicFormatFileClass.get();
 
             values[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
         }
