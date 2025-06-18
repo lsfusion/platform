@@ -4,7 +4,6 @@ import com.sun.net.httpserver.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.Result;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
@@ -53,8 +52,6 @@ import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
-
-import static lsfusion.server.physics.admin.log.ServerLoggers.exInfoLogger;
 
 public class ExternalHttpServer extends MonitorServer {
 
@@ -323,9 +320,6 @@ public class ExternalHttpServer extends MonitorServer {
             if (authHeader != null) {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
-                    if (!token.isAnonymous() && !token.string.contains(".")) {
-                        exInfoLogger.error("Bearer jwt token without dot: " + token.string);
-                    }
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
                     String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
                     if (credentials.length == 2)
