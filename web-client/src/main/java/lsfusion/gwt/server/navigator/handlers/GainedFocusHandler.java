@@ -19,10 +19,6 @@ public class GainedFocusHandler extends FormServerResponseActionHandler<GainedFo
 
     @Override
     public ServerResponseResult executeEx(GainedFocus action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.gainedFocus(action.requestIndex, action.lastReceivedRequestIndex);
-            }
-        });
+        return getServerResponseResult(action, remoteForm -> remoteForm.gainedFocus(action.requestIndex, action.lastReceivedRequestIndex));
     }
 }

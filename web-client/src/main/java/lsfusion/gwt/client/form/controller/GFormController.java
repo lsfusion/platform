@@ -1651,11 +1651,7 @@ public class GFormController implements EditManager {
     }
 
     public void executeVoidAction() {
-        syncDispatch(new VoidFormAction(), new SimpleRequestCallback<VoidResult>() {
-            @Override
-            public void onSuccess(VoidResult result) {
-            }
-        });
+        syncResponseDispatch(new VoidFormAction());
     }
 
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final AsyncCallback<ServerResponseResult> callback) {

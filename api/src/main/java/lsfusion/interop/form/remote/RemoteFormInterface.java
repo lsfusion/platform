@@ -23,7 +23,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : form
 
-    void voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
+    ServerResponse voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
     ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
