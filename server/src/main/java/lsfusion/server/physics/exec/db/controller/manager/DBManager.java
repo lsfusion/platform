@@ -976,6 +976,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private void setUserMaterializedProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("materialized", reflectionLM.userMaterializedProperty.getExpr(key));
+        query.and(reflectionLM.userMaterializedProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if(prop != null) {
+                Boolean materialized = (Boolean) values.get("materialized");
+                if (materialized) {
+                    if (!prop.property.isMarkedStored()) {
+                        LM.materialize(prop, namingPolicy);
+                    }
+                } else {
+                    if (prop.property.isMarkedStored()) {
+                        LM.dematerialize(prop, namingPolicy);
+                    }
+                }
+            }
+        }
+    }
+
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
                                      TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
         return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
@@ -1300,7 +1325,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (DBTable table : oldDBStructure.tables.keySet()) {
             oldTableDBNames.add(table.getName());
         }
-        
+
         for (Map.Entry<DBTable, List<IndexData<String>>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
             DBTable oldTable = oldTableIndexes.getKey();
             List<IndexData<String>> oldIndexes = oldTableIndexes.getValue();
@@ -2549,7 +2574,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 cls.dataPropCN = nameRenames.get(cls.dataPropCN);
             }
         }
-    } 
+    }
 
 
     // Временная реализация для переименования
@@ -2954,7 +2979,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return migrationVersion;
     }
-    
+
     public int readOldDBVersion(DataInputStream input) throws IOException {
         int version = input.read() - 'v'; // for backward compatibility
         if (version == 0) {
@@ -2962,7 +2987,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return version;
     }
-    
+
     public Map<String, String> getPropertyCNChanges(SQLSession sql) {
         runMigrationScript();
         try {
@@ -3268,7 +3293,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DBTable indexTable = tableInfo.getKey();
                 for (IndexData<Field> index : tableInfo.getValue()) {
                     String indexName = namingPolicy.transformIndexNameToDBName(sql.getIndexName(indexTable, index));
-                    
+
                     if (tableNames.containsKey(indexName)) {
                         DBTable table = tableNames.get(indexName);
                         String reason = "Tables and indexes must have unique names. If a table and an index have identical names, the database cannot distinguish between them, leading to conflicts when executing queries";
