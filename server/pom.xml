@@ -248,6 +248,10 @@
             <artifactId>json</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.github.erdtman</groupId>
+            <artifactId>java-json-canonicalization</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.junrar</groupId>
             <artifactId>junrar</artifactId>
         </dependency>
