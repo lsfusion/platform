@@ -319,7 +319,7 @@ public abstract class CallHTTPAction extends CallAction {
                 }
 
                 byte[] responseBytes = response.responseBytes;
-                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues) : ListFact.EMPTY();
+                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues, connectionString) : ListFact.EMPTY();
                 fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
                 int statusCode = response.statusCode;

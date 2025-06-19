@@ -94,11 +94,7 @@ public abstract class ImportAction extends SystemAction {
         writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
-        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
-            public ImSet<ObjectEntity> group(PropertyObjectEntity key) {
-                return ((PropertyObjectEntity<?>)key).getObjectInstances();
-            }
-        });
+        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(key -> ((PropertyObjectEntity<?>)key).getObjectInstances());
 
         for(int i=0,size=groupedProps.size();i<size;i++) {            
             // group by rows, convert to DataObject / ObjectValue, fill map with null values (needed for writeRows)
