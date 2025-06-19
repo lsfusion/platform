@@ -2718,22 +2718,22 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if (path.contains(this)) {
             throw new ScriptParsingException("Property " + this + " is recursive. One of the paths: " + findCycle(path));
         }
-        
+
         if (localMarks.contains(this) || marks.contains(this)) return;
-        
+
         path.add(this);
         localMarks.add(this);
-        
+
         calculateCheckRecursions(path, localMarks, marks, usePrev);
-        
+
         path.remove(this);
         marks.add(this);
     }
-    
+
     private List<Property<?>> findCycle(Set<Property<?>> path) {
         List<Property<?>> cycle = new ArrayList<>();
         boolean found = false;
-        
+
         for (Property<?> property : path) {
             if (property.equals(this)) {
                 found = true;
@@ -2742,11 +2742,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 cycle.add(property);
             }
         }
-        
+
         cycle.add(this);
         return cycle;
     }
-    
+
     public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
     }
 
