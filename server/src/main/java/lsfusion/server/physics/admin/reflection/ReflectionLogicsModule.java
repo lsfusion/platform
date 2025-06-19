@@ -6,7 +6,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
@@ -52,6 +51,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP canonicalNameProperty;
     public LP loggableProperty;
     public LP userLoggableProperty;
+    public LP userMaterializedProperty;
     public LP storedProperty;
     public LP isSetNotNullProperty;
     public LP disableInputListProperty;
@@ -254,6 +254,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         canonicalNameProperty = findProperty("canonicalName[Property]");
         loggableProperty = findProperty("loggable[Property]");
         userLoggableProperty = findProperty("userLoggable[Property]");
+        userMaterializedProperty = findProperty("userMaterialized[Property]");
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
         disableInputListProperty = findProperty("disableInputList[Property]");

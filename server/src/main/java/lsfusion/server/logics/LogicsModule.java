@@ -1605,7 +1605,7 @@ public abstract class LogicsModule {
         log.setWhenChange(this, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
 
         makePropertyPublic(log, name, signature);
-        markLoggableStored(log, namingPolicy);
+        materialize(log, namingPolicy);
         return log;
     }
 
@@ -1613,10 +1613,16 @@ public abstract class LogicsModule {
         return addLProp(systemEventsLM, lp, true, namingPolicy);
     }
 
-    private void markLoggableStored(LP lp, DBNamingPolicy namingPolicy) {
+    public void materialize(LP lp, DBNamingPolicy namingPolicy) {
         lp.property.markStored(null);
         if(namingPolicy != null)
             lp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize it because reflection events initialized after init stored
+    }
+
+    public void dematerialize(LP lp, DBNamingPolicy namingPolicy) {
+        lp.property.unmarkStored();
+        if(namingPolicy != null)
+            lp.property.destroyStored(namingPolicy);
     }
 
     private LP toLogical(LP property) {

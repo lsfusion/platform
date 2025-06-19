@@ -220,6 +220,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLogger.info("Setting user logging for properties");
                     setUserLoggableProperties(sql);
 
+                    try { //hack: ignore exception (only in 5.2) to avoid cherry-pick problem with int dbVersion
+                        startLogger.info("Setting user materialized for properties");
+                        setUserMaterializedProperties(sql);
+                    } catch (Exception ignored) {}
+
                     startLogger.info("Setting user not null constraints for properties");
                     setNotNullProperties(sql);
 
@@ -912,6 +917,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 }, env.locale, env.isServerRestarting, upOwner
         );
+    }
+
+    private void setUserMaterializedProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("materialized", reflectionLM.userMaterializedProperty.getExpr(key));
+        query.and(reflectionLM.userMaterializedProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if(prop != null) {
+                Boolean materialized = (Boolean) values.get("materialized");
+                if (materialized) {
+                    if (!prop.property.isMarkedStored()) {
+                        LM.materialize(prop, namingPolicy);
+                    }
+                } else {
+                    if (prop.property.isMarkedStored()) {
+                        LM.dematerialize(prop, namingPolicy);
+                    }
+                }
+            }
+        }
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
