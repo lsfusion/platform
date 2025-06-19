@@ -734,7 +734,7 @@ public abstract class FormsController {
     }
 
     public void executeVoidAction(long waitRequestIndex) {
-        executeSystemAction(new VoidNavigatorAction(waitRequestIndex));
+        syncDispatch(new VoidNavigatorAction(waitRequestIndex), new ServerResponseCallback(false));
     }
     public void executeSystemAction(NavigatorRequestCountingAction<VoidResult> systemAction) {
         syncDispatch(systemAction, new SimpleRequestCallback<VoidResult>() {
