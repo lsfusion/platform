@@ -1,6 +1,7 @@
 package lsfusion.interop.session;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
@@ -191,7 +192,7 @@ public class ExternalUtils {
 
         ImList<ExternalRequest.Param> queryParams = ListFact.mapList(parsedQueryParams, queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharsetName, queryParam.getName()));
         byte[] body = IOUtils.readBytesFromStream(is);
-        ImList<ExternalRequest.Param> bodyParams = getListFromInputStream(body, requestContentType, headerNames, headerValues);
+        ImList<ExternalRequest.Param> bodyParams = getListFromInputStream(body, requestContentType, headerNames, headerValues, null);
 
         ImList<ExternalRequest.Param> params = ListFact.add(queryParams, bodyParams);
 
@@ -376,7 +377,7 @@ public class ExternalUtils {
     }
 
     // body
-    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues) throws MessagingException, IOException, FileUploadException {
+    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues, String urlString) throws MessagingException, IOException, FileUploadException {
         String contentDispositionHeader = getHeaderValue(headerNames, headerValues, CONTENT_DISPOSITION_HEADER);
         String name = null; String filename = null;
         if(contentDispositionHeader != null) {
@@ -387,7 +388,14 @@ public class ExternalUtils {
                 contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
             }
             name = contentDisposition.getParameter("name");
+
             filename = contentDisposition.getParameter("filename");
+            if(filename == null && urlString != null) {
+                URL url = new URL(urlString);
+                filename = BaseUtils.getFileNameAndExtension(url.getPath());
+                if(filename.isEmpty())
+                    filename = null;
+            }
         }
         return getListFromInputStream(name != null ? name : ExternalRequest.SINGLEBODYPARAMNAME, filename, bytes, contentType);
     }
@@ -420,7 +428,7 @@ public class ExternalUtils {
                 MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart bodyPart = multipart.getBodyPart(i);
-                    mParamsList.addAll(getListFromInputStream(paramName, fileName, IOUtils.readBytesFromStream(bodyPart.getInputStream()), parseContentType(bodyPart.getContentType())));
+                    mParamsList.addAll(getListFromInputStream(paramName, bodyPart.getFileName(), IOUtils.readBytesFromStream(bodyPart.getInputStream()), parseContentType(bodyPart.getContentType())));
                 }
             }
         } else if(mimeType != null && mimeType.equalsIgnoreCase(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())) {
@@ -429,7 +437,15 @@ public class ExternalUtils {
             for(NameValuePair param : params)
                 mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString(), param.getName()));
         } else if (mimeType != null || bytes.length > 0) {
-            String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
+            String extension = null;
+            if(fileName != null) {
+                extension = BaseUtils.getFileExtension(fileName);
+                if(extension.isEmpty())
+                    extension = null;
+                fileName = BaseUtils.getFileName(fileName);
+            }
+            if(extension == null)
+                extension = contentType != null ? getExtensionFromContentType(contentType) : null;
             if(extension == null)
                 extension = "file";
             mParamsList.add(ExternalRequest.getBodyParam(new FileData(new RawFileData(bytes), extension), getBodyCharset(contentType).toString(), paramName, fileName));
