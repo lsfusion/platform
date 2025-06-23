@@ -1,5 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
+import com.fasterxml.jackson.databind.node.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
@@ -15,9 +17,7 @@ import org.erdtman.jcs.JsonCanonicalizer;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 public class CanonicalizeJSONAction extends InternalAction {
@@ -29,41 +29,46 @@ public class CanonicalizeJSONAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             final RawFileData jsonFile = (RawFileData) context.getSingleDataKeyValue().getValue();
-            JsonCanonicalizer jc = new JsonCanonicalizer(escapeAllStrings(new ObjectMapper().readValue(new String(jsonFile.getBytes()), Object.class)));
+            ObjectMapper mapper = new ObjectMapper();
+            JsonCanonicalizer jc = new JsonCanonicalizer(mapper.writeValueAsString(escapeAllStrings(mapper.readTree(jsonFile.getBytes()))));
             LM.findProperty("canonicalizedJSON[]").change(new DataObject(jc.getEncodedString()), context);
         } catch (IOException | ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static String escapeAllStrings(Object jsonNode) {
-        if (jsonNode instanceof Map) {
-            Map<String, Object> escaped = new LinkedHashMap<>();
-            for (Map.Entry<?, ?> entry : ((Map<?, ?>) jsonNode).entrySet()) {
-                String key = escapeUnicode(entry.getKey().toString());
-                escaped.put(key, escapeAllStrings(entry.getValue()));
+    public static JsonNode escapeAllStrings(JsonNode node) {
+        if (node.isTextual()) {
+            return new TextNode(escapeUnicode(node.asText()));
+        } else if (node.isObject()) {
+            ObjectNode objectNode = (ObjectNode) node;
+            ObjectNode result = new ObjectNode(JsonNodeFactory.instance);
+            Iterator<Map.Entry<String, JsonNode>> fields = objectNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String escapedKey = escapeUnicode(entry.getKey());
+                result.set(escapedKey, escapeAllStrings(entry.getValue()));
             }
-            return new ObjectMapper().valueToTree(escaped).toString();
-        } else if (jsonNode instanceof List) {
-            List<Object> escapedList = new ArrayList<>();
-            for (Object item : (List<?>) jsonNode) {
-                escapedList.add(escapeAllStrings(item));
+            return result;
+        } else if (node.isArray()) {
+            ArrayNode arrayNode = (ArrayNode) node;
+            ArrayNode result = new ArrayNode(JsonNodeFactory.instance);
+            for (JsonNode element : arrayNode) {
+                result.add(escapeAllStrings(element));
             }
-            return new ObjectMapper().valueToTree(escapedList).toString();
-        } else if (jsonNode instanceof String) {
-            return escapeUnicode((String) jsonNode);
+            return result;
         } else {
-            return jsonNode.toString();
+            return node;
         }
     }
 
-    public static String escapeUnicode(String input) {
+    private static String escapeUnicode(String input) {
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) {
-            if (c < 0x20 || c > 0x7E) {
-                sb.append(String.format("\\u%04x", (int) c));
-            } else {
+            if (c >= 0x20 && c <= 0x7E) {
                 sb.append(c);
+            } else {
+                sb.append(String.format("\\u%04x", (int) c));
             }
         }
         return sb.toString();
