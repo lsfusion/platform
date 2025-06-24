@@ -1037,16 +1037,16 @@ notify(JSON notification, JSON action) {
     getInputActions(action);
     INTERNAL CLIENT 'webNotify' PARAMS notification, action, inputActions(), push(currentConnection());
 }
-push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, JSON, JSON, JSON, JSON);
-push(BOOLEAN alwaysNotify, Connection connection, JSON notification, JSON action) {
+push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, BOOLEAN, JSON, JSON, JSON, JSON);
+push(BOOLEAN alwaysNotify, BOOLEAN noNotify, Connection connection, JSON notification, JSON action) {
     getInputActions(action);
-    push(alwaysNotify, notification, action, inputActions(), push(connection));
+    push(alwaysNotify, NULL, notification, action, inputActions(), push(connection));
 }
 push(Connection connection, JSON notification, JSON action) {
-    push(NULL, connection, notification, action);
+    push(NULL, TRUE, connection, notification, action);
 }
 pushNotify(Connection connection, JSON notification, JSON action) {
-    push(TRUE, connection, notification, action);
+    push(TRUE, NULL, connection, notification, action);
 }
 
 // shortcuts

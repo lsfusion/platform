@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 
 public class PushAction extends InternalAction {
     private final ClassPropertyInterface alwaysNotifyInterface;
+    private final ClassPropertyInterface noNotifyInterface;
     private final ClassPropertyInterface notificationInterface;
     private final ClassPropertyInterface actionInterface;
     private final ClassPropertyInterface inputActionsInterface;
@@ -36,6 +37,7 @@ public class PushAction extends InternalAction {
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         alwaysNotifyInterface = i.next();
+        noNotifyInterface = i.next();
         notificationInterface = i.next();
         actionInterface = i.next();
         inputActionsInterface = i.next();
@@ -50,6 +52,7 @@ public class PushAction extends InternalAction {
 
             JSONObject payload = new JSONObject();
             payload.put("alwaysNotify", !context.getKeyValue(alwaysNotifyInterface).isNull());
+            payload.put("noNotify", !context.getKeyValue(noNotifyInterface).isNull());
             String notification = (String) context.getKeyValue(notificationInterface).getValue();
             payload.put("notification", notification != null ? new JSONObject(notification) : null);
 

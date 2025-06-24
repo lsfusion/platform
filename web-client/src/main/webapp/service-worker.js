@@ -23,7 +23,7 @@ self.addEventListener('push', function(event) {
     if(data.alwaysNotify)
         event.waitUntil(showPushNotification(data.action, data.push));
     else
-        dispatchAction(event, { action: data.action, result: null }, data.push, (client) => showFocusNotification(client), (actionResult, push) => showPushNotification(actionResult.action, push));
+        dispatchAction(event, { action: data.action, result: null }, data.push, (client) => data.noNotify ? {} : showFocusNotification(client), (actionResult, push) => showPushNotification(actionResult.action, push));
 })
 
 self.addEventListener('notificationclick', function(event) {

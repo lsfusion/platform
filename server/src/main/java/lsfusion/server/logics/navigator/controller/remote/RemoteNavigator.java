@@ -612,12 +612,15 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
     }
 
+    public static boolean forceRefresh;
     public byte[] getNavigatorChangesByteArray(boolean refresh) {
         try {
-            NavigatorChanges navigatorChanges = getChanges(refresh);
+            NavigatorChanges navigatorChanges = getChanges(forceRefresh || refresh);
             return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        } finally {
+            forceRefresh = false;
         }
     }
 
