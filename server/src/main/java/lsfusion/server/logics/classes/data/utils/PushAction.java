@@ -25,8 +25,7 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
 public class PushAction extends InternalAction {
-    private final ClassPropertyInterface alwaysNotifyInterface;
-    private final ClassPropertyInterface noNotifyInterface;
+    private final ClassPropertyInterface notifyInterface;
     private final ClassPropertyInterface notificationInterface;
     private final ClassPropertyInterface actionInterface;
     private final ClassPropertyInterface inputActionsInterface;
@@ -36,8 +35,7 @@ public class PushAction extends InternalAction {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
-        alwaysNotifyInterface = i.next();
-        noNotifyInterface = i.next();
+        notifyInterface = i.next();
         notificationInterface = i.next();
         actionInterface = i.next();
         inputActionsInterface = i.next();
@@ -51,8 +49,9 @@ public class PushAction extends InternalAction {
                 Security.addProvider(new BouncyCastleProvider());
 
             JSONObject payload = new JSONObject();
-            payload.put("alwaysNotify", !context.getKeyValue(alwaysNotifyInterface).isNull());
-            payload.put("noNotify", !context.getKeyValue(noNotifyInterface).isNull());
+            Boolean notify = (Boolean) context.getKeyValue(notifyInterface).getValue();
+            if(notify != null)
+                payload.put("notify", notify);
             String notification = (String) context.getKeyValue(notificationInterface).getValue();
             payload.put("notification", notification != null ? new JSONObject(notification) : null);
 

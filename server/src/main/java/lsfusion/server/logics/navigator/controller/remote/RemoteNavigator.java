@@ -228,6 +228,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return isMobile;
     }
 
+    public void refreshData() {
+        refresh = true;
+    }
+
     public long getLastUsedTime() {
         return lastUsedTime;
     }
@@ -531,7 +535,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             }
 
-            dataStream.write(getNavigatorChangesByteArray(true));
+            refreshData();
+            dataStream.write(getNavigatorChangesByteArray());
 
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
@@ -608,19 +613,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @NotNull
     private ProcessNavigatorChangesClientAction getNavigatorChangesAction(long requestIndex) {
-        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
+        byte[] navigatorChanges = getNavigatorChangesByteArray();
         return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
     }
 
-    public static boolean forceRefresh;
-    public byte[] getNavigatorChangesByteArray(boolean refresh) {
+    public boolean refresh;
+    public byte[] getNavigatorChangesByteArray() {
         try {
-            NavigatorChanges navigatorChanges = getChanges(forceRefresh || refresh);
+            NavigatorChanges navigatorChanges = getChanges(refresh);
             return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            forceRefresh = false;
+            refresh = false;
         }
     }
 

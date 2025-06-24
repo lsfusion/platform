@@ -976,9 +976,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
-                                     TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
-        return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
+    public DataSession createSession(SQLSession sql, UserController userController, NavigatorRefreshController navigatorRefreshController,
+                                     FormController formController, TimeoutController timeoutController, ChangesController changesController,
+                                     LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
+        return new DataSession(sql, userController, navigatorRefreshController, formController, timeoutController, changesController, localeController, isServerRestartingController,
                 LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics, owner, null);
     }
 
@@ -1094,6 +1095,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public Long getCurrentUserRole() {
                         return null;
                     }
+                },
+                () -> {
+                    throw new RuntimeException("not supported");
                 },
                 new FormController() {
                     @Override

@@ -97,7 +97,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected abstract ChangesController createChangesController();    
 
     protected DataSession createSession() throws SQLException {
-        return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
+        return dbManager.createSession(sql, new WeakUserController(this), new WeakNavigatorRefreshController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
     }
     protected LogInfo logInfo;
 
@@ -185,6 +185,23 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             return remoteConnection == null ? null : remoteConnection.userRole;
         }
     }
+
+    protected static class WeakNavigatorRefreshController implements NavigatorRefreshController {
+        WeakReference<RemoteConnection> weakThis;
+
+        public WeakNavigatorRefreshController(RemoteConnection connection) {
+            this.weakThis = new WeakReference<>(connection);
+        }
+
+        @Override
+        public void refresh() {
+            RemoteConnection remoteConnection = weakThis.get();
+            if(remoteConnection instanceof RemoteNavigator) {
+                ((RemoteNavigator) remoteConnection).refreshData();
+            }
+        }
+    }
+
 
     protected static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteConnection> weakThis;

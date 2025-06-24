@@ -20,10 +20,10 @@ self.addEventListener('push', function(event) {
             return showNotification(data.notification, action, data.inputActions, push, null);
         return Promise.resolve();
     }
-    if(data.alwaysNotify)
+    if(data.notify === true)
         event.waitUntil(showPushNotification(data.action, data.push));
     else
-        dispatchAction(event, { action: data.action, result: null }, data.push, (client) => data.noNotify ? {} : showFocusNotification(client), (actionResult, push) => showPushNotification(actionResult.action, push));
+        dispatchAction(event, { action: data.action, result: null }, data.push, (client) => data.notify === undefined ? {} : showFocusNotification(client), (actionResult, push) => showPushNotification(actionResult.action, push));
 })
 
 self.addEventListener('notificationclick', function(event) {
