@@ -6,10 +6,10 @@ import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.jfree.ui.ExtensionFileFilter;
 
-import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.ParseException;
 import javax.swing.*;
 import java.io.*;
@@ -89,27 +89,25 @@ public abstract class ReadUtils {
         }
     }
 
-    private static String readFileExtension(URLConnection connection, String urlString) {
+    private static String readFileExtension(URLConnection connection, URL url) {
         String contentDispositionHeader = connection.getHeaderField("Content-Disposition");
+        String fileExtension = null;
         if (contentDispositionHeader != null) {
-            ContentDisposition contentDisposition = null;
             try {
-                contentDisposition = new ContentDisposition(contentDispositionHeader);
+                fileExtension = getFileExtension(ExternalUtils.getContentDispositionFileName(contentDispositionHeader).second);
             } catch (ParseException e) {
                 //do nothing
             }
-
-            String fileExtension = contentDisposition != null ? getFileExtension(contentDisposition.getParameter("filename")) : "";
-            if (!fileExtension.isEmpty())
-                return fileExtension;
         }
 
-        String fileExtension = null;
+        if (fileExtension == null)
+            fileExtension = BaseUtils.getFileExtension(url.getPath());
+
         String contentType = connection.getHeaderField("Content-Type");
-        if (contentType != null)
+        if (fileExtension == null && contentType != null)
             fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
 
-        return fileExtension != null ? fileExtension : getFileExtension(urlString);
+        return fileExtension;
     }
 
     private static String getFileExtension(String filename) {
@@ -161,10 +159,11 @@ public abstract class ReadUtils {
             urlSpec = path.type + "://" + path.path;
         }
 
-        URLConnection connection = new URL(urlSpec).openConnection();
+        URL url = new URL(urlSpec);
+        URLConnection connection = url.openConnection();
         connection.connect();
 
-        String extension = readFileExtension(connection, urlSpec);
+        String extension = readFileExtension(connection, url);
         org.apache.commons.io.FileUtils.copyInputStreamToFile(connection.getInputStream(), file);
         return extension;
     }
