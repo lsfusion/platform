@@ -31,7 +31,7 @@ public class CanonicalizeJSONAction extends InternalAction {
             final RawFileData jsonFile = (RawFileData) context.getSingleDataKeyValue().getValue();
             ObjectMapper mapper = new ObjectMapper();
             JsonCanonicalizer jc = new JsonCanonicalizer(mapper.writeValueAsString(escapeAllStrings(mapper.readTree(jsonFile.getBytes()))));
-            LM.findProperty("canonicalizedJSON[]").change(new DataObject(jc.getEncodedString()), context);
+            LM.findProperty("canonicalizedJSON[]").change(new DataObject(getEncodedJson(jc)), context);
         } catch (IOException | ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -72,5 +72,11 @@ public class CanonicalizeJSONAction extends InternalAction {
             }
         }
         return sb.toString();
+    }
+
+    private String getEncodedJson(JsonCanonicalizer jc) {
+        String encodedString = jc.getEncodedString();
+        //replace double slash to single slash in \\uxxxx
+        return encodedString.replaceAll("\\\\\\\\u", "\\\\u");
     }
 }
