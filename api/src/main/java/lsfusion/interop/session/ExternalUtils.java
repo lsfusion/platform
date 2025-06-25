@@ -3,6 +3,7 @@ package lsfusion.interop.session;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -381,15 +382,9 @@ public class ExternalUtils {
         String contentDispositionHeader = getHeaderValue(headerNames, headerValues, CONTENT_DISPOSITION_HEADER);
         String name = null; String filename = null;
         if(contentDispositionHeader != null) {
-            ContentDisposition contentDisposition;
-           try {
-                contentDisposition = new ContentDisposition(contentDispositionHeader);
-            } catch (ParseException e) { // backward compatibility to parse filename=x.f
-                contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
-            }
-            name = contentDisposition.getParameter("name");
-
-            filename = contentDisposition.getParameter("filename");
+            Pair<String, String> contentDispositionFileName = getContentDispositionFileName(contentDispositionHeader);
+            name = contentDispositionFileName.first;
+            filename = contentDispositionFileName.second;
             if(filename == null && urlString != null) {
                 URL url = new URL(urlString);
                 filename = BaseUtils.getFileNameAndExtension(url.getPath());
@@ -398,6 +393,17 @@ public class ExternalUtils {
             }
         }
         return getListFromInputStream(name != null ? name : ExternalRequest.SINGLEBODYPARAMNAME, filename, bytes, contentType);
+    }
+
+    public static Pair<String, String> getContentDispositionFileName(String contentDispositionHeader) throws ParseException {
+        ContentDisposition contentDisposition;
+        try {
+            contentDisposition = new ContentDisposition(contentDispositionHeader);
+        } catch (ParseException e) { // backward compatibility to parse filename=x.f
+            contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
+        }
+
+        return new Pair<>(contentDisposition.getParameter("name"), contentDisposition.getParameter("filename"));
     }
 
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters

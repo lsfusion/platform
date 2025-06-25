@@ -6,14 +6,17 @@ import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.jfree.ui.ExtensionFileFilter;
 
+import javax.mail.internet.ParseException;
 import javax.swing.*;
 import java.io.*;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.sql.SQLException;
@@ -48,8 +51,7 @@ public abstract class ReadUtils {
                     break;
                 case "http":
                 case "https":
-                    copyHTTPToFile(filePath, localFile);
-                    extension = readFileExtension(filePath.type + "://" + filePath.path);
+                    extension = copyHTTPToFile(filePath, localFile);
                     break;
                 case "ftp":
                     copyFTPToFile(filePath.path, localFile);
@@ -87,13 +89,25 @@ public abstract class ReadUtils {
         }
     }
 
-    private static String readFileExtension(String urlString) throws IOException {
+    private static String readFileExtension(URLConnection connection, URL url) {
+        String contentDispositionHeader = connection.getHeaderField("Content-Disposition");
         String fileExtension = null;
-        String contentType = new URL(urlString).openConnection().getHeaderField("Content-Type");
-        if(contentType != null) {
-            fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
+        if (contentDispositionHeader != null) {
+            try {
+                fileExtension = getFileExtension(ExternalUtils.getContentDispositionFileName(contentDispositionHeader).second);
+            } catch (ParseException e) {
+                //do nothing
+            }
         }
-        return fileExtension != null ? fileExtension : getFileExtension(urlString);
+
+        if (fileExtension == null)
+            fileExtension = BaseUtils.getFileExtension(url.getPath());
+
+        String contentType = connection.getHeaderField("Content-Type");
+        if (fileExtension == null && contentType != null)
+            fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
+
+        return fileExtension;
     }
 
     private static String getFileExtension(String filename) {
@@ -128,8 +142,9 @@ public abstract class ReadUtils {
         return result;
     }
 
-    private static void copyHTTPToFile(Path path, File file) throws IOException {
+    private static String copyHTTPToFile(Path path, File file) throws IOException {
         final List<String> properties = parseHTTPPath(path.path);
+        String urlSpec;
         if (properties != null) {
             final String username = properties.get(1);
             final String password = properties.get(2);
@@ -139,11 +154,18 @@ public abstract class ReadUtils {
                     return (new PasswordAuthentication(username, password.toCharArray()));
                 }
             });
-            URL httpUrl = new URL(URIUtil.encodeQuery(path.type + "://" + pathToFile));
-            org.apache.commons.io.FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
+            urlSpec = URIUtil.encodeQuery(path.type + "://" + pathToFile);
         } else {
-            org.apache.commons.io.FileUtils.copyURLToFile(new URL(path.type + "://" + path.path), file);
+            urlSpec = path.type + "://" + path.path;
         }
+
+        URL url = new URL(urlSpec);
+        URLConnection connection = url.openConnection();
+        connection.connect();
+
+        String extension = readFileExtension(connection, url);
+        org.apache.commons.io.FileUtils.copyInputStreamToFile(connection.getInputStream(), file);
+        return extension;
     }
 
     private static List<String> parseHTTPPath(String path) {
