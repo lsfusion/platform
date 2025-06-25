@@ -604,7 +604,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
         if (!paused && getInvocationsCount() <= 1)
-            pendingActions.add(0, getNavigatorChangesAction(requestIndex));
+            pendingActions.add(0, getNavigatorChangesAction());
 
         ServerResponse result = new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
         pendingActions.clear();
@@ -612,9 +612,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @NotNull
-    private ProcessNavigatorChangesClientAction getNavigatorChangesAction(long requestIndex) {
+    public ProcessNavigatorChangesClientAction getNavigatorChangesAction() {
         byte[] navigatorChanges = getNavigatorChangesByteArray();
-        return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
+        return new ProcessNavigatorChangesClientAction(navigatorChanges);
     }
 
     public byte[] getNavigatorChangesByteArray() {

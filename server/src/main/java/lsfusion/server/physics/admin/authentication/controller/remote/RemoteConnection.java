@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.*;
 import lsfusion.interop.session.*;
@@ -199,6 +200,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             if(remoteConnection instanceof RemoteNavigator) {
                 ((RemoteNavigator) remoteConnection).refreshData();
             }
+        }
+
+        @Override
+        public ClientAction getNavigatorChangesAction() {
+            RemoteConnection remoteConnection = weakThis.get();
+            if(remoteConnection instanceof RemoteNavigator && ((RemoteNavigator) remoteConnection).refresh) {
+                return ((RemoteNavigator) remoteConnection).getNavigatorChangesAction();
+            }
+            return null;
         }
     }
 

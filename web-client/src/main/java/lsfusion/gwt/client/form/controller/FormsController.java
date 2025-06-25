@@ -42,6 +42,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
@@ -81,6 +82,10 @@ public abstract class FormsController {
     private boolean fullScreenMode = false;
     
     private GToolbarButton mobileMenuButton;
+
+    public WindowsController getWindowsController() {
+        return windowsController;
+    }
 
     public static class Panel extends FlexTabbedPanel {
         public Panel(Widget extraTabWidget, boolean end) {
@@ -177,6 +182,14 @@ public abstract class FormsController {
         GwtClientUtils.addClassName(container, "forms-container-window");
 
         initEditModeTimer();
+    }
+
+    private GNavigatorController navigatorController;
+    public GNavigatorController getNavigatorController() {
+        return navigatorController;
+    }
+    public void setNavigatorController(GNavigatorController navigatorController) {
+        this.navigatorController = navigatorController;
     }
 
     private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();

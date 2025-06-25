@@ -18,6 +18,7 @@ import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
+import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -1095,9 +1096,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public Long getCurrentUserRole() {
                         return null;
                     }
-                },
-                () -> {
-                    throw new RuntimeException("not supported");
+                }, new NavigatorRefreshController() {
+                    @Override
+                    public void refresh() {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public ClientAction getNavigatorChangesAction() {
+                        throw new RuntimeException("not supported");
+                    }
                 },
                 new FormController() {
                     @Override
