@@ -8,9 +8,9 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class RefreshNavigatorAction extends InternalAction {
+public class NavigatorRefreshAction extends InternalAction {
 
-    public RefreshNavigatorAction(BaseLogicsModule lm) {
+    public NavigatorRefreshAction(BaseLogicsModule lm) {
         super(lm);
     }
 

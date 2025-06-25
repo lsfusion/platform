@@ -617,15 +617,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
     }
 
-    public boolean refresh;
     public byte[] getNavigatorChangesByteArray() {
         try {
-            NavigatorChanges navigatorChanges = getChanges(refresh);
+            NavigatorChanges navigatorChanges = getChanges();
             return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
-            refresh = false;
         }
     }
 
@@ -649,10 +646,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return mResult.immutable();
     }
 
+    public boolean refresh;
     @StackMessage("{message.form.end.apply}")
     @ThisMessage
     @AssertSynchronized
-    public NavigatorChanges getChanges(boolean refresh) throws SQLException, SQLHandledException {
+    public NavigatorChanges getChanges() throws SQLException, SQLHandledException {
 
         ImMap<PropertyNavigator, Object> changes = MapFact.EMPTY();
 
@@ -689,7 +687,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                     session.close();
             }
         }
-
+        refresh = false;
         return new NavigatorChanges(changes);
     }
 

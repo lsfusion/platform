@@ -102,7 +102,7 @@ formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.ac
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
 
-refreshNavigator INTERNAL  'lsfusion.server.logics.navigator.RefreshNavigatorAction' ();
+navigatorRefresh INTERNAL 'lsfusion.server.logics.navigator.NavigatorRefreshAction' ();
 
 forceUpdate INTERNAL 'lsfusion.server.logics.action.flow.ForceUpdateGroupObjectAction' (STRING);
 
