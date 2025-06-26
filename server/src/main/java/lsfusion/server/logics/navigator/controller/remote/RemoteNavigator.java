@@ -228,6 +228,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return isMobile;
     }
 
+    public void refreshData() {
+        refresh = true;
+    }
+
     public long getLastUsedTime() {
         return lastUsedTime;
     }
@@ -531,7 +535,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             }
 
-            dataStream.write(getNavigatorChangesByteArray(true));
+            refreshData();
+            dataStream.write(getNavigatorChangesByteArray());
 
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
@@ -599,7 +604,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
         if (!paused && getInvocationsCount() <= 1)
-            pendingActions.add(0, getNavigatorChangesAction(requestIndex));
+            pendingActions.add(0, getNavigatorChangesAction());
 
         ServerResponse result = new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
         pendingActions.clear();
@@ -607,14 +612,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @NotNull
-    private ProcessNavigatorChangesClientAction getNavigatorChangesAction(long requestIndex) {
-        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
-        return new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges);
+    public ProcessNavigatorChangesClientAction getNavigatorChangesAction() {
+        byte[] navigatorChanges = getNavigatorChangesByteArray();
+        return new ProcessNavigatorChangesClientAction(navigatorChanges);
     }
 
-    public byte[] getNavigatorChangesByteArray(boolean refresh) {
+    public byte[] getNavigatorChangesByteArray() {
         try {
-            NavigatorChanges navigatorChanges = getChanges(refresh);
+            NavigatorChanges navigatorChanges = getChanges();
             return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -641,10 +646,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return mResult.immutable();
     }
 
+    public boolean refresh;
     @StackMessage("{message.form.end.apply}")
     @ThisMessage
     @AssertSynchronized
-    public NavigatorChanges getChanges(boolean refresh) throws SQLException, SQLHandledException {
+    public NavigatorChanges getChanges() throws SQLException, SQLHandledException {
 
         ImMap<PropertyNavigator, Object> changes = MapFact.EMPTY();
 
@@ -681,7 +687,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                     session.close();
             }
         }
-
+        refresh = false;
         return new NavigatorChanges(changes);
     }
 

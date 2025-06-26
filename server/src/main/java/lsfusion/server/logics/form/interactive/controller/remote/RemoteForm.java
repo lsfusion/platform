@@ -958,6 +958,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     @NotNull
     private List<ClientAction> getFormChangesActions(long requestIndex, ExecutionStack stack, boolean forceLocalEvents) {
         List<ClientAction> resultActions = new ArrayList<>();
+        ClientAction navigatorChangesAction = form.session.navigator.getNavigatorChangesAction();
+        if(navigatorChangesAction != null)
+            resultActions.add(navigatorChangesAction);
         byte[] formChanges = getFormChangesByteArray(stack, getRemoteContext(), forceLocalEvents, resultActions);
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
         return resultActions;

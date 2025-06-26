@@ -329,10 +329,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GProcessNavigatorChangesAction action) {
-    }
-
-    @Override
     public Object execute(GRequestUserInputAction action) {
         return null;
     }

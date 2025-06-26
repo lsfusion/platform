@@ -432,6 +432,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static boolean reCalculateAggr = false;
 
     public final UserController user;
+    public final NavigatorRefreshController navigator;
     public final ChangesController changes;
     public final IDController id;
 
@@ -458,7 +459,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql, null);
     }
     public DataSession createSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException {
-        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, id, sessionEvents, null, fixedForms);
+        return new DataSession(sql, user, navigator, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, id, sessionEvents, null, fixedForms);
     }
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
@@ -820,7 +821,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     };
     private ImSet<FormEntity> allActiveForms = null;
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
+    public DataSession(SQLSession sql, final UserController user, final NavigatorRefreshController navigator,
+                       final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
                        IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, IDController id,
                        SessionEvents sessionEvents, OperationOwner upOwner, ImSet<FormEntity> fixedForms) {
         this.sql = sql;
@@ -830,6 +832,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.currentSession = currentSession;
 
         this.user = user;
+        this.navigator = navigator;
         this.changes = changes;
         this.id = id;
 

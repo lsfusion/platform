@@ -18,6 +18,7 @@ import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
+import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -1003,9 +1004,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
-                                     TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
-        return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
+    public DataSession createSession(SQLSession sql, UserController userController, NavigatorRefreshController navigatorRefreshController,
+                                     FormController formController, TimeoutController timeoutController, ChangesController changesController,
+                                     LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
+        return new DataSession(sql, userController, navigatorRefreshController, formController, timeoutController, changesController, localeController, isServerRestartingController,
                 LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, idController, businessLogics, owner, null);
     }
 
@@ -1120,6 +1122,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     @Override
                     public Long getCurrentUserRole() {
                         return null;
+                    }
+                }, new NavigatorRefreshController() {
+                    @Override
+                    public void refresh() {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public ProcessNavigatorChangesClientAction getNavigatorChangesAction() {
+                        throw new RuntimeException("not supported");
                     }
                 },
                 new FormController() {
