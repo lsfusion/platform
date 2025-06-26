@@ -21,7 +21,6 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.stack.*;
@@ -126,6 +125,7 @@ import lsfusion.server.physics.exec.db.table.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
+import org.postgresql.replication.LogSequenceNumber;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -246,13 +246,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         try {
             ImplementTable.reflectionStatProps(() -> {
-                SQLSession sql = getThreadLocalSql();
-
                 // splitting ensure function into two is necessary
                 // to make "DROP FUNCTION"-s execute after ensureDB (to have an active connection)
                 // but before ensureSqlFuncs.
-                adapter.ensureDBConnection(false);
+                updateLSN(adapter.ensureDBConnection(false));
 
+                SQLSession sql = getThreadLocalSql();
                 if(!isFirstStart(sql) && getOldDBStructure(sql).version < 40) {
                     startLog("Migrating cast.sql functions");
                     sql.executeDDL("DROP FUNCTION IF EXISTS cast_json_to_static_file(jsonb)");
@@ -389,37 +388,27 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void checkIndexes(SQLSession session) throws SQLException, SQLHandledException {
-        try {
-            for (Map.Entry<ImplementTable, List<IndexData<Field>>> mapIndex : getIndexesMap().entrySet()) {
-                session.startTransaction(START_TIL, OperationOwner.unknown);
+    public void checkIndexes(SQLSession sql) throws SQLException, SQLHandledException {
+        for (Map.Entry<ImplementTable, List<IndexData<Field>>> mapIndex : getIndexesMap().entrySet()) {
+            runSyncAction(sql, (session, master) -> {
                 ImplementTable table = mapIndex.getKey();
                 for (IndexData<Field> index : mapIndex.getValue()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.fields);
                     session.checkIndex(table, table.keys, fields, index.options);
                 }
                 session.addConstraint(table);
-                session.checkExtraIndexes(getThreadLocalSql(), table, table.keys);
-                session.commitTransaction();
-            }
-        } catch (Exception e) {
-            session.rollbackTransaction();
-            throw e;
+                session.checkExtraIndexes(table, table.keys);
+            });
         }
     }
 
-    public void checkTables(SQLSession session) throws SQLException, SQLHandledException {
-        try {
-            for (ImplementTable table : getIndexesMap().keySet()) {
-                session.startTransaction(START_TIL, OperationOwner.unknown);
+    public void checkTables(SQLSession sql) throws SQLException, SQLHandledException {
+        for (ImplementTable table : getIndexesMap().keySet()) {
+            runSyncAction(sql, (session, master) -> {
                 session.createTable(table, table.keys, true);
                 for (PropertyField property : table.properties)
                     session.addColumn(table, property, true);
-                session.commitTransaction();
-            }
-        } catch (Exception e) {
-            session.rollbackTransaction();
-            throw e;
+            });
         }
     }
 
@@ -780,22 +769,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    @IdentityStrongLazy // ресурсы потребляет
-    private SQLSession getIDSql() { // подразумевает synchronized использование
-        try {
-            return createSQL();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @IdentityStrongLazy
-    public SQLSession getStopSql() {
-        try {
-            return createSQL();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private SQLSession idSQL;
+    private boolean masterSync;
+    private SQLSession getIDSql() {
+        assert masterSync || !idSQL.isInTransaction();
+        return idSQL;
     }
 
     public long getSystemUser() {
@@ -806,7 +784,52 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return serverComputer;
     }
 
-    public SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
+    private final Object lsnLock = new Object();
+    private LogSequenceNumber lsn;
+
+    private LogSequenceNumber syncLsn;
+
+    public LogSequenceNumber getSyncLsn() {
+        return syncLsn;
+    }
+
+    public void lsnSynced() {
+        syncLsn = lsn;
+    }
+
+    private void updateLSN(LogSequenceNumber lsn) {
+        synchronized (lsnLock) {
+            if(this.lsn == null || lsn.compareTo(DBManager.this.lsn) > 0)
+                DBManager.this.lsn = lsn;
+        }
+    }
+
+    public final IDController idController = new IDController() {
+        @Override
+        public long generateID() {
+            return DBManager.this.generateID();
+        }
+
+        @Override
+        public Pair<Long, Long>[] generateIDs(long count) {
+            return DBManager.this.generateIDs(count);
+        }
+    };
+
+    public final SQLSessionLSNProvider lsnProvider = new SQLSessionLSNProvider() {
+        @Override
+        public void updateLSN(LogSequenceNumber lsn) {
+            DBManager.this.updateLSN(lsn);
+        }
+
+        @Override
+        public LogSequenceNumber getLSN() {
+            return lsn;
+        }
+    };
+
+    public final SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
+
         @Override
         public Long getCurrentUser() {
             return ThreadLocalContext.getCurrentUser();
@@ -850,11 +873,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return createSQL(contextProvider);
+        return createSQL(contextProvider, lsnProvider);
     }
 
-    public SQLSession createSQL(SQLSessionContextProvider environment) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return new SQLSession(adapter, environment);
+    public SQLSession createSQL(SQLSessionContextProvider environment, SQLSessionLSNProvider lsnProvider) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        return new SQLSession(adapter, environment, lsnProvider);
     }
 
     public SQLSession getThreadLocalSql() throws SQLException {
@@ -886,13 +909,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public long generateID() {
         try {
             return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
-        } catch (SQLException e) {
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(localize("{logics.info.error.reading.user.data}"), e);
+        }
+    }
+
+    public Pair<Long, Long>[] generateIDs(long count) {
+        try {
+            return IDTable.instance.generateIDs(count, getIDSql(), IDTable.OBJECT);
+        } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException(localize("{logics.info.error.reading.user.data}"), e);
         }
     }
 
     public DataSession createSession() throws SQLException {
-        return createSession((OperationOwner)null);
+        return createSession(getThreadLocalSql(), (OperationOwner)null);
     }
 
     public DataSession createRecalculateSession(SQLSession sql) throws SQLException { // when called from multi-thread recalculates
@@ -903,10 +934,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     @Deprecated
     public DataSession createSession(SQLSession sql) throws SQLException {
         return createSession(sql, null);
-    }
-
-    public DataSession createSession(OperationOwner upOwner) throws SQLException {
-        return createSession(getThreadLocalSql(), upOwner);
     }
 
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
@@ -979,7 +1006,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
                                      TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
         return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
-                LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics, owner, null);
+                LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, idController, businessLogics, owner, null);
     }
 
 
@@ -1014,7 +1041,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
-        for (DBTable table : oldDBStructure.tables.keySet()) {
+        for (DBTable table : oldDBStructure.getTables()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), ValueExpr.COUNT, table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.EMPTY());
@@ -1297,10 +1324,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImMap<String, ImRevMap<String, String>> newTableFieldToCN = getFieldToCNMaps(newDBStructure);
 
         Set<String> oldTableDBNames = new HashSet<>();
-        for (DBTable table : oldDBStructure.tables.keySet()) {
+        for (DBTable table : oldDBStructure.getTables()) {
             oldTableDBNames.add(table.getName());
         }
-        
+
         for (Map.Entry<DBTable, List<IndexData<String>>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
             DBTable oldTable = oldTableIndexes.getKey();
             List<IndexData<String>> oldIndexes = oldTableIndexes.getValue();
@@ -1500,6 +1527,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new OldDBStructure(inputDB);
     }
 
+    private static Pair<ByteArrayOutputStream, DataOutputStream> preWriteDBStructure(NewDBStructure newDBStructure) throws IOException {
+        ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
+        DataOutputStream outDB = new DataOutputStream(outDBStruct);
+        newDBStructure.write(outDB);
+        return new Pair<>(outDBStruct, outDB);
+    }
+
+    private void writeDBStructure(Pair<ByteArrayOutputStream, DataOutputStream> preWrite, SQLSession sql, NewDBStructure newDBStructure, boolean master) throws IOException, SQLException, SQLHandledException {
+        newDBStructure.writeConcreteClasses(preWrite.second, master);
+        try {
+            sql.insertRecord(StructTable.instance, MapFact.EMPTY(), MapFact.singleton(StructTable.instance.struct, new DataObject(new RawFileData(preWrite.first), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+        } catch (Exception e) {
+            ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
+            sql.insertRecord(StructTable.instance, MapFact.EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
+        }
+    }
+
+
     public static class IDAdd {
         public final long object;
 
@@ -1574,178 +1619,175 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void synchronizeDB() throws Exception {
 
-        SQLSession sql = getThreadLocalSql();
-
-        // инициализируем таблицы
-        LM.tableFactory.fillDB(sql, LM.baseClass);
-
-        // "старое" состояние базы
-        OldDBStructure oldDBStructure = getOldDBStructure(sql);
-        boolean isFirstStart = oldDBStructure.isEmpty();
-        if(!isFirstStart && oldDBStructure.version < 30)
-            throw new RuntimeException("You should update to version 30 first");
-        if (!isFirstStart && oldDBStructure.version < 37) {
-            createAdditionalIndexRecords(oldDBStructure);
-        }
-        checkModules(oldDBStructure);
-
-        // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
+        // At this point, in a normal situation, the migration script would already have been processed, and the call would have been left just in case. Repeating the call does nothing.
         runMigrationScript();
-        migrationManager.checkMigrationVersion(oldDBStructure.migrationVersion);
 
-        boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
-
-        try {
-            sql.pushNoHandled();
-
-            if(noTransSyncDB)
-                sql.startFakeTransaction(OperationOwner.unknown);
-            else
-                sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
-
-            ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
-            DataOutputStream outDB = new DataOutputStream(outDBStruct);
-
-            MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
-            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
-
-            checkUniquePropertyDBName(newDBStructure);
-            newDBStructure.write(outDB);
-
-            // DROP / RENAME indices
-            checkIndexes(sql, oldDBStructure, newDBStructure);
-
-            if (!isFirstStart)
-                alterDBStructure(sql, oldDBStructure, newDBStructure);
-
-            // CREATE / CHANGE TYPES tables (keys)
-
-            createTables(sql, oldDBStructure, newDBStructure);
-
-            changeKeyTypes(sql, oldDBStructure, newDBStructure);
-
-            // BUILDING DIFF properties and objects
-
-            List<DBStoredProperty> createProperties = new LinkedList<>();
-            Map<ImplementTable, Map<Field, Type>> changePropertyTypes = new HashMap<>();
-            List<MoveDBProperty> moveProperties = new ArrayList<>();
-            List<DBStoredProperty> dropProperties = new ArrayList<>();
-            buildPropertiesDiff(oldDBStructure, newDBStructure, createProperties, changePropertyTypes, moveProperties, dropProperties);
-
-            ImMap<String, ImMap<String, ImSet<Long>>> movedObjects = buildObjectsDiff(oldDBStructure, newDBStructure);
-
-            // CREATE / CHANGE TYPE properties
-
-            createColumns(sql, createProperties);
-
-            changeColumnTypes(sql, changePropertyTypes);
-
-            // since the below methods use queries we have to update stat props first
-            ImplementTable.reflectionStatProps(() -> {
-                startLog("Updating stats");
-                updateStats(sql, true);
-                return null;
-            });
-            ImplementTable.updatedStats = true;
-
-            // since dropping tables uses queries we need to do it after updating stats
-            if (isDenyDropTables()) {
-                String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
-                if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion");
+        runSyncDB(getThreadLocalSql(), (sql, master) -> {
+            try {
+                if(master) {
+                    // we need id also transactional here to be reversed if sync will fail (not to damage slaves)
+                    idSQL = sql;
+                    masterSync = true;
                 }
-            }
 
-            // MOVE properties / objects (both uses query, should be before table drop)
+                sql.pushNoHandled();
 
-            moveColumns(sql, oldDBStructure, moveProperties);
+                // initializing system tables
+                TableFactory.fillDB(sql, master);
 
-            moveObjects(sql, oldDBStructure, newDBStructure, movedObjects, LM.baseClass); // should be before tables and columns drop (since class data props are also dropped)
-
-            // CREATE indexes (need it after moving the columns, because they are created there)
-
-            createIndexes(sql, oldDBStructure, newDBStructure);
-
-            // DROP properties
-
-            Map<String, String> dropDataProperties = new HashMap<>();
-            dropColumns(sql, dropProperties, dropDataProperties);
-
-            // DROP / PACK tables
-
-            dropTables(sql, oldDBStructure, newDBStructure);
-
-            packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
-
-            startLog("Filling static objects ids");
-            IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
-                    migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
-                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
-                    idChanges, changesController);
-
-            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                newClass.ID = newClass.customClass.ID;
-            }
-
-            // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
-            new TaskRunner(getBusinessLogics()).runTask(initTask);
-
-            try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-                startLog("Writing static objects changes");
-                idChanges.apply(session, LM, isFirstStart);
-                apply(session);
-
-                startLog("Migrating reflection properties and actions");
-                migrateReflectionProperties(session, oldDBStructure);
-                apply(session);
-
-                newDBStructure.writeConcreteClasses(outDB);
-
-                try {
-                    sql.insertRecord(StructTable.instance, MapFact.EMPTY(), MapFact.singleton(StructTable.instance.struct, new DataObject(new RawFileData(outDBStruct), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
-                } catch (Exception e) {
-                    ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
-                    sql.insertRecord(StructTable.instance, MapFact.EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
+                // "старое" состояние базы
+                OldDBStructure oldDBStructure = getOldDBStructure(sql);
+                boolean isFirstStart = oldDBStructure.isEmpty();
+                if(!isFirstStart && oldDBStructure.version < 30)
+                    throw new RuntimeException("You should update to version 30 first");
+                if (!isFirstStart && oldDBStructure.version < 37) {
+                    createAdditionalIndexRecords(oldDBStructure);
                 }
-                apply(session);
 
-                if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
-                    startLog("Recalculating materializations");
-                    List<AggregateProperty> recalculateProperties = new ArrayList<>();
-                    for (DBStoredProperty property : createProperties) {
-                        if(property.property instanceof AggregateProperty) {
-                            recalculateProperties.add((AggregateProperty) property.property);
-                        }
+                checkModules(oldDBStructure);
+
+                migrationManager.checkMigrationVersion(oldDBStructure.migrationVersion);
+
+                MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
+                NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
+
+                // prewrite db structure because it is changed in checkIndexes (and it is the onyl place)
+                Pair<ByteArrayOutputStream, DataOutputStream> preWrite = preWriteDBStructure(newDBStructure);
+
+                checkUniquePropertyDBName(newDBStructure);
+
+                // DROP / RENAME indices
+                checkIndexes(sql, oldDBStructure, newDBStructure);
+
+                if (!isFirstStart)
+                    alterDBStructure(sql, oldDBStructure, newDBStructure);
+
+                // CREATE / CHANGE TYPES tables (keys)
+
+                createTables(sql, oldDBStructure, newDBStructure);
+
+                changeKeyTypes(sql, oldDBStructure, newDBStructure);
+
+                // BUILDING DIFF properties and objects
+
+                List<DBStoredProperty> createProperties = new LinkedList<>();
+                Map<ImplementTable, Map<Field, Type>> changePropertyTypes = new HashMap<>();
+                List<MoveDBProperty> moveProperties = new ArrayList<>();
+                List<DBStoredProperty> dropProperties = new ArrayList<>();
+                buildPropertiesDiff(oldDBStructure, newDBStructure, createProperties, changePropertyTypes, moveProperties, dropProperties);
+
+                ImMap<String, ImMap<String, ImSet<Long>>> movedObjects = null;
+                if(master)
+                    movedObjects = buildObjectsDiff(oldDBStructure, newDBStructure);
+
+                // CREATE / CHANGE TYPE properties
+
+                createColumns(sql, createProperties);
+
+                changeColumnTypes(sql, changePropertyTypes);
+
+                // since the below methods use queries we have to update stat props first
+                ImplementTable.reflectionStatProps(() -> {
+                    startLog("Updating stats");
+                    updateStats(sql, true);
+                    return null;
+                });
+                ImplementTable.updatedStats = true;
+
+                // since dropping tables uses queries we need to do it after updating stats
+                if (isDenyDropTables()) {
+                    String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
+                    if (!droppedTables.isEmpty()) {
+                        throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion");
                     }
-                    recalculateMaterializations(session, sql, recalculateProperties, false, ServerLoggers.startLogger);
-                    apply(session);
-
-                    List<Pair<Property, Boolean>> updateStatProperties = new ArrayList<>();
-                    for (DBStoredProperty property : createProperties)
-                        updateStatProperties.add(new Pair<>(property.property, property.property instanceof StoredDataProperty)); // we don't want to update DATA stats (it is always zero)
-                    for (MoveDBProperty move : moveProperties)
-                        updateStatProperties.add(new Pair<>(move.newProperty.property, false));
-                    updateMaterializationStats(session, updateStatProperties);
-                    apply(session);
                 }
 
-                writeDroppedColumns(session, dropDataProperties);
-                apply(session);
+                // MOVE properties / objects (both uses query, should be before table drop)
+
+                moveColumns(sql, oldDBStructure, moveProperties);
+
+                if(master) // should be before tables and columns drop (since class data props are also dropped)
+                    moveObjects(sql, oldDBStructure, newDBStructure, movedObjects, LM.baseClass);
+
+                // CREATE indexes (need it after moving the columns, because they are created there)
+
+                createIndexes(sql, oldDBStructure, newDBStructure);
+
+                // DROP properties
+
+                Map<String, String> dropDataProperties = new HashMap<>();
+                dropColumns(sql, dropProperties, dropDataProperties);
+
+                // DROP / PACK tables
+
+                dropTables(sql, oldDBStructure, newDBStructure);
+
+                if(master) {
+                    packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
+
+                    startLog("Filling static objects ids");
+                    IDChanges idChanges = new IDChanges();
+                    LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName,
+                            migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
+                            migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
+                            idChanges, changesController);
+
+                    for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                        newClass.ID = newClass.customClass.ID;
+                    }
+
+                    // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
+                    new TaskRunner(getBusinessLogics()).runTask(initTask);
+
+                    try (DataSession session = createSession(sql, OperationOwner.unknown)) { // apply in transaction
+                        startLog("Writing static objects changes");
+                        idChanges.apply(session, LM, isFirstStart);
+                        apply(session);
+
+                        startLog("Migrating reflection properties and actions");
+                        migrateReflectionProperties(session, oldDBStructure);
+                        apply(session);
+
+                        apply(session);
+
+                        if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
+                            startLog("Recalculating materializations");
+                            List<AggregateProperty> recalculateProperties = new ArrayList<>();
+                            for (DBStoredProperty property : createProperties) {
+                                if (property.property instanceof AggregateProperty) {
+                                    recalculateProperties.add((AggregateProperty) property.property);
+                                }
+                            }
+                            recalculateMaterializations(session, sql, recalculateProperties, false, ServerLoggers.startLogger);
+                            apply(session);
+
+                            List<Pair<Property, Boolean>> updateStatProperties = new ArrayList<>();
+                            for (DBStoredProperty property : createProperties)
+                                updateStatProperties.add(new Pair<>(property.property, property.property instanceof StoredDataProperty)); // we don't want to update DATA stats (it is always zero)
+                            for (MoveDBProperty move : moveProperties)
+                                updateStatProperties.add(new Pair<>(move.newProperty.property, false));
+                            updateMaterializationStats(session, updateStatProperties);
+                            apply(session);
+                        }
+
+                        writeDroppedColumns(session, dropDataProperties);
+                        apply(session);
+                    }
+                }
+
+                // for master have to be after filling ids
+                writeDBStructure(preWrite, sql, newDBStructure, master);
+            } catch (Throwable t) {
+                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+            } finally {
+                sql.popNoHandled();
+
+                if(master)
+                    masterSync = false;
             }
-            if(!noTransSyncDB)
-                sql.commitTransaction();
+        });
 
-        } catch (Throwable e) {
-            if(!noTransSyncDB)
-                sql.rollbackTransaction();
-            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
-        } finally {
-            if(noTransSyncDB)
-                sql.endFakeTransaction(OperationOwner.unknown);
-
-            sql.popNoHandled();
-        }
+        idSQL = createSQL();
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
@@ -1775,7 +1817,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         packTables(sql, mPackTables.immutable(), false);
     }
 
-    private static void moveColumns(SQLSession sql, OldDBStructure oldDBStructure, List<MoveDBProperty> movedProperties) throws Exception {
+    private static void moveColumns(SQLSession sql, OldDBStructure oldDBStructure, List<MoveDBProperty> movedProperties) throws SQLException, SQLHandledException {
         for(MoveDBProperty move : movedProperties) {
             DBStoredProperty newProperty = move.newProperty;
             DBStoredProperty oldProperty = move.oldProperty;
@@ -1784,7 +1826,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DBTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
             sql.addColumn(newTable, newProperty.property.field, false);
-            runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
+            ServerLoggers.<SQLException, SQLHandledException>runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
                     localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field.toString(), newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
 
             sql.dropColumn(oldProperty.getTableName(sql.syntax), oldProperty.getDBName(), Settings.get().isStartServerAnyWay());
@@ -1849,7 +1891,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private static void changeKeyTypes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
-        for (DBTable table : newDBStructure.tables.keySet()) {
+        for (DBTable table : newDBStructure.getTables()) {
             DBTable oldTable = oldDBStructure.getTable(table.getName());
             if (oldTable != null) {
                 for (KeyField key : table.keys) {
@@ -1868,7 +1910,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private static void createTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
         // добавим таблицы которых не было
         startLog("Creating tables");
-        for (DBTable table : newDBStructure.tables.keySet()) {
+        for (DBTable table : newDBStructure.getTables()) {
             if (oldDBStructure.getTable(table.getName()) == null)
                 sql.createTable(table, table.keys, Settings.get().isStartServerAnyWay());
         }
@@ -1895,7 +1937,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private static void dropTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
         // удаляем таблицы старые
-        for (DBTable table : oldDBStructure.tables.keySet()) {
+        for (DBTable table : oldDBStructure.getTables()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 startLog("Dropping table " + table);
                 sql.dropTable(table);
@@ -1949,7 +1991,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects, BaseClass baseClass) throws Exception {
+    private static void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects, BaseClass baseClass) throws SQLException, SQLHandledException {
         for (int i = 0, size = movedObjects.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
             DBStoredProperty classProp = newDBStructure.getProperty(movedObjects.getKey(i));
             DBTable table = newDBStructure.getTable(classProp.tableName);
@@ -1974,8 +2016,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mToCopy.immutable();
     }
 
-    private void createAdditionalIndexRecords(OldDBStructure dbStructure) {
-        for (List<IndexData<String>> indexList : dbStructure.tables.values()) {
+    private void createAdditionalIndexRecords(OldDBStructure oldDBStructure) {
+        for (List<IndexData<String>> indexList : oldDBStructure.tables.values()) {
             List<IndexData<String>> additionalIndexes = new ArrayList<>();
             for (IndexData<String> indexData : indexList) {
                 if (indexData.options.type == IndexType.LIKE) {
@@ -1991,7 +2033,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public static void moveObjects(DBTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
+    public static void moveObjects(DBTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws SQLException, SQLHandledException {
 //        ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
             Expr keyExpr = copyObjects.getMapExprs().singleValue();
@@ -2194,6 +2236,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(creator);
     }
 
+    public interface RunSyncService {
+        void run(SQLSession sql, boolean master) throws SQLException, SQLHandledException;
+    }
     public interface RunService {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
@@ -2299,10 +2344,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
             sql.updateRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
     }
 
-    public static void run(SQLSession session, boolean runInTransaction, boolean serializable, RunService run) throws SQLException, SQLHandledException {
-        run(session, runInTransaction, serializable, run, 0);
+    private void runSyncAction(SQLSession session, RunSyncService run) throws SQLException, SQLHandledException {
+        for(int server = adapter.getServersCount() - 1; server >= 0; server--) {
+            boolean master = server == 0;
+            run(session, true, DBManager.START_TIL, server, sql -> run.run(sql, master));
+        }
+    }
+    private void runSyncDB(SQLSession session, RunSyncService run) throws SQLException, SQLHandledException {
+        adapter.runSync(lsn,  server -> {
+            boolean master = server == 0;
+
+            boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
+            if (noTransSyncDB)
+                session.startFakeTransaction(server, OperationOwner.unknown);
+            try {
+                run(session, !noTransSyncDB, DBManager.START_TIL, server, sql -> run.run(sql, master));
+            } finally {
+                if (noTransSyncDB)
+                    session.endFakeTransaction(OperationOwner.unknown);
+            }
+        });
     }
 
+    public static void run(SQLSession session, boolean runInTransaction, boolean serializable, RunService run) throws SQLException, SQLHandledException {
+        run(session, runInTransaction, serializable, 0, run);
+    }
+
+    public static void run(SQLSession session, boolean runInTransaction, boolean serializable, int needServer, RunService run) throws SQLException, SQLHandledException {
+        run(session, runInTransaction, serializable, needServer, run, 0);
+    }
 
     public void recalculateMaterializationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         AggregateProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
@@ -2457,7 +2527,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        for (DBTable oldTable : oldData.tables.keySet()) {
+        for (DBTable oldTable : oldData.getTables()) {
             String oldDBName = oldTable.getName();
             if (tableRenames.containsKey(oldDBName)) {
                 String newDBName = tableRenames.get(oldDBName);
@@ -2478,7 +2548,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         Map<String, String> tableRenames = new HashMap<>();
         Map<String, DBTable> newTablesMap = createNewTablesMap(newData);
-        for (DBTable table : oldData.tables.keySet()) {
+        for (DBTable table : oldData.getTables()) {
             String oldCN = table.getCanonicalName();
             if (oldCN != null) {
                 String newCN = tableCNChanges.getOrDefault(oldCN, oldCN);
@@ -2495,7 +2565,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private Map<String, DBTable> createNewTablesMap(NewDBStructure newData) {
-        return newData.tables.keySet().stream()
+        return newData.getTables().stream()
                 .filter(table -> table.getCanonicalName() != null)
                 .collect(Collectors.toMap(DBTable::getCanonicalName, table -> table));
     }
@@ -2549,7 +2619,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 cls.dataPropCN = nameRenames.get(cls.dataPropCN);
             }
         }
-    } 
+    }
 
 
     // Временная реализация для переименования
@@ -2679,9 +2749,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         session.executeDDL(getSyntax().getVacuumDB());
     }
 
-    private static void run(SQLSession session, boolean runInTransaction, boolean serializable, RunService run, int attempts) throws SQLException, SQLHandledException {
+    private static void run(SQLSession session, boolean runInTransaction, boolean serializable, int needServer, RunService run, int attempts) throws SQLException, SQLHandledException {
         if(runInTransaction) {
-            session.startTransaction(serializable, OperationOwner.unknown);
+            session.startTransaction(serializable, needServer, OperationOwner.unknown);
             try {
                 run.run(session);
                 session.commitTransaction();
@@ -2689,7 +2759,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 session.rollbackTransaction();
                 if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
                     //serviceLogger.error("Run error: ", t);
-                    run(session, true, serializable, run, attempts + 1);
+                    run(session, true, serializable, needServer, run, attempts + 1);
                     return;
                 }
 
@@ -2774,7 +2844,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
-        final SQLSession sqlFrom = new SQLSession(adapter, contextProvider);
+        final SQLSession sqlFrom = new SQLSession(adapter, contextProvider, new SQLSessionLSNProvider() {
+            public void updateLSN(LogSequenceNumber lsn) {
+            }
+            public LogSequenceNumber getLSN() {
+                return null;
+            }
+        });
 
         sql.pushNoQueryLimit();
         try {
@@ -2908,30 +2984,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static boolean RECALC_REUPDATE = false;
     public static boolean PROPERTY_REUPDATE = false;
 
-    public void dropColumn(String tableName, String columnName) throws SQLException, SQLHandledException {
-        SQLSession sql = getThreadLocalSql();
-        sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
-        try {
-            sql.dropColumn(tableName, columnName, Settings.get().isStartServerAnyWay());
-            packTable(sql, tableName);
-            sql.commitTransaction();
-        } catch(SQLException e) {
-            sql.rollbackTransaction();
-            throw e;
-        }
+    public void dropColumn(SQLSession sql, String tableName, String columnName) throws SQLException, SQLHandledException {
+        runSyncAction(sql, (session, master) -> {
+            session.dropColumn(tableName, columnName, Settings.get().isStartServerAnyWay());
+            if(master)
+                packTable(session, tableName);
+        });
     }
 
-    public void dropColumns(String tableName, List<String> columnNames) throws SQLException, SQLHandledException {
-        SQLSession sql = getThreadLocalSql();
-        sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
-        try {
-            sql.dropColumns(tableName, columnNames);
-            packTable(sql, tableName);
-            sql.commitTransaction();
-        } catch(SQLException e) {
-            sql.rollbackTransaction();
-            throw e;
-        }
+    public void dropColumns(SQLSession sql, String tableName, List<String> columnNames) throws SQLException, SQLHandledException {
+        runSyncAction(sql, (session, master) -> {
+            session.dropColumns(tableName, columnNames);
+            if(master)
+                packTable(session, tableName);
+        });
     }
 
     private void packTable(SQLSession sql, String tableName) throws SQLException {
@@ -2954,7 +3020,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return migrationVersion;
     }
-    
+
     public int readOldDBVersion(DataInputStream input) throws IOException {
         int version = input.read() - 'v'; // for backward compatibility
         if (version == 0) {
@@ -3066,17 +3132,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
-        public void writeConcreteClasses(DataOutputStream outDB) throws IOException { // отдельно от write, так как ID заполняются после fillIDs
+        public Set<DBTable> getTables() {
+            return tables.keySet();
+        }
+
+        public void writeConcreteClasses(DataOutputStream outDB, boolean master) throws IOException { // отдельно от write, так как ID заполняются после fillIDs
             outDB.writeInt(concreteClasses.size());
             for (DBConcreteClass concreteClass : concreteClasses) {
                 outDB.writeUTF(concreteClass.sID);
                 outDB.writeUTF(concreteClass.dataPropCN);
-                outDB.writeLong(concreteClass.ID);
+                outDB.writeLong(master ? concreteClass.ID : 0);
             }
         }
 
         public DBTable getTable(String name) {
-            for (DBTable table : tables.keySet()) {
+            for (DBTable table : getTables()) {
                 if (table.getName().equals(name)) {
                     return table;
                 }
@@ -3260,7 +3330,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         private void checkTablesAndIndexesNameUniqueness(SQLSession sql) {
             Map<String, DBTable> tableNames = new HashMap<>();
-            for (DBTable table : tables.keySet()) {
+            for (DBTable table : getTables()) {
                 tableNames.put(table.getName(), table);
             }
 
@@ -3268,7 +3338,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DBTable indexTable = tableInfo.getKey();
                 for (IndexData<Field> index : tableInfo.getValue()) {
                     String indexName = namingPolicy.transformIndexNameToDBName(sql.getIndexName(indexTable, index));
-                    
+
                     if (tableNames.containsKey(indexName)) {
                         DBTable table = tableNames.get(indexName);
                         String reason = "Tables and indexes must have unique names. If a table and an index have identical names, the database cannot distinguish between them, leading to conflicts when executing queries";

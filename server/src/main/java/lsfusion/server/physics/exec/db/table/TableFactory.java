@@ -1,6 +1,5 @@
 package lsfusion.server.physics.exec.db.table;
 
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -18,18 +17,13 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.SystemClass;
-import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
-import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -159,29 +153,22 @@ public class TableFactory implements FullTablesInterface {
         return implementTable.getSingleMapTable(findItem, true);
     }
 
-    public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 
-        try {
-            sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
+    public static void fillDB(SQLSession sql, boolean master) throws SQLException, SQLHandledException {
+        sql.ensureTable(StructTable.instance);
 
-            sql.ensureTable(IDTable.instance);
-            sql.ensureTable(StructTable.instance);
-
+        sql.ensureTable(IDTable.instance);
+        if(master) {
             ImMap<Integer, Long> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
                 sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), IDTable.idTypeClass)), MapFact.singleton(IDTable.instance.value, new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
-
-            // создадим dumb
-            sql.ensureTable(DumbTable.instance);
-            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1L, SystemClass.instance)), MapFact.EMPTY(), TableOwner.global, OperationOwner.unknown);
-
-            sql.ensureTable(EmptyTable.instance);
-
-            sql.commitTransaction();
-        } catch (Throwable e) {
-            sql.rollbackTransaction();
-            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         }
+
+        sql.ensureTable(DumbTable.instance);
+        // we also need record for the dumb because it is used in structure reading
+        sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1L, SystemClass.instance)), MapFact.EMPTY(), TableOwner.global, OperationOwner.unknown);
+
+        sql.ensureTable(EmptyTable.instance);
     }
 
     @IdentityLazy

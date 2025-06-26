@@ -8,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.SelectTop;
@@ -56,7 +57,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
                         objectValue = importData.genObject(object);
                     else
                         objectValue = ((DataClass) object.baseClass).parseString((String) data.first);
-                } catch (SQLException | ParseException e) {
+                } catch (SQLException | ParseException | SQLHandledException e) {
                     throw Throwables.propagate(e);
                 }
 

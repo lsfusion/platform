@@ -2198,10 +2198,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getAllocatedBytesUpdateTask(scheduler));
             result.add(getCleanTempTablesTask(scheduler));
             result.add(getFlushPendingTransactionCleanersTask(scheduler));
+//            result.add(getBalanceConnectionsTask(scheduler));
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
         } else {
+            result.add(getBalanceConnectionsTask(scheduler)); // to test
+
             result.add(getSynchronizeSourceTask(scheduler));
         }
         return result;
@@ -2281,6 +2284,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getFlushAsyncValuesCachesTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> getDbManager().flushChanges(), false, Settings.get().getFlushAsyncValuesCaches(), false, "Flush async values caches");
+    }
+
+    private Scheduler.SchedulerTask getBalanceConnectionsTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> SQLSession.balanceConnections(), false, Settings.get().getPeriodBalanceConnections(), false, "Connection balancing");
     }
 
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {

@@ -110,7 +110,6 @@ import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.db.table.IDTable;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import javax.swing.*;
@@ -262,7 +261,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         applyFilter = readApplyFilter();
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
-        sql.startTransaction(serializable, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
+        sql.startTransaction(serializable, 0, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
     }
     
     private void cleanOnlyDataModifier() throws SQLException {
@@ -368,8 +367,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final SQLSession sql;
     public boolean isPrivateSql; // if this sql is private and should be closed with data session close
-    public final SQLSession idSession;
-    
+
     @Override
     protected void onClose(Object o) throws SQLException {
         assert o == null;
@@ -435,6 +433,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final UserController user;
     public final ChangesController changes;
+    public final IDController id;
 
     public DataObject applyObject = null;
     
@@ -459,7 +458,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql, null);
     }
     public DataSession createSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException {
-        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
+        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, id, sessionEvents, null, fixedForms);
     }
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
@@ -493,12 +492,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public DataObject addObject() throws SQLException {
+    public DataObject addObject() throws SQLException, SQLHandledException {
         return new DataObject(generateID(),baseClass.unknown);
     }
 
-    public long generateID() throws SQLException {
-        return IDTable.instance.generateID(idSession, IDTable.OBJECT);
+    public long generateID() {
+        return id.generateID();
     }
 
     public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
@@ -556,7 +555,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         OperationOwner owner = getOwner();
         try {
             // берем количество рядов - резервируем ID'ки
-            Pair<Long, Long>[] startFrom = IDTable.instance.generateIDs(table.getCount(), idSession, IDTable.OBJECT);
+            Pair<Long, Long>[] startFrom = id.generateIDs(table.getCount());
     
             // update'им на эту разницу ключи, чтобы сгенерить объекты
             table.updateAdded(sql, baseClass, toZeroBased(startFrom), owner); // так как не zero-based отнимаем 1
@@ -822,7 +821,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private ImSet<FormEntity> allActiveForms = null;
 
     public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
-                       IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession,
+                       IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, IDController id,
                        SessionEvents sessionEvents, OperationOwner upOwner, ImSet<FormEntity> fixedForms) {
         this.sql = sql;
 
@@ -832,10 +831,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         this.user = user;
         this.changes = changes;
+        this.id = id;
 
         this.sessionEvents = sessionEvents;
-
-        this.idSession = idSession;
 
         if(upOwner == null)
             upOwner = new OperationOwner() {};

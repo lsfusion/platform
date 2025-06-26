@@ -26,10 +26,7 @@ public class SQLClosedException extends SQLHandledException {
     }
 
     public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) {
-        if(attempts > Settings.get().getTooMuchAttempts())
-            return false;
-                    
-        return sql.tryRestore(owner, connection, isPrivate);
+        return false;
     }
 
     @Override

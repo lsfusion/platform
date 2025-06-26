@@ -3,14 +3,17 @@ package lsfusion.server.data.sql.connection;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.controller.env.SQLSessionLSNProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.postgresql.PGConnection;
+import org.postgresql.replication.LogSequenceNumber;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
@@ -20,182 +23,65 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
-    public abstract Connection startConnection() throws SQLException;
+    public static final LogSequenceNumber NO_SUBSCRIPTION = LogSequenceNumber.valueOf(1);
+    protected abstract LogSequenceNumber getSlaveLSN(Connection connection) throws SQLException;
+
+    protected abstract Connection startConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection) throws SQLException;
+    protected abstract void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException;
     public abstract SQLSyntax getSyntax();
 
-    private ExConnection common;
+    protected abstract boolean checkLSN(Connection connection, LogSequenceNumber lsn) throws SQLException;
 
-    private abstract class SyncRun<T> {
-    }
-
-    private abstract class SyncReRun<T> extends SyncRun<T> {
-        public T execute() throws SQLException {
-            T result;
-            synchronized (lock) {
-                result = execute(null);
-            }
-            if(result == null) {
-                T rerun = rerun();
-                try {
-                    synchronized (lock) {
-                        result = execute(rerun);
-                    }
-                } finally {
-                    if(rerun != result) // если не был использован результат, закрываем его
-                        close(rerun);
-                }
-            }
-            return result;
-        }
-
-        protected abstract T execute(T rerun) throws SQLException;
-
-        protected abstract T rerun() throws SQLException;
-
-        protected abstract void close(T rerun) throws SQLException;
-    }
-
-    public abstract class SyncNewExConnectionReRun extends SyncReRun<ExConnection> {
-        protected ExConnection rerun() throws SQLException {
-            return newExConnection();
-        }
-
-        protected void close(ExConnection rerun) throws SQLException {
-            closeExConnection(rerun);
-        }
-    }
-
-    public abstract class SyncNewConnectionReRun extends SyncReRun<Connection> {
-        protected Connection rerun() throws SQLException {
-            return newConnection();
-        }
-
-        protected void close(Connection rerun) throws SQLException {
-            closeConnection(rerun);
-        }
-    }
-
-    private abstract class SyncAfterRun<T> extends SyncRun<Object> {
-
-        public void execute() throws SQLException {
-            T after;
-            synchronized (lock) {
-                after = executeAfter();
-            }
-            after(after);
-        }
-
-        protected abstract T executeAfter() throws SQLException;
-
-        protected abstract void after(T run) throws SQLException;
-    }
-
-    public ExConnection getCommon(MutableObject object, SQLSessionContextProvider contextProvider) throws SQLException {
-        if(Settings.get().isCommonUnique())
-            return getPrivate(object, contextProvider);
-        else
-            return new SyncNewExConnectionReRun() {
-                public ExConnection execute(ExConnection rerun) {
-                    if(common==null) {
-                        if(rerun != null)
-                            common = rerun;
-                        else
-                            return null;
-                    }
-                    return common;
-                }
-            }.execute();
-    }
-
-    public void returnCommon(MutableObject object, ExConnection connection) throws SQLException {
-        if(Settings.get().isCommonUnique())
-            returnPrivate(object, connection);
-        else
-            assert common==connection;
-    }
-
-    public boolean restoreCommon(final Connection connection) throws SQLException {
-        assert !Settings.get().isCommonUnique();
-        return !new SyncNewConnectionReRun() {
-            public Connection execute(Connection rerun) throws SQLException {
-                if(common.sql == connection) { // мог восстановиться кем-то другим
-                    assert common.temporary.isEmpty();
-                    if(rerun != null)
-                        common.sql = rerun;
-                    else
-                        return null;
-                    ServerLoggers.handledLog("RESTORED COMMON " + common.sql.isClosed());
-                } else
-                    ServerLoggers.handledLog("SOMEBODY RESTORED COMMON " + common.sql + " CONNECTION " + connection + " " + common.sql.isClosed() + " " + connection.isClosed());
-                return common.sql;
-            }
-
-            public Connection rerun() throws SQLException {
-                return newConnection();
-            }
-        }.execute().isClosed();
-    }
-
-    private final Object lock = new Object();
     private final Map<ExConnection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
-    private final Stack<ExConnection> freeConnections = new Stack<>();
+    private final List<ExConnection> freeConnections = new ArrayList<>();
 
     private void checkUsed() throws SQLException {
-        new SyncAfterRun<List<ExConnection>>() {
-            protected List<ExConnection> executeAfter() {
-                List<ExConnection> connectionsToClose = new ArrayList<>();
-                Iterator<Map.Entry<ExConnection,WeakReference<MutableObject>>> it = usedConnections.entrySet().iterator();
-                while(it.hasNext()) {
-                    Map.Entry<ExConnection, WeakReference<MutableObject>> usedEntry = it.next();
-                    if(usedEntry.getValue().get()==null) {
-                        it.remove(); // можно было бы попробовать использовать повторно, но connection может быть "грязным" то есть с транзакцией или неочмщенными временными таблицами
-                        connectionsToClose.add(usedEntry.getKey());
-                    }
+        List<ExConnection> connectionsToClose;
+        synchronized (usedConnections) {
+            connectionsToClose = new ArrayList<>();
+            Iterator<Map.Entry<ExConnection, WeakReference<MutableObject>>> it = usedConnections.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<ExConnection, WeakReference<MutableObject>> usedEntry = it.next();
+                if (usedEntry.getValue().get() == null) {
+                    it.remove();
+                    connectionsToClose.add(usedEntry.getKey());
                 }
-                return connectionsToClose;
             }
+        }
 
-            protected void after(List<ExConnection> run) throws SQLException {
-                for(ExConnection connection : run)
-                    closeExConnection(connection);
-            }
-        }.execute();
+        for(ExConnection connection : connectionsToClose)
+            closeExConnection(connection, false); // we could try reusing it, but the connection may be “dirty,” i.e., with a transaction or uncommitted temporary tables
     }
 
-    private void addFreeConnection(ExConnection connection) throws SQLException {
-        // assert что synchronized lock
-        if(freeConnections.size() < Settings.get().getFreeConnections())
-            freeConnections.push(connection);
-        else
-            closeExConnection(connection);
-    }
-
-    public ExConnection newExConnection() throws SQLException {
-        return new ExConnection(newConnection(), new SQLTemporaryPool());
+    public ExConnection newExConnection(SQLSessionLSNProvider lsn) throws SQLException {
+        return new ExConnection(newConnection(null, lsn, null), new SQLTemporaryPool());
     }
     
-    public void closeExConnection(ExConnection connection) throws SQLException {
-        closeConnection(connection.sql);
+    public void closeExConnection(ExConnection connection, boolean clean) throws SQLException {
+        closeConnection(connection.sql, clean ? SQLSession.getCleaner(connection.temporary.getTables(), getSyntax()) : null);
     }
 
     private AtomicInteger connectionsCount = new AtomicInteger();
 
-    private Connection safeStartConnection(int count) throws SQLException {
+    private Connection safeStartConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection, int count) throws SQLException {
         try {
-            return startConnection();
+            return startConnection(needServer, lsn, prevConnection);
         } catch (SQLException e) {
             if(count < Settings.get().getNewConnectionAttempts()) {
                 ServerLoggers.sqlSuppLog(e);
-                return safeStartConnection(count + 1);
+                return safeStartConnection(needServer, lsn, prevConnection, count + 1);
             }
 
             throw e;
         }
     }
-    public Connection newConnection() throws SQLException {
+    public Connection newConnection(Integer needServer, SQLSessionLSNProvider lsnProvider, Connection prevConnection) throws SQLException {
         long l = System.currentTimeMillis();
 
-        Connection newConnection = safeStartConnection(0);
+        Connection newConnection = safeStartConnection(needServer, lsnProvider.getLSN(), prevConnection, 0);
+        if(newConnection == null)
+            return null;
+
         SQLSession.setACID(newConnection, false, getSyntax());
 
         logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());
@@ -203,12 +89,12 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         return newConnection;
     }
 
-    public void closeConnection(Connection connection) throws SQLException {
+    public void closeConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
         long l = System.currentTimeMillis();
 
         int backendPID = ((PGConnection) connection).getBackendPID();
 
-        connection.close();
+        stopConnection(connection, cleaner);
 
         logConnection("CLOSE", l, connectionsCount.getAndDecrement(), backendPID);
     }
@@ -219,71 +105,81 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     @Override
-    public Connection newRestartConnection() throws SQLException {
-        return newConnection();
+    public Connection newRestartConnection(SQLSessionLSNProvider lsn) throws SQLException {
+        return newConnection(null, lsn, null);
     }
 
     @Override
-    public void closeRestartConnection(Connection connection) throws SQLException {
-        closeConnection(connection);
+    public void closeRestartConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
+        closeConnection(connection, cleaner);
     }
 
-    public ExConnection getPrivate(final MutableObject object, SQLSessionContextProvider contextProvider) throws SQLException {
-        ExConnection connection;
-        if(Settings.get().isDisablePoolConnections()) {
-            connection = newExConnection();
-        } else {
+    public ExConnection getConnection(final MutableObject object, SQLSessionLSNProvider lsn, SQLSessionContextProvider contextProvider) throws SQLException {
+        ExConnection connection = null;
+        boolean disablePoolConnections = Settings.get().isDisablePoolConnections();
+        if (!disablePoolConnections) {
             checkUsed();
 
-            connection = new SyncNewExConnectionReRun() {
-                public ExConnection execute(ExConnection rerun) {
-                    ExConnection freeConnection;
-                    if (rerun != null && freeConnections.size() < Settings.get().getFreeConnections()) {
-                        freeConnection = rerun;
-                    } else {
-                        if (freeConnections.isEmpty())
-                            return null;
-                        freeConnection = freeConnections.pop();
-                        logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) freeConnection.sql).getBackendPID());
-                    }
-
-                    usedConnections.put(freeConnection, new WeakReference<>(object));
-                    return freeConnection;
+            synchronized (freeConnections) {
+                for (int i = 0, size = freeConnections.size(); i < size; i++) {
+                    connection = freeConnections.get(i);
+                    if (checkLSN(connection.sql, lsn.getLSN())) {
+                        freeConnections.remove(i);
+                        logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
+                        break;
+                    } else
+                        connection = null;
                 }
-            }.execute();
+            }
         }
-        connection.updateContext(contextProvider);
+
+        if(connection == null)
+            connection = newExConnection(lsn);
+
+        if (!disablePoolConnections) {
+            synchronized (usedConnections) {
+                usedConnections.put(connection, new WeakReference<>(object));
+            }
+        }
+        connection.updateContext(false, contextProvider);
         return connection;
     }
 
-    public void returnPrivate(final MutableObject object, final ExConnection connection) throws SQLException {
-        if(Settings.get().isDisablePoolConnections()) {
-            closeExConnection(connection);
-            return;
-        }
+    @Override
+    public Connection getBalanceConnection(Integer needServer, SQLSessionLSNProvider lsn, Connection prevConnection) throws SQLException {
+        return newConnection(needServer, lsn, prevConnection);
+    }
 
-        new SyncAfterRun<ExConnection>() {
-            protected ExConnection executeAfter() throws SQLException {
-                WeakReference<MutableObject> weakObject = usedConnections.remove(connection);
-                assert weakObject.get() == object;
-                if (!connection.sql.isClosed()) {
+    @Override
+    public void returnBalanceConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
+        closeConnection(connection, cleaner);
+    }
+
+    public void returnConnection(final MutableObject object, final ExConnection connection) throws SQLException {
+        boolean close = true;
+        boolean clean = true;
+        if (!connection.sql.isClosed()) {
+            if(!Settings.get().isDisablePoolConnections()) {
+                synchronized (usedConnections) {
+                    WeakReference<MutableObject> weakObject = usedConnections.remove(connection);
+                    assert weakObject.get() == object;
                     assert connection.sql.getAutoCommit();
+                }
 
+                synchronized (freeConnections) {
                     // assert что synchronized lock
                     if (freeConnections.size() < Settings.get().getFreeConnections()) {
-                        freeConnections.push(connection);
+                        freeConnections.add(connection);
                         logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
-                    } else
-                        return connection;
+                        close = false;
+                    }
                 }
-                return null;
             }
+        } else
+            clean = false;
 
-            protected void after(ExConnection run) throws SQLException {
-                if(run != null)
-                    closeExConnection(run);
-            }
-        }.execute();
+        if(close)
+            closeExConnection(connection, clean);
     }
 
     private AtomicInteger neededSavePoints = new AtomicInteger();

@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -18,8 +17,6 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class InternalDBAction extends CallDBAction {
@@ -34,7 +31,7 @@ public class InternalDBAction extends CallDBAction {
         DataAdapter adapter = dbManager.getAdapter();
         SQLSyntax syntax = adapter.syntax;
         MutableObject connOwner = new MutableObject();
-        ExConnection exConn = adapter.getPrivate(connOwner, dbManager.contextProvider);
+        ExConnection exConn = adapter.getConnection(connOwner, null, dbManager.contextProvider);
         Connection conn = exConn.sql;
         boolean prevReadOnly = conn.isReadOnly();
 
@@ -44,7 +41,7 @@ public class InternalDBAction extends CallDBAction {
             throw Throwables.propagate(e);
         } finally {
             conn.setReadOnly(prevReadOnly);
-            dbManager.getAdapter().returnPrivate(connOwner, exConn);
+            dbManager.getAdapter().returnConnection(connOwner, exConn);
         }
     }
 }

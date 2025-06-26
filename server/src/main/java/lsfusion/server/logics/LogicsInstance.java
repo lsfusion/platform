@@ -10,7 +10,6 @@ import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.physics.admin.Settings;
@@ -24,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -249,9 +247,4 @@ public class LogicsInstance implements InitializingBean {
         lifecycle.fireStopped();
         startLog("Logics instance has stopped...");
     }
-
-    public DataSession createSession() throws SQLException {
-        return dbManager.createSession();
-    }
-
 }

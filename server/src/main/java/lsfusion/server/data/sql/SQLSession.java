@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.server.base.MutableClosedObject;
@@ -73,6 +74,7 @@ import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.controller.env.SQLSessionLSNProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
@@ -83,6 +85,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.DBTable;
 import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
+import org.postgresql.replication.LogSequenceNumber;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -250,7 +253,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public SQLSyntax syntax;
 
-    public SQLSessionContextProvider contextProvider;
+    public final SQLSessionContextProvider contextProvider;
+    public final SQLSessionLSNProvider lsnProvider;
 
     public <F extends Field> Function<F, String> getDeclare(final TypeEnvironment typeEnv) {
         return getDeclare(syntax, typeEnv);
@@ -279,7 +283,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         try {
             if (useCommon)
-                resultConnection = connectionPool.getCommon(this, contextProvider);
+                resultConnection = connectionPool.getConnection(this, lsnProvider, contextProvider);
             resultConnection.checkClosed();
             resultConnection.updateLogLevel(syntax);
         } catch (Throwable t) {
@@ -307,7 +311,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         } else { // висит полный lock
             try {
-                connectionPool.returnCommon(this, connection);
+                connectionPool.returnConnection(this, connection);
             } finally {
                 temporaryTablesLock.unlock();
             }
@@ -350,11 +354,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public final ThreadDebugInfo threadDebugInfo;
 
-    public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider) {
+    public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider, SQLSessionLSNProvider lsnProvider) {
         syntax = adapter.syntax;
         connectionPool = adapter;
         typePool = adapter;
         this.contextProvider = contextProvider;
+        this.lsnProvider = lsnProvider;
         sqlSessionMap.put(this, 1);
 
         ServerLoggers.exinfoLog("SQL SESSION OPEN " + this);
@@ -368,7 +373,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         assertLock();
         if(privateConnection ==null) {
             assert transactionTables.isEmpty();
-            privateConnection = connectionPool.getPrivate(this, contextProvider);
+            privateConnection = connectionPool.getConnection(this, lsnProvider, contextProvider);
 //            sqlHandLogger.info("Obtaining backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
 //            System.out.println(this + " : NULL -> " + privateConnection + " " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
         }
@@ -383,7 +388,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
-            connectionPool.returnPrivate(this, privateConnection);
+            connectionPool.returnConnection(this, privateConnection);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
 //            sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
             privateConnection = null;
@@ -547,19 +552,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return (int) ((System.currentTimeMillis() - transStartTime)/1000);
     }
 
-    public void startFakeTransaction(OperationOwner owner) throws SQLException {
+    public void startFakeTransaction(int needServer, OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
 
         explicitNeedPrivate++;
 
         needPrivate();
 
+        balanceConnection(needServer, true);
+
         privateConnection.sql.setReadOnly(false);
     }
 
     public void endFakeTransaction(OperationOwner owner) throws SQLException {
         try {
-            privateConnection.sql.setReadOnly(false);
+            privateConnection.sql.setReadOnly(true);
 
             explicitNeedPrivate--;
 
@@ -569,11 +576,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void startTransaction(boolean serializable, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(serializable, owner, new HashMap<>(), false, 0, false);
+    public void startTransaction(boolean serializable, int needServer, OperationOwner owner) throws SQLException, SQLHandledException {
+        startTransaction(serializable, needServer, owner, new HashMap<>(), false, 0, false);
     }
 
-    public void startTransaction(boolean serializable, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
+    public void startTransaction(boolean serializable, int needServer, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -586,6 +593,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 transStartTime = System.currentTimeMillis();
 
                 needPrivate();
+
+                balanceConnection(needServer, true);
 
                 if(isExplainTemporaryTablesEnabled())
                     addTTLog("ST", owner);
@@ -719,6 +728,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 handleAndPropagate(e, "COMMIT TRANSACTION");
             }
         }
+        LogSequenceNumber masterLSN = connectionPool.getMasterLSN(privateConnection.sql);
+        if(masterLSN != null) // if needServer != 0 was used
+            lsnProvider.updateLSN(masterLSN); // assert that it is write locked
 
         afterCommit.run();
 
@@ -728,23 +740,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         endTransaction(owner, false);
     }
 
-    // удостоверивается что таблица есть
     public void ensureTable(StoredTable table) throws SQLException {
-        lockRead(OperationOwner.unknown);
         ExConnection connection = getConnection();
-
         try {
-//            DatabaseMetaData meta = connection.sql.getMetaData();
-//            ResultSet res = meta.getTables(null, null, null,
-//                    new String[] {"TABLE"});
-//            while (res.next()) {
-//                System.out.println(
-//                        "   "+res.getString("TABLE_CAT")
-//                                + ", "+res.getString("TABLE_SCHEM")
-//                                + ", "+res.getString("TABLE_NAME")
-//                                + ", "+res.getString("TABLE_TYPE")
-//                                + ", "+res.getString("REMARKS"));
-//            }
             DatabaseMetaData metaData = connection.sql.getMetaData();
             ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.getName()), new String[]{"TABLE"});
             if (!tables.next()) {
@@ -753,11 +751,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     addColumn(table, property, false);
             }
         } finally {
-            try {
-                returnConnection(connection, OperationOwner.unknown);
-            } finally {
-                unlockRead();
-            }
+            returnConnection(connection, OperationOwner.unknown);
         }
     }
 
@@ -774,10 +768,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             addIndex(table, fields, extraIndexes.options, ifNotExists);
     }
 
-    public void checkExtraIndexes(SQLSession threadLocalSQL, StoredTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
+    public void checkExtraIndexes(StoredTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
         DBManager.IndexData<ImOrderMap<Field, Boolean>> extraIndexes = getExtraIndexes(keys);
         for(ImOrderMap<Field, Boolean> fields : extraIndexes.fields)
-            threadLocalSQL.checkDefaultIndex(table, fields, extraIndexes.options);
+            checkDefaultIndex(table, fields, extraIndexes.options);
     }
 
     private String getConstraintName(String table) {
@@ -1117,7 +1111,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public void modifyColumn(StoredTable table, Field field, Type oldType) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
-        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
+        executeDDL("ALTER TABLE " + table.getName(syntax) + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
     }
 
     public void modifyColumns(StoredTable table, Map<Field, Type> fieldTypeMap) throws SQLException {
@@ -2213,7 +2207,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 return;
             } catch (SQLClosedException e) {
                 t = e;
-                if (e.isInTransaction() || !tryRestore(owner, e.connection, e.isPrivate))
+                if (e.isInTransaction())
                     throw e;
             } catch (SQLHandledException e) {
                 t = e;
@@ -2843,7 +2837,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     removeUnusedTemporaryTables(true, owner);
                 } finally {
                     ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this);
-                    connectionPool.returnPrivate(this, privateConnection);
+                    connectionPool.returnConnection(this, privateConnection);
 //                    System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
 //                    sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
                     privateConnection = null;
@@ -2855,26 +2849,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             unlockWrite();
         }
         
-    }
-    
-    public boolean tryRestore(OperationOwner opOwner, Connection connection, boolean isPrivate) {
-        lockRead(opOwner);
-        try {
-            temporaryTablesLock.lock();
-            try {
-                if(isPrivate || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
-                    return false;
-                // повалился common
-                assert sessionTablesMap.isEmpty();
-                return connectionPool.restoreCommon(connection);
-            } catch(Throwable e) {
-                return false;
-            } finally {
-                temporaryTablesLock.unlock();
-            }
-        } finally {
-            unlockRead();
-        }
     }
 
     private static final LRUWSVSMap<Connection, PreParsedStatement, ParsedStatement> statementPool = new LRUWSVSMap<>(LRUUtil.G1);
@@ -3177,19 +3151,32 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         });
     }
 
-    public static void dumpScores() throws SQLException, SQLHandledException {
-        Map<SQLSession, Integer> sessions = new IdentityHashMap<>(sqlSessionMap);
+    public static void balanceConnections() {
+        try {
+            Map<SQLSession, Integer> sessions = new IdentityHashMap<>(sqlSessionMap);
 
-        List<ConnectionUsage> usedSQLConnections = new ArrayList<>();
+            int connectionsRestart = Math.max((int) Math.round(Settings.get().getPercentBalanceConnections() * sessions.size() / 100), 1);
 
-        for(SQLSession session : sessions.keySet()) {
-            session.readRestartConnection(usedSQLConnections, true);
-        }
+            ServerLoggers.sqlConnectionLogger.info("Global connections balancing : count - " + sessions.size() + ", balancing : " + connectionsRestart);
 
-        Collections.sort(usedSQLConnections); // least first
+            List<ConnectionUsage> usedSQLConnections = new ArrayList<>();
 
-        for(ConnectionUsage usedSQLConnection : usedSQLConnections) {
-            ServerLoggers.exInfoLogger.info("DUMP - " + usedSQLConnection.description);
+            for(SQLSession session : sessions.keySet()) {
+                session.readBalanceConnection(usedSQLConnections);
+            }
+
+            Collections.sort(usedSQLConnections); // least first
+            // maybe makes sense to check min and max load
+
+            int succeeded = 0;
+            for (ConnectionUsage usage : usedSQLConnections) {
+                if (usage.sql.balanceConnection(null, false))
+                    succeeded++;
+                if (succeeded >= connectionsRestart)
+                    break;
+            }
+        } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
+            logger.error("GLOBAL BALANCE CONNECTIONS ERROR", t);
         }
     }
 
@@ -3214,23 +3201,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             List<ConnectionUsage> usedSQLConnections = new ArrayList<>();
 
             for(SQLSession session : sessions.keySet()) {
-                session.readRestartConnection(usedSQLConnections, false);
+                session.readRestartConnection(usedSQLConnections);
             }
 
             Collections.sort(usedSQLConnections); // least first
 
-            Map<ConnectionPool, Connection> notUsedNewConnections = new IdentityHashMap<>();
-            try {
-                int succeeded = 0;
-                for (ConnectionUsage usage : usedSQLConnections) {
-                    if (usage.sql.restartConnection(usage.score, notUsedNewConnections))
-                        succeeded++;
-                    if (succeeded >= removeFirst)
-                        break;
-                }
-            } finally {
-                for (Map.Entry<ConnectionPool, Connection> notUsedConnection : notUsedNewConnections.entrySet())
-                    notUsedConnection.getKey().closeRestartConnection(notUsedConnection.getValue());
+            int succeeded = 0;
+            for (ConnectionUsage usage : usedSQLConnections) {
+                if (usage.sql.restartConnection(usage.score))
+                    succeeded++;
+                if (succeeded >= removeFirst)
+                    break;
             }
         } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
             logger.error("GLOBAL RESTART CONNECTIONS ERROR", t);
@@ -3240,12 +3221,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static class ConnectionUsage implements Comparable<ConnectionUsage> {
         private final SQLSession sql;
         private final double score;
-        private final String description;
 
-        public ConnectionUsage(SQLSession sql, double score, String description) {
+        public ConnectionUsage(SQLSession sql, double score) {
             this.sql = sql;
             this.score = score;
-            this.description = description;
         }
 
         @Override
@@ -3254,11 +3233,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void readRestartConnection(final List<ConnectionUsage> usedConnections, final boolean readDescription) throws SQLException, SQLHandledException {
-        // assertLock
+    private void readRestartConnection(final List<ConnectionUsage> usedConnections) throws SQLException, SQLHandledException {
         runLockReadOperation(() -> {
-            Result<String> description = new Result<>(null);
-            usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(readDescription ? description : null, false), description.result));
+            usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(null, false)));
+        });
+    }
+
+    private void readBalanceConnection(final List<ConnectionUsage> usedConnections) throws SQLException, SQLHandledException {
+        runLockReadOperation(() -> {
+            usedConnections.add(new ConnectionUsage(SQLSession.this, -connectionPool.getLoad(privateConnection.sql)));
         });
     }
 
@@ -3294,17 +3277,35 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return score;
     }
 
+    private boolean balanceConnection(Integer needServer, boolean alreadyLocked) throws SQLException, SQLHandledException {
+        Connection prevConnection = privateConnection.sql;
+        Connection newConnection = connectionPool.getBalanceConnection(needServer, lsnProvider, prevConnection);
+        if(newConnection != null) { // if we are already on that server - return
+            boolean locked = alreadyLocked || tryLockWrite(OperationOwner.unknown);
+            if(locked) {
+                try {
+                    EConsumer<Connection, SQLException> cleaner = restartConnection(newConnection);
+
+                    connectionPool.returnBalanceConnection(prevConnection, cleaner);
+                } finally {
+                    if(!alreadyLocked)
+                        unlockWrite(true);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     public boolean isRestarting;
 
-    private boolean restartConnection(double score, Map<ConnectionPool, Connection> notUsedConnections) throws SQLException {
+    private boolean restartConnection(double score) throws SQLException {
         if(isClosed())
             return false;
 
-        Connection newConnection = notUsedConnections.remove(connectionPool);
-        if(newConnection == null)
-            newConnection = connectionPool.newRestartConnection(); // за пределами lockWrite чтобы не задерживать connection
+        Connection newConnection = connectionPool.newRestartConnection(lsnProvider); // за пределами lockWrite чтобы не задерживать connection
 
-        boolean noError = false;
+        Boolean newConnectionError = true; // true - error, false - not used but no error, null - used
         try {
             boolean locked = tryLockWrite(OperationOwner.unknown);
             try {
@@ -3313,46 +3314,29 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     
                 Result<String> description = new Result<>();
                 if(!locked || isClosed() || privateConnection == null || score > getScore(description, true)) { // double check - score упал
-                    notUsedConnections.put(connectionPool, newConnection); // если не использовали возвращаем
-                    noError = true;
+                    newConnectionError = false;
                     return false;
                 }
 
+                Connection prevConnection = privateConnection.sql;
                 long timeRestartStarted = System.currentTimeMillis();
 
-                // сначала переносим временные таблицы
                 try {
-                    for (String table : sessionTablesMap.keySet()) {
-                        SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
-                        uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
-                    }
-                } catch (Throwable t) { // если проблема в SQL, пишем в лог / игнорируем
+                    restartConnection(newConnection);
+                } catch (Throwable t) {
                     logger.error("RESTART CONNECTION ERROR : " + description.result, t);
                     return false;
                 }
 
-                // закрываем старое соединение
-                connectionPool.closeRestartConnection(privateConnection.sql);
+                newConnectionError = null;
+                connectionPool.closeRestartConnection(prevConnection, null); // we want to close the connection, that's the whole idea of restart connection
 
-                noError = true;
-
-                // если все ок, подменяем connection
-                privateConnection.sql = newConnection;
-                privateConnection.restartConnection(newConnection, contextProvider);
                 privateConnection.timeScore = 0;
                 privateConnection.lengthScore = 0;
                 long currentTime = System.currentTimeMillis();
                 privateConnection.timeStarted = currentTime;
                 privateConnection.lastTempTablesActivity = currentTime;
                 privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
-
-                // очищаем pool
-                Set<String> tables = new HashSet<>(privateConnection.temporary.getTables());
-                for(String table : tables)
-                    if(!sessionTablesMap.containsKey(table)) { // not used
-                        lastReturnedStamp.remove(table);
-                        privateConnection.temporary.removeTable(table);
-                    }
 
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
                 ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
@@ -3363,12 +3347,37 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
             }
         } finally {
-            if(!noError)
-                connectionPool.closeRestartConnection(newConnection);
+            if(newConnectionError != null)
+                connectionPool.closeRestartConnection(newConnection, newConnectionError ? null : cn -> {}); // error it's better to close the connection
         }
         return true;
     }
-    
+
+    private EConsumer<Connection, SQLException> restartConnection(Connection newConnection) throws SQLException, SQLHandledException {
+        for (String table : sessionTablesMap.keySet()) {
+            SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
+            uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
+        }
+
+        Set<String> tables = new HashSet<>(privateConnection.temporary.getTables());
+        for(String table : tables)
+            if(!sessionTablesMap.containsKey(table)) { // not used
+                lastReturnedStamp.remove(table);
+                privateConnection.temporary.removeTable(table);
+            }
+        privateConnection.sql = newConnection;
+        privateConnection.updateContext(true, contextProvider);
+
+        return getCleaner(tables, syntax);
+    }
+
+    public static EConsumer<Connection, SQLException> getCleaner(Set<String> tables, SQLSyntax syntax) {
+        return connection -> {
+            for(String table : tables)
+                dropTemporaryTableFromDB(connection, syntax, table, OperationOwner.unknown);
+        };
+    }
+
     // чисто для миграции таблиц, небольшой copy paste, но из-за error-handling'а и locking'а делать рефакторинг себе дороже
     private void createTemporaryTable(Connection connection, String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
         createTemporaryTable(connection, typePool, syntax, table, keys, properties, owner);

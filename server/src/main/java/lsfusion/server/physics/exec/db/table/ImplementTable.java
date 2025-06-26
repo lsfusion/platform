@@ -161,7 +161,7 @@ public class ImplementTable extends DBTable { // последний интерф
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, DBTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
+    public void moveColumn(SQLSession sql, PropertyField field, DBTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
 //        ImplementTable.ignoreStatProps(() -> {
         QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);

@@ -2210,10 +2210,13 @@ public class Settings implements Cloneable {
     private double maxUsedTempRowsDegree = 2; // по хорошему должен быть меньше usedTempRows, иначе может начать постоянно перестартовывать соединение с большим used
     private double timeStartedDegree = 8; // по хорошему должен быть больше usedTempRowsDegree, чтобы даже те кто использует много таблиц когда-нибудь перестартовывались
 
-    private int periodRestartConnections = 60; // 1 минута
+    private int periodRestartConnections = 60;
     private double percentRestartConnections = 1; // 1% соединений (соотвествено 1,5 часа среднее время жизни соединения при равномерной загрузке)
 
-    private int periodProcessDump = 60; //1 минута
+    private int periodBalanceConnections = 5;
+    private double percentBalanceConnections = 1;
+
+    private int periodProcessDump = 60;
 
     public int getQueryLengthAverageMax() {
         return queryLengthAverageMax;
@@ -2311,6 +2314,22 @@ public class Settings implements Cloneable {
 
     public void setPeriodRestartConnections(int periodRestartConnections) {
         this.periodRestartConnections = periodRestartConnections;
+    }
+
+    public int getPeriodBalanceConnections() {
+        return periodBalanceConnections;
+    }
+
+    public void setPeriodBalanceConnections(int periodBalanceConnections) {
+        this.periodBalanceConnections = periodBalanceConnections;
+    }
+
+    public double getPercentBalanceConnections() {
+        return percentBalanceConnections;
+    }
+
+    public void setPercentBalanceConnections(double percentBalanceConnections) {
+        this.percentBalanceConnections = percentBalanceConnections;
     }
 
     public int getPeriodProcessDump() {

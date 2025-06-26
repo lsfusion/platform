@@ -2,6 +2,7 @@ package lsfusion.server.physics.exec.db.table;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -81,12 +82,10 @@ public class IDTable extends DBTable {
             ids.add(counters.getKey(i), new Pair<>(0L, -1L));
     }
     
-    public long generateID(SQLSession dataSession, int idType) throws SQLException {
+    public long generateID(SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
 
         Long result;
         synchronized (this) {
-            assert !dataSession.isInTransaction();
-
             Pair<Long, Long> id = ids.get(idType);
             long freeID = id.first;
             long maxReservedID = id.second;
@@ -104,7 +103,7 @@ public class IDTable extends DBTable {
         return result;
     }
 
-    public Pair<Long, Long>[] generateIDs(long count, SQLSession dataSession, int idType) throws SQLException {
+    public Pair<Long, Long>[] generateIDs(long count, SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
         synchronized (this) {
             Pair<Long, Long> id = ids.get(idType);
             long freeID = id.first;
@@ -138,34 +137,16 @@ public class IDTable extends DBTable {
         }
     }
 
-    public long reserveIDs(long count, SQLSession dataSession, int idType) throws SQLException {
-        return reserveIDs(count, dataSession, idType, 0);
-    }
-
-        // возвращает первый, и резервирует себе еще count id'ков
-    private long reserveIDs(long count, SQLSession dataSession, int idType, int attempts) throws SQLException {
-        long freeID;
-        try {
-            dataSession.startTransaction(DBManager.ID_TIL, OperationOwner.unknown);
-
-            freeID = (Long) getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value) + 1; // замещаем
+    private long reserveIDs(long count, SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
+        Result<Long> rFreeID = new Result<>();
+        DBManager.run(dataSession, true, DBManager.ID_TIL, sql -> {
+            rFreeID.set((Long) getGenerateQuery(idType).execute(sql, OperationOwner.unknown).singleValue().get(value) + 1); // замещаем
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
-            updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
-            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
-
-            dataSession.commitTransaction();
-        } catch (Throwable e) {
-            ServerLoggers.sqlSuppLog(e); // just in case if rollback will fail
-
-            dataSession.rollbackTransaction();
-
-            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession, OperationOwner.unknown, attempts)) // update conflict или deadlock или timeout - пробуем еще раз
-                return reserveIDs(count, dataSession, idType, attempts + 1);
-            
-            throw ExceptionUtils.propagate(e, SQLException.class);
-        }
-        return freeID;
+            updateQuery.addProperty(value, new ValueExpr(rFreeID.result + count - 1, SystemClass.instance));
+            sql.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
+        });
+        return rFreeID.result;
     }
 
     public TableStatKeys getTableStatKeys() {

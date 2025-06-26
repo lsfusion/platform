@@ -32,17 +32,19 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
 
     @Override
     protected void runInnerTask(Object property, ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        String result = null;
-        if(property instanceof Integer) {
-            result = DBManager.checkClasses(sql, true, getBL().LM.baseClass);
-        } else if (property instanceof ImplementTable) {
-            result = DBManager.checkTableClasses((ImplementTable) property, sql, true, getBL().LM.baseClass, false); // так как снизу есть проверка классов
-        } else if(property instanceof Property) {
-            result = ((Property) property).checkClasses(sql, true, getBL().LM.baseClass);
+        try(DataSession session = createSession()) {
+            SQLSession sql = session.sql;
+            String result = null;
+            if (property instanceof Integer) {
+                result = DBManager.checkClasses(sql, true, getBL().LM.baseClass);
+            } else if (property instanceof ImplementTable) {
+                result = DBManager.checkTableClasses((ImplementTable) property, sql, true, getBL().LM.baseClass, false); // так как снизу есть проверка классов
+            } else if (property instanceof Property) {
+                result = ((Property) property).checkClasses(sql, true, getBL().LM.baseClass);
+            }
+            if (result != null && !result.isEmpty())
+                addMessage(result);
         }
-        if (result != null && !result.isEmpty())
-            addMessage(result);
     }
 
     @Override

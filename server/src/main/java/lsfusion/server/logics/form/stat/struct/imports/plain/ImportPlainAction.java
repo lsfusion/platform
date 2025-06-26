@@ -98,7 +98,7 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
                                 objectValues = objectValues.addExcl(object, data.genObject(object));
                             else 
                                 objectValues = objectValues.addExcl(mapFields.join(row));
-                        } catch (SQLException e) {
+                        } catch (SQLException | SQLHandledException e) {
                             throw Throwables.propagate(e);
                         }
                     }

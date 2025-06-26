@@ -57,15 +57,17 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
 
     @Override
     protected void runInnerTask(final Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        if (element instanceof Integer) {
-            getDbManager().recalculateClassesExclusiveness(sql, true);
-        } else if (element instanceof ImplementTable) {
-            DBManager.recalculateTableClasses((ImplementTable) element, sql, true, getBL().LM.baseClass);
+        try(DataSession session = createSession()) {
+            SQLSession sql = session.sql;
+            if (element instanceof Integer) {
+                getDbManager().recalculateClassesExclusiveness(sql, true);
+            } else if (element instanceof ImplementTable) {
+                DBManager.recalculateTableClasses((ImplementTable) element, sql, true, getBL().LM.baseClass);
 
-            DBManager.packTable(sql, (ImplementTable) element, true);
-        } else if (element instanceof AbstractDataProperty) {
-            ((AbstractDataProperty) element).recalculateClasses(sql, true, getBL().LM.baseClass);
+                DBManager.packTable(sql, (ImplementTable) element, true);
+            } else if (element instanceof AbstractDataProperty) {
+                ((AbstractDataProperty) element).recalculateClasses(sql, true, getBL().LM.baseClass);
+            }
         }
     }
 

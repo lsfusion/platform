@@ -1,25 +1,35 @@
 package lsfusion.server.data.sql.adapter;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.exec.db.table.DumbTable;
+import lsfusion.server.physics.exec.db.table.StructTable;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.postgresql.replication.LogSequenceNumber;
 import org.postgresql.util.PSQLException;
+import org.postgresql.util.PSQLState;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -36,6 +46,8 @@ public class PostgreDataAdapter extends DataAdapter {
     private String dumpDir;
     protected static final String DB_NAME = "postgres";
 
+    protected static final String DB_SUBSRIPTION = "lsfusion_sub";
+
     private int dbMajorVersion;
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
@@ -51,7 +63,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(PostgreSQLSyntax.instance, dataBase, server, null, userID, password, connectTimeout, cleanDB);
+        super(PostgreSQLSyntax.instance, dataBase, server, userID, password, connectTimeout, cleanDB);
 
         this.defaultBinPath = binPath;
         this.defaultDumpDir = dumpDir;
@@ -67,14 +79,14 @@ public class PostgreDataAdapter extends DataAdapter {
         this.dumpDir = dumpDir != null ? dumpDir : defaultDumpDir;
     }
 
-    private Connection getConnection(String dataBase) throws SQLException {
+    private Connection getConnection(String server, String dataBase) throws SQLException {
         Connection connection;
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase + "?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
+            connection = getConnection(server, dataBase, false); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
         } catch (PSQLException e) {
             String sqlState = e.getSQLState();
             if (sqlState != null && sqlState.equals("3D000")) //3D000 database from properties does not exist
-                connection = getConnection(DB_NAME); // try to connect to default db
+                connection = getConnection(server, DB_NAME); // try to connect to default db
             else
                 throw e;
         }
@@ -82,15 +94,30 @@ public class PostgreDataAdapter extends DataAdapter {
         return connection;
     }
 
-    public void ensureDB(boolean cleanDB) throws Exception {
+    private Connection getConnection(String server, String dataBase, boolean useConnectTimeout) throws SQLException {
+        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + user + "&password=" + password + (useConnectTimeout ? "&connectTimeout=" + (int) (connectTimeout / 1000) : ""));
+    }
+    private String getLibpqConnectionString(String server, String dataBase) {
+        String host = server;
+        String port = null;
+        if (server.contains(":")) {
+            String[] parts = server.split(":", 2);
+            host = parts[0];
+            port = parts[1];
+        }
+
+        return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase() + " user=" + user + " password=" + password;
+    }
+
+    public void ensureDB(String server, boolean cleanDB, boolean master) throws Exception {
 
         Connection connect = null;
         while(connect == null) {
             try {
-                connect = getConnection(dataBase);
+                connect = getConnection(server, dataBase);
                 dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
-                startLogError(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
+                startLogError(String.format("%s (host: %s, user: %s)", e.getMessage(), server, user));
                 logger.error("EnsureDB error: ", e);
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
                 String sqlState = e.getSQLState();
@@ -99,28 +126,168 @@ public class PostgreDataAdapter extends DataAdapter {
                 } else throw e;
             }
         }
-        if (cleanDB) {
-            try {
-                connect.createStatement().execute("DROP DATABASE " + dataBase);
-            } catch (SQLException e) {
-                ServerLoggers.sqlSuppLog(e);
-            }
-        }
+        if (cleanDB)
+            executeEnsure(connect, "DROP DATABASE " + dataBase);
 
-        try {
-            // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
-            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
-        } catch (SQLException e) {
-            ServerLoggers.sqlSuppLog(e);
-        }
+        // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
+        executeEnsure(connect, "CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
 
-        try {
-            connect.createStatement().execute("ALTER DATABASE " + dataBase + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
-        } catch (SQLException e) {
-            ServerLoggers.sqlSuppLog(e);
-        }
+        executeEnsure(connect, "ALTER DATABASE " + dataBase + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
 
         connect.close();
+    }
+
+    public void runSync(LogSequenceNumber masterLSN, SQLConsumer<Integer> run) throws SQLException, SQLHandledException {
+
+        // if doing async start / stop subscription should be done, but then we need to check / forbid next db structure change (so won't happen slave -> z (skip y), master -> y -> some changes -> z)
+
+        int serversCount = getServersCount();
+
+        for(int server = serversCount - 1; server >= 0; server--) {
+            Connection ensureConnection = ensureConnections[server];
+            if(server != 0) { // // waiting slave to reach master if there is a subscription
+                while(true) {
+                    LogSequenceNumber connectionLSN = readSlaveLSN(ensureConnection);
+                    if(connectionLSN != LogSequenceNumber.INVALID_LSN) { // first copy / or not yet started wal sync
+                        if (connectionLSN == DataAdapter.NO_SUBSCRIPTION) {
+                            executeEnsure(ensureConnections[0], "SELECT pg_drop_replication_slot('" + getSlotName(server) + "');\n");
+                            break;
+                        }
+                        if(connectionLSN.compareTo(masterLSN) >= 0 && readSlaveReady(ensureConnection))
+                            break;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw Throwables.propagate(e);
+                    }
+                }
+            }
+
+            run.accept(server);
+        }
+
+        if(serversCount > 1) {
+            // checking publications / subscriptions
+            for (int server = 0; server < serversCount; server++) {
+                Connection ensureConnection = ensureConnections[server];
+
+                if (server == 0) {
+                    executeEnsure(ensureConnection, "CREATE PUBLICATION " + DB_SUBSRIPTION + "\n" +
+                            "  FOR ALL TABLES\n" +
+                            "  WITH (\n" +
+                            "    publish = 'insert, update, delete, truncate'\n" +
+                            "  );");
+                } else {
+                    try {
+                        executeEnsureWithException(ensureConnection, "CREATE SUBSCRIPTION " + DB_SUBSRIPTION + "\n" +
+                                "                CONNECTION '" + getLibpqConnectionString(this.server, dataBase) + "'\n" +
+                                "                PUBLICATION " + DB_SUBSRIPTION + " WITH (slot_name = '" + getSlotName(server) + "', enabled = false);");
+                        // we can't do it in transaction, but we just hope that workers won't be fa
+                        // we need to truncate struct and dumb tables not to get unique violation
+                        ensureConnection.setAutoCommit(false);
+                        try {
+                            executeEnsureWithException(ensureConnection, "TRUNCATE TABLE " + StructTable.instance.getName(syntax) + ";\n");
+                            executeEnsureWithException(ensureConnection, "TRUNCATE TABLE " + DumbTable.instance.getName(syntax) + ";\n");
+                            executeEnsureWithException(ensureConnection, "ALTER SUBSCRIPTION " + DB_SUBSRIPTION + " ENABLE\n;");
+                        } finally {
+                            ensureConnection.setAutoCommit(true);
+                        }
+                        while(!readSlaveReady(ensureConnection)) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                throw Throwables.propagate(e);
+                            }
+                        }
+                    } catch (SQLException e) {
+                        if (PSQLState.PROTOCOL_VIOLATION.getState().equals(e.getSQLState()) && e.getMessage().contains("wal_level >= logical")) {
+                            Connection masterEnsureConnection = ensureConnections[0];
+                            executeEnsure(masterEnsureConnection, "ALTER SYSTEM SET wal_level = logical;");
+                            executeEnsure(masterEnsureConnection, "ALTER SYSTEM SET max_replication_slots = 30;"); // the problem that default is 10 and the max_sync_workers_per_subscription is 10 (and there are), so we'll inevitably get errors with default 10 on the first copy_data
+                            ServerLoggers.startLog("Publisher wal_level is < logical. ALTER SYSTEM SET wal_level = logical has already been applied; "
+                                    + "please restart the database server and only after that you can use the slave.");
+                        } else {
+                            ServerLoggers.sqlSuppLog(e);
+                        }
+                    }
+                    // we're assuming that copy_data is done once, so after that slave is ready
+                    // however after disable / enable while also can be needed (?)
+                    slavesReady.put(servers[server], true);
+                }
+            }
+        }
+    }
+
+    private static String getSlotName(int server) {
+        return DB_SUBSRIPTION + server;
+    }
+
+    public double getLoad(Connection connection) {
+        return Math.random();
+        // for master add coeff, for slave including lag
+    }
+
+    public LogSequenceNumber getMasterLSN(Connection connection) throws SQLException {
+        if(!isFromServer(connection, server)) // if not master
+            return null;
+
+        String sql = "SELECT pg_current_wal_lsn() AS last_apply_lsn";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return LogSequenceNumber.valueOf(rs.getString("last_apply_lsn"));
+            } else {
+                return LogSequenceNumber.INVALID_LSN;
+            }
+        }
+    }
+
+    private final ConcurrentHashMap<String, Boolean> slavesReady = MapFact.getGlobalConcurrentHashMap();
+
+    public LogSequenceNumber getSlaveLSN(Connection connection) throws SQLException {
+        if(isFromServer(connection, server)) // if master
+            return null;
+
+        // there is a subscription but not yet ready
+        Boolean slaveReady = slavesReady.get(getServer(connection));
+        if(slaveReady == null || !slaveReady)
+            return LogSequenceNumber.INVALID_LSN;
+
+        return readSlaveLSN(connection);
+    }
+
+    public LogSequenceNumber readSlaveLSN(Connection connection) throws SQLException {
+        String sql =
+                "SELECT latest_end_lsn " +
+                        "FROM pg_stat_subscription " +
+                        "WHERE subname = '" + DB_SUBSRIPTION + "'";
+        try (Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return LogSequenceNumber.valueOf(BaseUtils.nvl(rs.getString("latest_end_lsn"),"0"));
+            } else {
+                return DataAdapter.NO_SUBSCRIPTION;
+            }
+        }
+    }
+
+    public boolean readSlaveReady(Connection connection) throws SQLException {
+        if(isFromServer(connection, server)) // if master
+            return true;
+
+        String sql =
+                "SELECT bool_and(srsubstate IN ('r','s')) AS all_tables_synced" +
+                        " FROM pg_subscription_rel" +
+                        " WHERE srsubid = (SELECT oid FROM pg_subscription WHERE subname = '" + DB_SUBSRIPTION + "');";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getBoolean("all_tables_synced");
+            } else {
+                return true;
+            }
+        }
     }
 
     public int getDbMajorVersion() {
@@ -147,10 +314,10 @@ public class PostgreDataAdapter extends DataAdapter {
         return "/sql/postgres/";
     }
 
-    public Connection startConnection() throws SQLException {
+    public Connection createConnection(String server) throws SQLException {
         long started = System.currentTimeMillis();
         try {
-            return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
+            return getConnection(server, dataBase, true);
         } finally {
             long elapsed = System.currentTimeMillis() - started;
             if(elapsed > connectTimeout)
@@ -177,9 +344,14 @@ public class PostgreDataAdapter extends DataAdapter {
         return getBackupFilePath(dumpFileName) + ".log";
     }
 
+    protected String getMaintenanceServer() {
+        return server;
+    }
+
     @Override
     public void backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
         String host, port;
+        String server = getMaintenanceServer();
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
             port = server.substring(server.lastIndexOf(':') + 1);
@@ -197,7 +369,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("-p");
         commandLine.addArgument(port);
         commandLine.addArgument("-U");
-        commandLine.addArgument(userID);
+        commandLine.addArgument(user);
 
         for(String excludeTable : excludeTables) {
             commandLine.addArgument("--exclude-table-data="+excludeTable.toLowerCase());
@@ -254,6 +426,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
         String tempDB = "db-temp" + Calendar.getInstance().getTime().getTime();
         String host, port;
+        String server = getMaintenanceServer();
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
             port = server.substring(server.lastIndexOf(':') + 1);
@@ -272,7 +445,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 commandLine.addArgument("--port");
                 commandLine.addArgument(port);
                 commandLine.addArgument("--username");
-                commandLine.addArgument(userID);
+                commandLine.addArgument(user);
                 for (String table : tables) {
                     commandLine.addArgument("--table");
                     commandLine.addArgument(table.toLowerCase());
@@ -306,7 +479,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("--port");
         commandLine.addArgument(port);
         commandLine.addArgument("--username");
-        commandLine.addArgument(userID);
+        commandLine.addArgument(user);
         commandLine.addArgument(dbName);
         Executor executor = new DefaultExecutor();
         //executor.setExitValue(0);
@@ -324,6 +497,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public void dropDB(String dbName) throws IOException {
         String host, port;
+        String server = getMaintenanceServer();
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
             port = server.substring(server.lastIndexOf(':') + 1);
@@ -338,7 +512,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("--port");
         commandLine.addArgument(port);
         commandLine.addArgument("--username");
-        commandLine.addArgument(userID);
+        commandLine.addArgument(user);
         commandLine.addArgument("--if-exists");
         commandLine.addArgument(dbName);
         Executor executor = new DefaultExecutor();
@@ -354,7 +528,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
         List<List<Object>> dataKeys = new ArrayList<>();
         List<List<Object>> dataColumns = new ArrayList<>();
-        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dbName.toLowerCase() + "?user=" + userID + "&password=" + password)) {
+        try(Connection connection = getConnection(getMaintenanceServer(), dbName.toLowerCase(), false)) {
             try (Statement statement = connection.createStatement()) {
                 String column = "";
                 for(String k : keys)

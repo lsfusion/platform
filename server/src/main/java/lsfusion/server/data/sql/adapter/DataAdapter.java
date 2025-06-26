@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.adapter;
 
 import lsfusion.base.Pair;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
@@ -11,6 +12,8 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.sql.connection.AbstractConnectionPool;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -26,14 +29,13 @@ import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
+import org.postgresql.replication.LogSequenceNumber;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,35 +45,143 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected final static Logger logger = ServerLoggers.sqlLogger;
     public final SQLSyntax syntax;
 
-    public String server;
-    public String instance;
+    public String server; // master
+    public String[] servers; // first is master, others - slaves
+
     public String dataBase;
-    public String userID;
+    public String user;
     public String password;
     public Long connectTimeout;
 
-    protected abstract void ensureDB(boolean cleanDB) throws Exception;
+    protected abstract void ensureDB(String server, boolean cleanDB, boolean master) throws Exception;
 
-    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception {
+    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout, boolean cleanDB) throws Exception {
 
         Class.forName(syntax.getClassName());
 
         this.syntax = syntax;
-        
-        this.dataBase = dataBase;
-        this.server = server;
-        this.userID = userID;
+
+        servers = server.split(";");
+        this.server = servers[0];
+
+        this.user = user;
         this.password = password;
+
+        this.dataBase = dataBase;
+
         this.connectTimeout = connectTimeout;
-        this.instance = instance;
     }
 
-    public void ensureDBConnection(boolean cleanDB) throws Exception {
-        ensureDB(cleanDB);
+    public LogSequenceNumber ensureDBConnection(boolean cleanDB) throws Exception {
+        ensureConnections = new Connection[servers.length];
+        String[] servers = this.servers;
+        for (int i = 0; i < servers.length; i++) {
+            String server = servers[i];
+            ensureDB(server, cleanDB, i == 0);
 
-        ensureConnection = startConnection();
-        ensureConnection.setAutoCommit(true);
+            Connection connection = startConnection(server);
+            connection.setAutoCommit(true);
+            ensureConnections[i] = connection;
+        }
+        return getMasterLSN(ensureConnections[0]);
     }
+
+    protected boolean checkLSN(Connection connection, LogSequenceNumber lsn) throws SQLException {
+        LogSequenceNumber connectionLSN = getSlaveLSN(connection);
+
+        if(connectionLSN == null) // master
+            return true;
+
+        if(connectionLSN == LogSequenceNumber.INVALID_LSN) // first copy / or not yet started wal sync
+            return false;
+
+        if(connectionLSN == DataAdapter.NO_SUBSCRIPTION)
+            return false;
+
+        assert lsn != null;
+        return connectionLSN.compareTo(lsn) >= 0;
+    }
+
+    public int getServersCount() {
+        return servers.length;
+    }
+
+    public abstract void runSync(LogSequenceNumber masterLSN, SQLConsumer<Integer> run) throws SQLException, SQLHandledException;
+
+    // getting least loaded server
+    private String getServer(Integer needServer, LogSequenceNumber lsn) throws SQLException {
+        if(servers.length == 1)
+            return server;
+
+        if(needServer != null)
+            return servers[needServer];
+
+        String bestServer = null;
+        double bestLoad = 0;
+        for (int i = 0; i < ensureConnections.length; i++) {
+            Connection ensureConnection = ensureConnections[i];
+            if (checkLSN(ensureConnection, lsn)) {
+                double load = getLoad(ensureConnection);
+                if (bestServer == null || load <= bestLoad) {
+                    bestServer = servers[i];
+                    bestLoad = load;
+                }
+            }
+        }
+
+        return bestServer;
+    }
+
+    private final List<Connection> poolConnections = new ArrayList<>();
+
+    @Override
+    public Connection startConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection) throws SQLException {
+        String server = getServer(needServer, lsn); // get less loaded server
+
+        if(prevConnection != null && isFromServer(prevConnection, server))
+            return null;
+
+        synchronized (poolConnections) {
+            for (Connection poolConnection : poolConnections)
+                if (isFromServer(poolConnection, server)) {
+                    poolConnections.remove(poolConnection);
+                    return poolConnection;
+                }
+        }
+
+        return startConnection(server);
+    }
+
+    @Override
+    public void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
+        boolean canBePooled;
+        synchronized (poolConnections) {
+            canBePooled = poolConnections.size() < Settings.get().getFreeConnections();
+        }
+        if(canBePooled && cleaner != null && !connection.isClosed()) {
+            cleaner.accept(connection);
+            synchronized (poolConnections) {
+                poolConnections.add(connection);
+            }
+        } else
+            connection.close();
+    }
+
+    public static boolean isFromServer(Connection prevConnection, String server) {
+        return getServer(prevConnection).equals(server);
+    }
+
+    protected static String getServer(Connection prevConnection) {
+        return connectionInfo.get(prevConnection);
+    }
+
+    private final static Map<Connection, String> connectionInfo = Collections.synchronizedMap(new WeakHashMap<>());
+    protected Connection startConnection(String server) throws SQLException {
+        Connection connection = createConnection(server);
+        connectionInfo.put(connection, server);
+        return connection;
+    }
+    protected abstract Connection createConnection(String server) throws SQLException;
 
     public static List<String> getAllDBNames() {
         return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
@@ -167,7 +277,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
 
-    protected Connection ensureConnection;
+    protected Connection[] ensureConnections;
+
+    protected void executeEnsure(Connection connect, String command) {
+        try {
+            executeEnsureWithException(connect, command);
+        } catch (SQLException e) {
+            ServerLoggers.sqlSuppLog(e);
+        }
+    }
 
     protected void executeEnsure(String command) {
         try {
@@ -205,6 +323,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     }
 
     protected void executeEnsureWithException(String command) throws SQLException {
+        for(Connection ensureConnection : ensureConnections)
+            executeEnsureWithException(ensureConnection, command);
+    }
+
+    protected static void executeEnsureWithException(Connection ensureConnection, String command) throws SQLException {
         try (Statement statement = ensureConnection.createStatement()) {
             statement.execute(command);
         }

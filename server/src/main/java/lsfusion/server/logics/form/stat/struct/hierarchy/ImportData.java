@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -13,5 +14,5 @@ public interface ImportData {
 
     void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive);
     
-    Object genObject(ObjectEntity object) throws SQLException;
+    Object genObject(ObjectEntity object) throws SQLException, SQLHandledException;
 }

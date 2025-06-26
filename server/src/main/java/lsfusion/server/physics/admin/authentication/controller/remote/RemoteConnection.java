@@ -16,6 +16,7 @@ import lsfusion.interop.connection.*;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
+import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
@@ -49,6 +50,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
+import org.postgresql.replication.LogSequenceNumber;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.ref.WeakReference;
@@ -107,7 +109,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         securityManager = logicsInstance.getSecurityManager();
         this.logicsInstance = logicsInstance;
 
-        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
+        updateLSN(dbManager.getSyncLsn());
+        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this), new WeakSQLSessionLSNProvider(this));
     }
 
     // it's important to have all props lazy to make RemoteSession be initialized faster
@@ -217,11 +220,47 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    protected static class WeakSQLSessionContextProvider implements SQLSessionContextProvider { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteConnection> weakThis;
+    protected static class WeakSQLSessionLSNProvider implements SQLSessionLSNProvider {
 
-        public WeakSQLSessionContextProvider(RemoteConnection dbManager) {
-            this.weakThis = new WeakReference<>(dbManager);
+        private final WeakReference<RemoteConnection> weakThis;
+
+        public WeakSQLSessionLSNProvider(RemoteConnection remoteConnection) {
+            this.weakThis = new WeakReference<>(remoteConnection);
+        }
+
+        @Override
+        public void updateLSN(LogSequenceNumber lsn) {
+            final RemoteConnection wThis = weakThis.get();
+            if(wThis == null)
+                return;
+            wThis.updateLSN(lsn);
+        }
+
+        @Override
+        public LogSequenceNumber getLSN() {
+            final RemoteConnection wThis = weakThis.get();
+            if(wThis == null)
+                return null;
+            return wThis.getLSN();
+        }
+    }
+
+    private LogSequenceNumber lsn;
+    @AssertSynchronized
+    public void updateLSN(LogSequenceNumber lsn) {
+        this.lsn = lsn;
+    }
+
+    @AssertSynchronized
+    public LogSequenceNumber getLSN() {
+        return lsn;
+    }
+
+    protected static class WeakSQLSessionContextProvider implements SQLSessionContextProvider {
+        private final WeakReference<RemoteConnection> weakThis;
+
+        public WeakSQLSessionContextProvider(RemoteConnection remoteConnection) {
+            this.weakThis = new WeakReference<>(remoteConnection);
         }
 
         @Override

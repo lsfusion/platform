@@ -71,7 +71,6 @@ import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallAction;
-import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.SerializedTable;
 import org.apache.log4j.Logger;
 
@@ -867,11 +866,10 @@ public class SessionTable extends StoredTable implements ValuesContext<SessionTa
 
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
-
-            dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
+            dbSql.startFakeTransaction(0, OperationOwner.unknown);
             dbSql.ensureTable(this);
             dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, getBaseClass(), OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
-            dbSql.commitTransaction();
+            dbSql.endFakeTransaction(OperationOwner.unknown);
         }
     }
     

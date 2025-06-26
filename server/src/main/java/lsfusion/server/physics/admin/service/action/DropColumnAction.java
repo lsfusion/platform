@@ -25,7 +25,7 @@ public class DropColumnAction extends InternalAction {
         String columnName = (String) BL.reflectionLM.sidDropColumn.getOld(PrevScope.DB).read(context, dropColumnObject);
         String tableName = (String) BL.reflectionLM.sidTableDropColumn.getOld(PrevScope.DB).read(context, dropColumnObject);
         try {
-            context.getDbManager().dropColumn(tableName, columnName);
+            context.getDbManager().dropColumn(context.getSession().sql, tableName, columnName);
         } catch (SQLException e) {
             ServerLoggers.sqlLogger.error("Error dropping column", e);
         }

@@ -29,7 +29,7 @@ public class DropColumnsAction extends InternalAction {
         Map<String, List<String>> tableColumns = readTableColumns(context);
         for(Map.Entry<String, List<String>> entry : tableColumns.entrySet()) {
             try {
-                context.getDbManager().dropColumns(entry.getKey(), entry.getValue());
+                context.getDbManager().dropColumns(context.getSession().sql, entry.getKey(), entry.getValue());
             } catch (SQLException e) {
                 ServerLoggers.sqlLogger.error("Error dropping columns", e);
             }

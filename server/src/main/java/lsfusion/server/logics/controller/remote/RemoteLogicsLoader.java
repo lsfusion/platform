@@ -8,17 +8,12 @@ import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
@@ -58,10 +53,6 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         this.remoteLogics = remoteLogics;
     }
 
-    private DataSession createSession() throws SQLException {
-        return dbManager.createSession();
-    }
-
     private PublicTask initTask;
 
     public void setInitTask(PublicTask initTask) {
@@ -92,6 +83,8 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
 
     public void exportRmiObject() {
         try {
+            dbManager.lsnSynced(); // after that point all changes are considered to be "safe"
+
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);
         } catch (AlreadyBoundException e) {

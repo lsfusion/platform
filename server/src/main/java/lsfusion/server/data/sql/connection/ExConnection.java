@@ -25,23 +25,16 @@ public class ExConnection {
         this.lastTempTablesActivity = currentTime;
     }
 
-    public void restartConnection(Connection newConnection, SQLSessionContextProvider contextProvider) throws SQLException {
-        this.sql = newConnection;
-
-        updateContext(contextProvider);
-    }
-
     private String timeZone;
-    public void updateContext(SQLSessionContextProvider contextProvider) throws SQLException {
+    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider) throws SQLException {
         LocalePreferences localePreferences = contextProvider.getLocalePreferences();
-
         String newTimeZone = localePreferences != null ? ("'" + localePreferences.timeZone + "'") : "DEFAULT";
-        if (timeZone == null || !timeZone.equals(newTimeZone)) {
+        if (noCache || timeZone == null || !timeZone.equals(newTimeZone)) {
             timeZone = newTimeZone;
 
             Statement statement = SQLSession.createSingleStatement(sql);
             try {
-                statement.execute("SET TIMEZONE=" + timeZone);
+                statement.execute("SET TIMEZONE=" + newTimeZone);
             } catch (SQLException e) {
                 ServerLoggers.sqlLogger.error(statement.toString());
                 throw e;

@@ -16,10 +16,12 @@ import java.util.List;
 public class CheckMaterializationsTask extends GroupPropertiesSingleTask<AggregateProperty> {
     @Override
     protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        String result = element.checkMaterialization(sql, getBL().LM.baseClass, true);
-        if (result != null && !result.isEmpty())
-            addMessage(result);
+        try(DataSession dataSession = createSession()) {
+            SQLSession sql = dataSession.sql;
+            String result = element.checkMaterialization(sql, getBL().LM.baseClass, true);
+            if (result != null && !result.isEmpty())
+                addMessage(result);
+        }
     }
 
     @Override
