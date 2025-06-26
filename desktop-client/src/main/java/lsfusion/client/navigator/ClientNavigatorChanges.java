@@ -1,6 +1,5 @@
 package lsfusion.client.navigator;
 
-import lsfusion.base.file.IOUtils;
 import lsfusion.client.navigator.window.ClientClassWindowNavigator;
 
 import java.io.ByteArrayInputStream;
@@ -22,34 +21,32 @@ public class ClientNavigatorChanges {
 
     public ClientNavigatorChanges(DataInputStream inStream) throws IOException {
         properties = new HashMap<>();
-        if(inStream.available() > 0) {
-            int count = inStream.readInt();
-            for (int i = 0; i < count; i++) {
-                byte type = inStream.readByte();
-                ClientPropertyNavigator propertyNavigator;
-                String canonicalName = deserializeString(inStream);
-                switch (type) {
-                    case 0:
-                        propertyNavigator = new ClientCaptionElementNavigator(canonicalName);
-                        break;
-                    case 1:
-                        propertyNavigator = new ClientImageElementNavigator(canonicalName);
-                        break;
-                    case 2:
-                        propertyNavigator = new ClientClassElementNavigator(canonicalName);
-                        break;
-                    case 3:
-                        propertyNavigator = new ClientShowIfElementNavigator(canonicalName);
-                        break;
-                    case 10:
-                        propertyNavigator = new ClientClassWindowNavigator(canonicalName);
-                        break;
-                    default:
-                        throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
-                }
-                Object value = deserializeObject(inStream);
-                properties.put(propertyNavigator, value);
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            byte type = inStream.readByte();
+            ClientPropertyNavigator propertyNavigator;
+            String canonicalName = deserializeString(inStream);
+            switch (type) {
+                case 0:
+                    propertyNavigator = new ClientCaptionElementNavigator(canonicalName);
+                    break;
+                case 1:
+                    propertyNavigator = new ClientImageElementNavigator(canonicalName);
+                    break;
+                case 2:
+                    propertyNavigator = new ClientClassElementNavigator(canonicalName);
+                    break;
+                case 3:
+                    propertyNavigator = new ClientShowIfElementNavigator(canonicalName);
+                    break;
+                case 10:
+                    propertyNavigator = new ClientClassWindowNavigator(canonicalName);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
             }
+            Object value = deserializeObject(inStream);
+            properties.put(propertyNavigator, value);
         }
     }
 }

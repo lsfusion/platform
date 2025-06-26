@@ -34,16 +34,14 @@ public class NavigatorChanges {
     }
 
     public void serialize(ConnectionContext context, DataOutputStream outStream) throws IOException {
-        if (!properties.isEmpty()) {
-            outStream.writeInt(properties.size());
-            for (int i = 0, size = properties.size(); i < size; i++) {
-                PropertyNavigator propertyNavigator = properties.getKey(i);
-                Object value = properties.getValue(i);
+        outStream.writeInt(properties.size());
+        for (int i = 0, size = properties.size(); i < size; i++) {
+            PropertyNavigator propertyNavigator = properties.getKey(i);
+            Object value = properties.getValue(i);
 
-                propertyNavigator.serialize(outStream);
+            propertyNavigator.serialize(outStream);
 
-                FormChanges.serializeConvertFileValue(outStream, getNeedImage(propertyNavigator), value, context);
-            }
+            FormChanges.serializeConvertFileValue(outStream, getNeedImage(propertyNavigator), value, context);
         }
     }
 

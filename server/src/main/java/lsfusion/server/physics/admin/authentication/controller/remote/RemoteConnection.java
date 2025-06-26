@@ -206,8 +206,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         public ProcessNavigatorChangesClientAction getNavigatorChangesAction() {
             RemoteConnection remoteConnection = weakThis.get();
             if(remoteConnection instanceof RemoteNavigator) {
-                ProcessNavigatorChangesClientAction action = ((RemoteNavigator) remoteConnection).getNavigatorChangesAction();
-                return action.navigatorChanges.length > 0 ? action : null;
+                return ((RemoteNavigator) remoteConnection).getNavigatorChangesAction();
             }
             return null;
         }
