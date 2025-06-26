@@ -1314,9 +1314,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 .mapValues(value -> value.mapRevKeyValues(DBStoredProperty::getDBName, DBStoredProperty::getCanonicalName));
     }
 
-    // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы.
+    // Удаляем несуществующие индексы и добавляем в existingIndexes не изменившиеся индексы.
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
-    private void checkIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+    private void checkIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, Set<IndexData<Field>> existingIndexes) throws SQLException {
         startLog("Checking indexes");
         ImMap<String, String> propertyCNChanges = getStoredOldToNewCNMapping(oldDBStructure, newDBStructure);
 
@@ -1354,7 +1354,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 IndexData<Field> newIndex = newTableIndexesNames.get(new Pair<>(oldIndexKeys, oldOptions.type));
                 if (res != ReplaceResult.FAILED && newIndex != null && newIndex.options.equalsWithoutDBName(oldOptions)) {
                     IndexOptions newOptions = newIndex.options;
-                    newTableIndexes.remove(newIndex); // удаляем, чтобы в дальнейшем не создавать этот индекс
+                    existingIndexes.add(newIndex); // запоминаем, чтобы в дальнейшем не создавать этот индекс
                     if (!BaseUtils.nullEquals(newOptions.dbName, oldOptions.dbName) || oldOptions.dbName == null && res == ReplaceResult.REPLACED) {
                         ImOrderSet<String> newIndexKeysSet = SetFact.fromJavaOrderSet(oldIndexKeys);
                         sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, newIndexKeysSet, oldOptions, newOptions, Settings.get().isStartServerAnyWay());
@@ -1657,7 +1657,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 checkUniquePropertyDBName(newDBStructure);
 
                 // DROP / RENAME indices
-                checkIndexes(sql, oldDBStructure, newDBStructure);
+                Set<IndexData<Field>> existingIndexes = new HashSet<>();
+            checkIndexes(sql, oldDBStructure, newDBStructure, existingIndexes);
 
                 if (!isFirstStart)
                     alterDBStructure(sql, oldDBStructure, newDBStructure);
@@ -1711,7 +1712,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 // CREATE indexes (need it after moving the columns, because they are created there)
 
-                createIndexes(sql, oldDBStructure, newDBStructure);
+                createIndexes(sql, oldDBStructure, newDBStructure, existingIndexes);
 
                 // DROP properties
 
@@ -1916,14 +1917,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static void createIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+    private static void createIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, Set<IndexData<Field>> existingIndexes) throws SQLException {
         startLog("Adding indexes");
         for (Map.Entry<DBTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
             for (IndexData<Field> index : mapIndex.getValue()) {
-                DBTable table = mapIndex.getKey();
-                addIndexWithStartLog(() ->
-                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, Settings.get().isStartServerAnyWay()),
-                        "Adding index: " + sql.getIndexName(table, index), oldDBStructure.getTable(table.getName()) != null); // no need to log if the table is new
+                if (!existingIndexes.contains(index)) {
+                    DBTable table = mapIndex.getKey();
+                    addIndexWithStartLog(() ->
+                                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, Settings.get().isStartServerAnyWay()),
+                            "Adding index: " + sql.getIndexName(table, index), oldDBStructure.getTable(table.getName()) != null); // no need to log if the table is new
+                }
             }
     }
 
