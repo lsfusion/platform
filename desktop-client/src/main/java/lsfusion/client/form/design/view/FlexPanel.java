@@ -61,7 +61,7 @@ public class FlexPanel extends PanelWidget {
         add(widget, getChildrenCount(), alignment);
     }
 
-    private int getChildrenCount() {
+    public int getChildrenCount() {
         return getChildren().size();
     }
 

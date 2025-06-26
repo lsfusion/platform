@@ -134,7 +134,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                     ComponentViewWidget component = addPanelRenderer(columnKey, null);
 
                     if (!hide) { // something like getChildPosition should be done here, but for now there is a hasColumnGroupObjects check
-                        component.add(columnsPanel, renderedColumnKeys.get(columnKey));
+                        Integer childrenCount = columnsPanel.getWidgetCount();
+                        Integer beforeIndex = renderedColumnKeys.get(columnKey);
+                        component.add(columnsPanel, Math.min(childrenCount, beforeIndex));
                     }
                 });
             }

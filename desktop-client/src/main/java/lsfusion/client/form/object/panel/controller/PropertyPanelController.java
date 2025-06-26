@@ -211,7 +211,9 @@ public class PropertyPanelController {
 
                 if (!property.hide) {
                     if (newView.getWidget().getParent() != renderersPanel.getComponent()) {
-                        renderersPanel.addFill(newView.getWidget(), renderedColumnKeys.get(columnKey));
+                        Integer childrenCount = renderersPanel.getChildrenCount();
+                        Integer beforeIndex = renderedColumnKeys.get(columnKey);
+                        renderersPanel.addFill(newView.getWidget(), Math.min(childrenCount, beforeIndex));
                     }
                 }
 
