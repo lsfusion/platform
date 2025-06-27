@@ -24,6 +24,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.property.PropertyEditType;
     import lsfusion.interop.form.property.PropertyGroupType;
     import lsfusion.interop.form.print.FormPrintType;
+    import lsfusion.interop.navigator.NavigatorScheduler;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.base.AppServerImage;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -1221,7 +1222,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
 		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
-		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
+		| 	schedule = scheduleEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -1254,7 +1255,7 @@ formContainerEventDeclaration returns [String sid, boolean collapse = false]
         )
     ;
 
-scheduleFormEventDeclaration returns [int period, boolean fixed]
+scheduleEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 
@@ -5150,6 +5151,7 @@ orientation returns [Orientation val]
 
 navigatorStatement
 	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.root]
+
 	;
 
 navigatorElementStatementBody[NavigatorElement parentElement]
@@ -5158,6 +5160,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 			|	newNavigatorElementStatement[parentElement]
 			|	editNavigatorElementStatement[parentElement]
 			|	emptyStatement
+			|   navigatorSchedulerStatement
 			)*
 		'}'
 	|	emptyStatement
@@ -5266,7 +5269,16 @@ navigatorElementSelector returns [NavigatorElement element]
 		}
 	;
 
-
+navigatorSchedulerStatement
+@after {
+	if (inMainParseState()) {
+	    self.addNavigatorScheduler($action.action, new NavigatorScheduler($schedule.period, $schedule.fixed));
+	}
+}
+	:
+		schedule = scheduleEventDeclaration
+	    action=listTopContextDependentActionDefinitionBody[new ArrayList<>(), false, false]
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// DESIGN STATEMENT ////////////////////////////

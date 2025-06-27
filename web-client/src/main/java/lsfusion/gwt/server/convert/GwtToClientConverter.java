@@ -8,6 +8,7 @@ import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
+import lsfusion.gwt.client.GNavigatorScheduler;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
@@ -39,6 +40,7 @@ import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.property.cell.UserInputResult;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.session.ExternalHttpResponse;
 
 import java.awt.*;
@@ -239,5 +241,10 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GFormEventClose.class)
     public FormEventClose convertFormScheduler(GFormEventClose formEventClose) {
         return new FormEventClose(formEventClose.ok);
+    }
+
+    @Converter(from = GNavigatorScheduler.class)
+    public NavigatorScheduler convertNavigatorScheduler(GNavigatorScheduler navigatorScheduler) {
+        return new NavigatorScheduler(navigatorScheduler.period, navigatorScheduler.fixed);
     }
 }

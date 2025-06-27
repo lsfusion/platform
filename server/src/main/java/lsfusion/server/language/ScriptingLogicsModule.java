@@ -19,6 +19,7 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
@@ -5534,6 +5535,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitAddToSystemWindowError(parser, element.getName(), windowName);
             }
         }
+    }
+
+    public void addNavigatorScheduler(LAWithParams action, NavigatorScheduler scheduler) {
+        baseLM.navigatorSchedulers.put(scheduler, action.getLP());
     }
 
     public static class ImageOption {

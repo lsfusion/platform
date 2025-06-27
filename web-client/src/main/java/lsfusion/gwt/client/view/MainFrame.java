@@ -598,6 +598,8 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.requestPushNotificationPermissions();
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+
+        navigatorController.initializeNavigatorSchedulers(result.navigatorSchedulers);
     }
 
     private void addBindings(FormsController formsController, GNavigatorElement element) {

@@ -5,6 +5,7 @@ import lsfusion.client.connection.RemoteConnectionProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientInfo;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
@@ -47,7 +48,12 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
     }
-    
+
+    @Override
+    public ServerResponse executeNavigatorSchedulerAction(long requestIndex, long lastReceivedRequestIndex, NavigatorScheduler navigatorScheduler) throws RemoteException {
+        return target.executeNavigatorSchedulerAction(requestIndex, lastReceivedRequestIndex, navigatorScheduler);
+    }
+
     @Override
     public void updateClientInfo(ClientInfo clientInfo) throws RemoteException {
         target.updateClientInfo(clientInfo);
