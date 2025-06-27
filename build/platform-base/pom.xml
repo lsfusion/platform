@@ -521,11 +521,6 @@
                 <version>${java-json-canonicalization.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.github.erdtman</groupId>
-                <artifactId>java-json-canonicalization</artifactId>
-                <version>${java-json-canonicalization.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
                 <version>${junrar.version}</version>
