@@ -1910,7 +1910,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (DBTable table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 startLog("Dropping table " + table);
-                sql.dropTable(table);
+                sql.dropTable(table, Settings.get().isStartServerAnyWay());
             }
         }
     }
