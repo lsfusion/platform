@@ -805,8 +805,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("ALTER TABLE " + table.getName(syntax) + " RENAME TO " + syntax.getTableName(newTableName));
     }
 
-    public void dropTable(StoredTable table) throws SQLException {
-        executeDDL("DROP TABLE " + table.getName(syntax));
+    public void dropTable(StoredTable table, boolean ifExists) throws SQLException {
+        executeDDL("DROP TABLE " + (ifExists ? "IF EXISTS " : "" )+ table.getName(syntax));
     }
 
     static String getIndexName(StoredTable table, String dbName, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
@@ -1097,7 +1097,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void innerDropColumn(String table, String field, boolean ifExists) throws SQLException {
-        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + field);
+        executeDDL("ALTER TABLE " + (ifExists ? "IF EXISTS " : "" ) + table + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + field);
     }
 
     public void dropColumns(String table, List<String> fields) throws SQLException {
