@@ -510,6 +510,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
                 scr.onload = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
+                //temp fix: continueDispatching if .js not found
+                scr.onerror = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
             } else if (extension === 'css') {
                 var link = document.createElement("link");
                 link.href = resourcePath;
