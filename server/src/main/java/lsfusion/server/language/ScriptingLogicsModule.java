@@ -5537,8 +5537,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addNavigatorScheduler(LAWithParams action, NavigatorScheduler scheduler) {
-        baseLM.navigatorSchedulers.put(scheduler, action.getLP());
+    public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) {
+        baseLM.navigatorSchedulers.put(scheduler, action);
     }
 
     public static class ImageOption {
