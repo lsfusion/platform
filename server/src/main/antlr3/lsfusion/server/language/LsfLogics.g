@@ -5272,12 +5272,11 @@ navigatorElementSelector returns [NavigatorElement element]
 navigatorSchedulerStatement
 @after {
 	if (inMainParseState()) {
-	    self.addNavigatorScheduler($action.action, new NavigatorScheduler($schedule.period, $schedule.fixed));
+	    self.addNavigatorScheduler($action.action.getLP(), new NavigatorScheduler($schedule.period, $schedule.fixed));
 	}
 }
 	:
-		schedule = scheduleEventDeclaration
-	    action=listTopContextDependentActionDefinitionBody[new ArrayList<>(), false, false]
+		schedule = scheduleEventDeclaration action=keepContextFlowActionDefinitionBody[new ArrayList<>(), false]
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
