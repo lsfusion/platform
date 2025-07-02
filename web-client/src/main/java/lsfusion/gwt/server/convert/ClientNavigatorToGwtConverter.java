@@ -5,6 +5,7 @@ import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
+import lsfusion.gwt.client.GNavigatorScheduler;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
@@ -16,6 +17,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
+import lsfusion.interop.navigator.NavigatorScheduler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -160,5 +162,10 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientAsyncCloseForm.class)
     public GAsyncCloseForm convertCloseForm(ClientAsyncCloseForm asyncCloseForm) {
         return new GAsyncCloseForm();
+    }
+
+    @Converter(from = NavigatorScheduler.class)
+    public GNavigatorScheduler convertNavigatorScheduler(NavigatorScheduler scheduler) {
+        return new GNavigatorScheduler(scheduler.period, scheduler.fixed);
     }
 }

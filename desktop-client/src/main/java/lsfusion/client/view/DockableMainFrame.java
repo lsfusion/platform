@@ -156,7 +156,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         rmiQueue.setDispatcher(actionDispatcher);
 
-        navigatorController = new NavigatorController(mainNavigator);
+        navigatorController = new NavigatorController(mainNavigator, rmiQueue);
 
         mainControl = new CControl(this, new EfficientControlFactory() {
             @Override
@@ -260,7 +260,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
-    private void processServerResponse(ServerResponse serverResponse) throws IOException {
+    public void processServerResponse(ServerResponse serverResponse) throws IOException {
         //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
         if (serverResponse != null) {
             actionDispatcher.dispatchServerResponse(serverResponse);
@@ -599,6 +599,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
 
         navigatorController.initWindowViews();
+
+        navigatorController.initializeNavigatorSchedulers(navigatorData.navigatorSchedulers);
 
         windows = mergeLinked(windows, navigatorController.getWindowsViews());
 

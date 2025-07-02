@@ -2,6 +2,7 @@ package lsfusion.client.navigator;
 
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.interop.navigator.NavigatorScheduler;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -20,14 +21,18 @@ public class NavigatorData {
     public final ClientAbstractWindow logs;
     public final ClientAbstractWindow forms;
 
+    public final List<NavigatorScheduler> navigatorSchedulers;
+
     public NavigatorData(ClientNavigatorElement root, Map<String, ClientNavigatorWindow> windows,
                          ClientNavigatorChanges navigatorChanges,
-                         ClientAbstractWindow logs, ClientAbstractWindow forms) {
+                         ClientAbstractWindow logs, ClientAbstractWindow forms,
+                         List<NavigatorScheduler> navigatorSchedulers) {
         this.root = root;
         this.windows = windows;
         this.navigatorChanges = navigatorChanges;
         this.logs = logs;
         this.forms = forms;
+        this.navigatorSchedulers = navigatorSchedulers;
     }
 
     public static NavigatorData deserializeListClientNavigatorElementWithChildren(byte[] state) throws IOException {
@@ -70,6 +75,12 @@ public class NavigatorData {
         ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
         ClientAbstractWindow forms = new ClientAbstractWindow(inStream);
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms);
+        List<NavigatorScheduler> navigatorSchedulers = new ArrayList<>();
+        int size = inStream.readInt();
+        for (int i = 0; i < size; i++) {
+            navigatorSchedulers.add(new NavigatorScheduler(inStream.readInt(), inStream.readBoolean()));
+        }
+
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms, navigatorSchedulers);
     }
 }
