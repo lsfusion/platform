@@ -14,6 +14,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -110,9 +111,7 @@ import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
@@ -797,6 +796,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public NavigatorElement application;
     public NavigatorElement logs;
     public NavigatorElement system;
+
+    public Map<NavigatorScheduler, LA> navigatorSchedulers = new HashMap<>();
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 

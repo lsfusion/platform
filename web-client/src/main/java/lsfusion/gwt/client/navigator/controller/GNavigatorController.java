@@ -1,9 +1,13 @@
 package lsfusion.gwt.client.navigator.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.GNavigatorScheduler;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
+import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorSchedulerAction;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
@@ -36,6 +40,39 @@ public abstract class GNavigatorController implements GINavigatorController {
     }
     public void initMobileNavigatorView(GNavigatorWindow window, Widget widget) {
         mobileViews.put(window, widget);
+    }
+
+    public void initializeNavigatorSchedulers(List<GNavigatorScheduler> navigatorSchedulers) {
+        for(GNavigatorScheduler navigatorScheduler : navigatorSchedulers) {
+            scheduleNavigatorScheduler(navigatorScheduler);
+        }
+    }
+
+    private void scheduleNavigatorScheduler(GNavigatorScheduler navigatorScheduler) {
+        Scheduler.get().scheduleFixedPeriod(() -> {
+            executeNavigatorSchedulerAction(navigatorScheduler, () -> {
+                if (!navigatorScheduler.fixed) {
+                    scheduleNavigatorScheduler(navigatorScheduler);
+                }
+            });
+            return navigatorScheduler.fixed;
+        }, navigatorScheduler.period * 1000);
+    }
+
+    private void executeNavigatorSchedulerAction(GNavigatorScheduler navigatorScheduler, Runnable onSuccess) {
+        MainFrame.syncDispatch(new ExecuteNavigatorSchedulerAction(navigatorScheduler), new GwtActionDispatcher.ServerResponseCallback(false) {
+            @Override
+            protected GwtActionDispatcher getDispatcher() {
+                return formsController.getDispatcher();
+            }
+
+            @Override
+            protected Runnable getOnRequestFinished() {
+                if(onSuccess != null)
+                    return onSuccess;
+                return super.getOnRequestFinished();
+            }
+        }, false);
     }
 
     @Override

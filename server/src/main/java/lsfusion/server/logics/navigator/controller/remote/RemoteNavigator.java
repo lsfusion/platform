@@ -23,6 +23,7 @@ import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.NavigatorInfo;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.context.Context;
@@ -541,6 +542,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
 
+            Map<NavigatorScheduler, LA> navigatorSchedulers = businessLogics.LM.navigatorSchedulers;
+            dataStream.writeInt(navigatorSchedulers.size());
+            for(NavigatorScheduler navigatorScheduler : navigatorSchedulers.keySet()) {
+                navigatorScheduler.serialize(dataStream);
+            }
+
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -597,6 +604,15 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 try (DataSession session = createSession()) {
                     runAction(session, actionSID, type == 1, stack);
                 }
+            }
+        });
+    }
+
+    @Override
+    public ServerResponse executeNavigatorSchedulerAction(long requestIndex, long lastReceivedRequestIndex, NavigatorScheduler navigatorScheduler) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            try (DataSession session = createSession()) {
+                businessLogics.LM.navigatorSchedulers.get(navigatorScheduler).execute(session, getStack());
             }
         });
     }
