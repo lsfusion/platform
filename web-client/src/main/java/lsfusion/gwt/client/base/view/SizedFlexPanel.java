@@ -95,6 +95,8 @@ public class SizedFlexPanel extends FlexPanel {
 
     private static void setIntrinisticSize(Element element, boolean vertical, boolean isShrink, boolean isStretch, GSize size) {
         element.setPropertyObject(vertical ? "intrinisticShrinkHeight" : "intrinisticShrinkWidth", size);
+        if (MainFrame.safari)
+            GwtClientUtils.addClassName(element, "safari");
 
         if(isShrink) {
             if (vertical)
