@@ -72,6 +72,7 @@ public class NewThreadAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 //        String callThread = ExecutionStackAspect.getStackString();
+        context.getSession().registerThreadStack();
         if(targetProp != null || connectionProp != null) {
             RemoteNavigator.Notification notification = new RemoteNavigator.Notification() {
                 @Override
@@ -92,7 +93,6 @@ public class NewThreadAction extends AroundAspectAction {
                     context.getNavigatorsManager().pushNotificationConnection((DataObject) connectionObject, notification); //, callThread));
             }
         } else {
-            context.getSession().registerThreadStack();
             Long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;
             Long period = periodProp != null ? ((Number) periodProp.read(context, context.getKeys())).longValue() : null;
 
