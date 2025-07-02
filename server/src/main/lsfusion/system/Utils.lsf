@@ -151,35 +151,35 @@ endsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 E
 isISubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
 isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
-replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
+replace (TEXT string, TEXT from, TEXT to) = FORMULA TEXT 'replace($1,$2,$3)';
 
 length = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
 regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)';
 
-substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
-substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
+substr (TEXT string, INTEGER from, INTEGER len) = FORMULA TEXT 'substring($1, $2, $3)';
+substrFrom (TEXT string, INTEGER from) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
 regexPatternMatch (TEXT str, STRING pattern) = FORMULA NULL BOOLEAN PG 'CASE WHEN $1~$2 THEN 1 ELSE NULL END';
 
-ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
-rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
+ltrim (TEXT string) = FORMULA TEXT 'ltrim($1)';
+rtrim (TEXT string) = FORMULA TEXT 'rtrim($1)';
 
-ltrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'ltrim($1,$2)';
-rtrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'rtrim($1,$2)';
+ltrim (TEXT string, TEXT characters) = FORMULA TEXT PG 'ltrim($1,$2)';
+rtrim (TEXT string, TEXT characters) = FORMULA TEXT PG 'rtrim($1,$2)';
 
-trim (TEXT p1) = FORMULA TEXT PG 'trim($1)', MS 'ltrim(rtrim($1))';
+trim (TEXT string) = FORMULA TEXT PG 'trim($1)', MS 'ltrim(rtrim($1))';
 
-left (TEXT p1, INTEGER p2) = FORMULA TEXT 'left($1,$2)';
-right (TEXT p1, INTEGER p2) = FORMULA TEXT 'right($1,$2)';
+left (TEXT string, INTEGER n) = FORMULA TEXT 'left($1,$2)';
+right (TEXT string, INTEGER n) = FORMULA TEXT 'right($1,$2)';
 
-lpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'lpad($1,$2,$3)';
-rpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'rpad($1,$2,$3)';
+lpad (TEXT string, INTEGER len, TEXT fill) = FORMULA TEXT PG 'lpad($1,$2,$3)';
+rpad (TEXT string, INTEGER len, TEXT fill) = FORMULA TEXT PG 'rpad($1,$2,$3)';
 
-repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($1,$2)';
+repeat (TEXT string, INTEGER n) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($1,$2)';
 
-onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
+onlyDigits (TEXT string) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
 
 encode (RAWFILE f, STRING encoding) = FORMULA TEXT 'encode(($1),($2))';
 decode (STRING s, STRING encoding) = FORMULA RAWFILE 'decode(($1),($2))';
