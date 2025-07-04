@@ -19,7 +19,8 @@ public class ChangeFlowType {
     public static final ChangeFlowType HASSESSIONUSAGES = new ChangeFlowType(); // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
     public static final ChangeFlowType NEEDMORESESSIONUSAGES = new ChangeFlowType(); // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
     public static final ChangeFlowType INTERNALASYNC = new ChangeFlowType(); // checks if InternalClientAction is async
-    ;
+    public static final ChangeFlowType GROUPCHANGE = new ChangeFlowType(); // has interactive form, but not inside request
+
     public boolean isChange() {
         return this == READONLYCHANGE || this instanceof FormChangeFlowType || this == ANYEFFECT;
     }

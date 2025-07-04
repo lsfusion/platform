@@ -28,6 +28,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
@@ -230,10 +231,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
 
-        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), PropertyDrawView::hasUserChangeAction));
+        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), this::showGroupChange));
         setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
+    }
+
+    private boolean showGroupChange(PropertyDrawView property, FormInstanceContext context) {
+        return property.hasUserChangeAction(context) && !property.hasFlow(context, ChangeFlowType.GROUPCHANGE);
     }
 
     public final ImSet<T> interfaces;
