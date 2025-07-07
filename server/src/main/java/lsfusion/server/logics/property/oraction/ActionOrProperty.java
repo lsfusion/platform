@@ -238,7 +238,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     private boolean showGroupChange(PropertyDrawView property, FormInstanceContext context) {
-        return property.hasUserChangeAction(context) && !property.hasFlow(context, ChangeFlowType.GROUPCHANGE);
+        return property.hasUserChangeAction(context) && !property.hasFlow(context, ChangeFlowType.NOGROUPCHANGE);
     }
 
     public final ImSet<T> interfaces;

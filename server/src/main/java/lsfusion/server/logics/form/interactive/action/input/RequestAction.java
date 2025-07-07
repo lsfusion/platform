@@ -62,7 +62,7 @@ public class RequestAction extends KeepContextAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type == ChangeFlowType.GROUPCHANGE)
+        if(type == ChangeFlowType.NOGROUPCHANGE)
             return false;
         return super.hasFlow(type);
     }
