@@ -134,6 +134,7 @@ public abstract class MainFrame extends JFrame {
             MainController.disableActionsIfReadonly = clientSettings.disableActionsIfReadonly;
             MainController.enableShowingRecentlyLogMessages = clientSettings.enableShowingRecentlyLogMessages;
             MainController.maxRequestQueueSize = clientSettings.maxRequestQueueSize;
+            MainController.textFieldPropertyEditorScannerSleep = clientSettings.textFieldPropertyEditorScannerSleep;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 

@@ -85,6 +85,8 @@ public class MainController {
 
     public static int maxRequestQueueSize;
 
+    public static long textFieldPropertyEditorScannerSleep;
+
     public static boolean jasperReportsIgnorePageMargins;
 
     // lifecycle
