@@ -680,6 +680,10 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
+textFieldPropertyEditorScannerSleep = DATA LONG (Computer);
+computerSettings (Computer c) = JSON FROM textFieldPropertyEditorScannerSleep(c);
+computerSettings = computerSettings(currentComputer());
+
 EXTEND FORM settings
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 
@@ -687,6 +691,9 @@ EXTEND FORM settings
     PROPERTIES(uc) READONLY name, login, userRoles
     PROPERTIES(uc) fontSize, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    
+    OBJECTS c = Computer
+    PROPERTIES(c) hostname, textFieldPropertyEditorScannerSleep
 ;
 
 DESIGN settings {
@@ -712,6 +719,10 @@ DESIGN settings {
                }
             }
             MOVE BOX(uc);
+        }
+        NEW computer {
+            caption = '{authentication.computer}';
+            MOVE BOX(c);
         }
     }
 }

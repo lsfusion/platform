@@ -275,6 +275,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean userFiltersManualApplyMode;
         int maxRequestQueueSize;
         double maxStickyLeft;
+        String computerSettings;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -312,6 +313,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             maxRequestQueueSize = Settings.get().getMaxRequestQueueSize();
 
             maxStickyLeft = Settings.get().getMaxStickyLeft();
+            computerSettings = (String) businessLogics.serviceLM.computerSettings.read(session);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -319,7 +321,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, showDetailedInfoDelay, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
                 colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(),
-                userFiltersManualApplyMode, maxRequestQueueSize, maxStickyLeft);
+                userFiltersManualApplyMode, maxRequestQueueSize, maxStickyLeft, computerSettings);
     }
 
     private void fillRanges(String json, List<String> ranges) {

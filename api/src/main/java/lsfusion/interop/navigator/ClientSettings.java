@@ -28,13 +28,15 @@ public class ClientSettings implements Serializable {
     public boolean userFiltersManualApplyMode;
     public int maxRequestQueueSize;
     public double maxStickyLeft;
+    public String computerSettings;
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
                           boolean showDetailedInfo, int showDetailedInfoDelay, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                           boolean pivotOnlySelectedColumn, String matchSearchSeparator,
                           ColorTheme colorTheme, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
-                          boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode, int maxRequestQueueSize, double maxStickyLeft) {
+                          boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode, int maxRequestQueueSize, double maxStickyLeft,
+                          String computerSettings) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -56,5 +58,6 @@ public class ClientSettings implements Serializable {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.maxRequestQueueSize = maxRequestQueueSize;
         this.maxStickyLeft = maxStickyLeft;
+        this.computerSettings = computerSettings;
     }
 }

@@ -110,6 +110,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             MainController.userFiltersManualApplyMode = clientSettings.userFiltersManualApplyMode;
             MainController.maxRequestQueueSize = clientSettings.maxRequestQueueSize;
+            MainController.parseComputerSettings(clientSettings.computerSettings);
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 

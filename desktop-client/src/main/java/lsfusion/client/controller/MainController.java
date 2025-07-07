@@ -36,6 +36,7 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import javax.swing.Timer;
 import javax.swing.*;
@@ -79,6 +80,9 @@ public class MainController {
     public static boolean userFiltersManualApplyMode;
 
     public static int maxRequestQueueSize;
+
+    //computer settings
+    public static long textFieldPropertyEditorScannerSleep;
 
     // lifecycle
 
@@ -557,6 +561,11 @@ public class MainController {
         UIManager.put("Table.gridColor", SwingDefaults.getTableGridColor()); // Actually doesn't fully work. We have to update gridColor in JTable's updateUI() for existing tables
         UIManager.put("TableHeader.separatorColor", SwingDefaults.getTableGridColor());
         UIManager.put("TableHeader.bottomSeparatorColor", SwingDefaults.getTableGridColor());
+    }
+
+    public static void parseComputerSettings(String computerSettings) {
+        JSONObject json = new JSONObject(nvl(computerSettings, "{}"));
+        textFieldPropertyEditorScannerSleep = json.optLong("textFieldPropertyEditorScannerSleep", 300);
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {
