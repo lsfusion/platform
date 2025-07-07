@@ -52,8 +52,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.safeDelete;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
@@ -568,7 +567,7 @@ public class MainController {
     }
 
     public static void parseComputerSettings(String computerSettings) {
-        JSONObject json = new JSONObject(nvl(computerSettings, "{}"));
+        JSONObject json = new JSONObject(isRedundantString(computerSettings) ? "{}" : computerSettings);
         textFieldPropertyEditorScannerSleep = json.optLong("textFieldPropertyEditorScannerSleep", 300);
     }
 

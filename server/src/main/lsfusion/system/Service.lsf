@@ -995,7 +995,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
         cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel'),
-        useClusterizeInPivot = valueSetting('useClusterizeInPivot');
+        useClusterizeInPivot = valueSetting('useClusterizeInPivot'),
+        computerSettings = computerSettings();
 }
 
 getClientSettings() {
