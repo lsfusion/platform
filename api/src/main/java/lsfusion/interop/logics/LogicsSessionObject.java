@@ -97,7 +97,6 @@ public class LogicsSessionObject {
         boolean enableShowingRecentlyLogMessages = json.optBoolean("enableShowingRecentlyLogMessages");
         String pushNotificationPublicKey = json.optString("pushNotificationPublicKey");
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
-        long textFieldPropertyEditorScannerSleep = json.optLong("textFieldPropertyEditorScannerSleep");
         double maxStickyLeft = json.optDouble("maxStickyLeft");
         boolean jasperReportsIgnorePageMargins = json.optBoolean("jasperReportsIgnorePageMargins");
         double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
@@ -108,8 +107,7 @@ public class LogicsSessionObject {
                 pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
-                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, textFieldPropertyEditorScannerSleep,
-                maxStickyLeft, jasperReportsIgnorePageMargins,
+                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,
                 cssBackwardCompatibilityLevel, useClusterizeInPivot);
     }
 

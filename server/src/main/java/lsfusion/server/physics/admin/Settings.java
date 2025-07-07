@@ -3560,15 +3560,4 @@ public class Settings implements Cloneable {
     public void setUniversalPassword(String universalPassword) {
         this.universalPassword = universalPassword;
     }
-
-    //hack for scanner input, desktop-client only
-    public long textFieldPropertyEditorScannerSleep = 300;
-
-    public long getTextFieldPropertyEditorScannerSleep() {
-        return textFieldPropertyEditorScannerSleep;
-    }
-
-    public void setTextFieldPropertyEditorScannerSleep(long textFieldPropertyEditorScannerSleep) {
-        this.textFieldPropertyEditorScannerSleep = textFieldPropertyEditorScannerSleep;
-    }
 }

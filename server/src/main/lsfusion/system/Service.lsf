@@ -979,7 +979,6 @@ getClientSettings(User user) + WHEN user IS User THEN {
         enableShowingRecentlyLogMessages = valueSetting('enableShowingRecentlyLogMessages'),
         pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
-        textFieldPropertyEditorScannerSleep = valueSetting('textFieldPropertyEditorScannerSleep'),
         maxStickyLeft = valueSetting('maxStickyLeft'),
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),

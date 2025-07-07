@@ -38,7 +38,6 @@ public class ClientSettings implements Serializable {
     public boolean enableShowingRecentlyLogMessages;
     public String pushNotificationPublicKey;
     public int maxRequestQueueSize;
-    public long textFieldPropertyEditorScannerSleep;
     public double maxStickyLeft;
     public boolean jasperReportsIgnorePageMargins;
     public double cssBackwardCompatibilityLevel;
@@ -51,8 +50,7 @@ public class ClientSettings implements Serializable {
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, String size, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
-                          String pushNotificationPublicKey, int maxRequestQueueSize, long textFieldPropertyEditorScannerSleep,
-                          double maxStickyLeft, boolean jasperReportsIgnorePageMargins,
+                          String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins,
                           double cssBackwardCompatibilityLevel, boolean useClusterizeInPivot) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
@@ -83,7 +81,6 @@ public class ClientSettings implements Serializable {
         this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
         this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxRequestQueueSize = maxRequestQueueSize;
-        this.textFieldPropertyEditorScannerSleep = textFieldPropertyEditorScannerSleep;
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
