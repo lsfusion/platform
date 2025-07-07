@@ -39,6 +39,7 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import javax.swing.Timer;
 import javax.swing.*;
@@ -51,8 +52,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.safeDelete;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
@@ -86,6 +86,9 @@ public class MainController {
     public static int maxRequestQueueSize;
 
     public static boolean jasperReportsIgnorePageMargins;
+
+    //computer settings
+    public static long textFieldPropertyEditorScannerSleep;
 
     // lifecycle
 
@@ -561,6 +564,11 @@ public class MainController {
         UIManager.put("Table.gridColor", SwingDefaults.getTableGridColor()); // Actually doesn't fully work. We have to update gridColor in JTable's updateUI() for existing tables
         UIManager.put("TableHeader.separatorColor", SwingDefaults.getTableGridColor());
         UIManager.put("TableHeader.bottomSeparatorColor", SwingDefaults.getTableGridColor());
+    }
+
+    public static void parseComputerSettings(String computerSettings) {
+        JSONObject json = new JSONObject(isRedundantString(computerSettings) ? "{}" : computerSettings);
+        textFieldPropertyEditorScannerSleep = json.optLong("textFieldPropertyEditorScannerSleep", 300);
     }
 
     public static void changeColorTheme(ColorTheme newColorTheme) {

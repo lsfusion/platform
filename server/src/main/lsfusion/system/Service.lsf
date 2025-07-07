@@ -761,6 +761,10 @@ loadChain '{service.chain.load}' () { INPUT=chain() CHANGE; }
 openChain '{service.chain.open}' () { open(chain()); }
 resetChain '{service.chain.reset}' () { chain() <- NULL; }
 
+textFieldPropertyEditorScannerSleep = DATA LONG (Computer);
+computerSettings (Computer c) = JSON FROM textFieldPropertyEditorScannerSleep(c);
+computerSettings = computerSettings(currentComputer());
+
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
     PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
@@ -784,6 +788,9 @@ EXTEND FORM settings
     PROPERTIES() useKeystore
     PROPERTIES() SHOWIF useKeystore() keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
     PROPERTIES() SHOWIF NOT useKeystore() loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
+
+    OBJECTS c = Computer
+    PROPERTIES(c) hostname, textFieldPropertyEditorScannerSleep
 ;
 
 DESIGN settings {
@@ -851,6 +858,10 @@ DESIGN settings {
                 MOVE PROPERTY (resetChain());
                 MOVE PROPERTY (privateKeyPassword());
             }
+        }
+        NEW computer {
+            caption = '{authentication.computer}';
+            MOVE BOX(c);
         }
     }
 }
@@ -984,7 +995,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
         cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel'),
-        useClusterizeInPivot = valueSetting('useClusterizeInPivot');
+        useClusterizeInPivot = valueSetting('useClusterizeInPivot'),
+        computerSettings = computerSettings();
 }
 
 getClientSettings() {
