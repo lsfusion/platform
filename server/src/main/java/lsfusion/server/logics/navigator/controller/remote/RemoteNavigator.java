@@ -325,9 +325,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     private void fillRanges(String json, List<String> ranges) {
-        JSONArray rangesJson = new JSONArray(json);
-        for (int i = 0; i < rangesJson.length(); i++) {
-            ranges.add(rangesJson.getJSONObject(i).getString("range"));
+        if (json!=null) {
+            JSONArray rangesJson = new JSONArray(json);
+            for (int i = 0; i < rangesJson.length(); i++) {
+                ranges.add(rangesJson.getJSONObject(i).getString("range"));
+            }
         }
     }
 
