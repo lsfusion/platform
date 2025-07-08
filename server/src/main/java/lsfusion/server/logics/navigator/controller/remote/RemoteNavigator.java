@@ -330,6 +330,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         };
     }
 
+
     public static void updateOpenFormCount(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
             List<Pair<DataObject, String>> openForms;
