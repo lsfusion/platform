@@ -203,6 +203,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;
+        if(type == ChangeFlowType.NOGROUPCHANGE)
+            return true;
         return super.hasFlow(type, recursiveAbstracts);
     }
 
