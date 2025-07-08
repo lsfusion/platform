@@ -11,6 +11,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.property.Property;
@@ -59,6 +60,13 @@ public class ConfirmAction extends MessageAction {
                 requestResults = null; // NO_OPTION
         }
         context.writeRequested(requestResults);
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
+        if(type == ChangeFlowType.NOGROUPCHANGE)
+            return true;
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     @Override
