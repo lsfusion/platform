@@ -259,7 +259,9 @@ jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)-
 merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::jsonb)';
 
 canonicalizedJSON = DATA LOCAL STRING();
-canonicalizeJSON  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CanonicalizeJSONAction' (JSONFILE);
+//json, encodeUnicode
+canonicalizeJSON  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CanonicalizeJSONAction' (JSONFILE, BOOLEAN);
+canonicalizeJSON(JSONFILE file) { canonicalizeJSON(file, TRUE); }
 
 // -------------------------------------------- Files ---------------------------- //
 file = DATA LOCAL FILE ();
