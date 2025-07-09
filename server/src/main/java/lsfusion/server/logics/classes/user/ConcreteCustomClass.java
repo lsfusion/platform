@@ -369,8 +369,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public void updateStat(ImMap<Long, Integer> classStats) {
         stat = classStats.get(ID);
     }
-    public void updateSIDStat(ImMap<String, Integer> classStats) {
-        assert ID == null;
+    public void updateSIDStat(ImMap<String, Integer> classStats, boolean disableNullIdAssert) {
+        assert ID == null || disableNullIdAssert;
         stat = classStats.get(getSID());
     }
 }

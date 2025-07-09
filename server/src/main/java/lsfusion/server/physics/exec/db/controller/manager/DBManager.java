@@ -263,7 +263,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 adapter.ensureSqlFuncs();
 
                 if (!isFirstStart(sql)) {
-                    updateStats(sql, true);
+                    updateStats(sql, true, false);
 
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
@@ -433,9 +433,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
+    private void updateClassStats(SQLSession session, boolean useSIDs, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         if(useSIDs)
-            updateClassSIDStats(session);
+            updateClassSIDStats(session, disableNullIdAssert);
         else
             updateClassStats(session);
     }
@@ -469,12 +469,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    private void updateClassSIDStats(SQLSession session) throws SQLException, SQLHandledException {
+    private void updateClassSIDStats(SQLSession session, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
 
         for(CustomClass customClass : LM.baseClass.getAllClasses()) {
             if(customClass instanceof ConcreteCustomClass) {
-                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap);
+                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, disableNullIdAssert);
             }
         }
     }
@@ -501,16 +501,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    private void updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+    public void updateStats(SQLSession sql, boolean useSIDsForClasses, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        updateFullClassStats(sql, useSIDsForClasses);
+        updateFullClassStats(sql, useSIDsForClasses, disableNullIdAssert);
         if(SystemProperties.doNotCalculateStats)
             return;
         updateTableStats(sql, false);
     }
 
-    private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
-        updateClassStats(sql, useSIDsForClasses);
+    private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
+        updateClassStats(sql, useSIDsForClasses, disableNullIdAssert);
 
         adjustClassStats(sql);        
     }
@@ -1655,7 +1655,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // since the below methods use queries we have to update stat props first
             ImplementTable.reflectionStatProps(() -> {
                 startLog("Updating stats");
-                updateStats(sql, true);
+                updateStats(sql, true, false);
                 return null;
             });
             ImplementTable.updatedStats = true;
