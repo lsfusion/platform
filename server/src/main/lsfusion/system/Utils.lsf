@@ -373,7 +373,9 @@ fieldText (JSON json, STRING field1, STRING field2) = FORMULA STRING 'jsonb_extr
 fieldText (JSON json, STRING field1, STRING field2, STRING field3) = FORMULA STRING 'jsonb_extract_path_text($json, $field1, $field2, $field3)';
 
 canonicalizedJSON = DATA LOCAL STRING();
-canonicalizeJSON  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CanonicalizeJSONAction' (JSONFILE);
+//json, encodeUnicode
+canonicalizeJSON  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CanonicalizeJSONAction' (JSONFILE, BOOLEAN);
+canonicalizeJSON(JSONFILE file) { canonicalizeJSON(file, TRUE); }
 
 // -------------------------------------------- Files ---------------------------- //
 file = DATA LOCAL FILE ();
