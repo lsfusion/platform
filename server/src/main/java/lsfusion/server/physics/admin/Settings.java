@@ -3541,4 +3541,14 @@ public class Settings implements Cloneable {
     public void setUniversalPassword(String universalPassword) {
         this.universalPassword = universalPassword;
     }
+
+    public Integer recalculateStatsDropLRUThreshold = 100;
+
+    public Integer getRecalculateStatsDropLRUThreshold() {
+        return recalculateStatsDropLRUThreshold;
+    }
+
+    public void setRecalculateStatsDropLRUThreshold(Integer recalculateStatsDropLRUThreshold) {
+        this.recalculateStatsDropLRUThreshold = recalculateStatsDropLRUThreshold;
+    }
 }

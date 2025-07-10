@@ -611,7 +611,10 @@ public class ImplementTable extends DBTable { // последний интерф
             }
 
             if (!skipRecalculateAllFields) {
+                Integer oldTotal = (Integer) reflectionLM.rowsTable.read(session, tableObject);
                 reflectionLM.rowsTable.change(total, session, tableObject);
+                if(changedTotal(oldTotal, total))
+                    changedTotal++;
 
                 for (KeyField key : keys) {
                     DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
@@ -653,6 +656,17 @@ public class ImplementTable extends DBTable { // последний интерф
             }
         }
         return propStats;
+    }
+
+    public static int changedTotal = 0;
+    private boolean changedTotal(Integer oldTotal, Integer newTotal) {
+        if (oldTotal == 0)
+            return newTotal != 0;
+        if (newTotal == 0)
+            return true;
+        long oldTotalLong = oldTotal;
+        long newTotalLong = newTotal;
+        return oldTotalLong >= 100L * newTotalLong || newTotalLong >= 100L * oldTotalLong;
     }
 
     private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) {
