@@ -152,6 +152,8 @@ public class MainFrame implements EntryPoint {
         safari = GwtClientUtils.isSafariUserAgent();
         if (chrome)
             GwtClientUtils.setGlobalClassName(true, "is-chrome");
+        if (safari)
+            GwtClientUtils.setGlobalClassName(true, "is-safari");
 
         hackForGwtDnd();
 

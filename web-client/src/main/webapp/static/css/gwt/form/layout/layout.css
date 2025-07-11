@@ -20,7 +20,7 @@
 }
 /* Safari may not correctly calculate "-webkit-fill-available" inside flex containers if the parent height is not fixed (or cannot be calculated).
     Safari strictly requires the parent container to have a certain height for "-webkit-fill-available" to work*/
-.safari.intr-shrink-height {
+.is-safari .intr-shrink-height {
     max-height: 100%;
 }
 
