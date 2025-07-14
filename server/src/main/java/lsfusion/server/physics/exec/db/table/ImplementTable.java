@@ -95,6 +95,8 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
+    public boolean majorStatChanged = true;
+
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
     public boolean isFull() {
@@ -549,9 +551,9 @@ public class ImplementTable extends DBTable { // последний интерф
         return null;
     }
 
-    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
         recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
+        return recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
     }
 
     public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
@@ -611,10 +613,7 @@ public class ImplementTable extends DBTable { // последний интерф
             }
 
             if (!skipRecalculateAllFields) {
-                Integer oldTotal = (Integer) reflectionLM.rowsTable.read(session, tableObject);
                 reflectionLM.rowsTable.change(total, session, tableObject);
-                if(changedTotal(oldTotal, total))
-                    changedTotal++;
 
                 for (KeyField key : keys) {
                     DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
@@ -656,17 +655,6 @@ public class ImplementTable extends DBTable { // последний интерф
             }
         }
         return propStats;
-    }
-
-    public static int changedTotal = 0;
-    private boolean changedTotal(Integer oldTotal, Integer newTotal) {
-        if (oldTotal == 0)
-            return newTotal != 0;
-        if (newTotal == 0)
-            return true;
-        long oldTotalLong = oldTotal;
-        long newTotalLong = newTotal;
-        return oldTotalLong >= 100L * newTotalLong || newTotalLong >= 100L * oldTotalLong;
     }
 
     private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) {

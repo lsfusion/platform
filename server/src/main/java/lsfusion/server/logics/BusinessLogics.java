@@ -2201,6 +2201,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
+            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         } else {
             result.add(getSynchronizeSourceTask(scheduler));
         }
@@ -2300,6 +2301,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 serviceLM.makeProcessDumpAction.execute(session, stack);
             }
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
+    }
+
+    private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                for (ImplementTable table : LM.tableFactory.getImplementTables()) {
+                    if (table.majorStatChanged) {
+                        ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                        table.updateStat(result, SetFact.EMPTY(), false);
+                        table.majorStatChanged = false;
+                    }
+                }
+            }
+        }, false, 1, false, "RecalculateAndUpdateStats");
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

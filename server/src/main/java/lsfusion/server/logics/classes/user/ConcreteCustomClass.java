@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
@@ -366,11 +367,27 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public void updateStat(ImMap<Long, Integer> classStats) {
-        stat = classStats.get(ID);
+    public boolean updateSIDStat(ImMap<String, Integer> classStats, boolean disableNullIdAssert) {
+        boolean majorStatChanged = false;
+        if(disableNullIdAssert) {
+            Integer newStat = classStats.get(getSID());
+            majorStatChanged = majorStatChanged(stat, newStat);
+            stat = newStat;
+        } else {
+            assert ID == null;
+            stat = classStats.get(getSID());
+        }
+        return majorStatChanged;
     }
-    public void updateSIDStat(ImMap<String, Integer> classStats, boolean disableNullIdAssert) {
-        assert ID == null || disableNullIdAssert;
-        stat = classStats.get(getSID());
+
+    private boolean majorStatChanged(Integer oldStat, Integer newStat) {
+        long differ = Settings.get().getUpdateStatsDropLRUDiffer();
+        if (oldStat == 0)
+            return newStat > differ;
+        if (newStat == 0)
+            return oldStat > differ;
+        long oldStatLong = oldStat;
+        long newStatLong = newStat;
+        return oldStatLong >= differ * newStatLong || newStatLong >= differ * oldStatLong;
     }
 }

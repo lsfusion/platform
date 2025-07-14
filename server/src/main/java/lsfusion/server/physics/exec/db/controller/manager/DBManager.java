@@ -263,7 +263,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 adapter.ensureSqlFuncs();
 
                 if (!isFirstStart(sql)) {
-                    updateStats(sql, true, false);
+                    updateStats(sql, false);
 
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
@@ -433,50 +433,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateClassStats(SQLSession session, boolean useSIDs, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
-        if(useSIDs)
-            updateClassSIDStats(session, disableNullIdAssert);
-        else
-            updateClassStats(session);
-    }
-
-    private void updateClassStats(SQLSession session) throws SQLException, SQLHandledException {
-        ImMap<Long, Integer> customObjectClassMap = readClassStatsFromDB(session);
-
-        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
-            if(customClass instanceof ConcreteCustomClass) {
-                ((ConcreteCustomClass) customClass).updateStat(customObjectClassMap);
-            }
-        }
-    }
-
-    private ImMap<Long, Integer> readClassStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
-        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
-        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", customObjectClassExpr);
-
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
-
-        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
-
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
-
-        MExclMap<Long, Integer> mCustomObjectClassMap = MapFact.mExclMap(result.size());
-        for (int i=0,size=result.size();i<size;i++) {
-            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
-            mCustomObjectClassMap.exclAdd((Long) result.getKey(i).get("key"), statCustomObjectClass);
-        }
-        return mCustomObjectClassMap.immutable();
-    }
-
-    private void updateClassSIDStats(SQLSession session, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
+    private int updateClassSIDStats(SQLSession session, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
 
+        int majorStatChanged = 0;
         for(CustomClass customClass : LM.baseClass.getAllClasses()) {
             if(customClass instanceof ConcreteCustomClass) {
-                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, disableNullIdAssert);
+                if(((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, disableNullIdAssert))
+                    majorStatChanged++;
             }
         }
+        return majorStatChanged;
     }
 
     private ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
@@ -501,18 +468,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    public void updateStats(SQLSession sql, boolean useSIDsForClasses, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
+    public int updateStats(SQLSession sql, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        updateFullClassStats(sql, useSIDsForClasses, disableNullIdAssert);
+        int majorStatChanged = updateFullClassStats(sql, disableNullIdAssert);
         if(SystemProperties.doNotCalculateStats)
-            return;
+            return 0;
         updateTableStats(sql, false);
+        return majorStatChanged;
     }
 
-    private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
-        updateClassStats(sql, useSIDsForClasses, disableNullIdAssert);
-
-        adjustClassStats(sql);        
+    private int updateFullClassStats(SQLSession sql, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
+        int majorStatChanged = updateClassSIDStats(sql, disableNullIdAssert);
+        adjustClassStats(sql);
+        return majorStatChanged;
     }
     
 //    businessLogics.* -> *
@@ -1655,7 +1623,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // since the below methods use queries we have to update stat props first
             ImplementTable.reflectionStatProps(() -> {
                 startLog("Updating stats");
-                updateStats(sql, true, false);
+                updateStats(sql, false);
                 return null;
             });
             ImplementTable.updatedStats = true;
@@ -2114,7 +2082,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties, int count, int total) throws SQLException, SQLHandledException {
+    public void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties, int count, int total) throws SQLException, SQLHandledException {
         ImSet<Pair<Property, Boolean>> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
         ImMap<PropertyField, String> fields = propertySet.mapKeyValues(property -> property.first.field, property -> property.first.getCanonicalName());
         ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property.second).mapSetValues(property -> property.first.field);

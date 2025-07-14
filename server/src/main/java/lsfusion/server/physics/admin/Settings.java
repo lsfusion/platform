@@ -3542,13 +3542,36 @@ public class Settings implements Cloneable {
         this.universalPassword = universalPassword;
     }
 
-    public Integer recalculateStatsDropLRUThreshold = 100;
+    //old and new table stat values differ by this many times
+    public Integer updateStatsDropLRUDiffer =  100;
 
-    public Integer getRecalculateStatsDropLRUThreshold() {
-        return recalculateStatsDropLRUThreshold;
+    public Integer getUpdateStatsDropLRUDiffer() {
+        return updateStatsDropLRUDiffer;
     }
 
-    public void setRecalculateStatsDropLRUThreshold(Integer recalculateStatsDropLRUThreshold) {
-        this.recalculateStatsDropLRUThreshold = recalculateStatsDropLRUThreshold;
+    public void setUpdateStatsDropLRUDiffer(Integer updateStatsDropLRUDiffer) {
+        this.updateStatsDropLRUDiffer = updateStatsDropLRUDiffer;
+    }
+
+    //num of changed tables
+    public Integer updateStatsDropLRUThreshold = 1;
+
+    public Integer getUpdateStatsDropLRUThreshold() {
+        return updateStatsDropLRUThreshold;
+    }
+
+    public void setUpdateStatsDropLRUThreshold(Integer updateStatsDropLRUThreshold) {
+        this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
+    }
+
+    //min changed records count in savePropertyChanges to recalculate and update table stats
+    public Integer savePropertyChangesRecalculateAndUpdateStatsThreshold = 100;
+
+    public Integer getSavePropertyChangesRecalculateAndUpdateStatsThreshold() {
+        return savePropertyChangesRecalculateAndUpdateStatsThreshold;
+    }
+
+    public void setSavePropertyChangesRecalculateAndUpdateStatsThreshold(Integer savePropertyChangesRecalculateAndUpdateStatsThreshold) {
+        this.savePropertyChangesRecalculateAndUpdateStatsThreshold = savePropertyChangesRecalculateAndUpdateStatsThreshold;
     }
 }
