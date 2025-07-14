@@ -1,6 +1,7 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import com.ibm.icu.text.UnicodeSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -63,7 +64,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 348;
+        return 349;
     }
 
     public static String getPlatformVersion() {
@@ -2304,5 +2305,20 @@ public class BaseUtils {
 
     public static int roundToDegree(int base, int value) {
         return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
+    }
+
+    //[:L:] — all Unicode letters, including Latin, Cyrillic, Greek, Chinese, etc.
+    // /[:N:] — All digits (Arabic, Indian and others)
+    // /[:P:] — punctuation marks
+    // /[:Zs:] — whitespace characters (normal space, unbroken space, etc.)
+    private static final UnicodeSet ALLOWED_CHARACTERS = new UnicodeSet("[[:L:][:N:][:P:][:Zs:]]").freeze();
+    public static boolean isVisiblyValid(String s) {
+        if (s != null) {
+            for (int i = 0; i < s.length(); i++) {
+                if (!ALLOWED_CHARACTERS.contains(s.codePointAt(i)))
+                    return false;
+            }
+        }
+        return true;
     }
 }
