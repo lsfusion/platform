@@ -62,6 +62,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean firefox;
     public static boolean chrome;
+    public static boolean safari;
 
     // settings    
     public static boolean devMode;
@@ -148,8 +149,11 @@ public class MainFrame implements EntryPoint {
 
         firefox = GwtClientUtils.isFirefoxUserAgent();
         chrome = GwtClientUtils.isChromeUserAgent();
+        safari = GwtClientUtils.isSafariUserAgent();
         if (chrome)
             GwtClientUtils.setGlobalClassName(true, "is-chrome");
+        if (safari)
+            GwtClientUtils.setGlobalClassName(true, "is-safari");
 
         hackForGwtDnd();
 
