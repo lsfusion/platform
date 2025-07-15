@@ -47,6 +47,7 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -1555,8 +1556,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-        if(changeTable.getCount() > Settings.get().getSavePropertyChangesRecalculateAndUpdateStatsThreshold())
+       if (majorStatChanged(implementTable.getTableStatKeys().getRows(), new Stat(changeTable.getCount())))
             implementTable.majorStatChanged = true;
+    }
+
+    private boolean majorStatChanged(Stat tableStat, Stat changedStat) {
+        return tableStat.less(changedStat.mult(new Stat(Settings.get().getSavePropertyChangesRecalculateAndUpdateStatsDegree())));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)

@@ -3564,14 +3564,14 @@ public class Settings implements Cloneable {
         this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
     }
 
-    //min changed records count in savePropertyChanges to recalculate and update table stats
-    public Integer savePropertyChangesRecalculateAndUpdateStatsThreshold = 100;
+    //min degree diff of changed and total records in savePropertyChanges to recalculate and update table stats
+    public int savePropertyChangesRecalculateAndUpdateStatsDegree = 1;
 
-    public Integer getSavePropertyChangesRecalculateAndUpdateStatsThreshold() {
-        return savePropertyChangesRecalculateAndUpdateStatsThreshold;
+    public int getSavePropertyChangesRecalculateAndUpdateStatsDegree() {
+        return savePropertyChangesRecalculateAndUpdateStatsDegree;
     }
 
-    public void setSavePropertyChangesRecalculateAndUpdateStatsThreshold(Integer savePropertyChangesRecalculateAndUpdateStatsThreshold) {
-        this.savePropertyChangesRecalculateAndUpdateStatsThreshold = savePropertyChangesRecalculateAndUpdateStatsThreshold;
+    public void setSavePropertyChangesRecalculateAndUpdateStatsDegree(int savePropertyChangesRecalculateAndUpdateStatsDegree) {
+        this.savePropertyChangesRecalculateAndUpdateStatsDegree = savePropertyChangesRecalculateAndUpdateStatsDegree;
     }
 }
