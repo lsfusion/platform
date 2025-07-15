@@ -30,10 +30,10 @@ import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BusinessLogics;
@@ -706,8 +706,21 @@ public class ClassChanges {
                     KeyField key = mapFields.getKey(i);
                     sql.statusMessage = new StatusMessage("delete", key, i, size);
                     ValueClass value = mapFields.getValue(i);
-                    if (value instanceof CustomClass && remove.contains((CustomClass) value))
+                    if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
+
+                        ImSet<ClassDataProperty> upDataProps = ((CustomClass) value).getUpDataProps();
+                        long newsCount = 0;
+                        for(ClassDataProperty upDataProp : upDataProps) {
+                            SingleKeyPropertyUsage propUsage = news.get(upDataProp);
+                            if(propUsage != null) {
+                                newsCount += propUsage.getCount();
+                            }
+                        }
+                        if(table.getStatKeys().getRows().majorStatChanged(new Stat(newsCount))) {
+                            table.majorStatChanged = true;
+                        }
+                    }
                 } finally {
                     sql.statusMessage = null;
                 }

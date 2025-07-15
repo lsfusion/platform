@@ -3542,17 +3542,6 @@ public class Settings implements Cloneable {
         this.universalPassword = universalPassword;
     }
 
-    //old and new table stat values differ by this many times
-    public Integer updateStatsDropLRUDiffer =  100;
-
-    public Integer getUpdateStatsDropLRUDiffer() {
-        return updateStatsDropLRUDiffer;
-    }
-
-    public void setUpdateStatsDropLRUDiffer(Integer updateStatsDropLRUDiffer) {
-        this.updateStatsDropLRUDiffer = updateStatsDropLRUDiffer;
-    }
-
     //num of changed tables
     public Integer updateStatsDropLRUThreshold = 1;
 
@@ -3564,14 +3553,14 @@ public class Settings implements Cloneable {
         this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
     }
 
-    //min degree diff of changed and total records in savePropertyChanges to recalculate and update table stats
-    public int savePropertyChangesRecalculateAndUpdateStatsDegree = 1;
+    //min degree diff of table stats
+    public int majorStatChangeDegree = 1;
 
-    public int getSavePropertyChangesRecalculateAndUpdateStatsDegree() {
-        return savePropertyChangesRecalculateAndUpdateStatsDegree;
+    public int getMajorStatChangeDegree() {
+        return majorStatChangeDegree;
     }
 
-    public void setSavePropertyChangesRecalculateAndUpdateStatsDegree(int savePropertyChangesRecalculateAndUpdateStatsDegree) {
-        this.savePropertyChangesRecalculateAndUpdateStatsDegree = savePropertyChangesRecalculateAndUpdateStatsDegree;
+    public void setMajorStatChangeDegree(int majorStatChangeDegree) {
+        this.majorStatChangeDegree = majorStatChangeDegree;
     }
 }

@@ -119,4 +119,8 @@ public class Stat {
     public Stat avg(Stat add) {
         return new Stat((deg + add.deg) / 2, true);
     }
+
+    public boolean majorStatChanged(Stat changedStat) {
+        return this.less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree())));
+    }
 }

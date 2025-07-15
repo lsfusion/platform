@@ -436,14 +436,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private int updateClassSIDStats(SQLSession session, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
 
-        int majorStatChanged = 0;
+        int majorStatChangedLRU = 0;
         for(CustomClass customClass : LM.baseClass.getAllClasses()) {
             if(customClass instanceof ConcreteCustomClass) {
                 if(((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, disableNullIdAssert))
-                    majorStatChanged++;
+                    majorStatChangedLRU++;
             }
         }
-        return majorStatChanged;
+        return majorStatChangedLRU;
     }
 
     private ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
@@ -470,17 +470,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public int updateStats(SQLSession sql, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
         updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        int majorStatChanged = updateFullClassStats(sql, disableNullIdAssert);
+        int majorStatChangedLRU = updateFullClassStats(sql, disableNullIdAssert);
         if(SystemProperties.doNotCalculateStats)
             return 0;
-        updateTableStats(sql, false);
-        return majorStatChanged;
+        majorStatChangedLRU += updateTableStats(sql, false);
+        return majorStatChangedLRU;
     }
 
     private int updateFullClassStats(SQLSession sql, boolean disableNullIdAssert) throws SQLException, SQLHandledException {
-        int majorStatChanged = updateClassSIDStats(sql, disableNullIdAssert);
+        int majorStatChangedLRU = updateClassSIDStats(sql, disableNullIdAssert);
         adjustClassStats(sql);
-        return majorStatChanged;
+        return majorStatChangedLRU;
     }
     
 //    businessLogics.* -> *
@@ -517,7 +517,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
+    private int updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -531,9 +531,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
+        int majorStatChangedLRU = 0;
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
+            if(dataTable.updateStat(tableStats, keyStats, propStats, statDefault))
+                majorStatChangedLRU++;
         }
+        return majorStatChangedLRU;
     }
 
     private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp) throws SQLException, SQLHandledException {

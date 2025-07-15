@@ -88,6 +88,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     private TableStatKeys statKeys = null;
+    private TableStatKeys realStatKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImMap<PropertyField, IndexType> indexedProps = MapFact.EMPTY();
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
@@ -752,8 +753,8 @@ public class ImplementTable extends DBTable { // последний интерф
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
 
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
-
+    public boolean updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
+        boolean majorStatChangedLRU = false;
         Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
         ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
@@ -780,8 +781,14 @@ public class ImplementTable extends DBTable { // последний интерф
             mvDistinctKeys.mapValue(i, keyCount);
         }
         statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (!noClassStatsYet) {
+            if (realStatKeys != null && realStatKeys.getRows().majorStatChanged(statKeys.getRows()))
+                majorStatChangedLRU = true;
+            realStatKeys = statKeys;
+        }
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
+        return majorStatChangedLRU;
     }
 
     private ImMap<PropertyField, PropStat> getUpdateStatProps(ImSet<PropertyField> propertyFieldSet, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {

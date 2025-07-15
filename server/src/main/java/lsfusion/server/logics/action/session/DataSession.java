@@ -1556,12 +1556,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-       if (majorStatChanged(implementTable.getTableStatKeys().getRows(), new Stat(changeTable.getCount())))
+       if (implementTable.getTableStatKeys().getRows().majorStatChanged(new Stat(changeTable.getCount())))
             implementTable.majorStatChanged = true;
-    }
-
-    private boolean majorStatChanged(Stat tableStat, Stat changedStat) {
-        return tableStat.less(changedStat.mult(new Stat(Settings.get().getSavePropertyChangesRecalculateAndUpdateStatsDegree())));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
