@@ -121,6 +121,10 @@ public class Stat {
     }
 
     public boolean majorStatChanged(Stat changedStat) {
-        return this.less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree())));
+        return majorStatChanged(changedStat, true);
+    }
+
+    public boolean majorStatChanged(Stat changedStat, boolean useMultiplier) {
+        return useMultiplier ? less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree()))) : less(changedStat);
     }
 }

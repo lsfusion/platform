@@ -97,8 +97,8 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedExplicit; // if true assert !markedFull
 
     public boolean majorStatChanged;
-    public void checkMajorStatChanged(long changedCount) {
-        if (statKeys.getRows().majorStatChanged(new Stat(changedCount))) {
+    public void checkMajorStatChanged(long changedCount, boolean useMultiplier) {
+        if (statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier)) {
             majorStatChanged = true;
         }
     }
@@ -758,7 +758,7 @@ public class ImplementTable extends DBTable { // последний интерф
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
 
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet, AtomicInteger majorStatChangedLRU) {
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet, Result<Integer> majorStatChangedCount) {
         Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
         ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
@@ -784,10 +784,9 @@ public class ImplementTable extends DBTable { // последний интерф
 
             mvDistinctKeys.mapValue(i, keyCount);
         }
-        if (majorStatChangedLRU == null || !noClassStatsYet)
-            statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        if (majorStatChangedLRU != null && statKeys.getRows().majorStatChanged(statKeys.getRows()))
-            majorStatChangedLRU.incrementAndGet();
+        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(statKeys.getRows()))
+            majorStatChangedCount.set(majorStatChangedCount.result + 1);
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
     }

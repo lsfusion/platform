@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.user;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -368,11 +369,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public void updateSIDStat(ImMap<String, Integer> classStats, AtomicInteger majorStatChangedLRU) {
-        if(majorStatChangedLRU != null) {
+    public void updateSIDStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
+        if(majorStatChangedCount != null) {
             Integer newStat = classStats.get(getSID());
             if(new Stat(stat).majorStatChanged(new Stat(newStat)))
-                majorStatChangedLRU.incrementAndGet();
+                majorStatChangedCount.set(majorStatChangedCount.result + 1);
             stat = newStat;
         } else {
             assert ID == null;

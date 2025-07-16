@@ -200,8 +200,8 @@ onStarted() + {
 } 
 
 runGarbageCollector '{service.run.garbage.collector}'  INTERNAL  'lsfusion.server.physics.admin.service.action.GarbageCollectorAction' ();
-dropLRUPercent '{service.drop.lru.percent}' = DATA DOUBLE ();
-randomDropLRU '{service.random.drop.lru}' = DATA BOOLEAN ();
+dropLRUPercent '{service.drop.lru.percent}' = DATA LOCAL DOUBLE ();
+randomDropLRU '{service.random.drop.lru}' = DATA LOCAL BOOLEAN ();
 dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.physics.admin.service.action.DropLRUAction' (DOUBLE, BOOLEAN);
 dropLRU '{service.drop.lru}' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
 makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admin.service.action.MakeHeapDumpAction' ();

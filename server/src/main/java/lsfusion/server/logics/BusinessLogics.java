@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -2306,15 +2307,23 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
+                int majorStatChangedCount = 0;
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
                         table.updateStat(result, SetFact.EMPTY(), false);
+                        majorStatChangedCount++;
                         table.majorStatChanged = false;
                     }
                 }
+                dropLRU(majorStatChangedCount);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
+    }
+
+    public void dropLRU(int majorStatChangedCount) {
+        if (majorStatChangedCount > Settings.get().getUpdateStatsDropLRUThreshold())
+            ALRUMap.forceRemoveAllLRU(100);
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

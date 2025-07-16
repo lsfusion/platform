@@ -708,8 +708,7 @@ public class ClassChanges {
                     ValueClass value = mapFields.getValue(i);
                     if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
-
-                        table.checkMajorStatChanged(countChangedStat((CustomClass) value));
+                        table.checkMajorStatChanged(countChangedStat((CustomClass) value), false);
                     }
                 } finally {
                     sql.statusMessage = null;

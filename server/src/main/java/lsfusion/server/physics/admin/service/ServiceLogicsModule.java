@@ -53,8 +53,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP chain;
     public LP privateKeyPassword;
 
-    public LA dropLRU;
-
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
     }
@@ -105,7 +103,5 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         privateKey = findProperty("privateKey[]");
         chain = findProperty("chain[]");
         privateKeyPassword = findProperty("privateKeyPassword[]");
-
-        dropLRU = findAction("dropLRU[]");
     }
 }
