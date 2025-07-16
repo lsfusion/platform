@@ -709,17 +709,7 @@ public class ClassChanges {
                     if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
 
-                        ImSet<ClassDataProperty> upDataProps = ((CustomClass) value).getUpDataProps();
-                        long newsCount = 0;
-                        for(ClassDataProperty upDataProp : upDataProps) {
-                            SingleKeyPropertyUsage propUsage = news.get(upDataProp);
-                            if(propUsage != null) {
-                                newsCount += propUsage.getCount();
-                            }
-                        }
-                        if(table.getStatKeys().getRows().majorStatChanged(new Stat(newsCount))) {
-                            table.majorStatChanged = true;
-                        }
+                        table.checkMajorStatChanged(countChangedStat((CustomClass) value));
                     }
                 } finally {
                     sql.statusMessage = null;
@@ -729,6 +719,17 @@ public class ClassChanges {
             sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
         }
         return remove;
+    }
+
+    private long countChangedStat(CustomClass value) {
+        long changedStat = 0;
+        for(ClassDataProperty upDataProp : value.getUpDataProps()) {
+            SingleKeyPropertyUsage propUsage = news.get(upDataProp);
+            if(propUsage != null) {
+                changedStat += propUsage.getCount();
+            }
+        }
+        return changedStat;
     }
 
     private final Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> EMPTY_SPLIT = new Pair<>(new Pair<>(MapFact.<ClassDataProperty, SingleKeyPropertyUsage>EMPTY(), MapFact.<ClassDataProperty, ChangedDataClasses>EMPTY()), MapFact.<Property, UpdateResult>EMPTY());

@@ -3542,7 +3542,7 @@ public class Settings implements Cloneable {
         this.universalPassword = universalPassword;
     }
 
-    //num of changed tables
+    //num of changed tables to run dropLRU after updateStats
     public Integer updateStatsDropLRUThreshold = 1;
 
     public Integer getUpdateStatsDropLRUThreshold() {
@@ -3554,7 +3554,7 @@ public class Settings implements Cloneable {
     }
 
     //min degree diff of table stats
-    public int majorStatChangeDegree = 1;
+    public int majorStatChangeDegree = 2;
 
     public int getMajorStatChangeDegree() {
         return majorStatChangeDegree;

@@ -70,6 +70,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
@@ -88,7 +89,6 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     private TableStatKeys statKeys = null;
-    private TableStatKeys realStatKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImMap<PropertyField, IndexType> indexedProps = MapFact.EMPTY();
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
@@ -96,7 +96,12 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
-    public boolean majorStatChanged = true;
+    public boolean majorStatChanged;
+    public void checkMajorStatChanged(long changedCount) {
+        if (statKeys.getRows().majorStatChanged(new Stat(changedCount))) {
+            majorStatChanged = true;
+        }
+    }
 
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
@@ -753,8 +758,7 @@ public class ImplementTable extends DBTable { // последний интерф
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
 
-    public boolean updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
-        boolean majorStatChangedLRU = false;
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet, AtomicInteger majorStatChangedLRU) {
         Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
         ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
@@ -780,15 +784,12 @@ public class ImplementTable extends DBTable { // последний интерф
 
             mvDistinctKeys.mapValue(i, keyCount);
         }
-        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        if (!noClassStatsYet) {
-            if (realStatKeys != null && realStatKeys.getRows().majorStatChanged(statKeys.getRows()))
-                majorStatChangedLRU = true;
-            realStatKeys = statKeys;
-        }
+        if (majorStatChangedLRU == null || !noClassStatsYet)
+            statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (majorStatChangedLRU != null && statKeys.getRows().majorStatChanged(statKeys.getRows()))
+            majorStatChangedLRU.incrementAndGet();
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
-        return majorStatChangedLRU;
     }
 
     private ImMap<PropertyField, PropStat> getUpdateStatProps(ImSet<PropertyField> propertyFieldSet, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {

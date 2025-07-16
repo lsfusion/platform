@@ -8,6 +8,7 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UpdateStatsAction extends InternalAction {
 
@@ -17,7 +18,7 @@ public class UpdateStatsAction extends InternalAction {
 
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        int majorStatChanged = context.getDbManager().updateStats(context.getSession().sql, true);
+        int majorStatChanged = context.getDbManager().updateStats(context.getSession().sql, new AtomicInteger(0));
         if(majorStatChanged > Settings.get().getUpdateStatsDropLRUThreshold())
             context.getBL().serviceLM.dropLRU.execute(context);
     }

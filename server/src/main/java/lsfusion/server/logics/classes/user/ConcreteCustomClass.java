@@ -31,13 +31,13 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass, ConcreteObjectClass, ObjectValueClassSet, StaticClass {
     public ConcreteCustomClass(String canonicalName, LocalizedString caption, String image, Version version, ImList<CustomClass> parents) {
@@ -368,16 +368,15 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public boolean updateSIDStat(ImMap<String, Integer> classStats, boolean disableNullIdAssert) {
-        boolean majorStatChangedLRU = false;
-        if(disableNullIdAssert) {
+    public void updateSIDStat(ImMap<String, Integer> classStats, AtomicInteger majorStatChangedLRU) {
+        if(majorStatChangedLRU != null) {
             Integer newStat = classStats.get(getSID());
-            majorStatChangedLRU = new Stat(stat).majorStatChanged(new Stat(newStat));
+            if(new Stat(stat).majorStatChanged(new Stat(newStat)))
+                majorStatChangedLRU.incrementAndGet();
             stat = newStat;
         } else {
             assert ID == null;
             stat = classStats.get(getSID());
         }
-        return majorStatChangedLRU;
     }
 }
