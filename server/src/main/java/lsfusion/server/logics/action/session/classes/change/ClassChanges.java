@@ -688,10 +688,11 @@ public class ClassChanges {
         return objectValues.<SQLException, SQLHandledException>mapItIdentityValuesEx(value -> (T) updateCurrentClass(sql, env, baseClass, value));
     }
     
-    public ImSet<CustomClass> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+    public Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(news.isEmpty()) // оптимизация
-            return SetFact.EMPTY();
+            return Pair.create(SetFact.EMPTY(), SetFact.EMPTY());
 
+        MSet<ImplementTable> mChangedTables = SetFact.mSet();
         ImSet<CustomClass> remove = getAllRemoveClasses();
         // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляемый объект
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(remove)) {
@@ -706,7 +707,8 @@ public class ClassChanges {
                     ValueClass value = mapFields.getValue(i);
                     if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
-                        table.markMajorStatChanged(countChangedStat((CustomClass) value), false);
+                        if(table.majorStatChanged(countChangedStat((CustomClass) value), false))
+                            mChangedTables.add(table);
                     }
                 } finally {
                     sql.statusMessage = null;
@@ -715,7 +717,7 @@ public class ClassChanges {
             query.and(table.join(mapExprs).getWhere().and(removeWhere));
             sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
         }
-        return remove;
+        return Pair.create(remove, mChangedTables.immutable());
     }
 
     private long countChangedStat(CustomClass value) {

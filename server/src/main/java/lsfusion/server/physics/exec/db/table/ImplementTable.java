@@ -95,17 +95,10 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
-    public boolean preMajorStatChanged;
-    public void markMajorStatChanged(long changedCount, boolean useMultiplier) {
-        if (statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier)) {
-            preMajorStatChanged = true;
-        }
+    public boolean majorStatChanged(long changedCount, boolean useMultiplier) {
+        return statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier);
     }
     public boolean majorStatChanged;
-    public void applyMajorStatChanged() {
-        majorStatChanged = preMajorStatChanged;
-        preMajorStatChanged = false;
-    }
 
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
