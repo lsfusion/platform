@@ -370,14 +370,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public void updateSIDStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
-        if(majorStatChangedCount != null) {
-            Integer newStat = classStats.get(getSID());
-            if(new Stat(stat).majorStatChanged(new Stat(newStat)))
+        Integer newStat = classStats.get(getSID());
+        if (majorStatChangedCount != null) {
+            if (new Stat(stat).majorStatChanged(new Stat(newStat)))
                 majorStatChangedCount.set(majorStatChangedCount.result + 1);
-            stat = newStat;
         } else {
             assert ID == null;
-            stat = classStats.get(getSID());
         }
+        stat = newStat;
     }
 }

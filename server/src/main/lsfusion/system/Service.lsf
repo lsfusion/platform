@@ -18,7 +18,7 @@ recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion
 overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsAction' ();
 maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER ();
 
-updateStats INTERNAL 'lsfusion.server.physics.admin.service.action.UpdateStatsAction' ();
+updateStats '{service.update.stats.action}' INTERNAL 'lsfusion.server.physics.admin.service.action.UpdateStatsAction' ();
 
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 

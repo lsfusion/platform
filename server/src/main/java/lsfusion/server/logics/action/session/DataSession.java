@@ -47,7 +47,6 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -1556,7 +1555,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-        implementTable.checkMajorStatChanged(changeTable.getCount(), true);
+        implementTable.markMajorStatChanged(changeTable.getCount(), true);
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -2151,6 +2150,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         changes.flushStrong(changedPropKeys);
 
         restartFinal(false, changedProps, keepProps);
+
+        for (ImplementTable table : BL.LM.tableFactory.getImplementTables()) {
+            table.applyMajorStatChanged();
+        }
 
         return true;
     }

@@ -70,7 +70,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
@@ -96,11 +95,16 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
-    public boolean majorStatChanged;
-    public void checkMajorStatChanged(long changedCount, boolean useMultiplier) {
+    public boolean preMajorStatChanged;
+    public void markMajorStatChanged(long changedCount, boolean useMultiplier) {
         if (statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier)) {
-            majorStatChanged = true;
+            preMajorStatChanged = true;
         }
+    }
+    public boolean majorStatChanged;
+    public void applyMajorStatChanged() {
+        majorStatChanged = preMajorStatChanged;
+        preMajorStatChanged = false;
     }
 
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
@@ -784,9 +788,10 @@ public class ImplementTable extends DBTable { // последний интерф
 
             mvDistinctKeys.mapValue(i, keyCount);
         }
-        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(statKeys.getRows()))
+        TableStatKeys newStatKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows()))
             majorStatChangedCount.set(majorStatChangedCount.result + 1);
+        statKeys = newStatKeys;
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
     }
