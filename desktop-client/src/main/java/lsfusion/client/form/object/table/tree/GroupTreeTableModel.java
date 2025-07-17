@@ -29,15 +29,15 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> imageValues = new HashMap<>();
 
-    private final ClientFormController form;
     private final boolean plainTreeMode;
+    private final String hierarchicalCaption;
 
     public boolean synchronize;
 
-    public GroupTreeTableModel(ClientFormController form, boolean plainTreeMode) {
+    public GroupTreeTableModel(boolean plainTreeMode, String hierarchicalCaption) {
         super();
-        this.form = form;
         this.plainTreeMode = plainTreeMode;
+        this.hierarchicalCaption =  hierarchicalCaption;
         root = new TreeGroupNode(this);
     }
 
@@ -54,7 +54,7 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
     @Override
     public String getColumnName(int column) {
         if (column == 0) {
-            return ClientResourceBundle.getString("form.tree");
+            return hierarchicalCaption;
         }
 
         return getColumnProperty(column).getChangeCaption();

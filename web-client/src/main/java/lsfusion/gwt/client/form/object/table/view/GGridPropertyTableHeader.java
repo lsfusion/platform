@@ -100,6 +100,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.hasChangeAction = hasChangeAction;
     }
 
+    public void updateCaption(String caption) {
+        this.caption = caption;
+    }
+
     public void setCaptionElementClass(String captionElementClass) {
         this.captionElementClass = captionElementClass;
     }

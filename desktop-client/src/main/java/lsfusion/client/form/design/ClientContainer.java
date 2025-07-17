@@ -272,80 +272,31 @@ public class ClientContainer extends ClientComponent {
         }
     };
 
-    public final ClientPropertyReader imageReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-            assert BaseUtils.singleKey(readKeys).isEmpty();
-            Object containerCaption = BaseUtils.singleValue(readKeys);
-//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
-        }
-
+    public final ClientPropertyReader imageReader = new ExtraReader(PropertyReadType.CONTAINER_IMAGE) {
+        @Override
         public int getID() {
             return ClientContainer.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CONTAINER_IMAGE;
         }
     };
 
-    public final ClientPropertyReader captionClassReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-            assert BaseUtils.singleKey(readKeys).isEmpty();
-            Object containerCaption = BaseUtils.singleValue(readKeys);
-//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
-        }
-
+    public final ClientPropertyReader captionClassReader = new ExtraReader(PropertyReadType.CONTAINER_CAPTIONCLASS) {
+        @Override
         public int getID() {
             return ClientContainer.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CONTAINER_CAPTIONCLASS;
         }
     };
 
-    public final ClientPropertyReader valueClassReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-            assert BaseUtils.singleKey(readKeys).isEmpty();
-            Object containerCaption = BaseUtils.singleValue(readKeys);
-//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
-        }
-
+    public final ClientPropertyReader valueClassReader = new ExtraReader(PropertyReadType.CONTAINER_VALUECLASS) {
+        @Override
         public int getID() {
             return ClientContainer.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CONTAINER_VALUECLASS;
         }
     };
 
-    public final ClientPropertyReader customPropertyDesignReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
+    public final ClientPropertyReader customPropertyDesignReader = new ExtraReader(PropertyReadType.CUSTOM) {
+        @Override
         public int getID() {
             return ClientContainer.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CUSTOM;
         }
     };
 

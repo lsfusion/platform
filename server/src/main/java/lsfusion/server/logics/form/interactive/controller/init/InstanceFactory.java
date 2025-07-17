@@ -10,9 +10,11 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.GridPropertyViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.TreeGroupViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -190,7 +192,15 @@ public class InstanceFactory {
             PropertyObjectInstance propertyElementClassInstance = propertyElementClass != null ? getInstance(propertyElementClass) : null;
             if(entity instanceof GridPropertyView) {
                 PropertyObjectEntity propertyValueClass = ((GridPropertyView) entity).propertyValueClass;
-                baseComponentViewInstance = new GridPropertyViewInstance(entity, propertyElementClassInstance, propertyValueClass != null ? getInstance(propertyValueClass) : null);
+                PropertyObjectInstance propertyValueClassInstance = propertyValueClass != null ? getInstance(propertyValueClass) : null;
+                if(entity instanceof TreeGroupView) {
+                    PropertyObjectEntity propertyHierarchicalCaption = ((TreeGroupView) entity).propertyHierarchicalCaption;
+                    baseComponentViewInstance = new TreeGroupViewInstance(entity, propertyElementClassInstance,
+                            propertyValueClassInstance,
+                            propertyHierarchicalCaption != null ? getInstance(propertyHierarchicalCaption) : null);
+                } else {
+                    baseComponentViewInstance = new GridPropertyViewInstance(entity, propertyElementClassInstance, propertyValueClassInstance);
+                }
             } else
                 baseComponentViewInstance = new BaseComponentViewInstance(entity, propertyElementClassInstance);
             baseComponentViewInstances.exclAdd(entity, baseComponentViewInstance);

@@ -134,7 +134,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         contextMenuHandler.install();
         setAutoCreateColumnsFromModel(false);
 
-        setTreeTableModel(model = new GroupTreeTableModel(form, plainTreeMode));
+        setTreeTableModel(model = new GroupTreeTableModel(plainTreeMode, treeGroup.getCaption()));
         
         addColumn(createColumn(0)); // одна колонка для дерева. создаём вручную, чтобы подставить renderer
         

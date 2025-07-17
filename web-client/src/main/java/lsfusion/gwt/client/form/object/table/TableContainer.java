@@ -19,6 +19,8 @@ import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
 import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import static lsfusion.gwt.client.view.MainFrame.v5;
@@ -103,6 +105,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public void updateElementClass(GGridProperty component) {
         GFormLayout.updateComponentClass(component.valueClass, tableComponent.getWidget(), "value");
+    }
+
+    public void updateHierarchicalCaption(GTreeGroup component) {
+        ((GTreeTable) tableComponent).updateHierarchicalCaption(component.hierarchicalCaption);
     }
 
     public void changeTableComponent(TableComponent tableComponent, boolean boxed) {

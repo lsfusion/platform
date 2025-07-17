@@ -102,12 +102,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
-import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.GridPropertyViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.*;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
@@ -2597,9 +2595,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 componentInstance = containerInstance;
             } else {
                 componentInstance = instanceFactory.getInstance(component);
-                if(component instanceof GridPropertyView) {
+                if (component instanceof GridPropertyView) {
                     GridPropertyViewInstance gridInstance = (GridPropertyViewInstance) componentInstance;
                     fillChangedReader(gridInstance.valueClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                    if (component instanceof TreeGroupView) {
+                        TreeGroupViewInstance treeInstance = (TreeGroupViewInstance) componentInstance;
+                        fillChangedReader(treeInstance.hierarchicalCaptionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                    }
                 }
             }
 

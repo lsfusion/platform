@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
@@ -73,7 +75,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false, null);
+        String hierarchicalCaption = nvl(treeGroup.hierarchicalCaption, messages.formTree());
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, hierarchicalCaption, null, null, null, false, null);
         insertColumn(getColumnCount(), column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -1252,5 +1255,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     protected void scrollToEnd(boolean toEnd) {
         selectionHandler.changeRow(toEnd ? (getRowCount() - 1) : 0, FocusUtils.Reason.KEYMOVENAVIGATE);
+    }
+
+    public void updateHierarchicalCaption(String caption) {
+        if (!noHeaders) {
+            ((GGridPropertyTableHeader) getHeader(0)).updateCaption(caption);
+            headersChanged();
+        }
     }
 }
