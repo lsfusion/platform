@@ -249,6 +249,7 @@ To access design components, you can use their names or address property compone
 |`quickSearch`|Specifying that the table will support quick element search|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`headerHeight`|Header height in pixels|Integer literal|NULL|`60`|
 |`hierarchicalWidth`|Width of first tree column|Integer literal|NULL|`100`|
+|`hierarchicalCaption`|Caption of first tree column|String literal|'Tree'|`Tree caption`|
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Integer literal|NULL|`60`|
 |`lineHeight`|todo|Integer literal|NULL|`60`|

@@ -248,6 +248,7 @@ TREE treeSelector
 |`quickSearch`|Указание того, что в таблице будет осуществляться быстрый поиск элемента|`FALSE`|`TRUE`<br/>`FALSE`|
 |`headerHeight`|Высота заголовка в пикселях|Целочисленный литерал|NULL|`60`|
 |`hierarchicalWidth`|Ширина первой колонки дерева|Целочисленный литерал|NULL|`100`|
+|`hierarchicalCaption`|Заголовок первой колонки дерева|Строковый литерал|'Дерево'|`Заголовок дерева`|
 |`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Целочисленный литерал|NULL|`60`|
 |`lineHeight`|todo|Целочисленный литерал|NULL|`60`|

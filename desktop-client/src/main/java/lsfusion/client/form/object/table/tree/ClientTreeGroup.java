@@ -8,15 +8,19 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.ClientToolbar;
+import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.ClientGridProperty;
+import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
+import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ClientTreeGroup extends ClientGridProperty implements ClientIdentitySerializable, AbstractTreeGroup<ClientComponent> {
 
@@ -32,7 +36,7 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
     
     public boolean expandOnClick;
     public int hierarchicalWidth;
-
+    public String hierarchicalCaption;
 
     public ClientTreeGroup() {
     }
@@ -56,6 +60,23 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
         return filters;
     }
 
+    public final ClientPropertyReader hierarchicalCaptionClassReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientTreeGroup.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.TREE_HIERARCHICALCAPTION;
+        }
+    };
+
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
@@ -71,6 +92,7 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
         
         expandOnClick = inStream.readBoolean();
         hierarchicalWidth = inStream.readInt();
+        hierarchicalCaption = pool.readString(inStream);
 
         List<ClientGroupObject> upGroups = new ArrayList<>();
         for (ClientGroupObject group : groups) {
@@ -81,7 +103,13 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
 
     @Override
     public String getCaption() {
-        return  ClientResourceBundle.getString("form.tree");
+        return getHierarchicalCaption();
+    }
+
+    public String getHierarchicalCaption() {
+        if (hierarchicalCaption != null)
+            return hierarchicalCaption;
+        return ClientResourceBundle.getString("form.tree");
     }
 
     @Override

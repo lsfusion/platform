@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -241,6 +242,13 @@ public class GFormLayout extends SizedFlexPanel {
 
         TableContainer tableContainer = (TableContainer)baseComponentViews.get(component).getSingleWidget().widget;
         tableContainer.updateElementClass(component);
+    }
+
+    public void setHierarchicalCaption(GTreeGroup component, String hierarchicalCaption) {
+        component.hierarchicalCaption = hierarchicalCaption;
+
+        TableContainer tableContainer = (TableContainer)baseComponentViews.get(component).getSingleWidget().widget;
+        tableContainer.updateHierarchicalCaption(component);
     }
 
     public static void updateComponentClass(String elementClass, Widget widget, String postfix) {
