@@ -8,9 +8,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.ClientToolbar;
-import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
@@ -20,7 +18,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ClientTreeGroup extends ClientGridProperty implements ClientIdentitySerializable, AbstractTreeGroup<ClientComponent> {
 
@@ -60,20 +57,10 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
         return filters;
     }
 
-    public final ClientPropertyReader hierarchicalCaptionClassReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-        }
-
+    public final ClientPropertyReader hierarchicalCaptionClassReader = new ExtraReader(PropertyReadType.TREE_HIERARCHICALCAPTION) {
+        @Override
         public int getID() {
             return ClientTreeGroup.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.TREE_HIERARCHICALCAPTION;
         }
     };
 
