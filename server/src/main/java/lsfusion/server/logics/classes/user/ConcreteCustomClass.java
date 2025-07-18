@@ -127,17 +127,19 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, LocalizedString caption, String image) {
+        public ObjectInfo(String sid, String name, LocalizedString caption, String image, int order) {
             this.sid = sid;
             this.name = name;
             this.caption = (caption != null ? caption : LocalizedString.create(name, false));
             this.image = (image != null ? image : name);
+            this.order = order;
         }
 
         public String sid;
         public String name;
         public LocalizedString caption;
         public String image;
+        public int order;
 
         public Long id;
     }
@@ -150,18 +152,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return staticObjectsInfo.getNFIt(version);
     }
 
-    public boolean hasNFStaticObject(String name, Version version) {
-        for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
-            if (info.name.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean hasConcreteStaticObjects() {
-        return getStaticObjectsInfoIt().iterator().hasNext();
-    }
     public boolean hasStaticObject(String name) {
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
@@ -180,15 +170,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
-    public String getObjectName(long id) {
-        for(ObjectInfo info : getStaticObjectsInfoIt()) {
-            if (info.id == id) {
-                return info.name;
-            }
-        }
-        throw new RuntimeException("id not found");
-    }
-
     public LocalizedString getObjectCaption(String name) {
         for(ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
@@ -201,7 +182,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public final void addStaticObjects(List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i)), version);
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i), i), version);
         }
     }
 
@@ -224,11 +205,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public final long ID;
         public final String caption;
         public final String image;
+        public final Integer order;
 
-        public PrevClass(long ID, String caption, String image) {
+        public PrevClass(long ID, String caption, String image, Integer order) {
             this.ID = ID;
             this.caption = caption;
             this.image = image;
+            this.order = order;
         }
     }
 
@@ -238,7 +221,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             mImages.add(object.image + "," + searchName);
     }
 
-    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, LP staticCaptionOrder, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
@@ -249,6 +232,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         allClassesQuery.addProperty("sid", sidExpr);
         allClassesQuery.addProperty("caption", caption.getExpr(key));
         allClassesQuery.addProperty("image", image.getExpr(key));
+        allClassesQuery.addProperty("order", staticCaptionOrder.getExpr(key));
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
@@ -257,7 +241,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             ImMap<String, Object> resultKey = qResult.getKey(i);
             ImMap<String, Object> resultValue = qResult.getValue(i);
             String sid = ((String) resultValue.get("sid")).trim();
-            PrevClass prevValue = oldClasses.put(sid, new PrevClass((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("caption")), BaseUtils.nullTrim((String) resultValue.get("image"))));
+            Integer order = (Integer) resultValue.get("order");
+            PrevClass prevValue = oldClasses.put(sid, new PrevClass((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("caption")), BaseUtils.nullTrim((String) resultValue.get("image")), order));
             if(prevValue != null) // temporary, CONSTRAINT on static name change, it should not happen
                 dbChanges.removed.add(new DBManager.IDRemove(new DataObject(prevValue.ID, this), sid));
         }
@@ -289,10 +274,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
                     dbChanges.modifiedImages.put(new DataObject(oldObject.ID, this), staticObjectImage);
                 }
+                if (info.order != oldObject.order) {
+                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), info.order);
+                }
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, info.order));
                 info.id = id;
             }
 

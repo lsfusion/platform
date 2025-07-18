@@ -1519,13 +1519,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final String sID;
         public final String caption;
         public final String image;
+        public final int order;
 
-        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption, String image) {
+        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption, String image, int order) {
             this.object = object;
             this.customClass = customClass;
             this.sID = sID;
             this.caption = caption;
             this.image = image;
+            this.order = order;
         }
     }
 
@@ -1548,6 +1550,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final Map<DataObject, String> modifiedSIDs = new HashMap<>();
         public final Map<DataObject, String> modifiedCaptions = new HashMap<>();
         public final Map<DataObject, String> modifiedImages = new HashMap<>();
+        public final Map<DataObject, Integer> modifiedOrders = new HashMap<>();
 
         public void apply(DataSession session, BaseLogicsModule LM, boolean isFirstStart) throws SQLException, SQLHandledException {
             LM.fillingIDs.change(true, session); // need this to avoid constraint on staticName changing
@@ -1560,6 +1563,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 LM.staticName.change(addedObject.sID, session, classObject);
                 LM.staticCaption.change(addedObject.caption, session, classObject);
                 LM.staticImage.change(addedObject.image, session, classObject);
+                LM.staticCaptionOrder.change(addedObject.order, session, classObject);
             }
 
             for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
@@ -1580,6 +1584,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (IDRemove removedObject : removed) {
                 startLog("Removing static object with id " + removedObject.object.object + " and sid " + removedObject.sID);
                 session.changeClass(removedObject.object, LM.baseClass.unknown);
+            }
+
+            for (Map.Entry<DataObject, Integer> modifiedOrder : modifiedOrders.entrySet()) {
+                LM.staticCaptionOrder.change(modifiedOrder.getValue(), session, modifiedOrder.getKey());
             }
         }
     }
@@ -1691,7 +1699,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLog("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName, LM.staticCaptionOrder,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                     migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
                     idChanges, changesController);
