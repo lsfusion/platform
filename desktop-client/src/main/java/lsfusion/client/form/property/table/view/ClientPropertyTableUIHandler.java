@@ -1,6 +1,5 @@
 package lsfusion.client.form.property.table.view;
 
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.file.AppFileDataImage;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientImageClass;
@@ -62,15 +61,8 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
             }
         }
 
-        //забираем фокус после того как завершили редактирвоание
-        //SwingUtilities2.adjustFocus(table);
-        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
-        if(swingUtilities2Class != null) {
-            try {
-                ReflectionUtils.getStaticMethodValue(swingUtilities2Class, "adjustFocus", new Class[] {JComponent.class}, new Object[] {table});
-            } catch (ClassNotFoundException ignored) {
-            }
-        }
+        //request the focus after finishing the editing
+        SwingUtils.adjustFocus(table);
 
         Point p = e.getPoint();
         pressedRow = table.rowAtPoint(p);
@@ -157,12 +149,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
         Point p = e.getPoint();
         Point p2 = SwingUtilities.convertPoint(table, p, editorComponent);
         dispatchComponent = SwingUtilities.getDeepestComponentAt(editorComponent, p2.x, p2.y);
-        //SwingUtilities2.setSkipClickCount(dispatchComponent, e.getClickCount() - 1);
-        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
-        if(swingUtilities2Class != null) {
-            ReflectionUtils.invokeStaticMethod(swingUtilities2Class, "setSkipClickCount",
-                    new Class[]{Component.class, int.class}, new Object[] {dispatchComponent, e.getClickCount() - 1});
-        }
+        SwingUtils.setSkipClickCount(dispatchComponent, e.getClickCount() - 1);
     }
 
     private void repostEvent(MouseEvent e) {

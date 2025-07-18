@@ -3,7 +3,6 @@ package lsfusion.client.base;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
@@ -17,20 +16,31 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.SwingXUtilities;
+import sun.font.FontUtilities;
+import sun.print.ProxyPrintGraphics;
+import sun.swing.PrintColorUIResource;
 
 import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextAttribute;
+import java.awt.font.TextLayout;
+import java.awt.print.PrinterGraphics;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
+import static java.awt.RenderingHints.KEY_TEXT_LCD_CONTRAST;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -309,39 +319,35 @@ public class SwingUtils {
         return String.valueOf(value).replace("\n", "<br>");
     }
 
-    public static String toMultilineHtml(String text, Font font) {
+    public static String toMultilineHtml(Component c, String text, Font font) {
         String result = "<html>";
         String line = "";
-        Class swingUtilities2Class = ReflectionUtils.classForName("sun.swing.SwingUtilities2");
-        if(swingUtilities2Class != null) {
-            //SwingUtilities2.getFontMetrics(null, font);
-            FontMetrics fm = ReflectionUtils.getPrivateMethodValue(swingUtilities2Class, null, "getFontMetrics", new Class[] {JComponent.class, Font.class}, new Object[] {null, font});
-            int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width - 10;
-            String delims = " \n";
-            StringTokenizer st = new StringTokenizer(text, delims, true);
-            String wordDelim = "";
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                if (delims.contains(token)) {
-                    if (token.equals("\n")) {
-                        result += line;
-                        line = "<br>" + wordDelim;
-                        wordDelim = "";
-                    } else {
-                        wordDelim += token;
-                    }
-                } else {
-                    if (fm.stringWidth(line + wordDelim + token) >= screenWidth) {
-                        result += line;
-                        result += !line.equals("") ? "<br>" : "";
-                        line = "";
-                    }
-                    line += wordDelim + token;
+        FontMetrics fm = c.getFontMetrics(font);
+        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width - 10;
+        String delims = " \n";
+        StringTokenizer st = new StringTokenizer(text, delims, true);
+        String wordDelim = "";
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (delims.contains(token)) {
+                if (token.equals("\n")) {
+                    result += line;
+                    line = "<br>" + wordDelim;
                     wordDelim = "";
+                } else {
+                    wordDelim += token;
                 }
+            } else {
+                if (fm.stringWidth(line + wordDelim + token) >= screenWidth) {
+                    result += line;
+                    result += !line.equals("") ? "<br>" : "";
+                    line = "";
+                }
+                line += wordDelim + token;
+                wordDelim = "";
             }
         }
-        return result += line + "</html>";
+        return result + line + "</html>";
     }
 
     public static Icon getSystemIcon(String extension) {
@@ -905,5 +911,203 @@ public class SwingUtils {
 
     public static String wrapHtml(Object value) {
         return value != null ? ("<html>" + value + "</html>") : null;
+    }
+
+    private static final StringBuilder SKIP_CLICK_COUNT = new StringBuilder("skipClickCount");
+    public static void setSkipClickCount(Component comp, int count) {
+        if (comp instanceof JTextComponent && ((JTextComponent) comp).getCaret() instanceof DefaultCaret) {
+            ((JTextComponent) comp).putClientProperty(SKIP_CLICK_COUNT, count);
+        }
+    }
+
+    public static void adjustFocus(JComponent c) {
+        if (!c.hasFocus() && c.isRequestFocusEnabled()) {
+            c.requestFocus();
+        }
+    }
+
+    private static final int CHAR_BUFFER_SIZE = 100;
+    private static final Object charsBufferLock = new Object();
+    private static char[] charsBuffer = new char[CHAR_BUFFER_SIZE];
+
+    private static int syncCharsBuffer(String s) {
+        int length = s.length();
+        if ((charsBuffer == null) || (charsBuffer.length < length)) {
+            charsBuffer = s.toCharArray();
+        } else {
+            s.getChars(0, length, charsBuffer, 0);
+        }
+        return length;
+    }
+
+    private static boolean isComplexLayout(char[] text, int start, int limit) {
+        return FontUtilities.isComplexText(text, start, limit);
+    }
+
+    public static int stringWidth(JComponent c, FontMetrics fm, String string){
+        if (string == null || string.isEmpty()) {
+            return 0;
+        }
+        boolean needsTextLayout = ((c != null) && (c.getClientProperty(TextAttribute.NUMERIC_SHAPING) != null));
+        if (needsTextLayout) {
+            synchronized(charsBufferLock) {
+                int length = syncCharsBuffer(string);
+                needsTextLayout = isComplexLayout(charsBuffer, 0, length);
+            }
+        }
+        if (needsTextLayout) {
+            TextLayout layout = createTextLayout(c, string,
+                    fm.getFont(), fm.getFontRenderContext());
+            return (int) layout.getAdvance();
+        } else {
+            return fm.stringWidth(string);
+        }
+    }
+
+    private static TextLayout createTextLayout(JComponent c, String s, Font f, FontRenderContext frc) {
+        Object shaper = (c == null ? null : c.getClientProperty(TextAttribute.NUMERIC_SHAPING));
+        if (shaper == null) {
+            return new TextLayout(s, f, frc);
+        } else {
+            Map<TextAttribute, Object> a = new HashMap<>();
+            a.put(TextAttribute.FONT, f);
+            a.put(TextAttribute.NUMERIC_SHAPING, shaper);
+            return new TextLayout(s, a, frc);
+        }
+    }
+
+    public static void drawString(JComponent c, Graphics g, String text, float x, float y) {
+        // c may be null
+
+        // All non-editable widgets that draw strings call into this
+        // methods.  By non-editable that means widgets like JLabel, JButton
+        // but NOT JTextComponents.
+        if ( text == null || text.length() <= 0 ) { //no need to paint empty strings
+            return;
+        }
+        if (isPrinting(g)) {
+            Graphics2D g2d = getGraphics2D(g);
+            if (g2d != null) {
+                /* The printed text must scale linearly with the UI.
+                 * Calculate the width on screen, obtain a TextLayout with
+                 * advances for the printer graphics FRC, and then justify
+                 * it to fit in the screen width. This distributes the spacing
+                 * more evenly than directly laying out to the screen advances.
+                 */
+                String trimmedText = trimTrailingSpaces(text);
+                if (!trimmedText.isEmpty()) {
+                    float screenWidth = (float) g2d.getFont().getStringBounds
+                            (trimmedText, getFontRenderContext(c)).getWidth();
+                    TextLayout layout = createTextLayout(c, text, g2d.getFont(),
+                            g2d.getFontRenderContext());
+
+                    // If text fits the screenWidth, then do not need to justify
+                    if (SwingUtils.stringWidth(c, g2d.getFontMetrics(),
+                            trimmedText) > screenWidth) {
+                        layout = layout.getJustifiedLayout(screenWidth);
+                    }
+                    /* Use alternate print color if specified */
+                    Color col = g2d.getColor();
+                    if (col instanceof PrintColorUIResource) {
+                        g2d.setColor(((PrintColorUIResource)col).getPrintColor());
+                    }
+
+                    layout.draw(g2d, x, y);
+
+                    g2d.setColor(col);
+                }
+
+                return;
+            }
+        }
+
+        // If we get here we're not printing
+        if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D)g;
+
+            boolean needsTextLayout = ((c != null) && (c.getClientProperty(TextAttribute.NUMERIC_SHAPING) != null));
+
+            if (needsTextLayout) {
+                synchronized(charsBufferLock) {
+                    int length = syncCharsBuffer(text);
+                    needsTextLayout = isComplexLayout(charsBuffer, 0, length);
+                }
+            }
+
+            Object aaHint = (c == null) ? null : c.getClientProperty(KEY_TEXT_ANTIALIASING);
+            if (aaHint != null) {
+                Object oldContrast = null;
+                Object oldAAValue = g2.getRenderingHint(KEY_TEXT_ANTIALIASING);
+                if (aaHint != oldAAValue) {
+                    g2.setRenderingHint(KEY_TEXT_ANTIALIASING, aaHint);
+                } else {
+                    oldAAValue = null;
+                }
+
+                Object lcdContrastHint = c.getClientProperty(
+                        KEY_TEXT_LCD_CONTRAST);
+                if (lcdContrastHint != null) {
+                    oldContrast = g2.getRenderingHint(KEY_TEXT_LCD_CONTRAST);
+                    if (lcdContrastHint.equals(oldContrast)) {
+                        oldContrast = null;
+                    } else {
+                        g2.setRenderingHint(KEY_TEXT_LCD_CONTRAST,
+                                lcdContrastHint);
+                    }
+                }
+
+                if (needsTextLayout) {
+                    TextLayout layout = createTextLayout(c, text, g2.getFont(),
+                            g2.getFontRenderContext());
+                    layout.draw(g2, x, y);
+                } else {
+                    g2.drawString(text, x, y);
+                }
+
+                if (oldAAValue != null) {
+                    g2.setRenderingHint(KEY_TEXT_ANTIALIASING, oldAAValue);
+                }
+                if (oldContrast != null) {
+                    g2.setRenderingHint(KEY_TEXT_LCD_CONTRAST, oldContrast);
+                }
+
+                return;
+            }
+
+            if (needsTextLayout){
+                TextLayout layout = createTextLayout(c, text, g2.getFont(),
+                        g2.getFontRenderContext());
+                layout.draw(g2, x, y);
+                return;
+            }
+        }
+
+        g.drawString(text, (int) x, (int) y);
+    }
+
+    private static boolean isPrinting(Graphics g) {
+        return (g instanceof PrinterGraphics || g instanceof PrintGraphics);
+    }
+
+    private static Graphics2D getGraphics2D(Graphics g) {
+        if (g instanceof Graphics2D) {
+            return (Graphics2D) g;
+        } else if (g instanceof ProxyPrintGraphics) {
+            return (Graphics2D) (((ProxyPrintGraphics) g).getGraphics());
+        } else {
+            return null;
+        }
+    }
+
+    private static String trimTrailingSpaces(String s) {
+        int i = s.length() - 1;
+        while (i >= 0 && Character.isWhitespace(s.charAt(i))) {
+            i--;
+        }
+        return s.substring(0, i + 1);
+    }
+
+    private static FontRenderContext getFontRenderContext(Component c) {
+        return c.getFontMetrics(c.getFont()).getFontRenderContext();
     }
 }
