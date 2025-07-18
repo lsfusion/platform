@@ -1284,7 +1284,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                     }
 
                     if (!BaseUtils.isRedundantString(formattedValue)) {
-                        return SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont());
+                        return SwingUtils.toMultilineHtml(e.getComponent(), formattedValue, createToolTip().getFont());
                     }
                 }
             }
