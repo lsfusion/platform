@@ -2307,16 +2307,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
-                int majorStatChangedCount = 0;
+                Result<Integer> majorStatChangedCount = new Result<>(0);
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        table.updateStat(result, SetFact.EMPTY(), false);
-                        majorStatChangedCount++;
+                        table.updateStat(MapFact.EMPTY(), MapFact.EMPTY(), result, false, majorStatChangedCount);
                         table.majorStatChanged = false;
                     }
                 }
-                dropLRU(majorStatChangedCount);
+                dropLRU(majorStatChangedCount.result);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
     }
