@@ -257,7 +257,7 @@ public class MainController {
         }
     }
 
-    private static Class classForName(String className) {
+    public static Class classForName(String className) {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {

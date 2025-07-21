@@ -19,11 +19,11 @@ import bibliothek.gui.dock.control.DockRelocator;
 import bibliothek.gui.dock.control.relocator.DefaultDockRelocator;
 import bibliothek.gui.dock.facile.mode.Location;
 import bibliothek.gui.dock.support.mode.ModeSettings;
+import bibliothek.gui.dock.themes.basic.BasicColorScheme;
 import bibliothek.gui.dock.title.DockTitle;
-import bibliothek.gui.dock.util.color.ColorManager;
+import bibliothek.gui.dock.util.Priority;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.EProvider;
@@ -181,35 +181,34 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 });
             }
         });
-        
-        ReflectionUtils.setPrivateFieldValue(DockController.class, mainControl.getController(), "colors", new ColorManager(mainControl.getController()) {
-            @Override
-            public Color get(String id) {
-                if (id.equals("stack.border") || 
-                        id.equals("stack.tab.border") || 
-                        id.equals("stack.tab.border.selected") || 
-                        id.equals("stack.tab.border.selected.focused") || 
-                        id.equals("stack.tab.border.selected.focuslost") ||
-                        id.equals("stack.tab.border.disabled")) {
-                    return SwingDefaults.getComponentBorderColor();
-                } else if (id.equals("stack.tab.text") ||
-                        id.equals("stack.tab.text.selected") ||
-                        id.equals("stack.tab.text.selected.focused") ||
-                        id.equals("stack.tab.text.selected.focuslost") ||
-                        id.equals("stack.tab.text.disabled")) {
-                    return SwingDefaults.getTableCellForeground();
-                } else if (id.equals("stack.tab.top.selected") ||
-                        id.equals("stack.tab.top.selected.focused") ||
-                        id.equals("stack.tab.top.selected.focuslost") ||
-                        id.equals("stack.tab.bottom.selected") ||
-                        id.equals("stack.tab.bottom.selected.focused") ||
-                        id.equals("stack.tab.bottom.selected.focuslost")) {
-                    return SwingDefaults.getSelectionColor();
-                }
-                return super.get(id);
-            }
-        });
 
+            mainControl.getController().getColors().setScheme(Priority.CLIENT, new BasicColorScheme() {
+                @Override
+                protected void updateUI() {
+                    Color componentBorderColor = SwingDefaults.getComponentBorderColor();
+                    setColor("stack.border", componentBorderColor);
+                    setColor("stack.tab.border", componentBorderColor);
+                    setColor("stack.tab.border.selected", componentBorderColor);
+                    setColor("stack.tab.border.selected.focused", componentBorderColor);
+                    setColor("stack.tab.border.selected.focuslost", componentBorderColor);
+                    setColor("stack.tab.border.disabled", componentBorderColor);
+
+                    Color tableCellForeground = SwingDefaults.getTableCellForeground();
+                    setColor("stack.tab.text", tableCellForeground);
+                    setColor("stack.tab.text.selected", tableCellForeground);
+                    setColor("stack.tab.text.selected.focused", tableCellForeground);
+                    setColor("stack.tab.text.selected.focuslost", tableCellForeground);
+                    setColor("stack.tab.text.disabled", tableCellForeground);
+
+                    Color selectionColor = SwingDefaults.getSelectionColor();
+                    setColor("stack.tab.top.selected", selectionColor);
+                    setColor("stack.tab.top.selected.focused", selectionColor);
+                    setColor("stack.tab.top.selected.focuslost", selectionColor);
+                    setColor("stack.tab.bottom.selected", selectionColor);
+                    setColor("stack.tab.bottom.selected.focused", selectionColor);
+                    setColor("stack.tab.bottom.selected.focuslost", selectionColor);
+                }
+            });
 
         formsController = new FormsController(mainControl, mainNavigator);
 
