@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -33,7 +32,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BusinessLogics;
@@ -690,10 +688,11 @@ public class ClassChanges {
         return objectValues.<SQLException, SQLHandledException>mapItIdentityValuesEx(value -> (T) updateCurrentClass(sql, env, baseClass, value));
     }
     
-    public ImSet<CustomClass> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+    public Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(news.isEmpty()) // оптимизация
-            return SetFact.EMPTY();
+            return Pair.create(SetFact.EMPTY(), SetFact.EMPTY());
 
+        MSet<ImplementTable> mChangedTables = SetFact.mSet();
         ImSet<CustomClass> remove = getAllRemoveClasses();
         // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляемый объект
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(remove)) {
@@ -706,8 +705,11 @@ public class ClassChanges {
                     KeyField key = mapFields.getKey(i);
                     sql.statusMessage = new StatusMessage("delete", key, i, size);
                     ValueClass value = mapFields.getValue(i);
-                    if (value instanceof CustomClass && remove.contains((CustomClass) value))
+                    if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
+                        if(table.majorStatChanged(countChangedStat((CustomClass) value), false))
+                            mChangedTables.add(table);
+                    }
                 } finally {
                     sql.statusMessage = null;
                 }
@@ -715,7 +717,18 @@ public class ClassChanges {
             query.and(table.join(mapExprs).getWhere().and(removeWhere));
             sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
         }
-        return remove;
+        return Pair.create(remove, mChangedTables.immutable());
+    }
+
+    private long countChangedStat(CustomClass value) {
+        long changedStat = 0;
+        for(ClassDataProperty upDataProp : value.getUpDataProps()) {
+            SingleKeyPropertyUsage propUsage = news.get(upDataProp);
+            if(propUsage != null) {
+                changedStat += propUsage.getCount();
+            }
+        }
+        return changedStat;
     }
 
     private final Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> EMPTY_SPLIT = new Pair<>(new Pair<>(MapFact.<ClassDataProperty, SingleKeyPropertyUsage>EMPTY(), MapFact.<ClassDataProperty, ChangedDataClasses>EMPTY()), MapFact.<Property, UpdateResult>EMPTY());

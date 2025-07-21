@@ -95,6 +95,11 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
+    public boolean majorStatChanged(long changedCount, boolean useMultiplier) {
+        return statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier);
+    }
+    public boolean majorStatChanged;
+
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
     public boolean isFull() {
@@ -549,9 +554,9 @@ public class ImplementTable extends DBTable { // последний интерф
         return null;
     }
 
-    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
         recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
+        return recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
     }
 
     public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
@@ -750,8 +755,7 @@ public class ImplementTable extends DBTable { // последний интерф
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
 
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
-
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet, Result<Integer> majorStatChangedCount) {
         Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
         ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
@@ -777,7 +781,10 @@ public class ImplementTable extends DBTable { // последний интерф
 
             mvDistinctKeys.mapValue(i, keyCount);
         }
-        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        TableStatKeys newStatKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows()))
+            majorStatChangedCount.set(majorStatChangedCount.result + 1);
+        statKeys = newStatKeys;
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
     }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.action.session.classes.change;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.QueryEnvironment;
@@ -18,6 +19,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -113,7 +115,7 @@ public class UpdateCurrentClassesSession {
         return changes.updateCurrentClasses(sql, env, baseClass, objectValues);
     }
 
-    public <K, T extends ObjectValue> ImSet<CustomClass> packRemoveClasses(BusinessLogics BL) throws SQLException, SQLHandledException {
+    public <K, T extends ObjectValue> Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packRemoveClasses(BusinessLogics BL) throws SQLException, SQLHandledException {
         return changes.packRemoveClasses(modifier, BL, sql, env);
     }
 }

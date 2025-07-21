@@ -313,6 +313,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = null;
         mChangedPropKeys = null;
         mRemovedClasses = null;
+        mChangedTables = null;
 
         cleanOnlyDataModifier();
         applyFilter = ApplyFilter.NO;
@@ -1554,6 +1555,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            modifyQuery.and(reupdateWhere.not());
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
+
+        if(implementTable.majorStatChanged(changeTable.getCount(), true))
+            mChangedTables.add(implementTable);
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1585,6 +1589,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private MSet<CustomClass> mRemovedClasses;
     private MSet<Property> mChangedProps;
     private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
+    private MSet<ImplementTable> mChangedTables;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1727,7 +1732,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
-        mRemovedClasses = SetFact.mSet();        
+        mRemovedClasses = SetFact.mSet();
+        mChangedTables = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2126,6 +2132,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys = mChangedPropKeys.immutable();
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
+        ImSet<ImplementTable> changedTables = mChangedTables.immutable();
+
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
             assert data.isEmpty();
@@ -2148,6 +2156,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         changes.flushStrong(changedPropKeys);
 
         restartFinal(false, changedProps, keepProps);
+
+        for (ImplementTable table : changedTables) {
+            table.majorStatChanged = true;
+        }
 
         return true;
     }
@@ -2178,7 +2190,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             mChangedProps.addAll(updateSession.getChangedProps());
         stack.updateCurrentClasses(updateSession);
 
-        mRemovedClasses.addAll(updateSession.packRemoveClasses(BL));
+        Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packResult = updateSession.packRemoveClasses(BL);
+        mRemovedClasses.addAll(packResult.first);
+        mChangedTables.addAll(packResult.second);
     }
 
     private static long getTimestamp() {

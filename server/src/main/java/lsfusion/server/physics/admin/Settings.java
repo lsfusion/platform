@@ -3541,4 +3541,26 @@ public class Settings implements Cloneable {
     public void setUniversalPassword(String universalPassword) {
         this.universalPassword = universalPassword;
     }
+
+    //num of changed tables to run dropLRU after updateStats
+    public Integer updateStatsDropLRUThreshold = 1;
+
+    public Integer getUpdateStatsDropLRUThreshold() {
+        return updateStatsDropLRUThreshold;
+    }
+
+    public void setUpdateStatsDropLRUThreshold(Integer updateStatsDropLRUThreshold) {
+        this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
+    }
+
+    //min degree diff of table stats
+    public int majorStatChangeDegree = 2;
+
+    public int getMajorStatChangeDegree() {
+        return majorStatChangeDegree;
+    }
+
+    public void setMajorStatChangeDegree(int majorStatChangeDegree) {
+        this.majorStatChangeDegree = majorStatChangeDegree;
+    }
 }
