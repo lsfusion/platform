@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -2202,6 +2203,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
+            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         } else {
             result.add(getBalanceConnectionsTask(scheduler)); // to test
 
@@ -2307,6 +2309,27 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 serviceLM.makeProcessDumpAction.execute(session, stack);
             }
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
+    }
+
+    private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                Result<Integer> majorStatChangedCount = new Result<>(0);
+                for (ImplementTable table : LM.tableFactory.getImplementTables()) {
+                    if (table.majorStatChanged) {
+                        ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                        table.updateStat(MapFact.EMPTY(), MapFact.EMPTY(), result, false, majorStatChangedCount);
+                        table.majorStatChanged = false;
+                    }
+                }
+                dropLRU(majorStatChangedCount.result);
+            }
+        }, false, 1, false, "RecalculateAndUpdateStats");
+    }
+
+    public void dropLRU(int majorStatChangedCount) {
+        if (majorStatChangedCount > Settings.get().getUpdateStatsDropLRUThreshold())
+            ALRUMap.forceRemoveAllLRU(100);
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

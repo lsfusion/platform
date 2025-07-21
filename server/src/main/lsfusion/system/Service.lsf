@@ -18,6 +18,8 @@ recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion
 overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsAction' ();
 maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER ();
 
+updateStats '{service.update.stats.action}' INTERNAL 'lsfusion.server.physics.admin.service.action.UpdateStatsAction' ();
+
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -198,8 +200,8 @@ onStarted() + {
 } 
 
 runGarbageCollector '{service.run.garbage.collector}'  INTERNAL  'lsfusion.server.physics.admin.service.action.GarbageCollectorAction' ();
-dropLRUPercent '{service.drop.lru.percent}' = DATA DOUBLE ();
-randomDropLRU '{service.random.drop.lru}' = DATA BOOLEAN ();
+dropLRUPercent '{service.drop.lru.percent}' = DATA LOCAL DOUBLE ();
+randomDropLRU '{service.random.drop.lru}' = DATA LOCAL BOOLEAN ();
 dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.physics.admin.service.action.DropLRUAction' (DOUBLE, BOOLEAN);
 dropLRU '{service.drop.lru}' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
 makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admin.service.action.MakeHeapDumpAction' ();
@@ -214,7 +216,7 @@ FORM maintenance '{service.form.maintenance}'
                  clearApplicationLog, 
                  serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
                  checkClassesAction, checkMaterializationsAction, checkIndicesAction, checkTablesAction,
-                 recalculateStatsAction, overCalculateStatsAction,
+                 recalculateStatsAction, overCalculateStatsAction, updateStats,
                  packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
                  recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkMaterializationsMultiThreadAction,      
@@ -260,6 +262,7 @@ DESIGN maintenance {
                     MOVE PROPERTY(recalculateStatsAction());
                     MOVE PROPERTY(overCalculateStatsAction());             
                     MOVE PROPERTY(maxQuantityOverCalculate());
+                    MOVE PROPERTY(updateStats());
                 }
                 NEW checkOneThread {
                     caption = '{service.form.maintenance.caption.check.one.thread}';
