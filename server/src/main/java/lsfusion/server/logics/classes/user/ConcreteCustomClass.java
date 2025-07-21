@@ -369,8 +369,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public boolean majorStatChanged(long changedCount) {
-        return new Stat(stat).majorStatChanged(new Stat(changedCount), false);
+    public boolean majorStatChanged(long changedCount, boolean useMultiplier) {
+        return stat != null && new Stat(stat).majorStatChanged(new Stat(changedCount), useMultiplier);
     }
 
     public boolean majorStatChanged;
@@ -378,7 +378,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public void updateSIDStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
         Integer newStat = classStats.get(getSID());
         if (majorStatChangedCount != null) {
-            if (majorStatChanged(newStat))
+            if (majorStatChanged(newStat, false))
                 majorStatChangedCount.set(majorStatChangedCount.result + 1);
         } else {
             assert ID == null;

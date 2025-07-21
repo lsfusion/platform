@@ -310,8 +310,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = null;
         mChangedPropKeys = null;
         mRemovedClasses = null;
-        mChangedTables = null;
-        mChangedClasses = null;
+        mChangedStatTables = null;
+        mChangedStatClasses = null;
 
         cleanOnlyDataModifier();
         applyFilter = ApplyFilter.NO;
@@ -1555,7 +1555,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
         if(implementTable.majorStatChanged(changeTable.getCount(), true))
-            mChangedTables.add(implementTable);
+            mChangedStatTables.add(implementTable);
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1587,8 +1587,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private MSet<CustomClass> mRemovedClasses;
     private MSet<Property> mChangedProps;
     private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
-    private MSet<ImplementTable> mChangedTables;
-    private MSet<ConcreteCustomClass> mChangedClasses;
+    private MSet<ImplementTable> mChangedStatTables;
+    private MSet<ConcreteCustomClass> mChangedStatClasses;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1732,8 +1732,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();
-        mChangedTables = SetFact.mSet();
-        mChangedClasses = SetFact.mSet();
+        mChangedStatTables = SetFact.mSet();
+        mChangedStatClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2112,12 +2112,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
                 if (newClass instanceof ConcreteCustomClass) {
-                    checkMajorStatChanged((ConcreteCustomClass) newClass);
+                    majorStatChanged((ConcreteCustomClass) newClass, true);
                 }
             }
             for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
                 if (removeClass instanceof ConcreteCustomClass) {
-                    checkMajorStatChanged((ConcreteCustomClass) removeClass);
+                    majorStatChanged((ConcreteCustomClass) removeClass, false);
                 }
             }
     
@@ -2143,8 +2143,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys = mChangedPropKeys.immutable();
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
-        ImSet<ImplementTable> changedTables = mChangedTables.immutable();
-        ImSet<ConcreteCustomClass> changedClasses = mChangedClasses.immutable();
+        ImSet<ImplementTable> changedTables = mChangedStatTables.immutable();
+        ImSet<ConcreteCustomClass> changedClasses = mChangedStatClasses.immutable();
 
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
@@ -2180,9 +2180,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return true;
     }
 
-    private void checkMajorStatChanged(ConcreteCustomClass customClass) {
-        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass))) {
-            mChangedClasses.add(customClass);
+    private void majorStatChanged(ConcreteCustomClass customClass, boolean useMultiplier) {
+        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), useMultiplier)) {
+            mChangedStatClasses.add(customClass);
         }
     }
 
@@ -2214,7 +2214,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packResult = updateSession.packRemoveClasses(BL);
         mRemovedClasses.addAll(packResult.first);
-        mChangedTables.addAll(packResult.second);
+        mChangedStatTables.addAll(packResult.second);
     }
 
     private static long getTimestamp() {
