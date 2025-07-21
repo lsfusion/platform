@@ -422,7 +422,11 @@ public class ClassChanges {
 
     // просто lazy кэш для getCurrentClass
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap();
-    
+
+    public Map<DataObject, ConcreteObjectClass> getNewClasses() {
+        return newClasses;
+    }
+
     public ClassChanges() { // mutable конструктор
         news = MapFact.mAddRemoveMap();
         changedClasses = MapFact.mAddRemoveMap();
@@ -720,7 +724,7 @@ public class ClassChanges {
         return Pair.create(remove, mChangedTables.immutable());
     }
 
-    private long countChangedStat(CustomClass value) {
+    public long countChangedStat(CustomClass value) {
         long changedStat = 0;
         for(ClassDataProperty upDataProp : value.getUpDataProps()) {
             SingleKeyPropertyUsage propUsage = news.get(upDataProp);

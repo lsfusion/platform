@@ -70,10 +70,7 @@ import lsfusion.server.logics.action.session.change.increment.IncrementTableProp
 import lsfusion.server.logics.action.session.change.modifier.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
-import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.action.session.classes.change.MaterializableClassChange;
-import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.*;
 import lsfusion.server.logics.action.session.classes.changed.ChangedClasses;
 import lsfusion.server.logics.action.session.classes.changed.ChangedDataClasses;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
@@ -314,6 +311,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedPropKeys = null;
         mRemovedClasses = null;
         mChangedTables = null;
+        mChangedClasses = null;
 
         cleanOnlyDataModifier();
         applyFilter = ApplyFilter.NO;
@@ -1590,6 +1588,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private MSet<Property> mChangedProps;
     private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
     private MSet<ImplementTable> mChangedTables;
+    private MSet<ConcreteCustomClass> mChangedClasses;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1734,6 +1733,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedPropKeys = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();
         mChangedTables = SetFact.mSet();
+        mChangedClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2109,6 +2109,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.statusMessage = null;
                 }
             }
+
+            for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
+                if (newClass instanceof ConcreteCustomClass) {
+                    checkMajorStatChanged((ConcreteCustomClass) newClass);
+                }
+            }
+            for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
+                if (removeClass instanceof ConcreteCustomClass) {
+                    checkMajorStatChanged((ConcreteCustomClass) removeClass);
+                }
+            }
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
@@ -2133,6 +2144,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
         ImSet<ImplementTable> changedTables = mChangedTables.immutable();
+        ImSet<ConcreteCustomClass> changedClasses = mChangedClasses.immutable();
 
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
@@ -2161,7 +2173,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             table.majorStatChanged = true;
         }
 
+        for (ConcreteCustomClass customClass : changedClasses) {
+            customClass.majorStatChanged = true;
+        }
+
         return true;
+    }
+
+    private void checkMajorStatChanged(ConcreteCustomClass customClass) {
+        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass))) {
+            mChangedClasses.add(customClass);
+        }
     }
 
     public void addChangePropKeys(Property property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
