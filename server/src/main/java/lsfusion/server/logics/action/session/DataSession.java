@@ -41,6 +41,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLConflictException;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.exception.SQLTimeoutException;
@@ -261,7 +262,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         applyFilter = readApplyFilter();
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
-        sql.startTransaction(serializable, 0, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
+        sql.startTransaction(serializable, DataAdapter.NeedExplicitServer.MASTER, getOwner(), attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
     }
     
     private void cleanOnlyDataModifier() throws SQLException {

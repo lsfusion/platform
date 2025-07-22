@@ -5,6 +5,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import lsfusion.server.physics.dev.property.IsLightStartProperty;
@@ -35,6 +36,9 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public LP nameSetting;
     public LP overBaseValueSettingUserRole;
+
+    public ConcreteCustomClass dbSlave;
+    public LP<?> hostDBSlave;
 
     public LP allowExcessAllocatedBytes;
 
@@ -92,6 +96,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         nameSetting = findProperty("name[Setting]");
         overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");
 
+        dbSlave = (ConcreteCustomClass) findClass("DBSlave");
+        hostDBSlave = findProperty("host[DBSlave]");
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");

@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
@@ -24,13 +25,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public static final LogSequenceNumber NO_SUBSCRIPTION = LogSequenceNumber.valueOf(1);
-    protected abstract LogSequenceNumber getSlaveLSN(Connection connection) throws SQLException;
+    protected abstract LogSequenceNumber getMasterLSN() throws SQLException;
+    protected abstract LogSequenceNumber getSlaveLSN(DataAdapter.Slave slave) throws SQLException;
 
-    protected abstract Connection startConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection) throws SQLException;
+    protected abstract Connection startConnection(DataAdapter.NeedServer needServer, LogSequenceNumber lsn) throws SQLException;
     protected abstract void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException;
     public abstract SQLSyntax getSyntax();
 
-    protected abstract boolean checkLSN(Connection connection, LogSequenceNumber lsn) throws SQLException;
+    protected abstract boolean checkLSN(DataAdapter.Server server, LogSequenceNumber lsn) throws SQLException;
 
     private final Map<ExConnection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
     private final List<ExConnection> freeConnections = new ArrayList<>();
@@ -54,7 +56,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     public ExConnection newExConnection(SQLSessionLSNProvider lsn) throws SQLException {
-        return new ExConnection(newConnection(null, lsn, null), new SQLTemporaryPool());
+        return new ExConnection(newConnection(DataAdapter.NeedServer.BEST, lsn), new SQLTemporaryPool());
     }
     
     public void closeExConnection(ExConnection connection, boolean clean) throws SQLException {
@@ -63,22 +65,22 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     private AtomicInteger connectionsCount = new AtomicInteger();
 
-    private Connection safeStartConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection, int count) throws SQLException {
+    private Connection safeStartConnection(DataAdapter.NeedServer needServer, LogSequenceNumber lsn, int count) throws SQLException {
         try {
-            return startConnection(needServer, lsn, prevConnection);
+            return startConnection(needServer, lsn);
         } catch (SQLException e) {
             if(count < Settings.get().getNewConnectionAttempts()) {
                 ServerLoggers.sqlSuppLog(e);
-                return safeStartConnection(needServer, lsn, prevConnection, count + 1);
+                return safeStartConnection(needServer, lsn, count + 1);
             }
 
             throw e;
         }
     }
-    public Connection newConnection(Integer needServer, SQLSessionLSNProvider lsnProvider, Connection prevConnection) throws SQLException {
+    public Connection newConnection(DataAdapter.NeedServer needServer, SQLSessionLSNProvider lsnProvider) throws SQLException {
         long l = System.currentTimeMillis();
 
-        Connection newConnection = safeStartConnection(needServer, lsnProvider.getLSN(), prevConnection, 0);
+        Connection newConnection = safeStartConnection(needServer, lsnProvider.getLSN(), 0);
         if(newConnection == null)
             return null;
 
@@ -106,7 +108,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     @Override
     public Connection newRestartConnection(SQLSessionLSNProvider lsn) throws SQLException {
-        return newConnection(null, lsn, null);
+        return newConnection(DataAdapter.NeedServer.BEST, lsn);
     }
 
     @Override
@@ -123,7 +125,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             synchronized (freeConnections) {
                 for (int i = 0, size = freeConnections.size(); i < size; i++) {
                     connection = freeConnections.get(i);
-                    if (checkLSN(connection.sql, lsn.getLSN())) {
+                    if (checkLSN(DataAdapter.getServer(connection.sql), lsn.getLSN())) {
                         freeConnections.remove(i);
                         logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
                         break;
@@ -146,8 +148,8 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     @Override
-    public Connection getBalanceConnection(Integer needServer, SQLSessionLSNProvider lsn, Connection prevConnection) throws SQLException {
-        return newConnection(needServer, lsn, prevConnection);
+    public Connection getBalanceConnection(DataAdapter.NeedServer needServer, SQLSessionLSNProvider lsn) throws SQLException {
+        return newConnection(needServer, lsn);
     }
 
     @Override

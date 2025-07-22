@@ -1,19 +1,20 @@
 package lsfusion.server.data.sql.adapter;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.sql.connection.AbstractConnectionPool;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
+import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -32,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.postgresql.replication.LogSequenceNumber;
 import org.springframework.util.PropertyPlaceholderHelper;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -45,15 +45,96 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected final static Logger logger = ServerLoggers.sqlLogger;
     public final SQLSyntax syntax;
 
-    public String server; // master
-    public String[] servers; // first is master, others - slaves
+    public static abstract class Server {
+        public final String host;
+
+        public Connection ensureConnection;
+
+        public Server(String host) {
+            this.host = host;
+        }
+
+        public abstract boolean isMaster();
+    }
+    public static class Master extends Server {
+        public Master(String host) {
+            super(host);
+        }
+
+        public boolean isMaster() {
+            return true;
+        }
+    }
+    public static class Slave extends Server {
+
+        public final String id;
+
+        public Slave(String host, String id) {
+            super(host);
+
+            this.id = id;
+        }
+
+        public boolean isMaster() {
+            return false;
+        }
+    }
+
+    public interface NeedServer {
+
+        Server getServer(DataAdapter adapter, LogSequenceNumber lsn) throws SQLException;
+
+        NeedServer BEST = DataAdapter::getBestServer;
+    }
+
+    public interface NeedExplicitServer extends NeedServer {
+
+        Server getServer(DataAdapter adapter);
+
+        boolean isMaster();
+
+        static NeedExplicitServer EXPLICIT(Server server) {
+            return new NeedExplicitServer() {
+                @Override
+                public Server getServer(DataAdapter adapter) {
+                    return server;
+                }
+
+                @Override
+                public boolean isMaster() {
+                    return server.isMaster();
+                }
+            };
+        }
+
+        NeedExplicitServer MASTER = new NeedExplicitServer() {
+            @Override
+            public Server getServer(DataAdapter adapter) {
+                return adapter.master;
+            }
+
+            @Override
+            public boolean isMaster() {
+                return true;
+            }
+        };
+
+        @Override
+        default Server getServer(DataAdapter adapter, LogSequenceNumber lsn) throws SQLException {
+            return getServer(adapter);
+        }
+    }
+
+    protected final Master master;
+
+    protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
 
     public String dataBase;
     public String user;
     public String password;
     public Long connectTimeout;
 
-    protected abstract void ensureDB(String server, boolean cleanDB, boolean master) throws Exception;
+    public abstract void ensureDB(Server server, boolean cleanDB) throws Exception;
 
     protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout, boolean cleanDB) throws Exception {
 
@@ -61,8 +142,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
         this.syntax = syntax;
 
-        servers = server.split(";");
-        this.server = servers[0];
+        this.master = new Master(server);
 
         this.user = user;
         this.password = password;
@@ -72,25 +152,20 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.connectTimeout = connectTimeout;
     }
 
-    public LogSequenceNumber ensureDBConnection(boolean cleanDB) throws Exception {
-        ensureConnections = new Connection[servers.length];
-        String[] servers = this.servers;
-        for (int i = 0; i < servers.length; i++) {
-            String server = servers[i];
-            ensureDB(server, cleanDB, i == 0);
-
-            Connection connection = startConnection(server);
-            connection.setAutoCommit(true);
-            ensureConnections[i] = connection;
-        }
-        return getMasterLSN(ensureConnections[0]);
+    public void startEnsureConnection(Server server) throws SQLException {
+        Connection connection = startConnection(server);
+        connection.setAutoCommit(true);
+        server.ensureConnection = connection;
+    }
+    public void closeEnsureConnection(Server server) throws SQLException {
+        closeConnection(server.ensureConnection, cn -> {});
     }
 
-    protected boolean checkLSN(Connection connection, LogSequenceNumber lsn) throws SQLException {
-        LogSequenceNumber connectionLSN = getSlaveLSN(connection);
-
-        if(connectionLSN == null) // master
+    protected boolean checkLSN(Server server, LogSequenceNumber lsn) throws SQLException {
+        if(server.isMaster()) // if master
             return true;
+
+        LogSequenceNumber connectionLSN = getSlaveLSN((Slave)server);
 
         if(connectionLSN == LogSequenceNumber.INVALID_LSN) // first copy / or not yet started wal sync
             return false;
@@ -102,28 +177,91 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return connectionLSN.compareTo(lsn) >= 0;
     }
 
-    public int getServersCount() {
-        return servers.length;
+    public void runOnAllServers(SQLConsumer<Server> run) throws SQLException, SQLHandledException {
+        for(Server server : servers)
+            run.accept(server);
+    }
+    public LogSequenceNumber ensureMaster(boolean cleanDB, SQLRunnable backwardCompatibility) throws Exception {
+        ensureDB(master, cleanDB);
+
+        startEnsureConnection(master);
+
+        servers.add(master);
+
+        backwardCompatibility.run();
+
+        ensureSqlFuncs(master);
+
+        return getMasterLSN();
+    }
+    public void addMaster(SQLConsumer<Server> synchronizeDB) throws Exception {
+        synchronizeDB.accept(master);
+
+        ensurePublication(master);
+    }
+    public void addSlave(Slave server, SQLConsumer<Server> synchronizeDB, SQLRunnable onFirstStart, LogSequenceNumber lsn) throws Exception {
+        ensureDB(server, false);
+
+        startEnsureConnection(server);
+
+        ensureSqlFuncs(server);
+
+        ensureCaches(server);
+
+        if(lsn != null)
+            waitForMasterLSN(lsn, server);
+
+        synchronizeDB.accept(server);
+
+        ensureAndEnableSubscription(server, onFirstStart);
+
+        // adding in the end to be used only after
+        servers.add(server);
+    }
+    public void removeSlave(DataAdapter.Slave slave) throws SQLException {
+        for(Server server : servers) {
+            if(server.host.equals(slave.host)) {
+                servers.remove(server);
+
+                disableSubscription(slave);
+
+                closeEnsureConnection(slave);
+                break;
+            }
+        }
+    }
+    public void waitAndDisable(Slave server, LogSequenceNumber lsn) throws Exception {
+        try {
+            startEnsureConnection(server);
+        } catch (SQLException e) {
+            ServerLoggers.sqlSuppLog(e);
+            return;
+        }
+
+        waitForMasterLSN(lsn, server);
+
+        disableSubscription(server);
+
+        closeEnsureConnection(server);
     }
 
-    public abstract void runSync(LogSequenceNumber masterLSN, SQLConsumer<Integer> run) throws SQLException, SQLHandledException;
+    protected abstract void ensurePublication(Master master) throws Exception;
+    protected abstract void waitForMasterLSN(LogSequenceNumber masterLSN, Slave slave) throws SQLException;
+    protected abstract void ensureAndEnableSubscription(Slave server, SQLRunnable onFirstStart) throws Exception;
+    protected abstract void disableSubscription(Slave slave) throws SQLException;
 
     // getting least loaded server
-    private String getServer(Integer needServer, LogSequenceNumber lsn) throws SQLException {
-        if(servers.length == 1)
-            return server;
+    private Server getBestServer(LogSequenceNumber lsn) throws SQLException {
+        if(servers.size() == 1)
+            return master;
 
-        if(needServer != null)
-            return servers[needServer];
-
-        String bestServer = null;
+        Server bestServer = null;
         double bestLoad = 0;
-        for (int i = 0; i < ensureConnections.length; i++) {
-            Connection ensureConnection = ensureConnections[i];
-            if (checkLSN(ensureConnection, lsn)) {
-                double load = getLoad(ensureConnection);
+        for (Server server : servers) {
+            if (checkLSN(server, lsn)) {
+                double load = getLoad(server);
                 if (bestServer == null || load <= bestLoad) {
-                    bestServer = servers[i];
+                    bestServer = server;
                     bestLoad = load;
                 }
             }
@@ -135,15 +273,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     private final List<Connection> poolConnections = new ArrayList<>();
 
     @Override
-    public Connection startConnection(Integer needServer, LogSequenceNumber lsn, Connection prevConnection) throws SQLException {
-        String server = getServer(needServer, lsn); // get less loaded server
-
-        if(prevConnection != null && isFromServer(prevConnection, server))
+    public Connection startConnection(NeedServer needServer, LogSequenceNumber lsn) throws SQLException {
+        Server server = needServer.getServer(this, lsn);
+        if(server == null)
             return null;
 
         synchronized (poolConnections) {
             for (Connection poolConnection : poolConnections)
-                if (isFromServer(poolConnection, server)) {
+                if (getServer(poolConnection).equals(server)) {
                     poolConnections.remove(poolConnection);
                     return poolConnection;
                 }
@@ -167,34 +304,30 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             connection.close();
     }
 
-    public static boolean isFromServer(Connection prevConnection, String server) {
-        return getServer(prevConnection).equals(server);
+    public static Server getServer(Connection connection) {
+        return connectionServer.get(connection);
     }
 
-    protected static String getServer(Connection prevConnection) {
-        return connectionInfo.get(prevConnection);
-    }
-
-    private final static Map<Connection, String> connectionInfo = Collections.synchronizedMap(new WeakHashMap<>());
-    protected Connection startConnection(String server) throws SQLException {
+    private final static Map<Connection, Server> connectionServer = Collections.synchronizedMap(new WeakHashMap<>());
+    protected Connection startConnection(Server server) throws SQLException {
         Connection connection = createConnection(server);
-        connectionInfo.put(connection, server);
+        connectionServer.put(connection, server);
         return connection;
     }
-    protected abstract Connection createConnection(String server) throws SQLException;
+    protected abstract Connection createConnection(Server server) throws SQLException;
 
     public static List<String> getAllDBNames() {
         return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
     }
 
     private List<String> findSQLScripts() {
-        List<String> allDBNames = getAllDBNames();
-        allDBNames.remove(getDBName());
+        List<String> otherDBNames = getAllDBNames();
+        otherDBNames.remove(getDBName());
         return ResourceUtils.getResources(Pattern.compile("/sql/.*")).stream().filter(resource -> {
             if (resource.contains(".tsql"))
                 return false;
-            for (String key : allDBNames) {
-                if (resource.contains("/" + key + "/"))
+            for (String otherDB : otherDBNames) {
+                if (resource.contains("/" + otherDB + "/"))
                     return false;
             }
             return true;
@@ -203,8 +336,25 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public abstract String getDBName();
 
-    public void ensureSqlFuncs() throws IOException, SQLException {
-        executeEnsure(findSQLScripts());
+    private void ensureSqlFuncs(Server server) throws SQLException {
+        for (String command : findSQLScripts()) {
+            String resourceCmd;
+            boolean ignoreErrors;
+            try {
+                resourceCmd = readResource(command);
+                ignoreErrors = BaseUtils.getFileName(command).endsWith("_opt");
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            try {
+                executeEnsureWithException(server, resourceCmd);
+            } catch (SQLException e) {
+                if(ignoreErrors)
+                    disabledFunctions.add(BaseUtils.getFileNameAndExtension(command));
+                else
+                    throw e;
+            }
+        }
     }
 
     public void ensureLogLevel() {
@@ -277,21 +427,30 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
 
-    protected Connection[] ensureConnections;
-
+    protected void executeEnsure(Server server, String command) {
+        try {
+            executeEnsureWithException(server, command);
+        } catch (SQLException e) {
+            ServerLoggers.sqlSuppLog(e);
+        }
+    }
     protected void executeEnsure(Connection connect, String command) {
         try {
-            executeEnsureWithException(connect, command);
+            try (Statement statement = connect.createStatement()) {
+                statement.execute(command);
+            }
         } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
         }
     }
 
-    protected void executeEnsure(String command) {
-        try {
-            executeEnsureWithException(command);
-        } catch (SQLException e) {
-            ServerLoggers.sqlSuppLog(e);
+    protected void executeEnsure(String command, Slave slave) {
+        for(Server server : (slave == null ? servers : Collections.singletonList(slave))) {
+            try {
+                executeEnsureWithException(server, command);
+            } catch (SQLException e) {
+                ServerLoggers.sqlSuppLog(e);
+            }
         }
     }
 
@@ -303,74 +462,98 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     }
 
     public static Set<String> disabledFunctions = new HashSet<>();
-    protected void executeEnsure(List<String> functions) {
-        functions.forEach(command -> {
-            try {
-                executeEnsureWithException(readResource(command));
-            } catch (IOException | SQLException e) {
-                String name = new File(command).getName();
-                if (name.endsWith("_opt.sql")) {
-                    disabledFunctions.add(name);
-                } else {
-                    throw new RuntimeException(command, e);
-                }
-            }
-        });
-    }
 
     public static boolean hasTrgmExtension() {
         return !disabledFunctions.contains("trgm_opt.sql");
     }
 
-    protected void executeEnsureWithException(String command) throws SQLException {
-        for(Connection ensureConnection : ensureConnections)
-            executeEnsureWithException(ensureConnection, command);
-    }
-
-    protected static void executeEnsureWithException(Connection ensureConnection, String command) throws SQLException {
-        try (Statement statement = ensureConnection.createStatement()) {
+    protected static void executeEnsureWithException(Server server, String command) throws SQLException {
+        try (Statement statement = server.ensureConnection.createStatement()) {
             statement.execute(command);
         }
     }
 
-    protected MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
-
-    protected void proceedEnsureConcType(ConcatenateType concType) throws SQLException {
-        throw new UnsupportedOperationException();
+    public void ensureConcType(ConcatenateType concType) throws SQLException {
+        ensureConcType.run(concType);
     }
-    
-    public synchronized void ensureConcType(ConcatenateType concType) throws SQLException {
 
-        Boolean ensured = ensuredConcTypes.get(concType);
-        if(ensured != null)
-            return;
+    protected void proceedEnsureConcType(ConcatenateType concType, Slave slave) throws SQLException {
+        // ensuring types
+        String declare = "";
+        ImList<Type> types = concType.getTypes();
+        for (int i=0,size=types.size();i<size;i++)
+            declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(syntax, recTypes);
 
-        proceedEnsureConcType(concType);
+        String typeName = getConcTypeName(concType);
+        executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")", slave);
 
-        ensuredConcTypes.exclAdd(concType, true);
+        // создаем cast'ы всем concatenate типам
+        for(int i=0,size=ensureConcType.cache.size();i<size;i++) {
+            ConcatenateType ensuredType = ensureConcType.cache.get(i);
+            if(concType.getCompatible(ensuredType)!=null) {
+                String ensuredName = getConcTypeName(ensuredType);
+                executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")", slave);
+                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+                executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")", slave);
+                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT", slave);
+            }
+        }
     }
 
     public static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
-
-    public synchronized void ensureRecursion(Object ot) throws SQLException {
-        throw new UnsupportedOperationException();
-    }
 
     public void ensureArrayClass(ArrayClass arrayClass) {
         throw new UnsupportedOperationException();
     }
 
+    protected String recursionString;
     protected String safeCastString;
     protected String safeCastIntString;
     protected String safeCastStrString;
 
-    private LRUSVSMap<Pair<Type, Integer>, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
+    private interface ProceedEnsure<T> {
+        void proceed(T element, Slave slave) throws SQLException;
+    }
+    private static class Ensure<T> {
+        private final MAddSet<T> cache = SetFact.mAddSet();
+        private final ProceedEnsure<T> proceed;
 
-    public synchronized void ensureSafeCast(Pair<Type, Integer> castType) throws SQLException {
-        Boolean ensured = ensuredSafeCasts.get(castType);
-        if(ensured != null)
-            return;
+        public Ensure(ProceedEnsure<T> proceed) {
+            this.proceed = proceed;
+        }
 
+        public void run(T object) throws SQLException {
+            synchronized (cache) {
+                if (!cache.contains(object)) {
+                    proceed.proceed(object, null);
+
+                    cache.add(object);
+                }
+            }
+        }
+        public void run(Slave slave) throws SQLException {
+            synchronized (cache) {
+                for (int i = 0, size = cache.size(); i < size; i++) {
+                    proceed.proceed(cache.get(i), slave);
+                }
+            }
+        }
+    }
+
+    private final Ensure<Pair<Type, Integer>> ensureSafeCast = new Ensure<>(this::proceedEnsureSafeCast);
+    private final Ensure<ConcatenateType> ensureConcType = new Ensure<>(this::proceedEnsureConcType);
+    private final Ensure<Object> ensureRecursion = new Ensure<>(this::proceedEnsureRecursion);
+
+    public void ensureCaches(Slave slave) throws SQLException {
+        for(Ensure ensure : new Ensure[] {ensureSafeCast, ensureConcType, ensureRecursion})
+            ensure.run(slave);
+    }
+
+    public void ensureSafeCast(Pair<Type, Integer> castType) throws SQLException {
+        ensureSafeCast.run(castType);
+    }
+
+    private void proceedEnsureSafeCast(Pair<Type, Integer> castType, Slave slave) {
         // assert type.hasSafeCast;
         Properties properties = new Properties();
         properties.put("function.name", DefaultSQLSyntax.genSafeCastName(castType.first, castType.second));
@@ -382,9 +565,32 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         boolean isStr = castType.second == 1 && Settings.get().getSafeCastIntType() == 1;
 
         executeEnsure(stringResolver.replacePlaceholders(
-                isInt ? safeCastIntString : isStr ? safeCastStrString : safeCastString, properties));
+                isInt ? safeCastIntString : isStr ? safeCastStrString : safeCastString, properties), slave);
+    }
 
-        ensuredSafeCasts.put(castType, true);
+    @Override
+    public void ensureRecursion(Object object) throws SQLException {
+        ensureRecursion.run(object);
+    }
+
+    private void proceedEnsureRecursion(Object object, Slave slave) {
+        ImList<Type> types = (ImList<Type>) object;
+
+        String declare = "";
+        String using = "";
+        for (int i=0,size=types.size();i<size;i++) {
+            String paramName = "p" + i;
+            Type type = types.get(i);
+            declare = declare + ", " + paramName + " " + type.getDB(syntax, recTypes);
+            using = (using.length() == 0 ? "USING " : using + ",") + paramName;
+        }
+
+        Properties properties = new Properties();
+        properties.put("function.name", PostgreSQLSyntax.genRecursionName(types));
+        properties.put("params.declare", declare);
+        properties.put("params.usage", using);
+
+        executeEnsure(stringResolver.replacePlaceholders(recursionString, properties), slave);
     }
 
     public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {
@@ -395,10 +601,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected String getPath() {
         throw new UnsupportedOperationException();
-    }
-    public void ensureScript(String script, Properties props) throws SQLException, IOException {
-        String scriptString = readResource(getPath() + script);
-        executeEnsure(stringResolver.replacePlaceholders(scriptString, props));
     }
 
     protected String getConcTypeName(ConcatenateType type) {

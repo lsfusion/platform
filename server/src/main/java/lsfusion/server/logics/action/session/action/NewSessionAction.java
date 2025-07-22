@@ -97,12 +97,7 @@ public class NewSessionAction extends AroundAspectAction {
 
         ExecutionContext.NewSession<PropertyInterface> newContext;
         if(newSQL) {
-            SQLSession sql;
-            try {
-                sql = context.getDbManager().createSQL();
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                throw Throwables.propagate(e);
-            }
+            SQLSession sql = context.getDbManager().createSQL();
             newContext = context.newSession(sql, fixedForms);
             newContext.getSession().isPrivateSql = true; // not pretty, in theory createSQL and isPrivateSql should be in DataSession constructor but it is a really rare case
         } else {

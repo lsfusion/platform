@@ -1,5 +1,7 @@
 package lsfusion.base.col.lru;
 
+import lsfusion.base.lambda.DProcessor;
+
 import static lsfusion.base.col.lru.LRUUtil.hash;
 
 public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.ASegment> {
@@ -105,5 +107,9 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
         public int hashKey() {
             return LRUSVSMap.hashKey(key);
         }
+    }
+
+    public void proceedSafeLockLRUEKeyValues(final DProcessor<K, V> processor) {
+        proceedSafeLockLRUEEntries(element -> processor.proceed(element.key, element.value));
     }
 }

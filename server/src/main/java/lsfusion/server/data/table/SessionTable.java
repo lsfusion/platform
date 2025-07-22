@@ -37,6 +37,7 @@ import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
@@ -866,7 +867,7 @@ public class SessionTable extends StoredTable implements ValuesContext<SessionTa
 
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
-            dbSql.startFakeTransaction(0, OperationOwner.unknown);
+            dbSql.startFakeTransaction(DataAdapter.NeedExplicitServer.MASTER, OperationOwner.unknown);
             dbSql.ensureTable(this);
             dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, getBaseClass(), OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
             dbSql.endFakeTransaction(OperationOwner.unknown);

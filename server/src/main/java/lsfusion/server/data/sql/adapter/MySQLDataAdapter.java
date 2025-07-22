@@ -1,7 +1,6 @@
 package lsfusion.server.data.sql.adapter;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.sql.lambda.SQLConsumer;
+import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.MySQLSQLSyntax;
 import org.postgresql.replication.LogSequenceNumber;
 
@@ -17,15 +16,15 @@ public class MySQLDataAdapter extends DataAdapter {
         super(MySQLSQLSyntax.instance, database, server, user, password, null, false);
     }
 
-    public void ensureDB(String server, boolean cleanDB, boolean master) throws SQLException {
+    public void ensureDB(Server server, boolean cleanDB) throws SQLException {
 
-        Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
+        Connection connect = DriverManager.getConnection("jdbc:mysql://" + server.host + ":3306/" + dataBase);
         connect.createStatement().execute("DROP DATABASE " + dataBase);
         connect.createStatement().execute("CREATE DATABASE " + dataBase);
         connect.close();
     }
 
-    public Connection createConnection(String server) throws SQLException {
+    public Connection createConnection(Server server) throws SQLException {
         Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
         connect.createStatement().execute("USE " + dataBase);
 
@@ -38,17 +37,37 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public double getLoad(Connection connection) throws SQLException {
+    public double getLoad(Server server) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void runSync(LogSequenceNumber masterLSN, SQLConsumer<Integer> run) throws SQLException, SQLHandledException {
+    public LogSequenceNumber getSlaveLSN(Slave slave) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public LogSequenceNumber getSlaveLSN(Connection connection) throws SQLException {
+    protected void ensurePublication(Master master) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void waitForMasterLSN(LogSequenceNumber masterLSN, Slave slave) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void ensureAndEnableSubscription(Slave server, SQLRunnable onFirstStart) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void disableSubscription(Slave slave) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected LogSequenceNumber getMasterLSN() throws SQLException {
         throw new UnsupportedOperationException();
     }
 

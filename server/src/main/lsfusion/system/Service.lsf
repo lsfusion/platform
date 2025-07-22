@@ -1037,3 +1037,49 @@ heuristicSize() += CASE
     WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelTinySize')) THEN Size.tiny
     WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelMiniSize')) THEN Size.mini
     ELSE Size.normal;
+
+// DB scaling
+
+CLASS ABSTRACT DBServer '{service.scaling.db.server}';
+name '{service.scaling.db.server.name}' = ABSTRACT STRING (DBServer);
+
+CLASS DBMaster '{service.scaling.db.master}' {
+    instance '{service.scaling.master}'
+} : DBServer;
+name(DBMaster server) += '{service.scaling.master}' IF server IS DBMaster;
+
+CLASS DBSlave '{service.scaling.db.slave}' : DBServer;
+host '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
+name(DBSlave server) += host(server);
+addSlave INTERNAL 'lsfusion.server.physics.admin.service.action.AddSlaveAction' (DBSlave);
+removeSlave INTERNAL 'lsfusion.server.physics.admin.service.action.RemoveSlaveAction' (DBSlave);
+asyncAddSlave (DBSlave slave) {
+    NEWSESSION NEWTHREAD {
+        addSlave(slave);
+    } 
+}
+asyncRemoveSlave (DBSlave slave) {
+    NEWSESSION NEWTHREAD {
+        removeSlave(slave);
+    } 
+}
+WHEN CHANGED(host(DBSlave slave)) DO {
+    asyncRemoveSlave(slave);
+    asyncAddSlave(slave);
+}
+onStarted() +{
+    FOR DBSlave slave IS DBSlave DO
+        asyncAddSlave(slave);
+}
+
+FORM scaling '{service.scaling}'
+    OBJECTS s = DBServer
+    PROPERTIES (s) GRID name
+    PROPERTIES (s) NEW[DBSlave], DELETE
+;
+
+NAVIGATOR {
+    system {
+        NEW scaling;
+    }
+}

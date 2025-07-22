@@ -85,7 +85,6 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.DBTable;
 import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
-import org.postgresql.replication.LogSequenceNumber;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -552,7 +551,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return (int) ((System.currentTimeMillis() - transStartTime)/1000);
     }
 
-    public void startFakeTransaction(int needServer, OperationOwner owner) throws SQLException, SQLHandledException {
+    private boolean slaveTransaction;
+
+    public void startFakeTransaction(DataAdapter.NeedServer needServer, OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
 
         explicitNeedPrivate++;
@@ -576,11 +577,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void startTransaction(boolean serializable, int needServer, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void startTransaction(boolean serializable, DataAdapter.NeedExplicitServer needServer, OperationOwner owner) throws SQLException, SQLHandledException {
         startTransaction(serializable, needServer, owner, new HashMap<>(), false, 0, false);
     }
 
-    public void startTransaction(boolean serializable, int needServer, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
+    public void startTransaction(boolean serializable, DataAdapter.NeedExplicitServer needServer, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -594,6 +595,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 needPrivate();
 
+                slaveTransaction = !needServer.isMaster();
                 balanceConnection(needServer, true);
 
                 if(isExplainTemporaryTablesEnabled())
@@ -728,9 +730,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 handleAndPropagate(e, "COMMIT TRANSACTION");
             }
         }
-        LogSequenceNumber masterLSN = connectionPool.getMasterLSN(privateConnection.sql);
-        if(masterLSN != null) // if needServer != 0 was used
-            lsnProvider.updateLSN(masterLSN); // assert that it is write locked
+        if(!slaveTransaction)
+            lsnProvider.updateLSN(connectionPool.getMasterLSN(privateConnection.sql)); // assert that it is write locked
 
         afterCommit.run();
 
@@ -1093,11 +1094,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void dropColumn(String table, String field, boolean ifExists) throws SQLException {
-        innerDropColumn(syntax.getTableName(table), syntax.getFieldName(field), ifExists);
-    }
-
-    private void innerDropColumn(String table, String field, boolean ifExists) throws SQLException {
-        executeDDL("ALTER TABLE " + (ifExists ? "IF EXISTS " : "" ) + table + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + field);
+        executeDDL("ALTER TABLE " + (ifExists ? "IF EXISTS " : "" ) + syntax.getTableName(table) + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + syntax.getFieldName(field));
     }
 
     public void dropColumns(String table, List<String> fields) throws SQLException {
@@ -3170,7 +3167,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             int succeeded = 0;
             for (ConnectionUsage usage : usedSQLConnections) {
-                if (usage.sql.balanceConnection(null, false))
+                if (usage.sql.balanceConnection(DataAdapter.NeedServer.BEST, false))
                     succeeded++;
                 if (succeeded >= connectionsRestart)
                     break;
@@ -3241,7 +3238,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void readBalanceConnection(final List<ConnectionUsage> usedConnections) throws SQLException, SQLHandledException {
         runLockReadOperation(() -> {
-            usedConnections.add(new ConnectionUsage(SQLSession.this, -connectionPool.getLoad(privateConnection.sql)));
+            usedConnections.add(new ConnectionUsage(SQLSession.this, -connectionPool.getLoad(DataAdapter.getServer(privateConnection.sql))));
         });
     }
 
@@ -3277,13 +3274,26 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return score;
     }
 
-    private boolean balanceConnection(Integer needServer, boolean alreadyLocked) throws SQLException, SQLHandledException {
-        Connection prevConnection = privateConnection.sql;
-        Connection newConnection = connectionPool.getBalanceConnection(needServer, lsnProvider, prevConnection);
+    private boolean balanceConnection(DataAdapter.NeedServer needServer, boolean alreadyLocked) throws SQLException, SQLHandledException {
+
+        // we want to create connection outside the lock (because it's done async), but inside the lock create only if needed
+        if(alreadyLocked) {
+            DataAdapter.NeedServer fNeedServer = needServer;
+            needServer = (adapter, lsn) -> {
+                DataAdapter.Server server = fNeedServer.getServer(adapter, lsn);
+                return server.equals(DataAdapter.getServer(privateConnection.sql)) ? null : server;
+            };
+        }
+
+        Connection newConnection = connectionPool.getBalanceConnection(needServer, lsnProvider);
         if(newConnection != null) { // if we are already on that server - return
             boolean locked = alreadyLocked || tryLockWrite(OperationOwner.unknown);
             if(locked) {
                 try {
+                    Connection prevConnection = privateConnection.sql;
+                    if (!alreadyLocked && DataAdapter.getServer(newConnection).equals(DataAdapter.getServer(prevConnection)))
+                        return false;
+
                     EConsumer<Connection, SQLException> cleaner = restartConnection(newConnection);
 
                     connectionPool.returnBalanceConnection(prevConnection, cleaner);
