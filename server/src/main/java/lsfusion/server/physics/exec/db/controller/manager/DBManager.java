@@ -1509,17 +1509,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new OldDBStructure(inputDB);
     }
 
-    private static Pair<ByteArrayOutputStream, DataOutputStream> preWriteDBStructure(NewDBStructure newDBStructure) throws IOException {
+    private void writeDBStructure(SQLSession sql, NewDBStructure newDBStructure) throws IOException, SQLException, SQLHandledException {
         ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
         DataOutputStream outDB = new DataOutputStream(outDBStruct);
         newDBStructure.write(outDB);
-        return new Pair<>(outDBStruct, outDB);
-    }
-
-    private void writeDBStructure(Pair<ByteArrayOutputStream, DataOutputStream> preWrite, SQLSession sql, NewDBStructure newDBStructure, boolean master) throws IOException, SQLException, SQLHandledException {
-        newDBStructure.writeConcreteClasses(preWrite.second, master);
         try {
-            sql.insertRecord(StructTable.instance, MapFact.EMPTY(), MapFact.singleton(StructTable.instance.struct, new DataObject(new RawFileData(preWrite.first), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+            sql.insertRecord(StructTable.instance, MapFact.EMPTY(), MapFact.singleton(StructTable.instance.struct, new DataObject(new RawFileData(outDBStruct), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
         } catch (Exception e) {
             ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
             sql.insertRecord(StructTable.instance, MapFact.EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
@@ -1671,9 +1666,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
 
-            // prewrite db structure because it is changed in checkIndexes (and it is the onyl place)
-            Pair<ByteArrayOutputStream, DataOutputStream> preWrite = preWriteDBStructure(newDBStructure);
-
             checkUniquePropertyDBName(newDBStructure);
 
             // DROP / RENAME indices
@@ -1801,7 +1793,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
 
             // for master have to be after filling ids
-            writeDBStructure(preWrite, sql, newDBStructure, master);
+            writeDBStructure(sql, newDBStructure);
         } catch (Throwable t) {
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         } finally {
@@ -3169,15 +3161,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return tables.keySet();
         }
 
-        public void writeConcreteClasses(DataOutputStream outDB, boolean master) throws IOException { // отдельно от write, так как ID заполняются после fillIDs
-            outDB.writeInt(concreteClasses.size());
-            for (DBConcreteClass concreteClass : concreteClasses) {
-                outDB.writeUTF(concreteClass.sID);
-                outDB.writeUTF(concreteClass.dataPropCN);
-                outDB.writeLong(master ? concreteClass.ID : 0);
-            }
-        }
-
         public DBTable getTable(String name) {
             for (DBTable table : getTables()) {
                 if (table.getName().equals(name)) {
@@ -3416,6 +3399,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     outDB.writeInt(property.mapKeys.getKey(i));
                     outDB.writeUTF(property.mapKeys.getValue(i).getName());
                 }
+            }
+
+            outDB.writeInt(concreteClasses.size());
+            for (DBConcreteClass concreteClass : concreteClasses) {
+                outDB.writeUTF(concreteClass.sID);
+                outDB.writeUTF(concreteClass.dataPropCN);
+                outDB.writeLong(concreteClass.ID);
             }
         }
     }
