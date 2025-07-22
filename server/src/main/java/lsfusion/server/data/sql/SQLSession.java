@@ -282,7 +282,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         try {
             if (useCommon)
-                resultConnection = connectionPool.getConnection(this, lsnProvider, contextProvider);
+                resultConnection = connectionPool.getConnection(this, null, lsnProvider, contextProvider);
             resultConnection.checkClosed();
             resultConnection.updateLogLevel(syntax);
         } catch (Throwable t) {
@@ -368,11 +368,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 Settings.get().isStacktraceInSQLSession() ? ThreadUtils.getJavaStack(currentThread.getStackTrace()) : null);
     }
 
-    private void needPrivate() throws SQLException { // получает unique connection
+    private void needPrivate() throws SQLException {
+        needPrivate(null);
+    }
+
+    private void needBalancedPrivate(DataAdapter.NeedServer needServer) throws SQLException, SQLHandledException {
+        needPrivate(needServer);
+
+        balanceConnection(needServer, true);
+    }
+
+    private void needPrivate(DataAdapter.NeedServer needServer) throws SQLException { // получает unique connection
         assertLock();
         if(privateConnection ==null) {
             assert transactionTables.isEmpty();
-            privateConnection = connectionPool.getConnection(this, lsnProvider, contextProvider);
+            privateConnection = connectionPool.getConnection(this, needServer, lsnProvider, contextProvider);
 //            sqlHandLogger.info("Obtaining backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
 //            System.out.println(this + " : NULL -> " + privateConnection + " " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
         }
@@ -558,9 +568,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         explicitNeedPrivate++;
 
-        needPrivate();
-
-        balanceConnection(needServer, true);
+        needBalancedPrivate(needServer);
 
         privateConnection.sql.setReadOnly(false);
     }
@@ -593,10 +601,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 transStartTime = System.currentTimeMillis();
 
-                needPrivate();
-
                 slaveTransaction = !needServer.isMaster();
-                balanceConnection(needServer, true);
+
+                needBalancedPrivate(needServer);
 
                 if(isExplainTemporaryTablesEnabled())
                     addTTLog("ST", owner);
@@ -3232,17 +3239,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void readRestartConnection(final List<ConnectionUsage> usedConnections) throws SQLException, SQLHandledException {
         runLockReadOperation(() -> {
-            usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(null, false)));
+            usedConnections.add(new ConnectionUsage(SQLSession.this, getRestartScore(null, false)));
         });
     }
 
     private void readBalanceConnection(final List<ConnectionUsage> usedConnections) throws SQLException, SQLHandledException {
         runLockReadOperation(() -> {
-            usedConnections.add(new ConnectionUsage(SQLSession.this, -connectionPool.getLoad(DataAdapter.getServer(privateConnection.sql))));
+            usedConnections.add(new ConnectionUsage(SQLSession.this, getBalanceScore()));
         });
     }
 
-    private double getScore(Result<String> description, boolean lockedWrite) throws SQLException {
+    private double getRestartScore(Result<String> description, boolean lockedWrite) throws SQLException {
         Settings settings = Settings.get();
 
         int usedTablesSize = getSessionTablesCountAll(lockedWrite);
@@ -3272,6 +3279,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         return score;
+    }
+    private double getBalanceScore() throws SQLException {
+        Settings settings = Settings.get();
+
+        int usedTablesSize = getSessionTablesCountAll(false);
+
+        double usedAntiScore = Math.pow((double) usedTablesSize / (double) settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree());
+
+        // max load, min temp tables count
+        return -connectionPool.getLoad(DataAdapter.getServer(privateConnection.sql)) * 1000 + usedAntiScore;
     }
 
     private boolean balanceConnection(DataAdapter.NeedServer needServer, boolean alreadyLocked) throws SQLException, SQLHandledException {
@@ -3323,7 +3340,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     isRestarting = true;
                     
                 Result<String> description = new Result<>();
-                if(!locked || isClosed() || privateConnection == null || score > getScore(description, true)) { // double check - score упал
+                if(!locked || isClosed() || privateConnection == null || score > getRestartScore(description, true)) { // double check - score упал
                     newConnectionError = false;
                     return false;
                 }

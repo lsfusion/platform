@@ -270,51 +270,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return bestServer;
     }
 
-    private final List<Connection> poolConnections = new ArrayList<>();
-
-    @Override
-    public Connection startConnection(NeedServer needServer, LogSequenceNumber lsn) throws SQLException {
-        Server server = needServer.getServer(this, lsn);
-        if(server == null)
-            return null;
-
-        synchronized (poolConnections) {
-            for (Connection poolConnection : poolConnections)
-                if (getServer(poolConnection).equals(server)) {
-                    poolConnections.remove(poolConnection);
-                    return poolConnection;
-                }
-        }
-
-        return startConnection(server);
+    protected void destroyConnection(Connection connection) throws SQLException {
+        connection.close();
     }
 
     @Override
-    public void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
-        boolean canBePooled;
-        synchronized (poolConnections) {
-            canBePooled = poolConnections.size() < Settings.get().getFreeConnections();
-        }
-        if(canBePooled && cleaner != null && !connection.isClosed()) {
-            cleaner.accept(connection);
-            synchronized (poolConnections) {
-                poolConnections.add(connection);
-            }
-        } else
-            connection.close();
+    protected boolean needPoolConnection() {
+        return servers.size() != 1;
     }
-
-    public static Server getServer(Connection connection) {
-        return connectionServer.get(connection);
-    }
-
-    private final static Map<Connection, Server> connectionServer = Collections.synchronizedMap(new WeakHashMap<>());
-    protected Connection startConnection(Server server) throws SQLException {
-        Connection connection = createConnection(server);
-        connectionServer.put(connection, server);
-        return connection;
-    }
-    protected abstract Connection createConnection(Server server) throws SQLException;
 
     public static List<String> getAllDBNames() {
         return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));

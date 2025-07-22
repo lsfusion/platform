@@ -3,6 +3,7 @@ package lsfusion.server.data.sql.connection;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
@@ -20,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractConnectionPool implements ConnectionPool {
@@ -28,14 +30,60 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     protected abstract LogSequenceNumber getMasterLSN() throws SQLException;
     protected abstract LogSequenceNumber getSlaveLSN(DataAdapter.Slave slave) throws SQLException;
 
-    protected abstract Connection startConnection(DataAdapter.NeedServer needServer, LogSequenceNumber lsn) throws SQLException;
-    protected abstract void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException;
+    private final ConcurrentIdentityWeakHashMap<DataAdapter.Server, ConcurrentLinkedDeque<Connection>> freeConnections = MapFact.getGlobalConcurrentIdentityWeakHashMap();
+
+    public Connection startConnection(DataAdapter.NeedServer needServer, LogSequenceNumber lsn) throws SQLException {
+        DataAdapter.Server server = getServer(needServer, lsn);
+        if(server == null) // basically needed only for the balanceConnection, to avoid extra startConnection
+            return null;
+
+        Connection poolConnection = freeConnections.computeIfAbsent(server, s -> new ConcurrentLinkedDeque<>()).pollFirst();
+        if(poolConnection != null)
+            return poolConnection;
+
+        return startConnection(server);
+    }
+
+    public void stopConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException {
+        ConcurrentLinkedDeque<Connection> freeDequeue;
+        if(cleaner != null && !connection.isClosed() &&
+                (freeDequeue = freeConnections.computeIfAbsent(getServer(connection), s -> new ConcurrentLinkedDeque<>())).size() < (needPoolConnection() ? Settings.get().getFreeConnections() : 0)) {
+            cleaner.accept(connection);
+            freeDequeue.add(connection);
+        } else
+            stopConnection(connection);
+    }
+
+    // this connection pool is used only for the connection balancing, and when there are no slaves, we don't need it
+    protected abstract boolean needPoolConnection();
+
+    private DataAdapter.Server getServer(DataAdapter.NeedServer needServer, LogSequenceNumber lsn) throws SQLException {
+        return needServer.getServer((DataAdapter) this, lsn);
+    }
+
+    public static DataAdapter.Server getServer(Connection connection) {
+        return connectionServer.get(connection);
+    }
+
+    private final static Map<Connection, DataAdapter.Server> connectionServer = Collections.synchronizedMap(new WeakHashMap<>());
+    protected Connection startConnection(DataAdapter.Server server) throws SQLException {
+        Connection connection = createConnection(server);
+        connectionServer.put(connection, server);
+        return connection;
+    }
+    protected void stopConnection(Connection connection) throws SQLException {
+        destroyConnection(connection);
+        connectionServer.remove(connection);
+    }
+
+    protected abstract Connection createConnection(DataAdapter.Server server) throws SQLException;
+    protected abstract void destroyConnection(Connection connection) throws SQLException;
+
     public abstract SQLSyntax getSyntax();
 
     protected abstract boolean checkLSN(DataAdapter.Server server, LogSequenceNumber lsn) throws SQLException;
 
     private final Map<ExConnection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
-    private final List<ExConnection> freeConnections = new ArrayList<>();
 
     private void checkUsed() throws SQLException {
         List<ExConnection> connectionsToClose;
@@ -55,8 +103,8 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             closeExConnection(connection, false); // we could try reusing it, but the connection may be “dirty,” i.e., with a transaction or uncommitted temporary tables
     }
 
-    public ExConnection newExConnection(SQLSessionLSNProvider lsn) throws SQLException {
-        return new ExConnection(newConnection(DataAdapter.NeedServer.BEST, lsn), new SQLTemporaryPool());
+    public ExConnection newExConnection(DataAdapter.NeedServer needServer, SQLSessionLSNProvider lsn) throws SQLException {
+        return new ExConnection(newConnection(needServer, lsn), new SQLTemporaryPool());
     }
     
     public void closeExConnection(ExConnection connection, boolean clean) throws SQLException {
@@ -116,27 +164,22 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         closeConnection(connection, cleaner);
     }
 
-    public ExConnection getConnection(final MutableObject object, SQLSessionLSNProvider lsn, SQLSessionContextProvider contextProvider) throws SQLException {
+    private final ConcurrentIdentityWeakHashMap<DataAdapter.Server, ConcurrentLinkedDeque<ExConnection>> freeExConnections = MapFact.getGlobalConcurrentIdentityWeakHashMap();
+
+    public ExConnection getConnection(final MutableObject object, DataAdapter.NeedServer needServer, SQLSessionLSNProvider lsn, SQLSessionContextProvider contextProvider) throws SQLException {
+        if(needServer == null)
+            needServer = DataAdapter.NeedServer.BEST;
+
         ExConnection connection = null;
         boolean disablePoolConnections = Settings.get().isDisablePoolConnections();
         if (!disablePoolConnections) {
             checkUsed();
 
-            synchronized (freeConnections) {
-                for (int i = 0, size = freeConnections.size(); i < size; i++) {
-                    connection = freeConnections.get(i);
-                    if (checkLSN(DataAdapter.getServer(connection.sql), lsn.getLSN())) {
-                        freeConnections.remove(i);
-                        logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
-                        break;
-                    } else
-                        connection = null;
-                }
-            }
+            connection = freeExConnections.computeIfAbsent(getServer(needServer, lsn.getLSN()), s -> new ConcurrentLinkedDeque<>()).pollFirst();
         }
 
         if(connection == null)
-            connection = newExConnection(lsn);
+            connection = newExConnection(needServer, lsn);
 
         if (!disablePoolConnections) {
             synchronized (usedConnections) {
@@ -168,13 +211,11 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                     assert connection.sql.getAutoCommit();
                 }
 
-                synchronized (freeConnections) {
-                    // assert что synchronized lock
-                    if (freeConnections.size() < Settings.get().getFreeConnections()) {
-                        freeConnections.add(connection);
-                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
-                        close = false;
-                    }
+                ConcurrentLinkedDeque<ExConnection> freeQueue = freeExConnections.computeIfAbsent(getServer(connection.sql), s -> new ConcurrentLinkedDeque<>());
+                if (freeQueue.size() < Settings.get().getFreeConnections()) {
+                    freeQueue.addLast(connection);
+                    logConnection("CLOSE CONNECTION TO CACHE (size : " + freeExConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
+                    close = false;
                 }
             }
         } else
