@@ -4,6 +4,10 @@ import lsfusion.server.physics.admin.Settings;
 
 public class Stat {
 
+    public enum Mode {
+        BOTHDIRECTIONS, USEMULTIPLIER, DEFAULT;
+    }
+
     public final static Stat MAX = new Stat(1000000, true);
     public final static Stat ONE = new Stat(1);
     public final static Stat ONESTAT = new Stat(1, true);
@@ -120,11 +124,13 @@ public class Stat {
         return new Stat((deg + add.deg) / 2, true);
     }
 
-    public boolean majorStatChanged(Stat changedStat) {
-        return majorStatChanged(changedStat, true);
-    }
-
-    public boolean majorStatChanged(Stat changedStat, boolean useMultiplier) {
-        return useMultiplier ? less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree()))) : less(changedStat);
+    public boolean majorStatChanged(Stat changedStat, Mode mode) {
+        if (mode == Mode.USEMULTIPLIER) {
+            return less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree())));
+        } else if (mode == Mode.BOTHDIRECTIONS) {
+            return less(changedStat) || changedStat.less(this);
+        } else {
+            return less(changedStat);
+        }
     }
 }

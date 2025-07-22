@@ -47,6 +47,7 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -1554,7 +1555,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-        if(implementTable.majorStatChanged(changeTable.getCount(), true))
+        if(implementTable.majorStatChanged(changeTable.getCount(), Stat.Mode.USEMULTIPLIER))
             mChangedStatTables.add(implementTable);
     }
 
@@ -2112,12 +2113,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
                 if (newClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) newClass, true);
+                    majorStatChanged((ConcreteCustomClass) newClass, Stat.Mode.USEMULTIPLIER);
                 }
             }
             for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
                 if (removeClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) removeClass, false);
+                    majorStatChanged((ConcreteCustomClass) removeClass, Stat.Mode.DEFAULT);
                 }
             }
     
@@ -2180,8 +2181,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return true;
     }
 
-    private void majorStatChanged(ConcreteCustomClass customClass, boolean useMultiplier) {
-        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), useMultiplier, false)) {
+    private void majorStatChanged(ConcreteCustomClass customClass, Stat.Mode mode) {
+        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), mode)) {
             mChangedStatClasses.add(customClass);
         }
     }

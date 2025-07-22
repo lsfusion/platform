@@ -2311,9 +2311,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 boolean apply = false;
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
-                        ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        Pair<ImMap<String, Integer>, ImMap<String, Integer>> stats = getDbManager().readStatsFromDB(session, table.getName());
-                        table.updateStat(stats.first, stats.second, result, false, majorStatChangedCount);
+                        table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                        getDbManager().updateTableStats(session.sql, session.getModifier(), false, majorStatChangedCount, table.getName());
                         table.majorStatChanged = false;
                         apply = true;
                     }
@@ -2321,8 +2320,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
                 for (CustomClass customClass : LM.baseClass.getAllClasses()) {
                     if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
-                        ImMap<String, Integer> classStats = getDbManager().readClassSIDStatsFromDB(session.sql, customClass.getSID());
-                        ((ConcreteCustomClass) customClass).updateSIDStat(classStats, majorStatChangedCount);
+                        ImMap<String, Integer> classStats = getDbManager().readClassStatsFromDB(session.sql, customClass.getSID());
+                        ((ConcreteCustomClass) customClass).updateStat(classStats, majorStatChangedCount);
                         ((ConcreteCustomClass) customClass).majorStatChanged = false;
                     }
                 }

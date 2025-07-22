@@ -29,6 +29,7 @@ import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
@@ -711,7 +712,7 @@ public class ClassChanges {
                     ValueClass value = mapFields.getValue(i);
                     if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
-                        if(table.majorStatChanged(countChangedStat((CustomClass) value), false))
+                        if(table.majorStatChanged(countChangedStat((CustomClass) value), Stat.Mode.DEFAULT))
                             mChangedTables.add(table);
                     }
                 } finally {

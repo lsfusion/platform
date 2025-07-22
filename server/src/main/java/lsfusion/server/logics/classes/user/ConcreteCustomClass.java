@@ -38,7 +38,6 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass, ConcreteObjectClass, ObjectValueClassSet, StaticClass {
     public ConcreteCustomClass(String canonicalName, LocalizedString caption, String image, Version version, ImList<CustomClass> parents) {
@@ -369,21 +368,19 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public boolean majorStatChanged(long changedCount, boolean useMultiplier, boolean bothDirections) {
+    public boolean majorStatChanged(long changedCount, Stat.Mode mode) {
         if(stat != null) {
-            Stat oldStat = new Stat(stat);
-            Stat newStat = new Stat(changedCount);
-            return oldStat.majorStatChanged(newStat, useMultiplier) || (bothDirections && newStat.majorStatChanged(oldStat, useMultiplier));
+            return new Stat(stat).majorStatChanged(new Stat(changedCount), mode);
         }
         return false;
     }
 
     public boolean majorStatChanged;
 
-    public void updateSIDStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
+    public void updateStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
         Integer newStat = classStats.get(getSID());
         if (majorStatChangedCount != null) {
-            if (majorStatChanged(newStat, false, true))
+            if (majorStatChanged(newStat, Stat.Mode.BOTHDIRECTIONS))
                 majorStatChangedCount.set(majorStatChangedCount.result + 1);
         } else {
             assert ID == null;

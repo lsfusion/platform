@@ -95,8 +95,8 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
-    public boolean majorStatChanged(long changedCount, boolean useMultiplier) {
-        return statKeys.getRows().majorStatChanged(new Stat(changedCount), useMultiplier);
+    public boolean majorStatChanged(long changedCount, Stat.Mode mode) {
+        return statKeys.getRows().majorStatChanged(new Stat(changedCount), mode);
     }
     public boolean majorStatChanged;
 
@@ -782,7 +782,7 @@ public class ImplementTable extends DBTable { // последний интерф
             mvDistinctKeys.mapValue(i, keyCount);
         }
         TableStatKeys newStatKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows()))
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows(), Stat.Mode.USEMULTIPLIER))
             majorStatChangedCount.set(majorStatChangedCount.result + 1);
         statKeys = newStatKeys;
 

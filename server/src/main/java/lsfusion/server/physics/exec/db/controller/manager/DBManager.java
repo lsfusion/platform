@@ -76,7 +76,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
@@ -434,20 +434,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateClassSIDStats(SQLSession session, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
+    private void updateClassStats(SQLSession session, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> customSIDObjectClassMap = readClassStatsFromDB(session);
         for(CustomClass customClass : LM.baseClass.getAllClasses()) {
             if(customClass instanceof ConcreteCustomClass) {
-                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, majorStatChangedCount);
+                ((ConcreteCustomClass) customClass).updateStat(customSIDObjectClassMap, majorStatChangedCount);
             }
         }
     }
 
-    public ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
-        return readClassSIDStatsFromDB(session, null);
+    public ImMap<String, Integer> readClassStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
+        return readClassStatsFromDB(session, null);
     }
 
-    public ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session, String staticName) throws SQLException, SQLHandledException {
+    public ImMap<String, Integer> readClassStatsFromDB(SQLSession session, String staticName) throws SQLException, SQLHandledException {
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", customObjectClassExpr);
 
@@ -482,15 +482,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private void updateFullClassStats(SQLSession sql, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
-        updateClassSIDStats(sql, majorStatChangedCount);
+        updateClassStats(sql, majorStatChangedCount);
         adjustClassStats(sql);
     }
     
 //    businessLogics.* -> *
 
     private void adjustClassStats(SQLSession sql) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
-        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
+        ImMap<String, Integer> tableStats = readStatsFromDB(sql, null, reflectionLM.tableSID, reflectionLM.rowsTable, null, null, null);
+        ImMap<String, Integer> keyStats = readStatsFromDB(sql, null, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, null, null);
 
         MMap<CustomClass, Integer> mClassFullStats = MapFact.mMap(MapFact.max());
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
@@ -521,6 +521,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private void updateTableStats(SQLSession sql, boolean statDefault, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
+        updateTableStats(sql, null, statDefault, majorStatChangedCount, null);
+    }
+
+    public void updateTableStats(SQLSession sql, Modifier modifier, boolean statDefault, Result<Integer> majorStatChangedCount, String tableName) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -529,9 +533,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             keyStats = MapFact.EMPTY();
             propStats = MapFact.EMPTY();
         } else {
-            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
-            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+            tableStats = readStatsFromDB(sql, modifier, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tableName);
+            keyStats = readStatsFromDB(sql, modifier, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tableName);
+            propStats = readStatsFromDB(sql, modifier, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn, reflectionLM.sidTableTableColumn, tableName);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
@@ -539,52 +543,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp) throws SQLException, SQLHandledException {
+    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, Modifier modifier, LP sIDProp, LP statsProp, final LP notNullProp, LP tableProp, String tableName) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key"));
-        Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
-        query.and(sidToObject.getWhere());
-        query.addProperty("property", statsProp.getExpr(sidToObject));
-        if(notNullProp!=null)
-            query.addProperty("notNull", notNullProp.getExpr(sidToObject));
+        Expr keyExpr = query.getMapExprs().singleValue();
+        Expr sidToObject = modifier != null ? sIDProp.getExpr(modifier, keyExpr) : sIDProp.getExpr(keyExpr);
+        if (tableProp != null && tableName != null)
+            query.and((modifier != null ? tableProp.getExpr(modifier, sidToObject) : tableProp.getExpr(sidToObject)).compare(new DataObject(tableName), Compare.EQUALS));
+        else
+            query.and(sidToObject.getWhere());
+        query.addProperty("property", modifier != null ? statsProp.getExpr(modifier, sidToObject) : statsProp.getExpr(sidToObject));
+        if (notNullProp != null) {
+            query.addProperty("notNull", modifier != null ? notNullProp.getExpr(modifier, sidToObject) : notNullProp.getExpr(sidToObject));
+        }
         return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(key -> ((String) key.singleValue()).trim(), value -> {
-            if(notNullProp!=null) {
+            if (notNullProp != null) {
                 return (V) new Pair<>((Integer) value.get("property"), (Integer) value.get("notNull"));
             } else
-                return (V)value.singleValue();
+                return (V) value.singleValue();
         });
-    }
-
-    public Pair<ImMap<String, Integer>, ImMap<String, Integer>> readStatsFromDB(DataSession session, String tableName) throws SQLException, SQLHandledException {
-        KeyExpr tableExpr = new KeyExpr("table");
-        KeyExpr tableKeyExpr = new KeyExpr("tableKey");
-        ImRevMap<Object, KeyExpr> keys = MapFact.toRevMap("table", tableExpr, "tableKey",  tableKeyExpr);
-
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        SessionModifier modifier = session.getModifier();
-        query.addProperty("rowsTable", reflectionLM.rowsTable.getExpr(modifier, tableExpr));
-        query.addProperty("sidTableKey", reflectionLM.sidTableKey.getExpr(modifier, tableKeyExpr));
-        query.addProperty("overQuantityTableKey", reflectionLM.overQuantityTableKey.getExpr(modifier, tableKeyExpr));
-
-        query.and(reflectionLM.sidTable.getExpr(modifier, tableExpr).compare(new DataObject(tableName), Compare.EQUALS));
-        query.and(reflectionLM.tableTableKey.getExpr(modifier, tableKeyExpr).compare(tableExpr, Compare.EQUALS));
-
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-
-        MMap<String, Integer> tableStats = MapFact.mMap(false);
-        MMap<String, Integer> keyStats = MapFact.mMap(false);
-
-        for (int i = 0, size = result.size(); i < size; i++) {
-            ImMap<Object, Object> entry = result.getValue(i);
-            Integer rowsTable = (Integer) entry.get("rowsTable");
-            String sidTableKey = (String) entry.get("sidTableKey");
-            Integer overQuantityTableKey = (Integer) entry.get("overQuantityTableKey");
-
-            tableStats.add(tableName, rowsTable);
-
-            keyStats.add(sidTableKey, overQuantityTableKey);
-        }
-
-        return Pair.create(tableStats.immutable(), keyStats.immutable());
     }
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {

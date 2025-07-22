@@ -151,6 +151,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP tableSID;
     public LP rowsTable;
     public LP tableTableKey;
+    public LP sidTableTableKey;
     public LP sidTableKey;
     public LP tableKeySID;
     public LP classTableKey;
@@ -162,6 +163,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP tableTableColumn;
     public LP propertyTableColumn;
     public LP sidTableColumn;
+    public LP sidTableTableColumn;
     public LP longSIDTableColumn;
     public LP tableColumnLongSID;
     public LP tableColumnSID;
@@ -384,6 +386,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Ключи таблиц
         tableTableKey = findProperty("table[TableKey]");
+        sidTableTableKey = findProperty("sidTable[TableKey]");
 
         sidTableKey = findProperty("sid[TableKey]");
         tableKeySID = findProperty("tableKey[ISTRING[100]]");
@@ -401,6 +404,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertyTableColumn = findProperty("property[TableColumn]");
 
         sidTableColumn = findProperty("sid[TableColumn]");
+        sidTableTableColumn = findProperty("sidTable[TableColumn]");
         longSIDTableColumn = findProperty("longSID[TableColumn]");
         tableColumnLongSID = findProperty("tableColumnLong[ISTRING[100]]");
         tableColumnSID = findProperty("tableColumnSID[ISTRING[100]]");
