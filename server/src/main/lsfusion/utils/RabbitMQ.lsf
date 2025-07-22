@@ -5,6 +5,7 @@ REQUIRE SystemEvents;
 CLASS Channel 'Channel';
 
 host 'Host' = DATA STRING (Channel);
+vHost 'vHost' = DATA STRING (Channel);
 queue 'Queue name' = DATA STRING (Channel);
 user 'User' = DATA STRING (Channel);
 password 'Password' = DATA STRING (Channel) ECHO;
@@ -46,7 +47,7 @@ restartConsumers 'Restart all consumers' () {
 
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), queue READONLYIF started(c), user, password, 
+    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), vHost READONLYIF started(c), queue READONLYIF started(c), user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
         NEW, DELETE
