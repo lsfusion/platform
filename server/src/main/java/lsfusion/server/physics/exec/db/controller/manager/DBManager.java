@@ -76,6 +76,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
@@ -443,6 +444,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
+        return readClassSIDStatsFromDB(session, null);
+    }
+
+    public ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session, String staticName) throws SQLException, SQLHandledException {
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", customObjectClassExpr);
 
@@ -451,6 +456,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
 
         query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+        if(staticName != null) {
+            query.and(LM.staticName.getExpr(customObjectClassExpr).compare(new DataObject(staticName), Compare.EQUALS));
+        }
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
 
@@ -544,6 +552,39 @@ public class DBManager extends LogicsManager implements InitializingBean {
             } else
                 return (V)value.singleValue();
         });
+    }
+
+    public Pair<ImMap<String, Integer>, ImMap<String, Integer>> readStatsFromDB(DataSession session, String tableName) throws SQLException, SQLHandledException {
+        KeyExpr tableExpr = new KeyExpr("table");
+        KeyExpr tableKeyExpr = new KeyExpr("tableKey");
+        ImRevMap<Object, KeyExpr> keys = MapFact.toRevMap("table", tableExpr, "tableKey",  tableKeyExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        SessionModifier modifier = session.getModifier();
+        query.addProperty("rowsTable", reflectionLM.rowsTable.getExpr(modifier, tableExpr));
+        query.addProperty("sidTableKey", reflectionLM.sidTableKey.getExpr(modifier, tableKeyExpr));
+        query.addProperty("overQuantityTableKey", reflectionLM.overQuantityTableKey.getExpr(modifier, tableKeyExpr));
+
+        query.and(reflectionLM.sidTable.getExpr(modifier, tableExpr).compare(new DataObject(tableName), Compare.EQUALS));
+        query.and(reflectionLM.tableTableKey.getExpr(modifier, tableKeyExpr).compare(tableExpr, Compare.EQUALS));
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
+
+        MMap<String, Integer> tableStats = MapFact.mMap(false);
+        MMap<String, Integer> keyStats = MapFact.mMap(false);
+
+        for (int i = 0, size = result.size(); i < size; i++) {
+            ImMap<Object, Object> entry = result.getValue(i);
+            Integer rowsTable = (Integer) entry.get("rowsTable");
+            String sidTableKey = (String) entry.get("sidTableKey");
+            Integer overQuantityTableKey = (Integer) entry.get("overQuantityTableKey");
+
+            tableStats.add(tableName, rowsTable);
+
+            keyStats.add(sidTableKey, overQuantityTableKey);
+        }
+
+        return Pair.create(tableStats.immutable(), keyStats.immutable());
     }
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {

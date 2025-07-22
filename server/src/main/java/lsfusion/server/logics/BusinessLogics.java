@@ -2308,22 +2308,27 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
+                boolean apply = false;
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        table.updateStat(MapFact.EMPTY(), MapFact.EMPTY(), result, false, majorStatChangedCount);
+                        Pair<ImMap<String, Integer>, ImMap<String, Integer>> stats = getDbManager().readStatsFromDB(session, table.getName());
+                        table.updateStat(stats.first, stats.second, result, false, majorStatChangedCount);
                         table.majorStatChanged = false;
+                        apply = true;
                     }
                 }
 
-                ImMap<String, Integer> customSIDObjectClassMap = getDbManager().readClassSIDStatsFromDB(session.sql);
-                for(CustomClass customClass : LM.baseClass.getAllClasses()) {
-                    if(customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
-                        ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap, majorStatChangedCount);
+                for (CustomClass customClass : LM.baseClass.getAllClasses()) {
+                    if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
+                        ImMap<String, Integer> classStats = getDbManager().readClassSIDStatsFromDB(session.sql, customClass.getSID());
+                        ((ConcreteCustomClass) customClass).updateSIDStat(classStats, majorStatChangedCount);
                         ((ConcreteCustomClass) customClass).majorStatChanged = false;
                     }
                 }
                 dropLRU(majorStatChangedCount);
+                if(apply)
+                    session.applyException(this, stack);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
     }

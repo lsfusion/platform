@@ -2181,7 +2181,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void majorStatChanged(ConcreteCustomClass customClass, boolean useMultiplier) {
-        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), useMultiplier)) {
+        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), useMultiplier, false)) {
             mChangedStatClasses.add(customClass);
         }
     }
