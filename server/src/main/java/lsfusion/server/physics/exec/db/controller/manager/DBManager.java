@@ -1563,7 +1563,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 LM.staticName.change(addedObject.sID, session, classObject);
                 LM.staticCaption.change(addedObject.caption, session, classObject);
                 LM.staticImage.change(addedObject.image, session, classObject);
-                LM.staticCaptionOrder.change(addedObject.order, session, classObject);
+                LM.staticOrder.change(addedObject.order, session, classObject);
             }
 
             for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
@@ -1587,7 +1587,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
 
             for (Map.Entry<DataObject, Integer> modifiedOrder : modifiedOrders.entrySet()) {
-                LM.staticCaptionOrder.change(modifiedOrder.getValue(), session, modifiedOrder.getKey());
+                LM.staticOrder.change(modifiedOrder.getValue(), session, modifiedOrder.getKey());
             }
         }
     }
@@ -1699,7 +1699,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLog("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName, LM.staticCaptionOrder,
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName, LM.staticOrder,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                     migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
                     idChanges, changesController);

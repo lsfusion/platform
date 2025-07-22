@@ -4,7 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -31,11 +30,15 @@ public class DialogFormEntity extends BaseClassFormEntity {
             addPropertyDraw(LM.getDeleteAction(object), scope, SetFact.singletonOrder(object));
         }
 
+        if (cls.hasConcreteStaticObjects())
+            addFixedOrder(addPropertyObject(LM.staticOrder, SetFact.singletonOrder(object)), false);
+
         finalizeInit();
     }
 
-    public <P extends PropertyInterface> void addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
         PropertyDrawEntity propertyDraw = addPropertyDraw(property, ComplexLocation.LAST(), objects);
         propertyDraw.defaultChangeEventScope = scope;
+        return propertyDraw;
     }
 }

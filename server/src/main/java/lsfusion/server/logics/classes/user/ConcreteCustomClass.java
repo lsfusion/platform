@@ -170,6 +170,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
+    public boolean hasConcreteStaticObjects() {
+        return getStaticObjectsInfoIt().iterator().hasNext();
+    }
+
     public LocalizedString getObjectCaption(String name) {
         for(ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
@@ -221,7 +225,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             mImages.add(object.image + "," + searchName);
     }
 
-    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, LP staticCaptionOrder, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, LP staticOrder, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
@@ -232,7 +236,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         allClassesQuery.addProperty("sid", sidExpr);
         allClassesQuery.addProperty("caption", caption.getExpr(key));
         allClassesQuery.addProperty("image", image.getExpr(key));
-        allClassesQuery.addProperty("order", staticCaptionOrder.getExpr(key));
+        allClassesQuery.addProperty("order", staticOrder.getExpr(key));
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
@@ -274,7 +278,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
                     dbChanges.modifiedImages.put(new DataObject(oldObject.ID, this), staticObjectImage);
                 }
-                if (info.order != oldObject.order) {
+                if (oldObject.order == null || info.order != oldObject.order) {
                     dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), info.order);
                 }
                 info.id = oldObject.ID;

@@ -710,4 +710,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
         return result;
     }
+
+    public boolean hasConcreteStaticObjects() {
+        return false;
+    }
 }
