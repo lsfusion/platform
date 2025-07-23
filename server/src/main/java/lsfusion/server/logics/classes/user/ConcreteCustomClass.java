@@ -172,7 +172,14 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public boolean hasConcreteStaticObjects() {
-        return getStaticObjectsInfoIt().iterator().hasNext();
+        boolean hasConcreteStaticObjects = getStaticObjectsInfoIt().iterator().hasNext();
+        if (!hasConcreteStaticObjects && hasChildren())
+            for (CustomClass child : getChildrenIt()) {
+                if (child.hasConcreteStaticObjects())
+                    return true;
+            }
+
+        return hasConcreteStaticObjects;
     }
 
     public LocalizedString getObjectCaption(String name) {
@@ -256,7 +263,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
         ImList<ObjectInfo> staticObjectsInfoList = getStaticObjectsInfoList();
-        for (ObjectInfo info : staticObjectsInfoList) {
+        for (int i = 0; i < staticObjectsInfoList.size(); i++) {
+            ObjectInfo info = staticObjectsInfoList.get(i);
             String newSID = info.sid; // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя, наверное, можно уже переходить на канонические имена 
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
@@ -273,7 +281,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
             String staticObjectCaption = ThreadLocalContext.localize(info.caption);
             String staticObjectImage = ScriptedStringUtils.wrapImage(info.image);
-            int order = staticObjectsInfoList.indexOf(info);
             if (oldObject != null) {
                 if (!staticObjectCaption.equals(oldObject.caption)) {
                     dbChanges.modifiedCaptions.put(new DataObject(oldObject.ID, this), staticObjectCaption);
@@ -281,13 +288,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
                     dbChanges.modifiedImages.put(new DataObject(oldObject.ID, this), staticObjectImage);
                 }
-                if (oldObject.order == null || order != oldObject.order) {
-                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), order);
+                if (oldObject.order == null || i != oldObject.order) {
+                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), i);
                 }
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, order));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, i));
                 info.id = id;
             }
 
