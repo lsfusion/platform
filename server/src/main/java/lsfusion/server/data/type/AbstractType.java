@@ -257,6 +257,9 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public T readResult(Object object) {
         return read(object);
     }
+    public T readCast(Object value, Type typeFrom) {
+        return read(value);
+    }
     protected T readDBF(Object object) {
         return read(object);
     }
