@@ -67,6 +67,7 @@ import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -2311,7 +2312,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 DBManager dbManager = getDbManager();
 
                 //recalculate table stat and class stat
-                Set<ImplementTable> recalculatedTables = new HashSet<>();
+                MSet<ImplementTable> recalculatedTables = SetFact.mSet();
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         table.recalculateStat(reflectionLM, new HashSet<>(), session);
@@ -2319,7 +2320,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         table.majorStatChanged = false;
                     }
                 }
-                Set<ConcreteCustomClass> recalculatedClasses = new HashSet<>();
+                MSet<ConcreteCustomClass> recalculatedClasses = SetFact.mSet();
                 for (CustomClass customClass : LM.baseClass.getAllClasses()) {
                     if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
                         ((ConcreteCustomClass) customClass).recalculateClassStat(LM, session);
@@ -2328,14 +2329,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     }
                 }
 
-                if (!recalculatedTables.isEmpty() || !recalculatedClasses.isEmpty())
+                if (recalculatedTables.size() > 0 || recalculatedClasses.size() > 0)
                     session.applyException(this, stack);
 
                 //update table stat and class stat
-                for (ImplementTable table : recalculatedTables)
+                for (ImplementTable table : recalculatedTables.immutable())
                     dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
-                for (ConcreteCustomClass customClass : recalculatedClasses)
-                    dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
+                for (ObjectValueClassSet objectValueClassSet : new OrObjectClassSet(recalculatedClasses.immutable()).getObjectClassFields().values()) {
+                    if(objectValueClassSet instanceof ConcreteCustomClass)
+                        dbManager.updateClassStats(session.sql, majorStatChangedCount, (ConcreteCustomClass) objectValueClassSet);
+                }
 
                 dropLRU(majorStatChangedCount);
             }

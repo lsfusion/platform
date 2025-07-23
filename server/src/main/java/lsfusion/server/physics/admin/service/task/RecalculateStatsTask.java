@@ -45,7 +45,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
             throw Throwables.propagate(e);
         }
         List<Object> elements = new ArrayList<>(getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet).toJavaSet());
-        elements.addAll(getBL().LM.baseClass.getObjectClassFields());
+        elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
         return elements;
     }
 

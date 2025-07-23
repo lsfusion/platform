@@ -578,9 +578,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         count = 0;
-        Collection<ObjectValueClassSet> fields = LM.baseClass.getObjectClassFields();
-        for (ObjectValueClassSet tableClasses : fields) {
-            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format("%s of %s", ++count, fields.size()));
+        ImCol<ObjectValueClassSet> tableClassesCol = LM.baseClass.getUpObjectClassFields().values();
+        for (ObjectValueClassSet tableClasses : tableClassesCol) {
+            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format("%s of %s", ++count, tableClassesCol.size()));
         }
     }
 

@@ -653,23 +653,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
     }
 
-    public Collection<ObjectValueClassSet> getObjectClassFields() {
-        ImSet<ConcreteCustomClass> customClasses = getCustomClasses();
-        UpClassSet upClassSet = new UpClassSet(customClasses.toArray(new ConcreteCustomClass[customClasses.size()]));
-        return upClassSet.getObjectClassFields().toJavaMap().values();
-    }
-
-    @IdentityLazy
-    public ImSet<ConcreteCustomClass> getCustomClasses() {
-        MSet<ConcreteCustomClass> mSet = SetFact.mSet();
-        for(CustomClass customClass : getChildrenIt())
-            mSet.addAll(customClass.getCustomClasses());
-        if(this instanceof ConcreteCustomClass)
-            mSet.add((ConcreteCustomClass)this);
-        return mSet.immutable();
-    }
-
-
     public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields, ObjectValueClassSet baseClassSet) {
         // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere
         // но пока из способа определения ClassField'а и методологии определения FULL, это большая редкость
