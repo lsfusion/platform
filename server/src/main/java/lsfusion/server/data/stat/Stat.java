@@ -5,7 +5,7 @@ import lsfusion.server.physics.admin.Settings;
 public class Stat {
 
     public enum Mode {
-        BOTHDIRECTIONS, USEMULTIPLIER, DEFAULT;
+        ADD, REMOVE, CHANGE;
     }
 
     public final static Stat MAX = new Stat(1000000, true);
@@ -125,12 +125,12 @@ public class Stat {
     }
 
     public boolean majorStatChanged(Stat changedStat, Mode mode) {
-        if (mode == Mode.USEMULTIPLIER) {
+        if (mode == Mode.ADD) {
             return less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree())));
-        } else if (mode == Mode.BOTHDIRECTIONS) {
-            return less(changedStat) || changedStat.less(this);
-        } else {
+        } else if (mode == Mode.REMOVE) {
             return less(changedStat);
+        } else {
+            return less(changedStat) || changedStat.less(this);
         }
     }
 }

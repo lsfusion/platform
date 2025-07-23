@@ -39,22 +39,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
             if (element instanceof ImplementTable) {
                 ((ImplementTable) element).recalculateStat(getBL().reflectionLM, getDbManager().getDisableStatsTableColumnSet(), session);
             } else if (element instanceof ObjectValueClassSet) {
-                QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
-
-                KeyExpr countKeyExpr = new KeyExpr("count");
-                Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(getBL().LM.baseClass)),
-                        ValueExpr.COUNT, countKeyExpr.isClass((ObjectValueClassSet) element), GroupType.SUM, classes.getMapExprs());
-
-                classes.addProperty(0, countExpr);
-                classes.and(countExpr.getWhere());
-
-                ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-                ImSet<ConcreteCustomClass> concreteChilds = ((ObjectValueClassSet) element).getSetConcreteChildren();
-                for (int i = 0, size = concreteChilds.size(); i < size; i++) {
-                    ConcreteCustomClass customClass = concreteChilds.get(i);
-                    ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
-                    getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
-                }
+                ((ObjectValueClassSet) element).recalculateClassStat(getBL().LM, session);
             }
             session.applyException(getBL(), stack);
         }

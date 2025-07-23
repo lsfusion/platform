@@ -2308,26 +2308,37 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
-                boolean apply = false;
+                DBManager dbManager = getDbManager();
+
+                //tables: recalculate stat, apply, update stat
+                Set<ImplementTable> recalculatedTables = new HashSet<>();
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        getDbManager().updateTableStats(session.sql, session.getModifier(), false, majorStatChangedCount, table.getName());
+                        recalculatedTables.add(table);
                         table.majorStatChanged = false;
-                        apply = true;
                     }
                 }
+                if (!recalculatedTables.isEmpty())
+                    session.applyException(this, stack);
+                for (ImplementTable table : recalculatedTables)
+                    dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
 
+                //classes: recalculate stat, apply, update stat
+                Set<ConcreteCustomClass> recalculatedClasses = new HashSet<>();
                 for (CustomClass customClass : LM.baseClass.getAllClasses()) {
                     if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
-                        ImMap<String, Integer> classStats = getDbManager().readClassStatsFromDB(session.sql, customClass.getSID());
-                        ((ConcreteCustomClass) customClass).updateStat(classStats, majorStatChangedCount);
+                        ((ConcreteCustomClass) customClass).recalculateClassStat(LM, session);
+                        recalculatedClasses.add((ConcreteCustomClass) customClass);
                         ((ConcreteCustomClass) customClass).majorStatChanged = false;
                     }
                 }
-                dropLRU(majorStatChangedCount);
-                if(apply)
+                if (!recalculatedClasses.isEmpty())
                     session.applyException(this, stack);
+                for (ConcreteCustomClass customClass : recalculatedClasses)
+                    dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
+
+                dropLRU(majorStatChangedCount);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
     }

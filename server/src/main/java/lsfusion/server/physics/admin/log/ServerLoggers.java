@@ -225,9 +225,17 @@ public class ServerLoggers {
     }
 
     public static <E1 extends Exception, E2 extends Exception> void runWithStartLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+        runWithLog(run, message, startLogger);
+    }
+
+    public static <E1 extends Exception, E2 extends Exception> void runWithServiceLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+        runWithLog(run, message, serviceLogger);
+    }
+
+    public static <E1 extends Exception, E2 extends Exception> void runWithLog(E2Runnable<E1, E2> run, String message, Logger logger) throws E1, E2 {
         long start = System.currentTimeMillis();
-        startLogger.info(message + " started");
+        logger.info(message + " started");
         run.run();
-        startLogger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
+        logger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
     }
 }

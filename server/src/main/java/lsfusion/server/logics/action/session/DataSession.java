@@ -1555,7 +1555,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-        if(implementTable.majorStatChanged(changeTable.getCount(), Stat.Mode.USEMULTIPLIER))
+        if(implementTable.majorStatChanged(changeTable.getCount(), Stat.Mode.ADD))
             mChangedStatTables.add(implementTable);
     }
 
@@ -2113,12 +2113,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
                 if (newClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) newClass, Stat.Mode.USEMULTIPLIER);
+                    majorStatChanged((ConcreteCustomClass) newClass, Stat.Mode.ADD);
                 }
             }
             for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
                 if (removeClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) removeClass, Stat.Mode.DEFAULT);
+                    majorStatChanged((ConcreteCustomClass) removeClass, Stat.Mode.REMOVE);
                 }
             }
     

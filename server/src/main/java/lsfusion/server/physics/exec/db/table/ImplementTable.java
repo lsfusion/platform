@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheAspect;
@@ -71,6 +72,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
+
+import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithServiceLog;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
@@ -554,9 +558,16 @@ public class ImplementTable extends DBTable { // последний интерф
         return null;
     }
 
-    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
-        return recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
+    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
+        recalculateStat(reflectionLM, disableStatsTableColumnSet, session, null);
+    }
+
+    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session, String logSuffix) throws SQLException, SQLHandledException {
+        runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> {
+            recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
+            recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
+        }, String.format("Recalculate Table Stats%s: %s", nvl(logSuffix, ""), getName()));
+
     }
 
     public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
@@ -782,7 +793,7 @@ public class ImplementTable extends DBTable { // последний интерф
             mvDistinctKeys.mapValue(i, keyCount);
         }
         TableStatKeys newStatKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows(), Stat.Mode.USEMULTIPLIER))
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows(), Stat.Mode.ADD))
             majorStatChangedCount.set(majorStatChangedCount.result + 1);
         statKeys = newStatKeys;
 
