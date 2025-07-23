@@ -2310,7 +2310,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try(DataSession session = createSystemTaskSession()) {
                 DBManager dbManager = getDbManager();
 
-                //tables: recalculate stat, apply, update stat
+                //recalculate table stat and class stat
                 Set<ImplementTable> recalculatedTables = new HashSet<>();
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
@@ -2319,12 +2319,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         table.majorStatChanged = false;
                     }
                 }
-                if (!recalculatedTables.isEmpty())
-                    session.applyException(this, stack);
-                for (ImplementTable table : recalculatedTables)
-                    dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
-
-                //classes: recalculate stat, apply, update stat
                 Set<ConcreteCustomClass> recalculatedClasses = new HashSet<>();
                 for (CustomClass customClass : LM.baseClass.getAllClasses()) {
                     if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
@@ -2333,8 +2327,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         ((ConcreteCustomClass) customClass).majorStatChanged = false;
                     }
                 }
-                if (!recalculatedClasses.isEmpty())
+
+                if (!recalculatedTables.isEmpty() || !recalculatedClasses.isEmpty())
                     session.applyException(this, stack);
+
+                //update table stat and class stat
+                for (ImplementTable table : recalculatedTables)
+                    dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
                 for (ConcreteCustomClass customClass : recalculatedClasses)
                     dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
 

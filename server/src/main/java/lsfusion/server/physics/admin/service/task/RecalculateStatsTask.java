@@ -1,22 +1,12 @@
 package lsfusion.server.physics.admin.service.task;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.ValueExpr;
-import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
@@ -48,15 +38,14 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     @Override
     protected List<Object> getElements() {
         checkContext();
-        List<Object> elements = new ArrayList<>();
         Set<String> notRecalculateStatsTableSet;
         try(DataSession session = createSession()) {
             notRecalculateStatsTableSet = getDbManager().getDisableStatsTableSet(session);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet).toJavaSet());
-        elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
+        List<Object> elements = new ArrayList<>(getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet).toJavaSet());
+        elements.addAll(getBL().LM.baseClass.getObjectClassFields());
         return elements;
     }
 

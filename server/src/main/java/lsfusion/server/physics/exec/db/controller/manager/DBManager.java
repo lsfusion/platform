@@ -88,6 +88,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.UpClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
@@ -573,15 +574,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         int count = 0;
         ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDisableStatsTableSet(session));
         for (ImplementTable dataTable : tables) {
-            count++;
-            dataTable.recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session, String.format(" %s of %s", count, tables.size()));
+            dataTable.recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session, String.format(" %s of %s", ++count, tables.size()));
         }
 
         count = 0;
-        ImCol<ObjectValueClassSet> tableClassesCol = LM.baseClass.getUpObjectClassFields().values();
-        for (ObjectValueClassSet tableClasses : tableClassesCol) {
-            count++;
-            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format("%s of %s", count, tableClassesCol.size()));
+        Collection<ObjectValueClassSet> fields = LM.baseClass.getObjectClassFields();
+        for (ObjectValueClassSet tableClasses : fields) {
+            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format("%s of %s", ++count, fields.size()));
         }
     }
 

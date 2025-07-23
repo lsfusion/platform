@@ -55,6 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -650,6 +651,22 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         if(this instanceof ConcreteCustomClass) // глуповато конечно,
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
         return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
+    }
+
+    public Collection<ObjectValueClassSet> getObjectClassFields() {
+        ImSet<ConcreteCustomClass> customClasses = getCustomClasses();
+        UpClassSet upClassSet = new UpClassSet(customClasses.toArray(new ConcreteCustomClass[customClasses.size()]));
+        return upClassSet.getObjectClassFields().toJavaMap().values();
+    }
+
+    @IdentityLazy
+    public ImSet<ConcreteCustomClass> getCustomClasses() {
+        MSet<ConcreteCustomClass> mSet = SetFact.mSet();
+        for(CustomClass customClass : getChildrenIt())
+            mSet.addAll(customClass.getCustomClasses());
+        if(this instanceof ConcreteCustomClass)
+            mSet.add((ConcreteCustomClass)this);
+        return mSet.immutable();
     }
 
 
