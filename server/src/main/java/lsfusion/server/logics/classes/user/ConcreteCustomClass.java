@@ -9,7 +9,7 @@ import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
@@ -127,26 +127,27 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, LocalizedString caption, String image, int order) {
+        public ObjectInfo(String sid, String name, LocalizedString caption, String image) {
             this.sid = sid;
             this.name = name;
             this.caption = (caption != null ? caption : LocalizedString.create(name, false));
             this.image = (image != null ? image : name);
-            this.order = order;
         }
 
         public String sid;
         public String name;
         public LocalizedString caption;
         public String image;
-        public int order;
 
         public Long id;
     }
 
-    private NFSet<ObjectInfo> staticObjectsInfo = NFFact.set();
+    private final NFOrderSet<ObjectInfo> staticObjectsInfo = NFFact.orderSet();
     public Iterable<ObjectInfo> getStaticObjectsInfoIt() {
         return staticObjectsInfo.getIt();
+    }
+    public ImList<ObjectInfo> getStaticObjectsInfoList() {
+        return staticObjectsInfo.getList();
     }
     public Iterable<ObjectInfo> getNFStaticObjectsInfoIt(Version version) {
         return staticObjectsInfo.getNFIt(version);
@@ -186,7 +187,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public final void addStaticObjects(List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i), i), version);
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i)), version);
         }
     }
 
@@ -254,7 +255,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         // new sid -> old sid
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
-        for (ObjectInfo info : getStaticObjectsInfoIt()) {
+        ImList<ObjectInfo> staticObjectsInfoList = getStaticObjectsInfoList();
+        for (ObjectInfo info : staticObjectsInfoList) {
             String newSID = info.sid; // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя, наверное, можно уже переходить на канонические имена 
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
@@ -271,6 +273,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
             String staticObjectCaption = ThreadLocalContext.localize(info.caption);
             String staticObjectImage = ScriptedStringUtils.wrapImage(info.image);
+            int order = staticObjectsInfoList.indexOf(info);
             if (oldObject != null) {
                 if (!staticObjectCaption.equals(oldObject.caption)) {
                     dbChanges.modifiedCaptions.put(new DataObject(oldObject.ID, this), staticObjectCaption);
@@ -278,13 +281,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
                     dbChanges.modifiedImages.put(new DataObject(oldObject.ID, this), staticObjectImage);
                 }
-                if (oldObject.order == null || info.order != oldObject.order) {
-                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), info.order);
+                if (oldObject.order == null || order != oldObject.order) {
+                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), order);
                 }
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, info.order));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, order));
                 info.id = id;
             }
 

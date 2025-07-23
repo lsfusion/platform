@@ -123,7 +123,7 @@ public class BaseClass extends AbstractCustomClass {
         objectClass.ID = Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
 
         if(objectClass.readData(objectClass.ID, sql, env, changesController) == null)
-            dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), ThreadLocalContext.localize(objectClass.caption), "object", 0)); //todo order 0??
+            dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), ThreadLocalContext.localize(objectClass.caption), "object", 0));
 
         usedSIds.put(objectClass.getSID(), objectClass);
         usedIds.add(objectClass.ID);

@@ -30,10 +30,21 @@ public class DialogFormEntity extends BaseClassFormEntity {
             addPropertyDraw(LM.getDeleteAction(object), scope, SetFact.singletonOrder(object));
         }
 
-        if (cls.hasConcreteStaticObjects())
+        if (hasConcreteStaticObjects(cls))
             addFixedOrder(addPropertyObject(LM.staticOrder, SetFact.singletonOrder(object)), false);
 
         finalizeInit();
+    }
+
+    private boolean hasConcreteStaticObjects(CustomClass cls) {
+        boolean hasConcreteStaticObjects = cls.hasConcreteStaticObjects();
+        if (!hasConcreteStaticObjects && cls.hasChildren())
+            for (CustomClass customClass : cls.getChildrenIt()) {
+                if (customClass.hasConcreteStaticObjects())
+                    return true;
+            }
+
+        return hasConcreteStaticObjects;
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
