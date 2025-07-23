@@ -71,11 +71,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public abstract DataClass getCompatible(DataClass compClass, boolean or);
 
-    public T readCast(Object value, ConcreteClass typeFrom) {
+    public T readCast(Object value, Type typeFrom) {
         if(!(typeFrom instanceof DataClass))
             throw new RuntimeException("Cannot cast value : " + value + ", from : " + typeFrom + ", to : " + this);
 
-        return read(value);
+        return super.readCast(value, typeFrom);
     }
 
     public abstract T getDefaultValue();
