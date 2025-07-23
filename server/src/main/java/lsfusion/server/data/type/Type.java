@@ -160,6 +160,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
+    T readCast(Object value, Type typeFrom);
+
     String getSID();
 
     default boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {

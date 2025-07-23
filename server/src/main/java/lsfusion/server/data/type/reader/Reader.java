@@ -18,6 +18,5 @@ public interface Reader<T> {
 
     void readDeconc(String source, String name, MExclMap<String, String> mResult, SQLSyntax syntax, TypeEnvironment typeEnv);
 
-    T readCast(Object value, Type typeFrom);
     T read(ResultSet set, SQLSyntax syntax, String name) throws SQLException;
 }
