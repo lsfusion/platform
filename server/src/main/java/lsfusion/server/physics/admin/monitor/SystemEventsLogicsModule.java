@@ -77,6 +77,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP schemeConnection;
     public LP userConnection;
     public LP userLoginConnection;
+    public LP userAgentConnection;
     public LP osVersionConnection;
     public LP processorConnection;
     public LP architectureConnection;
@@ -200,6 +201,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         schemeConnection = findProperty("scheme[Connection]");
         userConnection = findProperty("user[Connection]");
         userLoginConnection = findProperty("userLogin[Connection]");
+        userAgentConnection = findProperty("userAgent[Connection]");
         osVersionConnection = findProperty("osVersion[Connection]");
         processorConnection = findProperty("processor[Connection]");
         architectureConnection = findProperty("architecture[Connection]");

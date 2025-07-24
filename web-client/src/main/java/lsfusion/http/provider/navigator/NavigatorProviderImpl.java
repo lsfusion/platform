@@ -110,7 +110,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
-        return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
+        return new NavigatorInfo(getSessionInfo(request), userAgent, osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 

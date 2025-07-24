@@ -145,6 +145,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         try (DataSession session = createSession()) {
             newConnection = session.addObject(businessLogics.systemEventsLM.connection);
             businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
+            businessLogics.systemEventsLM.userAgentConnection.change(navigatorInfo.userAgent, session, newConnection);
             businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
             businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
             businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);

@@ -446,6 +446,7 @@ originUrl(Connection cn, LINK relativeLink) = LINK(originUrl(cn, STRING(relative
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
 
+userAgent '{system.events.user.agent.connection}' = DATA STRING (Connection);
 osVersion '{system.events.os.version.connection}' = DATA STRING[100] (Connection);
 processor '{system.events.processor.connection}' = DATA STRING[100] (Connection);
 architecture '{system.events.architecture.connection}' = DATA STRING[10] (Connection);
@@ -460,7 +461,15 @@ is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
 screenWidth = DATA INTEGER(Connection);
 screenHeight = DATA INTEGER(Connection);
 screenSize '{system.events.screen.size.connection}'(Connection c) = screenWidth(c) + 'x' + screenHeight(c);
-isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE min(screenWidth(c), screenHeight(c)) <= 570;
+
+customIsMobileMode(Connection c) = ABSTRACT TBOOLEAN; 
+defaultIsMobileMode(Connection c) = min(screenWidth(c), screenHeight(c)) <= 570;
+isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE 
+    IF customIsMobileMode(c) THEN customIsMobileMode(c) == TTRUE ELSE defaultIsMobileMode(c);
+
+//customIsMobileMode(Connection c) += CASE WHEN userAgent(c) LIKE '%Android%' THEN TTRUE
+//                                         WHEN userAgent(c) LIKE '%Windows%' THEN TFALSE
+//                                         ELSE NULL;
 
 scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
@@ -708,6 +717,7 @@ maxUsedMemoryFromTo '{system.events.max.used.memory.from.to}' = DATA INTEGER (Co
 
 lastConnection(computer) = GROUP LAST Connection connection ORDER connection BY computer(connection);
 remoteAddress '{system.events.remote.address.connection}' (Computer computer) = remoteAddress(lastConnection(computer));
+userAgent '{system.events.user.agent.connection}' (Computer computer) = userAgent(lastConnection(computer));
 osVersion '{system.events.os.version.connection}' (Computer computer) = osVersion(lastConnection(computer));
 processor '{system.events.processor.connection}' (Computer computer) = processor(lastConnection(computer));
 architecture '{system.events.architecture.connection}' (Computer computer) = architecture(lastConnection(computer));
@@ -773,7 +783,7 @@ evalInAllCurrentConnections(TEXT code, TEXT param) {
 FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
+    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, userAgent, osVersion,
                             javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                             lastActivity, disconnectTime, shutdown GRID CHANGEABLE
@@ -908,7 +918,7 @@ averageMaxUsedMemoryDateFrom '{system.events.average.max.used.memory.date.from}'
 
 FORM pings '{system.events.form.pings}'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
-    PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
+    PROPERTIES(c) READONLY hostname, remoteAddress, userAgent, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
                            javaVersion, is64Java                                       
     PROPERTIES dFromObj = VALUE(dFrom), dToObj = VALUE(dTo), limitDFromObj = VALUE(limitDFrom), limitDToObj = VALUE(limitDTo),
@@ -921,7 +931,7 @@ FORM pings '{system.events.form.pings}'
     FILTERS pingFromTo(c,dFrom,dTo)
     
     OBJECTS cn = Connection
-    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
+    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion, userAgent,
                              javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                              disconnectTime
