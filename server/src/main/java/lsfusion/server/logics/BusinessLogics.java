@@ -2312,33 +2312,37 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 DBManager dbManager = getDbManager();
 
                 //recalculate table stat and class stat
-                MSet<ImplementTable> recalculatedTables = SetFact.mSet();
+                MSet<ImplementTable> mRecalculatedTables = SetFact.mSet();
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
                         table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        recalculatedTables.add(table);
+                        mRecalculatedTables.add(table);
                         table.majorStatChanged = false;
                     }
                 }
-                MSet<ConcreteCustomClass> recalculatedClasses = SetFact.mSet();
+                ImSet<ImplementTable> recalculatedTables = mRecalculatedTables.immutable();
+
+                MSet<ConcreteCustomClass> mRecalculatedClasses = SetFact.mSet();
                 for (CustomClass customClass : LM.baseClass.getAllClasses()) {
                     if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
-                        ((ConcreteCustomClass) customClass).recalculateClassStat(LM, session);
-                        recalculatedClasses.add((ConcreteCustomClass) customClass);
+                        mRecalculatedClasses.add((ConcreteCustomClass) customClass);
                         ((ConcreteCustomClass) customClass).majorStatChanged = false;
                     }
                 }
+                ImSet<ConcreteCustomClass> recalculatedClasses = mRecalculatedClasses.immutable();
 
-                if (recalculatedTables.size() > 0 || recalculatedClasses.size() > 0)
+                for (ObjectValueClassSet objectValueClassSet : new OrObjectClassSet(recalculatedClasses).getObjectClassFields().values()) {
+                    objectValueClassSet.recalculateClassStat(LM, session);
+                }
+
+                if (!recalculatedTables.isEmpty() || !recalculatedClasses.isEmpty())
                     session.applyException(this, stack);
 
                 //update table stat and class stat
-                for (ImplementTable table : recalculatedTables.immutable())
+                for (ImplementTable table : recalculatedTables)
                     dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
-                for (ObjectValueClassSet objectValueClassSet : new OrObjectClassSet(recalculatedClasses.immutable()).getObjectClassFields().values()) {
-                    if(objectValueClassSet instanceof ConcreteCustomClass)
-                        dbManager.updateClassStats(session.sql, majorStatChangedCount, (ConcreteCustomClass) objectValueClassSet);
-                }
+                for (ConcreteCustomClass customClass : recalculatedClasses)
+                    dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
 
                 dropLRU(majorStatChangedCount);
             }
