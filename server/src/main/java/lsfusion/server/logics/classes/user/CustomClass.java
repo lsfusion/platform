@@ -710,4 +710,20 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
         return result;
     }
+
+    protected boolean hasStaticObjects() {
+        return false;
+    }
+
+    public boolean hasConcreteStaticObjects() {
+        if (hasStaticObjects())
+            return true;
+
+        for (CustomClass child : getChildrenIt()) {
+            if (child.hasConcreteStaticObjects())
+                return true;
+        }
+
+        return false;
+    }
 }
