@@ -226,6 +226,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP objectClassName;
     public LP staticName;
     public LP staticCaption;
+    public LP staticOrder;
 
     public LP staticImage;
     public LP statCustomObjectClass;
@@ -635,6 +636,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         staticName = findProperty("staticName[StaticObject]");
         staticCaption = findProperty("staticCaption[StaticObject]");
+        staticOrder = findProperty("order[StaticObject]");
         staticImage = findProperty("image[StaticObject]");
 
         sessionOwners = findProperty("sessionOwners[]");
