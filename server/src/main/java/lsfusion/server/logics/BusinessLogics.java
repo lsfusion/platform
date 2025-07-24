@@ -67,6 +67,7 @@ import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -2304,25 +2305,55 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
+    Result<Integer> majorStatChangedCount = new Result<>(0);
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
-                Result<Integer> majorStatChangedCount = new Result<>(0);
+                DBManager dbManager = getDbManager();
+
+                //recalculate table stat and class stat
+                MSet<ImplementTable> mRecalculatedTables = SetFact.mSet();
                 for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                     if (table.majorStatChanged) {
-                        ImMap<String, Pair<Integer, Integer>> result = table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        table.updateStat(MapFact.EMPTY(), MapFact.EMPTY(), result, false, majorStatChangedCount);
+                        table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                        mRecalculatedTables.add(table);
                         table.majorStatChanged = false;
                     }
                 }
-                dropLRU(majorStatChangedCount.result);
+                ImSet<ImplementTable> recalculatedTables = mRecalculatedTables.immutable();
+
+                MSet<ConcreteCustomClass> mRecalculatedClasses = SetFact.mSet();
+                for (CustomClass customClass : LM.baseClass.getAllClasses()) {
+                    if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
+                        mRecalculatedClasses.add((ConcreteCustomClass) customClass);
+                        ((ConcreteCustomClass) customClass).majorStatChanged = false;
+                    }
+                }
+                ImSet<ConcreteCustomClass> recalculatedClasses = mRecalculatedClasses.immutable();
+
+                for (ObjectValueClassSet objectValueClassSet : new OrObjectClassSet(recalculatedClasses).getObjectClassFields().values()) {
+                    objectValueClassSet.recalculateClassStat(LM, session);
+                }
+
+                if (!recalculatedTables.isEmpty() || !recalculatedClasses.isEmpty())
+                    session.applyException(this, stack);
+
+                //update table stat and class stat
+                for (ImplementTable table : recalculatedTables)
+                    dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
+                for (ConcreteCustomClass customClass : recalculatedClasses)
+                    dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
+
+                dropLRU(majorStatChangedCount);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
     }
 
-    public void dropLRU(int majorStatChangedCount) {
-        if (majorStatChangedCount > Settings.get().getUpdateStatsDropLRUThreshold())
+    public void dropLRU(Result<Integer> majorStatChangedCount) {
+        if (majorStatChangedCount.result > Settings.get().getUpdateStatsDropLRUThreshold()) {
             ALRUMap.forceRemoveAllLRU(100);
+            majorStatChangedCount.set(0);
+        }
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

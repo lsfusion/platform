@@ -47,6 +47,7 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -70,10 +71,7 @@ import lsfusion.server.logics.action.session.change.increment.IncrementTableProp
 import lsfusion.server.logics.action.session.change.modifier.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
-import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.action.session.classes.change.MaterializableClassChange;
-import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.*;
 import lsfusion.server.logics.action.session.classes.changed.ChangedClasses;
 import lsfusion.server.logics.action.session.classes.changed.ChangedDataClasses;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
@@ -313,7 +311,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = null;
         mChangedPropKeys = null;
         mRemovedClasses = null;
-        mChangedTables = null;
+        mChangedStatTables = null;
+        mChangedStatClasses = null;
 
         cleanOnlyDataModifier();
         applyFilter = ApplyFilter.NO;
@@ -1556,8 +1555,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
 
-        if(implementTable.majorStatChanged(changeTable.getCount(), true))
-            mChangedTables.add(implementTable);
+        if(implementTable.majorStatChanged(changeTable.getCount(), Stat.Mode.ADD))
+            mChangedStatTables.add(implementTable);
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1589,7 +1588,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private MSet<CustomClass> mRemovedClasses;
     private MSet<Property> mChangedProps;
     private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
-    private MSet<ImplementTable> mChangedTables;
+    private MSet<ImplementTable> mChangedStatTables;
+    private MSet<ConcreteCustomClass> mChangedStatClasses;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1733,7 +1733,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();
-        mChangedTables = SetFact.mSet();
+        mChangedStatTables = SetFact.mSet();
+        mChangedStatClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2109,6 +2110,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.statusMessage = null;
                 }
             }
+
+            for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
+                if (newClass instanceof ConcreteCustomClass) {
+                    majorStatChanged((ConcreteCustomClass) newClass, Stat.Mode.ADD);
+                }
+            }
+            for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
+                if (removeClass instanceof ConcreteCustomClass) {
+                    majorStatChanged((ConcreteCustomClass) removeClass, Stat.Mode.REMOVE);
+                }
+            }
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
@@ -2132,7 +2144,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys = mChangedPropKeys.immutable();
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
-        ImSet<ImplementTable> changedTables = mChangedTables.immutable();
+        ImSet<ImplementTable> changedTables = mChangedStatTables.immutable();
+        ImSet<ConcreteCustomClass> changedClasses = mChangedStatClasses.immutable();
 
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
@@ -2161,7 +2174,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             table.majorStatChanged = true;
         }
 
+        for (ConcreteCustomClass customClass : changedClasses) {
+            customClass.majorStatChanged = true;
+        }
+
         return true;
+    }
+
+    private void majorStatChanged(ConcreteCustomClass customClass, Stat.Mode mode) {
+        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), mode)) {
+            mChangedStatClasses.add(customClass);
+        }
     }
 
     public void addChangePropKeys(Property property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
@@ -2192,7 +2215,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packResult = updateSession.packRemoveClasses(BL);
         mRemovedClasses.addAll(packResult.first);
-        mChangedTables.addAll(packResult.second);
+        mChangedStatTables.addAll(packResult.second);
     }
 
     private static long getTimestamp() {
