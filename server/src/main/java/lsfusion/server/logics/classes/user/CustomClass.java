@@ -55,6 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -651,7 +652,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
         return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
     }
-
 
     public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields, ObjectValueClassSet baseClassSet) {
         // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere

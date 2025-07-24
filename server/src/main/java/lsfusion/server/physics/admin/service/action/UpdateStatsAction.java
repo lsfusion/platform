@@ -19,6 +19,6 @@ public class UpdateStatsAction extends InternalAction {
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Result<Integer> majorStatChangedCount = new Result(0);
         context.getDbManager().updateStats(context.getSession().sql, majorStatChangedCount);
-        context.getBL().dropLRU(majorStatChangedCount.result);
+        context.getBL().dropLRU(majorStatChangedCount);
     }
 }
