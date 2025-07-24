@@ -171,15 +171,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
-    public boolean hasConcreteStaticObjects() {
-        boolean hasConcreteStaticObjects = getStaticObjectsInfoIt().iterator().hasNext();
-        if (!hasConcreteStaticObjects && hasChildren())
-            for (CustomClass child : getChildrenIt()) {
-                if (child.hasConcreteStaticObjects())
-                    return true;
-            }
-
-        return hasConcreteStaticObjects;
+    @Override
+    protected boolean hasStaticObjects() {
+        return getStaticObjectsInfoIt().iterator().hasNext();
     }
 
     public LocalizedString getObjectCaption(String name) {
