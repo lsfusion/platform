@@ -105,7 +105,7 @@ public class MainFrame implements EntryPoint {
     public static boolean disableActionsIfReadonly;
     public static boolean enableShowingRecentlyLogMessages;
     public static String pushNotificationPublicKey;
-    
+
     public static double maxStickyLeft;
 
     public static boolean jasperReportsIgnorePageMargins;

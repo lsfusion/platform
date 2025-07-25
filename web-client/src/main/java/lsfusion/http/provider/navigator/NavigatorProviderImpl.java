@@ -123,12 +123,13 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
+    public Pair<String,Boolean> createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
-        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
-        scheduleCheckInitialized(sessionID, MainController.isPrefetch(request));
-        return sessionID;
+        NavigatorSessionObject navigatorSessionObject = createNavigatorSessionObject(sessionObject, request));
+        scheduleCheckInitialized(sessionID, MainController.isPrefetch(request);
+        addLogicsAndNavigatorSessionObject(sessionID, navigatorSessionObject);
+        return new Pair(sessionID, navigatorSessionObject.isOverMobile);
     }
 
     private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
@@ -140,7 +141,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         ServerSettings serverSettings = LogicsProviderImpl.getServerSettings(request, false, sessionObject);
         if (serverSettings.sessionConfigTimeout > 0)
             request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
-        return new NavigatorSessionObject(remoteNavigator, serverSettings);
+        return new NavigatorSessionObject(remoteNavigator, serverSettings, remoteNavigator.isOverMobile());
     }
 
     @Override
