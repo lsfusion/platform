@@ -19,6 +19,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientInfo;
