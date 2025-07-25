@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.user;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -47,29 +48,29 @@ public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 
     ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields); // по сути protected
 
-    default void recalculateClassStat(BaseLogicsModule LM, DataSession session) throws SQLException, SQLHandledException {
-        recalculateClassStat(LM, session, null);
-    }
-
     default void recalculateClassStat(BaseLogicsModule LM, DataSession session, String logSuffix) throws SQLException, SQLHandledException {
         runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> {
-            QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
+            recalculateClassStat(LM, session);
+        }, String.format("Recalculate Class Stats%s: %s", BaseUtils.nvl(logSuffix,"") , this));
+    }
 
-            KeyExpr countKeyExpr = new KeyExpr("count");
-            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
-                    ValueExpr.COUNT, countKeyExpr.isClass(ObjectValueClassSet.this), GroupType.SUM, classes.getMapExprs());
+    default void recalculateClassStat(BaseLogicsModule LM, DataSession session) throws SQLException, SQLHandledException {
+        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
-            classes.addProperty(0, countExpr);
-            classes.and(countExpr.getWhere());
+        KeyExpr countKeyExpr = new KeyExpr("count");
+        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
+                ValueExpr.COUNT, countKeyExpr.isClass(ObjectValueClassSet.this), GroupType.SUM, classes.getMapExprs());
 
-            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-            ImSet<ConcreteCustomClass> concreteChilds = getSetConcreteChildren();
-            for (int i = 0, size = concreteChilds.size(); i < size; i++) {
-                ConcreteCustomClass customClass = concreteChilds.get(i);
-                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
-                LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
-            }
-        }, String.format("Recalculate Class Stats%s: %s", logSuffix, this));
+        classes.addProperty(0, countExpr);
+        classes.and(countExpr.getWhere());
+
+        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+        ImSet<ConcreteCustomClass> concreteChilds = getSetConcreteChildren();
+        for (int i = 0, size = concreteChilds.size(); i < size; i++) {
+            ConcreteCustomClass customClass = concreteChilds.get(i);
+            ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
+            LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
+        }
     }
 
 }

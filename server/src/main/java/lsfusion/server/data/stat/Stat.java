@@ -125,12 +125,13 @@ public class Stat {
     }
 
     public boolean majorStatChanged(Stat changedStat, Mode mode) {
-        if (mode == Mode.ADD) {
-            return less(changedStat.mult(new Stat(Settings.get().getMajorStatChangeDegree())));
+        Stat coeff = new Stat(Settings.get().getMajorStatChangeDegree(), true);
+        if (mode == Mode.ADD) { // changed >= st
+            return mult(coeff).lessEquals(changedStat);
         } else if (mode == Mode.REMOVE) {
-            return less(changedStat);
+            return lessEquals(changedStat);
         } else {
-            return less(changedStat) || changedStat.less(this);
+            return mult(coeff).lessEquals(changedStat) || changedStat.mult(coeff).lessEquals(this);
         }
     }
 }

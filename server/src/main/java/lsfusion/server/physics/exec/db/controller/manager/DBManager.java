@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
@@ -76,7 +77,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
@@ -88,7 +88,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
-import lsfusion.server.logics.classes.user.set.UpClassSet;
+import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
@@ -140,6 +140,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -265,7 +266,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 adapter.ensureSqlFuncs();
 
                 if (!isFirstStart(sql)) {
-                    updateStats(sql, null);
+                    updateStats(sql);
 
                     startLog("Setting user logging for properties");
                     setUserLoggableProperties(sql);
@@ -435,21 +436,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void updateClassStats(SQLSession session, Result<Integer> majorStatChangedCount, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        String staticName = cls != null ? cls.getSID() : null;
-        ImMap<String, Integer> classStats = readClassStatsFromDB(session, staticName);
-        if (staticName != null) {
-            cls.updateStat(classStats, majorStatChangedCount);
-        } else {
-            for (CustomClass customClass : LM.baseClass.getAllClasses()) {
-                if (customClass instanceof ConcreteCustomClass) {
-                    ((ConcreteCustomClass) customClass).updateStat(classStats, majorStatChangedCount);
-                }
-            }
-        }
+    public void updateClassStats(SQLSession session, Result<Integer> majorStatChangedCount, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> classStats = readClassStatsFromDB(session, classes);
+        for (CustomClass customClass : (classes != null ? classes : LM.baseClass.getAllClasses()))
+            if (customClass instanceof ConcreteCustomClass)
+                ((ConcreteCustomClass) customClass).updateStat(classStats, majorStatChangedCount);
     }
 
-    public ImMap<String, Integer> readClassStatsFromDB(SQLSession session, String staticName) throws SQLException, SQLHandledException {
+    public ImMap<String, Integer> readClassStatsFromDB(SQLSession session, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", customObjectClassExpr);
 
@@ -458,9 +452,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
 
         query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
-        if(staticName != null) {
-            query.and(LM.staticName.getExpr(customObjectClassExpr).compare(new DataObject(staticName), Compare.EQUALS));
-        }
+        if(classes != null)
+            query.and(getReadFilterWhere(classes, CustomClass::getSID, LM.staticName.getExpr(customObjectClassExpr)));
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
 
@@ -474,28 +467,42 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    public void updateStats(SQLSession sql, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
-        if(majorStatChangedCount == null)
-            updateTableStats(sql, true, null); // чтобы сами таблицы статистики получили статистику
-        updateFullClassStats(sql, majorStatChangedCount);
-        if(SystemProperties.doNotCalculateStats)
-            return;
-        updateTableStats(sql, false, majorStatChangedCount);
+    private static <T> Where getReadFilterWhere(ImSet<T> classes, Function<T, String> getString, Expr nameExpr) {
+        return nameExpr.compareStatic(classes.mapSetValues(value -> new DataObject(getString.apply(value), StringClass.instance)));
     }
 
-    private void updateFullClassStats(SQLSession sql, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
-        updateClassStats(sql, majorStatChangedCount, null);
-        adjustClassStats(sql);
-    }
-    
-//    businessLogics.* -> *
+    public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
+        // so that the statistics tables themselves receive statistics
+        updateTableStats(sql, true, null, null);
 
-    private void adjustClassStats(SQLSession sql) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, null, null);
-        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, null, null);
+        updateStats(sql, null, null, null);
+    }
+
+    private final Result<Integer> majorStatChangedCount = new Result<>(0);
+    public void updateStats(SQLSession sql, ImSet<ImplementTable> tables, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
+        updateStats(sql, majorStatChangedCount, tables, classes);
+
+        if (majorStatChangedCount.result > Settings.get().getUpdateStatsDropLRUThreshold()) {
+            ALRUMap.forceRemoveAllLRU(100);
+            majorStatChangedCount.set(0);
+        }
+    }
+
+    public void updateStats(SQLSession sql, Result<Integer> majorStatChangedCount, ImSet<ImplementTable> tables, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
+        updateClassStats(sql, majorStatChangedCount, classes);
+
+        adjustClassStats(sql, tables != null ? tables.merge(LM.tableFactory.getUpImplementTables(new OrObjectClassSet(classes))) : null);
+
+        updateTableStats(sql, false, majorStatChangedCount, tables);
+    }
+
+    // we're taking full tables stats, and adjusting class stats to match it
+    private void adjustClassStats(SQLSession sql, ImSet<ImplementTable> tables) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tables);
+        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tables);
 
         MMap<CustomClass, Integer> mClassFullStats = MapFact.mMap(MapFact.max());
-        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
+        for (ImplementTable dataTable : (tables != null ? tables : LM.tableFactory.getImplementTables())) {
             dataTable.fillFullClassStat(tableStats, keyStats, mClassFullStats);
         }
         ImMap<CustomClass, Integer> classFullStats = mClassFullStats.immutable();
@@ -522,11 +529,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateTableStats(SQLSession sql, boolean statDefault, Result<Integer> majorStatChangedCount) throws SQLException, SQLHandledException {
-        updateTableStats(sql, statDefault, majorStatChangedCount, null);
-    }
-
-    public void updateTableStats(SQLSession sql, boolean statDefault, Result<Integer> majorStatChangedCount, ImplementTable table) throws SQLException, SQLHandledException {
+    public void updateTableStats(SQLSession sql, boolean statDefault, Result<Integer> majorStatChangedCount, ImSet<ImplementTable> tables) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -535,27 +538,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
             keyStats = MapFact.EMPTY();
             propStats = MapFact.EMPTY();
         } else {
-            String tableName = table != null ? table.getName() : null;
-            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tableName);
-            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tableName);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn, reflectionLM.sidTableTableColumn, tableName);
+            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tables);
+            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tables);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn, reflectionLM.sidTableTableColumn, tables);
         }
 
-        if(table != null) {
-            table.updateStat(tableStats, keyStats, propStats, statDefault, majorStatChangedCount);
-        } else {
-            for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-                dataTable.updateStat(tableStats, keyStats, propStats, statDefault, majorStatChangedCount);
-            }
+        for (ImplementTable dataTable : (tables != null ? tables : LM.tableFactory.getImplementTables())) {
+            dataTable.updateStat(tableStats, keyStats, propStats, statDefault, majorStatChangedCount);
         }
     }
 
-    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp, LP tableProp, String tableName) throws SQLException, SQLHandledException {
+    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp, LP sIDTableProp, ImSet<ImplementTable> tables) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key"));
         Expr keyExpr = query.getMapExprs().singleValue();
         Expr sidToObject = sIDProp.getExpr(keyExpr);
-        if (tableProp != null && tableName != null)
-            query.and((tableProp.getExpr(sidToObject)).compare(new DataObject(tableName), Compare.EQUALS));
+        if (tables != null)
+            query.and(getReadFilterWhere(tables, StoredTable::getName, sIDTableProp.getExpr(sidToObject)));
         else
             query.and(sidToObject.getWhere());
         query.addProperty("property", statsProp.getExpr(sidToObject));
@@ -580,7 +578,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         count = 0;
         ImCol<ObjectValueClassSet> tableClassesCol = LM.baseClass.getUpObjectClassFields().values();
         for (ObjectValueClassSet tableClasses : tableClassesCol) {
-            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format("%s of %s", ++count, tableClassesCol.size()));
+            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format(" %s of %s", ++count, tableClassesCol.size()));
         }
     }
 
@@ -1624,7 +1622,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // since the below methods use queries we have to update stat props first
             ImplementTable.reflectionStatProps(() -> {
                 startLog("Updating stats");
-                updateStats(sql, null);
+                updateStats(sql);
                 return null;
             });
             ImplementTable.updatedStats = true;
@@ -1926,7 +1924,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             dropClassObjects.and(moveWhere);
 
             startLog(localize(LocalizedString.createFormatted("{logics.info.objects.removing.from.table}", classProp.tableName)));
-            sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+            sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery()));
         }
     }
 
@@ -1995,7 +1993,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             copyObjects.and(moveWhere);
 
             startLog(localize(LocalizedString.createFormatted("{logics.info.objects.transferring.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
-            sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+            sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery()));
 //            return null;
 //        });
     }
@@ -2090,8 +2088,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         Result<ImMap<String, Pair<Integer, Integer>>> propsStat = new Result<>();
         runWithStartLog((E2Runnable<SQLException, SQLHandledException>) () -> {
-            table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
-            propsStat.result = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
+            propsStat.result = table.recalculateStat(reflectionLM, session, fields, new HashSet<>(), skipRecalculateFields);
             apply(session);
         }, String.format("Updating materialization stats %s of %s: %s", count, total, table));
             
@@ -2273,11 +2270,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Query<KeyField, PropertyField> query;
 
         query = BaseUtils.immutableCast(getIncorrectQuery(table, baseClass, false, false));
-        sql.deleteRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
+        sql.deleteRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner()));
 
         query = BaseUtils.immutableCast(getIncorrectQuery(table, baseClass, true, false));
         if(!query.properties.isEmpty())
-            sql.updateRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
+            sql.updateRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner()));
     }
 
     public static void run(SQLSession session, boolean runInTransaction, boolean serializable, RunService run) throws SQLException, SQLHandledException {

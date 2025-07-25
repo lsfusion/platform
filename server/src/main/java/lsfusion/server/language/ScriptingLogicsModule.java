@@ -30,6 +30,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.ActionSettings;
@@ -4183,7 +4184,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
                 LPWithParams importProp = new LPWithParams(importParamProps.get(importIndex), params);
                 DataClass cls = (DataClass) newContext.get(i).cls;
-                LPWithParams defaultValueProp = new LPWithParams(addCProp(cls, PropertyFact.getValueForProp(cls.getDefaultValue(), cls)));
+                LPWithParams defaultValueProp = new LPWithParams(addCProp(cls, StaticValueExpr.getStaticValue(cls.getDefaultValue(), cls)));
                 // prop(row) <- defvalue WHERE NOT prop(row)
                 fillNulls.add(addScriptedChangeAProp(oldAndRowContext, defaultValueProp, addScriptedNotProp(importProp), importProp));
             }

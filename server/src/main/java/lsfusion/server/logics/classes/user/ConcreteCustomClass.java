@@ -364,19 +364,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public boolean majorStatChanged(long changedCount, Stat.Mode mode) {
-        if(stat != null) {
-            return new Stat(stat).majorStatChanged(new Stat(changedCount), mode);
-        }
-        return false;
-    }
-
-    public boolean majorStatChanged;
-
     public void updateStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
         Integer newStat = classStats.get(getSID());
         if (majorStatChangedCount != null) {
-            if (majorStatChanged(newStat, Stat.Mode.CHANGE))
+            if (stat != null && new Stat(stat).majorStatChanged(new Stat((long) newStat), Stat.Mode.CHANGE))
                 majorStatChangedCount.set(majorStatChangedCount.result + 1);
         } else {
             assert ID == null;
