@@ -19,7 +19,7 @@ public class NavigatorInfo implements Serializable {
     public final Integer freeMemory;
     public final String javaVersion;
     public final String screenSize;
-    public final ClientType clientType;
+    public ClientType clientType;
     public final String platformVersion;
     public final Integer apiVersion;
 

@@ -31,4 +31,6 @@ public interface RemoteNavigatorInterface extends RemoteRequestInterface {
     // external
     
     Pair<RemoteFormInterface, String> createFormExternal(String json) throws RemoteException;
+
+    Boolean isOverMobile() throws RemoteException;
 }

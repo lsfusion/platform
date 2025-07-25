@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ServerUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -110,11 +111,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
+    public Pair<String,Boolean> createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
-        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request, connectionInfo));
-        return sessionID;
+        NavigatorSessionObject navigatorSessionObject = createNavigatorSessionObject(sessionObject, request, connectionInfo);
+        addLogicsAndNavigatorSessionObject(sessionID, navigatorSessionObject);
+        return new Pair(sessionID, navigatorSessionObject.isOverMobile);
     }
 
     private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
@@ -126,7 +128,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         ServerSettings serverSettings = sessionObject.getServerSettings(navigatorInfo.session, null, false);
         if (serverSettings.sessionConfigTimeout > 0)
             request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
-        return new NavigatorSessionObject(remoteNavigator, serverSettings);
+        return new NavigatorSessionObject(remoteNavigator, serverSettings, remoteNavigator.isOverMobile());
     }
 
     @Override
