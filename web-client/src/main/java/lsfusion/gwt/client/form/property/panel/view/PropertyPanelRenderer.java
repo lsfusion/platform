@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.InlineComponentViewWidget;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -64,7 +63,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        if(property.caption == null && property.comment == null) // if there is no (empty) static caption and no dynamic caption
+        boolean hasCaption = property.caption != null;
+        if(!hasCaption && property.comment == null && property.appImage == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
@@ -75,7 +75,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         value.getElement().setId(globalID);
 
         SizedWidget sizedLabel = null;
-        if(property.caption != null) {
+        if(hasCaption || property.appImage != null) {
             label = GFormLayout.createLabelCaptionWidget();
             BaseImage.initImageText(label, null, property.appImage, property.getCaptionHtmlOrTextType());
             GwtClientUtils.addClassName(label, "panel-property-label");
@@ -114,8 +114,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
         boolean inline = !isAlignCaption && property.isInline();
-        boolean verticalDiffers = property.caption != null && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
-        boolean panelVertical = property.caption != null ? property.captionVertical : property.panelCommentVertical;
+        boolean verticalDiffers = hasCaption && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
+        boolean panelVertical = hasCaption ? property.captionVertical : property.panelCommentVertical;
 
         SizedWidget sizedComment = null;
         if(property.comment != null) {
