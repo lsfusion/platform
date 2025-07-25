@@ -142,8 +142,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         createPausablesExecutor();
 
-        fixClientType(navigatorInfo);
-
         this.navigatorManager = logicsInstance.getNavigatorsManager();
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
 
@@ -167,28 +165,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session) != null;
         highlightDuplicateValue = businessLogics.systemEventsLM.highlightDuplicateValue.read(session) != null;
         securityPolicy = securityManager.getSecurityPolicy(session, user);
-    }
-
-    // Hack only for v5.
-    // In v5, maxMobileWidthHeight = 570 is a constant in the web client, but sometimes it needs to be overridden.
-    // In v6, maxMobileWidthHeight is handled on the server, so this hack is relevant only for v5.
-    private void fixClientType(NavigatorInfo navigatorInfo) {
-        int maxMobileWidthHeight = Settings.get().maxMobileWidthHeight;
-        if(maxMobileWidthHeight >= 0) {
-            if(navigatorInfo.clientType == ClientType.WEB_MOBILE || navigatorInfo.clientType == ClientType.WEB_DESKTOP) {
-                String screenSize = navigatorInfo.screenSize;
-                if(screenSize != null && screenSize.contains("x")) {
-                    String[] screenSizes = screenSize.split("x");
-                    int minWidthHeight = Math.min(Integer.parseInt(screenSizes[0]), Integer.parseInt(screenSizes[1]));
-                    boolean defaultIsMobile = minWidthHeight <= 570;
-                    boolean newIsMobile = minWidthHeight <= maxMobileWidthHeight;
-                    if(defaultIsMobile != newIsMobile) {
-                        isOverMobile = newIsMobile;
-                        navigatorInfo.clientType = isOverMobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP;
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -1060,11 +1036,5 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     public Object getProfiledObject() {
         return "n";
-    }
-
-    Boolean isOverMobile = null;
-    @Override
-    public Boolean isOverMobile() throws RemoteException {
-        return isOverMobile;
     }
 }
