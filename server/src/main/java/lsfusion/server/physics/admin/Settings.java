@@ -3129,4 +3129,14 @@ public class Settings implements Cloneable {
     public void setExportDBFNumericMandatoryZeroes(boolean exportDBFNumericMandatoryZeroes) {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
+
+    public int maxMobileWidthHeight = -1;
+
+    public int getMaxMobileWidthHeight() {
+        return maxMobileWidthHeight;
+    }
+
+    public void setMaxMobileWidthHeight(int maxMobileWidthHeight) {
+        this.maxMobileWidthHeight = maxMobileWidthHeight;
+    }
 }

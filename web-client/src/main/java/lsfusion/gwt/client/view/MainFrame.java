@@ -550,10 +550,12 @@ public class MainFrame implements EntryPoint {
         Integer screenHeight = Window.getClientHeight();
         mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
         logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new PriorityErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new PriorityErrorHandlingCallback<CreateNavigatorResult>() {
             @Override
-            public void onSuccess(StringResult result) {
-                navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
+            public void onSuccess(CreateNavigatorResult result) {
+                navigatorDispatchAsync = new NavigatorDispatchAsync(result.sessionId);
+                if(result.isMobile != null)
+                    mobile = result.isMobile;
                 initializeFrame();
             }
 

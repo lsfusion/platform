@@ -12,9 +12,12 @@ public class NavigatorSessionObject {
 
     public final ServerSettings serverSettings; // needed for static resources (images / js / css)
 
-    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings) {
+    public final Boolean isOverMobile;
+
+    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, Boolean isOverMobile) {
         this.remoteNavigator = remoteNavigator;
         this.serverSettings = serverSettings;
+        this.isOverMobile = isOverMobile;
     }
 
     public ClientCallBackInterface remoteCallback; // caching

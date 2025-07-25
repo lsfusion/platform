@@ -59,4 +59,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
     }
+
+    @Override
+    public Boolean isOverMobile() throws RemoteException {
+        return target.isOverMobile();
+    }
 }
