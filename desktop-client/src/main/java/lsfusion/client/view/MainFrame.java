@@ -295,7 +295,7 @@ public abstract class MainFrame extends JFrame {
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-        return new NavigatorInfo(MainController.getSessionInfo(), null, osVersion, processor, architecture, cores, physicalMemory, totalMemory,
+        return new NavigatorInfo(MainController.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 

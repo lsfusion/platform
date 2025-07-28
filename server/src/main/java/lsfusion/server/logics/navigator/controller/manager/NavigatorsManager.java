@@ -8,6 +8,7 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -17,13 +18,13 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,6 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
@@ -145,7 +148,6 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         try (DataSession session = createSession()) {
             newConnection = session.addObject(businessLogics.systemEventsLM.connection);
             businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
-            businessLogics.systemEventsLM.userAgentConnection.change(navigatorInfo.userAgent, session, newConnection);
             businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
             businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
             businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
@@ -160,14 +162,18 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
             businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
 
-            businessLogics.systemEventsLM.schemeConnection.change(navigatorInfo.session.externalRequest.scheme, session, newConnection);
+            ExternalRequest request = navigatorInfo.session.externalRequest;
+            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.headersConnection, newConnection, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
+            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.cookiesConnection, newConnection, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
+            CallHTTPAction.writeObjectStringParams(session, businessLogics.systemEventsLM.paramsConnection, newConnection, request.params);
+            businessLogics.systemEventsLM.schemeConnection.change(request.scheme, session, newConnection);
             businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);
-            businessLogics.systemEventsLM.webHostConnection.change(navigatorInfo.session.externalRequest.webHost, session, newConnection);
-            businessLogics.systemEventsLM.webPortConnection.change(navigatorInfo.session.externalRequest.webPort, session, newConnection);
-            businessLogics.systemEventsLM.contextPathConnection.change(navigatorInfo.session.externalRequest.contextPath, session, newConnection);
-            businessLogics.systemEventsLM.servletPathConnection.change(navigatorInfo.session.externalRequest.servletPath, session, newConnection);
-            businessLogics.systemEventsLM.pathInfoConnection.change(navigatorInfo.session.externalRequest.pathInfo, session, newConnection);
-            businessLogics.systemEventsLM.queryConnection.change(navigatorInfo.session.externalRequest.query, session, newConnection);
+            businessLogics.systemEventsLM.webHostConnection.change(request.webHost, session, newConnection);
+            businessLogics.systemEventsLM.webPortConnection.change(request.webPort, session, newConnection);
+            businessLogics.systemEventsLM.contextPathConnection.change(request.contextPath, session, newConnection);
+            businessLogics.systemEventsLM.servletPathConnection.change(request.servletPath, session, newConnection);
+            businessLogics.systemEventsLM.pathInfoConnection.change(request.pathInfo, session, newConnection);
+            businessLogics.systemEventsLM.queryConnection.change(request.query, session, newConnection);
 
             businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
             String result = session.applyMessage(businessLogics, stack);

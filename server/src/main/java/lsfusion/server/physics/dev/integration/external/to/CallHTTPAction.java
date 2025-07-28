@@ -8,14 +8,13 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
@@ -29,7 +28,6 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -48,7 +46,6 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -213,6 +210,33 @@ public abstract class CallHTTPAction extends CallAction {
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
         property.change(session, env, MapFact.toMap(names, values));
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringValues(DataSession session, LP<P> property, DataObject object, String[] names, String[] values) throws SQLException, SQLHandledException {
+        MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
+        for (int i = 0; i < names.length; i++) {
+            mParams.add(ListFact.toList(object, names[i]), values[i]);
+        }
+        property.change(session, mParams.immutable());
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringParams(DataSession session, LP<P> property, DataObject object, ExternalRequest.Param[] params) throws SQLException, SQLHandledException {
+        MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
+        Map<String, Integer> paramIndexes = new HashMap<>();
+        for (ExternalRequest.Param param : params) {
+            String paramName = param.name;
+            Object paramValue = param.value;
+
+            if(paramValue instanceof String) {
+                Integer paramIndex = paramIndexes.get(paramName);
+                if (paramIndex == null)
+                    paramIndex = 0;
+                paramIndexes.put(paramName, paramIndex + 1);
+
+                mParams.add(ListFact.toList(object, paramName, paramIndex), (String) paramValue);
+            }
+        }
+        property.change(session, mParams.immutable());
     }
 
     @Override

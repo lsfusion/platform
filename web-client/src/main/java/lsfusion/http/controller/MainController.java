@@ -2,6 +2,9 @@ package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -27,7 +30,9 @@ import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -45,10 +50,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.list;
+import static lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler.getRequestCookies;
+import static lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler.getRequestHeaderValues;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -380,7 +389,21 @@ public class MainController {
     public static ExternalRequest getExternalRequest(ExternalRequest.Param[] params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
 
-        return new ExternalRequest(params, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
+        String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
+        String[] headerValues = getRequestHeaderValues(request, headerNames);
+
+        OrderedMap<String, String> cookiesMap = getRequestCookies(request);
+        String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
+        String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+
+        Charset urlCharset = ExternalUtils.defaultUrlCharset;
+        ImList<ExternalRequest.Param> queryParams = ListFact.mapList(URLEncodedUtils.parse(request.getQueryString(), urlCharset), queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharset.toString(), queryParam.getName()));
+        ExternalRequest.Param[] mergedParams = new ExternalRequest.Param[params.length + queryParams.size()];
+        System.arraycopy(params, 0, mergedParams, 0, params.length);
+        System.arraycopy(queryParams.toArray(new ExternalRequest.Param[queryParams.size()]), 0, mergedParams, params.length, queryParams.size());
+
+        return new ExternalRequest(mergedParams, headerNames, headerValues, cookieNames, cookieValues,
+                request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
                 contentTypeString, request.getSession().getId());
     }

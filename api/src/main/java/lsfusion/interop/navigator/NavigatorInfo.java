@@ -1,6 +1,5 @@
 package lsfusion.interop.navigator;
 
-import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.session.SessionInfo;
 
 import java.io.Serializable;
@@ -9,7 +8,6 @@ public class NavigatorInfo implements Serializable {
     
     public final SessionInfo session;
 
-    public final String userAgent;
     public final String osVersion;
     public final String processor;
     public final String architecture;
@@ -22,12 +20,11 @@ public class NavigatorInfo implements Serializable {
     public final String platformVersion;
     public final Integer apiVersion;
 
-    public NavigatorInfo(SessionInfo session, String userAgent, String osVersion, String processor,
+    public NavigatorInfo(SessionInfo session, String osVersion, String processor,
                          String architecture, Integer cores, Integer physicalMemory, Integer totalMemory, Integer maximumMemory,
                          Integer freeMemory, String javaVersion, String platformVersion, Integer apiVersion) {
         this.session = session;
 
-        this.userAgent = userAgent;
         this.osVersion = osVersion;
         this.processor = processor;
         this.architecture = architecture;

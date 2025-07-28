@@ -428,6 +428,14 @@ computer '{system.events.computer.connection}' = DATA Computer (Connection);
 hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
 remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Connection);
 
+headers = DATA TEXT(Connection, TEXT);
+userAgent (Connection c) = headers(c, 'User-Agent');
+
+cookies = DATA TEXT(Connection, TEXT);
+
+params = DATA TEXT(Connection, TEXT, INTEGER);
+params(Connection c, TEXT key) = GROUP CONCAT params(c, key, INTEGER i) IF params(c, key, i), ', ' ORDER i; 
+
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 webHost '{system.events.web.host.connection}' = DATA STRING (Connection);
 webPort '{system.events.web.port.connection}' = DATA INTEGER (Connection);
@@ -446,7 +454,6 @@ originUrl(Connection cn, LINK relativeLink) = LINK(originUrl(cn, STRING(relative
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
 
-userAgent '{system.events.user.agent.connection}' = DATA STRING (Connection);
 osVersion '{system.events.os.version.connection}' = DATA STRING[100] (Connection);
 processor '{system.events.processor.connection}' = DATA STRING[100] (Connection);
 architecture '{system.events.architecture.connection}' = DATA STRING[10] (Connection);
@@ -717,7 +724,6 @@ maxUsedMemoryFromTo '{system.events.max.used.memory.from.to}' = DATA INTEGER (Co
 
 lastConnection(computer) = GROUP LAST Connection connection ORDER connection BY computer(connection);
 remoteAddress '{system.events.remote.address.connection}' (Computer computer) = remoteAddress(lastConnection(computer));
-userAgent '{system.events.user.agent.connection}' (Computer computer) = userAgent(lastConnection(computer));
 osVersion '{system.events.os.version.connection}' (Computer computer) = osVersion(lastConnection(computer));
 processor '{system.events.processor.connection}' (Computer computer) = processor(lastConnection(computer));
 architecture '{system.events.architecture.connection}' (Computer computer) = architecture(lastConnection(computer));
@@ -783,7 +789,7 @@ evalInAllCurrentConnections(TEXT code, TEXT param) {
 FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, userAgent, osVersion,
+    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                             javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                             lastActivity, disconnectTime, shutdown GRID CHANGEABLE
@@ -796,6 +802,18 @@ FORM connections '{system.events.form.connections}'
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionForm, nameUser, dateTime
 
+    OBJECTS header=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(header), '{system.events.form.connections.value}' = headers(c, header)
+    FILTERS headers(c, header)
+
+    OBJECTS cookie=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(cookie), '{system.events.form.connections.value}' = cookies(c, cookie)
+    FILTERS cookies(c, cookie)
+
+    OBJECTS param=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(param), '{system.events.form.connections.value}' = params(c, param)
+    FILTERS params(c, param)
+    
     FILTERS connectionFormCount(c, n)>0
     FILTERS connection(s)==c
     FILTERGROUP filtersConnection
@@ -807,10 +825,22 @@ FORM connections '{system.events.form.connections}'
 DESIGN connections{
     NEW boxes BEFORE TOOLBARBOX {
         fill = 1;
-        horizontal = TRUE;
-
-        MOVE BOX(n);
-        MOVE BOX(s);
+        tabbed = TRUE;
+        NEW activity {
+            caption = '{system.events.form.connections.activity}';
+            horizontal = TRUE;
+            MOVE BOX(n);
+            MOVE BOX(s);
+        }
+        MOVE BOX(header) {
+            caption = '{system.events.form.connections.headers}';
+        }
+        MOVE BOX(cookie) {
+            caption = '{system.events.form.connections.cookies}';
+        }
+        MOVE BOX(param) {
+            caption = '{system.events.form.connections.parameters}';
+        }
     }
 }
 
@@ -918,7 +948,7 @@ averageMaxUsedMemoryDateFrom '{system.events.average.max.used.memory.date.from}'
 
 FORM pings '{system.events.form.pings}'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
-    PROPERTIES(c) READONLY hostname, remoteAddress, userAgent, osVersion, processor, architecture, cores, 
+    PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
                            javaVersion, is64Java                                       
     PROPERTIES dFromObj = VALUE(dFrom), dToObj = VALUE(dTo), limitDFromObj = VALUE(limitDFrom), limitDToObj = VALUE(limitDTo),
@@ -931,7 +961,7 @@ FORM pings '{system.events.form.pings}'
     FILTERS pingFromTo(c,dFrom,dTo)
     
     OBJECTS cn = Connection
-    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion, userAgent,
+    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                              javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                              disconnectTime
