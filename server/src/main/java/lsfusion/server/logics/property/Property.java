@@ -33,6 +33,7 @@ import lsfusion.server.data.expr.key.NullableKeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
@@ -1771,7 +1772,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
                 StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
+                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(StaticValueExpr.getStaticValue(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;
         } else
@@ -2607,7 +2608,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, incorrectWhere);
 
-        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global);
+        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query);
         DBManager.run(sql, runInTransaction, DBManager.RECALC_CLASSES_TIL, sql1 -> sql1.updateRecords(modifyQuery));
     }
 

@@ -29,7 +29,6 @@ import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
@@ -115,19 +114,8 @@ public class ClassChanges {
         return false;
     }
 
-    public final static KeyField classField = new KeyField("key0", ObjectType.instance);
     public static Where isStaticValueClass(Expr expr, ObjectValueClassSet classSet) {
-        Where result;
-        ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();
-        if(concreteChildren.size() > Settings.get().getSessionRowsToTable()) {
-            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(value -> MapFact.singleton(classField, value.getClassObject())).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
-            return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
-        } else {
-            result = Where.FALSE();
-            for (ConcreteCustomClass customUsedClass : concreteChildren)
-                result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
-        }
-        return result;
+        return expr.compareStatic(classSet.getSetConcreteChildren().mapSetValues(ConcreteCustomClass::getClassObject));
     }
 
     // читаем текущие классы в сессии
@@ -424,10 +412,6 @@ public class ClassChanges {
     // просто lazy кэш для getCurrentClass
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap();
 
-    public Map<DataObject, ConcreteObjectClass> getNewClasses() {
-        return newClasses;
-    }
-
     public ClassChanges() { // mutable конструктор
         news = MapFact.mAddRemoveMap();
         changedClasses = MapFact.mAddRemoveMap();
@@ -693,11 +677,10 @@ public class ClassChanges {
         return objectValues.<SQLException, SQLHandledException>mapItIdentityValuesEx(value -> (T) updateCurrentClass(sql, env, baseClass, value));
     }
     
-    public Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+    public ImSet<CustomClass> packRemoveClasses(Modifier classModifier, BusinessLogics BL, SQLSession sql, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(news.isEmpty()) // оптимизация
-            return Pair.create(SetFact.EMPTY(), SetFact.EMPTY());
+            return SetFact.EMPTY();
 
-        MSet<ImplementTable> mChangedTables = SetFact.mSet();
         ImSet<CustomClass> remove = getAllRemoveClasses();
         // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляемый объект
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(remove)) {
@@ -712,28 +695,15 @@ public class ClassChanges {
                     ValueClass value = mapFields.getValue(i);
                     if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
-                        if(table.majorStatChanged(countChangedStat((CustomClass) value), Stat.Mode.REMOVE))
-                            mChangedTables.add(table);
                     }
                 } finally {
                     sql.statusMessage = null;
                 }
             }
             query.and(table.join(mapExprs).getWhere().and(removeWhere));
-            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
+            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv));
         }
-        return Pair.create(remove, mChangedTables.immutable());
-    }
-
-    public long countChangedStat(CustomClass value) {
-        long changedStat = 0;
-        for(ClassDataProperty upDataProp : value.getUpDataProps()) {
-            SingleKeyPropertyUsage propUsage = news.get(upDataProp);
-            if(propUsage != null) {
-                changedStat += propUsage.getCount();
-            }
-        }
-        return changedStat;
+        return remove;
     }
 
     private final Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> EMPTY_SPLIT = new Pair<>(new Pair<>(MapFact.<ClassDataProperty, SingleKeyPropertyUsage>EMPTY(), MapFact.<ClassDataProperty, ChangedDataClasses>EMPTY()), MapFact.<Property, UpdateResult>EMPTY());

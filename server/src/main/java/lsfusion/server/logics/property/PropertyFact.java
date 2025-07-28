@@ -35,7 +35,6 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
@@ -404,11 +403,6 @@ public class PropertyFact {
 //        return new PropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance, new HashMap<PropertyInterface, T>());
     }
 
-    public static Object getValueForProp(Object value, StaticClass objectClass) {
-        if(objectClass instanceof StringClass)
-            return LocalizedString.create((String)value, false);
-        return value;
-    }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
         return new PropertyMapImplement<>(new ValueProperty(LocalizedString.NONAME, value, valueClass), MapFact.EMPTYREV());
     }

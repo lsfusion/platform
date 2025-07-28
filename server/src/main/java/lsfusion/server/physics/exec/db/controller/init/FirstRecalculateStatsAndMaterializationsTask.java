@@ -9,10 +9,11 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
+// not sure that is needed now after getRecalculateAndUpdateStatsTask
 public class FirstRecalculateStatsAndMaterializationsTask extends SimpleBLTask {
 
     public String getCaption() {
-        return "Recalculating Stats and Materializations at first start";
+        return "Recalculating stats and materializations at the first start";
     }
 
     @Override

@@ -16,7 +16,6 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -44,6 +43,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -67,7 +67,6 @@ import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
-import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -2204,11 +2203,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
-            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         } else {
             result.add(getBalanceConnectionsTask(scheduler)); // to test
 
             result.add(getSynchronizeSourceTask(scheduler));
+            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         }
         return result;
     }
@@ -2312,55 +2311,45 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
-    Result<Integer> majorStatChangedCount = new Result<>(0);
     private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
                 DBManager dbManager = getDbManager();
 
-                //recalculate table stat and class stat
-                MSet<ImplementTable> mRecalculatedTables = SetFact.mSet();
-                for (ImplementTable table : LM.tableFactory.getImplementTables()) {
-                    if (table.majorStatChanged) {
-                        table.recalculateStat(reflectionLM, new HashSet<>(), session);
-                        mRecalculatedTables.add(table);
-                        table.majorStatChanged = false;
+                ImSet<ImplementTable> updateTables;
+                ImSet<ConcreteCustomClass> updateClasses;
+                synchronized (LM.tableFactory.syncLock) {
+                    MExclSet<ImplementTable> mUpdateTables = SetFact.mExclSet();
+                    MExclSet<ConcreteCustomClass> mUpdateClasses = SetFact.mExclSet();
+                    for (ImplementTable table : LM.tableFactory.getImplementTables()) {
+                        long changed = table.statChange.get();
+                        if (table.getStatKeys().getRows().majorStatChanged(new Stat(changed >= 0 ? changed : -changed), changed >= 0 ? Stat.Mode.ADD : Stat.Mode.REMOVE)) {
+                            table.statChange.set(0);
+
+                            table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                            mUpdateTables.exclAdd(table);
+
+                            ObjectValueClassSet classSet = table.getClassDataSet();
+                            if (classSet != null) {
+                                classSet.recalculateClassStat(LM, session);
+                                mUpdateClasses.exclAddAll(classSet.getSetConcreteChildren());
+                            }
+                        }
                     }
-                }
-                ImSet<ImplementTable> recalculatedTables = mRecalculatedTables.immutable();
+                    updateTables = mUpdateTables.immutable();
+                    updateClasses = mUpdateClasses.immutable();
 
-                MSet<ConcreteCustomClass> mRecalculatedClasses = SetFact.mSet();
-                for (CustomClass customClass : LM.baseClass.getAllClasses()) {
-                    if (customClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) customClass).majorStatChanged) {
-                        mRecalculatedClasses.add((ConcreteCustomClass) customClass);
-                        ((ConcreteCustomClass) customClass).majorStatChanged = false;
-                    }
-                }
-                ImSet<ConcreteCustomClass> recalculatedClasses = mRecalculatedClasses.immutable();
+                    if(updateTables.isEmpty() && updateClasses.isEmpty()) // optimization
+                        return;
 
-                for (ObjectValueClassSet objectValueClassSet : new OrObjectClassSet(recalculatedClasses).getObjectClassFields().values()) {
-                    objectValueClassSet.recalculateClassStat(LM, session);
-                }
-
-                if (!recalculatedTables.isEmpty() || !recalculatedClasses.isEmpty())
                     session.applyException(this, stack);
+                }
 
-                //update table stat and class stat
-                for (ImplementTable table : recalculatedTables)
-                    dbManager.updateTableStats(session.sql, false, majorStatChangedCount, table);
-                for (ConcreteCustomClass customClass : recalculatedClasses)
-                    dbManager.updateClassStats(session.sql, majorStatChangedCount, customClass);
-
-                dropLRU(majorStatChangedCount);
+                dbManager.updateStats(session.sql, updateTables, updateClasses);
+            } catch (Throwable t) {
+                ServerLoggers.serviceLogger.info("Recalculate and update stats task error: ", t);
             }
         }, false, 1, false, "RecalculateAndUpdateStats");
-    }
-
-    public void dropLRU(Result<Integer> majorStatChangedCount) {
-        if (majorStatChangedCount.result > Settings.get().getUpdateStatsDropLRUThreshold()) {
-            ALRUMap.forceRemoveAllLRU(100);
-            majorStatChangedCount.set(0);
-        }
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

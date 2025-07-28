@@ -115,7 +115,7 @@ public class UpdateCurrentClassesSession {
         return changes.updateCurrentClasses(sql, env, baseClass, objectValues);
     }
 
-    public <K, T extends ObjectValue> Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packRemoveClasses(BusinessLogics BL) throws SQLException, SQLHandledException {
+    public <K, T extends ObjectValue> ImSet<CustomClass> packRemoveClasses(BusinessLogics BL) throws SQLException, SQLHandledException {
         return changes.packRemoveClasses(modifier, BL, sql, env);
     }
 }

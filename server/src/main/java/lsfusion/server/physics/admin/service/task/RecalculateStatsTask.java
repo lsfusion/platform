@@ -27,9 +27,9 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected void runInnerTask(Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             if (element instanceof ImplementTable) {
-                ((ImplementTable) element).recalculateStat(getBL().reflectionLM, getDbManager().getDisableStatsTableColumnSet(), session);
+                ((ImplementTable) element).recalculateStat(getBL().reflectionLM, getDbManager().getDisableStatsTableColumnSet(), session, null);
             } else if (element instanceof ObjectValueClassSet) {
-                ((ObjectValueClassSet) element).recalculateClassStat(getBL().LM, session);
+                ((ObjectValueClassSet) element).recalculateClassStat(getBL().LM, session, null);
             }
             session.applyException(getBL(), stack);
         }
@@ -44,8 +44,14 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        List<Object> elements = new ArrayList<>(getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet).toJavaSet());
-        elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
+        List<Object> elements = new ArrayList<>();
+        for (ImplementTable table : getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet)) {
+            elements.add(table);
+
+            ObjectValueClassSet classSet = table.getClassDataSet();
+            if(classSet != null)
+                elements.add(classSet);
+        }
         return elements;
     }
 

@@ -311,8 +311,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = null;
         mChangedPropKeys = null;
         mRemovedClasses = null;
-        mChangedStatTables = null;
-        mChangedStatClasses = null;
 
         cleanOnlyDataModifier();
         applyFilter = ApplyFilter.NO;
@@ -1552,10 +1550,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //        if(reupdateWhere != null)
 //            modifyQuery.and(reupdateWhere.not());
         
-        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
-
-        if(implementTable.majorStatChanged(changeTable.getCount(), Stat.Mode.ADD))
-            mChangedStatTables.add(implementTable);
+        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1587,8 +1582,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private MSet<CustomClass> mRemovedClasses;
     private MSet<Property> mChangedProps;
     private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
-    private MSet<ImplementTable> mChangedStatTables;
-    private MSet<ConcreteCustomClass> mChangedStatClasses;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1732,8 +1725,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();
-        mChangedStatTables = SetFact.mSet();
-        mChangedStatClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2109,18 +2100,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.statusMessage = null;
                 }
             }
-    
-            for (ConcreteObjectClass newClass : classChanges.getNewClasses().values()) {
-                if (newClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) newClass, Stat.Mode.ADD);
-                }
-            }
-            for (CustomClass removeClass : classChanges.getAllRemoveClasses()) {
-                if (removeClass instanceof ConcreteCustomClass) {
-                    majorStatChanged((ConcreteCustomClass) removeClass, Stat.Mode.REMOVE);
-                }
-            }
-    
+
+
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
 
@@ -2142,9 +2123,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImSet<Property> changedProps = mChangedProps.immutable();
         ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys = mChangedPropKeys.immutable();
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
-
-        ImSet<ImplementTable> changedTables = mChangedStatTables.immutable();
-        ImSet<ConcreteCustomClass> changedClasses = mChangedStatClasses.immutable();
 
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
@@ -2169,21 +2147,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         restartFinal(false, changedProps, keepProps);
 
-        for (ImplementTable table : changedTables) {
-            table.majorStatChanged = true;
-        }
-
-        for (ConcreteCustomClass customClass : changedClasses) {
-            customClass.majorStatChanged = true;
-        }
-
         return true;
-    }
-
-    private void majorStatChanged(ConcreteCustomClass customClass, Stat.Mode mode) {
-        if(customClass.majorStatChanged(classChanges.countChangedStat(customClass), mode)) {
-            mChangedStatClasses.add(customClass);
-        }
     }
 
     public void addChangePropKeys(Property property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
@@ -2212,9 +2176,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             mChangedProps.addAll(updateSession.getChangedProps());
         stack.updateCurrentClasses(updateSession);
 
-        Pair<ImSet<CustomClass>, ImSet<ImplementTable>> packResult = updateSession.packRemoveClasses(BL);
-        mRemovedClasses.addAll(packResult.first);
-        mChangedStatTables.addAll(packResult.second);
+        mRemovedClasses.addAll(updateSession.packRemoveClasses(BL));
     }
 
     private static long getTimestamp() {

@@ -21,8 +21,6 @@ import lsfusion.server.data.stat.TableStatKeys;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
-import lsfusion.server.data.table.TableOwner;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -144,7 +142,7 @@ public class IDTable extends DBTable {
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
             updateQuery.addProperty(value, new ValueExpr(rFreeID.result + count - 1, SystemClass.instance));
-            sql.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
+            sql.updateRecords(new ModifyQuery(this, updateQuery.getQuery()));
         });
         return rFreeID.result;
     }

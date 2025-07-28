@@ -23,6 +23,9 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.SystemClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.classes.user.set.ObjectClassSet;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.sql.SQLException;
@@ -45,6 +48,10 @@ public class TableFactory implements FullTablesInterface {
         newTable.include(implementTablesMap.get(classes.length), version, true, SetFact.mAddRemoveSet(), null);
         return newTable;
     }
+
+    // the problem that Implement.recalculateStat, as well as synchronizeDB when creating tables is not transactional, so can lead to the (Violated uniqueness of property Table name)
+    // mostly the race condition is handled explicitly in the initialization process, however dynamic recalculate / update stats is asynchronous so we'll synchronize it manually
+    public final Object syncLock = new Object();
 
     // получает постоянные таблицы
     public ImSet<ImplementTable> getImplementTables() {
@@ -174,6 +181,10 @@ public class TableFactory implements FullTablesInterface {
     @IdentityLazy
     public ImSet<ImplementTable> getImplementTables(final ImSet<CustomClass> cls) {
         return getImplementTables().filterFn(element -> !element.getMapFields().values().toSet().disjoint(cls));
+    }
+
+    public ImSet<ImplementTable> getUpImplementTables(final ObjectClassSet cls) {
+        return getImplementTables().filterFn(element -> element.getMapFields().containsFnValue(valueClass -> valueClass instanceof CustomClass && !valueClass.getUpSet().and(cls).isEmpty()));
     }
 
 }

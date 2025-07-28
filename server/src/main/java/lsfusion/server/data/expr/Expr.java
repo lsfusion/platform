@@ -26,7 +26,6 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
-import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.expr.where.cases.MExprCaseList;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
@@ -39,6 +38,9 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.SessionRows;
+import lsfusion.server.data.table.ValuesTable;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.PartialKeyExprTranslator;
 import lsfusion.server.data.type.Type;
@@ -53,6 +55,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -174,6 +177,24 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public Where compare(DataObject data, Compare compare) {
         return compare(data.getExpr(),compare);
+    }
+
+    // it's important DataObject to be static otherwise there will be a leakage in the ValuesTable
+    public Where compareStatic(ImSet<DataObject> data) {
+        if(data.size() > Settings.get().getSessionRowsToTable()) {
+            if(data.isEmpty())
+                return Where.FALSE();
+
+            KeyField keyField = new KeyField("key0", data.get(0).getType());
+            SessionRows rows = new SessionRows(SetFact.singletonOrder(keyField), SetFact.EMPTY(), data.mapSetValues(value -> MapFact.singleton(keyField, value)).toMap(MapFact.EMPTY()));
+            return new ValuesTable(rows).join(MapFact.singleton(keyField, this)).getWhere();
+        } else {
+            Where result;
+            result = Where.FALSE();
+            for (DataObject customUsedClass : data)
+                result = result.or(compare(customUsedClass.getStaticExpr(), Compare.EQUALS));
+            return result;
+        }
     }
 
 //    public abstract Expr scale(int coeff);
