@@ -3,7 +3,6 @@ package lsfusion.http.controller;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
@@ -55,9 +54,6 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.list;
-import static lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler.getRequestCookies;
-import static lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler.getRequestHeaderValues;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -81,11 +77,11 @@ public class MainController {
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
         remoteNavigator.updateClientInfo(clientInfo);
-        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(new ExternalRequest.Param[0], request), remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
+        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(ListFact.EMPTY(), request), remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
     }
 
-    public static String sendRequest(HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, String action) throws RemoteException {
-        return sendRequest(AuthenticationToken.ANONYMOUS, request, params, sessionObject, NavigatorProviderImpl.getConnectionInfo(request), action);
+    public static String sendRequest(HttpServletRequest request, ImList<ExternalRequest.Param> params, LogicsSessionObject sessionObject, String action) throws RemoteException {
+        return sendRequest(AuthenticationToken.ANONYMOUS, request, params, sessionObject, RequestUtils.getConnectionInfo(request), action);
     }
 
     @GetMapping(value = "/manifest", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -111,7 +107,7 @@ public class MainController {
         return response;
     }
 
-    public static String sendRequest(AuthenticationToken token, HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, ConnectionInfo connectionInfo, String action) throws RemoteException {
+    public static String sendRequest(AuthenticationToken token, HttpServletRequest request, ImList<ExternalRequest.Param> params, LogicsSessionObject sessionObject, ConnectionInfo connectionInfo, String action) throws RemoteException {
         ExternalRequest externalRequest = MainController.getExternalRequest(params, request);
         ExternalResponse result = sessionObject.remoteLogics.exec(token, connectionInfo, action, externalRequest);
         return LogicsSessionObject.getStringResult(result, ClientFormChangesToGwtConverter.getConvertFileValue(sessionObject, request, connectionInfo, externalRequest));
@@ -325,7 +321,7 @@ public class MainController {
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method) {
         try {
             return logicsProvider.runRequest(request,
-                    (sessionObject, retry) -> new JSONObject(sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(jsonArray.toString())}, sessionObject, method + "[JSONFILE]")));
+                    (sessionObject, retry) -> new JSONObject(sendRequest(request, ListFact.singleton(ExternalRequest.getSystemParam(jsonArray.toString())), sessionObject, method + "[JSONFILE]")));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
         }
@@ -386,25 +382,18 @@ public class MainController {
         return FileUtils.saveApplicationFile(file);
     }
 
-    public static ExternalRequest getExternalRequest(ExternalRequest.Param[] params, HttpServletRequest request){
+    public static ExternalRequest getExternalRequest(ImList<ExternalRequest.Param> params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
 
-        String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
-        String[] headerValues = getRequestHeaderValues(request, headerNames);
-
-        OrderedMap<String, String> cookiesMap = getRequestCookies(request);
-        String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
-        String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+        RequestUtils.RequestInfo requestInfo = RequestUtils.getRequestInfo(request);
 
         Charset urlCharset = ExternalUtils.defaultUrlCharset;
-        ImList<ExternalRequest.Param> queryParams = ListFact.mapList(URLEncodedUtils.parse(request.getQueryString(), urlCharset), queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharset.toString(), queryParam.getName()));
-        ExternalRequest.Param[] mergedParams = new ExternalRequest.Param[params.length + queryParams.size()];
-        System.arraycopy(params, 0, mergedParams, 0, params.length);
-        System.arraycopy(queryParams.toArray(new ExternalRequest.Param[queryParams.size()]), 0, mergedParams, params.length, queryParams.size());
+        ImList<ExternalRequest.Param> queryParams = ListFact.mapList(URLEncodedUtils.parse(requestInfo.query, urlCharset), queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharset.toString(), queryParam.getName()));
+        ExternalRequest.Param[] mergedParams = params.addList(queryParams).toArray(new ExternalRequest.Param[params.size() + queryParams.size()]);
 
-        return new ExternalRequest(mergedParams, headerNames, headerValues, cookieNames, cookieValues,
+        return new ExternalRequest(mergedParams, requestInfo.headerNames, requestInfo.headerValues, requestInfo.cookieNames, requestInfo.cookieValues,
                 request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
+                request.getServletPath(), requestInfo.pathInfo, requestInfo.query,
                 contentTypeString, request.getSession().getId());
     }
 

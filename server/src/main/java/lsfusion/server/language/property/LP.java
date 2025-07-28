@@ -265,37 +265,6 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public <V> void change(DataSession session, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
-        ImMap<T, ValueClass> keyClasses = property.getInterfaceClasses(ClassType.editValuePolicy);
-        ValueClass propertyValueClass = property.getValueClass(ClassType.editValuePolicy);
-
-        SinglePropertyTableUsage<T> table = new SinglePropertyTableUsage<>("updpm:sp", listInterfaces, key -> keyClasses.get(key).getType(), propertyValueClass.getType());
-
-        table.writeRows(params.<ImMap<T, DataObject>, ObjectValue, SQLException, SQLHandledException>mapKeyValuesEx(
-                value -> {
-                    MMap<T, DataObject> result = MapFact.mMap(true);
-                    for(int i = 0; i < value.size(); i++){
-                        DataObject dataObject;
-                        if(value.get(i) instanceof DataObject)
-                            dataObject = (DataObject)value.get(i);
-                        else if(value.get(i) instanceof String)
-                            dataObject = new DataObject(value.get(i), StringClass.instance);
-                        else {
-                            assert value.get(i) instanceof Integer;
-                            dataObject = new DataObject(value.get(i), IntegerClass.instance);
-                        }
-                        result.add(listInterfaces.get(i), dataObject);
-                    }
-                    return result.immutable();
-                },
-                value -> session.getObjectValue(propertyValueClass, value)), session.sql, session.getOwner());
-        try {
-            session.change(property, SinglePropertyTableUsage.getChange(table));
-        } finally {
-            table.drop(session.sql, session.getOwner());
-        }
-    }
-
     public <V> void changeList(DataSession session, ExecutionEnvironment env, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
 
         ImMap<T, ValueClass> keyClasses = property.getInterfaceClasses(ClassType.editValuePolicy);

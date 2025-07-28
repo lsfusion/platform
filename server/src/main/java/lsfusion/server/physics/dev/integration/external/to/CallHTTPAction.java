@@ -215,9 +215,9 @@ public abstract class CallHTTPAction extends CallAction {
     public static <P extends PropertyInterface> void writeObjectStringValues(DataSession session, LP<P> property, DataObject object, String[] names, String[] values) throws SQLException, SQLHandledException {
         MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
         for (int i = 0; i < names.length; i++) {
-            mParams.add(ListFact.toList(object, names[i]), values[i]);
+            mParams.add(ListFact.toList(object.getValue(), names[i]), values[i]);
         }
-        property.change(session, mParams.immutable());
+        property.changeList(session, session, mParams.immutable());
     }
 
     public static <P extends PropertyInterface> void writeObjectStringParams(DataSession session, LP<P> property, DataObject object, ExternalRequest.Param[] params) throws SQLException, SQLHandledException {
@@ -233,10 +233,10 @@ public abstract class CallHTTPAction extends CallAction {
                     paramIndex = 0;
                 paramIndexes.put(paramName, paramIndex + 1);
 
-                mParams.add(ListFact.toList(object, paramName, paramIndex), (String) paramValue);
+                mParams.add(ListFact.toList(object.getValue(), paramName, paramIndex), (String) paramValue);
             }
         }
-        property.change(session, mParams.immutable());
+        property.changeList(session, session, mParams.immutable());
     }
 
     @Override

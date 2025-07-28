@@ -469,14 +469,9 @@ screenWidth = DATA INTEGER(Connection);
 screenHeight = DATA INTEGER(Connection);
 screenSize '{system.events.screen.size.connection}'(Connection c) = screenWidth(c) + 'x' + screenHeight(c);
 
-customIsMobileMode(Connection c) = ABSTRACT TBOOLEAN; 
-defaultIsMobileMode(Connection c) = min(screenWidth(c), screenHeight(c)) <= 570;
-isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE 
-    IF customIsMobileMode(c) THEN customIsMobileMode(c) == TTRUE ELSE defaultIsMobileMode(c);
-
-//customIsMobileMode(Connection c) += CASE WHEN userAgent(c) LIKE '%Android%' THEN TTRUE
-//                                         WHEN userAgent(c) LIKE '%Windows%' THEN TFALSE
-//                                         ELSE NULL;
+defaultIsMobileMode(Connection c) = ABSTRACT BOOLEAN;
+defaultIsMobileMode(Connection c) += min(screenWidth(c), screenHeight(c)) <= 570;
+isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE defaultIsMobileMode(c);
 
 scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);

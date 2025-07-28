@@ -359,4 +359,8 @@ public class GwtSharedUtils {
         }
         return msg.toString();
     }
+
+    public static <T> T nvl(T value1, T value2) {
+        return value1 == null ? value2 : value1;
+    }
 }
