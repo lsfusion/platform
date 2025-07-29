@@ -57,6 +57,17 @@ function interpreter() {
                 e.preventDefault();
             });
 
+            // ctrl+z continues to work even if the textInput field has lost focus
+            // The input field lost focus, for example, a modal window opened, and when the focus is on the modal window,
+            // user presses Ctrl+Z (no other key combinations cause this behavior),
+            // the interpreter catches this action and starts to undo the changes, and after that keyboard input goes to the interpreter.
+
+            // It seems that this is a Chrome bug related to historyUndo event type and <textarea> field. To resolve this, we will not process historyUndo
+            aceEditor.textInput.getElement().addEventListener("beforeinput", function(e) {
+                if (e.inputType === "historyUndo")
+                    e.preventDefault();
+            });
+
             aceEditor.onBlur = function (e) {
                 //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
                 aceEditor.$isFocused = false;
