@@ -504,10 +504,6 @@ vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 
 generateJnlpUrls () {
 
-    LOCAL desktopURL = STRING();
-    desktopURL() <- CONCAT '',
-        '<a href="\{contextPath\}\\download\\flutter-client.exe">\{run.desktop.client\} (Flutter)</a><br/>';
-    
     LOCAL execURL = STRING();
     //we use generateJnlp without params because linux mint cut from url '%5'
     execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp';
@@ -518,13 +514,13 @@ generateJnlpUrls () {
             urlEncode(vmargs(ml), 'UTF-8');
             exportText() <- CONCAT '', exportText(), '&p=', urlEncoded();
         }
-        exportText() <- CONCAT '', exportText(), '">\{run.desktop.client\} (JNLP) ', name(ml), '</a><br/>';   
+        exportText() <- CONCAT '', exportText(), '">\{run.desktop.client\} ', name(ml), '</a><br/>';   
     }
     
    IF(exportText()) THEN {  
-        exportText() <- CONCAT '', desktopURL(), '<details><summary>', '<a href="', execURL(), '">\{run.desktop.client\} (JNLP)</a>', '</summary>', exportText(), '</details>';
+        exportText() <- CONCAT '', '<details><summary>', '<a href="', execURL(), '">\{run.desktop.client\}</a>', '</summary>', exportText(), '</details>';
    } ELSE {
-        exportText() <- CONCAT '', desktopURL(), '<a href="', execURL(), '">\{run.desktop.client\} (JNLP)</a>';     
+        exportText() <- CONCAT '', '<a href="', execURL(), '">\{run.desktop.client\}</a>';     
    }
 }
 

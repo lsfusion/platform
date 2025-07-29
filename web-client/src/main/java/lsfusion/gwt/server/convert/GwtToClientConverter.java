@@ -14,7 +14,6 @@ import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.action.file.GListFilesResult;
 import lsfusion.gwt.client.action.file.GReadResult;
-import lsfusion.gwt.client.action.file.GUserLogsResult;
 import lsfusion.gwt.client.action.net.GTcpResult;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
