@@ -100,7 +100,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 } else {
                     optionsToAdd.add(columnKey);
                 }
-                newRenderedColumnKeys.put(columnKey, i);
+                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
             }
         }
 
@@ -134,9 +134,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                     ComponentViewWidget component = addPanelRenderer(columnKey, null);
 
                     if (!hide) { // something like getChildPosition should be done here, but for now there is a hasColumnGroupObjects check
-                        Integer childrenCount = columnsPanel.getWidgetCount();
-                        Integer beforeIndex = renderedColumnKeys.get(columnKey);
-                        component.add(columnsPanel, Math.min(childrenCount, beforeIndex));
+                        component.add(columnsPanel, renderedColumnKeys.get(columnKey));
                     }
                 });
             }
