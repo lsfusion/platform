@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static lsfusion.base.BaseUtils.getNotNullStringArray;
-
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
 
@@ -163,8 +161,8 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
 
             ExternalRequest request = navigatorInfo.session.externalRequest;
-            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.headersConnection, newConnection, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
-            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.cookiesConnection, newConnection, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
+            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.headersConnection, newConnection, request.headerNames, request.headerValues);
+            CallHTTPAction.writeObjectStringValues(session, businessLogics.systemEventsLM.cookiesConnection, newConnection, request.cookieNames, request.cookieValues);
             CallHTTPAction.writeObjectStringParams(session, businessLogics.systemEventsLM.paramsConnection, newConnection, request.params);
             businessLogics.systemEventsLM.schemeConnection.change(request.scheme, session, newConnection);
             businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);

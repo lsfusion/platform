@@ -52,7 +52,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
@@ -209,34 +212,46 @@ public abstract class CallHTTPAction extends CallAction {
         writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        property.change(session, env, MapFact.toMap(names, values));
+        property.change(session, env, MapFact.toMap(getNotNullStringArray(names), getNotNullStringArray(values)));
     }
 
     public static <P extends PropertyInterface> void writeObjectStringValues(DataSession session, LP<P> property, DataObject object, String[] names, String[] values) throws SQLException, SQLHandledException {
         MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
-        for (int i = 0; i < names.length; i++) {
-            mParams.add(ListFact.toList(object.getValue(), names[i]), values[i]);
+        if (names != null && values != null) {
+            for (int i = 0; i < names.length; i++) {
+                mParams.add(ListFact.toList(object.getValue(), names[i]), values[i]);
+            }
         }
         property.changeList(session, session, mParams.immutable());
     }
 
     public static <P extends PropertyInterface> void writeObjectStringParams(DataSession session, LP<P> property, DataObject object, ExternalRequest.Param[] params) throws SQLException, SQLHandledException {
-        MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
+        property.changeList(session, session, getParamsMap(params,
+                paramValue -> paramValue instanceof String,
+                (paramName, paramIndex) -> ListFact.toList(object.getValue(), paramName, paramIndex),
+                param -> param.value));
+    }
+
+    public static ImMap<ImList<Object>, Object> getParamsMap(ExternalRequest.Param[] params,
+                                                             Function<Object, Boolean> paramValueTypeCheck,
+                                                             BiFunction<String, Integer, ImList<Object>> keyGetter,
+                                                             Function<ExternalRequest.Param, Object> valueGetter) {
+        MExclMap<ImList<Object>, Object> mParams = MapFact.mExclMap();
         Map<String, Integer> paramIndexes = new HashMap<>();
         for (ExternalRequest.Param param : params) {
             String paramName = param.name;
             Object paramValue = param.value;
 
-            if(paramValue instanceof String) {
+            if(paramValueTypeCheck.apply(paramValue)) {
                 Integer paramIndex = paramIndexes.get(paramName);
                 if (paramIndex == null)
                     paramIndex = 0;
                 paramIndexes.put(paramName, paramIndex + 1);
 
-                mParams.add(ListFact.toList(object.getValue(), paramName, paramIndex), (String) paramValue);
+                mParams.exclAdd(keyGetter.apply(paramName, paramIndex), valueGetter.apply(param));
             }
         }
-        property.changeList(session, session, mParams.immutable());
+        return mParams.immutable();
     }
 
     @Override
