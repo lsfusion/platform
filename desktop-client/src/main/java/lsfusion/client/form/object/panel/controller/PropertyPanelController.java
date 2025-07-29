@@ -172,7 +172,7 @@ public class PropertyPanelController {
                 } else {
                     optionsToAdd.add(columnKey);
                 }
-                newRenderedColumnKeys.put(columnKey, i);
+                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
             }
         }
 
@@ -211,9 +211,7 @@ public class PropertyPanelController {
 
                 if (!property.hide) {
                     if (newView.getWidget().getParent() != renderersPanel.getComponent()) {
-                        Integer childrenCount = renderersPanel.getChildrenCount();
-                        Integer beforeIndex = renderedColumnKeys.get(columnKey);
-                        renderersPanel.addFill(newView.getWidget(), Math.min(childrenCount, beforeIndex));
+                        renderersPanel.addFill(newView.getWidget(), renderedColumnKeys.get(columnKey));
                     }
                 }
 
