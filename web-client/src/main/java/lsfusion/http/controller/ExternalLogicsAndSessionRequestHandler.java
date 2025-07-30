@@ -43,23 +43,15 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String queryString = request.getQueryString();
-        String query = queryString != null ? queryString : "";
         ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
 
-        ConnectionInfo connectionInfo = NavigatorProviderImpl.getConnectionInfo(request);
-
-        String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
-        String[] headerValues = getRequestHeaderValues(request, headerNames);
-
-        OrderedMap<String, String> cookiesMap = getRequestCookies(request);
-        String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
-        String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+        ConnectionInfo connectionInfo = RequestUtils.getConnectionInfo(request);
+        RequestUtils.RequestInfo requestInfo = RequestUtils.getRequestInfo(request);
 
         String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
                 ? sessionObject.connection.host : request.getServerName();
 
-        InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
+        InputStream requestInputStream = getRequestInputStream(request, requestContentType, requestInfo.query);
 
         Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> ClientFormChangesToGwtConverter.getConvertFileValue(sessionObject, request, connectionInfo, externalRequest);
 
@@ -70,9 +62,10 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
         try {
             ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, convertFileValue, requestInputStream, requestContentType,
-                    headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
+                    requestInfo.headerNames, requestInfo.headerValues, requestInfo.cookieNames, requestInfo.cookieValues,
+                    logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
                     request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
-                    request.getPathInfo() == null ? "" : request.getPathInfo(), query, request.getSession().getId());
+                    requestInfo.pathInfo, requestInfo.query, request.getSession().getId());
 
             sendResponse(response, request, externalResponse);
         } catch (RemoteException e) {
@@ -117,22 +110,5 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             inputStream = new ByteArrayInputStream(bodyParams.toString().getBytes(charset));
         }
         return inputStream;
-    }
-
-    private String[] getRequestHeaderValues(HttpServletRequest request, String[] headerNames) {
-        String[] headerValuesArray = new String[headerNames.length];
-        for (int i = 0; i < headerNames.length; i++) {
-            headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])).iterator(), ",");
-        }
-        return headerValuesArray;
-    }
-
-    public static OrderedMap<String, String> getRequestCookies(HttpServletRequest request) {
-        OrderedMap<String, String> cookiesMap = new OrderedMap<>();
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null)
-            for (Cookie cookie : cookies)
-                ExternalHttpUtils.formatCookie(cookiesMap, cookie);
-        return cookiesMap;
     }
 }

@@ -8,14 +8,13 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
@@ -29,7 +28,6 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -48,14 +46,16 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
@@ -212,7 +212,46 @@ public abstract class CallHTTPAction extends CallAction {
         writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        property.change(session, env, MapFact.toMap(names, values));
+        property.change(session, env, MapFact.toMap(getNotNullStringArray(names), getNotNullStringArray(values)));
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringValues(DataSession session, LP<P> property, DataObject object, String[] names, String[] values) throws SQLException, SQLHandledException {
+        MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
+        if (names != null && values != null) {
+            for (int i = 0; i < names.length; i++) {
+                mParams.add(ListFact.toList(object.getValue(), names[i]), values[i]);
+            }
+        }
+        property.changeList(session, session, mParams.immutable());
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringParams(DataSession session, LP<P> property, DataObject object, ExternalRequest.Param[] params) throws SQLException, SQLHandledException {
+        property.changeList(session, session, getParamsMap(params,
+                paramValue -> paramValue instanceof String,
+                (paramName, paramIndex) -> ListFact.toList(object.getValue(), paramName, paramIndex),
+                param -> param.value));
+    }
+
+    public static ImMap<ImList<Object>, Object> getParamsMap(ExternalRequest.Param[] params,
+                                                             Function<Object, Boolean> paramValueTypeCheck,
+                                                             BiFunction<String, Integer, ImList<Object>> keyGetter,
+                                                             Function<ExternalRequest.Param, Object> valueGetter) {
+        MExclMap<ImList<Object>, Object> mParams = MapFact.mExclMap();
+        Map<String, Integer> paramIndexes = new HashMap<>();
+        for (ExternalRequest.Param param : params) {
+            String paramName = param.name;
+            Object paramValue = param.value;
+
+            if(paramValueTypeCheck.apply(paramValue)) {
+                Integer paramIndex = paramIndexes.get(paramName);
+                if (paramIndex == null)
+                    paramIndex = 0;
+                paramIndexes.put(paramName, paramIndex + 1);
+
+                mParams.exclAdd(keyGetter.apply(paramName, paramIndex), valueGetter.apply(param));
+            }
+        }
+        return mParams.immutable();
     }
 
     @Override

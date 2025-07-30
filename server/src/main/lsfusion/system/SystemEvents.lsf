@@ -428,6 +428,14 @@ computer '{system.events.computer.connection}' = DATA Computer (Connection);
 hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
 remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Connection);
 
+headers = DATA TEXT(Connection, TEXT);
+userAgent (Connection c) = headers(c, 'User-Agent');
+
+cookies = DATA TEXT(Connection, TEXT);
+
+params = DATA TEXT(Connection, TEXT, INTEGER);
+params(Connection c, TEXT key) = GROUP CONCAT params(c, key, INTEGER i) IF params(c, key, i), ', ' ORDER i; 
+
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 webHost '{system.events.web.host.connection}' = DATA STRING (Connection);
 webPort '{system.events.web.port.connection}' = DATA INTEGER (Connection);
@@ -460,7 +468,10 @@ is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
 screenWidth = DATA INTEGER(Connection);
 screenHeight = DATA INTEGER(Connection);
 screenSize '{system.events.screen.size.connection}'(Connection c) = screenWidth(c) + 'x' + screenHeight(c);
-isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE min(screenWidth(c), screenHeight(c)) <= 570;
+
+defaultIsMobileMode(Connection c) = ABSTRACT BOOLEAN;
+defaultIsMobileMode(Connection c) += min(screenWidth(c), screenHeight(c)) <= 570;
+isMobileMode(Connection c) = IF mobileMode() THEN mobileMode() == TTRUE ELSE defaultIsMobileMode(c);
 
 scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
@@ -786,6 +797,18 @@ FORM connections '{system.events.form.connections}'
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionForm, nameUser, dateTime
 
+    OBJECTS header=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(header), '{system.events.form.connections.value}' = headers(c, header)
+    FILTERS headers(c, header)
+
+    OBJECTS cookie=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(cookie), '{system.events.form.connections.value}' = cookies(c, cookie)
+    FILTERS cookies(c, cookie)
+
+    OBJECTS param=STRING
+    PROPERTIES '{system.events.form.connections.key}' = VALUE(param), '{system.events.form.connections.value}' = params(c, param)
+    FILTERS params(c, param)
+    
     FILTERS connectionFormCount(c, n)>0
     FILTERS connection(s)==c
     FILTERGROUP filtersConnection
@@ -797,10 +820,22 @@ FORM connections '{system.events.form.connections}'
 DESIGN connections{
     NEW boxes BEFORE TOOLBARBOX {
         fill = 1;
-        horizontal = TRUE;
-
-        MOVE BOX(n);
-        MOVE BOX(s);
+        tabbed = TRUE;
+        NEW activity {
+            caption = '{system.events.form.connections.activity}';
+            horizontal = TRUE;
+            MOVE BOX(n);
+            MOVE BOX(s);
+        }
+        MOVE BOX(header) {
+            caption = '{system.events.form.connections.headers}';
+        }
+        MOVE BOX(cookie) {
+            caption = '{system.events.form.connections.cookies}';
+        }
+        MOVE BOX(param) {
+            caption = '{system.events.form.connections.parameters}';
+        }
     }
 }
 

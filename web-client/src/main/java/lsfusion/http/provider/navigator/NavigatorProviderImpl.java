@@ -1,13 +1,13 @@
 package lsfusion.http.provider.navigator;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ServerUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler;
 import lsfusion.http.controller.MainController;
+import lsfusion.http.controller.RequestUtils;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -19,24 +19,19 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.web.util.WebUtils;
 import ua_parser.Client;
 import ua_parser.Parser;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -56,23 +51,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(getConnectionInfo(request), MainController.getExternalRequest(new ExternalRequest.Param[0], request));
-    }
-
-    public static ConnectionInfo getConnectionInfo(HttpServletRequest request) {
-        Locale clientLocale = LocaleContextHolder.getLocale();
-
-        String hostName = ExternalLogicsAndSessionRequestHandler.getRequestCookies(request).get(ServerUtils.HOSTNAME_COOKIE_NAME);
-        if(hostName == null)
-            hostName = request.getRemoteHost();
-
-        Cookie timeZone = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_ZONE");
-        Cookie timeFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_FORMAT");
-        Cookie dateFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_DATE_FORMAT");
-
-        Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
-
-        return new ConnectionInfo(new ComputerInfo(hostName, request.getRemoteAddr()), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
+        return new SessionInfo(RequestUtils.getConnectionInfo(request), MainController.getExternalRequest(ListFact.EMPTY(), request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
