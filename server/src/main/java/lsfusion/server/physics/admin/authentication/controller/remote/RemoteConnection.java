@@ -4,12 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -60,7 +56,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static lsfusion.base.ApiResourceBundle.getString;
-import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
@@ -506,49 +501,25 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
         if (action.uses(businessLogics.LM.headers.property)) {
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
         }
         if (action.uses(businessLogics.LM.params.property)) {
-            MExclMap<ImList<Object>, String> mParams = MapFact.mExclMap();
-            Map<String, Integer> paramIndexes = new HashMap<>();
-            for (ExternalRequest.Param param : request.params) {
-                String paramName = param.name;
-                Object paramValue = param.value;
-
-                if(paramValue instanceof String) {
-                    Integer paramIndex = paramIndexes.get(paramName);
-                    if (paramIndex == null)
-                        paramIndex = 0;
-                    paramIndexes.put(paramName, paramIndex + 1);
-
-                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), (String) paramValue);
-                }
-            }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, CallHTTPAction.getParamsMap(request.params,
+                    paramValue -> paramValue instanceof String,
+                    (paramName, paramIndex) -> ListFact.toList(paramName, (Object) paramIndex),
+                    param -> param.value));
         }
         if (action.uses(businessLogics.LM.fileParams.property)) {
-            MExclMap<ImList<Object>, NamedFileData> mParams = MapFact.mExclMap();
-            Map<String, Integer> paramIndexes = new HashMap<>();
-            for (ExternalRequest.Param param : request.params) {
-                String paramName = param.name;
-                Object paramValue = param.value;
-
-                if(paramValue instanceof FileData) {
-                    Integer paramIndex = paramIndexes.get(paramName);
-                    if (paramIndex == null)
-                        paramIndex = 0;
-                    paramIndexes.put(paramName, paramIndex + 1);
-
-                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), ExternalRequest.getNamedFile((FileData) paramValue, param.fileName));
-                }
-            }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.fileParams, mParams.immutable());
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, CallHTTPAction.getParamsMap(request.params,
+                    paramValue -> paramValue instanceof FileData,
+                    (paramName, paramIndex) -> ListFact.toList(paramName, (Object) paramIndex),
+                    param -> ExternalRequest.getNamedFile((FileData) param.value, param.fileName)));
         }
         if (action.uses(businessLogics.LM.actionPathInfo.property)) {
             businessLogics.LM.actionPathInfo.change(actionPathInfo, session);
