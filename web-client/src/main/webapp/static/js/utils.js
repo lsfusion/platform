@@ -170,7 +170,12 @@ function plainEquals(object1, object2, ignoreField) {
 }
 
 function jsDateEquals(date1, date2) {
-    return date1 === date2 ? true : date1.getTime() === date2.getTime();
+    if (date1 === date2)
+        return true;
+    if (!date1 || !date2)
+        return false;
+
+    return date1.getTime() === date2.getTime();
 }
 
 function containsLineBreak(value) {
