@@ -4,18 +4,15 @@ import com.lowagie.text.FontFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.log.ServerLoggers;
-import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +39,10 @@ public class BusinessLogicsBootstrap {
 
         String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
         startLog("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
+
+        startLog("Java version: " + SystemUtils.getJavaVersion());
+        startLog("Class path: " + ResourceUtils.getClassPath());
+        startLog("JVM arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
 
 //        initLRUCaches();
 
