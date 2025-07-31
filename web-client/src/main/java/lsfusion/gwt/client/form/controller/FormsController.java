@@ -720,13 +720,14 @@ public abstract class FormsController {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
         GFormController form = currentForm != null ? currentForm.getForm() : null;
         String notification = id + (result != null ? ";" + result : ""); // should match RemoteNavigator.runNotification
-        if (form != null)
+        if (form != null) {
             try {
                 form.executeNotificationAction(notification);
             } catch (IOException e) {
                 GWT.log(e.getMessage());
             }
-        else
+            executeVoidAction(-1);
+        } else
             executeNavigatorAction(notification, false, true, 2, null);
     }
     public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
