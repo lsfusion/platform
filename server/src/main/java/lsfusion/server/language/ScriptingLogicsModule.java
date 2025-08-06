@@ -1201,24 +1201,68 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addSettingsToActionOrProperty(LAP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
                                               ActionOrPropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        property.getActionOrProperty().annotations = ps.annotations;
+        ActionOrProperty actionOrProperty = property.getActionOrProperty();
+        ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
+
+        actionOrProperty.annotations = ps.annotations;
 
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checks.checkDistinctParameters(paramNames);
         checks.checkNamedParams(property, paramNames);
         checks.checkParamsClasses(params, signature);
-        property.getActionOrProperty().paramNames = paramNames.isEmpty() ? MapFact.EMPTYREV() : property.listInterfaces.mapOrderRevValues(paramNames::get);
+        actionOrProperty.paramNames = paramNames.isEmpty() ? MapFact.EMPTYREV() : property.listInterfaces.mapOrderRevValues(paramNames::get);
 
         String groupName = ps.groupName;
         Group group = (groupName == null ? null : findGroup(groupName));
-        property.getActionOrProperty().caption = (caption == null ? LocalizedString.create(name) : caption);
-        addPropertyToGroup(property.getActionOrProperty(), group);
+        actionOrProperty.caption = (caption == null ? LocalizedString.create(name) : caption);
+        addPropertyToGroup(actionOrProperty, group);
+
+        if(ps.viewType != null)
+            drawOptions.setViewType(ps.viewType);
+        if(ps.customRenderFunction != null)
+            actionOrProperty.setCustomRenderFunction(ps.customRenderFunction);
+        if(ps.customEditorFunction != null)
+            drawOptions.setCustomEditorFunction(ps.customEditorFunction);
+        if(ps.flex != null)
+            drawOptions.setValueFlex(ps.flex);
+        if (ps.charWidth != null)
+            drawOptions.setCharWidth(ps.charWidth);
+        if (ps.changeKey != null) {
+            drawOptions.setChangeKey(ps.changeKey);
+            if (ps.showChangeKey != null)
+                drawOptions.setShowChangeKey(ps.showChangeKey);
+        }
+        if (ps.changeMouse != null) {
+            drawOptions.setChangeMouse(ps.changeMouse);
+            if (ps.showChangeMouse != null)
+                drawOptions.setShowChangeMouse(ps.showChangeMouse);
+        }
+        if(ps.sticky != null)
+            drawOptions.setSticky(ps.sticky);
+        if(ps.sync != null)
+            drawOptions.setSync(ps.sync);
+        if(ps.image != null)
+            actionOrProperty.setImage(ps.image);
     }
 
     public void addSettingsToAction(LA action, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings as) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateAction(name, signature);
 
         addSettingsToActionOrProperty(action, name, caption, params, signature, as);
+
+        ActionOrProperty actionOrProperty = action.getActionOrProperty();
+        ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
+
+        if(as.contextMenuMainPropertyUsage != null) {
+            LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(as.contextMenuMainPropertyUsage);
+            action.addToContextMenuFor(mainProperty, as.contextMenuCaption);
+
+            action.setAsEventActionFor(action.action.getSID(), mainProperty);
+        }
+        if(as.eventActionSID != null)
+            setAsEventActionFor(action, as.eventActionSID, as.before, as.eventActionMainPropertyUsage);
+        if(as.askConfirm != null)
+            drawOptions.setAskConfirm(as.askConfirm);
 
         makeActionPublic(action, name, signature);
     }
@@ -1281,6 +1325,27 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (Settings.get().isCheckClassWhere()) {
 //                checks.checkClassWhere((LP) property, name);
 //            }
+
+        ActionOrProperty actionOrProperty = property.getActionOrProperty();
+        ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
+        if(ps.defaultCompare != null)
+            drawOptions.setDefaultCompare(ps.defaultCompare);
+        if(ps.autoset != null)
+            property.setAutoset(ps.autoset);
+        if(ps.pattern != null)
+            drawOptions.setPattern(ps.pattern);
+        if(ps.regexp != null)
+            drawOptions.setRegexp(ps.regexp);
+        if(ps.regexpMessage != null)
+            drawOptions.setRegexpMessage(ps.regexpMessage);
+        if(ps.echoSymbols != null)
+            drawOptions.setEchoSymbols(ps.echoSymbols);
+        if(ps.aggr != null)
+            property.property.setAggr(ps.aggr);
+        if(ps.eventId != null)
+            drawOptions.setEventID(ps.eventId);
+        if(ps.lazy != null)
+            property.property.setLazy(ps.lazy, ps.debugPoint);
     }
 
     /** Проверяет нужно ли обернуть свойство в join.
@@ -1370,13 +1435,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingErrorLog.emitSemanticError(errorMessage.toString(), new ScriptingErrorLog.SemanticErrorException(parser.getCurrentParser().input));
     }
 
-    public void addToContextMenuFor(LA onContextAction, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        assert mainPropertyUsage != null;
-
-        LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(mainPropertyUsage);
-        onContextAction.addToContextMenuFor(mainProperty, contextMenuCaption);
-
-        onContextAction.setAsEventActionFor(onContextAction.action.getSID(), mainProperty);
+    public void addToContextMenuFor(ActionSettings as, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        as.contextMenuCaption = contextMenuCaption;
+        as.contextMenuMainPropertyUsage = mainPropertyUsage;
     }
 
     public void setAsEventActionFor(LA eventAction, String eventActionSID, Boolean before, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
@@ -1390,56 +1451,32 @@ public class ScriptingLogicsModule extends LogicsModule {
         eventAction.setAsEventActionFor(eventActionSID, mainProperty);
     }
 
-    public void setViewType(LAP property, ClassViewType viewType) {
-        property.getActionOrProperty().drawOptions.setViewType(viewType);
-    }
-    
-    public void setCustomRenderFunction(LAP property, String customRenderFunction) {
-        property.getActionOrProperty().setCustomRenderFunction(customRenderFunction);
-    }
-
-    public void setCustomEditorFunction(LAP property, String customEditorFunction) {
-        property.setCustomEditorFunction(customEditorFunction);
-    }
-
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }
 
-    public void setFlexCharWidth(LAP property, Integer charWidth, Boolean flex) {
-        if (charWidth != null && charWidth > 0)
-            property.setFlexCharWidth(charWidth, flex);
+    public void setFlexCharWidth(ActionOrPropertySettings ps, Integer charWidth, Boolean flex) {
+        if (charWidth != null && charWidth > 0) {
+            ps.flex = flex;
+            ps.charWidth = charWidth;
+        }
     }
 
-    public void setCharWidth(LAP property, Integer charWidth) {
-        if (charWidth != null)
-            property.setCharWidth(charWidth);
+    public void setLazy(PropertySettings ps, Property.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        ps.lazy = lazy;
+        ps.debugPoint = debugPoint;
     }
 
-    public void setImage(LAP property, String path) {
-        property.getActionOrProperty().setImage(path);
-    }
-
-    public void setLazy(LP property, Property.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        property.property.setLazy(lazy, debugPoint);
-    }
-
-    public void setDefaultCompare(LAP property, String defaultCompare) {
-        property.setDefaultCompare(defaultCompare);
-    }
-
-    public void setChangeKey(LAP lap, String code, Boolean showChangeKey) {
-        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
-        actionOrProperty.drawOptions.setChangeKey(KeyStrokeConverter.parseInputBindingEvent(code, false));
+    public void setChangeKey(ActionOrPropertySettings ps, String code, Boolean showChangeKey) {
+        ps.changeKey = KeyStrokeConverter.parseInputBindingEvent(code, false);
         if (showChangeKey != null)
-            actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
+            ps.showChangeKey = showChangeKey;
     }
 
-    public void setChangeMouse(LAP lap, String code, Boolean showChangeMouse) {
-        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
-        actionOrProperty.drawOptions.setChangeMouse(KeyStrokeConverter.parseInputBindingEvent(code, true));
+    public void setChangeMouse(ActionOrPropertySettings ps, String code, Boolean showChangeMouse) {
+        ps.changeMouse = KeyStrokeConverter.parseInputBindingEvent(code, true);
         if (showChangeMouse != null)
-            actionOrProperty.drawOptions.setShowChangeMouse(showChangeMouse);
+            ps.showChangeMouse = showChangeMouse;
     }
 
     private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "window", "group", "editing", "showing", "panel", "cell");
@@ -1491,34 +1528,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return options;
     }
 
-
-    public void setAutoset(LP property, boolean autoset) {
-        property.setAutoset(autoset);
-    }
-
-    public void setAskConfirm(LAP property, boolean askConfirm) {
-        property.setAskConfirm(askConfirm);
-    }
-
-    public void setPattern(LAP property, LocalizedString pattern) {
-        property.setPattern(pattern);
-    }
-
-    public void setRegexp(LAP property, LocalizedString regexp, LocalizedString regexpMessage) {
-        property.setRegexp(regexp);
-        if (regexpMessage != null) {
-            property.setRegexpMessage(regexpMessage);
-        }
-    }
-
-    public void setEchoSymbols(LAP property) {
-        property.setEchoSymbols(true);
-    }
-
-    public void setAggr(LP lp) {
-        lp.property.setAggr(true);
-    }
-
     public void setScriptedEventAction(LAP property, String actionType, Boolean before, LAWithParams action) {
         if(before != null) {
             throw new UnsupportedOperationException("ON CHANGE BEFORE|AFTER is not supported");
@@ -1546,18 +1555,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         String actionSID = actionImplement.action.getSID();
         property.getActionOrProperty().setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
         property.getActionOrProperty().setEventAction(actionSID, actionImplement);
-    }
-
-    public void setEventId(LAP property, String id) {
-        property.getActionOrProperty().drawOptions.setEventID(id);
-    }
-
-    public void setSticky(LAP property, boolean sticky) {
-        property.getActionOrProperty().drawOptions.setSticky(sticky);
-    }
-
-    public void setSync(LAP property, boolean sync) {
-        property.getActionOrProperty().drawOptions.setSync(sync);
     }
 
     public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {

@@ -2873,7 +2873,7 @@ propertyOptions[LP property, String propertyName, LocalizedString caption, List<
 	;
 
 recursivePropertyOptions[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-	:	semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context])
+	:	semiPropertyOption[property, ps] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context])
 	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
 	;
 
@@ -2882,48 +2882,48 @@ actionOptions[LA action, String actionName, LocalizedString caption, List<TypedP
 	;
 
 recursiveActionOptions[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
-	:	semiActionOption[action, actionName, caption, as, context] (';' | recursiveActionOptions[action, actionName, caption, as, context])
+	:	semiActionOption[actionName, caption, as] (';' | recursiveActionOptions[action, actionName, caption, as, context])
 	|	nonSemiActionOption[action, actionName, caption, as, context] recursiveActionOptions[action, actionName, caption, as, context]?
 	;
 
-semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
+semiActionOrPropertyOption[ActionOrPropertySettings ps]
     :	inSetting [ps]
-	|	viewTypeSetting [property]
-	|	customViewSetting [property]
-	|	flexCharWidthSetting [property]
-	|	charWidthSetting [property]
-	|	changeKeySetting [property]
-	|	changeMouseSetting [property]
-	|	stickySetting [property]
-	|	syncSetting [property]
-	|   imageSetting [property]
+	|	viewTypeSetting [ps]
+	|	customViewSetting [ps]
+	|	flexCharWidthSetting [ps]
+	|	charWidthSetting [ps]
+	|	changeKeySetting [ps]
+	|	changeMouseSetting [ps]
+	|	stickySetting [ps]
+	|	syncSetting [ps]
+	|   imageSetting [ps]
 	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
     ;
 
-semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-    :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
+semiPropertyOption[LP property, PropertySettings ps]
+    :	semiActionOrPropertyOption[ps]
     |   materializedSetting [ps]
     |	indexedSetting [ps]
 	|	complexSetting [ps]
 	|	prereadSetting [ps]
 	|	hintSettings [ps]
 	|	tableSetting [ps]
-	|   defaultCompareSetting [property]
-	|	autosetSetting [property]
-	|	patternSetting [property]
-	|	regexpSetting [property]
-	|	echoSymbolsSetting [property]
+	|   defaultCompareSetting [ps]
+	|	autosetSetting [ps]
+	|	patternSetting [ps]
+	|	regexpSetting [ps]
+	|	echoSymbolsSetting [ps]
 	|	setNotNullSetting [ps]
-	|	aggrSetting [property]
-	|	eventIdSetting [property]
-	|   lazySetting [property]
+	|	aggrSetting [ps]
+	|	eventIdSetting [ps]
+	|   lazySetting [ps]
     ;
 
-semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-    :	semiActionOrPropertyOption[action, actionName, caption, ps, context]
-	|	shortcutSetting [action, caption != null ? caption : LocalizedString.create(actionName)]
-	|	asonEventActionSetting [action]
-	|	confirmSetting [action]
+semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
+    :	semiActionOrPropertyOption[as]
+	|	shortcutSetting [as, caption != null ? caption : LocalizedString.create(actionName)]
+	|	asonEventActionSetting [as]
+	|	confirmSetting [as]
     ;
 
 nonSemiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -2942,6 +2942,80 @@ nonSemiActionOption[LA action, String actionName, LocalizedString caption, Actio
 
 inSetting [ActionOrPropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
+	;
+
+viewTypeSetting [ActionOrPropertySettings ps]
+	:	viewType=propertyClassViewType { ps.viewType = $viewType.type; }
+	;
+
+customViewSetting [ActionOrPropertySettings ps]
+	:	customView=propertyCustomView { ps.customRenderFunction = $customView.customRenderFunction; ps.customEditorFunction = $customView.customEditorFunction; }
+	;
+
+flexCharWidthSetting [ActionOrPropertySettings ps]
+@init {
+	Boolean flex = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setFlexCharWidth(ps, $width.val, flex);
+	}
+}
+	:	'CHARWIDTH' width = intLiteral
+	    (	('FLEX' { flex = true; })
+        |	('NOFLEX' { flex = false; })
+        )
+	;
+
+charWidthSetting [ActionOrPropertySettings ps]
+	:	'CHARWIDTH' width = intLiteral {ps.charWidth = $width.val;}
+	;
+
+changeKeySetting [ActionOrPropertySettings ps]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setChangeKey(ps, $key.val, show);
+	}
+}
+	:	'CHANGEKEY' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
+	;
+
+changeMouseSetting [ActionOrPropertySettings ps]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setChangeMouse(ps, $key.val, show);
+	}
+}
+	:	'CHANGEMOUSE' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
+	;
+
+stickySetting [ActionOrPropertySettings ps]
+    :   st = stickyOption { ps.sticky = $st.sticky;}
+    ;
+
+stickyOption returns[boolean sticky = false]
+	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
+	;
+
+syncSetting [ActionOrPropertySettings ps]
+    :
+        s = syncTypeLiteral { ps.sync = $s.val; }
+    ;
+
+imageSetting [ActionOrPropertySettings ps]
+	:   img=imageOption { ps.image = $img.image; }
 	;
 
 materializedSetting [PropertySettings ps]
@@ -2969,15 +3043,26 @@ tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
 	;
 
-aggrSetting [LP property]
-@after {
-	if (inMainParseState()) {
-		self.setAggr(property);
-	}
-}
-    :
-        'AGGR'
-    ;
+defaultCompareSetting [PropertySettings ps]
+	:	'DEFAULTCOMPARE' defaultCompare = stringLiteral { ps.defaultCompare = $defaultCompare.val; }
+	;
+
+autosetSetting [PropertySettings ps]
+	:	'AUTOSET' { ps.autoset = true; }
+	;
+
+patternSetting [PropertySettings ps]
+	:	'PATTERN' exp = localizedStringLiteral { ps.pattern = $exp.val; }
+	;
+
+regexpSetting [PropertySettings ps]
+	:	'REGEXP' exp = localizedStringLiteral { ps.regexp = $exp.val; }
+		(mess = localizedStringLiteral { ps.regexpMessage = $mess.val; } )?
+	;
+
+echoSymbolsSetting [PropertySettings ps]
+	:	'ECHO' { ps.echoSymbols = true; }
+	;
 
 setNotNullSetting [PropertySettings ps]
     :   s=notNullSetting {
@@ -2997,170 +3082,42 @@ notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve 
 	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); $resolveEvent = $dt.event; })?
 	;
 
+aggrSetting [PropertySettings ps]
+    :   'AGGR' { ps.aggr = true; }
+    ;
 
-shortcutSetting [LA property, LocalizedString caption]
+eventIdSetting [PropertySettings ps]
+	:	'EVENTID' id=stringLiteral { ps.eventId = $id.val; }
+	;
+
+lazySetting [PropertySettings ps]
+@init {
+	Lazy lazy = Lazy.WEAK;
+	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
+}
 @after {
 	if (inMainParseState()) {
-		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
+		self.setLazy(ps, lazy, debugPoint);
+	}
+}
+	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
+	;
+
+shortcutSetting [ActionSettings as, LocalizedString caption]
+@after {
+	if (inMainParseState()) {
+		self.addToContextMenuFor(as, $c.val != null ? $c.val : caption, $usage.propUsage);
 	}
 }
 	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? usage = actionOrPropertyUsage
 	;
 
-asonEventActionSetting [LA property]
-@init {
-	String eventActionSID = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setAsEventActionFor(property, $et.type, $et.before, $usage.propUsage);
-	}
-}
-	:	'ASON' et=formEventType usage=actionOrPropertyUsage
+asonEventActionSetting [ActionSettings as]
+	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.eventActionSID = $et.type; as.before = $et.before; as.eventActionMainPropertyUsage = $usage.propUsage; }
 	;
 
-viewTypeSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setViewType(property, $viewType.type);
-	}
-}
-	:	viewType=propertyClassViewType
-	;
-
-customViewSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setCustomRenderFunction(property, $customView.customRenderFunction);
-		self.setCustomEditorFunction(property, $customView.customEditorFunction);
-	}
-}
-	:	customView=propertyCustomView
-	;
-
-flexCharWidthSetting [LAP property]
-@init {
-	Boolean flex = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setFlexCharWidth(property, $width.val, flex);
-	}
-}
-	:	'CHARWIDTH' width = intLiteral
-	    (	('FLEX' { flex = true; })
-        |	('NOFLEX' { flex = false; })
-        )
-	;
-
-charWidthSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setCharWidth(property, $width.val);
-	}
-}
-	:	'CHARWIDTH' width = intLiteral
-	;
-
-imageSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setImage(property, $img.image);
-	}
-}
-	:   img=imageOption
-	;
-
-defaultCompareSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setDefaultCompare(property, $defaultCompare.val);
-	}
-}
-	:	'DEFAULTCOMPARE' defaultCompare = stringLiteral
-	;
-
-
-changeKeySetting [LAP property]
-@init {
-	Boolean show = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setChangeKey(property, $key.val, show);
-	}
-}
-	:	'CHANGEKEY' key = stringLiteral
-		(	('SHOW' { show = true; })
-		|	('HIDE' { show = false; })
-		)?
-	;
-
-changeMouseSetting [LAP property]
-@init {
-	Boolean show = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setChangeMouse(property, $key.val, show);
-	}
-}
-	:	'CHANGEMOUSE' key = stringLiteral
-		(	('SHOW' { show = true; })
-		|	('HIDE' { show = false; })
-		)?
-	;
-
-autosetSetting [LP property]
-@init {
-	boolean autoset = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setAutoset(property, autoset);
-	}
-}
-	:	'AUTOSET' { autoset = true; }
-	;
-
-confirmSetting [LAP property]
-@init {
-	boolean askConfirm = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setAskConfirm(property, askConfirm);
-	}
-}
-	:	'CONFIRM' { askConfirm = true; }
-	;
-
-patternSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setPattern(property, $exp.val);
-	}
-}
-	:	'PATTERN' exp = localizedStringLiteral
-	;
-
-regexpSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setRegexp(property, $exp.val, $mess.val);
-	}
-}
-	:	'REGEXP' exp = localizedStringLiteral
-		(mess = localizedStringLiteral)?
-	;
-
-echoSymbolsSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setEchoSymbols(property);
-	}
-}
-	:	'ECHO'
+confirmSetting [ActionSettings as]
+	:	'CONFIRM' { as.askConfirm = true; }
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
@@ -3206,59 +3163,6 @@ onKeyPressEventSetting [LAP property, List<TypedParameter> context]
 }
 	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
-
-eventIdSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setEventId(property, $id.val);
-	}
-}
-	:	'EVENTID' id=stringLiteral
-	;
-
-lazySetting [LP property]
-@init {
-	Lazy lazy = Lazy.WEAK;
-	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
-}
-@after {
-	if (inMainParseState()) {
-		self.setLazy(property, lazy, debugPoint);
-	}
-}
-	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
-	;
-
-
-stickySetting [LAP property]
-@init {
-	boolean sticky = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setSticky(property, sticky);
-	}
-}
-    :
-        st = stickyOption { sticky = $st.sticky; }
-    ;
-
-stickyOption returns[boolean sticky = false]
-	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
-	;
-
-syncSetting [LAP property]
-@init {
-	Boolean sync = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setSync(property, sync);
-	}
-}
-    :
-        s = syncTypeLiteral { sync = $s.val; }
-    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
