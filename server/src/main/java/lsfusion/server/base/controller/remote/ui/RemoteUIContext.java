@@ -45,13 +45,13 @@ import static lsfusion.server.data.type.TypeSerializer.serializeType;
 public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        requestFormUserInteraction(createRemoteForm(formInstance, stack), showFormType, forbidDuplicate, formId, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), showFormType, forbidDuplicate, syncType, formId, stack);
     }
 
-    protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(forbidDuplicate, remoteForm, remoteForm.initClientData(stack), showFormType, formId);
-        if(showFormType.isModal()) {
+    protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(forbidDuplicate, syncType, remoteForm, remoteForm.initClientData(stack), showFormType, formId);
+        if(showFormType.isModal() && syncType) {
             requestUserInteraction(action);
             remoteForm.form.syncLikelyOnClose(true, stack);
         } else

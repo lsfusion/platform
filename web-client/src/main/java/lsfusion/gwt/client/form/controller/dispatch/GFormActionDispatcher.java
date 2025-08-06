@@ -52,11 +52,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             action.showFormType = GModalityShowFormType.MODAL;
         }
 
-        if (action.showFormType.isModal()) {
+        if (action.showFormType.isModal() && action.syncType) {
             pauseDispatching();
         }
         WindowHiddenHandler onClose = () -> {
-            if (action.showFormType.isModal()) {
+            if (action.showFormType.isModal() && action.syncType) {
                 continueDispatching();
             }
         };
