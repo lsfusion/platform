@@ -1486,7 +1486,7 @@ scope {
         EQ
         pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
         { if (inMainParseState() && property != null) { property = self.checkPropertyIsNew(property); }}
-        ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
+        ((popt=propertyOptions[propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
 	;
 
 actionStatement
@@ -1519,11 +1519,11 @@ scope {
 		}
         (
             (   ciADB=contextIndependentActionDB[context] { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
-                ((aopt=actionOptions[action, actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
+                ((aopt=actionOptions[actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
             )
         |
             (   aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inMainParseState()) { action = $aDB.action.getLP(); signature = self.getClassesFromTypedParams(context); }}
-                (aopt=actionOptions[action, actionName, caption, context, signature]  { as = $aopt.as; } )?
+                (aopt=actionOptions[actionName, caption, context, signature]  { as = $aopt.as; } )?
             )
         )
 	;
@@ -2868,22 +2868,22 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
-	:	recursivePropertyOptions[property, propertyName, caption, $ps, context]
+propertyOptions[String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
+	:	recursivePropertyOptions[propertyName, caption, $ps, context]
 	;
 
-recursivePropertyOptions[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-	:	semiPropertyOption[property, ps] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context])
-	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
+recursivePropertyOptions[String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+	:	semiPropertyOption[ps] (';' | recursivePropertyOptions[propertyName, caption, ps, context])
+	|	nonSemiPropertyOption[ps, context] recursivePropertyOptions[propertyName, caption, ps, context]?
 	;
 
-actionOptions[LA action, String actionName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings as = new ActionSettings()]
-	:	recursiveActionOptions[action, actionName, caption, $as, context]
+actionOptions[String actionName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings as = new ActionSettings()]
+	:	recursiveActionOptions[actionName, caption, $as, context]
 	;
 
-recursiveActionOptions[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
-	:	semiActionOption[actionName, caption, as] (';' | recursiveActionOptions[action, actionName, caption, as, context])
-	|	nonSemiActionOption[action, actionName, caption, as, context] recursiveActionOptions[action, actionName, caption, as, context]?
+recursiveActionOptions[String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
+	:	semiActionOption[actionName, caption, as] (';' | recursiveActionOptions[actionName, caption, as, context])
+	|	nonSemiActionOption[as, context] recursiveActionOptions[actionName, caption, as, context]?
 	;
 
 semiActionOrPropertyOption[ActionOrPropertySettings ps]
@@ -2900,7 +2900,7 @@ semiActionOrPropertyOption[ActionOrPropertySettings ps]
 	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
     ;
 
-semiPropertyOption[LP property, PropertySettings ps]
+semiPropertyOption[PropertySettings ps]
     :	semiActionOrPropertyOption[ps]
     |   materializedSetting [ps]
     |	indexedSetting [ps]
@@ -2926,18 +2926,18 @@ semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
 	|	confirmSetting [as]
     ;
 
-nonSemiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
-    :	onEditEventSetting [property, context]
-    |	onContextMenuEventSetting [property, context]
-    |	onKeyPressEventSetting [property, context]
+nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
+    :	onEditEventSetting [ps, context]
+    |	onContextMenuEventSetting [ps, context]
+    |	onKeyPressEventSetting [ps, context]
     ;
 
-nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-    :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
+nonSemiPropertyOption[PropertySettings ps, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[ps, context]
     ;
 
-nonSemiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
-    :   nonSemiActionOrPropertyOption[action, actionName, caption, as, context]
+nonSemiActionOption[ActionSettings as, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[as, context]
     ;
 
 inSetting [ActionOrPropertySettings ps]
@@ -3113,7 +3113,7 @@ shortcutSetting [ActionSettings as, LocalizedString caption]
 	;
 
 asonEventActionSetting [ActionSettings as]
-	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.eventActionSID = $et.type; as.before = $et.before; as.eventActionMainPropertyUsage = $usage.propUsage; }
+	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.eventActionSID = $et.type; as.eventActionBefore = $et.before; as.eventActionMainPropertyUsage = $usage.propUsage; }
 	;
 
 confirmSetting [ActionSettings as]
@@ -3128,14 +3128,9 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
         et=baseEventNotPE { $event = $et.event; }
 	;
 
-onEditEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedEventAction(property, $et.type, $et.before, $aDB.action);
-	}
-}
-	:	'ON' et=formEventType
-		aDB=listTopContextDependentActionDefinitionBody[context, false, false]
+onEditEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
+	:	'ON' et=formEventType { ps.editEventActionType = $et.type; ps.editEventBefore = $et.before; }
+		aDB=listTopContextDependentActionDefinitionBody[context, false, false]  { ps.editEventAction = $aDB.action; }
 	;
 
 formEventType returns [String type, Boolean before]
@@ -3145,23 +3140,13 @@ formEventType returns [String type, Boolean before]
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
 	;
 
-onContextMenuEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedContextMenuAction(property, $c.val, $action.action);
-	}
-}
-	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)?
-		action=listTopContextDependentActionDefinitionBody[context, false, false]
+onContextMenuEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
+	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID { ps.contextMenuEventCaption = $c.val; })?
+		action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.contextMenuEventAction = $action.action; }
 	;
 
-onKeyPressEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedKeyPressAction(property, $key.val, $action.action);
-	}
-}
-	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false]
+onKeyPressEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
+	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.keyPressKey = $key.val; ps.keyPressAction = $action.action; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

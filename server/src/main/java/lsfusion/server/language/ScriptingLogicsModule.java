@@ -16,7 +16,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.navigator.NavigatorScheduler;
@@ -1217,13 +1216,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         actionOrProperty.caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(actionOrProperty, group);
 
-        if(ps.viewType != null)
+        if (ps.viewType != null)
             drawOptions.setViewType(ps.viewType);
-        if(ps.customRenderFunction != null)
+        if (ps.customRenderFunction != null)
             actionOrProperty.setCustomRenderFunction(ps.customRenderFunction);
-        if(ps.customEditorFunction != null)
+        if (ps.customEditorFunction != null)
             drawOptions.setCustomEditorFunction(ps.customEditorFunction);
-        if(ps.flex != null)
+        if (ps.flex != null)
             drawOptions.setValueFlex(ps.flex);
         if (ps.charWidth != null)
             drawOptions.setCharWidth(ps.charWidth);
@@ -1237,12 +1236,20 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (ps.showChangeMouse != null)
                 drawOptions.setShowChangeMouse(ps.showChangeMouse);
         }
-        if(ps.sticky != null)
+        if (ps.sticky != null)
             drawOptions.setSticky(ps.sticky);
-        if(ps.sync != null)
+        if (ps.sync != null)
             drawOptions.setSync(ps.sync);
-        if(ps.image != null)
+        if (ps.image != null)
             actionOrProperty.setImage(ps.image);
+
+        if (ps.keyPressKey != null)
+            setScriptedKeyPressAction(property, ps.keyPressKey, ps.keyPressAction);
+        if (ps.contextMenuEventAction != null)
+            setScriptedContextMenuAction(property, ps.contextMenuEventCaption, ps.contextMenuEventAction);
+        if(ps.editEventActionType != null)
+            setScriptedEventAction(property, ps.editEventActionType, ps.editEventBefore, ps.editEventAction);
+
     }
 
     public void addSettingsToAction(LA action, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings as) throws ScriptingErrorLog.SemanticErrorException {
@@ -1253,14 +1260,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ActionOrProperty actionOrProperty = action.getActionOrProperty();
         ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
 
-        if(as.contextMenuMainPropertyUsage != null) {
-            LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(as.contextMenuMainPropertyUsage);
-            action.addToContextMenuFor(mainProperty, as.contextMenuCaption);
+        if(as.contextMenuForMainPropertyUsage != null) {
+            LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(as.contextMenuForMainPropertyUsage);
+            action.addToContextMenuFor(mainProperty, as.contextMenuForCaption);
 
             action.setAsEventActionFor(action.action.getSID(), mainProperty);
         }
         if(as.eventActionSID != null)
-            setAsEventActionFor(action, as.eventActionSID, as.before, as.eventActionMainPropertyUsage);
+            setAsEventActionFor(action, as.eventActionSID, as.eventActionBefore, as.eventActionMainPropertyUsage);
         if(as.askConfirm != null)
             drawOptions.setAskConfirm(as.askConfirm);
 
@@ -1436,8 +1443,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addToContextMenuFor(ActionSettings as, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        as.contextMenuCaption = contextMenuCaption;
-        as.contextMenuMainPropertyUsage = mainPropertyUsage;
+        as.contextMenuForCaption = contextMenuCaption;
+        as.contextMenuForMainPropertyUsage = mainPropertyUsage;
     }
 
     public void setAsEventActionFor(LA eventAction, String eventActionSID, Boolean before, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
