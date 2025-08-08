@@ -15,7 +15,7 @@ public class DialogModalWindow extends ModalWindow {
     }
 
     public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size, String backgroundClass) {
-        super(resizable, size);
+        super(resizable, true, size);
 
         GwtClientUtils.addClassName(getBody().getElement(), "dialog-modal-body");
 
