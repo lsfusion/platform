@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.*;
 import java.util.List;
 import java.util.*;
@@ -221,7 +222,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String creationPath;
     public String path;
     public String formPath;
-    
+
+    public Map<String, ContextMenuDebugInfo> contextMenuDebugInfoMap = new HashMap<>();
+
     public boolean notNull;
 
     public boolean sticky;
@@ -732,6 +735,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String actionSID = pool.readString(inStream);
                 String caption = pool.readString(inStream);
                 editBindingMap.setContextMenuAction(actionSID, caption);
+                if(pool.readBoolean(inStream)) {
+                    String creationScript = pool.readString(inStream);
+                    String creationPath = pool.readString(inStream);
+                    String path = pool.readString(inStream);
+                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(creationScript, creationPath, path));
+                }
             }
         }
         
@@ -1123,6 +1132,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return type;
+        }
+    }
+
+    public static class ContextMenuDebugInfo implements Serializable {
+        public String creationScript;
+        public String creationPath;
+        public String path;
+
+        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
+            this.creationScript = creationScript;
+            this.creationPath = creationPath;
+            this.path = path;
         }
     }
 }

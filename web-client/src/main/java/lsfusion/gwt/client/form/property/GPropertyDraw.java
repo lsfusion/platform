@@ -79,6 +79,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String path;
     public String formPath;
 
+    public Map<String, ContextMenuDebugInfo> contextMenuDebugInfoMap;
+
     public GGroupObject groupObject;
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
@@ -1070,5 +1072,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isPredefinedImage() {
         String sid = integrationSID;
         return sid != null && sid.equals("image");
+    }
+
+    public static class ContextMenuDebugInfo implements Serializable {
+        public String creationScript;
+        public String creationPath;
+        public String path;
+
+        @SuppressWarnings("unused")
+        public ContextMenuDebugInfo() {
+        }
+
+        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
+            this.creationScript = creationScript;
+            this.creationPath = creationPath;
+            this.path = path;
+        }
+
+        public String getTooltip(String sid, String caption) {
+            if (!MainFrame.showDetailedInfo) {
+                return caption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, caption);
+            } else {
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationScript, ""), nvl(creationPath, ""));
+            }
+        }
+
+        public static final String TOOL_TIP_FORMAT =
+                "<html><b>%s</b>";
+
+        public static String getDetailedActionToolTipFormat() {
+            return createTooltipHorizontalSeparator() +
+                    "<b>sID:</b> %s<br>" +
+                    "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
+                    "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
+                    "</html>";
+        }
     }
 }
