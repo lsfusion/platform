@@ -102,8 +102,8 @@ return '{reflection.return.property}' = DATA STRING[100] (Property);
 complexity '{reflection.complexity.property}' = DATA LONG (Property);
 tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);
 
-stats '{reflection.stats.property}' = DATA INTEGER (Property);
-maxStatsProperty '{reflection.max.stats.property}' = DATA INTEGER ();
+stats '{reflection.stats.property}' = DATA LONG (Property);
+maxStatsProperty '{reflection.max.stats.property}' = DATA LONG ();
 overMaxStatsProperty = OVERRIDE maxStatsProperty(), 2000000000;
 CONSTRAINT SET (userLoggable(Property p)) AND overMaxStatsProperty() AND stats(p) > overMaxStatsProperty() 
            MESSAGE '{reflection.constraint.max.stats.property} ' + overMaxStatsProperty();
@@ -128,9 +128,9 @@ actionCanonicalName '{reflection.action}' (cn) = GROUP AGGR Action property WHER
 INDEX tableSID(Property property), dbName(property);
 propertyTable '{reflection.property}' (string, sID) = GROUP AGGR Property property WHERE stored(property) BY tableSID(property), dbName(property);
 
-quantity '{reflection.quantity.property}' = DATA INTEGER (Property);
-quantityTop '{reflection.quantity.top.property}' = DATA INTEGER (Property);
-notNullQuantity '{reflection.not.null.quantity.property}' = DATA INTEGER (Property);
+quantity '{reflection.quantity.property}' = DATA LONG (Property);
+quantityTop '{reflection.quantity.top.property}' = DATA LONG (Property);
+notNullQuantity '{reflection.not.null.quantity.property}' = DATA LONG (Property);
 overStats '{reflection.stats.property}' (Property property) = OVERRIDE notNullQuantity(property), stats(property);
 
 hasNotNullQuantity() = GROUP SUM 1 IF notNullQuantity(Property property);
@@ -247,7 +247,7 @@ TABLE tables (Table);
 
 sid '{reflection.sid.table}' = DATA ISTRING[100] (Table);
 table '{reflection.table}' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
-rows '{reflection.row.table}' = DATA INTEGER (Table);
+rows '{reflection.row.table}' = DATA LONG (Table);
 skipVacuum '{reflection.skip.vacuum.table}' = DATA BOOLEAN (Table);
 table '{reflection.table}' = DATA Table (TableKey) NONULL DELETE;
 sidTable (TableKey tableKey) = sid(table(tableKey));
@@ -260,8 +260,8 @@ tableKey '{reflection.table.key}' (sID) = GROUP AGGR TableKey tableKey WHERE tab
 class '{reflection.class.table.key}' = DATA ISTRING[40] (TableKey);
 classSID '{reflection.class.sid.table.key}' = DATA STRING[100] (TableKey);
 name '{reflection.name.table.key}' = DATA ISTRING[20] (TableKey);
-quantity '{reflection.quantity.table.key}' = DATA INTEGER (TableKey);
-quantityTop '{reflection.quantity.top.table.key}' = DATA INTEGER (TableKey);
+quantity '{reflection.quantity.table.key}' = DATA LONG (TableKey);
+quantityTop '{reflection.quantity.top.table.key}' = DATA LONG (TableKey);
 overQuantity '{reflection.quantity.table.key}' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
 
 CLASS TableColumn '{reflection.table.column}';

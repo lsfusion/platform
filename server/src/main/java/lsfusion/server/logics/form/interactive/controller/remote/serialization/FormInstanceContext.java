@@ -49,17 +49,17 @@ public class FormInstanceContext extends ConnectionContext {
         return formEntity.getGlobalContext();
     }
 
-    private final Map<Pair<ActionOrProperty, DBManager.Param>, Pair<Integer, Integer>> values = new HashMap<>();
+    private final Map<Pair<ActionOrProperty, DBManager.Param>, Pair<Long, Long>> values = new HashMap<>();
     // assert that it is synchronized in all remote calls / form instancing
     @AssertSynchronized
 //    @ManualParamStrongLazy
-    public Pair<Integer, Integer> getValues(InputPropertyValueList propValues) {
+    public Pair<Long, Long> getValues(InputPropertyValueList propValues) {
         QueryEnvironment env = this.env;
         Pair<ActionOrProperty, DBManager.Param> cacheKey = new Pair<>(propValues.getCacheKey(),
                 propValues.getCacheParam("", 0, AsyncMode.OBJECTS, env));
                 // we need static neededCount to guarantee that getValues will be the same during the form lifecycle
                 // env can be null, because getEnvDepends should be empty (see getSelectProperty)
-        Pair<Integer, Integer> result = values.get(cacheKey);
+        Pair<Long, Long> result = values.get(cacheKey);
         if(result == null) {
             result = readValues(propValues, env);
             values.put(cacheKey, result);
@@ -69,7 +69,7 @@ public class FormInstanceContext extends ConnectionContext {
 
     // assert that it is called during form instancing
     @AssertSynchronized
-    private Pair<Integer, Integer> readValues(InputPropertyValueList values, QueryEnvironment env) {
+    private Pair<Long, Long> readValues(InputPropertyValueList values, QueryEnvironment env) {
         int maxValuesNeeded = Settings.get().getMaxInterfaceStatForValueDropdown();
         PropertyAsync[] asyncValues;
         try {
@@ -77,9 +77,9 @@ public class FormInstanceContext extends ConnectionContext {
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        int count = asyncValues.length;
+        long count = asyncValues.length;
 
-        int sumLength = 0;
+        long sumLength = 0;
         for(PropertyAsync asyncValue : asyncValues)
             sumLength += asyncValue.rawString.trim().length();
 

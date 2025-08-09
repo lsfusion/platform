@@ -74,8 +74,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
         public final PropertyObjectEntity<?> property;
 
-        public final int length;
-        public final int count;
+        public final long length;
+        public final long count;
         public final boolean actual;
 
         public enum Type {
@@ -87,7 +87,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         public final Type type;
         public final boolean html;
 
-        public Select(PropertyObjectEntity<?> property, int length, int count, boolean actual, Type type, boolean html) {
+        public Select(PropertyObjectEntity<?> property, long length, long count, boolean actual, Type type, boolean html) {
             this.property = property;
             this.length = length;
             this.count = count;

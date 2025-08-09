@@ -1877,13 +1877,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         public final ImList<InputPropertyValueList> values;
 
-        public final Pair<Integer, Integer> stat; // estimate stat
+        public final Pair<Long, Long> stat; // estimate stat
         public final boolean multi;
         public final boolean html;
 
         public final boolean notNull;
 
-        public Select(SelectProperty<T> property, Pair<Integer, Integer> stat, ImList<InputPropertyValueList> values, boolean multi, boolean html, boolean notNull) {
+        public Select(SelectProperty<T> property, Pair<Long, Long> stat, ImList<InputPropertyValueList> values, boolean multi, boolean html, boolean notNull) {
             this.property = property;
             this.stat = stat;
             this.values = values;
@@ -1972,7 +1972,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         } else
             assert where.property.isValueFull(mapWhereInterfaces); // isValueUnique checks this
         Stat whereStat = where.property.getInterfaceStat(mapWhereInterfaces);
-        int whereCount = whereStat.getCount();
+        long whereCount = whereStat.getCount();
 
         boolean hasAlotValues = whereCount > Settings.get().getMaxInterfaceStatForValueDropdown();
         if(!fallbackToFilterSelected && hasAlotValues) // optimization

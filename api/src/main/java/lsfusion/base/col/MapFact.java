@@ -384,14 +384,14 @@ public class MapFact {
     public static <K, V> AddValue<K, V> override() {
         return (AddValue<K, V>) override;
     }
-    private final static AddValue<Object, Integer> max = new SymmAddValue<Object, Integer>() {
+    private final static AddValue<Object, Long> max = new SymmAddValue<Object, Long>() {
         @Override
-        public Integer addValue(Object key, Integer prevValue, Integer newValue) {
+        public Long addValue(Object key, Long prevValue, Long newValue) {
             return BaseUtils.max(prevValue, newValue);
         }
     };            
-    public static <K> AddValue<K, Integer> max() {
-        return (AddValue<K, Integer>) max;
+    public static <K> AddValue<K, Long> max() {
+        return (AddValue<K, Long>) max;
     }
     
     private final static AddValue<Object, Boolean> or = new SymmAddValue<Object, Boolean>() {

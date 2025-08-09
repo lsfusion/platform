@@ -182,7 +182,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         final IQuery<KeyField, PropertyField> insertQuery = query;
         final ImOrderMap<PropertyField, Boolean> insertOrdersTop = ordersTop;
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, null, null, new FillTemporaryTable() { // статистика обновится в readSingleValues / removeFields
-            public Integer fill(String name) throws SQLException, SQLHandledException {
+            public Long fill(String name) throws SQLException, SQLHandledException {
 //                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
                 return session.insertSessionSelect(name, insertQuery, env, owner, insertOrdersTop, limitOffset);
             }
@@ -191,7 +191,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
-                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<>(); Result<ImMap<KeyField, Integer>> statKeys = new Result<>();
+                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<>(); Result<ImMap<KeyField, Long>> statKeys = new Result<>();
                 Result<ImMap<PropertyField, Object>> actualPropValues = new Result<>(); Result<ImMap<PropertyField, PropStat>> statProps = new Result<>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues, statKeys, statProps, opOwner);
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
@@ -303,7 +303,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         }
     }
     
-    public abstract int getCount();
+    public abstract long getCount();
 
     public abstract T checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException;
 }

@@ -69,7 +69,7 @@ public class FormChanges {
     // tree objects
     private final ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects;
     // tree object has + 
-    private final ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Integer>> expandables;
+    private final ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Long>> expandables;
 
     // properties
     private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
@@ -92,7 +92,7 @@ public class FormChanges {
     public FormChanges(ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
                        ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects,
                        ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects,
-                       ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Integer>> expandables,
+                       ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Long>> expandables,
                        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
                        ImSet<PropertyDrawInstance> dropProperties,
                        ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
@@ -172,11 +172,11 @@ public class FormChanges {
         for (int i = 0; i < expandables.size(); ++i) {
             outStream.writeInt(expandables.getKey(i).getID());
 
-            ImMap<ImMap<ObjectInstance, DataObject>, Integer> groupExpandables = expandables.getValue(i);
+            ImMap<ImMap<ObjectInstance, DataObject>, Long> groupExpandables = expandables.getValue(i);
             outStream.writeInt(groupExpandables.size());
             for (int j = 0; j < groupExpandables.size(); ++j) {
                 serializeGroupObjectValue(outStream, groupExpandables.getKey(j));
-                outStream.writeInt(groupExpandables.getValue(j));
+                outStream.writeInt(groupExpandables.getValue(j).intValue());
             }
         }
 

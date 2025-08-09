@@ -789,13 +789,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         public final String type;
         public final String elementType;
 
-        public final int length;
-        public final int count;
+        public final long length;
+        public final long count;
         public final boolean actual;
         public final boolean html;
         public final boolean changeValue;
 
-        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual, boolean html, boolean changeValue) {
+        public Select(PropertyObjectEntity property, String type, String elementType, long length, long count, boolean actual, boolean html, boolean changeValue) {
             this.property = property;
             this.type = type;
             this.elementType = elementType;

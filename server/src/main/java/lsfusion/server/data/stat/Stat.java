@@ -109,15 +109,13 @@ public class Stat {
         return deg;
     }
 
-    public int getCount() {
+    public long getCount() {
         int statDegree = Settings.get().getStatDegree();
         long result = 1;
         for(int i=0,size=getWeight();i<size;i++) {
             result = result * statDegree;
-            if(result > Integer.MAX_VALUE)
-                break;
         }
-        return (int) Math.min(result, Integer.MAX_VALUE);
+        return result;
     }
     
     public Stat avg(Stat add) {
