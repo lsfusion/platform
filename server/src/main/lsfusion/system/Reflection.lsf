@@ -415,7 +415,7 @@ FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
     PROPERTIES(t) GRID disableClasses, checkClasses, recalculateClasses,
-                       disableStatsTable, notRecalculateStats, recalculateStats, 
+                       disableStatsTable, recalculateStats, 
                        recalculateColumnsAggregations, pack, skipVacuum
 
     OBJECTS tk=TableKey
