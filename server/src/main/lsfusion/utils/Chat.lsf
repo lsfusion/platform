@@ -275,13 +275,13 @@ sendMessage '{chat.send.message}' (Chat chat)  {
         markSeenOnChangeMessages(chat, currentUser());
         seekLastMessage();
     }
-} CHANGEKEY 'ctrl ENTER;priority=200';
+} CHANGEKEY 'ctrl ENTER;priority=1100';
 
 sendMessage '{chat.send.message}' (CustomUser user)  { 
     createDialogChat(user, currentUser()) ;
     sendMessage(chatIn(user, currentUser()));
     seekChat(chatIn(user, currentUser()));
-} CHANGEKEY 'ctrl ENTER;priority=200';
+} CHANGEKEY 'ctrl ENTER;priority=1100';
 
 recentVisible = ABSTRACT BOOLEAN ();
 
@@ -310,7 +310,7 @@ saveEditing '{chat.save.message}' () {
         attachment(m) <- attachment();
         APPLY;
     }
-} CHANGEKEY 'ctrl ENTER;priority=200';
+} CHANGEKEY 'ctrl ENTER;priority=1100';
 
 stopEditing () { 
     IF editingMessage() THEN {
