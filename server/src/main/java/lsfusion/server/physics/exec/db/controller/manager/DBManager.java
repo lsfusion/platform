@@ -1833,7 +1833,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ImplementTable newTable = newProperty.getTable();
             DBTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
-            sql.addColumn(newTable, newProperty.property.field, false);
+            sql.addColumn(newTable, newProperty.property.field, Settings.get().isStartServerAnyWay());
             ServerLoggers.<SQLException, SQLHandledException>runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
                     localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field.toString(), newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
 
