@@ -34,7 +34,8 @@ public class ProcessBinding {
                 if ((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview.apply(binding, preview)
                         && bindDialog.apply(binding) && bindWindow.apply(binding) && bindGroup.apply(groupObject, binding)
                         && bindEditing.apply(binding, ke) && bindShowing.apply(binding) && bindPanel.apply(binding, panel))
-                    orderedBindings.put(-(binding.priority + (equalGroupFunction.apply(groupObject, binding) ? 100 : 0)), binding);
+                    // increasing priority for group object; possible problems in forms with over 1000 properties
+                    orderedBindings.put(-(binding.priority + (equalGroupFunction.apply(groupObject, binding) ? 1000 : 0)), binding);
 
             if (!orderedBindings.isEmpty())
                 commitOrCancelCurrentEditing.run();
