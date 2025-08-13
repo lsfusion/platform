@@ -226,6 +226,10 @@ extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww
 // changes extractWeek return value for first days of the year    
 extractWeekZeroBased(DATE date) = IF extractWeek(date) > 50 AND extractMonthNumber(date) == 1 THEN 0 ELSE extractWeek(date);
 
+//$1 - year, $2 - week
+getWeekStart = FORMULA DATE r!'to_date('$1 $2 1', 'IYYY IW ID')'!;
+getWeekEnd = FORMULA DATE r!'to_date('$1 $2 7', 'IYYY IW ID')'!;
+
 CLASS DateTimePickerRanges '{date.time.picker.range.predefined.date}' {
     rangeToday '{date.time.picker.range.today}',
     rangeYesterday '{date.time.picker.range.yesterday}',
