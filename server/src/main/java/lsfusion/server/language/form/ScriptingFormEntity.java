@@ -57,6 +57,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CalcCase;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -361,10 +362,53 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Map<DebugInfo.DebugPoint, List<String>> allPropsMap, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         ComplexLocation<PropertyDrawEntity> commonLocation = commonOptions.getLocation();
         boolean reverseList = commonLocation != null && commonLocation.isReverseList();
-        
+
+        for (Map.Entry<DebugInfo.DebugPoint, List<String>> allPropsEntry : allPropsMap.entrySet()) {
+
+            DebugInfo.DebugPoint debugPoint = allPropsEntry.getKey();
+            List<String> allPropsMapping = allPropsEntry.getValue();
+
+            List<ValueClass> allPropsClasses = new ArrayList<>();
+            List<String> allPropsClassNames = new ArrayList<>();
+            for (String paramName : allPropsMapping) {
+                ValueClass baseClass = LM.getNFObjectEntityByName(form, paramName).baseClass;
+                allPropsClasses.add(baseClass);
+                allPropsClassNames.add(baseClass.getParsedName());
+            }
+
+            for (LP<?> namedProperty : LM.getNamedProperties()) {
+
+                List<ValueClass> interfaceClasses = new ArrayList<>();
+                for (PropertyInterface propertyInterface : namedProperty.listInterfaces) {
+                    if (propertyInterface instanceof ClassPropertyInterface)
+                        interfaceClasses.add(((ClassPropertyInterface) propertyInterface).interfaceClass);
+                }
+
+                if (interfaceClasses.equals((allPropsClasses))) {
+
+                    ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = new ScriptingLogicsModule.FormPropertyUsage(new ScriptingLogicsModule.NamedPropertyUsage(namedProperty.property.getName(), allPropsClassNames), allPropsMapping);
+
+                    Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
+                    MappedActionOrProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
+
+                    ComplexLocation<PropertyDrawEntity> location = ComplexLocation.DEFAULT();
+
+                    PropertyDrawEntity propertyDraw = form.addPropertyDraw(prop.property.createObjectEntity(prop.mapping), debugPoint.getFullPath(), inherited.result, prop.property.listInterfaces, location, version);
+                    propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
+
+                    propertyDraw.defaultChangeEventScope = commonOptions.getFormSessionScope();
+
+                    applyPropertyOptions(propertyDraw, commonOptions, version);
+
+                    // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
+                    checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, commonOptions.getNeighbourPropertyText(), version);
+                }
+            }
+        }
+
         for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
             ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
