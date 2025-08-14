@@ -161,7 +161,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         logNameCustomUser = findProperty("logName[CustomUser]");
 
         sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
-        sha256PasswordCustomUser.setEchoSymbols(true);
 
         calculatedHash = findProperty("calculatedHash[]");
 
