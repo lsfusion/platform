@@ -803,11 +803,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             processors = processors.addList(processor);
         }
 
-        public void setFlexCharWidth(int charWidth, Boolean flex) {
-            setCharWidth(charWidth);
-            setValueFlex(flex);
-        }
-
         public Compare getDefaultCompare() {
             return defaultCompare;
         }
