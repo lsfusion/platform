@@ -36,6 +36,7 @@ import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -362,168 +363,160 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Map<DebugInfo.DebugPoint, List<String>> allPropsMap, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<List<String>> allPropsMappings, List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         ComplexLocation<PropertyDrawEntity> commonLocation = commonOptions.getLocation();
         boolean reverseList = commonLocation != null && commonLocation.isReverseList();
 
-        for (Map.Entry<DebugInfo.DebugPoint, List<String>> allPropsEntry : allPropsMap.entrySet()) {
+        for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
+            DebugInfo.DebugPoint debugPoint = points.get(i);
 
-            DebugInfo.DebugPoint debugPoint = allPropsEntry.getKey();
-            List<String> allPropsMapping = allPropsEntry.getValue();
-
-            List<ValueClass> allPropsClasses = new ArrayList<>();
-            List<String> allPropsClassNames = new ArrayList<>();
-            for (String paramName : allPropsMapping) {
-                ValueClass baseClass = LM.getNFObjectEntityByName(form, paramName).baseClass;
-                allPropsClasses.add(baseClass);
-                allPropsClassNames.add(baseClass.getParsedName());
-            }
-
-            for (LP<?> namedProperty : LM.getNamedProperties()) {
-
-                List<ValueClass> interfaceClasses = new ArrayList<>();
-                for (PropertyInterface propertyInterface : namedProperty.listInterfaces) {
-                    if (propertyInterface instanceof ClassPropertyInterface)
-                        interfaceClasses.add(((ClassPropertyInterface) propertyInterface).interfaceClass);
+            List<String> allPropsMapping = allPropsMappings.get(i);
+            if (allPropsMapping != null) {
+                List<ResolveClassSet> allPropsClasses = new ArrayList<>();
+                List<String> allPropsClassNames = new ArrayList<>();
+                for (String paramName : allPropsMapping) {
+                    ValueClass baseClass = LM.getNFObjectEntityByName(form, paramName).baseClass;
+                    allPropsClasses.add(baseClass.getResolveSet());
+                    allPropsClassNames.add(baseClass.getParsedName());
                 }
 
-                if (interfaceClasses.equals((allPropsClasses))) {
+                for (LP<?> namedProperty : LM.getNamedProperties())
+                    addLAP(namedProperty, commonOptions, allPropsMapping, allPropsClasses, allPropsClassNames, version, debugPoint);
+                for (LA<?> namedAction : LM.getNamedActions())
+                    addLAP(namedAction, commonOptions, allPropsMapping, allPropsClasses, allPropsClassNames, version, debugPoint);
+            } else {
 
-                    ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = new ScriptingLogicsModule.FormPropertyUsage(new ScriptingLogicsModule.NamedPropertyUsage(namedProperty.property.getName(), allPropsClassNames), allPropsMapping);
+                ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
+                String alias = aliases.get(i);
 
-                    Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
+                FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+
+                FormSessionScope scope = propertyOptions.getFormSessionScope();
+                boolean isFormObjectAction = false;
+
+                Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
+                LAP<?, ?> property;
+                ImOrderSet<ObjectEntity> objects;
+                String forceIntegrationSID = null;
+                ActionObjectSelector selectorAction = null;
+                if (pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
+                    ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
+                    ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
+                    List<String> mapping = prefefUsage.mapping;
+                    String propertyName = pUsage.name;
+                    if (propertyName.equals("VALUE")) {
+                        ObjectEntity obj = getSingleMappingObject(mapping);
+                        Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(form, obj);
+                        property = valueProp.first;
+                        selectorAction = valueProp.second;
+                        objects = SetFact.singletonOrder(obj);
+                    } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
+                        ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                        CustomClass explicitClass = getSingleAddClass(pUsage);
+                        property = LM.getAddObjectAction(form, obj, explicitClass);
+                        objects = SetFact.EMPTYORDER();
+                        isFormObjectAction = true;
+                        forceIntegrationSID = propertyName;
+                    } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
+                        ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                        CustomClass explicitClass = getSingleAddClass(pUsage);
+                        property = LM.getAddFormAction(form, obj, explicitClass);
+                        objects = SetFact.EMPTYORDER();
+                        isFormObjectAction = true;
+                    } else if (propertyName.equals("EDIT")) {
+                        ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                        CustomClass explicitClass = getSingleAddClass(pUsage);
+                        property = LM.getEditFormAction(obj, explicitClass);
+                        isFormObjectAction = true;
+                        objects = SetFact.singletonOrder(obj);
+                    } else if (propertyName.equals("DELETE")) {
+                        ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                        property = LM.getDeleteAction(obj);
+                        objects = SetFact.singletonOrder(obj);
+                        isFormObjectAction = true;
+                        forceIntegrationSID = propertyName;
+                    } else if (propertyName.equals("INTERVAL")) {
+                        objects = getTwinTimeSeriesMappingObject(propertyName, mapping);
+                        Iterator<ObjectEntity> iterator = objects.iterator();
+                        ObjectEntity objectFrom = iterator.next();
+                        ObjectEntity objectTo = iterator.next();
+                        TimeSeriesClass timeClass = (TimeSeriesClass) objectFrom.baseClass;
+                        LP<?>[] intProps = LM.findProperties(timeClass.getIntervalProperty(), timeClass.getFromIntervalProperty(), timeClass.getToIntervalProperty());
+                        Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
+                        property = intervalProp.first;
+                        selectorAction = intervalProp.second;
+                    } else
+                        throw new UnsupportedOperationException();
+                } else {
                     MappedActionOrProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
+                    checkPropertyParameters(prop.property, prop.mapping);
+                    property = prop.property;
+                    objects = prop.mapping;
 
-                    ComplexLocation<PropertyDrawEntity> location = ComplexLocation.DEFAULT();
-
-                    PropertyDrawEntity propertyDraw = form.addPropertyDraw(prop.property.createObjectEntity(prop.mapping), debugPoint.getFullPath(), inherited.result, prop.property.listInterfaces, location, version);
-                    propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
-
-                    propertyDraw.defaultChangeEventScope = commonOptions.getFormSessionScope();
-
-                    applyPropertyOptions(propertyDraw, commonOptions, version);
-
-                    // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
-                    checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, commonOptions.getNeighbourPropertyText(), version);
+                    if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLAPUsage) {
+                        LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLAPUsage) pDrawUsage));
+                    }
                 }
+
+                ComplexLocation<PropertyDrawEntity> location = propertyOptions.getLocation();
+                if (location == null)
+                    location = isFormObjectAction ? ComplexLocation.LAST() : ComplexLocation.DEFAULT();
+
+                PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), debugPoint.getFullPath(), inherited.result, property.listInterfaces, location, version);
+                propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
+
+                if (selectorAction != null)
+                    propertyDraw.setSelectorAction(selectorAction);
+
+                propertyDraw.defaultChangeEventScope = scope;
+
+                if (forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
+                    propertyDraw.setIntegrationSID(forceIntegrationSID);
+
+                try {
+                    form.checkAlreadyDefined(propertyDraw, alias);
+
+                    form.setFinalPropertyDrawSID(propertyDraw, alias);
+                } catch (FormEntity.AlreadyDefined alreadyDefined) {
+                    LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
+                }
+
+                applyPropertyOptions(propertyDraw, propertyOptions, version);
+
+                // Добавляем PropertyDrawView в FormView, если он уже был создан
+                PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
+
+                LocalizedString caption = captions.get(i);
+                String appImage = propertyOptions.getAppImage();
+                if (view != null) {
+                    view.caption = caption;
+                    if (appImage != null)
+                        view.setImage(appImage);
+                } else {
+                    propertyDraw.initCaption = caption;
+                    propertyDraw.initImage = appImage;
+                }
+
+                // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
+                checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
             }
         }
+    }
 
-        for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
-            ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
-            String alias = aliases.get(i);
+    private void addLAP(LAP lap, FormPropertyOptions commonOptions, List<String> allPropsMapping, List<ResolveClassSet> allPropsClasses, List<String> allPropsClassNames, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        if (lap.getExplicitClasses().equals((allPropsClasses))) {
 
-            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
-
-            FormSessionScope scope = propertyOptions.getFormSessionScope();
-            boolean isFormObjectAction = false;
+            ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = new ScriptingLogicsModule.FormPropertyElseActionUsage(new ScriptingLogicsModule.PropertyElseActionUsage(new ScriptingLogicsModule.NamedPropertyUsage(lap.getActionOrProperty().getName(), allPropsClassNames)), allPropsMapping);
 
             Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
-            LAP<?, ?> property = null;
-            ImOrderSet<ObjectEntity> objects = null;
-            String forceIntegrationSID = null;
-            ActionObjectSelector selectorAction = null;
-            if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
-                ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
-                ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
-                List<String> mapping = prefefUsage.mapping;
-                String propertyName = pUsage.name;
-                if (propertyName.equals("VALUE")) {
-                    ObjectEntity obj = getSingleMappingObject(mapping);
-                    Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(form, obj);
-                    property = valueProp.first;
-                    selectorAction = valueProp.second;
-                    objects = SetFact.singletonOrder(obj);
-                } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
-                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getAddObjectAction(form, obj, explicitClass);
-                    objects = SetFact.EMPTYORDER();
-                    isFormObjectAction = true;
-                    forceIntegrationSID = propertyName;
-                } else if (propertyName.equals("NEWEDIT") || propertyName.equals("NEW")) {
-                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getAddFormAction(form, obj, explicitClass);
-                    objects = SetFact.EMPTYORDER();
-                    isFormObjectAction = true;
-                } else if (propertyName.equals("EDIT")) {
-                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    CustomClass explicitClass = getSingleAddClass(pUsage);
-                    property = LM.getEditFormAction(obj, explicitClass);
-                    isFormObjectAction = true;
-                    objects = SetFact.singletonOrder(obj);
-                } else if (propertyName.equals("DELETE")) {
-                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                    property = LM.getDeleteAction(obj);
-                    objects = SetFact.singletonOrder(obj);
-                    isFormObjectAction = true;
-                    forceIntegrationSID = propertyName;
-                } else if (propertyName.equals("INTERVAL")) {
-                    objects = getTwinTimeSeriesMappingObject(propertyName, mapping);
-                    Iterator<ObjectEntity> iterator = objects.iterator();
-                    ObjectEntity objectFrom = iterator.next();
-                    ObjectEntity objectTo = iterator.next();
-                    TimeSeriesClass timeClass = (TimeSeriesClass) objectFrom.baseClass;
-                    LP<?>[] intProps = LM.findProperties(timeClass.getIntervalProperty(), timeClass.getFromIntervalProperty(), timeClass.getToIntervalProperty());
-                    Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
-                    property = intervalProp.first;
-                    selectorAction = intervalProp.second;
-                } else
-                    throw new UnsupportedOperationException();
-            } else {
-                MappedActionOrProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
-                checkPropertyParameters(prop.property, prop.mapping);
-                property = prop.property;
-                objects = prop.mapping;
+            MappedActionOrProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
 
-                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLAPUsage) {
-                    LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLAPUsage) pDrawUsage));
-                }
-            }
-
-            ComplexLocation<PropertyDrawEntity> location = propertyOptions.getLocation();
-            if(location == null)
-                location = isFormObjectAction ? ComplexLocation.LAST() : ComplexLocation.DEFAULT();
-
-            DebugInfo.DebugPoint debugPoint = points.get(i);
-            PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), debugPoint.getFullPath(), inherited.result, property.listInterfaces, location, version);
+            PropertyDrawEntity propertyDraw = form.addPropertyDraw(prop.property.createObjectEntity(prop.mapping), debugPoint.getFullPath(), inherited.result, prop.property.listInterfaces, ComplexLocation.DEFAULT(), version);
             propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
-            if(selectorAction != null)
-                propertyDraw.setSelectorAction(selectorAction);
+            propertyDraw.defaultChangeEventScope = commonOptions.getFormSessionScope();
 
-            propertyDraw.defaultChangeEventScope = scope;
-
-            if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
-                propertyDraw.setIntegrationSID(forceIntegrationSID);
-
-            try {
-                form.checkAlreadyDefined(propertyDraw, alias);
-
-                form.setFinalPropertyDrawSID(propertyDraw, alias);
-            } catch (FormEntity.AlreadyDefined alreadyDefined) {
-                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
-            }
-
-            applyPropertyOptions(propertyDraw, propertyOptions, version);
-
-            // Добавляем PropertyDrawView в FormView, если он уже был создан
-            PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
-
-            LocalizedString caption = captions.get(i);
-            String appImage = propertyOptions.getAppImage();
-            if(view != null) {
-                view.caption = caption;
-                if(appImage != null)
-                    view.setImage(appImage);
-            } else {
-                propertyDraw.initCaption = caption;
-                propertyDraw.initImage = appImage;
-            }
-
-            // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
-            checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
+            applyPropertyOptions(propertyDraw, commonOptions, version);
         }
     }
 
