@@ -19,6 +19,7 @@ IN groupName
 viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
+CHANGEMOUSE key [SHOW | HIDE]
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
@@ -150,7 +151,74 @@ DEFAULTCOMPARE [compare]
 
     - `key`
 
-        [String literal](Literals.md#strliteral) describing the key combination. The method of specifying is similar to the method of specifying a parameter in the Java class method [Keystroke.getKeystroke (String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+        [String literal](Literals.md#strliteral) describing the key combination. Syntax:
+          ```
+          keyStroke [;(modeKey=modeValue;)*]
+          ```
+    
+          - `keyStroke`
+              String representation of a key combination. The definition principle is similar to the way the parameter is specified in the Java class method KeyStroke.getKeyStroke(String). (http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+    
+          - `(modeKey=modeValue;)*`
+              Options specifying the execution conditions for keyStroke. The following options are supported:
+    
+              - `priority = priorityValue`
+                  Priority, an integer value. If multiple properties meet the CHANGEKEY conditions, the one with the higher priority will be executed.
+                  If the priority is not set, it is equal to the sequential number of the property in the form. Additionally, in any case, 1000 is added to the priority value if the object group matches.
+    
+              - `preview = previewValue`
+                  All events are checked for execution twice: first with isPreview = true, then with isPreview = false. Supported `previewValue` values:
+                  - `AUTO`, `ONLY` -> isPreview
+                  - `NO` -> !isPreview
+                  - `ALL` -> true
+    
+              - `dialog = dialogValue`
+                  Checks whether CHANGEKEY should be executed in a dialog window. Supported `dialogValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> isDialog
+                  - `NO` -> !isDialog
+    
+              - `window = windowValue`
+                  Checks whether CHANGEKEY should be executed in a modal window. Supported `windowValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> isWindow
+                  - `NO` -> !isWindow
+    
+              - `group = groupValue`
+                  Checks whether the object group matches. Supported `groupValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> equalGroup
+                  - `NO` -> !equalGroup
+    
+              - `editing = editingValue`
+                  Checks whether CHANGEKEY should be executed in property editing mode. Supported `editingValue` values:
+                  - `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+                  - `ALL` -> true
+                  - `ONLY` -> isEditing
+                  - `NO` -> !isEditing
+    
+              - `showing = showingValue`
+                  Checks whether the property is currently visible on the form. Supported `showingValue` values:
+                  - `AUTO`, `ONLY` -> isShowing
+                  - `ALL` -> true
+                  - `NO` -> !isShowing
+    
+              - `panel = panelValue`
+                  Checks whether the property is located in a panel. Supported `panelValue` values:
+                  - `AUTO` -> !isMouse || !isPanel
+                  - `ALL` -> true
+                  - `ONLY` -> isPanel
+                  - `NO` -> !isPanel
+    
+              - `cell = cellValue`
+                  Checks whether the property is located in a table cell. Supported `cellValue` values:
+                   - `AUTO` -> !isMouse || isCell
+                   - `ALL` -> true
+                   - `ONLY` -> isCell
+                   - `NO` -> !isCell
+    
+    
+              For all options except `priority`, the default value is `AUTO`.
 
     - `SHOW`
 
@@ -159,6 +227,31 @@ DEFAULTCOMPARE [compare]
     - `HIDE`
 
         Keyword. When specified, the key combination will not be displayed in the property caption. 
+
+- `CHANGEMOUSE key [SHOW | HIDE]`
+
+    Specifies the mouse key combination that triggers the start of property editing. Sets the default value for the design, which can be overridden in the `DESIGN` instruction.
+
+    - `key`
+
+    [String literal](Literals.md#strliteral)describing a mouse key combination. Syntax:
+        ```
+        keyStroke [;(modeKey=modeValue;)*]
+        ```
+
+  	    - `keyStroke`
+  		    String representation of a mouse key combination. Currently, the only supported value is `DBLCLK` — double click.
+  		
+  	    - `(modeKey=modeValue;)*`
+  		    The syntax is identical to that of `CHANGEKEY`.		
+
+    - `SHOW`
+
+        Keyword indicating that the mouse key combination should be displayed in the property header. This is the default behavior.
+
+    - `HIDE`
+
+        Keyword indicating that the mouse key combination should not be displayed in the property header.
 
 - `DEFAULTCOMPARE [compare]`
 
