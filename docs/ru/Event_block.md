@@ -39,6 +39,9 @@ ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
     - `CHANGE objName` - указывает, что действие должно быть выполнено при изменении значения объекта с именем `objName.`
     - `QUERYOK`
     - `QUERYCANCEL`
+    - `EXPAND componentSelector` - указывает, что действие должно быть выполнено после разворачивания контейнера `componentSelector`. 
+    - `COLLAPSE componentSelector` - указывает, что действие должно быть выполнено после сворачивания контейнера `componentSelector`.
+    - `TAB componentSelector` - указывает, что действие должно быть выполнено после того, как закладка `componentSelector` стала активна. 
     - `SCHEDULE PERIOD intPeriod [FIXED]` - создаёт планировщик, выполняющий действие каждые `intPeriod` секунд. Ключевое слово `FIXED` указывает на то, что период до следующего действия отсчитывается от старта текущего действия. По умолчанию период отсчитывается от окончания текущего действия.
 
 - `eventActionId`
