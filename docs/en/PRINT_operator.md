@@ -7,8 +7,10 @@ The `PRINT` operator creates an [action](Actions.md) that [opens a form](In_a_pr
 ### Syntax
 
 ```
-PRINT name 
+PRINT name
+[CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
+FILTERS ...
 [formActionOptions] 
 ```
 
@@ -30,6 +32,10 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 
     Form name. [Composite ID](IDs.md#cid).
 
+- `CLIENT` | `SERVER`
+
+   Keywords. Specify whether to perform the action on the client (`CLIENT`) or on the server (`SERVER`). By default, the action is performed on the client.
+
 - `objName1 ... objNameN`
 
     Names of form objects for which additional filters are specified. [Simple IDs](IDs.md#id).
@@ -37,6 +43,10 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 - `expr1 ... exprN`
 
     [Expressions](Expression.md) whose values determine the filtered (fixed) values for form objects.
+
+- `FILTERS ...`
+
+    Adds fixed filters to the form. [Syntax of the fixed filters block](Filters_and_sortings_block.md#fixedfilters).
 
 #### Additional options
 

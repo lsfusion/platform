@@ -7,7 +7,7 @@ title: 'Оператор PRINT'
 ### Синтаксис
 
 ```
-PRINT name 
+PRINT name
 [CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
 FILTERS ...
