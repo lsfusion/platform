@@ -29,6 +29,7 @@ CHARWIDTH width [FLEX | NOFLEX]
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
+LAZY [WEAK | STRONG]
 ```
 
 ## Description and parameters
@@ -260,6 +261,13 @@ DEFAULTCOMPARE [compare]
     - `compare`
 
         Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
+
+- `LAZY [WEAK | STRONG]`
+
+	Specifies the caching level of a property. 
+	`WEAK` means caching the property value on the application server (if reading is done for all fixed parameters).
+	`STRONG` means that the cache will not be entirely cleared upon any property change, but instead, an event will be triggered, and specific values will be cleared.
+	Default value is `WEAK`.
 
 ## Examples
 
