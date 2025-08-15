@@ -17,7 +17,7 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType]
+MESSAGE [syncType] [messageType]
 [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
 [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
 ```
@@ -86,6 +86,22 @@ MESSAGE [syncType]
 
     - `WAIT` - после завершения действия клиентом (закрытия формы предпросмотра / сообщения). Используется по умолчанию.
     - `NOWAIT` -  после подготовки информации для передачи клиенту (чтения данных формы).
+
+  - `messageType`
+
+    Тип сообщения. Определяет, как сообщение будет показываться на экране. Задается одним из ключевых слов:
+
+    - `LOG` - сообщение в окне сообщений `System.log`.
+
+    - `INFO` - информационное сообщение.
+
+    - `SUCCESS` - сообщение об успешном выполнении.
+
+    - `WARN` - сообщение с предупреждением.
+
+    - `ERROR` - сообщение об ошибке.
+
+    - `DEFAULT` - простое сообщение. Используется по умолчанию.
 
 - `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
 

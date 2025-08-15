@@ -17,7 +17,7 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType]
+MESSAGE [syncType] [messageType]
 [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
 [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
 ```
@@ -86,6 +86,22 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 
     - `WAIT` - after the client completes the action (closes the preview/message form). Used by default.
     - `NOWAIT` - after preparation of the information for sending to the client (form data is read).
+
+  - `messageType`
+
+    Message type. Specifies how the message will be displayed on the screen. Specified by one of the keywords:
+
+    - `LOG` - message in the `System.log` window.
+
+    - `INFO` - information message.
+
+    - `SUCCESS` - success message.
+
+    - `WARN` - warning message.
+
+    - `ERROR` - error message.
+
+    - `DEFAULT` - plain message. This value is used by default.
 
 - `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
 
