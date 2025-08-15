@@ -7,8 +7,10 @@ title: 'Оператор PRINT'
 ### Синтаксис
 
 ```
-PRINT name 
+PRINT name
+[CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
+FILTERS ...
 [formActionOptions] 
 ```
 
@@ -32,6 +34,10 @@ MESSAGE [syncType] [messageType]
 
     Имя формы. [Составной идентификатор](IDs.md#cid).
 
+- `CLIENT` | `SERVER`
+
+  Ключевые слова. Определяют, выполнять действие на клиенте (`CLIENT`) или на сервере (`SERVER`). По умолчанию действие выполняется на клиенте.
+
 - `objName1 ... objNameN`
 
     Имена объектов формы, для которых задаются дополнительные фильтры. [Простые идентификаторы](IDs.md#id).
@@ -39,6 +45,10 @@ MESSAGE [syncType] [messageType]
 - `expr1 ... exprN`
 
     [Выражения](Expression.md), значения которых определяют фильтруемые (фиксированные) значения для объектов формы.
+
+- `FILTERS ...`
+
+  Добавляет фиксированные фильтры на форму. [Синтаксис блока фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters).
 
 #### Дополнительные опции
 
