@@ -47,7 +47,7 @@ If the form is not the session owner:
 If `OK BEFORE` and `OK AFTER` handlers are defined, but the form is not the session owner, these handlers are still executed, respectively before and after the `OK` event handler.
 :::
 
-If, after the execution of event handlers with the `BEFORE` postfix, the `System.applyCanceled` property value equals `TRUE`, further execution of the action that led to the occurrence of this event is stopped (for example, with `APPLY BEFORE`, saving the session is interrupted as if one of the existing constraints had been [violated](Constraints.md)).
+If, after the execution of event handlers with the `BEFORE` postfix, the `System.beforeCanceled` property value equals `TRUE`, further execution of the action that led to the occurrence of this event is stopped (for example, with `APPLY BEFORE`, saving the session is interrupted as if one of the existing constraints had been [violated](Constraints.md)).
 
 
 :::info
