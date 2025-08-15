@@ -58,6 +58,8 @@ public class CaseAction extends ListCaseAction {
     }
 
     public void addCase(PropertyMapImplement<?, PropertyInterface> where, ActionMapImplement<?, PropertyInterface> action, boolean optimisticAsync, Version version) {
+        assert isAbstract();
+
         assert type == AbstractType.CASE;
 
         ExplicitActionCase<PropertyInterface> aCase = new ExplicitActionCase<>(where, action, optimisticAsync);
@@ -267,7 +269,7 @@ public class CaseAction extends ListCaseAction {
             allCases.set(!cases.isEmpty() &&
                     (cases.get(cases.size() - 1).where.mapIsExplicitTrue() || // the last is true (if else nonexclusive)
                     !cases.containsFn(aCase -> !aCase.isClassSimple()) || // it's MULTI
-                    (cases.size() == 2 && cases.get(1).where.mapIsExplicitNot(cases.get(0).where)))); // if else exclusive
+                    (cases.size() == 2 && cases.get(1).where.mapIsNot(cases.get(0).where)))); // if else exclusive
         }
 
         return cases.mapListValues(value -> value.implement);

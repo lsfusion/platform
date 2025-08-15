@@ -37,6 +37,8 @@ public class ListAction extends ListCaseAction {
 
     private Object actions;
     public void addAction(ActionMapImplement<?, PropertyInterface> action, Version version) {
+        assert isAbstract();
+
         assert action != null;
         NFListImpl.add(isLast, (NFList<ActionMapImplement<?, PropertyInterface>>) actions, action, version);
 

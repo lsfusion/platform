@@ -57,6 +57,14 @@ public class PropertyRevImplement<P extends PropertyInterface, T> implements Pro
         return property.toString() + " {" + mapping + "}";
     }
 
+    public boolean equals(Object object) {
+        return object instanceof PropertyRevImplement && property.equals(((PropertyRevImplement<?, ?>) object).property) && mapping.equals(((PropertyRevImplement<?, ?>) object).mapping);
+    }
+
+    public int hashCode() {
+        return 31 * property.hashCode() + mapping.hashCode();
+    }
+
     public LP createLP(ImOrderSet<T> listInterfaces) {
         return new LP<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }

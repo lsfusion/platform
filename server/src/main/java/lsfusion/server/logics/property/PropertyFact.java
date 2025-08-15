@@ -370,6 +370,15 @@ public class PropertyFact {
         return createUnion(interfaces, ListFact.toList(first, rest));
     }
 
+    public static <T> PropertyRevImplement<?, T> createXUnion(ImSet<T> interfaces, PropertyRevImplement<?, T> first, PropertyRevImplement<?, T> rest) {
+        ImRevMap<T, UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
+        ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
+
+        ImList<PropertyInterfaceImplement<UnionProperty.Interface>> operands = ListFact.toList(first.mapPropertyImplement(mapInterfaces), rest.mapPropertyImplement(mapInterfaces));
+        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(),operands.getCol(), false);
+        return new PropertyRevImplement<>(unionProperty, revMapInterfaces);
+    }
+
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createXUnion(ImSet<T> interfaces, PropertyInterfaceImplement<T> first, PropertyInterfaceImplement<T> rest) {
         return createXUnion(interfaces, ListFact.toList(first, rest));
     }
@@ -733,7 +742,7 @@ public class PropertyFact {
             return ifFalse;
         if(ifFalse==null)
             return ifTrue;
-        return PropertyFact.createXUnion(innerInterfaces, ifTrue, ifFalse);
+        return PropertyFact.createXUnion(innerInterfaces, (PropertyInterfaceImplement<L>) ifTrue, ifFalse);
     }
 
     public static SessionDataProperty createInputDataProp(ValueClass valueClass) {
@@ -859,10 +868,12 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+        // has no extend context
         return createSetAction(context, context, null, writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
-        return createSetAction(innerInterfaces, context, null, writeToProp, writeFrom);
+        // assert that is created with createForDataProp (SessionDataProperty) and written to (from it)
+        return createSetAction(innerInterfaces, context, PropertyFact.createUnion(innerInterfaces, writeToProp, writeFrom), writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         SetAction<P, W, L> setAction = new SetAction<>(LocalizedString.NONAME, innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
@@ -962,7 +973,7 @@ public class PropertyFact {
             ImSet<PropertyInterfaceImplement<I>> partitions = BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(context);
             writeFrom = createOProp(LocalizedString.NONAME, PartitionType.select(), innerInterfaces, ListFact.singleton(writeFrom), partitions, orders, ordersNotNull, selectTop);
         }
-        return createSetAction(innerInterfaces, context, null, writeTo, writeFrom);
+        return createSetAction(innerInterfaces, context, writeTo, writeFrom);
     }
 
     // расширенный интерфейс создания SetAction, который умеет группировать, если что
@@ -976,32 +987,36 @@ public class PropertyFact {
         assert innerInterfaces.merge(whereInterfaces).containsAll(getUsedInterfaces(writeFrom));
 
         if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
-            if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
-                if(writeFrom instanceof PropertyMapImplement) {
-                    whereInterfaces = whereInterfaces.merge(innerInterfaces);
-                    where = (PropertyMapImplement<W, I>) SetAction.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
-                } else { // по сути оптимизация, чтобы or не тянуть
-                    whereInterfaces = whereInterfaces.merge((I) writeFrom);
-                    where  = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetAction.getValueClassProperty(writeTo, writeFrom));
-                }
-            }
+            // we don't need it know since we create "full" where outside the SetAction
+//            if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
+//                if(writeFrom instanceof PropertyMapImplement) {
+//                    whereInterfaces = whereInterfaces.merge(innerInterfaces);
+//                    where = (PropertyMapImplement<W, I>) SetAction.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
+//                } else { // по сути оптимизация, чтобы or не тянуть
+//                    whereInterfaces = whereInterfaces.merge((I) writeFrom);
+//                    where  = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetAction.getValueClassProperty(writeTo, writeFrom));
+//                }
+//            }
+//
+//            ImSet<I> checkContext = whereInterfaces.filter(context);
+//            // тут с assertion'ом на filterIncl есть нюанс, может получиться что контекст определяется сверху и он может проталкиваться, но на момент компиляции его нет (или может вообще не проталкиваться, тогда что делать непонятно)
+//            // при этом ситуацию усугубляет например если есть FOR t==x(d) NEW z=Z и d из верхнего контекста, условие x(d) скомпилируется в NEW и тип его не вытянется
+//            // поэтому будем подставлять те классы которые есть, предполагая что если нет они должны придти сверху
+//            if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
+//                where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filter(checkContext))); // filterIncl
 
-            ImSet<I> checkContext = whereInterfaces.filter(context);
-            // тут с assertion'ом на filterIncl есть нюанс, может получиться что контекст определяется сверху и он может проталкиваться, но на момент компиляции его нет (или может вообще не проталкиваться, тогда что делать непонятно)
-            // при этом ситуацию усугубляет например если есть FOR t==x(d) NEW z=Z и d из верхнего контекста, условие x(d) скомпилируется в NEW и тип его не вытянется
-            // поэтому будем подставлять те классы которые есть, предполагая что если нет они должны придти сверху
-            if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
-                where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filter(checkContext))); // filterIncl
+            ImSet<I> usedExtraInterfaces = getUsedInterfaces(orders.keys());
 
-            // we can do it before the above check, but since we don't have any classes during where extending it doesn't make any sense
-            for(PropertyInterfaceImplement<I> order : orders.keyIt()) {
-                ImSet<I> usedOrderInterfaces = getUsedInterfaces(order);
-                if (!whereInterfaces.containsAll(usedOrderInterfaces)) {
-                    ImSet<I> extraInterfaces = usedOrderInterfaces.remove(whereInterfaces);
-                    whereInterfaces = whereInterfaces.addExcl(extraInterfaces);
-                    where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(extraInterfaces));
-                }
-            }
+            // in theory IsClassProperty.getMapProperty for the writeTo should be added (since it is implicitly added in the change) as well as writeFrom IS valueClass
+            // but in theory push from above should work
+            if(1 != 1)
+                where = (PropertyMapImplement<W, I>) SetAction.getFullProperty(where, writeTo, writeFrom);
+            else
+                usedExtraInterfaces = usedExtraInterfaces.merge(getUsedInterfaces(writeFrom));
+
+            ImSet<I> extraInterfaces = usedExtraInterfaces.remove(whereInterfaces);
+            if (!extraInterfaces.isEmpty()) // patching parameters because we use where.property in GProps
+                where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces.addExcl(extraInterfaces), where, BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(extraInterfaces));
 
             ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces);
             ImRevMap<I, W> mapWhere = where.mapping.reverse();

@@ -1,10 +1,13 @@
 package lsfusion.server.logics.action.change;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.SQLSession;
@@ -90,26 +93,26 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         return getChangeProps(writeTo.property);
     }
 
+    @IdentityLazy
+    private boolean isRewriteLocal() {
+        return writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(this.mapInterfaces.valuesSet()) && (where == null || where.mapIsOr(writeTo))
+                && !(writeFrom instanceof PropertyMapImplement && Property.depends(((PropertyMapImplement)writeFrom).property, writeTo.property));
+    }
+
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
-        if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
-                && !(writeFrom instanceof PropertyMapImplement && Property.depends(((PropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
+        if(isRewriteLocal()) // optimization, in the future it will be necessary to directly set “delete” changes to null in aspectChangeProperty in the case of SessionDataProperty
             session.dropChanges((SessionDataProperty) writeTo.property);
 
-        // если не хватает ключей надо or добавить, так чтобы кэширование работало
-        ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
-        PropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
-                (where == null ? getTrueProperty() : where) : getFullProperty();
-
-        Where exprWhere = changeWhere.mapExpr(innerExprs, context.getModifier()).getWhere();
+        Where exprWhere = where != null ? where.mapExpr(innerExprs, context.getModifier()).getWhere() : Where.TRUE();
 
         if(!exprWhere.isFalse()) { // оптимизация, важна так как во многих event'ах может учавствовать
 
             Result<SessionTableUsage> rUsedTable = new Result<>();
             try {
-                if (writeFrom.mapHasPreread(context.getModifier()) && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
-                    exprWhere = PropertyChange.materializeWhere("setmwh", changeWhere, session, innerKeys, innerValues, innerExprs, exprWhere, rUsedTable);
+                if (where != null && writeFrom.mapHasPreread(context.getModifier()) && PropertyChange.needMaterializeWhere(exprWhere))
+                    exprWhere = PropertyChange.materializeWhere("setmwh", where, session, innerKeys, innerValues, innerExprs, exprWhere, rUsedTable);
 
                 if (!exprWhere.isFalse()) {
                     Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
@@ -130,22 +133,13 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         return FlowResult.FINISH;
     }
 
-    public static <I extends PropertyInterface> PropertyMapImplement<?, I> getFullProperty(ImSet<I> innerInterfaces, PropertyMapImplement<?, I> where, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
-        PropertyMapImplement<?, I> result = PropertyFact.createUnion(innerInterfaces, // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
-                PropertyFact.createNotNull(writeTo), getValueClassProperty(writeTo, writeFrom));
-        if(where!=null)
-            result = PropertyFact.createAnd(innerInterfaces, where, result);
-        return result;
-    }
-
-    public static <I extends PropertyInterface> PropertyMapImplement<?, I> getValueClassProperty(PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
-        return PropertyFact.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(ClassType.wherePolicy), "value").
-                mapImplement(MapFact.singleton("value", writeFrom)));
-    }
-
-    @IdentityInstanceLazy
-    private PropertyMapImplement<?, I> getFullProperty() {
-        return getFullProperty(innerInterfaces, where, writeTo, writeFrom);
+    public static <I extends PropertyInterface> PropertyMapImplement<?, I> getFullProperty(PropertyMapImplement<?, I> where, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
+        MList<PropertyMapImplement<?, I>> mAnds = ListFact.mListMax(3);
+        if(where != null) // optimization
+            mAnds.add(where);
+        mAnds.add(writeTo.mapChangeClassProperty());
+        mAnds.add(writeFrom.mapChangeValueClassProperty(writeTo.property));
+        return PropertyFact.createAnd(mAnds.immutableList().getCol());
     }
 
     @IdentityInstanceLazy
@@ -154,7 +148,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
-        return getFullProperty();
+        return getFullProperty(where, writeTo, writeFrom);
     }
 
     @Override
@@ -180,8 +174,8 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
 
     @Override
     protected AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
-        if((where == null || where.property instanceof ValueProperty) &&
-                mapInterfaces.valuesSet().containsAll(writeTo.mapping.valuesSet())) {
+        if(where == null) {
+            assert getExtendInterfaces().isEmpty();
             // it can be mapped because of the assertion mapInterfaces.values + writeTo.values contains all inner interfaces
             AsyncMapChange<?, I> asyncChange = writeFrom.mapAsyncChange(writeTo, null);
             if(asyncChange != null)

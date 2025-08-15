@@ -33,6 +33,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -49,8 +50,8 @@ import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -302,8 +303,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         assert canonicalName == null;
 
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
-
-        setExplicitClasses(signatureOrder, signature);
     }
 
     final public boolean isNamed() {
@@ -554,14 +553,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
     }
 
-    public List<ResolveClassSet> getExplicitClasses(ImOrderSet<T> interfaces) {
-        if(explicitClasses == null)
-            return null;
-        return interfaces.mapList(explicitClasses).toJavaList();
-    }
-
     public void setExplicitClasses(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
         this.explicitClasses = getPackedSignature(interfaces, signature);
+
+//        checkExplicitInterfaces();
     }
     
     public String getPID() {
@@ -596,22 +591,21 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     protected ImMap<T, ResolveClassSet> explicitClasses; // без nulls
 
-    protected interface Checker<V> {
-        boolean checkEquals(V expl, V calc);
+    public interface Checker<V> {
+        void checkEquals(Object object, V expl, V calc);
     }
 
     protected BaseLogicsModule getBaseLM() {
         return ThreadLocalContext.getBaseLM();
     }
 
-    //
-    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, ActionOrProperty property, Checker<V> checker) {
+    public static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, Object object, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
         if (explicitInterfaces != null)
             inferred = explicitInterfaces;
 
-        if (inferred == null || inferred.size() < interfaces.size() || AlgType.checkExplicitInfer) {
+        if (inferred == null || inferred.size() < interfaces.size() || checker != null) {
             try {
                 ImMap<T, V> calcInferred = calcInterfaces.call();
                 if (calcInferred == null) {
@@ -620,7 +614,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 if (inferred == null)
                     inferred = calcInferred;
                 else {
-                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(checker, caption + property, inferred, calcInferred);
+                    if (checker != null) checkExplicitCalcInterfaces(checker, object, inferred, calcInferred);
                     inferred = calcInferred.override(inferred); // тут возможно replaceValues достаточно, но не так просто оценить
                 }
             } catch (Exception e) {
@@ -630,17 +624,38 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return inferred;
     }
 
-    private static  <T, V> boolean checkExplicitCalcInterfaces(Checker<V> checker, String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
+    private static  <T, V> void checkExplicitCalcInterfaces(Checker<V> checker, Object object, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
         for(int i=0, size = inferred.size(); i<size; i++) {
             T key = inferred.getKey(i);
             V calcValue = calcInferred.get(key);
             V inferValue = inferred.getValue(i);
-            if((calcValue != null || inferValue != null) && (calcValue == null || inferValue == null || !checker.checkEquals(calcValue, inferValue))) {
-                System.out.println(caption + ", CALC : " + calcInferred + ", INF : " + inferred);
-                return false;
-            }
+            checker.checkEquals(object, inferValue, calcValue);
         }
-        return true;
+    }
+
+    public abstract void checkExplicitInterfaces();
+
+    protected static void checkExplicitInterfaces(String typeCheck, Object object, ExClassSet expl, ExClassSet calc) {
+        boolean onlyObjects = true;
+        ResolveClassSet resExpl = ExClassSet.fromEx(expl);
+        ResolveClassSet resCalc = ExClassSet.fromEx(calc);
+        if(resExpl == null)
+            return;
+        if(resCalc == null || calc.orAny) {
+            if(!(onlyObjects && resExpl instanceof DataClass)) {
+                System.out.println(typeCheck + " MISSING " + (resExpl instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
+            }
+
+            return;
+        }
+
+        AndClassSet explAnd = resExpl.toAnd();
+        AndClassSet calcAnd = resCalc.toAnd();
+        if(explAnd.containsAll(calcAnd, true)) // && calcAnd.containsAll(explAnd, false);
+            return;
+
+        if(!(onlyObjects && resExpl instanceof DataClass && resCalc instanceof DataClass))
+            System.out.println(typeCheck + " INCORRECT " + (resExpl instanceof DataClass && resCalc instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
     }
 
     public String getChangeExtSID() {

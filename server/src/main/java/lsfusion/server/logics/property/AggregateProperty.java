@@ -55,12 +55,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     }
 
 
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
+    public static <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
         ImList<ExClassSet> valueClasses = ListFact.toList(used.size(), i -> isSelect && i == 0 ? commonValue : ExClassSet.notNull(commonValue));
         return inferInnerInterfaceClasses(used, orders, ordersNotNull, skipNotNull, valueClasses, inferType);
     }
 
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, ImList<ExClassSet> valueClasses, InferType inferType) {
+    public static <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, ImList<ExClassSet> valueClasses, InferType inferType) {
         return op(used.addList(orders.keyOrderSet()), valueClasses.addList(ListFact.toList(ExClassSet.NULL, orders.size())),
                 used.size() + (ordersNotNull ? orders.size() : 0), skipNotNull, inferType, false);
     }

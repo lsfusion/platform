@@ -2939,6 +2939,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
         if(!(sessionTable != null && sessionTable.get() != null)) { // одна из возможных причин - DataSession.updateSessionNotChangedEvents
+            if(isExplainTemporaryTablesEnabled() && privateConnection != null)
+                privateConnection.temporary.outLog(table.getName());
             ServerLoggers.assertLog(false, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()), true);
             wasSessionTableAssertion.set(true);
         }

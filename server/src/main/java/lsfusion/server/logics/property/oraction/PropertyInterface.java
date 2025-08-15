@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.oraction;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -242,7 +243,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return BaseUtils.hashEquals(this, changeProperty);
     }
     @Override
-    public boolean mapIsExplicitNot(PropertyInterfaceImplement<P> where) {
+    public boolean mapIsNot(PropertyInterfaceImplement<P> where) {
+        return false;
+    }
+    @Override
+    public boolean mapIsOr(PropertyMapImplement<?, P> where) {
         return false;
     }
 
@@ -275,5 +280,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     @Override
     public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo, ObjectEntity object) {
         return new AsyncMapChange<>(writeTo, object, null, (P)this);
+    }
+
+    @Override
+    public PropertyMapImplement<?, P> mapChangeValueClassProperty(Property<?> to) {
+        return to.getValueClassProperty().mapPropertyImplement(MapFact.singletonRev("value", (P)this));
     }
 }

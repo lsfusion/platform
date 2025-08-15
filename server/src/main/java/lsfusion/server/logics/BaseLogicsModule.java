@@ -115,6 +115,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
+import static lsfusion.base.BaseUtils.consecutiveList;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.intervalPrefix;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.objValuePrefix;
 
@@ -676,18 +677,18 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     private void initNativeProperties() {
         objectClass = addProperty(null, new LP<>(baseClass.getObjectClassProperty()));
-        makePropertyPublic(objectClass, "objectClass", Collections.nCopies(1, null));
+        makePropertyPublic(objectClass, "objectClass", (ResolveClassSet) null);
 
         random = addRMProp(LocalizedString.create("Random"));
-        makePropertyPublic(random, "random", Collections.emptyList());
+        makePropertyPublic(random, "random");
 
         SessionDataProperty requestCanceledProp = new SessionDataProperty(LocalizedString.NONAME, LogicalClass.instance);
         requestCanceledProp.nestedType = LocalNestedType.ALL;
         requestCanceled = addProperty(null, new LP<>(requestCanceledProp));
-        makePropertyPublic(requestCanceled, "requestCanceled", Collections.emptyList());
+        makePropertyPublic(requestCanceled, "requestCanceled");
 
         isHTMLSupported = addAUProp(null, false, false, false, false, CaseUnionProperty.Type.MULTI, LocalizedString.NONAME, LogicalClass.instance);
-        makePropertyPublic(isHTMLSupported, "isHTMLSupported", Collections.emptyList());
+        makePropertyPublic(isHTMLSupported, "isHTMLSupported");
 
         makePropertyPublic(FormEntity.isDocked, "isDocked");
         makePropertyPublic(FormEntity.isEditing, "isEditing");
@@ -1028,11 +1029,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public <P extends PropertyInterface> LP addClassProp(LP<P> lp) {
-        return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
+        return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp.listInterfaces);
     }
 
     private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
         return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.groupTo.updateType != UpdateType.NULL);
+    }
+
+    protected LP<?> wrapObjProperty(LP<?> property) {
+        return addJProp(property, consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
 
     @Override
@@ -1138,7 +1143,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         if(form.getCanonicalName() != null) {
             String name = "_NAVIGATORFORM" + getFormPrefix(form);
-            makeActionPublic(result, name, new ArrayList<>());
+            makeActionPublic(result, name);
         }
         
         return result;
@@ -1150,7 +1155,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         if(formEntity.getCanonicalName() != null) {
             String name = "_ADDFORMNEWSESSION" + getFormPrefix(formEntity) + getObjectPrefix(contextObject) + getClassPrefix(cls); // issue #47
-            makeActionPublic(result, name, new ArrayList<>());
+            makeActionPublic(result, name);
         }
 
         return result;
@@ -1326,10 +1331,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     public LA<?> addDDAProp(Property property) {
-        List<ResolveClassSet> signature = new ArrayList<>();
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
         LA result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
+            List<ResolveClassSet> signature = new ArrayList<>();
             String name = nameForDrillDownAction(property, signature);
             makeActionPublic(result, name, signature);
         }

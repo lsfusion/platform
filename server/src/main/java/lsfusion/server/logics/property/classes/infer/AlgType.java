@@ -18,7 +18,7 @@ public interface AlgType {
 
     <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property);
 
-    <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses);
+    <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property);
 
     <P extends PropertyInterface> ValueClass getValueClass(Property<P> property);
 
@@ -40,6 +40,7 @@ public interface AlgType {
     boolean useClassInfer = useInfer;
     AlgInfoType defaultType = useInfer ? InferType.prevBase() : CalcClassType.prevBase();
     AlgType caseCheckType = useInfer ? InferType.prevSame() : CalcClassType.prevSame();
+    AlgType patchType = useInfer ? InferType.prevSameNoExplicit() : CalcClassType.prevSame();
     AlgInfoType checkType = defaultType;
     AlgInfoType statAlotType = defaultType;
     AlgInfoType hintType = CalcType.EXPR.getAlgInfo();

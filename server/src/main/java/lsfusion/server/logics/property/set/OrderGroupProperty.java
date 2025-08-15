@@ -143,6 +143,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
             BaseLogicsModule baseLM = getBaseLM();
 
             PropertyMapImplement<ClassPropertyInterface, I> selectProp = ForAction.createForDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null, null);
+            ActionMapImplement<?, Interface<I>> writeAction = PropertyFact.createSetAction(innerInterfaces, groupMap, selectProp, whereProp);
 
             // now Object.noClasses doesn't work for interactive forms (so we can return innerClasses to null if it will be fixed)
             LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false, true);
@@ -150,9 +151,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
             ActionMapImplement<?, Interface<I>> selectFormAction = la.getImplement(selectForm.getOrderInterfaces(groupMap));
 
             ActionMapImplement<?, Interface<I>> result = PropertyFact.createRequestAction(interfaces,
-                    PropertyFact.createListAction(interfaces,
-                            PropertyFact.createSetAction(innerInterfaces, groupMap, selectProp, whereProp),
-                            selectFormAction),
+                    PropertyFact.createListAction(interfaces, writeAction, selectFormAction),
                     PropertyFact.createSetAction(innerInterfaces, groupMap, (PropertyMapImplement<?, I>) whereProp, selectProp), null);
             return result;
         }

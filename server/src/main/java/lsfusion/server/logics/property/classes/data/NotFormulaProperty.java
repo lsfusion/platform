@@ -12,6 +12,7 @@ import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -22,6 +23,11 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
     }
 
     public final static NotFormulaProperty instance = new NotFormulaProperty();
+
+    public static <T> PropertyRevImplement<?, T> getProperty(T map) {
+        NotFormulaProperty notProperty = instance;
+        return new PropertyRevImplement<>(notProperty, MapFact.singletonRev(notProperty.interfaces.single(), map));
+    }
 
     protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.singleValue().getWhere().not());

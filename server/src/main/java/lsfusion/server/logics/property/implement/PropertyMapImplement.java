@@ -103,11 +103,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type) {
-        return mapInterfaceClasses(type, null);
-    }
-
-    public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type, ExClassSet valueClasses) {
-        return mapping.rightCrossJoin(property.getInterfaceClasses(type, valueClasses));
+        return mapping.rightCrossJoin(property.getInterfaceClasses(type));
     }
 
     public ClassWhere<T> mapClassWhere(ClassType type) {
@@ -313,13 +309,25 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getClassProperty().mapPropertyImplement(mapping);
     }
 
+    public PropertyMapImplement<?, T> mapChangeClassProperty() {
+        return property.getChangeClassProperty().mapPropertyImplement(mapping);
+    }
+
+    public PropertyMapImplement<?, T> mapChangeValueClassProperty(Property to) {
+        return property.getChangeValueClassProperty(to).mapPropertyImplement(mapping);
+    }
+
     @Override
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
          return getInterfaces().containsAll(changeProperty.getInterfaces()) && property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
     }
     @Override
-    public boolean mapIsExplicitNot(PropertyInterfaceImplement<T> where) {
+    public boolean mapIsNot(PropertyInterfaceImplement<T> where) {
         return getInterfaces().containsAll(where.getInterfaces()) && property.isNot(where.map(mapping.reverse()));
+    }
+    @Override
+    public boolean mapIsOr(PropertyMapImplement<?, T> where) {
+        return getInterfaces().containsAll(where.getInterfaces()) && property.isOr(where.map(mapping.reverse()));
     }
 
     @Override

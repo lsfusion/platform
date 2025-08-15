@@ -85,7 +85,6 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
-import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -111,6 +110,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -138,7 +138,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -599,8 +598,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return containsAll(inferredClasses, exInterfaceClasses, true); // тут вопрос с последним параметром, так как при false - A : C MULTI B : C пойдет в панель, с другой стороны при добавлении D : C поведение изменится
     }
 
-    public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType, ExClassSet valueClasses) {
-        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType, valueClasses);
+    public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType) {
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
         if(inferred == null)
             return MapFact.EMPTY();
         return ExClassSet.fromExValue(inferred).removeNulls();
@@ -614,6 +613,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public boolean isNot(PropertyInterfaceImplement<T> map) {
         return false;
+    }
+    public boolean isOr(PropertyMapImplement<?, T> map) {
+        return getImplement().equalsMap(map);
     }
 
     public Pair<PropertyInterfaceImplement<T>, PropertyInterfaceImplement<T>> getIfProp() {
@@ -1230,7 +1232,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         markedStored = true;
 
         if (table != null) {
-            ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(AlgType.storedResolveType);
+            ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses();
             if(interfaces.size() == 1) { // optimization + hack
                 mapTable = new MapKeysTable<>(table, MapFact.singletonRev(interfaces.single(), table.keys.single()));
                 assert this instanceof ClassDataProperty || mapTable.equals(table.getMapKeysTable(keyClasses)); // for classdataprops it's a hack, because there can be really different classes inside and their commonParent (in interfaceClasses) can be really different from full table (explicit table for class dataprops)   
@@ -1253,7 +1255,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public void initStored(TableFactory tableFactory, DBNamingPolicy policy) {
         if(mapTable == null)
-            mapTable = tableFactory.getMapTable(getOrderTableInterfaceClasses(AlgType.storedResolveType), policy);
+            mapTable = tableFactory.getMapTable(getOrderTableInterfaceClasses(), policy);
 
         String dbName = mapDbName != null ? mapDbName : policy.transformActionOrPropertyCNToDBName(this.canonicalName);
 
@@ -1341,25 +1343,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         });
     }
 
+    public ImOrderMap<T, ValueClass> getOrderTableInterfaceClasses() {
+        // AlgType.patchType should be used instead of storedResolveType, if there is no params patching for materializations in the addSettingsToProperty
+        return getOrderInterfaces().mapOrderMap(getInterfaceClasses(AlgType.storedResolveType));
+    }
+
     @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
-        return getInterfaceClasses(type, null);
-    }
-
-    public ImOrderMap<T, ValueClass> getOrderTableInterfaceClasses(AlgType type) {
-        return getOrderInterfaces().mapOrderMap(getInterfaceClasses(type));
-    }
-
-    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {
-        return classToAlg(type, arg -> getInterfaceClasses(arg, valueClasses));
+        return classToAlg(type, this::getInterfaceClasses);
     }
 
     public ImMap<T, ValueClass> getInterfaceClasses(AlgType type) {
-        return getInterfaceClasses(type, null);
-    }
-
-    public ImMap<T, ValueClass> getInterfaceClasses(AlgType type, final ExClassSet valueClasses) {
-        return type.getInterfaceClasses(this, valueClasses);
+        return type.getInterfaceClasses(this);
     }
 
     @IdentityLazy
@@ -1473,27 +1468,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
 
-    private static final Checker<ExClassSet> checker = (expl, calc) -> {
-        ResolveClassSet resExpl = ExClassSet.fromEx(expl);
-        ResolveClassSet resCalc = ExClassSet.fromEx(calc);
-        if(resExpl == null)
-            return resCalc == null;
-        if(resCalc == null)
-            return false;
-        
-        AndClassSet explAnd = resExpl.toAnd();
-        AndClassSet calcAnd = resCalc.toAnd();
-        return explAnd.containsAll(calcAnd, false) && calcAnd.containsAll(explAnd, false);
-    };
-
-    public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
-        return inferClassValueWhere(inferType, null);
-    }
-
     @IdentityStartLazy
-    public ClassWhere<Object> inferClassValueWhere(final InferType inferType, final ExClassSet valueClasses) {
+    public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
         // если prevBase и есть PREV'ы не используем explicitClasses
-        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType, valueClasses);
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
         if(inferred == null)
             return ClassWhere.FALSE();
         
@@ -1504,17 +1482,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new ClassWhere<>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
-    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, ActionOrProperty property, Checker<ExClassSet> checker) {
-        assert inferType != InferType.resolve();
-        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.prevBase() && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
-    }
-
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
         return getInferInterfaceClasses(inferType, null);
     }
 
-    private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType, final ExClassSet valueClasses) {
-        return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, () -> inferInterfaceClasses(valueClasses, inferType).finishEx(inferType), "CALC ", this, checker);
+    // we don't want to call inferInterfaceClasses to avoid unnecessary infer calculations
+    private ImMap<T, ExClassSet> getInferInterfaceClasses(InferType inferType, Checker<ExClassSet> checker) {
+        assert inferType != InferType.resolve();
+
+        boolean noExplicitClasses = false;
+        if(inferType == InferType.prevSameNoExplicit()) {
+            inferType = InferType.prevSame();
+            noExplicitClasses = true;
+        }
+
+        InferType fInferType = inferType;
+        return getExplicitCalcInterfaces(interfaces, noExplicitClasses || (inferType == InferType.prevBase() && !noOld()) || explicitClasses == null ? null : ExClassSet.toEx(explicitClasses), () -> aspectCalcInferInterfaceClasses(null, fInferType).finishEx(fInferType), this, checker);
+    }
+
+    public void checkExplicitInterfaces() {
+        getInferInterfaceClasses(InferType.prevSame(), (object, expl, calc) -> checkExplicitInterfaces("PROPERTY", object, expl, calc));
     }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
@@ -2277,10 +2264,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public Inferred<T> inferInterfaceClasses(InferType inferType) {
         return inferInterfaceClasses(null, inferType);
     }
-    // make inferInterfaceClasses using explicitClasses (now it works different from plugin) but however it's not evident how it can cause problems in practice
-    @IdentityStartLazy
     public Inferred<T> inferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return calcInferInterfaceClasses(commonValue, inferType);
+        Inferred<T> calcInferred = aspectCalcInferInterfaceClasses(commonValue, inferType);
+
+//        assert inferType != InferType.resolve();
+//        if (explicitClasses != null && !(inferType == InferType.prevBase() && !noOld())) {
+//            Inferred<T> cinf = calcInferred;
+//            calcInferred = cinf.overrideClasses(ExClassSet.toExAny(explicitClasses));
+//        }
+
+        return calcInferred;
+    }
+    @IdentityStartLazy
+    public Inferred<T> aspectCalcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return calcInferInterfaceClasses(commonValue, inferType)                                                                                                                                                                                                                                                                                                                        ;
     }
     protected abstract Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
     // optimization really important for applyCompared
@@ -2439,14 +2436,28 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy).filter(interfaces));
     }
 
+    public PropertyMapImplement<?, T> getChangeClassProperty() {
+        return getClassProperty();
+    }
+
+    public PropertyMapImplement<?, T> getChangeValueClassProperty(Property<?> to) {
+        return getChangeValueClassProperty(to.getValueClassProperty());
+    }
+
     @IdentityInstanceLazy
-    protected PropertyRevImplement<?, String> getValueClassProperty() {
+    private PropertyMapImplement<?, T> getChangeValueClassProperty(PropertyRevImplement<?, String> to) {
+        return PropertyFact.createJoin(to.mapImplement(MapFact.singleton("value", getImplement())));
+    }
+
+    @IdentityInstanceLazy
+    public PropertyRevImplement<?, String> getValueClassProperty() {
         ValueClass valueClass = getValueClass(ClassType.signaturePolicy);
-        if(valueClass instanceof ConcatenateValueClass) // getClassProperty not supported
-            return null;
         if(valueClass == null)
             return null;
-        return IsClassProperty.getProperty(valueClass, "value");
+
+        PropertyRevImplement<?, String> classProperty = IsClassProperty.getProperty(valueClass, "value");
+        // return classProperty
+        return PropertyFact.createXUnion(SetFact.singleton("value"), classProperty, NotFormulaProperty.getProperty("value"));
     }
 
     public boolean isFull(ImCol<T> checkInterfaces, AlgInfoType algType) {
@@ -2535,6 +2546,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean isExplicitNull() {
         return this instanceof NullValueProperty; // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+    }
+
+    public boolean isExplicitNotNull() {
+        return this instanceof ValueProperty;
     }
 
     public boolean isExplicitTrue() {

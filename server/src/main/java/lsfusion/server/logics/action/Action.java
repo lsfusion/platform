@@ -346,18 +346,21 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         return getWhereProperty(false);
     }
-    
-    private static final Checker<ValueClass> checker = BaseUtils::hashEquals; 
-            
+
     private PropertyMapImplement<?, P> calcClassWhereProperty() {
-        ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), this::calcWhereInterfaceClasses, "ACTION ", this, checker);
-        return IsClassProperty.getMapProperty(inferred);
+        return IsClassProperty.getMapProperty(calcClassWhere(null));
+    }
+
+    private ImMap<P, ValueClass> calcClassWhere(Checker<ValueClass> checker) {
+        return getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), this::calcWhereInterfaceClasses, this, checker);
+    }
+
+    public void checkExplicitInterfaces() {
+        calcClassWhere((caption, expl, calc) -> checkExplicitInterfaces("ACTION", caption, ExClassSet.toExValue(expl), ExClassSet.toExValue(calc)));
     }
 
     private ImMap<P, ValueClass> getExplicitInterfaces() {
-        if(explicitClasses == null)
-            return null;
-        return ExClassSet.fromResolveValue(explicitClasses);
+        return explicitClasses != null ? ExClassSet.fromResolveValue(explicitClasses) : null;
     }
 
     private ImMap<P, ValueClass> calcWhereInterfaceClasses() {

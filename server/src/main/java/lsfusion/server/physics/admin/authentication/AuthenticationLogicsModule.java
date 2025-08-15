@@ -132,11 +132,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public void initMainLogic() throws RecognitionException {
         // Текущий пользователь
         currentUser = addProperty(null, new LP<>(new CurrentUserProperty(user)));
-        makePropertyPublic(currentUser, "currentUser", new ArrayList<>());
+        makePropertyPublic(currentUser, "currentUser");
         currentComputer = addProperty(null, new LP<>(new CurrentComputerProperty(computer)));
-        makePropertyPublic(currentComputer, "currentComputer", new ArrayList<>());
+        makePropertyPublic(currentComputer, "currentComputer");
         currentAuthToken = addProperty(null, new LP<>(new CurrentAuthTokenProperty()));
-        makePropertyPublic(currentAuthToken, "currentAuthToken", new ArrayList<>());
+        makePropertyPublic(currentAuthToken, "currentAuthToken");
 
         super.initMainLogic();
 

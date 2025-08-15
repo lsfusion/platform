@@ -34,26 +34,21 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
     private final boolean interactive;
 
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> explicitInnerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
                                                                PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, boolean interactive, Version version) {
         super(LocalizedString.NONAME, version);
 
         this.interactive = interactive;
 
-        ImMap<P, ValueClass> interfaceClasses;
-        if(innerClasses == null) { // export / json
-            if (where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
-                PropertyMapImplement<M, P> mapWhere = (PropertyMapImplement<M, P>) where;
-                interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
-            } else 
-                interfaceClasses = MapFact.EMPTY();
+        // remove null
+        ImMap<P, ValueClass> interfaceClasses = Property.getExplicitCalcInterfaces(innerInterfaces.getSet(), explicitInnerClasses != null ? innerInterfaces.mapList(explicitInnerClasses) : null, () -> {
+            if (where instanceof PropertyMapImplement) // it'not clear what to do with parameter as where
+                return ((PropertyMapImplement<M, P>) where).mapInterfaceClasses(ClassType.forPolicy);
+            return MapFact.EMPTY();
+        }, this, null);
 
-        } else
-            interfaceClasses = innerInterfaces.mapList(innerClasses);
-
-        ImMap<P, ValueClass> finalInterfaceClasses = interfaceClasses;
         mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> {
-            ValueClass interfaceClass = finalInterfaceClasses.get(value);
+            ValueClass interfaceClass = interfaceClasses.get(value);
             return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
         });
 

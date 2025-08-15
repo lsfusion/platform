@@ -99,7 +99,11 @@ public class Inferred<T extends PropertyInterface> {
             iq++;
         }
         return queue.immutableOrder().getSet().removeIncl(compare);
-    }    
+    }
+
+    public Inferred<T> overrideClasses(ImMap<T, ExClassSet> newClasses) {
+        return new Inferred<>(opParams(params, newClasses, false), notNull, compared, notParams, notNotNull, notCompared);
+    }
 
     private static <T> ImMap<T, ExClassSet> overrideClasses(ImMap<T, ExClassSet> oldClasses, ImMap<T, ExClassSet> newClasses) {
         return oldClasses.filterFnValues(new NotFunctionSet<>((SFunctionSet<ExClassSet>) element -> ExClassSet.fromEx(element) instanceof DataClass)).override(newClasses.removeNulls());

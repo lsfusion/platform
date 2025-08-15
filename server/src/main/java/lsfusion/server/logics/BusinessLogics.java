@@ -586,7 +586,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
             Action setupPolicyAction = setupPolicyLA.action;
-            LM.makeActionPublic(setupPolicyLA, setupPolicyActionName, new ArrayList<>());
+            LM.makeActionPublic(setupPolicyLA, setupPolicyActionName);
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEventAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
         }

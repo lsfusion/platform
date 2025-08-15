@@ -318,8 +318,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                 ImSet<I> noInlineInterfaces = extNoInline;
                 MSet<SessionDataProperty> mLocals = SetFact.mSet();
                 if (Property.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
-                    noInlineIfProp = createForDataProp(mLocals, null);// делаем SET в session свойство, и подменяем условие на это свойство
-                    mResult.add(PropertyFact.createSetAction(addObject != null ? innerInterfaces.removeIncl(addObject) : innerInterfaces, context, null, noInlineIfProp, ifProp));
+                    noInlineIfProp = createSetAction(mLocals, mResult, context);
                     noInlineInterfaces = noInline;
                 }
 
@@ -424,10 +423,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                 return null;
 
             if (Property.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
-                    Property.depends(ifProp.property, StoredDataProperty.set) || !noSelectTop) {
-                pushProp = createForDataProp(mLocals, null); // делаем SET в session свойство, и подменяем условие на это свойство
-                mResult.add(PropertyFact.createSetAction(innerInterfaces, context, pushProp, ifProp, orders, ordersNotNull, selectTop));
-            }
+                    Property.depends(ifProp.property, StoredDataProperty.set) || !noSelectTop)
+                pushProp = createSetAction(mLocals, mResult, context);
         }
 
         // "вытаскиваемым" проталкиваем where + order и добавляем в начало
@@ -440,6 +437,12 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                     ordersNotNull, PropertyFact.createListAction(innerInterfaces, rest), elseAction, false, innerInterfaces.remove(context), false));
 
         return PropertyFact.createListAction(context, mResult.immutableList(), mLocals.immutable());
+    }
+
+    private PropertyMapImplement<?, I> createSetAction(MSet<SessionDataProperty> mLocals, MList<ActionMapImplement<?, I>> mResult, ImSet<I> context) {
+        PropertyMapImplement<?, I> writeProp = createForDataProp(mLocals, null);// делаем SET в session свойство, и подменяем условие на это свойство
+        mResult.add(PropertyFact.createSetAction(addObject != null ? innerInterfaces.removeIncl(addObject) : innerInterfaces, context, writeProp, ifProp, orders, ordersNotNull, selectTop));
+        return writeProp;
     }
 
     @IdentityInstanceLazy

@@ -40,7 +40,7 @@ public class CalcClassType extends CalcType implements AlgType {
         return property.calcClassValueWhere(this);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses) {
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property) {
         return property.calcInterfaceClasses(this);
     }
 

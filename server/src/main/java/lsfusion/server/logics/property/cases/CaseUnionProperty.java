@@ -70,6 +70,17 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return mResult.immutable();
     }
 
+    @Override
+    public boolean isOr(PropertyMapImplement<?, Interface> map) {
+        ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
+        for(int i=0,size=simpleCases.size();i<size;i++) {
+            CalcCase<Interface> simpleCase = simpleCases.get(i);
+            if (simpleCase.implement.mapIsOr(map))
+                return true;
+        }
+        return false;
+    }
+
     private static class OperandCase implements Function<PropertyInterfaceImplement<Interface>, CalcCase<Interface>> {
         private final boolean caseClasses;
 

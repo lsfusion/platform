@@ -64,18 +64,18 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initMainLogic() throws RecognitionException {
         isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingProperty()));
-        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<>());
+        makePropertyPublic(isServerRestarting, "isServerRestarting");
 
         inDevMode = addProperty(null, new LP<>(IsDevProperty.instance));
-        makePropertyPublic(inDevMode, "inDevMode", new ArrayList<>());
+        makePropertyPublic(inDevMode, "inDevMode");
         isLightStart = addProperty(null, new LP<>(IsLightStartProperty.instance));
-        makePropertyPublic(isLightStart, "isLightStart", new ArrayList<>());
+        makePropertyPublic(isLightStart, "isLightStart");
 
         inTestMode = addProperty(null, new LP<>(InTestModeProperty.instance));
-        makePropertyPublic(inTestMode, "inTestMode", new ArrayList<>());
+        makePropertyPublic(inTestMode, "inTestMode");
 
         projectLSFDir = addProperty(null, new LP<>(ProjectLSFDirProperty.instance));
-        makePropertyPublic(projectLSFDir, "projectLSFDir", new ArrayList<>());
+        makePropertyPublic(projectLSFDir, "projectLSFDir");
 
         super.initMainLogic();
         // Управление сервером базы данных

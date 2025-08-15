@@ -98,10 +98,6 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath, path);
     }
 
-    public List<ResolveClassSet> getExplicitClasses() {
-        return getActionOrProperty().getExplicitClasses(listInterfaces);
-    }
-
     public void setExplicitClasses(List<ResolveClassSet> signature) {
         getActionOrProperty().setExplicitClasses(listInterfaces, signature);
     }

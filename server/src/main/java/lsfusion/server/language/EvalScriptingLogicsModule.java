@@ -50,14 +50,12 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public <T extends PropertyInterface> void addScriptedConstraint(LP<T> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages,
-                                      LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    <T extends PropertyInterface> void addScriptedConstraint(LP<T> property, List<TypedParameter> context, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, List<LPWithParams> properties, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("CONSTRAINT statement");
     }
 
     @Override
-    public void addScriptedWhen(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending,
-                                     Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWhen(LPWithParams whenProp, List<TypedParameter> newContext, LAWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("WHEN statement");
     }
 
@@ -115,7 +113,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     
     @Override
     public <K extends PropertyInterface> void addSettingsToProperty(LP<K> property, String name, LocalizedString caption, List<TypedParameter> params,
-                                      List<ResolveClassSet> signature, PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
+                                                                    List<ResolveClassSet> signature, PropertySettings ps, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (ps.isMaterialized) {
             emitEvalError("MATERIALIZED property option");
         } else if (ps.table != null) {
@@ -123,7 +121,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         } else if (ps.notNull != null) {
             emitEvalError("NONULL property option");
         }
-        super.addSettingsToProperty(property, name, caption, params, signature, ps);
+        super.addSettingsToProperty(property, name, caption, params, signature, ps, debugPoint);
     }    
     
     @Override

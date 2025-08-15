@@ -22,25 +22,26 @@ public class InferType implements AlgType {
     public static InferType prevSame() {
         return PREVSAME;
     }
-    
+
+    public static InferType prevSameNoExplicit() {
+        return PREVSAME_NO_EXPLICIT;
+    }
+
     public static InferType resolve() {
         return RESOLVE;
     }
     
     private static final InferType PREVSAME = new InferType();
+    private static final InferType PREVSAME_NO_EXPLICIT = new InferType();
     private static final InferType RESOLVE = new InferType(); // PREVSAME
 
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property) {
-        return getClassValueWhere(property, null);
-    }
-
-    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property, ExClassSet valueClasses) {
         assert this != RESOLVE;
-        return property.inferClassValueWhere(this, valueClasses);
+        return property.inferClassValueWhere(this);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses) {
-        return property.inferGetInterfaceClasses(this, valueClasses);
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property) {
+        return property.inferGetInterfaceClasses(this);
     }
 
     public <P extends PropertyInterface> ValueClass getValueClass(Property<P> property) {

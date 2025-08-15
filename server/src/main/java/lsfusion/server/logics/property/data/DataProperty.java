@@ -116,8 +116,8 @@ public abstract class DataProperty extends AbstractDataProperty {
 
         Result<ImSet<ClassPropertyInterface>> checkKeyChanges = new Result<>();
         Result<Boolean> checkValueChange = new Result<>();
-        AlgType classType = AlgType.storedType; // actually id doesn't really matter because it is dataproperty
-        boolean updatedClasses = change.checkClasses(sql, baseClass, true, owner, true, getInterfaceClasses(classType), getValueClass(classType), checkKeyChanges, checkValueChange, checkTransaction, classRemove, timestamp); // тут фиг поймешь какое policy
+        ClassType classType = ClassType.dataChangePolicy; // actually id doesn't really matter because it is dataproperty
+        boolean updatedClasses = change.checkClasses(sql, baseClass, true, owner, true, getInterfaceClasses(ClassType.dataChangePolicy), getValueClass(classType), checkKeyChanges, checkValueChange, checkTransaction, classRemove, timestamp); // тут фиг поймешь какое policy
         
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
         Join<String> changeJoin = change.join(mapKeys);
@@ -158,7 +158,7 @@ public abstract class DataProperty extends AbstractDataProperty {
     private Where getIsClassWhere(PropertyChanges propChanges, ImMap<ClassPropertyInterface, ? extends Expr> mapKeys, Expr expr, boolean checkParams) {
         Where result = checkParams ? getClassProperty(mapKeys.keys()).mapExpr(mapKeys, propChanges, null).getWhere() : Where.TRUE();
         if(expr != null) {
-            Where valueWhere = getValueClassProperty().mapExpr(MapFact.singleton("value", expr), propChanges, null).getWhere().or(expr.getWhere().not());
+            Where valueWhere = getValueClassProperty().mapExpr(MapFact.singleton("value", expr), propChanges, null).getWhere();
             result = result.and(valueWhere);
         }
         return result;

@@ -352,6 +352,11 @@ public abstract class LogicsModule {
         return new ArrayList<>();
     }
 
+    protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeSystemActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
+        makeActionOrPropertyPublic(lp, name, signature);
+
+        lp.setExplicitClasses(signature);
+    }
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
         propClasses.put(lp, signature);
@@ -367,15 +372,15 @@ public abstract class LogicsModule {
     }
 
     protected void makePropertyPublic(SessionDataProperty property, String name) {
-        makePropertyPublic(addProperty(null, new LP<>(property)), name, Collections.emptyList());
+        makePropertyPublic(addProperty(null, new LP<>(property)), name);
     }
 
     protected <P extends PropertyInterface> void makePropertyPublic(LP<P> lp, String name, List<ResolveClassSet> signature) {
-        makeActionOrPropertyPublic(lp, name, signature);
+        makeSystemActionOrPropertyPublic(lp, name, signature);
     }
     
     protected <P extends PropertyInterface> void makeActionPublic(LA<P> la, String name, List<ResolveClassSet> signature) {
-        makeActionOrPropertyPublic(la, name, signature);
+        makeSystemActionOrPropertyPublic(la, name, signature);
     }
 
     public Group getGroup(String name) {
@@ -767,7 +772,7 @@ public abstract class LogicsModule {
         }
     }
 
-    private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                                boolean hasWhere, Object[] params, boolean interactive) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
@@ -779,27 +784,29 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - 1) : null;
         where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs);
 
-        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, null, mapInterfaces, exprs, propUsages, orders, where, interactive);
+        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, explicitInnerClasses, mapInterfaces, exprs, propUsages, orders, where, interactive);
         addAutoFormEntityNotFinalized(integrationForm.form);
 
         return integrationForm;
     }
 
-    protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> explicitInnerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                                                                   PropertyInterfaceImplement<I> where, boolean interactive) throws FormEntity.AlreadyDefined {
         // creating integration form
-        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, innerClasses, mapInterfaces, properties, propUsages,
+        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, explicitInnerClasses, mapInterfaces, properties, propUsages,
                 where, orders, false, interactive, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
-        ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
+
+        // if groupObject is not null, then all props will be rendered there (using .toDraw for "static" properties), and GROUP BY implicitly requires all params to be not null
+        ImList<Boolean> nulls = ListFact.toList(form.groupObject == null, mapInterfaces.size());
 
         return new IntegrationForm<I>(form, objectsToSet, nulls);
     }
 
-    protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                              boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
-        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params, false);
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
 
         return addJSONFormProp(caption, integrationForm, selectTop, returnString);
     }
@@ -818,10 +825,10 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Export property action ----------------- //
-    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
                                         Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
-        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params, false);
+        IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
         ImMap<GroupObjectEntity, LP> exportFiles = MapFact.EMPTY();
@@ -852,12 +859,17 @@ public abstract class LogicsModule {
 
     // ------------------- Set property action ----------------- //
 
+    protected <C extends PropertyInterface, W extends PropertyInterface> LA addSetPropertyAProp(LocalizedString caption, int resInterfaces,
+                                                                                                Object... params) {
+        // has no extend params
+        return addSetPropertyAProp(null, caption, resInterfaces, false, add(getUParams(resInterfaces), params));
+    }
     protected <C extends PropertyInterface, W extends PropertyInterface> LA addSetPropertyAProp(Group group, LocalizedString caption, int resInterfaces,
                                                                                                 boolean conditional, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         PropertyMapImplement<W, PropertyInterface> conditionalPart = (PropertyMapImplement<W, PropertyInterface>)
-                (conditional ? readImplements.get(resInterfaces + 2) : PropertyFact.createTrue());
+                (conditional ? readImplements.get(resInterfaces + 2) : null);
         return addAction(group, new LA<>(new SetAction<C, W, PropertyInterface>(caption,
                 innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart,
                 (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
@@ -1334,29 +1346,37 @@ public abstract class LogicsModule {
     }
 
     protected LP addJProp(boolean user, LP mainProp, Object... params) {
-        return addJProp(user, 0, mainProp, params);
+        return addJProp(user, false, 0, mainProp, params);
     }
-    protected LP addJProp(boolean user, int removeLast, LP<?> mainProp, Object... params) {
+    protected LP addJProp(boolean user, boolean onlyCreate, int removeLast, LP<?> mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params);
         JoinProperty<?> property = new JoinProperty(LocalizedString.NONAME, listInterfaces, user,
                 mapCalcImplement(mainProp, listImplements));
 
-        for(Property andProp : mainProp.property.getAndProperties())
-            property.drawOptions.inheritDrawOptions(andProp.drawOptions);
+        LP<JoinProperty.Interface> lp = new LP<>(property, listInterfaces);
 
-        return addProperty(null, new LP<>(property, listInterfaces));
+        if(!onlyCreate) {
+            for (Property andProp : mainProp.property.getAndProperties()) {
+                property.drawOptions.inheritDrawOptions(andProp.drawOptions);
+                property.caption = andProp.caption;
+            }
+
+            return addProperty(null, lp);
+        }
+
+        return lp;
     }
 
     // ------------------- mapLProp ----------------- //
 
-    private <P extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<?, P> implement, ImOrderSet<P> listInterfaces) {
-        return addProperty(group, new LP(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
+    protected  <P extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<?, P> implement, ImOrderSet<P> listInterfaces) {
+        return addProperty(group, mapLProp(implement, listInterfaces));
     }
 
-    protected <P extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<?, P> implement, LP<P> property) {
-        return mapLProp(group, persistent, implement, property.listInterfaces);
+    protected static <P extends PropertyInterface> LP mapLProp(PropertyMapImplement<?, P> implement, ImOrderSet<P> listInterfaces) {
+        return new LP(implement.property, listInterfaces.mapOrder(implement.mapping.reverse()));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, PropertyImplement<?, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
@@ -1888,8 +1908,7 @@ public abstract class LogicsModule {
     }
 
     public LA<?> addResetProperty(LP property) {
-        return addSetPropertyAProp(null, LocalizedString.create("{logics.property.reset}"), property.listInterfaces.size(), false,
-                add(getUParams(property.listInterfaces.size()), add(directLI(property), baseLM.vnull)));
+        return addSetPropertyAProp(LocalizedString.create("{logics.property.reset}"), property.listInterfaces.size(), add(directLI(property), baseLM.vnull));
     }
 
     private String nameForResetAction(Property property, List<ResolveClassSet> signature) {
@@ -1992,10 +2011,9 @@ public abstract class LogicsModule {
     }
 
     public LA<?> addNewEditAction(CustomClass cls, LP targetProp, int contextParams, FormSessionScope scope, Object... setProperty) {
-        Object[] externalParams = getUParams(contextParams + 1); // + new object
         LA action = addNewEditAction(cls,
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, setProperty)),
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, new Object[] {targetProp, contextParams + 1})), // targetProp() <- new object
+                addSetPropertyAProp(LocalizedString.NONAME, contextParams + 1, setProperty),
+                addSetPropertyAProp(LocalizedString.NONAME, contextParams + 1, targetProp, contextParams + 1), // targetProp() <- new object
                 contextParams);
 
         if(scope.isNewSession())
@@ -2120,6 +2138,16 @@ public abstract class LogicsModule {
 
     public <T extends PropertyInterface> LP addClassProp(LP<T> lp) {
         return baseLM.addClassProp(lp);
+    }
+
+    public <T extends PropertyInterface> LP addChangeClassProp(LP<T> lp) {
+        return mapLProp(lp.property.getChangeClassProperty(), lp.listInterfaces);
+    }
+
+    public <T extends PropertyInterface> LP addChangeValueClassProp(LP<T> from, LP<?> to) {
+        if(from == null)
+            return new LP(to.property.getValueClassProperty().property);
+        return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
@@ -2385,6 +2413,12 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
+    protected LP and(int params) {
+        boolean[] notsArray = new boolean[params - 1];
+        Arrays.fill(notsArray, false);
+        return addAFProp(notsArray);
+    }
+
     protected NavigatorElement createNavigatorFolder(String canonicalName) {
         return new NavigatorFolder(canonicalName);
     }
@@ -2596,7 +2630,7 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
-        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
+//        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
     }
 
     protected void removeLocal(LP<?> lcp) {

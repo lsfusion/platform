@@ -2,14 +2,11 @@ package lsfusion.server.logics.property.set;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.WindowExpr;
-import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -120,7 +117,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     public ExClassSet calcInferValueClass(final ImMap<Interface<I>, ExClassSet> inferred, final InferType inferType) {
         ImMap<I, ExClassSet> innerInferred;
         if(inferType != InferType.resolve()) {
-            innerInferred = getInferExplicitCalcInterfaces(innerInterfaces, noOld(), inferType, explicitInnerClasses, () -> inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType), "CALCINNER", this, null);
+            innerInferred = getExplicitCalcInterfaces(innerInterfaces, (inferType == InferType.prevBase() && !noOld()) || explicitInnerClasses == null ? null : ExClassSet.toEx(explicitInnerClasses), () -> inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType), this, null);
         } else {
             assert explicitInnerClasses != null;
             innerInferred = ExClassSet.toEx(explicitInnerClasses);

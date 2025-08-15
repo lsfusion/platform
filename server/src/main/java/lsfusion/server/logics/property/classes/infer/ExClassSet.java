@@ -99,6 +99,11 @@ public class ExClassSet extends TwinImmutableObject {
         return new ExClassSet(set);
     }
 
+    public static ExClassSet toExAny(ResolveClassSet set) {
+        if(set == null) return null;
+        return new ExClassSet(set, true);
+    }
+
     public static ExClassSet toExValue(ValueClass set) {
         if(set == null) return null;
         return new ExClassSet(set.getResolveSet());
@@ -146,6 +151,10 @@ public class ExClassSet extends TwinImmutableObject {
 
     public static <T> ImMap<T, ExClassSet> toEx(ImMap<T, ResolveClassSet> classes) {
         return classes.mapValues(value -> toEx(value));
+    }
+
+    public static <T> ImMap<T, ExClassSet> toExAny(ImMap<T, ResolveClassSet> classes) {
+        return classes.mapValues(value -> toExAny(value));
     }
 
     public static <T> ImMap<T, ExClassSet> toExValue(ImMap<T, ValueClass> classes) {
@@ -202,9 +211,17 @@ public class ExClassSet extends TwinImmutableObject {
     }
     
     private static ImSet<Object> op(ImSet<Object> values1, ImSet<Object> values2, boolean or) {
-        if(values1 == null || values2 == null)
-            return null;
-        return or ? values1.merge(values2) : values1.filter(values2);
+        if(or) {
+            if (values1 == null || values2 == null)
+                return null;
+            return values1.merge(values2);
+        } else {
+            if (values1 == null)
+                return values2;
+            if(values2 == null)
+                return values1;
+            return values1.filter(values2);
+        }
     } 
     
     private static ResolveClassSet op(ResolveClassSet set1, ResolveClassSet set2, boolean or) {

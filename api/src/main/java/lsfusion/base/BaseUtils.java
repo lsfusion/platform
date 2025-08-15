@@ -5,10 +5,7 @@ import com.ibm.icu.text.UnicodeSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.comb.map.GlobalObject;
@@ -49,6 +46,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -722,6 +720,18 @@ public class BaseUtils {
         return removeList;
     }
 
+    public static <K> List<K> removeList(List<K> list, int index) {
+        if(index < 0)
+            return list;
+
+        List<K> removeList = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if (i != index)
+                removeList.add(list.get(i));
+        }
+        return removeList;
+    }
+
     public static <K> List<K> removeList(List<K> list, K remove) {
         return removeList(list, Collections.singleton(remove));
     }
@@ -1284,6 +1294,13 @@ public class BaseUtils {
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<>();
         Collections.addAll(list, elements);
+        return list;
+    }
+
+    public static <T> List<T> toList(int size, IntFunction<T> getter) {
+        List<T> list = new ArrayList<>();
+        for(int i=0;i<size;i++)
+            list.add(getter.apply(i));
         return list;
     }
 

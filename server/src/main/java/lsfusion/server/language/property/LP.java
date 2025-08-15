@@ -4,7 +4,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.version.Version;
@@ -33,8 +32,7 @@ import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
@@ -42,6 +40,7 @@ import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -387,6 +386,28 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
     public <U extends PropertyInterface> PropertyMapImplement<T, U> getImplement(ImOrderSet<U> mapping) {
         return new PropertyMapImplement<>(property, getRevMap(mapping));
+    }
+
+    public boolean isFull(int lastIndex) {
+        return property.isFull(listInterfaces.subOrder(listInterfaces.size() - lastIndex, listInterfaces.size()).getSet(), AlgType.checkType);
+    }
+
+    public boolean isFullAndContains(int lastIndex, CustomClass valueClass, List<String> reasons) {
+        int paramNum = listInterfaces.size() - 1 - lastIndex;
+        T propertyInterface = listInterfaces.get(paramNum);
+        if(!property.isFull(SetFact.singleton(propertyInterface), AlgType.checkType)) {
+            reasons.add(paramNum + " - NOT FULL");
+            return false;
+        }
+
+        ImMap<T, ValueClass> interfaceClasses = property.getInterfaceClasses(AlgType.patchType);
+        ValueClass interfaceClass = interfaceClasses.get(propertyInterface);
+        if(!(interfaceClass instanceof CustomClass && ((CustomClass) interfaceClass).isChild(valueClass))) {
+            reasons.add(paramNum + " - SPECIFIED: " + valueClass + ", FOUND: " + interfaceClass);
+            return false;
+        }
+
+        return true;
     }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
