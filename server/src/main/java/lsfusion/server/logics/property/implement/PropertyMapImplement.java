@@ -398,7 +398,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     private ImMap<P, StaticParamNullableExpr> getInterfaceParams(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) { // maybe classes from ObjectValue should be used with the proper caching
-        return PropertyObjectInstance.getParamExprs(property, mapping.join(mapObjects));
+        return PropertyObjectInstance.getParamExprs(property, mapping.rightJoin(mapObjects));
     }
 
     public Stat mapSelectStat(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) {
