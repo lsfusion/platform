@@ -2630,7 +2630,8 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
-//        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
+
+        lcp.setExplicitClasses(data.signature);
     }
 
     protected void removeLocal(LP<?> lcp) {

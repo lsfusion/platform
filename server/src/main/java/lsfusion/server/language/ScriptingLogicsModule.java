@@ -5616,23 +5616,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             element.setChangeMouse(changeMouse, showChangeMouse);
     }
 
-    public static class FullContext {
-        public final LPWithParams property;
-        public final List<ResolveClassSet> signature;
-        // actuall needed only for the inline property
-        public final List<Integer> usedContext;
-
-        public FullContext(LPWithParams property, List<ResolveClassSet> signature, List<Integer> usedContext) {
-            this.property = property;
-            this.signature = signature;
-            this.usedContext = usedContext;
-        }
-    }
-
-    public FullContext propertyExpressionCreated(LPWithParams property, List<TypedParameter> context) {
-        return patchExtendParams(property, context, Collections.emptyList());
-    }
-    public void propertyDefinitionCreated(LP<?> property, DebugInfo.DebugPoint point, List<ResolveClassSet> signature) {
+    public void propertyDefinitionCreated(LP<?> property, DebugInfo.DebugPoint point) {
         if(property != null) { // can be null if property is param
             Property prop = property.property;
             boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && prop instanceof DataProperty;
@@ -5644,9 +5628,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 prop.setDebugInfo(debugInfo);
             }
         }
-
-        if(signature != null)
-            property.setExplicitClasses(signature);
     }
 
     public void actionDefinitionBodyCreated(LAWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate, List<ResolveClassSet> signature) {
@@ -5821,27 +5802,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(wrappedLCP, mergeAllParams(allCreationParams));
     }
 
-    // assert that newContext extends oldContext (at least there is such assertion in addScriptedForAProp)
-    private FullContext patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext, List<TypedParameter> oldContext) {
-        assert oldContext.isEmpty();
-        List<Integer> resultInterfaces = getResultInterfaces(newContext.size(), lpWithParams);
-//        List<ResolveClassSet> signature = getUsedClasses(newContext, resultInterfaces);
-        List<ResolveClassSet> signature = getClassesFromTypedParams(newContext);
-
-        if(resultInterfaces.size() != (newContext.size() - oldContext.size()) || propertyNeedsToBeWrapped(lpWithParams.getLP())) { // all are used and we don't need to wrapProperty
+    public LPWithParams patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext) {
+        LP<?> lp = lpWithParams.getLP();
+        if(lp.listInterfaces.size() != newContext.size() || propertyNeedsToBeWrapped(lp)) { // all are used and we don't need to wrapProperty
             // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает
             List<LPWithParams> allCreationParams = new ArrayList<>();
             allCreationParams.add(lpWithParams);
-            for (int i = oldContext.size(); i < newContext.size(); i++) { // докидываем
+            for (int i = 0; i < newContext.size(); i++)
                 allCreationParams.add(new LPWithParams(i));
-            }
 
             List<Object> resultParams = getParamsPlainList(allCreationParams);
-            LP wrappedLCP = addJProp(false, false, newContext.size() - oldContext.size(), (LP)resultParams.get(0), resultParams.subList(1, resultParams.size()).toArray());
+            LP wrappedLCP = addJProp(false, false, newContext.size(), (LP)resultParams.get(0), resultParams.subList(1, resultParams.size()).toArray());
             lpWithParams = new LPWithParams(wrappedLCP, mergeAllParams(allCreationParams));
         }
 
-        return new FullContext(lpWithParams, signature, resultInterfaces);
+        return lpWithParams;
     }
 
     public void checkPropertyValue(LP property) {
