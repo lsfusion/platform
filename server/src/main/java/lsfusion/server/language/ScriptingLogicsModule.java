@@ -5802,17 +5802,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(wrappedLCP, mergeAllParams(allCreationParams));
     }
 
-    public LPWithParams patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext) {
+    public LPWithParams patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext, boolean dynamic, DebugInfo.DebugPoint debugPoint) {
         LP<?> lp = lpWithParams.getLP();
-        if(lp.listInterfaces.size() != newContext.size() || propertyNeedsToBeWrapped(lp)) { // all are used and we don't need to wrapProperty
+        if((!dynamic && lp.listInterfaces.size() != newContext.size()) || propertyNeedsToBeWrapped(lp)) { // all are used and we don't need to wrapProperty
             // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает
             List<LPWithParams> allCreationParams = new ArrayList<>();
             allCreationParams.add(lpWithParams);
-            for (int i = 0; i < newContext.size(); i++)
-                allCreationParams.add(new LPWithParams(i));
+            int removeLast = 0;
+
+            if(!dynamic) {
+                for (int i = 0; i < newContext.size(); i++) {
+                    allCreationParams.add(new LPWithParams(i));
+                    removeLast++;
+                }
+            }
 
             List<Object> resultParams = getParamsPlainList(allCreationParams);
-            LP wrappedLCP = addJProp(false, false, newContext.size(), (LP)resultParams.get(0), resultParams.subList(1, resultParams.size()).toArray());
+            LP wrappedLCP = addJProp(false, false, removeLast, (LP)resultParams.get(0), resultParams.subList(1, resultParams.size()).toArray());
+            wrappedLCP.property.setDebugInfo(new PropertyDebugInfo(debugPoint, false));
             lpWithParams = new LPWithParams(wrappedLCP, mergeAllParams(allCreationParams));
         }
 

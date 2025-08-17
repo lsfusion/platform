@@ -1339,7 +1339,7 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<>(new DeconcatenateProperty(paramIndex, baseLM.baseClass)));
     }
 
-    // ------------------- JOIN (продолжение) ----------------- //
+    // ------------------- JOIN ----------------- //
 
     public LP addJProp(LP mainProp, Object... params) {
         return addJProp( false, mainProp, params);

@@ -1485,7 +1485,7 @@ scope {
 			$propertyStatement::topCaption = caption = $declaration.caption;
 		}
         EQ
-        pdef=propertyDefinition[context, dynamic, null] { property = $pdef.property; signature = $pdef.signature; }
+        pdef=propertyDefinition[context, dynamic, false, Collections.emptyList()] { property = $pdef.property; signature = $pdef.signature; }
         ((popt=propertyOptions[propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
 	;
 
@@ -1528,7 +1528,7 @@ scope {
         )
 	;
 
-propertyDefinition[List<TypedParameter> context, boolean dynamic, List<TypedParameter> innerPDContext] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext, boolean ci]
+propertyDefinition[List<TypedParameter> context, boolean dynamic, boolean innerPD, List<TypedParameter> outerContext] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext, boolean ci]
 @init {
     DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
@@ -1538,27 +1538,22 @@ propertyDefinition[List<TypedParameter> context, boolean dynamic, List<TypedPara
             self.propertyDefinitionCreated($property, point);
 
         if($property != null)
-            $property.setExplicitClasses($signature); // we need to set it for innerPD because they are used in resolving
+            $property.setExplicitClasses($signature); // we need to set it for innerPD also because they are used in resolving
     }
 }
 	:
-	      ciPD=contextIndependentPD[context, dynamic, innerPDContext != null] { $property = $ciPD.property; $signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
-    |	  exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic, innerPDContext == null] {
+	      ciPD=contextIndependentPD[context, dynamic, innerPD] { $property = $ciPD.property; $signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
+    |	  exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic] {
                 if($exprOrCIPD.ci != null) {
                     $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true;
-                } else {
+                } else
                     if (inMainParseState()) {
                         $property = self.checkSingleParam($exprOrCIPD.property).getLP();
-                        if(innerPDContext == null) { // there are all params (however in that case we can just assume innerPDContext to be empty)
-                            $signature = self.getClassesFromTypedParams(context);
-                        } else {
-                            $usedContext = self.getResultInterfaces(innerPDContext.size(), $exprOrCIPD.property);
-                            $signature = self.getClassesFromTypedParams(innerPDContext.size(), $usedContext, context);
-                        }
+                        $usedContext = self.getResultInterfaces(outerContext.size(), $exprOrCIPD.property);
+                        $signature = self.getClassesFromTypedParams(outerContext.size(), $usedContext, context);
                     }
-                }
-          }
-    |	'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
+           }
+    |	  'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
 actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
@@ -1568,53 +1563,58 @@ actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<
 
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-    :   exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic, false] { $property = $exprOrCIPD.property; }
-        { if(inMainParseState()) { self.checkNotExprInExpr($exprOrCIPD.property, $exprOrCIPD.ci); } }
+    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic] { $property = $exprOrNotExpr.property; }
+        { if(inMainParseState()) { self.checkNotExprInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
-propertyExpressionFull[List<TypedParameter> context, boolean needFullContext] returns [LPWithParams property]
-    :   exprOrCIPD=propertyExpressionOrContextIndependent[context, false, needFullContext] { $property = $exprOrCIPD.property; }
+propertyExpressionFull[List<TypedParameter> context] returns [LPWithParams property]
+    :   exprOrCIPD=propertyExpressionOrContextIndependent[context, false] { $property = $exprOrCIPD.property; }
         {
             if(inMainParseState()) {
                 self.checkNotExprInExpr($exprOrCIPD.property, $exprOrCIPD.ci);
-                if(needFullContext)
-                    $property.getLP().setExplicitClasses(self.getClassesFromTypedParams(context));
+
+                $property.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // need this for ABSTRACT correct implementation
+             }
+        }
+;
+
+propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+@init {
+    DebugInfo.DebugPoint point = getCurrentDebugPoint();
+}
+    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic] { $property = $exprOrNotExpr.property;  }
+        {
+            if(inMainParseState()) {
+                $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci);
+                if($property != null)
+                    $property = self.patchExtendParams($property, context, dynamic, point);
             }
         }
 ;
 
-propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
-    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, needFullContext] { $property = $exprOrNotExpr.property; }
-        { if(inMainParseState()) { $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
-;
-
 propertyExpressionOrTrivialLA[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPTrivialLA la]
-    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, false] { $property = $exprOrNotExpr.property;  }
+    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $la = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrLiteral[List<TypedParameter> context] returns [LPWithParams property, LPLiteral literal]
-    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $literal = self.checkLiteralInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
 propertyExpressionOrCompoundID[List<TypedParameter> context] returns [LPWithParams property, LPCompoundID id]
-    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
-propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
+propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
-@after{
+@after {
     if (inMainParseState()) {
-        if($property != null) {
-            if(needFullContext)
-                $property = self.patchExtendParams($property, context);
-
+        if($property != null)
             self.propertyDefinitionCreated($property.getLP(), point);
-        }
     }
 }
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; $ci = $pe.ci; }
@@ -2878,7 +2878,7 @@ inlineProperty[List<TypedParameter> context] returns [LP property, List<Integer>
 	List<TypedParameter> newContext = new ArrayList<>(context);
 }
 	:	'['
-	            pd = propertyDefinition[newContext, true, context] {$property = $pd.property; $usedContext = $pd.usedContext; $ci = $pd.ci;}
+	            pd = propertyDefinition[newContext, true, true, context] {$property = $pd.property; $usedContext = $pd.usedContext; $ci = $pd.ci;}
 		']'
 	;
 
@@ -4607,7 +4607,7 @@ terminalFlowActionDefinitionBody returns [LAWithParams action]
 ////////////////////////////////////////////////////////////////////////////////
 
 overrideWhenExpression[List<TypedParameter> context] returns [LPWithParams property]
-    :   exprOrCIPD=propertyExpressionFull[context, true] { $property = $exprOrCIPD.property; }
+    :   exprOrCIPD=propertyExpressionFull[context] { $property = $exprOrCIPD.property; }
 ;
 
 overridePropertyStatement
@@ -4629,8 +4629,12 @@ scope {
 	}
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+='
-        ('WHEN' whenExpr=overrideWhenExpression[context] 'THEN' { when = $whenExpr.property; })?
-        expr=propertyExpressionFull[context, when == null] // for abstract VALUE will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)
+        (
+            'WHEN' whenExpr=overrideWhenExpression[context] 'THEN' { when = $whenExpr.property; }
+            expr=propertyExpression[context, false]
+        |
+            expr=propertyExpressionFull[context] // for abstract VALUE will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)
+        )
         ';'
 	;
 
