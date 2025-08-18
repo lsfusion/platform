@@ -1053,22 +1053,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         boolean result = false;
 
         try {
-            Method getInputMapMethod = JComponent.class.getDeclaredMethod("getInputMap", int.class, boolean.class);
-            Object inputMap = null;
-            if (getInputMapMethod != null) {
-                getInputMapMethod.setAccessible(true);
-                inputMap = getInputMapMethod.invoke(this, condition, false);
-            }
-
-            Method getActionMapMethod = JComponent.class.getDeclaredMethod("getActionMap", boolean.class);
-            Object actionMap = null;
-            if (getActionMapMethod != null) {
-                getActionMapMethod.setAccessible(true);
-                actionMap = getActionMapMethod.invoke(this, false);
-            }
+            InputMap inputMap = getInputMap(condition);
+            ActionMap actionMap = getActionMap();
             if(inputMap != null && actionMap != null && isEnabled()) {
-                Object binding = ((InputMap) inputMap).get(ks);
-                Action action = (binding == null) ? null : ((ActionMap) actionMap).get(binding);
+                Object binding = inputMap.get(ks);
+                Action action = (binding == null) ? null : actionMap.get(binding);
 
                 Class uiActionClass = MainController.classForName("sun.swing.UIAction");
                 if (uiActionClass != null && uiActionClass.isInstance(action)) {
@@ -1077,8 +1066,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
 
             result = super.processKeyBinding(ks, e, condition, pressed);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            Throwables.propagate(ex);
         } finally {
             threadLocalUIAction.set(null);
         }
