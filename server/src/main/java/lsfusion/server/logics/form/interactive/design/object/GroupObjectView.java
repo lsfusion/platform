@@ -76,6 +76,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         } else {
             filtersContainer.setHorizontal(true);
         }
+        //disable isReversed optimisation for FILTERS container because children are added after isReversed check
+        filtersContainer.reversed = false;
 
         // behaves weirdly if unset as alignCaptions property sometimes depends on children count, which changes in runtime for filters container
         filtersContainer.setAlignCaptions(false); 
