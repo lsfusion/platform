@@ -32,6 +32,7 @@ public class JSONBuildSingleArrayFormulaImpl implements FormulaJoinImpl {
     }
 
     public Type getType(ExprType source) {
-        return JSONClass.instance;
+        Type type = source.getType(0);
+        return type instanceof JSONTextClass ? JSONTextClass.instance : JSONClass.instance;
     }
 }

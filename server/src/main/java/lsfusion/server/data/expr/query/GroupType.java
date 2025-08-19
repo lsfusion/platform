@@ -24,6 +24,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.JSONTextClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -212,6 +213,12 @@ public abstract class GroupType implements AggrType {
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
             return getAggrSource((type instanceof JSONTextClass ? "JSON_AGG" : "JSONB_AGG"), exprs.get(0), orders, syntax);
         }
+
+        @Override
+        public Type getType(Type exprType) {
+            return exprType instanceof JSONTextClass ? JSONTextClass.instance : JSONClass.instance;
+        }
+
         public String name() {
             return "JSON_CONCAT";
         }
