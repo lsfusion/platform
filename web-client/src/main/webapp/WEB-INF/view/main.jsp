@@ -7,7 +7,6 @@
 <!DOCTYPE html>
 
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%response.setHeader("X-Powered-By", "lsFusion");%>
 <html>
     <head>
         <link rel="manifest" href="manifest">
