@@ -65,7 +65,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nvl;
 
 @SuppressWarnings("UnusedDeclaration")
 public class GwtToClientConverter extends ObjectConverter {
@@ -262,7 +262,7 @@ public class GwtToClientConverter extends ObjectConverter {
         if(readResult.error != null)
             throw new RuntimeException(readResult.error);
         RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
-        return new ReadUtils.ReadResult(readResult.extension != null ? new FileData(file, readResult.extension) : file, "file");
+        return new ReadUtils.ReadResult(new FileData(file, nvl(readResult.extension, "")), "file");
     }
 
     @Converter(from = GListFilesResult.class)

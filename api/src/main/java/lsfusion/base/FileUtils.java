@@ -48,9 +48,9 @@ public class FileUtils {
         } else if (move && equalFTPServers(srcPath, destPath)) {
             renameFTP(srcPath.path, destPath.path, null);
         } else {
-            ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
+            ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, null);
             if (readResult != null) {
-                RawFileData rawFile = (RawFileData) readResult.fileBytes;
+                RawFileData rawFile = readResult.fileData.getRawFile();
                 switch (destPath.type) {
                     case "file":
                         rawFile.write(destPath.path);
