@@ -52,7 +52,10 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return KeyExpr.getMapKeys(getKeys());
     }
 
-    public abstract Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement);
+    public Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement) {
+        return join(joinImplement, false);
+    }
+    public abstract Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement, boolean staticValueExpr);
 
     public abstract void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException;
     public abstract void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException;
@@ -289,12 +292,14 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     protected abstract class SessionJoin extends AbstractJoin<PropertyField> {
 
         protected final ImMap<KeyField, ? extends Expr> joinImplement;
-        protected SessionJoin(ImMap<KeyField, ? extends Expr> joinImplement) {
+        protected final boolean staticValueExpr;
+        protected SessionJoin(ImMap<KeyField, ? extends Expr> joinImplement, boolean staticValueExpr) {
             this.joinImplement = joinImplement;
+            this.staticValueExpr = staticValueExpr;
         }
 
         public Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
-            return SessionData.this.translateRemoveValues(translate).join(translate.mapKeys().translate(joinImplement));
+            return SessionData.this.translateRemoveValues(translate).join(translate.mapKeys().translate(joinImplement), staticValueExpr);
         }
     }
     

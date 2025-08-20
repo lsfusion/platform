@@ -24,6 +24,7 @@ import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.query.SubQueryExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.classes.IsClassWhere;
@@ -40,7 +41,9 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -83,6 +86,26 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             Pair<KeyExpr,Expr> subQuery = getBaseClass().getSubQuery(classTables, type);
             return new SubQueryExpr(new SubQueryExpr.Query(subQuery.second, false, 0), MapFact.singleton(subQuery.first, expr));
         }
+    }
+
+    public static Where checkEquals(Expr expr1, Expr expr2) {
+        if(!(expr1 instanceof IsClassExpr)) {
+            Expr tExpr = expr2;
+            expr2 = expr1;
+            expr1 = tExpr;
+        }
+
+        if(expr1 instanceof IsClassExpr && expr2 instanceof StaticValueExpr && ((IsClassExpr) expr1).type == IsClassType.CONSISTENT) {
+            BaseClass baseClass = ((IsClassExpr) expr1).getBaseClass();
+            long classId = LongClass.instance.read(((StaticValueExpr) expr2).getObject());
+            ConcreteCustomClass concreteClass = baseClass.findConcreteClassID(classId);
+            if(concreteClass == null)
+                return Where.FALSE();
+
+            return ((IsClassExpr) expr1).expr.isClass(concreteClass);
+        }
+
+        return null;
     }
 
     public static Expr create(SingleClassExpr expr, ImSet<ObjectClassField> classes, IsClassType type) {

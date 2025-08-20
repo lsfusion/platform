@@ -73,12 +73,12 @@ public class SessionRows extends SessionData<SessionRows> {
         return properties;
     }
 
-    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
-        return new SessionJoin(joinImplement) {
+    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement, boolean staticValueExpr) {
+        return new SessionJoin(joinImplement, staticValueExpr) {
             public Expr getExpr(PropertyField property) {
                 CaseExprInterface cases = Expr.newCases(true, rows.size());
                 for(int i=0,size=rows.size();i<size;i++)
-                    cases.add(CompareWhere.compareValues(joinImplement,rows.getKey(i)),rows.getValue(i).get(property).getExpr());
+                    cases.add(CompareWhere.compareValues(joinImplement,rows.getKey(i)),rows.getValue(i).get(property).getStaticExpr(this.staticValueExpr));
                 return cases.getFinal();
             }
 
