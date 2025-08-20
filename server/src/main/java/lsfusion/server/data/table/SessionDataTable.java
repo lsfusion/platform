@@ -58,14 +58,14 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         this.propertyValues = propertyValues;
     }
 
-    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
+    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement, boolean staticValueExpr) {
 
         final Join<PropertyField> tableJoin = table.join(joinImplement.filterIncl(table.getTableKeys()));
-        return new SessionJoin(joinImplement) {
+        return new SessionJoin(joinImplement, staticValueExpr) {
             public Expr getExpr(PropertyField property) {
                 ObjectValue propertyValue = propertyValues.get(property);
                 if(propertyValue!=null)
-                    return propertyValue.getExpr().and(tableJoin.getWhere());
+                    return propertyValue.getStaticExpr(this.staticValueExpr).and(tableJoin.getWhere());
                 else
                     return tableJoin.getExpr(property);
             }

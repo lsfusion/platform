@@ -231,12 +231,13 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         AndClassSet result = null;
         for(And<VariableSingleClassExpr> andWhere : wheres) {
             AndClassSet classSet = expr.getAndClassSet(andWhere);
-            if(classSet!=null) {
-                if(result == null)
-                    result = classSet;
-                else
-                    result = result.or(classSet);
-            }
+            if(classSet == null) // any class
+                break;
+
+            if(result == null)
+                result = classSet;
+            else
+                result = result.or(classSet);
         }
         return result;
     }
@@ -262,11 +263,11 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             MMap<VariableSingleClassExpr, AndClassSet> andTrans = MapFact.mMapMax(size, ClassExprWhere.<VariableSingleClassExpr>addAnd());
             for(int i=0;i<size;i++) {
                 AndClassSet mapSet = map.getValue(i).getAndClassSet(andWhere);
-                if(mapSet==null)
-                    continue;
-                if(!map.getKey(i).addAndClassSet(andTrans, mapSet)) {
-                    isFalse = true;
-                    break;
+                if(mapSet != null) {
+                    if (!map.getKey(i).addAndClassSet(andTrans, mapSet)) {
+                        isFalse = true;
+                        break;
+                    }
                 }
             }
             if(!isFalse)

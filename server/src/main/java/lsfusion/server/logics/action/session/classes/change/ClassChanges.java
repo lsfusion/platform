@@ -259,7 +259,7 @@ public class ClassChanges {
     }
     
     public static SingleKeyPropertyUsage createChangeTable(String debugInfo) {
-        return new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance);
+        return new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance, true);
     }
 
     public ImMap<Property, UpdateResult> changeClass(MaterializableClassChange matChange, SQLSession sql, BaseClass baseClass, QueryEnvironment env, ChangedClasses changedClasses) throws SQLException, SQLHandledException {
