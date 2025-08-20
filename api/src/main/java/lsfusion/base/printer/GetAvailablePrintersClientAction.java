@@ -1,4 +1,4 @@
-package lsfusion.server.physics.dev.integration.external.to.equ.printer.client;
+package lsfusion.base.printer;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;

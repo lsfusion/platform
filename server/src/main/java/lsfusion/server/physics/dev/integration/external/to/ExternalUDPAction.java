@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.session.UdpClientAction;
+import lsfusion.base.net.UdpClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

@@ -1,12 +1,12 @@
-package lsfusion.server.physics.dev.integration.external.to.file.client;
+package lsfusion.base.file;
 
+import lsfusion.base.FileUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 
 public class ListFilesClientAction implements ClientAction {
-    private String source;
-    private boolean recursive;
+    public final String source;
+    public final boolean recursive;
 
     public ListFilesClientAction(String source, boolean recursive) {
         this.source = source;

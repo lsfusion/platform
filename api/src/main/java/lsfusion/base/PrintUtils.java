@@ -1,7 +1,6 @@
-package lsfusion.server.physics.dev.integration.external.to.equ.printer;
+package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.print.ReportGenerator;
 import org.apache.pdfbox.pdmodel.PDDocument;

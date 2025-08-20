@@ -41,6 +41,21 @@
 
         <lsf:writeResources resources="${resourcesBeforeSystem}"/>
 
+        <%--reset and restore node globals same as in GwtActionDispatcher--%>
+        <script>
+            // save Node.js variables for electron
+            window._nodeRequire = window.require;
+            window._nodeModule = window.module;
+            window._nodeExports = window.exports;
+            window._nodeProcess = window.process;
+
+            // disable Node.js variables
+            window.require = undefined;
+            window.module = undefined;
+            window.exports = undefined;
+            window.process = undefined;
+        </script>
+
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 "static/js/external/jquery-3.7.1.min.js",
                 "static/js/external/jquery-ui.min.js",
@@ -197,6 +212,14 @@
 
         <lsf:writeResources resources="${versionedResources}"/>
         <lsf:writeResources resources="${resourcesAfterSystem}"/>
+
+        <script>
+            // restore Node.js variables
+            window.require = window._nodeRequire
+            window.module = window._nodeModule;
+            window.exports = window._nodeExports;
+            window.process = window._nodeProcess;
+        </script>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>

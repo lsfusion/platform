@@ -1,8 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.*;
+import com.google.gwt.json.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -12,6 +11,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.action.com.GWriteToComPortAction;
+import lsfusion.gwt.client.action.file.*;
+import lsfusion.gwt.client.action.net.*;
+import lsfusion.gwt.client.action.printer.GGetAvailablePrintersAction;
+import lsfusion.gwt.client.action.printer.GPrintFileAction;
+import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -28,6 +33,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.LogClientException
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -35,6 +41,8 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.executeFlutter;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
@@ -366,8 +374,281 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public GReadResult execute(GReadAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "readFile", new String[] {action.sourcePath}, res -> {
+                String errorValue = getJSONError(res);
+                continueDispatching(errorValue != null ?
+                        new GReadResult(errorValue, null, null) :
+                        new GReadResult(null, getJSONStringResult(res), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result);
+            });
+            return null;
+        } else {
+            throw new UnsupportedOperationException("ReadFile is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public String execute(GDeleteFileAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "deleteFile", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("DeleteFile is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public boolean execute(GFileExistsAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "fileExists", new String[]{action.source}, res -> {
+                Boolean exists = getJSONBoolean(res, "result");
+                continueDispatching(exists != null && exists, result);
+            });
+            return false;
+        } else {
+            throw new UnsupportedOperationException("FileExists is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public String execute(GMkDirAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "makeDir", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("MakeDir is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public String execute(GMoveFileAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "moveFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("MoveFile is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public String execute(GCopyFileAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "copyFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("CopyFile is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public GListFilesResult execute(GListFilesAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "listFiles", new Object[]{action.source, action.recursive}, res -> continueDispatching(getListFilesResult(new JSONObject(res).get("result")), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("ListFiles is supported only in flutter client");
+        }
+    }
+
+    private GListFilesResult getListFilesResult(JSONValue res) {
+        try {
+            JSONArray result =res.isArray();
+            String[] namesArray = new String[result.size()];
+            Boolean[] dirsArray = new Boolean[result.size()];
+            GDateTimeDTO[] modifiedArray = new GDateTimeDTO[result.size()];
+            Long[] sizesArray = new Long[result.size()];
+
+            for (int i = 0; i < result.size(); i++) {
+                JSONObject entry = result.get(i).isObject();
+                namesArray[i] = entry.get("path").isString().stringValue();
+                dirsArray[i] = entry.get("isDirectory").isBoolean().booleanValue() ? true : null;
+                modifiedArray[i] = GDateTimeDTO.fromJsDate(JsDate.create(entry.get("modifiedDateTime").isString().stringValue()));
+                sizesArray[i] = (long) entry.get("fileSize").isNumber().doubleValue();
+            }
+            return new GListFilesResult(null, namesArray, dirsArray, modifiedArray, sizesArray);
+        } catch (Exception e) {
+            return new GListFilesResult(e.getMessage(), null, null, null, null);
+        }
+    }
+
+    @Override
     public void execute(GWriteAction action) {
-        GwtClientUtils.downloadFile(action.fileUrl);
+        if (action.fileUrl != null) {
+            String downloadURL = getAppDownloadURL(action.fileUrl);
+            JavaScriptObject flutter = getFlutterObject();
+            if (flutter != null) { //todo: status 401 from RestAuthenticationEntryPoint
+                executeFlutter(flutter, "writeFile", new Object[]{getFullUrl(downloadURL), action.filePath},res -> {});
+            } else { //it is actually downloading the file, not opening it in the browser
+                fileDownload(downloadURL);
+            }
+        }
+    }
+
+    @Override
+    public GRunCommandActionResult execute(GRunCommandAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "runCommand", new String[]{action.command}, res -> continueDispatching(new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("RunCommand is supported only in flutter-client");
+        }
+    }
+
+    @Override
+    public String execute(GGetAvailablePrintersAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "getAvailablePrinters", new String[] {}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("GetAvailablePrinters is supported only in flutter-client");
+        }
+    }
+
+    @Override
+    public void execute(GPrintFileAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "print", new String[] {action.fileData, action.filePath, null, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
+        } else {
+            throw new UnsupportedOperationException("PrintFile is supported only in flutter-client");
+        }
+    }
+
+    @Override
+    public String execute(GWriteToPrinterAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "print", new String[] {null, null, action.text, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("PrintText is supported only in flutter-client");
+        }
+    }
+
+    @Override
+    public String execute(GTcpAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "sendTCP", new Object[]{action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)},res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("EXTERNAL TCP is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public void execute(GUdpAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, "sendUDP", new Object[]{action.host, action.port, action.fileBytes}, res -> {});
+        } else {
+            throw new UnsupportedOperationException("EXTERNAL UDP is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public void execute(GWriteToSocketAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, "writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, res -> {});
+        } else {
+            throw new UnsupportedOperationException("WriteToSocket is supported only in flutter client");
+        }
+    }
+
+    @Override
+    public String execute(GPingAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "ping", new String[] {action.host}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("Ping is supported only in flutter client");
+        }
+    }
+
+    private String getJSONStringResult(JavaScriptObject res) {
+        return getJSONString(res, "result");
+    }
+
+    private String getJSONError(JavaScriptObject res) {
+        return getJSONString(res, "error");
+    }
+
+    private String getJSONString(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isString().stringValue();
+        } else {
+            return null;
+        }
+    }
+
+    private int getJSONInt(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? 0 : (int) json.isNumber().doubleValue();
+        } else {
+            return 0;
+        }
+    }
+
+    private Boolean getJSONBoolean(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isBoolean().booleanValue();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String execute(GWriteToComPortAction action) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            pauseDispatching();
+            Result<Object> result = new Result<>();
+            executeFlutter(flutter, "writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, res -> continueDispatching(getJSONStringResult(res), result));
+            return null;
+        } else {
+            throw new UnsupportedOperationException("WriteToComPort is supported only in flutter client");
+        }
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

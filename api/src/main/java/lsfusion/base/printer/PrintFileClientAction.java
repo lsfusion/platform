@@ -1,18 +1,18 @@
-package lsfusion.server.physics.dev.integration.external.to.equ.printer.client;
+package lsfusion.base.printer;
 
+import lsfusion.base.PrintUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientActionDispatcher;
 import lsfusion.interop.action.ExecuteClientAction;
-import lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintUtils;
 
 import java.io.IOException;
 
 public class PrintFileClientAction extends ExecuteClientAction {
-    private RawFileData fileData;
-    private String filePath;
-    private String printerName;
-    private String trayName;
-    private boolean duplex;
+    public final RawFileData fileData;
+    public final String filePath;
+    public final String printerName;
+    public final String trayName;
+    public final boolean duplex;
 
     public PrintFileClientAction(RawFileData fileData, String filePath, String printerName, String trayName, boolean duplex) {
         this.fileData = fileData;
