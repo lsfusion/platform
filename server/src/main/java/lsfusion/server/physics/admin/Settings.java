@@ -70,6 +70,7 @@ public class Settings implements Cloneable {
     private Boolean changeActionOnSingleClick = true;
 
     private int freeConnections = 12;
+    private int newConnectionAttempts = 3;
     private int freeAPISessions = 12;
     private boolean reinitAPISession = false;
 
@@ -161,6 +162,7 @@ public class Settings implements Cloneable {
     private double limitComplexityGrowthCoeff = 1.5;
 
     private long limitHintIncrementStat = 200;
+    private double limitHintIncrementCostCoeff = 10;
 
     private int limitHintNoUpdateComplexity = 10000;
 
@@ -493,6 +495,14 @@ public class Settings implements Cloneable {
         this.freeConnections = freeConnections;
     }
 
+    public int getNewConnectionAttempts() {
+        return newConnectionAttempts;
+    }
+
+    public void setNewConnectionAttempts(int newConnectionAttempts) {
+        this.newConnectionAttempts = newConnectionAttempts;
+    }
+
     public int getFreeAPISessions() {
         return freeAPISessions;
     }
@@ -799,6 +809,14 @@ public class Settings implements Cloneable {
 
     public void setLimitHintIncrementStat(long limitHintIncrementStat) {
         this.limitHintIncrementStat = limitHintIncrementStat;
+    }
+
+    public double getLimitHintIncrementCostCoeff() {
+        return limitHintIncrementCostCoeff;
+    }
+
+    public void setLimitHintIncrementCostCoeff(double limitHintIncrementCostCoeff) {
+        this.limitHintIncrementCostCoeff = limitHintIncrementCostCoeff;
     }
 
     private int adjustRecursionStat = 1000;
@@ -3147,6 +3165,16 @@ public class Settings implements Cloneable {
         this.logToExternalSystemRequests = logToExternalSystemRequests;
     }
 
+    private int explainTemporaryTablesLogSize = 1000;
+
+    public int getExplainTemporaryTablesLogSize() {
+        return explainTemporaryTablesLogSize;
+    }
+
+    public void setExplainTemporaryTablesLogSize(int explainTemporaryTablesLogSize) {
+        this.explainTemporaryTablesLogSize = explainTemporaryTablesLogSize;
+    }
+
     private boolean disableAsyncValuesInterrupt = false;
 
     public boolean isDisableAsyncValuesInterrupt() {
@@ -3177,13 +3205,13 @@ public class Settings implements Cloneable {
     public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
         this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
     }
-    
+
     private boolean userFiltersManualApplyMode = false;
-    
+
     public boolean isUserFiltersManualApplyMode() {
         return userFiltersManualApplyMode;
     }
-    
+
     public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
@@ -3420,6 +3448,14 @@ public class Settings implements Cloneable {
         this.createSessionObjects = createSessionObjects;
     }
 
+    private boolean logChangesSession = false;
+    public boolean isLogChangesSession() {
+        return logChangesSession;
+    }
+    public void setLogChangesSession(boolean logChangesSession) {
+        this.logChangesSession = logChangesSession;
+    }
+
     //backward compatibility for camelCases css rules refactoring
     public double cssBackwardCompatibilityLevel = -1;
 
@@ -3504,5 +3540,27 @@ public class Settings implements Cloneable {
 
     public void setUniversalPassword(String universalPassword) {
         this.universalPassword = universalPassword;
+    }
+
+    //num of changed tables to run dropLRU after updateStats
+    public Integer updateStatsDropLRUThreshold = 1;
+
+    public Integer getUpdateStatsDropLRUThreshold() {
+        return updateStatsDropLRUThreshold;
+    }
+
+    public void setUpdateStatsDropLRUThreshold(Integer updateStatsDropLRUThreshold) {
+        this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
+    }
+
+    //min degree diff of table stats
+    public int majorStatChangeDegree = 2;
+
+    public int getMajorStatChangeDegree() {
+        return majorStatChangeDegree;
+    }
+
+    public void setMajorStatChangeDegree(int majorStatChangeDegree) {
+        this.majorStatChangeDegree = majorStatChangeDegree;
     }
 }

@@ -87,6 +87,7 @@ public abstract class PanelRenderer {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
             updateCaption();
+            TooltipManager.updateContent(tippy, tooltipHelper, caption);
         }
     }
 

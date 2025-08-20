@@ -13,9 +13,9 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Исполняемые exe файлы:
-**lsFusion 6.0-beta2** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
+**lsFusion 6.0** (OpenJDK **21.0.6**, PostgreSQL **17.4**, Tomcat **9.0.104**, IntelliJ IDEA Community Edition **2025.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-beta2-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-x64.exe)
 - <details>
   <summary>Предыдущие версии</summary>
 
@@ -41,7 +41,7 @@ import TabItem from '@theme/TabItem';
 
 Bash скрипты с использованием dnf/apt (в качестве минорных версий используются последние стабильные):
 
-lsFusion **6** Server & Client (+ OpenJDK **11**, PostgreSQL **16**, Tomcat **9.0.89**):
+lsFusion **6** Server & Client (+ OpenJDK (**default-jdk / java-openjdk**), PostgreSQL **17**, Tomcat **9.0.104**):
 
 | ОС                               | Команда / Скрипт                                                        |
 |----------------------------------|-------------------------------------------------------------------------|
@@ -147,7 +147,7 @@ Classpath сервера по умолчанию устанавливается 
 #### Нестабильные версии
 Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) <platform version>`.
 
-Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.0-SNAPSHOT`.
+Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.1-SNAPSHOT`.
 
 </TabItem>
 </Tabs>
@@ -165,20 +165,20 @@ Classpath сервера по умолчанию устанавливается 
 
 Ниже приведены скрипты для установки отдельных компонент платформы:
 
-Сервер БД - PostgreSQL **16**:
+Сервер БД - PostgreSQL **17**:
 
 | ОС                            | Команда / Скрипт                                                           |
 |-------------------------------|----------------------------------------------------------------------------|
 | Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-db)` |
 
-Сервер приложений - lsFusion 6 Server (+ OpenJDK **11**):
+Сервер приложений - lsFusion 6 Server (+ OpenJDK (**default-jdk**)):
 
 
 | ОС                            | Команда / Скрипт                                                               |
 |-------------------------------|--------------------------------------------------------------------------------|
 | Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-server)` |
  
-Веб-сервер - lsFusion 6 Client (+ Tomcat 9.0.89): 
+Веб-сервер - lsFusion 6 Client (+ Tomcat 9.0.104): 
 
 | ОС                            | Команда / Скрипт                                                               |
 |-------------------------------|--------------------------------------------------------------------------------|

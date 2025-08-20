@@ -2,15 +2,15 @@
 title: 'Для разработки'
 ---
 
-На этой странице можно скачать программы установки, которые установят все необходимое для разработки в один клик. Помимо lsFusion эти программы также устанавливают OpenJDK, PostgreSQL, Tomcat и IntelliJ IDEA Community Edition со встроенным lsFusion плагином. Если какие-то из этих программ уже есть на вашем компьютере, то их можно будет исключить в процессе установки.
+На этой странице можно скачать программы установки, которые установят все необходимое для разработки в один клик. Помимо lsFusion эти программы также устанавливают OpenJDK, PostgreSQL, Tomcat, Jaspersoft Studio и IntelliJ IDEA Community Edition со встроенным lsFusion плагином. Если какие-то из этих программ уже есть на вашем компьютере, то их можно будет исключить в процессе установки.
 
 ## Скачать
 
 ### Windows
 
-**lsFusion 6.0-beta2** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
+**lsFusion 6.0** (OpenJDK **21.0.6**, PostgreSQL **17.4**, Tomcat **9.0.104**, Jaspersoft Studio **6.20.0**, IntelliJ IDEA Community Edition **2025.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-dev-6.0-beta2-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-dev-6.0-x64.exe)
 
 <details>
 <summary><strong>Предыдущие версии</strong></summary>

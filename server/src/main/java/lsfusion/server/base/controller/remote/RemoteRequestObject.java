@@ -166,8 +166,10 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     public void waitRecentResults(long waitRequestIndex) {
         try {
-            while (!recentResults.containsKey(waitRequestIndex)) {
-                Thread.sleep(100);
+            if(waitRequestIndex != -1) { //see FormsController.executeNotificationAction
+                while (!recentResults.containsKey(waitRequestIndex)) {
+                    Thread.sleep(100);
+                }
             }
         } catch (InterruptedException e) {
             throw Throwables.propagate(e);

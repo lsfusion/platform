@@ -1,13 +1,13 @@
 package lsfusion.http.provider.navigator;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ServerUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler;
 import lsfusion.http.controller.MainController;
+import lsfusion.http.controller.RequestUtils;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -19,25 +19,23 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.web.util.WebUtils;
 import ua_parser.Client;
 import ua_parser.Parser;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // session scoped - one for one browser (! not tab)
@@ -53,23 +51,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(getConnectionInfo(request), MainController.getExternalRequest(new ExternalRequest.Param[0], request));
-    }
-
-    public static ConnectionInfo getConnectionInfo(HttpServletRequest request) {
-        Locale clientLocale = LocaleContextHolder.getLocale();
-
-        String hostName = ExternalLogicsAndSessionRequestHandler.getRequestCookies(request).get(ServerUtils.HOSTNAME_COOKIE_NAME);
-        if(hostName == null)
-            hostName = request.getRemoteHost();
-
-        Cookie timeZone = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_ZONE");
-        Cookie timeFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_FORMAT");
-        Cookie dateFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_DATE_FORMAT");
-
-        Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
-
-        return new ConnectionInfo(new ComputerInfo(hostName, request.getRemoteAddr()), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
+        return new SessionInfo(RequestUtils.getConnectionInfo(request), MainController.getExternalRequest(ListFact.EMPTY(), request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
@@ -103,7 +85,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        we don't need client locale here, because it was already updated when authenticating
 //        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
 //        if(clientLocale == null)
-//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
+//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
@@ -124,6 +106,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
         addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
+        scheduleCheckInitialized(sessionID, MainController.isPrefetch(request));
         return sessionID;
     }
 
@@ -175,9 +158,31 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
-        NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
         MainDispatchServlet.logger.error("Removing navigator " + sessionID + "...");
-        currentLogicsAndNavigators.remove(sessionID);
+        removeNavigatorSessionObject(currentLogicsAndNavigators, sessionID);
+    }
+
+    public void scheduleCheckInitialized(String sessionId, boolean isPrefetch) {
+        scheduleCheckInitialized(currentLogicsAndNavigators, sessionId, isPrefetch);
+    }
+    private static final ScheduledExecutorService checkInitializedExecutor = Executors.newScheduledThreadPool(5);
+    private static void scheduleCheckInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, boolean isPrefetch) {
+        checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 1), 1, TimeUnit.MINUTES);
+        if(isPrefetch) // google has prefetch 5 minutes grace period
+            checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 2), 5, TimeUnit.MINUTES);
+    }
+
+    private static void checkInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, int status) {
+        try {
+            NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionId);
+            if(navigatorSessionObject != null && navigatorSessionObject.initialized < status)
+                removeNavigatorSessionObject(currentLogicsAndNavigators, sessionId);
+        } catch (Exception e) {
+        }
+    }
+
+    private static void removeNavigatorSessionObject(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionID) throws RemoteException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
         navigatorSessionObject.remoteNavigator.close();
     }
 

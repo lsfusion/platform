@@ -42,6 +42,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -711,6 +712,37 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     protected ActionClassImplement<P> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> mapping) {
         return new ActionClassImplement<>(this, classes, mapping);
+    }
+
+    private static <X extends PropertyInterface, Z extends PropertyInterface, Y extends PropertyInterface> Property.Select<X> getSelectProperty(boolean forceSelect, ImSet<X> mapping, AsyncMapInput<X> input, PropertyInterfaceImplement<X> value, boolean drawnValue) { // false - filter selected,
+        InputContextPropertyListEntity<Z, X> list = (InputContextPropertyListEntity<Z, X>) input.list;
+        return Property.getSelectProperty(forceSelect, mapping, list.getSelectViewEntity(), list.getSelectFilterEntity(), list.getSelectOrderEntities(), value, drawnValue);
+    }
+
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
+    public <X extends PropertyInterface> Property.MapSelect<?> getSelectProperty(boolean forceSelect, ImRevMap<P, ObjectEntity> mapping, PropertyObjectEntity<X> drawProperty) { // false - filter selected,
+        AsyncMapEventExec<P> asyncExec = getAsyncEventExec(true);
+        if(asyncExec instanceof AsyncMapInput) {
+            AsyncMapInput<P> asyncMapInput = (AsyncMapInput<P>) asyncExec;
+
+            if(asyncMapInput.list instanceof InputContextPropertyListEntity && asyncMapInput.strict) {
+                // setting oldValue
+                PropertyInterfaceImplement<P> oldValue = asyncMapInput.oldValue;
+                boolean drawnValue = false;
+                if (oldValue == null) {
+                    drawnValue = true;
+                    ImSet<ObjectEntity> allObjects = mapping.valuesSet().merge(drawProperty.mapping.valuesSet());
+                    if (allObjects.size() > mapping.size()) { // optimization, when we don't have extra objects, just use existing
+                        ImRevMap<ObjectEntity, PropertyInterface> objectInterfaces = allObjects.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
+                        return Property.createMapSelect(getSelectProperty(forceSelect, objectInterfaces.valuesSet(), asyncMapInput.map(mapping.join(objectInterfaces)), drawProperty.getImplement(objectInterfaces), drawnValue), objectInterfaces.reverse());
+                    } else
+                        oldValue = drawProperty.property.getIdentityImplement(drawProperty.mapping.crossValuesRev(mapping));
+                }
+
+                return Property.createMapSelect(getSelectProperty(forceSelect, mapping.keys(), asyncMapInput, oldValue, drawnValue), mapping);
+            }
+        }
+        return null;
     }
 
     @IdentityStrongLazy // STRONG because of using in security policy

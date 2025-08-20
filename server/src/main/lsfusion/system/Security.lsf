@@ -110,7 +110,7 @@ META initPropertyPermission (type, caption)
     backgroundPermission###type(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermission###type(ur, child) AND 
         (NOT dataPermission###type(ur, g) OR dataPermission###type(ur, child) != dataPermission###type(ur, g));     
     permission###type (UserRole ur, PropertyGroup g) = OVERRIDE dataPermission###type(ur, g), nearestParentPermission###type(ur, g);
-    captionPermission###type caption (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permission###type(ur, g), Permission.default) CHARWIDTH 10;
+    captionPermission###type caption (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permission###type(ur, g), Permission.default IF ur IS UserRole AND g IS PropertyGroup) CHARWIDTH 10;
     
     dataPermission###type = DATA Permission (UserRole, ActionOrProperty);
     foregroundPermission###type (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermission###type(ur, p);
@@ -124,7 +124,7 @@ META initPropertyPermission (type, caption)
             updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), staticName(permission###type(ur, p)), ''##type);
             
     namePermission###type (UserRole ur, ActionOrProperty p) = staticName(permission###type(ur, p));
-    captionPermission###type caption (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permission###type(ur, p), Permission.default) CHARWIDTH 10;
+    captionPermission###type caption (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permission###type(ur, p), Permission.default IF ur IS UserRole AND p IS ActionOrProperty) CHARWIDTH 10;
     
     copy (UserRole from, UserRole to) +{
         dataPermission###type(to, ActionOrProperty property) <- dataPermission###type(from, property);
@@ -156,7 +156,7 @@ WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, Navigato
         updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
-captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default) CHARWIDTH 10;
+captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default IF ur IS UserRole AND e IS NavigatorElement) CHARWIDTH 10;
 
 permit (User u, NavigatorElement ne) = 
     (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit AND NOT disableRole(ur)) OR NOT 
@@ -505,8 +505,7 @@ vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 generateJnlpUrls () {
 
     LOCAL execURL = STRING();
-    //we use generateJnlp without params because linux mint cut from url '%5'
-    execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp';
+    execURL() <- '\{runDesktopQuery\}';
 
     FOR MemoryLimit ml IS MemoryLimit DO {
         exportText() <- CONCAT '', exportText(), '<a href="', execURL(), '&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';

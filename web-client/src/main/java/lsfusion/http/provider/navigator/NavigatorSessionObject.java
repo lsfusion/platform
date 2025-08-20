@@ -12,6 +12,8 @@ public class NavigatorSessionObject {
 
     public final ServerSettings serverSettings; // needed for static resources (images / js / css)
 
+    public int initialized; // 0 - not yet, 1 - prefetched, 2 - initialized
+
     public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings) {
         this.remoteNavigator = remoteNavigator;
         this.serverSettings = serverSettings;

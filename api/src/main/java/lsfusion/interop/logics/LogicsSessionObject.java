@@ -101,6 +101,7 @@ public class LogicsSessionObject {
         boolean jasperReportsIgnorePageMargins = json.optBoolean("jasperReportsIgnorePageMargins");
         double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
         boolean useClusterizeInPivot = json.optBoolean("useClusterizeInPivot");
+        String computerSettings = json.optString("computerSettings");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, mobile, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings,
@@ -108,7 +109,7 @@ public class LogicsSessionObject {
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,
-                cssBackwardCompatibilityLevel, useClusterizeInPivot);
+                cssBackwardCompatibilityLevel, useClusterizeInPivot, computerSettings);
     }
 
     // Expect that only JSONObject and JSONArray will be passed as param
@@ -194,8 +195,6 @@ public class LogicsSessionObject {
             int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
             String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
-            if (jnlpUrls != null && contextPath != null)
-                jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSON(json.opt("lsfParams")) : null;

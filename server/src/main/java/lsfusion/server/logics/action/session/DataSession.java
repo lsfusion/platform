@@ -47,6 +47,7 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -70,10 +71,7 @@ import lsfusion.server.logics.action.session.change.increment.IncrementTableProp
 import lsfusion.server.logics.action.session.change.modifier.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
-import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.action.session.classes.change.MaterializableClassChange;
-import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.*;
 import lsfusion.server.logics.action.session.classes.changed.ChangedClasses;
 import lsfusion.server.logics.action.session.classes.changed.ChangedDataClasses;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
@@ -374,8 +372,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     protected void onClose(Object o) throws SQLException {
         assert o == null;
 
-        if(sql.isExplainTemporaryTablesEnabled())
-            sql.addFifo("DC " + getOwner());
         try {
             dropTables(SetFact.EMPTY());
             sessionEventChangedOld.clear(sql, getOwner());
@@ -383,6 +379,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sessionEventNotChangedOld.clear();
 
             updateNotChangedOld.clear();
+
+            if(sql.isExplainTemporaryTablesEnabled())
+                sql.addTTDSLog("DC", getOwner());
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         } finally {
@@ -433,6 +432,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static boolean reCalculateAggr = false;
 
     public final UserController user;
+    public final NavigatorRefreshController navigator;
     public final ChangesController changes;
 
     public DataObject applyObject = null;
@@ -458,7 +458,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql, null);
     }
     public DataSession createSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException {
-        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
+        return new DataSession(sql, user, navigator, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
     }
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
@@ -820,7 +820,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     };
     private ImSet<FormEntity> allActiveForms = null;
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
+    public DataSession(SQLSession sql, final UserController user, final NavigatorRefreshController navigator,
+                       final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
                        IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession,
                        SessionEvents sessionEvents, OperationOwner upOwner, ImSet<FormEntity> fixedForms) {
         this.sql = sql;
@@ -830,6 +831,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.currentSession = currentSession;
 
         this.user = user;
+        this.navigator = navigator;
         this.changes = changes;
 
         this.sessionEvents = sessionEvents;
@@ -870,7 +872,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         registerThreadStack(); // создающий поток также является владельцем сессии
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
         if(sql.isExplainTemporaryTablesEnabled())
-            sql.addFifo("DCR");
+            sql.addTTDSLog("DCR", getOwner());
 
         env = new ContextQueryEnvironment(sql.contextProvider, this.owner, isServerRestarting, timeout, form, locale);
 
@@ -1549,7 +1551,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //        if(reupdateWhere != null)
 //            modifyQuery.and(reupdateWhere.not());
         
-        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
+        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1637,21 +1639,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void logSession(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        Integer changed = data.size();
-        String dataChanged = "";
-        for(Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
-            String canonicalName = entry.getKey().getCanonicalName();
-            if(canonicalName != null)
-                dataChanged += canonicalName + ": " + entry.getValue().getCount() + "\n";
-        }
-
+        boolean logChangesSession = Settings.get().isLogChangesSession();
         Result<Integer> addedCount = new Result<>();
         Result<Integer> removedCount = new Result<>();
-        String result = classChanges.logSession(addedCount, removedCount);        
-        if(!result.isEmpty())
-            dataChanged += result;
+        String classChangesLog = classChanges.logSession(addedCount, removedCount, logChangesSession);
 
-        BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
+        if (logChangesSession) {
+            String dataChanged = "";
+            for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()) {
+                String canonicalName = entry.getKey().getCanonicalName();
+                if (canonicalName != null)
+                    dataChanged += canonicalName + ": " + entry.getValue().getCount() + "\n";
+            }
+
+            if (!classChangesLog.isEmpty())
+                dataChanged += classChangesLog;
+
+            BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
+        }
+
         currentSession.change(applyObject, DataSession.this);
         Long cn = sql.contextProvider.getCurrentConnection();
         if(cn != null)
@@ -1666,7 +1672,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         BL.systemEventsLM.quantityAddedClassesSession.change(addedCount.result, DataSession.this, applyObject);
         BL.systemEventsLM.quantityRemovedClassesSession.change(removedCount.result, DataSession.this, applyObject);
-        BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
+        BL.systemEventsLM.quantityChangedClassesSession.change(data.size(), DataSession.this, applyObject);
     }
 
     public void refresh() throws SQLException, SQLHandledException {
@@ -1719,7 +1725,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
-        mRemovedClasses = SetFact.mSet();        
+        mRemovedClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2095,7 +2101,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.statusMessage = null;
                 }
             }
-    
+
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
 

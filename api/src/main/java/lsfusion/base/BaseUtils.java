@@ -1,6 +1,7 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import com.ibm.icu.text.UnicodeSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -59,11 +60,11 @@ public class BaseUtils {
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
-    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго 
+    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 338;
+        return 355;
     }
 
     public static String getPlatformVersion() {
@@ -742,6 +743,36 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B, V> OrderedMap<B, V> nullMerge(OrderedMap<K1, ? extends V> map1, OrderedMap<K2, ? extends V> map2) {
+        if (map2 == null)
+            return (OrderedMap<B, V>) map1;
+        if (map1 == null)
+            return (OrderedMap<B, V>) map2;
+        return merge(map1, map2);
+    }
+
+    public static <B, K1 extends B, K2 extends B, V> OrderedMap<B, V> merge(OrderedMap<K1, ? extends V> map1, OrderedMap<K2, ? extends V> map2) {
+        if (map2.isEmpty())
+            return (OrderedMap<B, V>) map1;
+        if (map1.isEmpty())
+            return (OrderedMap<B, V>) map2;
+
+        OrderedMap<B, V> result = new OrderedMap(map1);
+        for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
+            V prevValue = result.put(entry2.getKey(), entry2.getValue());
+            assert prevValue == null || prevValue.equals(entry2.getValue());
+        }
+        return result;
+    }
+
+    public static <B, K1 extends B, K2 extends B, V> Map<B, V> nullMerge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
+        if(map2 == null)
+            return (Map<B, V>) map1;
+        if(map1 == null)
+            return (Map<B, V>) map2;
+        return merge(map1, map2);
+    }
+
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> merge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
         if(map2.isEmpty())
             return (Map<B, V>) map1;
@@ -781,6 +812,14 @@ public class BaseUtils {
         result.add(item2);
         result.addAll(list);
         return result;
+    }
+
+    public static <B> List<B> nullMergeList(List<? extends B> list1, List<? extends B> list2) {
+        if (list2 == null)
+            return (List<B>) list1;
+        if (list1 == null)
+            return (List<B>) list2;
+        return mergeList(list1, list2);
     }
 
     public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
@@ -2266,5 +2305,20 @@ public class BaseUtils {
 
     public static int roundToDegree(int base, int value) {
         return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
+    }
+
+    //[:L:] — all Unicode letters, including Latin, Cyrillic, Greek, Chinese, etc.
+    // /[:N:] — All digits (Arabic, Indian and others)
+    // /[:P:] — punctuation marks
+    // /[:Zs:] — whitespace characters (normal space, unbroken space, etc.)
+    private static final UnicodeSet ALLOWED_CHARACTERS = new UnicodeSet("[[:L:][:N:][:P:][:Zs:]]").freeze();
+    public static boolean isVisiblyValid(String s) {
+        if (s != null) {
+            for (int i = 0; i < s.length(); i++) {
+                if (!ALLOWED_CHARACTERS.contains(s.codePointAt(i)))
+                    return false;
+            }
+        }
+        return true;
     }
 }

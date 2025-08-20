@@ -4,13 +4,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.*;
 import lsfusion.interop.session.*;
@@ -48,7 +45,6 @@ import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -60,7 +56,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static lsfusion.base.ApiResourceBundle.getString;
-import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
@@ -98,7 +93,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected abstract ChangesController createChangesController();    
 
     protected DataSession createSession() throws SQLException {
-        return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
+        return dbManager.createSession(sql, new WeakUserController(this), new WeakNavigatorRefreshController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
     }
     protected LogInfo logInfo;
 
@@ -186,6 +181,32 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             return remoteConnection == null ? null : remoteConnection.userRole;
         }
     }
+
+    protected static class WeakNavigatorRefreshController implements NavigatorRefreshController {
+        WeakReference<RemoteConnection> weakThis;
+
+        public WeakNavigatorRefreshController(RemoteConnection connection) {
+            this.weakThis = new WeakReference<>(connection);
+        }
+
+        @Override
+        public void refresh() {
+            RemoteConnection remoteConnection = weakThis.get();
+            if(remoteConnection instanceof RemoteNavigator) {
+                ((RemoteNavigator) remoteConnection).refreshData();
+            }
+        }
+
+        @Override
+        public ProcessNavigatorChangesClientAction getNavigatorChangesAction() {
+            RemoteConnection remoteConnection = weakThis.get();
+            if(remoteConnection instanceof RemoteNavigator) {
+                return ((RemoteNavigator) remoteConnection).getNavigatorChangesAction();
+            }
+            return null;
+        }
+    }
+
 
     protected static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteConnection> weakThis;
@@ -394,7 +415,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
-        boolean isInteractive = request.isInteractiveClient && property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI);
+        boolean isInteractive = !property.action.hasAnnotation("noui")
+                && (property.action.hasAnnotation("ui")
+                || request.isInteractiveClient && property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI));
 
         if(isInteractive)
             RemoteNavigator.checkEnableUI(token);
@@ -478,49 +501,25 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
         if (action.uses(businessLogics.LM.headers.property)) {
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
         }
         if (action.uses(businessLogics.LM.params.property)) {
-            MExclMap<ImList<Object>, String> mParams = MapFact.mExclMap();
-            Map<String, Integer> paramIndexes = new HashMap<>();
-            for (ExternalRequest.Param param : request.params) {
-                String paramName = param.name;
-                Object paramValue = param.value;
-
-                if(paramValue instanceof String) {
-                    Integer paramIndex = paramIndexes.get(paramName);
-                    if (paramIndex == null)
-                        paramIndex = 0;
-                    paramIndexes.put(paramName, paramIndex + 1);
-
-                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), (String) paramValue);
-                }
-            }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, CallHTTPAction.getParamsMap(request.params,
+                    paramValue -> paramValue instanceof String,
+                    (paramName, paramIndex) -> ListFact.toList(paramName, (Object) paramIndex),
+                    param -> param.value));
         }
         if (action.uses(businessLogics.LM.fileParams.property)) {
-            MExclMap<ImList<Object>, NamedFileData> mParams = MapFact.mExclMap();
-            Map<String, Integer> paramIndexes = new HashMap<>();
-            for (ExternalRequest.Param param : request.params) {
-                String paramName = param.name;
-                Object paramValue = param.value;
-
-                if(paramValue instanceof FileData) {
-                    Integer paramIndex = paramIndexes.get(paramName);
-                    if (paramIndex == null)
-                        paramIndex = 0;
-                    paramIndexes.put(paramName, paramIndex + 1);
-
-                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), ExternalRequest.getNamedFile((FileData) paramValue, param.fileName));
-                }
-            }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.fileParams, mParams.immutable());
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, CallHTTPAction.getParamsMap(request.params,
+                    paramValue -> paramValue instanceof FileData,
+                    (paramName, paramIndex) -> ListFact.toList(paramName, (Object) paramIndex),
+                    param -> ExternalRequest.getNamedFile((FileData) param.value, param.fileName)));
         }
         if (action.uses(businessLogics.LM.actionPathInfo.property)) {
             businessLogics.LM.actionPathInfo.change(actionPathInfo, session);
@@ -612,38 +611,46 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected abstract ExecSession getExecSession() throws SQLException;
 
     private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
-        String requestLogMessage = Settings.get().isLogFromExternalSystemRequests() ? getExternalSystemRequestsLog(logInfo, request.servletPath, request.method,
-                "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
+        RequestLog.Builder logBuilder = null;
+
+        if (Settings.get().isLogFromExternalSystemRequests())
+            logBuilder = new RequestLog.Builder().requestQuery(request.getRequestQuery()).method(request.method);
+
+        boolean detailLog = Settings.get().isLogFromExternalSystemRequestsDetail();
+        if (detailLog && logBuilder != null)
+            logBuilder.logInfo(logInfo)
+                    .extraValue("\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action)
+                    .requestHeaders(BaseUtils.toStringMap(request.headerNames, request.headerValues))
+                    .requestCookies(BaseUtils.toStringMap(request.cookieNames, request.cookieValues))
+                    .requestBody(request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null);
+
         boolean successfulResponse = false;
         try {
             ExternalResponse execResult = responseCallable.call();
 
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
-            if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
+            if (logBuilder != null) {
                 ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, request.returnMultiType, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
 
-                    requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
-                            BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
-                            request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null,
-                            null,
-                            BaseUtils.toStringMap(result.headerNames, result.headerValues),
-                            BaseUtils.toStringMap(result.cookieNames, result.cookieValues),
-                            String.valueOf(result.statusHttp),
-                            "\tOBJECTS:\n\t\t" + result.response);
+                    logBuilder.responseStatus(String.valueOf(result.statusHttp));
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(result.headerNames, result.headerValues))
+                                .responseCookies(BaseUtils.toStringMap(result.cookieNames, result.cookieValues))
+                                .responseExtraValue("\tOBJECTS:\n\t\t" + result.response);
                 }
             }
             return execResult;
         } catch (Throwable t) {
-            if (requestLogMessage != null)
-                requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
+            if (logBuilder != null)
+                logBuilder.errorMessage(t.getMessage());
 
             throw Throwables.propagate(t);
         } finally {
-            logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+            logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, logBuilder, successfulResponse);
         }
     }
 
@@ -659,38 +666,13 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public static String getExternalSystemRequestsLog (LogInfo logInfo, String path, String method, String extraValue) {
-        return "\nREQUEST:\n" +
-                (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
-                "\tREQUEST_PATH: " + path + "\n" +
-                "\tREQUEST_METHOD: " + method + "\n" +
-                (extraValue != null ? "\n" + extraValue + "\n" : "");
-    }
-
-    public static String getExternalSystemRequestsLogDetail (Map<String, String> requestHeaders, Map<String, String> requestCookies, String requestBody,
-                                                             String requestExtraValue, Map<String, String> responseHeaders, Map<String, String> responseCookies,
-                                                             String responseStatus, String responseExtraValue) {
-        return getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" +
-                getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" +
-                (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") +
-                (requestExtraValue != null ? requestExtraValue + "\n" : "") +
-                "RESPONSE:\n" +
-                getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" +
-                getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" +
-                "\tRESPONSE_STATUS_HTTP: " + responseStatus + "\n" +
-                (responseExtraValue != null ? responseExtraValue : "");
-    }
-
-    private static String getLogMapValues(String caption, Map<String, String> map) {
-        return "\t" + caption + "\n\t\t" + StringUtils.join(map.entrySet().iterator(), "\n\t\t");
-    }
-
     public static boolean successfulResponse(int responseStatusCode) {
         return responseStatusCode >= 200 && responseStatusCode < 300;
     }
 
-    public static void logExternalSystemRequest (Logger logger, String message, boolean successfulResponse) {
-        if (message != null) {
+    public static void logExternalSystemRequest (Logger logger, RequestLog.Builder logBuilder, boolean successfulResponse) {
+        if (logBuilder != null) {
+            String message = logBuilder.build().toString();
             if (successfulResponse)
                 logger.info(message);
             else

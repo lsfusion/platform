@@ -172,7 +172,7 @@ public class PropertyPanelController {
                 } else {
                     optionsToAdd.add(columnKey);
                 }
-                newRenderedColumnKeys.put(columnKey, i);
+                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
             }
         }
 

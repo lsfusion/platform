@@ -478,7 +478,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                     }
 
                     if (!BaseUtils.isRedundantString(formattedValue)) {
-                        return SwingUtils.toMultilineHtml(
+                        return SwingUtils.toMultilineHtml(e.getComponent(),
                                 cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).trimTooltip()
                                         && formattedValue.length() > 1000 ? (BaseUtils.substring(formattedValue, 1000) + "...") : formattedValue,
                                 createToolTip().getFont());

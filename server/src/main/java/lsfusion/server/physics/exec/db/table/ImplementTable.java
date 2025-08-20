@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheAspect;
@@ -21,7 +22,6 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
@@ -60,17 +60,20 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+
+import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithServiceLog;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
@@ -91,6 +94,9 @@ public class ImplementTable extends DBTable { // последний интерф
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImMap<PropertyField, IndexType> indexedProps = MapFact.EMPTY();
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
+
+    public final AtomicLong statChange = new AtomicLong();
+//    public final AtomicLong statUpdate = new AtomicLong();
 
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
@@ -132,6 +138,12 @@ public class ImplementTable extends DBTable { // последний интерф
         setFullField((IsClassField) isClassField);
     }
 
+    public ObjectValueClassSet getClassDataSet() {
+        if(fullField instanceof ClassDataProperty)
+            return ((ClassDataProperty) fullField).getObjectSet();
+        return null;
+    }
+
     @Override
     protected IndexType getIndexType(PropertyField field) {
         return indexedProps.get(field);
@@ -168,7 +180,7 @@ public class ImplementTable extends DBTable { // последний интерф
         moveColumn.addProperty(field, moveExpr);
         moveColumn.and(moveExpr.getWhere());
 
-        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery()));
 //            return null;
 //        });
     }
@@ -549,106 +561,110 @@ public class ImplementTable extends DBTable { // последний интерф
         return null;
     }
 
-    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), false);
-        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
+    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session, String logSuffix) throws SQLException, SQLHandledException {
+        runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> {
+            recalculateStat(reflectionLM, disableStatsTableColumnSet, session);
+        }, String.format("Recalculate table stats%s: %s", nvl(logSuffix, ""), getName()));
     }
 
-    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
-        return recalculateStat(reflectionLM, session, props, new HashSet<>(), skipRecalculateFields, top);
+    public void recalculateStat(ReflectionLogicsModule reflectionLM, Set<String> disableStatsTableColumnSet, DataSession session) throws SQLException, SQLHandledException {
+        recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY());
     }
 
     public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props,
+                                    Set<String> disableStatsTableColumnSet, ImSet<PropertyField> skipRecalculateFields) throws SQLException, SQLHandledException {
+        recalculateStat(reflectionLM, session, props, disableStatsTableColumnSet, skipRecalculateFields, false);
+        return recalculateStat(reflectionLM, session, props, disableStatsTableColumnSet, skipRecalculateFields, true);
+    }
+    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props,
                                     Set<String> disableStatsTableColumnSet, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
-        if (!SystemProperties.doNotCalculateStats) {
-            ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
+        ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+        lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
 
-            MExclMap<Object, Object> mResult = MapFact.mExclMap();
-            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+        MExclMap<Object, Object> mResult = MapFact.mExclMap();
+        MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
 
-            Where inWhere = join.getWhere();
-            KeyExpr countKeyExpr = new KeyExpr("count");
+        Where inWhere = join.getWhere();
+        KeyExpr countKeyExpr = new KeyExpr("count");
 
-            Integer total = 0;
+        Integer total = 0;
 
-            boolean skipRecalculateAllFields = props != null && props.size() == skipRecalculateFields.size();
+        boolean skipRecalculateAllFields = props != null && props.size() == skipRecalculateFields.size();
 
-            if (!skipRecalculateAllFields) {
-                total = (Integer) readCount(session, inWhere);
-                for (KeyField key : keys) {
-                    ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
-                    mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
-                                GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
+        if (!skipRecalculateAllFields) {
+            total = (Integer) readCount(session, inWhere);
+            for (KeyField key : keys) {
+                ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
+                mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
+                            GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
+            }
+        }
+
+        ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
+
+        for (PropertyField prop : propertyFieldSet) {
+            if(!disableStatsTableColumnSet.contains(prop.getName())) {
+                boolean skipRecalculate = skipRecalculateFields.contains(prop);
+                Integer notNullCount = skipRecalculate ? 0 : (Integer) readCount(session, join.getExpr(prop).getWhere());
+                mNotNulls.exclAdd(prop, notNullCount);
+
+                if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
+                    mResult.exclAdd(prop, skipRecalculate ? 0 : readCount(session, getCountWhere(session.sql,
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
+                            countKeyExpr, notNullCount, top), notNullCount, top));
                 }
             }
+        }
 
-            ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
+        ImMap<Object, Object> result = mResult.immutable();
 
-            for (PropertyField prop : propertyFieldSet) {
-                if(!disableStatsTableColumnSet.contains(prop.getName())) {
-                    boolean skipRecalculate = skipRecalculateFields.contains(prop);
-                    Integer notNullCount = skipRecalculate ? 0 : (Integer) readCount(session, join.getExpr(prop).getWhere());
-                    mNotNulls.exclAdd(prop, notNullCount);
+        String tableName = getName();
+        DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(tableName));
+        if(tableObject == null) {
+            tableObject = session.addObject(reflectionLM.table);
+            reflectionLM.sidTable.change(tableName, session, tableObject);
+        }
 
-                    if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
-                        mResult.exclAdd(prop, skipRecalculate ? 0 : readCount(session, getCountWhere(session.sql,
-                                GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
-                                GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
-                                countKeyExpr, notNullCount, top), notNullCount, top));
-                    }
+        if (!skipRecalculateAllFields) {
+            reflectionLM.rowsTable.change(total, session, tableObject);
+
+            for (KeyField key : keys) {
+                DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
+                if (keyObject == null) {
+                    keyObject = session.addObject(reflectionLM.tableKey);
+                    reflectionLM.sidTableKey.change(tableName + "." + key.getName(), session, keyObject);
+                    reflectionLM.tableTableKey.change(tableObject, session, keyObject);
                 }
+                int quantity = BaseUtils.nvl((Integer) result.get(key), 0);
+                (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
             }
+        }
 
-            ImMap<Object, Object> result = mResult.immutable();
+        ImMap<Object, Object> notNulls = mNotNulls.immutable();
 
-            String tableName = getName();
-            DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(tableName));
-            if(tableObject == null) {
-                tableObject = session.addObject(reflectionLM.table);
-                reflectionLM.sidTable.change(tableName, session, tableObject);
-            }
-
-            if (!skipRecalculateAllFields) {
-                reflectionLM.rowsTable.change(total, session, tableObject);
-
-                for (KeyField key : keys) {
-                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
-                    if (keyObject == null) {
-                        keyObject = session.addObject(reflectionLM.tableKey);
-                        reflectionLM.sidTableKey.change(tableName + "." + key.getName(), session, keyObject);
-                        reflectionLM.tableTableKey.change(tableObject, session, keyObject);
+        for (PropertyField property : propertyFieldSet) {
+            if(!disableStatsTableColumnSet.contains(property.getName())) {
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(tableName), new DataObject(property.getName()));
+                if (propertyObject == null && props != null) {
+                    String canonicalName = props.get(property);
+                    propertyObject = safeReadClasses(session, reflectionLM.propertyCanonicalName, new DataObject(canonicalName));
+                    if (propertyObject == null) {
+                        propertyObject = session.addObject(reflectionLM.property);
+                        reflectionLM.canonicalNameProperty.change(canonicalName, session, propertyObject);
                     }
-                    int quantity = BaseUtils.nvl((Integer) result.get(key), 0);
-                    (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
+                    reflectionLM.storedProperty.change(true, session, propertyObject);
+                    reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
+                    reflectionLM.tableSIDProperty.change(tableName, session, propertyObject);
                 }
-            }
+                if (propertyObject != null) {
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change((Integer) result.get(property), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
 
-            ImMap<Object, Object> notNulls = mNotNulls.immutable();
-
-            for (PropertyField property : propertyFieldSet) {
-                if(!disableStatsTableColumnSet.contains(property.getName())) {
-                    DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(tableName), new DataObject(property.getName()));
-                    if (propertyObject == null && props != null) {
-                        String canonicalName = props.get(property);
-                        propertyObject = safeReadClasses(session, reflectionLM.propertyCanonicalName, new DataObject(canonicalName));
-                        if (propertyObject == null) {
-                            propertyObject = session.addObject(reflectionLM.property);
-                            reflectionLM.canonicalNameProperty.change(canonicalName, session, propertyObject);
-                        }
-                        reflectionLM.storedProperty.change(true, session, propertyObject);
-                        reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
-                        reflectionLM.tableSIDProperty.change(tableName, session, propertyObject);
-                    }
-                    if (propertyObject != null) {
-                        (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change((Integer) result.get(property), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
-
-                        int notNull = BaseUtils.nvl((Integer) notNulls.get(property), 0);
-                        int quantity = BaseUtils.nvl((Integer) result.get(property), 0);
-                        reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
-                        propStats = propStats.addExcl(tableName + "." + property.getName(), Pair.create(quantity, notNull));
-                    }
+                    int notNull = BaseUtils.nvl((Integer) notNulls.get(property), 0);
+                    int quantity = BaseUtils.nvl((Integer) result.get(property), 0);
+                    reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
+                    propStats = propStats.addExcl(tableName + "." + property.getName(), Pair.create(quantity, notNull));
                 }
             }
         }
@@ -679,41 +695,38 @@ public class ImplementTable extends DBTable { // последний интерф
     @StackProgress
     public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Long> propertiesSet, Set<String> disableStatsTableColumnSet, @StackProgress ProgressBar progressBar, boolean top) throws SQLException, SQLHandledException {
         boolean found = false;
-        if (!SystemProperties.doNotCalculateStats) {
+        ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+        lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
 
-            ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
+        MExclMap<Object, Object> mResult = MapFact.mExclMap();
+        MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
 
-            MExclMap<Object, Object> mResult = MapFact.mExclMap();
-            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+        KeyExpr countKeyExpr = new KeyExpr("count");
 
-            KeyExpr countKeyExpr = new KeyExpr("count");
+        for(PropertyField prop : properties) {
+            if(!disableStatsTableColumnSet.contains(prop.getName())) {
+                Integer notNullCount = (Integer) readCount(session, join.getExpr(prop).getWhere());
+                mNotNulls.exclAdd(prop, notNullCount);
 
-            for(PropertyField prop : properties) {
-                if(!disableStatsTableColumnSet.contains(prop.getName())) {
-                    Integer notNullCount = (Integer) readCount(session, join.getExpr(prop).getWhere());
-                    mNotNulls.exclAdd(prop, notNullCount);
-
-                    if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
-                        mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
-                                GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
-                                GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
-                                countKeyExpr, notNullCount, top), notNullCount, top));
-                    }
+                if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
+                    mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE(), MapFact.singleton(0, countKeyExpr), false),
+                            countKeyExpr, notNullCount, top), notNullCount, top));
                 }
             }
-            ImMap<Object, Object> result = mResult.immutable();
-            ImMap<Object, Object> notNulls = mNotNulls.immutable();
+        }
+        ImMap<Object, Object> result = mResult.immutable();
+        ImMap<Object, Object> notNulls = mNotNulls.immutable();
 
-            for (PropertyField property : properties) {
-                if(!disableStatsTableColumnSet.contains(property.getName())) {
-                    DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
+        for (PropertyField property : properties) {
+            if(!disableStatsTableColumnSet.contains(property.getName())) {
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
 
-                    if (propertyObject != null && propertiesSet.contains((Long) propertyObject.getValue())) {
-                        (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl((Integer) result.get(property), 0), session, propertyObject);
-                        reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl((Integer) notNulls.get(property), 0), session, propertyObject);
-                        found = true;
-                    }
+                if (propertyObject != null && propertiesSet.contains((Long) propertyObject.getValue())) {
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl((Integer) result.get(property), 0), session, propertyObject);
+                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl((Integer) notNulls.get(property), 0), session, propertyObject);
+                    found = true;
                 }
             }
         }
@@ -750,8 +763,7 @@ public class ImplementTable extends DBTable { // последний интерф
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
 
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
-
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet, Result<Integer> majorStatChangedCount) {
         Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
         ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
@@ -777,7 +789,10 @@ public class ImplementTable extends DBTable { // последний интерф
 
             mvDistinctKeys.mapValue(i, keyCount);
         }
-        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        TableStatKeys newStatKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+        if (majorStatChangedCount != null && statKeys.getRows().majorStatChanged(newStatKeys.getRows(), Stat.Mode.CHANGE)) // maybe statProps also should be checked, but since we don't check statUpdate for now, we won't check props stats either (however we're recalculating props for now)
+            majorStatChangedCount.set(majorStatChangedCount.result + 1);
+        statKeys = newStatKeys;
 
         statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
     }

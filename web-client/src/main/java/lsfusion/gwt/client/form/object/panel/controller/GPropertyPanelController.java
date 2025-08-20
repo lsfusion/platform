@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -101,7 +100,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 } else {
                     optionsToAdd.add(columnKey);
                 }
-                newRenderedColumnKeys.put(columnKey, i);
+                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
             }
         }
 

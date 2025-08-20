@@ -323,7 +323,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     schedulerLogger.info("Finished running scheduler task - " + name);
                 } catch (Throwable e) {
                     schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
-                    throw Throwables.propagate(e);
+//                    throw Throwables.propagate(e);
                 }
             };
             this.scheduledTaskId = scheduledTaskId;

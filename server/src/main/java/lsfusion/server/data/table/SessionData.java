@@ -130,7 +130,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             if(BaseUtils.hashEquals(dataClass, dataObject.objectClass))
                 return value;
 
-            return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass), dataClass);
+            return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass.getType()), dataClass);
         });
     }
     public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {

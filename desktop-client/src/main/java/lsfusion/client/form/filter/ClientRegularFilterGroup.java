@@ -19,6 +19,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
+    public boolean noNull;
+
     public ClientRegularFilterGroup() {
 
     }
@@ -39,6 +41,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
         defaultFilterIndex = inStream.readInt();
 
         groupObject = pool.deserializeObject(inStream);
+
+        noNull = pool.readBoolean(inStream);
     }
 
     @Override

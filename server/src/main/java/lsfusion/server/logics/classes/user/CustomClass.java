@@ -55,6 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -652,7 +653,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
     }
 
-
     public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields, ObjectValueClassSet baseClassSet) {
         // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere
         // но пока из способа определения ClassField'а и методологии определения FULL, это большая редкость
@@ -709,5 +709,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         return result;
+    }
+
+    protected boolean hasStaticObjects() {
+        return false;
+    }
+
+    public boolean hasConcreteStaticObjects() {
+        if (hasStaticObjects())
+            return true;
+
+        for (CustomClass child : getChildrenIt()) {
+            if (child.hasConcreteStaticObjects())
+                return true;
+        }
+
+        return false;
     }
 }

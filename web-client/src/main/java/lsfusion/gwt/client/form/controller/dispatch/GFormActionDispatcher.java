@@ -13,6 +13,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -51,11 +52,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             action.showFormType = GModalityShowFormType.MODAL;
         }
 
-        if (action.showFormType.isModal()) {
+        if (action.showFormType.isModal() && action.syncType) {
             pauseDispatching();
         }
         WindowHiddenHandler onClose = () -> {
-            if (action.showFormType.isModal()) {
+            if (action.showFormType.isModal() && action.syncType) {
                 continueDispatching();
             }
         };
@@ -118,6 +119,12 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GProcessFormChangesAction action) {
         form.applyRemoteChanges(action.formChanges);
+    }
+
+    @Override
+    public void execute(GProcessNavigatorChangesAction action) {
+        FormsController formsController = form.getFormsController();
+        MainFrame.applyNavigatorChanges(action.navigatorChanges, formsController.getNavigatorController(), formsController.getWindowsController());
     }
 
     @Override

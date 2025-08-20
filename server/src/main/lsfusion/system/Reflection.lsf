@@ -270,6 +270,7 @@ TABLE tableColumn (TableColumn);
 table '{reflection.table.table.column}' = DATA Table(TableColumn) NONULL DELETE;
 sid '{reflection.sid.table.column}' = DATA ISTRING[100] (TableColumn);
 tableSID (sid) = GROUP MAX Table table BY sid(table);
+sidTable(TableColumn tableColumn) = sid(table(tableColumn));
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
 tableColumnLong '{reflection.table.column}' (sID) = GROUP AGGR TableColumn tableColumn WHERE tableColumn IS TableColumn BY longSID(tableColumn); 

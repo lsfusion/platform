@@ -7,7 +7,7 @@ title: 'Блок описания события'
 ### Синтаксис
 
 ```
-[GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM]
+[GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM] [AFTER propertyId1, ..., propertyIdM]
 ```
 
 ### Параметры
@@ -23,6 +23,9 @@ title: 'Блок описания события'
 - `formName1, ..., formNameN`
 
     Список имен [форм](Forms.md), в которых будет происходить событие. Каждый элемент списка является [составным идентификатором](IDs.md#cid). Если список не задается, то событие будет происходить во всех формах.
+
+- `GOAFTER` | `AFTER`
+    Ключевые слова, можно использовать как первое, так и второе. После них следует список свойств.
 
 - `propertyId1, ..., propertyIdM`
 

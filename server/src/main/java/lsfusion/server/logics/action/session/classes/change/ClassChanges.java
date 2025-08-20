@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -33,7 +32,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BusinessLogics;
@@ -116,19 +114,8 @@ public class ClassChanges {
         return false;
     }
 
-    public final static KeyField classField = new KeyField("key0", ObjectType.instance);
     public static Where isStaticValueClass(Expr expr, ObjectValueClassSet classSet) {
-        Where result;
-        ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();
-        if(concreteChildren.size() > Settings.get().getSessionRowsToTable()) {
-            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(value -> MapFact.singleton(classField, value.getClassObject())).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
-            return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
-        } else {
-            result = Where.FALSE();
-            for (ConcreteCustomClass customUsedClass : concreteChildren)
-                result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
-        }
-        return result;
+        return expr.compareStatic(classSet.getSetConcreteChildren().mapSetValues(ConcreteCustomClass::getClassObject));
     }
 
     // читаем текущие классы в сессии
@@ -142,7 +129,7 @@ public class ClassChanges {
         return new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(sql, env).keyOrderSet().mapMergeOrderSetValues(readClasses -> readClasses.mapValues(id -> baseClass.findConcreteClassID((Long) id, -1)));
     }
 
-    public String logSession(Result<Integer> rAddedCount, Result<Integer> rRemovedCount) {
+    public String logSession(Result<Integer> rAddedCount, Result<Integer> rRemovedCount, boolean log) {
         String result = "";
 
         int addedCount = 0;
@@ -150,11 +137,14 @@ public class ClassChanges {
         StringBuilder added = new StringBuilder();
         StringBuilder removed = new StringBuilder();
         for(ChangedDataClasses dataNewsInfo : changedClasses.values()) {
-            for (CustomClass addEntry : dataNewsInfo.add)
-                added.append((added.length() == 0) ? "" : ", ").append(addEntry.getCanonicalName());
+            if (log) {
+                for (CustomClass addEntry : dataNewsInfo.add)
+                    added.append((added.length() == 0) ? "" : ", ").append(addEntry.getCanonicalName());
+
+                for (CustomClass removeEntry : dataNewsInfo.remove)
+                    removed.append((removed.length() == 0) ? "" : ", ").append(removeEntry.getCanonicalName());
+            }
             addedCount += dataNewsInfo.add.size();
-            for (CustomClass removeEntry : dataNewsInfo.remove)
-                removed.append((removed.length() == 0) ? "" : ", ").append(removeEntry.getCanonicalName());
             removedCount += dataNewsInfo.remove.size();
         }
 
@@ -421,7 +411,7 @@ public class ClassChanges {
 
     // просто lazy кэш для getCurrentClass
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap();
-    
+
     public ClassChanges() { // mutable конструктор
         news = MapFact.mAddRemoveMap();
         changedClasses = MapFact.mAddRemoveMap();
@@ -703,14 +693,15 @@ public class ClassChanges {
                     KeyField key = mapFields.getKey(i);
                     sql.statusMessage = new StatusMessage("delete", key, i, size);
                     ValueClass value = mapFields.getValue(i);
-                    if (value instanceof CustomClass && remove.contains((CustomClass) value))
+                    if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
+                    }
                 } finally {
                     sql.statusMessage = null;
                 }
             }
             query.and(table.join(mapExprs).getWhere().and(removeWhere));
-            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
+            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv));
         }
         return remove;
     }

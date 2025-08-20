@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.authentication;
 
+import lsfusion.base.BaseUtils;
 import javax.naming.AuthenticationException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
@@ -93,7 +94,9 @@ public class LDAPAuthenticationService {
 
                     for (Attribute attribute : Collections.list(searchResult.getAttributes().getAll())) {
                         Object attributeValue = attribute.get();
-                        attributes.put(attribute.getID(), attributeValue != null ? attributeValue.toString() : null);
+                        String value = attributeValue != null ? attributeValue.toString() : null;
+                        if (BaseUtils.isVisiblyValid(value))
+                            attributes.put(attribute.getID(), value);
                     }
                 }
             }

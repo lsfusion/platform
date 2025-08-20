@@ -110,7 +110,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         GShowFormType modalityType = convertOrCast(action.showFormType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, remoteForm, action.clientData, formSessionObject.navigatorID),
-                action.forbidDuplicate, action.formId);
+                action.forbidDuplicate, action.syncType, action.formId);
     }
 
     @Converter(from = ModalityShowFormType.class)
@@ -451,28 +451,29 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         GType returnType = action.returnType != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.returnType)) : null;
 
         Object resource = action.resource;
-        String resourcePath;
         String originalResourceName = action.originalResourceName;
-        String fileExtension = null;
+        String extension = null;
+
+        String resourcePath;
         boolean isFileUrl = false;
         String resourceName = action.resourceName;
         if(action.isFile) {
             if(resource instanceof RawFileData) {
                 resourcePath = FileUtils.saveWebFile(resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
-                fileExtension = BaseUtils.getFileExtension(resourceName);
+                extension = BaseUtils.getFileExtension(resourceName);
             } else {
                 Result<String> rFileExtension = new Result<>();
                 // we do the server conversion (not sending GStringWithFiles to the client), to make it possible to encode the query and do some other manipulations
                 // valuesConverter.convertFileValue(resource, formSessionObject, servlet)
                 Object convertedValue = ClientFormChangesToGwtConverter.getConvertFileValue(formSessionObject, servlet).convertFileValue(resource);
                 resourcePath = convertUrl((String) convertedValue, rFileExtension);
-                fileExtension = rFileExtension.result;
+                extension = rFileExtension.result;
                 isFileUrl = true;
             }
         } else
             resourcePath = (String) resource;
 
-        if(action.isFile && (BaseUtils.equalsIgnoreCase(fileExtension, "ttf") || BaseUtils.equalsIgnoreCase(fileExtension, "otf"))) {
+        if(action.isFile && (BaseUtils.equalsIgnoreCase(extension, "ttf") || BaseUtils.equalsIgnoreCase(extension, "otf"))) {
             String fontFamily = fontFamilyMap.get(resourceName);
             if(fontFamily == null) {
                 fontFamily = SystemUtils.registerFont(action);
@@ -481,7 +482,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             originalResourceName = fontFamily;
         }
 
-        return new GClientWebAction(resourcePath, resourceName, originalResourceName, action.isFile, fileExtension, isFileUrl, values, types, returnType,
+        return new GClientWebAction(resourcePath, originalResourceName, extension, action.isFile, isFileUrl, values, types, returnType,
                 action.syncType, action.remove);
     }
 

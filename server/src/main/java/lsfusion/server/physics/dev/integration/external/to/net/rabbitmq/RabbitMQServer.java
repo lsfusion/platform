@@ -1,10 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.net.rabbitmq;
 
 import com.google.common.base.Throwables;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 import com.rabbitmq.client.impl.DefaultCredentialsProvider;
 import lsfusion.base.Pair;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -52,8 +49,8 @@ public class RabbitMQServer extends MonitorServer {
             ServerLoggers.systemLogger.info("Binding RabbitMQServer");
             try (DataSession session = createSession()) {
                 LM.findAction("restartConsumers[]").execute(session, getTopStack());
-            } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
-                throw Throwables.propagate(e);
+            } catch (Throwable t) {
+                ServerLoggers.systemLogger.error("Binding RabbitMQServer failed", t);
             }
         }
     }
@@ -68,10 +65,12 @@ public class RabbitMQServer extends MonitorServer {
 
     public Map<Pair<String, String>, Pair<Channel, Connection>> consumers = new HashMap<>();
 
-    public void startConsume(String host, String queue, String user, String password, boolean local) {
+    public void startConsume(String host, String queue, String user, String password, boolean local, String virtualHost) {
         try {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
+            if (virtualHost!=null)
+                factory.setVirtualHost(virtualHost);
 
             factory.setCredentialsProvider(new DefaultCredentialsProvider(user, password));
 

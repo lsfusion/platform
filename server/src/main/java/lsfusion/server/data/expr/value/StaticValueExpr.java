@@ -30,6 +30,12 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         assert !(staticClass instanceof StringClass) || value instanceof LocalizedString;
     }
 
+    public static Object getStaticValue(Object value, StaticClass objectClass) {
+        if(objectClass instanceof StringClass)
+            return LocalizedString.create((String)value, false);
+        return value;
+    }
+
     public StaticValueExpr(Object value, StaticClass customClass, boolean sID) {
         super(customClass);
 

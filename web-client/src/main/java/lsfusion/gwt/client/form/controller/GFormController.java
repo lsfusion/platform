@@ -283,7 +283,7 @@ public class GFormController implements EditManager {
         for (final GRegularFilterGroup filterGroup : form.regularFilterGroups) {
             if (filterGroup.filters.size() == 1) {
                 createSingleFilterComponent(filterGroup, filterGroup.filters.iterator().next());
-            } else {
+            } else if (filterGroup.filters.size() > 1) {
                 createMultipleFilterComponent(filterGroup);
             }
         }
@@ -314,7 +314,8 @@ public class GFormController implements EditManager {
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
         final ListBox filterBox = new ListBox();
         filterBox.setMultipleSelect(false);
-        filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
+        if (!filterGroup.noNull)
+            filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {
@@ -857,23 +858,45 @@ public class GFormController implements EditManager {
     }
 
     public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
-        boolean isDockedModal = showFormType.isDockedModal();
-        if (isDockedModal)
-            ((FormDockable)formContainer).block();
+        FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
+        if (contextFormDockable != null)
+            contextFormDockable.block();
 
         FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
-            if(isDockedModal) {
-                ((FormDockable)formContainer).unblock();
+            if(contextFormDockable != null) {
+                contextFormDockable.unblock();
 
-                formsController.selectTab((FormDockable) formContainer);
+                formsController.selectTab(contextFormDockable);
             } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();
         }, formId);
 
-        if (isDockedModal)
-            ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
+        if (contextFormDockable != null)
+            contextFormDockable.setBlockingForm((FormDockable) blockingForm);
+    }
+
+    private FormDockable getFormDockableContainer(boolean isDockedModal) {
+        if (isDockedModal) {
+            return (FormDockable) getContextContainer();
+        } else {
+            return null;
+        }
+    }
+
+    private FormContainer getContextContainer() {
+        GFormController contextForm = getContextForm();
+        return contextForm != null ? contextForm.formContainer : null;
+    }
+
+    private GFormController getContextForm() {
+        if (formHidden) {
+            GFormController contextForm = formContainer.getContextForm();
+            return contextForm != null ? contextForm.getContextForm() : null;
+        } else {
+            return this;
+        }
     }
 
     public void onServerInvocationResponse(ServerResponseResult response) {
@@ -1017,7 +1040,7 @@ public class GFormController implements EditManager {
                 return;
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || (contextAction.result == null && !property.hasUserChangeAction())))
+            if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || (contextAction.result == null && !property.hasUserChangeAction)))
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
@@ -1628,11 +1651,7 @@ public class GFormController implements EditManager {
     }
 
     public void executeVoidAction() {
-        syncDispatch(new VoidFormAction(), new SimpleRequestCallback<VoidResult>() {
-            @Override
-            public void onSuccess(VoidResult result) {
-            }
-        });
+        syncResponseDispatch(new VoidFormAction());
     }
 
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final AsyncCallback<ServerResponseResult> callback) {
@@ -1768,7 +1787,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isWindow() {
-        return formContainer instanceof ModalForm;
+        return nvl(getContextContainer(), formContainer) instanceof ModalForm;
     }
 
     public boolean isDialog() {

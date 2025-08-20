@@ -420,8 +420,8 @@ colorThemeName '{authentication.color.theme}' (DesignEnv designEnv) = name(desig
 isDarkTheme() = colorTheme(currentDesignEnv()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(designEnvColorTheme(DesignEnv designEnv)) DO {
-    changeColorThemeAction(colorTheme(designEnv));    
+WHEN CHANGED(designEnvColorTheme(currentDesignEnv())) DO {
+    changeColorThemeAction(colorTheme(currentDesignEnv()));    
 }
 
 FORM dialogColorThemes '{authentication.color.themes}'

@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.stack.StackProgress;
@@ -56,10 +57,10 @@ public abstract class ImportAction extends SystemAction {
         this.charset = charset;
     }
 
-    public static RawFileData readFile(ObjectValue value, String charset) {
-        if(value instanceof DataObject)
-            return ((DataObject) value).objectClass.getType().formatFile(((DataObject) value).object, charset);
-        return null;
+    // in IMPORT operator adjustImportFormatFromFileType and addAutoImportFAProp are used, so we know the type / extension, and importFileType is in fact calculated in the adjustImportFormatFromFileType
+    protected static RawFileData readRawFile(ObjectValue value, String charset) {
+        FileData fileData = readFile(value, null, charset);
+        return fileData != null ? fileData.getRawFile() : null;
     }
 
     protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException;
@@ -93,11 +94,7 @@ public abstract class ImportAction extends SystemAction {
         writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
-        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
-            public ImSet<ObjectEntity> group(PropertyObjectEntity key) {
-                return ((PropertyObjectEntity<?>)key).getObjectInstances();
-            }
-        });
+        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(key -> ((PropertyObjectEntity<?>)key).getObjectInstances());
 
         for(int i=0,size=groupedProps.size();i<size;i++) {            
             // group by rows, convert to DataObject / ObjectValue, fill map with null values (needed for writeRows)

@@ -32,8 +32,9 @@ public class StartConsumerRabbitMQAction extends InternalAction {
             String user = (String) findProperty("user[Channel]").read(context, channelObject);
             String password = (String) findProperty("password[Channel]").read(context, channelObject);
             boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
+            String virtualHost = (String) findProperty("vHost[Channel]").read(context, channelObject);
 
-            context.getLogicsInstance().getRabbitMQServer().startConsume(host, queue, user, password, local);
+            context.getLogicsInstance().getRabbitMQServer().startConsume(host, queue, user, password, local, virtualHost);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

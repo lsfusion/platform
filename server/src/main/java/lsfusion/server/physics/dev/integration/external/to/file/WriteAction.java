@@ -6,6 +6,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.base.file.WriteUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -15,7 +16,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -43,15 +43,9 @@ public class WriteAction extends SystemAction {
         ObjectValue pathObject = context.getKeys().getValue(1);
         assert pathObject.getType() instanceof StringClass;
 
-        if(sourceObject instanceof DataObject && pathObject instanceof DataObject) {
+        FileData fileData = readFile(sourceObject, sourcePropertyType, ExternalUtils.resultCharset.toString());
+        if(fileData != null && pathObject instanceof DataObject) {
             String path = (String) pathObject.getValue();
-            Object source = sourceObject.getValue();
-
-            FileData fileData;
-            if (sourcePropertyType instanceof StaticFormatFileClass) {
-                fileData = ((StaticFormatFileClass) sourcePropertyType).getFileData((RawFileData) source);
-            } else
-                fileData = (FileData) source;
             try {
                 String extension = fileData.getExtension();
                 RawFileData rawFileData = fileData.getRawFile();

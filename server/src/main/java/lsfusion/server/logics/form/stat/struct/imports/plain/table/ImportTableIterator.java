@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.table;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -38,9 +39,13 @@ public class ImportTableIterator extends ImportPlainIterator {
 
     @Override
     protected Object getPropValue(String name, Type type) {
-        // actuall readResult already is made in serializeJDBC, so doesn't make sense to call readResult
-        return row.get(name);
-//        return ((AbstractType)type).readResult(row.get(name));
+        Object value = row.get(name);
+
+        Type typeFrom = rs.fieldTypes.get(name);
+        if(BaseUtils.hashEquals(type, typeFrom))
+            return value;
+
+        return type.readCast(value, typeFrom);
     }
 
     @Override

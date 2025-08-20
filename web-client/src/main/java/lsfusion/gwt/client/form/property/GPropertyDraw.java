@@ -79,6 +79,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String path;
     public String formPath;
 
+    public Map<String, ContextMenuDebugInfo> contextMenuDebugInfoMap;
+
     public GGroupObject groupObject;
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
@@ -103,9 +105,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
     public GType getPasteType() {
         return getValueType();
-    }
-    public GType getEventType() {
-        return getCellType();
     }
 
     public GType cellType;
@@ -286,16 +285,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasEditObjectAction;
     public boolean hasChangeAction; // programmatic or user
-    public boolean hasUserChangeAction() { // user
-        if(!hasChangeAction)
-            return false;
-
-        if (getEventType() instanceof GHTMLTextType)
-            return externalChangeType instanceof GHTMLTextType;
-
-        // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
-        return customRenderFunction == null || externalChangeType == null;
-    }
+    public boolean hasUserChangeAction; // programmatic or user
 
     public boolean hasExternalChangeActionForRendering(RendererType rendererType) {
         return canUseChangeValueForRendering(externalChangeType, rendererType);
@@ -488,7 +478,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.changeOrGroupChange();
         }
 
-        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction(), customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction, customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input
@@ -1082,5 +1072,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isPredefinedImage() {
         String sid = integrationSID;
         return sid != null && sid.equals("image");
+    }
+
+    public static class ContextMenuDebugInfo implements Serializable {
+        public String creationScript;
+        public String creationPath;
+        public String path;
+
+        @SuppressWarnings("unused")
+        public ContextMenuDebugInfo() {
+        }
+
+        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
+            this.creationScript = creationScript;
+            this.creationPath = creationPath;
+            this.path = path;
+        }
+
+        public String getTooltip(String sid, String caption) {
+            if (!MainFrame.showDetailedInfo) {
+                return caption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, caption);
+            } else {
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationScript, ""), nvl(creationPath, ""));
+            }
+        }
+
+        public static final String TOOL_TIP_FORMAT =
+                "<html><b>%s</b>";
+
+        public static String getDetailedActionToolTipFormat() {
+            return createTooltipHorizontalSeparator() +
+                    "<b>sID:</b> %s<br>" +
+                    "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
+                    "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
+                    "</html>";
+        }
     }
 }

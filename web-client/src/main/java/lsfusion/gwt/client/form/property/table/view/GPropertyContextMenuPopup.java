@@ -3,10 +3,7 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -48,6 +45,25 @@ public class GPropertyContextMenuPopup {
             };
             GwtClientUtils.addClassName(menuItem, "context-menu-item");
 
+            GPropertyDraw.ContextMenuDebugInfo debugInfo = property.contextMenuDebugInfoMap.get(actionSID);
+            if(debugInfo != null) {
+                TooltipManager.initTooltip(new PopupOwner(menuBar, menuItem.getElement()), new TooltipManager.TooltipHelper() {
+                    @Override
+                    public String getTooltip(String dynamicTooltip) {
+                        return debugInfo.getTooltip(actionSID, menuItem.getText());
+                    }
+
+                    @Override
+                    public String getCreationPath() {
+                        return debugInfo.creationPath;
+                    }
+
+                    @Override
+                    public String getPath() {
+                        return debugInfo.path;
+                    }
+                });
+            }
             menuBar.addItem(menuItem);
         }
 

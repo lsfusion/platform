@@ -63,7 +63,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.sql.SQLException;
 
 public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
@@ -288,14 +287,10 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             InputResult pushedInput = context.getPushedInput(returnString ? JSONTextClass.instance : JSONClass.instance, false);
             context.dropRequestCanceled(); // need this because in group change push request there is a request canceled check
             if(pushedInput != null) {
-                try {
-                    // later maybe it makes sense to use simple new JSONObject() (since toString is used in getAsyncValues)
-                    JSONObject rootObject = JSONReader.toJSONObject(InternalAction.readJSON(pushedInput.value), true);
-                    if(rootObject != null)
-                        change(rootObject, context);
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
-                }
+                // later maybe it makes sense to use simple new JSONObject() (since toString is used in getAsyncValues)
+                JSONObject rootObject = JSONReader.toJSONObject(InternalAction.readJSON(pushedInput.value, null), true);
+                if(rootObject != null)
+                    change(rootObject, context);
             }
             return FlowResult.FINISH;
         }

@@ -1,27 +1,39 @@
 package lsfusion.client.navigator.controller;
 
 import bibliothek.gui.dock.common.SingleCDockable;
+import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.view.NavigatorView;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.client.view.DockableMainFrame;
+import lsfusion.client.view.MainFrame;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ExceptionClientAction;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.navigator.NavigatorScheduler;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.nvl;
 
 public class NavigatorController implements INavigatorController {
     private final ClientNavigator mainNavigator;
+    private final RmiQueue rmiQueue;
     private final LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<>();
     private final Map<JComponent, SingleCDockable> docks = new HashMap<>();
 
-    public NavigatorController(ClientNavigator mainNavigator) {
+    public NavigatorController(ClientNavigator mainNavigator, RmiQueue rmiQueue) {
         this.mainNavigator = mainNavigator;
+        this.rmiQueue = rmiQueue;
     }
 
     public void initWindowViews() {
@@ -30,6 +42,40 @@ public class NavigatorController implements INavigatorController {
             NavigatorView navigatorView = window.createView(this);
             views.put(window, navigatorView);
         }
+    }
+
+    public void initializeNavigatorSchedulers(List<NavigatorScheduler> navigatorSchedulers) {
+        for(NavigatorScheduler navigatorScheduler : navigatorSchedulers) {
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            scheduleNavigatorScheduler(scheduler, navigatorScheduler);
+        }
+    }
+
+    private void scheduleNavigatorScheduler(ScheduledExecutorService scheduler, NavigatorScheduler navigatorScheduler) {
+        scheduler.schedule(() -> {
+            SwingUtils.invokeLater(() ->rmiQueue.syncRequest(new RmiRequest("executeNavigatorScheduler") {
+                @Override
+                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                    if (navigatorScheduler.fixed) {
+                        scheduleNavigatorScheduler(scheduler, navigatorScheduler);
+                    }
+                    return mainNavigator.remoteNavigator.executeNavigatorSchedulerAction(requestIndex, lastReceivedRequestIndex, navigatorScheduler);
+                }
+
+                @Override
+                protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
+                    ((DockableMainFrame) MainFrame.instance).processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, false));
+                }
+
+                @Override
+                protected void onResponse(long requestIndex, Object result) throws Exception {
+                    ((DockableMainFrame) MainFrame.instance).processServerResponse((ServerResponse) result);
+                    if (!navigatorScheduler.fixed) {
+                        scheduleNavigatorScheduler(scheduler, navigatorScheduler);
+                    }
+                }
+            }));
+        }, navigatorScheduler.period, TimeUnit.SECONDS);
     }
 
     boolean firstUpdate = true;

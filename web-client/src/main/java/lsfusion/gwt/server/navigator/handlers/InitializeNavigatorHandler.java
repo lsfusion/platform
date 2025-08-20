@@ -5,6 +5,7 @@ import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
+import lsfusion.gwt.client.GNavigatorScheduler;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.controller.remote.action.navigator.GClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigator;
@@ -25,6 +26,7 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -91,11 +93,17 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         //put in navigator info navigator data first changes
         GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges);
 
-        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
+        List<GNavigatorScheduler> navigatorSchedulers = new ArrayList<>();
+        for (NavigatorScheduler navigatorScheduler : navigatorData.navigatorSchedulers) {
+            navigatorSchedulers.add(converter.convertNavigatorScheduler(navigatorScheduler));
+        }
+
+        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows, navigatorSchedulers);
     }
 
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
+        getNavigatorSessionObject(action).initialized = action.prefetching ? 1 : 2;
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }

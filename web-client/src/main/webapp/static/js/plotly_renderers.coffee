@@ -157,6 +157,7 @@ callWithJQuery ($, Plotly) ->
                 layout.showlegend = false if data[0].labels.length == 1
             else
                 layout.xaxis =
+                    type: 'category'
                     title: 
                         text: if transpose then fullAggName else hAxisTitle
                         font:

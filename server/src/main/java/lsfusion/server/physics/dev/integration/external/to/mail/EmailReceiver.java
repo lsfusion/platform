@@ -1,10 +1,5 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
-import com.github.junrar.Archive;
-import com.github.junrar.exception.RarException;
-import com.github.junrar.impl.FileVolumeManager;
-import com.github.junrar.rarfile.FileHeader;
-import com.google.common.base.Throwables;
 import com.sun.mail.imap.DefaultFolder;
 import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.imap.IMAPInputStream;
@@ -31,6 +26,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.integration.external.to.file.ZipUtils;
 import lsfusion.server.physics.dev.integration.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ContentType;
@@ -40,7 +36,6 @@ import org.apache.poi.hmef.HMEFMessage;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
@@ -49,8 +44,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static lsfusion.base.BaseUtils.nullEmpty;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
@@ -615,148 +608,12 @@ public class EmailReceiver {
     }
 
     private static Map<String, FileData> unpack(RawFileData byteArray, String fileName, boolean unpack) {
-        Map<String, FileData> attachments = new HashMap<>();
-        String[] fileNameAndExt = fileName.split("\\.");
-        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
-        if (unpack) {
-            if (fileExtension.equalsIgnoreCase("rar")) {
-                attachments.putAll(unpackRARFile(byteArray));
-            } else if (fileExtension.equalsIgnoreCase("zip")) {
-                attachments.putAll(unpackZIPFile(byteArray));
-            }
+        String extension = BaseUtils.getFileExtension(fileName);
+        Map<String, FileData> attachments = unpack ? ZipUtils.unpackFile(byteArray, extension, false) : new HashMap<>();
+        if (attachments.isEmpty()) {
+            attachments.put(fileName, new FileData(byteArray, extension));
         }
-        if (attachments.isEmpty()) attachments.put(fileName, new FileData(byteArray, fileExtension));
         return attachments;
-    }
-
-    private static Map<String, FileData> unpackRARFile(RawFileData rawFile) {
-
-        Map<String, FileData> result = new HashMap<>();
-        File inputFile = null;
-        File outputFile = null;
-        try {
-            inputFile = File.createTempFile("email", ".rar");
-            rawFile.write(inputFile);
-
-            List<File> dirList = new ArrayList<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
-            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirList.add(outputDirectory);
-                Archive a = new Archive(new FileVolumeManager(inputFile));
-
-                FileHeader fh = a.nextFileHeader();
-
-                while (fh != null) {
-                    String fileName = (fh.isUnicode() ? fh.getFileNameW() : fh.getFileNameString());
-                    outputFile = new File(outputDirectory.getPath() + "/" + fileName);
-                    File dir = outputFile.getParentFile();
-                    dir.mkdirs();
-                    if(!dirList.contains(dir))
-                        dirList.add(dir);
-                    if(!outputFile.isDirectory()) {
-                        try (FileOutputStream os = new FileOutputStream(outputFile)) {
-                            a.extractFile(fh, os);
-                        }
-                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                        BaseUtils.safeDelete(outputFile);
-                    }
-                    fh = a.nextFileHeader();
-                }
-                a.close();
-            }
-
-            for(File dir : dirList) {
-                BaseUtils.safeDelete(dir);
-            }
-
-        } catch (RarException | IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            BaseUtils.safeDelete(inputFile);
-            BaseUtils.safeDelete(outputFile);
-        }
-        return result;
-    }
-
-    private static Map<String, FileData> unpackZIPFile(RawFileData rawFile) {
-
-        Map<String, FileData> result = new HashMap<>();
-        File inputFile = null;
-        File outputFile = null;
-        try {
-            inputFile = File.createTempFile("email", ".zip");
-            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
-                rawFile.write(stream);
-            }
-
-            byte[] buffer = new byte[1024];
-            Set<File> dirList = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
-            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirList.add(outputDirectory);
-                ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
-
-                ZipEntry ze = inputStream.getNextEntry();
-                while (ze != null) {
-                    if(ze.isDirectory()) {
-                        File dir = new File(outputDirectory.getPath() + "/" + ze.getName());
-                        dir.mkdirs();
-                        dirList.add(dir);
-                    }
-                    else {
-                        String fileName = ze.getName();
-                        outputFile = new File(outputDirectory.getPath() + "/" + fileName);
-                        File parentDir = outputFile.getParentFile();
-                        if(!parentDir.exists()) {
-                            if (parentDir.mkdirs()) {
-                                dirList.add(parentDir);
-                            } else {
-                                throw new RuntimeException("Unable to unpack archive" + inputFile.getName());
-                            }
-                        }
-                        FileOutputStream outputStream = new FileOutputStream(outputFile);
-                        int len;
-                        while ((len = inputStream.read(buffer)) > 0) {
-                            outputStream.write(buffer, 0, len);
-                        }
-                        outputStream.close();
-                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                        BaseUtils.safeDelete(outputFile);
-                    }
-                    ze = inputStream.getNextEntry();
-                }
-                inputStream.closeEntry();
-                inputStream.close();
-            }
-
-            for(File dir : dirList) {
-                BaseUtils.safeDelete(dir);
-            }
-
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            BaseUtils.safeDelete(inputFile);
-            BaseUtils.safeDelete(outputFile);
-        }
-        return result;
-    }
-
-    private static String getFileName(Map<String, FileData> files, String fileName) {
-        if (files.containsKey(fileName)) {
-            String name = BaseUtils.getFileName(fileName);
-            String extension = BaseUtils.getFileExtension(fileName);
-            int count = 1;
-            while (files.containsKey(getFileName(name, count, extension))) {
-                count++;
-            }
-            fileName = getFileName(name, count, extension);
-        }
-        return fileName;
-    }
-
-    private static String getFileName(String name, int count, String extension) {
-        return name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
     }
 
     private static void runIntegrationService(ExecutionContext context, List<ImportProperty<?>> props, List<ImportField> fields, List<ImportKey<?>> keys, List<List<Object>> data) throws SQLException, SQLHandledException {

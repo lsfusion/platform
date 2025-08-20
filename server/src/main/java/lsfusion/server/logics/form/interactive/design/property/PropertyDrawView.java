@@ -27,6 +27,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -625,7 +626,7 @@ public class PropertyDrawView extends BaseComponentView {
         return aClass != null && aClass.contains(check);
     }
 
-    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, FormInstanceContext context) {
+    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
         if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
             return null;
         }
@@ -633,10 +634,12 @@ public class PropertyDrawView extends BaseComponentView {
         OrderedMap<String, LocalizedString> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
-            LocalizedString caption = contextMenuBindings.getValue(i);
-            ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
-            if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
-                contextMenuItems.put(actionSID, caption);
+            ActionOrProperty.ContextMenuBinding contextMenuBinding = contextMenuBindings.getValue(i);
+            if(contextMenuBinding.show(this, context)) {
+                ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
+                if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
+                    contextMenuItems.put(actionSID, contextMenuBinding.caption);
+                }
             }
         }
         return contextMenuItems;
@@ -797,6 +800,16 @@ public class PropertyDrawView extends BaseComponentView {
     }
     public boolean hasEditObjectAction(FormInstanceContext context) {
         return hasAction(context, EDIT_OBJECT);
+    }
+    public boolean hasUserChangeAction(FormInstanceContext context) {
+        if(!hasChangeAction(context))
+            return false;
+
+        if (isProperty(context) && getAssertCellType(context) instanceof HTMLTextClass)
+            return getExternalChangeType(context) instanceof HTMLTextClass;
+
+        // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
+        return getCustomRenderFunction(context) == null || getExternalChangeType(context) == null;
     }
 
     public boolean hasAction(FormInstanceContext context, String actionID) {
@@ -1078,6 +1091,7 @@ public class PropertyDrawView extends BaseComponentView {
             pool.writeString(outStream, getAskConfirmMessage(pool.context));
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
+        outStream.writeBoolean(hasUserChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage());
         outStream.writeBoolean(entity.hasDynamicCaption());
 
@@ -1185,8 +1199,16 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
-                pool.writeString(outStream, contextMenuBindings.getKey(i));
+                String actionSID = contextMenuBindings.getKey(i);
+                pool.writeString(outStream, actionSID);
                 pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
+                ActionObjectSelector eventAction = entity.getExplicitEventAction(actionSID);
+                pool.writeBoolean(outStream, eventAction != null);
+                if(eventAction instanceof ActionObjectEntity) {
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationScript());
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationPath());
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getPath());
+                }
             }
         }
 

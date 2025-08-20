@@ -173,9 +173,8 @@ public abstract class FormContainer {
         image.addClickHandler(clickEvent -> {
             if(contextForm != null) {
                 contextForm.executeVoidAction();
-            } else {
-                formsController.executeVoidAction(requestIndex);
             }
+            formsController.executeVoidAction(requestIndex);
         });
 
         topPanel.add(image);

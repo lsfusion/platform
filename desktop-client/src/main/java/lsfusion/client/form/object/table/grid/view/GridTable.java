@@ -3,11 +3,11 @@ package lsfusion.client.form.object.table.grid.view;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
@@ -225,12 +225,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             TableHeaderUI ui = getTableHeader().getUI();
             if (ui instanceof BasicTableHeaderUI) {
                 // change default CellRendererPane to draw corner triangles
-                JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
-                CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
-                header.remove(oldRendererPane);
-                GridCellRendererPane newRendererPane = new GridCellRendererPane();
-                ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
-                header.add(newRendererPane);
+                getTableHeader().setUI(new BasicTableHeaderUI() {
+                    @Override
+                    public void installUI(JComponent c) {
+                        super.installUI(c);
+                        rendererPane = new GridCellRendererPane();
+                    }
+                });
             }
 
             tableHeader.addMouseListener(sortableHeaderManager);
@@ -1052,32 +1053,19 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         boolean result = false;
 
         try {
-            Method getInputMapMethod = JComponent.class.getDeclaredMethod("getInputMap", int.class, boolean.class);
-            Object inputMap = null;
-            if (getInputMapMethod != null) {
-                getInputMapMethod.setAccessible(true);
-                inputMap = getInputMapMethod.invoke(this, condition, false);
-            }
-
-            Method getActionMapMethod = JComponent.class.getDeclaredMethod("getActionMap", boolean.class);
-            Object actionMap = null;
-            if (getActionMapMethod != null) {
-                getActionMapMethod.setAccessible(true);
-                actionMap = getActionMapMethod.invoke(this, false);
-            }
+            InputMap inputMap = getInputMap(condition);
+            ActionMap actionMap = getActionMap();
             if(inputMap != null && actionMap != null && isEnabled()) {
-                Object binding = ((InputMap) inputMap).get(ks);
-                Action action = (binding == null) ? null : ((ActionMap) actionMap).get(binding);
+                Object binding = inputMap.get(ks);
+                Action action = (binding == null) ? null : actionMap.get(binding);
 
-                Class uiActionClass = ReflectionUtils.classForName("sun.swing.UIAction");
+                Class uiActionClass = MainController.classForName("sun.swing.UIAction");
                 if (uiActionClass != null && uiActionClass.isInstance(action)) {
                     threadLocalUIAction.set(action);
                 }
             }
 
             result = super.processKeyBinding(ks, e, condition, pressed);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            Throwables.propagate(ex);
         } finally {
             threadLocalUIAction.set(null);
         }

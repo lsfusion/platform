@@ -28,6 +28,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
@@ -40,6 +41,7 @@ import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -58,6 +60,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -71,7 +74,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     private int ID = 0;
     protected String canonicalName;
-    public String annotation;
+    public ImSet<String> annotations;
     public ImRevMap<T, String> paramNames;
 
     private boolean local = false;
@@ -100,7 +103,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public boolean hasAnnotation(String annotation) {
-        return this.annotation != null && this.annotation.equals(annotation);
+        return annotations != null && annotations.contains(annotation);
     }
 
     public LocalizedString localizedToString() {
@@ -228,10 +231,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
 
-        setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
+        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), this::showGroupChange));
         setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
+    }
+
+    private boolean showGroupChange(PropertyDrawView property, FormInstanceContext context) {
+        return property.hasUserChangeAction(context) && !property.hasFlow(context, ChangeFlowType.NOGROUPCHANGE);
     }
 
     public final ImSet<T> interfaces;
@@ -303,6 +310,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return canonicalName != null;
     }
 
+    public static class ContextMenuBinding {
+        public final LocalizedString caption;
+        public final BiPredicate<PropertyDrawView, FormInstanceContext> show;
+
+        public ContextMenuBinding(LocalizedString caption, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
+            this.caption = caption;
+            this.show = show;
+        }
+
+        public boolean show(PropertyDrawView propertyDraw, FormInstanceContext context) {
+            return show == null || show.test(propertyDraw, context);
+        }
+    }
+
     // для всех    
     private String mouseBinding;
     private Object keyBindings;
@@ -332,16 +353,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
     }
 
-    @NFLazy
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
+        setContextMenuAction(actionSID, new ContextMenuBinding(caption, null));
+    }
+
+    @NFLazy
+    public void setContextMenuAction(String actionSID, ContextMenuBinding contextMenuBinding) {
         if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
             contextMenuBindings = MapFact.mOrderMap(MapFact.override());
         }
-        ((MOrderMap<String, LocalizedString>)contextMenuBindings).add(actionSID, caption);
+        ((MOrderMap<String, ContextMenuBinding>)contextMenuBindings).add(actionSID, contextMenuBinding);
     }
 
-    public ImOrderMap<String, LocalizedString> getContextMenuBindings() {
-        return (ImOrderMap<String, LocalizedString>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+    public ImOrderMap<String, ContextMenuBinding> getContextMenuBindings() {
+        return (ImOrderMap<String, ContextMenuBinding>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
     }
 
     @NFLazy
@@ -776,11 +801,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void addProcessor(DefaultProcessor processor) {
             processors = processors.addList(processor);
-        }
-
-        public void setFlexCharWidth(int charWidth, Boolean flex) {
-            setCharWidth(charWidth);
-            setValueFlex(flex);
         }
 
         public Compare getDefaultCompare() {

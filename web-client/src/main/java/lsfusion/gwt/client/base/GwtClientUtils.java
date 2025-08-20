@@ -51,6 +51,16 @@ public class GwtClientUtils {
         }
     }
 
+    public static native boolean isPrefetching()/*-{
+        return $doc.prerendering;
+    }-*/;
+
+    public static native boolean addPrefetchCompleteListener(Runnable runnable)/*-{
+        $doc.addEventListener('prerenderingchange', function () {
+            runnable.@java.lang.Runnable::run()();
+        }, { once: true });
+    }-*/;
+
     public static String getPageUrlPreservingParameters(String pageUrl) {
         return getWebAppBaseURL() + pageUrl + Window.Location.getQueryString();
     }
@@ -526,6 +536,12 @@ public class GwtClientUtils {
         String userAgent = getUserAgent();
         //chrome, opera, edge contains "chrome"; opera contains "opr" edge contains "edg"
         return userAgent.contains("chrome") && !userAgent.contains("opr") && !userAgent.contains("edg");
+    }
+
+    public static boolean isSafariUserAgent() {
+        String userAgent = getUserAgent();
+        return userAgent.contains("safari") && !userAgent.contains("chrome") && !userAgent.contains("chromium")
+                && !userAgent.contains("crios") && !userAgent.contains("opr") && !userAgent.contains("edg");
     }
 
     public static boolean isShowing(Widget widget) {
@@ -1895,9 +1911,12 @@ public class GwtClientUtils {
 
     public static String escapeSeparator(String value, GCompare compare) {
         if (value != null) {
+            boolean isContainsOrMatch = (compare == GCompare.CONTAINS || compare == GCompare.MATCH);
+            if (isContainsOrMatch)
+                value = value.replace("\\", "\\\\");
             if (compare.escapeSeparator())
                 value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
-            if (compare == GCompare.CONTAINS)
+            if (isContainsOrMatch)
                 value = value.replace("%", "\\%").replace("_", "\\_");
         }
         return value;

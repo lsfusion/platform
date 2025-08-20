@@ -62,6 +62,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean firefox;
     public static boolean chrome;
+    public static boolean safari;
 
     // settings    
     public static boolean devMode;
@@ -104,7 +105,7 @@ public class MainFrame implements EntryPoint {
     public static boolean disableActionsIfReadonly;
     public static boolean enableShowingRecentlyLogMessages;
     public static String pushNotificationPublicKey;
-    
+
     public static double maxStickyLeft;
 
     public static boolean jasperReportsIgnorePageMargins;
@@ -148,8 +149,11 @@ public class MainFrame implements EntryPoint {
 
         firefox = GwtClientUtils.isFirefoxUserAgent();
         chrome = GwtClientUtils.isChromeUserAgent();
+        safari = GwtClientUtils.isSafariUserAgent();
         if (chrome)
             GwtClientUtils.setGlobalClassName(true, "is-chrome");
+        if (safari)
+            GwtClientUtils.setGlobalClassName(true, "is-safari");
 
         hackForGwtDnd();
 
@@ -313,7 +317,7 @@ public class MainFrame implements EntryPoint {
         return hasAttribute;
     }
 
-    public void initializeFrame(NavigatorInfo result, PopupOwner popupOwner) {
+    public void initializeFrame(NavigatorInfo result, PopupOwner popupOwner, boolean prefetching) {
         assert currentForm == null;
         currentForm = null;
 
@@ -367,6 +371,11 @@ public class MainFrame implements EntryPoint {
 //                saveAndClean(windowsController);
 //            });
 //        }
+        if(prefetching)
+            GwtClientUtils.addPrefetchCompleteListener(() -> {
+                if(navigatorDispatchAsync != null)
+                    navigatorDispatchAsync.executePriority(new NavigatorShown(), new PriorityErrorHandlingCallback<>(popupOwner));
+            });
 
         Window.addWindowClosingHandler(event -> {
             if(!disableConfirmDialog) {
@@ -381,6 +390,7 @@ public class MainFrame implements EntryPoint {
             }
         };
         navigatorControllerLink.link = navigatorController;
+        formsController.setNavigatorController(navigatorController);
 
         actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController, navigatorController);
 
@@ -592,6 +602,8 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.requestPushNotificationPermissions();
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+
+        navigatorController.initializeNavigatorSchedulers(result.navigatorSchedulers);
     }
 
     private void addBindings(FormsController formsController, GNavigatorElement element) {
@@ -641,7 +653,10 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+
+        boolean prefetching = GwtClientUtils.isPrefetching();
+
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale, prefetching), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -690,7 +705,7 @@ public class MainFrame implements EntryPoint {
 
                 useClusterizeInPivot = gClientSettings.useClusterizeInPivot;
 
-                initializeFrame(result.navigatorInfo, popupOwner);
+                initializeFrame(result.navigatorInfo, popupOwner, prefetching);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
             }
         });

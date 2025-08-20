@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
@@ -143,7 +144,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatConnectionString(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
     ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName); // returns String or FileData (not null), null's encode'it depending on type
-    RawFileData formatFile(T value, String charset);
+    FileData formatFile(T value, String charset);
 
     T parseUI(String value, String pattern) throws ParseException;
     String formatUI(T object, String pattern);
@@ -158,6 +159,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString
 
     AndClassSet getBaseClassSet(BaseClass baseClass);
+
+    T readCast(Object value, Type typeFrom);
 
     String getSID();
 

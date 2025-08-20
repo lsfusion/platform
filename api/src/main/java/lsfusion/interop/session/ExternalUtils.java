@@ -1,7 +1,9 @@
 package lsfusion.interop.session;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -60,7 +62,7 @@ public class ExternalUtils {
     // "bytes-to-string" charsets
     public static Charset fileCharset = StandardCharsets.UTF_8; // when "data" files are converted to strings (should match cast)
     public static Charset resourceCharset = StandardCharsets.UTF_8; // when "disk" (usually "resource") files are converted (read) to strings
-    public static Charset printCharset = StandardCharsets.UTF_8; // when "printed" files are converted to string
+    public static Charset resultCharset = StandardCharsets.UTF_8; // when result ("disk" or "printed") files are converted to / from string
     public static Charset downloadCharset = StandardCharsets.UTF_8; // when file ("disk" or "data" or "printed") is downloaded to the client
     public static Charset jsonCharset = StandardCharsets.UTF_8; // when json file comes from the "unknown" place (i.e javascript client, url.openStream, etc.)
 
@@ -191,7 +193,7 @@ public class ExternalUtils {
 
         ImList<ExternalRequest.Param> queryParams = ListFact.mapList(parsedQueryParams, queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharsetName, queryParam.getName()));
         byte[] body = IOUtils.readBytesFromStream(is);
-        ImList<ExternalRequest.Param> bodyParams = getListFromInputStream(body, requestContentType, headerNames, headerValues);
+        ImList<ExternalRequest.Param> bodyParams = getListFromInputStream(body, requestContentType, headerNames, headerValues, null);
 
         ImList<ExternalRequest.Param> params = ListFact.add(queryParams, bodyParams);
 
@@ -202,8 +204,11 @@ public class ExternalUtils {
 
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
-        String secFetchMode = getHeaderValue(headerNames, headerValues, "sec-fetch-mode");
-        boolean isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");;
+        boolean isInteractiveClient = false;
+        if(sessionId != null) { // supports interactive client
+            String secFetchMode = getHeaderValue(headerNames, headerValues, "sec-fetch-mode");
+            isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");            ;
+        }
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), params.toArray(new ExternalRequest.Param[params.size()]),
                 headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort,
@@ -346,27 +351,6 @@ public class ExternalUtils {
         return null;
     }
 
-    private static ExternalRequest.Param getRequestParam(String paramName, String fileName, Object object, ContentType contentType, boolean convertedToString) {
-        assert object instanceof byte[] || (object instanceof String && convertedToString);
-        Charset charset = getBodyCharset(contentType);
-
-        String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
-        Object value;
-        if(extension != null) { // FILE
-            RawFileData file;
-            if(isTextContentType(contentType) && convertedToString) //humanReadable
-                file = new RawFileData((String)object, charset);
-            else
-                file = new RawFileData((byte[])object);
-            value = new FileData(file, extension);
-        } else {
-            if(!convertedToString)
-                object = new String((byte[]) object, charset);
-            value = object;
-        }
-        return ExternalRequest.getBodyParam(value, charset.toString(), paramName, fileName);
-    }
-
     public static Charset getLoggingCharsetFromContentType(String contentType) {
         return getBodyCharset(parseContentType(contentType));
     }
@@ -394,20 +378,32 @@ public class ExternalUtils {
     }
 
     // body
-    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues) throws MessagingException, IOException, FileUploadException {
+    public static ImList<ExternalRequest.Param> getListFromInputStream(byte[] bytes, ContentType contentType, String[] headerNames, String[] headerValues, String urlString) throws MessagingException, IOException, FileUploadException {
         String contentDispositionHeader = getHeaderValue(headerNames, headerValues, CONTENT_DISPOSITION_HEADER);
         String name = null; String filename = null;
         if(contentDispositionHeader != null) {
-            ContentDisposition contentDisposition;
-           try {
-                contentDisposition = new ContentDisposition(contentDispositionHeader);
-            } catch (ParseException e) { // backward compatibility to parse filename=x.f
-                contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
+            Pair<String, String> contentDispositionFileName = getContentDispositionFileName(contentDispositionHeader);
+            name = contentDispositionFileName.first;
+            filename = contentDispositionFileName.second;
+            if(filename == null && urlString != null) {
+                URL url = new URL(urlString);
+                filename = BaseUtils.getFileNameAndExtension(url.getPath());
+                if(filename.isEmpty())
+                    filename = null;
             }
-            name = contentDisposition.getParameter("name");
-            filename = contentDisposition.getParameter("filename");
         }
         return getListFromInputStream(name != null ? name : ExternalRequest.SINGLEBODYPARAMNAME, filename, bytes, contentType);
+    }
+
+    public static Pair<String, String> getContentDispositionFileName(String contentDispositionHeader) throws ParseException {
+        ContentDisposition contentDisposition;
+        try {
+            contentDisposition = new ContentDisposition(contentDispositionHeader);
+        } catch (ParseException e) { // backward compatibility to parse filename=x.f
+            contentDisposition = new ContentDisposition("attachment; " + contentDispositionHeader);
+        }
+
+        return new Pair<>(contentDisposition.getParameter("name"), contentDisposition.getParameter("filename"));
     }
 
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
@@ -432,22 +428,13 @@ public class ExternalUtils {
                     String fieldFileName = fileItem.getName();
                     if(fieldFileName == null)
                         fieldFileName = fieldName;
-                    ContentType partContentType = parseContentType(fileItem.getContentType());
-                    if (!fileItem.isFormField()) // actually it seems that simple true can be here (but apparently it doesn't matter)
-                        mParamsList.addAll(getListFromInputStream(fieldName, fieldFileName, fileItem.get(), partContentType));
-                    else
-                        mParamsList.add(getRequestParam(fieldName, fieldFileName, fileItem.getString(), partContentType, true)); // multipart автоматически text/* возвращает как String
+                    mParamsList.addAll(getListFromInputStream(fieldName, fieldFileName, fileItem.get(), parseContentType(fileItem.getContentType())));
                 }
             } else { // using javax.mail
                 MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart bodyPart = multipart.getBodyPart(i);
-                    Object param = bodyPart.getContent();
-                    ContentType partContentType = parseContentType(bodyPart.getContentType());
-                    if (param instanceof InputStream)
-                        mParamsList.addAll(getListFromInputStream(paramName, fileName, IOUtils.readBytesFromStream((InputStream) param), partContentType));
-                    else
-                        mParamsList.add(getRequestParam(paramName, fileName, param, partContentType, true)); // multipart автоматически text/* возвращает как String
+                    mParamsList.addAll(getListFromInputStream(paramName, bodyPart.getFileName(), IOUtils.readBytesFromStream(bodyPart.getInputStream()), parseContentType(bodyPart.getContentType())));
                 }
             }
         } else if(mimeType != null && mimeType.equalsIgnoreCase(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())) {
@@ -455,8 +442,20 @@ public class ExternalUtils {
             List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
             for(NameValuePair param : params)
                 mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString(), param.getName()));
-        } else if (mimeType != null || bytes.length > 0)
-            mParamsList.add(getRequestParam(paramName, fileName, bytes, contentType, false));
+        } else if (mimeType != null || bytes.length > 0) {
+            String extension = null;
+            if(fileName != null) {
+                extension = BaseUtils.getFileExtension(fileName);
+                if(extension.isEmpty())
+                    extension = null;
+                fileName = BaseUtils.getFileName(fileName);
+            }
+            if(extension == null)
+                extension = contentType != null ? getExtensionFromContentType(contentType) : null;
+            if(extension == null)
+                extension = "file";
+            mParamsList.add(ExternalRequest.getBodyParam(new FileData(new RawFileData(bytes), extension), getBodyCharset(contentType).toString(), paramName, fileName));
+        }
 
         return mParamsList.immutableList();
     }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.user;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -9,7 +10,7 @@ import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
@@ -19,6 +20,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.language.property.LP;
@@ -142,26 +144,17 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public Long id;
     }
 
-    private NFSet<ObjectInfo> staticObjectsInfo = NFFact.set();
+    private final NFOrderSet<ObjectInfo> staticObjectsInfo = NFFact.orderSet();
     public Iterable<ObjectInfo> getStaticObjectsInfoIt() {
         return staticObjectsInfo.getIt();
+    }
+    public ImList<ObjectInfo> getStaticObjectsInfoList() {
+        return staticObjectsInfo.getList();
     }
     public Iterable<ObjectInfo> getNFStaticObjectsInfoIt(Version version) {
         return staticObjectsInfo.getNFIt(version);
     }
 
-    public boolean hasNFStaticObject(String name, Version version) {
-        for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
-            if (info.name.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean hasConcreteStaticObjects() {
-        return getStaticObjectsInfoIt().iterator().hasNext();
-    }
     public boolean hasStaticObject(String name) {
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
@@ -180,13 +173,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
-    public String getObjectName(long id) {
-        for(ObjectInfo info : getStaticObjectsInfoIt()) {
-            if (info.id == id) {
-                return info.name;
-            }
-        }
-        throw new RuntimeException("id not found");
+    @Override
+    protected boolean hasStaticObjects() {
+        return getStaticObjectsInfoIt().iterator().hasNext();
     }
 
     public LocalizedString getObjectCaption(String name) {
@@ -224,11 +213,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public final long ID;
         public final String caption;
         public final String image;
+        public final Integer order;
 
-        public PrevClass(long ID, String caption, String image) {
+        public PrevClass(long ID, String caption, String image, Integer order) {
             this.ID = ID;
             this.caption = caption;
             this.image = image;
+            this.order = order;
         }
     }
 
@@ -238,7 +229,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             mImages.add(object.image + "," + searchName);
     }
 
-    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, LP staticOrder, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
@@ -249,6 +240,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         allClassesQuery.addProperty("sid", sidExpr);
         allClassesQuery.addProperty("caption", caption.getExpr(key));
         allClassesQuery.addProperty("image", image.getExpr(key));
+        allClassesQuery.addProperty("order", staticOrder.getExpr(key));
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
@@ -257,7 +249,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             ImMap<String, Object> resultKey = qResult.getKey(i);
             ImMap<String, Object> resultValue = qResult.getValue(i);
             String sid = ((String) resultValue.get("sid")).trim();
-            PrevClass prevValue = oldClasses.put(sid, new PrevClass((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("caption")), BaseUtils.nullTrim((String) resultValue.get("image"))));
+            Integer order = (Integer) resultValue.get("order");
+            PrevClass prevValue = oldClasses.put(sid, new PrevClass((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("caption")), BaseUtils.nullTrim((String) resultValue.get("image")), order));
             if(prevValue != null) // temporary, CONSTRAINT on static name change, it should not happen
                 dbChanges.removed.add(new DBManager.IDRemove(new DataObject(prevValue.ID, this), sid));
         }
@@ -265,7 +258,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         // new sid -> old sid
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
-        for (ObjectInfo info : getStaticObjectsInfoIt()) {
+        ImList<ObjectInfo> staticObjectsInfoList = getStaticObjectsInfoList();
+        for (int i = 0; i < staticObjectsInfoList.size(); i++) {
+            ObjectInfo info = staticObjectsInfoList.get(i);
             String newSID = info.sid; // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя, наверное, можно уже переходить на канонические имена 
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
@@ -289,10 +284,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
                     dbChanges.modifiedImages.put(new DataObject(oldObject.ID, this), staticObjectImage);
                 }
+                if (oldObject.order == null || i != oldObject.order) {
+                    dbChanges.modifiedOrders.put(new DataObject(oldObject.ID, this), i);
+                }
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, i));
                 info.id = id;
             }
 
@@ -366,11 +364,14 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public void updateStat(ImMap<Long, Integer> classStats) {
-        stat = classStats.get(ID);
-    }
-    public void updateSIDStat(ImMap<String, Integer> classStats) {
-        assert ID == null;
-        stat = classStats.get(getSID());
+    public void updateStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
+        Integer newStat = classStats.get(getSID());
+        if (majorStatChangedCount != null) {
+            if (stat != null && new Stat(stat).majorStatChanged(new Stat((long) newStat), Stat.Mode.CHANGE))
+                majorStatChangedCount.set(majorStatChangedCount.result + 1);
+        } else {
+            assert ID == null;
+        }
+        stat = newStat;
     }
 }

@@ -38,6 +38,9 @@ public class ExternalLSFAction extends CallHTTPAction {
                     paramName = eval ? ExternalUtils.SCRIPT_PARAM : ExternalUtils.ACTION_CN_PARAM;
                     script.set(value);
                 } else {
+                    if (!noExec)
+                        return false;
+
                     paramName = ExternalUtils.PARAMS_PARAM;
                     params[number - 1] = value;
                 }

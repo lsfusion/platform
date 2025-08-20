@@ -21,8 +21,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import javax.swing.*;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.*;
 
 public class FormPropertyOptions {
     private PropertyEditType editType;
@@ -522,10 +521,10 @@ public class FormPropertyOptions {
         merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
         merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
-        merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
-        merged.setFormChangeEventActions(nvl(overrides.getFormChangeEventActions(), formChangeEventActions));
-        merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
-        merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
+        merged.setEventActions(nullMerge(overrides.getEventActions(), eventActions));
+        merged.setFormChangeEventActions(nullMergeList(overrides.getFormChangeEventActions(), formChangeEventActions));
+        merged.setContextMenuBindings(nullMerge(overrides.getContextMenuBindings(), contextMenuBindings));
+        merged.setKeyBindings(nullMerge(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
         merged.setLocation(nvl(overrides.getLocation(), location), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));

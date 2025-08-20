@@ -43,6 +43,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -2203,6 +2204,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getProcessDumpTask(scheduler));
         } else {
             result.add(getSynchronizeSourceTask(scheduler));
+            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         }
         return result;
     }
@@ -2300,6 +2302,47 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 serviceLM.makeProcessDumpAction.execute(session, stack);
             }
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
+    }
+
+    private Scheduler.SchedulerTask getRecalculateAndUpdateStatsTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                DBManager dbManager = getDbManager();
+
+                ImSet<ImplementTable> updateTables;
+                ImSet<ConcreteCustomClass> updateClasses;
+                synchronized (LM.tableFactory.syncLock) {
+                    MExclSet<ImplementTable> mUpdateTables = SetFact.mExclSet();
+                    MExclSet<ConcreteCustomClass> mUpdateClasses = SetFact.mExclSet();
+                    for (ImplementTable table : LM.tableFactory.getImplementTables()) {
+                        long changed = table.statChange.get();
+                        if (table.getStatKeys().getRows().majorStatChanged(new Stat(changed >= 0 ? changed : -changed), changed >= 0 ? Stat.Mode.ADD : Stat.Mode.REMOVE)) {
+                            table.statChange.set(0);
+
+                            table.recalculateStat(reflectionLM, new HashSet<>(), session);
+                            mUpdateTables.exclAdd(table);
+
+                            ObjectValueClassSet classSet = table.getClassDataSet();
+                            if (classSet != null) {
+                                classSet.recalculateClassStat(LM, session);
+                                mUpdateClasses.exclAddAll(classSet.getSetConcreteChildren());
+                            }
+                        }
+                    }
+                    updateTables = mUpdateTables.immutable();
+                    updateClasses = mUpdateClasses.immutable();
+
+                    if(updateTables.isEmpty() && updateClasses.isEmpty()) // optimization
+                        return;
+
+                    session.applyException(this, stack);
+                }
+
+                dbManager.updateStats(session.sql, updateTables, updateClasses);
+            } catch (Throwable t) {
+                ServerLoggers.serviceLogger.info("Recalculate and update stats task error: ", t);
+            }
+        }, false, 1, false, "RecalculateAndUpdateStats");
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {

@@ -18,11 +18,6 @@ public class ExternalHTTPAction extends CallHTTPAction {
     }
 
     @Override
-    protected Long getDefaultTimeout() {
-        return 1800000L; //30 minutes
-    }
-
-    @Override
     protected UrlProcessor createUrlProcessor(String connectionString, boolean noExec) {
         Result<String> rConnectionString = new Result<>(connectionString);
         return new CallHTTPAction.UrlProcessor() {

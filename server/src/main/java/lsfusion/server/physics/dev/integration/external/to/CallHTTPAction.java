@@ -8,14 +8,13 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
@@ -29,13 +28,14 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
+import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+import lsfusion.server.physics.admin.authentication.controller.remote.RequestLog;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -52,7 +52,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
@@ -182,7 +185,7 @@ public abstract class CallHTTPAction extends CallAction {
                 value = (valueClass != null ? valueClass.getType().parseHTTP(param) : param.value);
 
             if(valueClass == null && value != null)
-                valueClass = value instanceof String ? StringClass.instance : CustomStaticFormatFileClass.get();
+                valueClass = value instanceof String ? StringClass.instance : DynamicFormatFileClass.get();
 
             values[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
         }
@@ -209,7 +212,46 @@ public abstract class CallHTTPAction extends CallAction {
         writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        property.change(session, env, MapFact.toMap(names, values));
+        property.change(session, env, MapFact.toMap(getNotNullStringArray(names), getNotNullStringArray(values)));
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringValues(DataSession session, LP<P> property, DataObject object, String[] names, String[] values) throws SQLException, SQLHandledException {
+        MMap<ImList<Object>, String> mParams = MapFact.mMap(true);
+        if (names != null && values != null) {
+            for (int i = 0; i < names.length; i++) {
+                mParams.add(ListFact.toList(object.getValue(), names[i]), values[i]);
+            }
+        }
+        property.changeList(session, session, mParams.immutable());
+    }
+
+    public static <P extends PropertyInterface> void writeObjectStringParams(DataSession session, LP<P> property, DataObject object, ExternalRequest.Param[] params) throws SQLException, SQLHandledException {
+        property.changeList(session, session, getParamsMap(params,
+                paramValue -> paramValue instanceof String,
+                (paramName, paramIndex) -> ListFact.toList(object.getValue(), paramName, paramIndex),
+                param -> param.value));
+    }
+
+    public static ImMap<ImList<Object>, Object> getParamsMap(ExternalRequest.Param[] params,
+                                                             Function<Object, Boolean> paramValueTypeCheck,
+                                                             BiFunction<String, Integer, ImList<Object>> keyGetter,
+                                                             Function<ExternalRequest.Param, Object> valueGetter) {
+        MExclMap<ImList<Object>, Object> mParams = MapFact.mExclMap();
+        Map<String, Integer> paramIndexes = new HashMap<>();
+        for (ExternalRequest.Param param : params) {
+            String paramName = param.name;
+            Object paramValue = param.value;
+
+            if(paramValueTypeCheck.apply(paramValue)) {
+                Integer paramIndex = paramIndexes.get(paramName);
+                if (paramIndex == null)
+                    paramIndex = 0;
+                paramIndexes.put(paramName, paramIndex + 1);
+
+                mParams.exclAdd(keyGetter.apply(paramName, paramIndex), valueGetter.apply(param));
+            }
+        }
+        return mParams.immutable();
     }
 
     @Override
@@ -221,7 +263,11 @@ public abstract class CallHTTPAction extends CallAction {
 
         boolean noExec = isNoExec(connectionString);
 
-        String requestLogMessage = !noExec && Settings.get().isLogToExternalSystemRequests() ? RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
+        RequestLog.Builder logBuilder = null;
+        boolean detailLog = Settings.get().isLogToExternalSystemRequestsDetail();
+        if (!noExec && Settings.get().isLogToExternalSystemRequests())
+            logBuilder = new RequestLog.Builder().requestQuery(connectionString).method(method.name());
+
         boolean successfulResponse = false;
         try {
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
@@ -230,8 +276,6 @@ public abstract class CallHTTPAction extends CallAction {
             if(noExec)
                 targetPropList.single().change(connectionString, context);
             else {
-                String bodyUrl = null;
-
                 Map<String, String> headers = new HashMap<>();
                 if (headersProperty != null) {
                     MapFact.addJavaAll(headers, readPropertyValues(context.getEnv(), headersProperty));
@@ -244,11 +288,12 @@ public abstract class CallHTTPAction extends CallAction {
                 CookieStore cookieStore = new BasicCookieStore();
 
                 byte[] body = null;
+                String contentType = null;
                 if (method.hasBody()) {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
                     Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
-                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
+                    String bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
                     if(bodyUrl != null) {
                         bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
                         if (!rNotUsedParams.result.isEmpty()) {
@@ -275,7 +320,8 @@ public abstract class CallHTTPAction extends CallAction {
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamHeadersList, contentDisposition, forceContentType, bodyCharset);
                     if (entity != null) { // no body
                         body = IOUtils.readBytesFromHttpEntity(entity);
-                        headers.put("Content-Type", entity.getContentType());
+                        contentType = entity.getContentType();
+                        headers.put("Content-Type", contentType);
 
                         if(contentDisposition.result != null && !headers.containsKey(ExternalUtils.CONTENT_DISPOSITION_HEADER))
                             headers.put(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition.result);
@@ -284,6 +330,12 @@ public abstract class CallHTTPAction extends CallAction {
 
                 Long timeout = nvl((Long) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
+
+                if (detailLog && logBuilder != null)
+                    logBuilder.logInfo(ThreadLocalContext.getLogInfo())
+                            .requestHeaders(headers)
+                            .requestCookies(cookies)
+                            .requestBody(body != null ? new String(body, ExternalUtils.getLoggingCharsetFromContentType(contentType)) : null);
 
                 ExternalHttpResponse response;
                 if (clientAction) {
@@ -306,7 +358,7 @@ public abstract class CallHTTPAction extends CallAction {
                 }
 
                 byte[] responseBytes = response.responseBytes;
-                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues) : ListFact.EMPTY();
+                ImList<ExternalRequest.Param> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, ExternalUtils.parseContentType(response.contentType), headerNames, headerValues, connectionString) : ListFact.EMPTY();
                 fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
                 int statusCode = response.statusCode;
@@ -317,34 +369,31 @@ public abstract class CallHTTPAction extends CallAction {
                 String responseStatus = statusCode + " " + response.statusText;
                 successfulResponse = RemoteConnection.successfulResponse(statusCode);
 
-                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
-                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
-                            cookies,
-                            null,
-                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
-                            BaseUtils.toStringMap(headerNames, headerValues),
-                            responseCookies,
-                            responseStatus,
-                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
+                if (logBuilder != null) {
+                    logBuilder.responseStatus(responseStatus);
+                    if (detailLog)
+                        logBuilder.responseHeaders(BaseUtils.toStringMap(headerNames, headerValues))
+                                    .responseCookies(responseCookies)
+                                    .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
                 if (!successfulResponse)
                     throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
             }
         } catch (Exception e) {
-            if (requestLogMessage != null)
-                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
+            if (logBuilder != null)
+                logBuilder.errorMessage(e.getMessage());
 
             throw Throwables.propagate(e);
         } finally {
-            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, logBuilder, successfulResponse);
         }
 
         return FlowResult.FINISH;
     }
 
     protected Long getDefaultTimeout() {
-        return null;
-    };
+        return 1800000L; //30 minutes
+    }
 
     protected abstract UrlProcessor createUrlProcessor(String connectionString, boolean noExec);
     interface UrlProcessor {

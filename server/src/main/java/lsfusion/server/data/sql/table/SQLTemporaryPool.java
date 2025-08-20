@@ -1,12 +1,15 @@
 package lsfusion.server.data.sql.table;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.CacheStats;
+import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
@@ -18,6 +21,9 @@ import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.apache.commons.collections.Buffer;
+import org.apache.commons.collections.BufferUtils;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
@@ -30,6 +36,28 @@ public class SQLTemporaryPool {
     private final Map<String, Object> stats = MapFact.mAddRemoveMap();
     private final Map<String, FieldStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
     private int counter = 0;
+
+    public SQLTemporaryPool() {
+        log = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(Settings.get().getExplainTemporaryTablesLogSize()));
+        allLogs.add(log);
+    }
+    public final Buffer log;
+    private static final ConcurrentIdentityWeakHashSet<Buffer> allLogs = new ConcurrentIdentityWeakHashSet<>();
+    public static void removeAllLogs() {
+        for(Buffer log : allLogs)
+            log.clear();
+    }
+    public void addLog(String log, String table, OperationOwner owner) {
+        this.log.add(new Pair<>(table, SQLSession.getCurrentTimeStamp() + " " + log + " " + owner + " " + ExecutionStackAspect.getExStackTrace()));
+    }
+    public void outLog(String table) {
+        ServerLoggers.sqlHandLogger.info("TABLE DUMP: " + table);
+        for (Object ff : log) {
+            Pair<String, String> pff = (Pair<String, String>) ff;
+            if(pff.first == null || pff.first.equals(table))
+                ServerLoggers.sqlHandLogger.info(pff.second);
+        }
+    }
 
     public int getCounter() {
         return counter;

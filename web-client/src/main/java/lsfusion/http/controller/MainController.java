@@ -1,10 +1,9 @@
 package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
-import lsfusion.base.ServerMessages;
+import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -30,7 +29,9 @@ import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -45,8 +46,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,11 +77,11 @@ public class MainController {
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
         remoteNavigator.updateClientInfo(clientInfo);
-        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(new ExternalRequest.Param[0], request), remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
+        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(ListFact.EMPTY(), request), remoteNavigator, ClientFormChangesToGwtConverter.getConvertFileValue(request.getServletContext(), serverSettings));
     }
 
-    public static String sendRequest(HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, String action) throws RemoteException {
-        return sendRequest(AuthenticationToken.ANONYMOUS, request, params, sessionObject, NavigatorProviderImpl.getConnectionInfo(request), action);
+    public static String sendRequest(HttpServletRequest request, ImList<ExternalRequest.Param> params, LogicsSessionObject sessionObject, String action) throws RemoteException {
+        return sendRequest(AuthenticationToken.ANONYMOUS, request, params, sessionObject, RequestUtils.getConnectionInfo(request), action);
     }
 
     @GetMapping(value = "/manifest", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -104,7 +107,7 @@ public class MainController {
         return response;
     }
 
-    public static String sendRequest(AuthenticationToken token, HttpServletRequest request, ExternalRequest.Param[] params, LogicsSessionObject sessionObject, ConnectionInfo connectionInfo, String action) throws RemoteException {
+    public static String sendRequest(AuthenticationToken token, HttpServletRequest request, ImList<ExternalRequest.Param> params, LogicsSessionObject sessionObject, ConnectionInfo connectionInfo, String action) throws RemoteException {
         ExternalRequest externalRequest = MainController.getExternalRequest(params, request);
         ExternalResponse result = sessionObject.remoteLogics.exec(token, connectionInfo, action, externalRequest);
         return LogicsSessionObject.getStringResult(result, ClientFormChangesToGwtConverter.getConvertFileValue(sessionObject, request, connectionInfo, externalRequest));
@@ -291,21 +294,26 @@ public class MainController {
     private List<WebAction> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
         List<WebAction> versionedResources = new ArrayList<>();
         for (Pair<String, RawFileData> resource : resources) {
-            String fullPath = resource.first;
+            String resourceName = resource.first;
             String extension;
 
             String url;
             boolean isUrl = false;
-            if (resource.second != null) { // resource file
-                extension = BaseUtils.getFileExtension(fullPath);
-                url = extension.equals("html") ? resource.second.convertString() : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth);
+            RawFileData resourceData = resource.second;
+            if (resourceData != null) { // resource file
+                extension = BaseUtils.getFileExtension(resourceName);
+
+                if (SystemUtils.isFont(extension))
+                    resourceName = SystemUtils.registerFont(resourceData);
+
+                url = extension.equals("html") ? resourceData.convertString() : FileUtils.saveWebFile(resourceName, resourceData, serverSettings, noAuth);
             } else { // url
                 Result<String> rExtension = new Result<>();
-                url = ClientActionToGwtConverter.convertUrl(fullPath, rExtension);
+                url = ClientActionToGwtConverter.convertUrl(resourceName, rExtension);
                 extension = rExtension.result;
                 isUrl = true;
             }
-            versionedResources.add(new WebAction(url, extension, isUrl));
+            versionedResources.add(new WebAction(url, resourceName, extension, isUrl));
         }
         return versionedResources;
     }
@@ -313,21 +321,25 @@ public class MainController {
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method) {
         try {
             return logicsProvider.runRequest(request,
-                    (sessionObject, retry) -> new JSONObject(sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(jsonArray.toString())}, sessionObject, method + "[JSONFILE]")));
+                    (sessionObject, retry) -> new JSONObject(sendRequest(request, ListFact.singleton(ExternalRequest.getSystemParam(jsonArray.toString())), sessionObject, method + "[JSONFILE]")));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
         }
     }
 
+    //  The WebAction class is a declarative variant of GClientWebAction
     public static class WebAction {
         public final String resource;
+        public final String resourceName;
         public final String extension;
+
         public final boolean isUrl;
 
-        public WebAction(String resource, String extension, boolean isUrl) {
+        public WebAction(String resource, String resourceName, String extension, boolean isUrl) {
             this.resource = resource;
             this.extension = extension;
             this.isUrl = isUrl;
+            this.resourceName = resourceName;
         }
     }
 
@@ -370,11 +382,18 @@ public class MainController {
         return FileUtils.saveApplicationFile(file);
     }
 
-    public static ExternalRequest getExternalRequest(ExternalRequest.Param[] params, HttpServletRequest request){
+    public static ExternalRequest getExternalRequest(ImList<ExternalRequest.Param> params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
 
-        return new ExternalRequest(params, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
-                request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
+        RequestUtils.RequestInfo requestInfo = RequestUtils.getRequestInfo(request);
+
+        Charset urlCharset = ExternalUtils.defaultUrlCharset;
+        ImList<ExternalRequest.Param> queryParams = ListFact.mapList(URLEncodedUtils.parse(requestInfo.query, urlCharset), queryParam -> ExternalRequest.getUrlParam(queryParam.getValue(), urlCharset.toString(), queryParam.getName()));
+        ExternalRequest.Param[] mergedParams = params.addList(queryParams).toArray(new ExternalRequest.Param[params.size() + queryParams.size()]);
+
+        return new ExternalRequest(mergedParams, requestInfo.headerNames, requestInfo.headerValues, requestInfo.cookieNames, requestInfo.cookieValues,
+                request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
+                request.getServletPath(), requestInfo.pathInfo, requestInfo.query,
                 contentTypeString, request.getSession().getId());
     }
 
@@ -463,11 +482,18 @@ public class MainController {
         model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
     }
 
+    public static boolean isPrefetch(HttpServletRequest request) {
+        return "prefetch".equals(request.getHeader("Sec-Purpose")) || "prefetch".equals(request.getHeader("Purpose"));
+    }
+
     @RequestMapping(value = "/main", method = RequestMethod.GET)
-    public String processMain(ModelMap model, HttpServletRequest request) {
-        String purpose = request.getHeader("Purpose");
-        if (purpose != null && purpose.equals("prefetch"))
-            return null;
+    public String processMain(ModelMap model, HttpServletRequest request,
+                                         HttpServletResponse response) {
+//        this way it is really faster, when we start creating navigator when user still type (however later maybe it's better to parameterize this)
+//        if (isPrefetch(request)) {
+//            response.setStatus(HttpStatus.NO_CONTENT.value());
+//            return null;
+//        }
 
         ServerSettings serverSettings = getServerSettings(request, false);
 
@@ -506,9 +532,12 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String directUrl = getDirectUrl("/exec", "action=Security.generateJnlp", request); //we use generateJnlp without params because linux mint cut from url '%5'
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
-        return serverSettings != null ? serverSettings.jnlpUrls.replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + getDirectUrl("/exec", "action=Security.generateJnlp", request) + ">" + localizedString + "</a>";
+        return serverSettings != null ? serverSettings.jnlpUrls
+                .replaceAll("\\{runDesktopQuery}", directUrl)
+                .replaceAll("\\{run.desktop.client}", localizedString)
+                : "<a href=" + directUrl + ">" + localizedString + "</a>";
     }
 
     public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {

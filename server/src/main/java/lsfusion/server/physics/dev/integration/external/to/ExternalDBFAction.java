@@ -7,12 +7,17 @@ import lsfusion.base.file.FileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.TableClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
@@ -56,44 +61,50 @@ public class ExternalDBFAction extends CallAction {
 
     private void writeDBF(ExecutionContext<PropertyInterface> context, String connectionString) {
         try {
-            Object fileData = context.getKeyObject(paramInterfaces.single());
-            if (fileData instanceof FileData) {
-                String extension = ((FileData) fileData).getExtension();
-                if (extension.equals("jdbc")) { // значит таблица
-                    JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) fileData).getRawFile());
+            PropertyInterface paramInterface = paramInterfaces.single();
+            ObjectValue paramValue = context.getKeyValue(paramInterface);
+            if (paramValue instanceof DataObject) {
+                DataObject paramObject = (DataObject) paramValue;
+                DataClass paramClass = (DataClass) getFileClass(paramObject, paramTypes.get(paramInterface));
+                if (paramClass instanceof FileClass) {
+                    FileData fileData = readFile(paramObject, paramClass, null);
+                    String extension = fileData.getExtension();
+                    if (extension.equals(TableClass.extension)) { // значит таблица
+                        JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileData.getRawFile());
 
-                    Field[] fields = getFields(jdbcTable);
-                    File file = new File(connectionString);
-                    boolean append = file.exists();
+                        Field[] fields = getFields(jdbcTable);
+                        File file = new File(connectionString);
+                        boolean append = file.exists();
 
-                    DBF dbfFile = null;
-                    ConnectionService connectionService = context.getConnectionService();
-                    if (connectionService != null)
-                        dbfFile = connectionService.getDBFFile(connectionString);
-                    else if (connectionString.isEmpty())
-                        throw new UnsupportedOperationException("Empty connectionString is supported only inside of NEWCONNECTION operator");
-
-                    if (dbfFile == null) {
-                        if (append) {
-                            dbfFile = new DBF(file.getAbsolutePath(), charset);
-                        } else {
-                            dbfFile = new DBF(file.getAbsolutePath(), DBF.DBASEIV, true, charset);
-                            dbfFile.addField(fields);
-                        }
+                        DBF dbfFile = null;
+                        ConnectionService connectionService = context.getConnectionService();
                         if (connectionService != null)
-                            connectionService.putDBFFile(connectionString, dbfFile);
-                    }
+                            dbfFile = connectionService.getDBFFile(connectionString);
+                        else if (connectionString.isEmpty())
+                            throw new UnsupportedOperationException("Empty connectionString is supported only inside of NEWCONNECTION operator");
 
-                    try {
-                        for (ImMap<String, Object> row : jdbcTable.set) {
-                            for (Field field : fields) {
-                                putField(dbfFile, field, String.valueOf(row.get(field.getName())), append);
+                        if (dbfFile == null) {
+                            if (append) {
+                                dbfFile = new DBF(file.getAbsolutePath(), charset);
+                            } else {
+                                dbfFile = new DBF(file.getAbsolutePath(), DBF.DBASEIV, true, charset);
+                                dbfFile.addField(fields);
                             }
-                            dbfFile.write();
+                            if (connectionService != null)
+                                connectionService.putDBFFile(connectionString, dbfFile);
                         }
-                    } finally {
-                        if (connectionService == null)
-                            dbfFile.close();
+
+                        try {
+                            for (ImMap<String, Object> row : jdbcTable.set) {
+                                for (Field field : fields) {
+                                    putField(dbfFile, field, String.valueOf(row.get(field.getName())), append);
+                                }
+                                dbfFile.write();
+                            }
+                        } finally {
+                            if (connectionService == null)
+                                dbfFile.close();
+                        }
                     }
                 }
             }

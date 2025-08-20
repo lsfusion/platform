@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.ChangeColorThemeClientAction;
 import lsfusion.interop.base.view.ColorTheme;
@@ -25,15 +26,15 @@ public class ChangeColorThemeAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Long colorTheme = (Long) context.getKeyValue(colorThemeInterface).getValue();
         String colorThemeString = null;
         if (colorTheme != null) {
             try {
                 String colorThemeStaticName = (String) findProperty("staticName[StaticObject]").read(context, context.getSession().getDataObject(findClass("ColorTheme"), colorTheme));
                 colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null;
-            } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-                return;
+            } catch (ScriptingErrorLog.SemanticErrorException e) {
+                throw Throwables.propagate(e);
             }
         }
         context.delayUserInteraction(new ChangeColorThemeClientAction(BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT)));

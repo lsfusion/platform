@@ -33,8 +33,6 @@ public class SystemProperties {
         return assertsEnabled;
     }
 
-    public static final boolean doNotCalculateStats = "true".equals(System.getProperty("lsfusion.server.logics.donotcalculatestats"));
-
     public static String getProjectLSFDir() {
         Path srcPath = Paths.get(userDir, "src/main/lsfusion/");
         return Files.exists(srcPath) ? srcPath.toString() : userDir;

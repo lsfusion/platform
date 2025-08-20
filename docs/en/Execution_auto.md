@@ -13,9 +13,9 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Executable exe files:
-**lsFusion 6.0-beta2** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
+**lsFusion 6.0** (OpenJDK **21.0.6**, PostgreSQL **17.4**, Tomcat **9.0.104**, IntelliJ IDEA Community Edition **2025.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-beta2-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-x64.exe)
 - <details>
   <summary>Older versions</summary>
 
@@ -41,7 +41,7 @@ Subsequently, `$INSTALL_DIR$` refers to the folder selected during the installat
 
 Bash scripts using dnf / apt (the latest stable releases are used as minor versions):
 
-lsFusion **6** Server & Client (+ OpenJDK **11**, PostgreSQL **16**, Tomcat **9.0.89**):
+lsFusion **6** Server & Client (+ OpenJDK (**default-jdk / java-openjdk**), PostgreSQL **17**, Tomcat **9.0.104**):
 
 | OS                               | Command / Script                                                        |
 |----------------------------------|-------------------------------------------------------------------------|
@@ -148,7 +148,7 @@ Platform components are also updated separately from each other. To do this, you
 #### Unstable versions
 Upgrade platform to a SNAPSHOT version : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) <platform version>`.
 
-For example, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.0-SNAPSHOT`.
+For example, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.1-SNAPSHOT`.
 
 </TabItem>
 </Tabs>
@@ -166,20 +166,20 @@ These programs can be excluded during installation using the corresponding graph
 
 The following are scripts for installing specific platform components:
 
-Database Server - PostgreSQL **16**:
+Database Server - PostgreSQL **17**:
 
 | OS                            | Command / Script                                                          |
 |-------------------------------|---------------------------------------------------------------------------|
 | Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-db)`|
 
-Application Server - lsFusion 6 Server (+ OpenJDK **11**):
+Application Server - lsFusion 6 Server (+ OpenJDK (**default-jdk**)):
 
 
 | OS                            | Command / Script                                                               |
 |-------------------------------|--------------------------------------------------------------------------------|
 | Ubuntu 18 / Debian 9          | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-server)` |
  
-Web server - lsFusion 6 Client (+ Tomcat 9.0.89): 
+Web server - lsFusion 6 Client (+ Tomcat 9.0.104): 
 
 | OS                            | Command / Script                                                               |
 | ------------------------------|--------------------------------------------------------------------------------|

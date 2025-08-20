@@ -55,7 +55,6 @@ headers = DATA LOCAL NESTED TEXT(TEXT);
 cookies = DATA LOCAL NESTED TEXT(TEXT);    
 headersTo = DATA LOCAL NESTED TEXT(TEXT);
 cookiesTo = DATA LOCAL NESTED TEXT(TEXT);
-query = DATA LOCAL NESTED TEXT();
 params = DATA LOCAL NESTED TEXT(TEXT, INTEGER);
 params(TEXT name) = params(name, 0);
 fileParams = DATA LOCAL NESTED NAMEDFILE (TEXT, INTEGER);
@@ -66,15 +65,24 @@ body = DATA LOCAL NESTED RAWFILE();
 appHost = DATA LOCAL NESTED TEXT();
 appPort = DATA LOCAL NESTED INTEGER();
 exportName = DATA LOCAL NESTED TEXT();
-scheme = DATA LOCAL NESTED TEXT();
 method = DATA LOCAL NESTED TEXT();
+
+scheme = DATA LOCAL NESTED TEXT();
 webHost = DATA LOCAL NESTED TEXT();
 webPort = DATA LOCAL NESTED INTEGER();
 contextPath = DATA LOCAL NESTED TEXT();
 servletPath = DATA LOCAL NESTED TEXT();
 pathInfo = DATA LOCAL NESTED TEXT();
-webPath() = scheme() + '://' + webHost() + ':' + webPort() + contextPath();
+query = DATA LOCAL NESTED TEXT();
+
+origin() = scheme() + '://' + webHost() + ':' + webPort(); 
+webPath() = origin() + contextPath();
 url() = webPath() + servletPath() + pathInfo();
+
+// temporary, will be renamed without api
+apiOriginUrl(STRING relativeUrl) = origin() + relativeUrl;
+apiContextUrl(STRING relativeUrl) = CONCAT '&', webPath() + relativeUrl, notEmpty(query());
+apiOriginUrl(LINK relativeLink) = LINK(apiOriginUrl(STRING(relativeLink)));
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
@@ -93,6 +101,8 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=1000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
+
+navigatorRefresh INTERNAL 'lsfusion.server.logics.navigator.NavigatorRefreshAction' ();
 
 forceUpdate INTERNAL 'lsfusion.server.logics.action.flow.ForceUpdateGroupObjectAction' (STRING);
 
@@ -136,6 +146,7 @@ fillingIDs = DATA LOCAL BOOLEAN ();
 CONSTRAINT CHANGED(staticName(StaticObject object)) AND NOT fillingIDs() MESSAGE '{system.constraint.change.staticname.forbidden}';
 
 staticCaption '{system.static.caption.object}' = DATA BPISTRING[100] (StaticObject) TABLE staticObject IN id;
+order = DATA INTEGER (StaticObject) TABLE staticObject IN id;
 image '{classes.image}' = DATA HTML (StaticObject) TABLE staticObject IN id;
 
 objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o));

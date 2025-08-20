@@ -1,6 +1,5 @@
 package lsfusion.client.navigator;
 
-import lsfusion.base.file.IOUtils;
 import lsfusion.client.navigator.window.ClientClassWindowNavigator;
 
 import java.io.ByteArrayInputStream;

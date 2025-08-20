@@ -572,13 +572,14 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                         }
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
-                    
+
+                    String annotations = actionOrProperty.annotations != null ? actionOrProperty.annotations.toString(" ") : null;
                     dataProperty.add(asList(actionOrProperty.getCanonicalName(), fieldSID, ThreadLocalContext.localize(actionOrProperty.caption),
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isLoggable() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation,
+                            returnClass, classProperty, complexityProperty, tableSID, annotations,
                             (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
                 }
             }
@@ -792,20 +793,22 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField, tableColumnLongSIDField), dataProps);
 
             try {
-                try(DataSession session = createSyncSession()) {
-                    session.pushVolatileStats("RM_TE");
+                synchronized(LM.tableFactory.syncLock) {
+                    try (DataSession session = createSyncSession()) {
+                        session.pushVolatileStats("RM_TE");
 
-                    IntegrationService service = new IntegrationService(session, table, Collections.singletonList(tableKey), properties, delete);
-                    service.synchronize(true, false);
+                        IntegrationService service = new IntegrationService(session, table, Collections.singletonList(tableKey), properties, delete);
+                        service.synchronize(true, false);
 
-                    service = new IntegrationService(session, tableKeys, Collections.singletonList(tableKeyKey), propertiesKeys, deleteKeys);
-                    service.synchronize(true, false);
+                        service = new IntegrationService(session, tableKeys, Collections.singletonList(tableKeyKey), propertiesKeys, deleteKeys);
+                        service.synchronize(true, false);
 
-                    service = new IntegrationService(session, tableColumns, Collections.singletonList(tableColumnKey), propertiesColumns, deleteColumns);
-                    service.synchronize(true, false);
+                        service = new IntegrationService(session, tableColumns, Collections.singletonList(tableColumnKey), propertiesColumns, deleteColumns);
+                        service.synchronize(true, false);
 
-                    session.popVolatileStats();
-                    apply(session);
+                        session.popVolatileStats();
+                        apply(session);
+                    }
                 }
             } catch (Exception e) {
                 throw Throwables.propagate(e);

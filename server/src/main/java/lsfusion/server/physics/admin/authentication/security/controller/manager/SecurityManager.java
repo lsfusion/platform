@@ -270,7 +270,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     .parseClaimsJws(token.string)
                     .getBody();
         } catch (Exception e) {
-            throw new AuthenticationException(e.getMessage());
+            throw new AuthenticationException(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
         }
 
         return body.getSubject();

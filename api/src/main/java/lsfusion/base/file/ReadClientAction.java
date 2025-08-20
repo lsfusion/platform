@@ -20,7 +20,7 @@ public class ReadClientAction implements ClientAction {
 
     public Object dispatch(ClientActionDispatcher dispatcher) {
         try {
-            return ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, isDialog, null);
+            return ReadUtils.readFile(sourcePath, isBlockingFileRead, isDialog, null);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
