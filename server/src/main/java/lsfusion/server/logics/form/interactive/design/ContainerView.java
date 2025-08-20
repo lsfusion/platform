@@ -81,6 +81,7 @@ public class ContainerView extends ComponentView {
     public Boolean resizeOverflow;
 
     public int lines = 1;
+    public Boolean reversed = null;
     public Integer lineSize = null;
     public Integer captionLineSize = null;
     public Boolean lineShrink = null;
@@ -263,7 +264,7 @@ public class ContainerView extends ComponentView {
     }
 
     private boolean isReversed() {
-        return lines > 1 && getChildrenList().size() <= lines && !isGrid();
+        return reversed != null ? reversed : (lines > 1 && getChildrenList().size() <= lines && !isGrid());
     }
 
     @Override

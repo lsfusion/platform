@@ -617,14 +617,7 @@ public class SwingUtils {
                     break;
                 }
             }
-
-            try {
-                Field hideTip = ToolTipManager.class.getDeclaredField("hideTip");
-                if (hideTip != null) {
-                    hideTip.setAccessible(true);
-                    closeTooltipKeyStroke = (KeyStroke) hideTip.get(ToolTipManager.sharedInstance());
-                }
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {}    
+            closeTooltipKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         }
         return tooltipListenerClass != null && closeTooltipKeyStroke != null;
     }

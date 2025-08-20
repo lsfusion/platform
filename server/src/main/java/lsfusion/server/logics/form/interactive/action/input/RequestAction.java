@@ -59,12 +59,11 @@ public class RequestAction extends KeepContextAction {
         return PropertyFact.createUnion(interfaces, listWheres);
     }
 
-
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
+    public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if(type == ChangeFlowType.NOGROUPCHANGE)
             return false;
-        return super.hasFlow(type);
+        return super.hasFlow(type, recursiveAbstracts);
     }
 
     public ImSet<Action> getDependActions() {

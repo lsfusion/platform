@@ -13,11 +13,28 @@ EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ...,
 `externalCall` - an external call defined by one of the following syntaxes:
 
 ```
-HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+HTTP [requestType] connectionStrExpr httpOption1 ... httpOptionN
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
 LSF connectionStrExpr lsfExecType execStrExpr
+```
+
+Options for `HTTP` are listed one after another in arbitrary order, separated by spaces or line feeds:
+
+```
+httpOption1 ... httpOptionN
+```
+
+The following set of options is supported (the syntax of each option is indicated on a separate line):
+
+```
+BODYURL bodyStrExpr
+HEADERS headersPropertyId
+COOKIES cookiesPropertyId
+HEADERSTO headersToPropertyId
+COOKIESTO cookiesToPropertyId
+NOENCODE
 ```
 
 ### Description
@@ -78,6 +95,10 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 - `cookiesToPropertyId`
 
     [Property ID](IDs.md#propertyid) containing request cookies. The property must have exactly one parameter: the name of the cookie. This parameter must belong to a string class. If the property is not specified, cookies are ignored/not set.
+
+- `NOENCODE`
+
+    Keyword. Specifies that the query string will not be encoded in url format (it is assumed that it has already been encoded previously).
 
 - `lsfExecType`
 

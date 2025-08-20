@@ -13,11 +13,25 @@ EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ...,
 `externalCall` - внешний вызов, задается одним из следующих синтаксисов:
 
 ```
-HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+HTTP [requestType] connectionStrExpr httpOption1 ... httpOptionN
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
 LSF connectionStrExpr lsfExecType execStrExpr
+```
+
+Опции для `HTTP` перечисляются друг за другом в произвольном порядке через пробел или переводы строк:
+```
+httpOption1 ... httpOptionN
+```
+
+```
+BODYURL bodyStrExpr
+HEADERS headersPropertyId
+COOKIES cookiesPropertyId
+HEADERSTO headersToPropertyId
+COOKIESTO cookiesToPropertyId
+NOENCODE
 ```
 
 ### Описание
@@ -78,6 +92,10 @@ LSF connectionStrExpr lsfExecType execStrExpr
 - `cookiesToPropertyId`
 
     [Идентификатор свойства](IDs.md#propertyid), содержащего cookies запроса. Свойство должно иметь ровно один параметр - имя cookie. Этот параметр должен принадлежать строковому классу. Если свойство не указано, cookie не задаются / игнорируются.
+
+- `NOENCODE`
+
+    Ключевое слово. Определяет, что строка запроса не будет кодироваться в формат URL (предполагается, что она уже закодирована ранее).
 
 - `lsfExecType`
 

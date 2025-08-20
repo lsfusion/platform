@@ -41,6 +41,19 @@ Because of the grammar nature, the option for specifying import/export name of t
 Unlike property names on the form, property export/import names (`EXTID`) of different properties can be equal if these properties are located in different nodes of the hierarchy (i.e., different groups of objects/properties). The same applies to export/import names of object groups and property groups.
 :::
 
+`EXTID` can have specialized postfixes:
+-   ':escapeInnerJSON'
+    This postfix means that if the value contains JSON or something resembling JSON (starts and ends with square or curly brackets), we will treat it as a string instead of as JSON.
+    Example:
+    ```lsf
+    regexpPattern 'Mask' () = '[0-9]';
+    FORM exportPattern
+    PROPERTIES() c1 = regexpPattern EXTID 'c1', c2 = regexpPattern EXTID 'c2:escapeInnerJSON';
+    ```
+    ```json
+    {"c1":["0-9"],"c2":"[0-9]"}
+    ```
+
 ### Hierarchical view {#hierarchy}
 
 Before directly proceeding with the form export/import, the platform builds a hierarchy of properties, groups of objects/properties as follows:
