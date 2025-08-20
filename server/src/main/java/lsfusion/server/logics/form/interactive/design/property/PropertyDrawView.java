@@ -27,6 +27,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -1198,8 +1199,16 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
-                pool.writeString(outStream, contextMenuBindings.getKey(i));
+                String actionSID = contextMenuBindings.getKey(i);
+                pool.writeString(outStream, actionSID);
                 pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
+                ActionObjectSelector eventAction = entity.getExplicitEventAction(actionSID);
+                pool.writeBoolean(outStream, eventAction != null);
+                if(eventAction instanceof ActionObjectEntity) {
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationScript());
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationPath());
+                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getPath());
+                }
             }
         }
 

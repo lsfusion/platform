@@ -340,7 +340,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    private ActionObjectSelector getExplicitEventAction(String actionId) {
+    public ActionObjectSelector getExplicitEventAction(String actionId) {
         if (eventActions != null)
             return eventActions.get(actionId);
         return null;
