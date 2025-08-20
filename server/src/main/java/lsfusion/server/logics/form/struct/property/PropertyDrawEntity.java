@@ -32,7 +32,9 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
@@ -163,6 +165,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean lastAggrDesc;
 
     public PropertyDrawEntity quickFilterProperty;
+
+    private Property<?> activeProperty;
+
+    public Property<?> getActiveProperty() {
+        if (activeProperty == null) {
+            activeProperty = PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance);
+        }
+        return activeProperty;
+    }
+
+    public void updateActiveProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        if(activeProperty != null)
+            activeProperty.change(session, value);
+    }
 
     @IdentityStrongLazy
     public ImSet<PropertyReaderEntity> getQueryProps() {

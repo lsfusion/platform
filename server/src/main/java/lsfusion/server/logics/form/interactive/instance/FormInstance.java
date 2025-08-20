@@ -1811,7 +1811,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // programmatic activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
         if (!(view instanceof ContainerView && ((ContainerView) view).getChildrenList().isEmpty())) {
-            setTabVisible(view.getContainer(), view);
+            setTabActive(view.getContainer(), view);
             userActivateTabs = userActivateTabs.addList(view);
         }
     }
@@ -1924,11 +1924,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ComponentView container = userHidableContainer.getHiddenContainer();
         if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
-            ComponentView visible = visibleTabs.get((ContainerView)container);
+            ComponentView active = activeTabs.get((ContainerView)container);
             ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
-            if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
-                visible = siblings.get(0);
-            if (!userHidableContainer.equals(visible))
+            if (active == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+                active = siblings.get(0);
+            if (!userHidableContainer.equals(active))
                 return true;
         } else {
             assert ((ContainerView) userHidableContainer).isCollapsible();
@@ -1939,13 +1939,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isUserHidden(userHidableContainer.getHiddenContainer());
     }
 
-    protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
+    protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
+    protected PropertyDrawEntity activeProperty = null;
     protected Set<ContainerView> collapsedContainers = new HashSet<>();
 
-    public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
+    public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbed();
         updateActiveTabProperty(page);
-        visibleTabs.put(view, page);
+        activeTabs.put(view, page);
+    }
+
+    public void setPropertyActive(PropertyDrawEntity property, boolean focused) throws SQLException, SQLHandledException {
+        updateActiveProperty(property, focused);
+        activeProperty = property;
     }
     
     public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
@@ -1957,11 +1963,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
-        ComponentView prevActiveTab = visibleTabs.get(page.getLayoutParamContainer());
+        ComponentView prevActiveTab = activeTabs.get(page.getLayoutParamContainer());
         if(prevActiveTab != null) {
             prevActiveTab.updateActiveTabProperty(session, null);
         }
         page.updateActiveTabProperty(session, true);
+    }
+
+    private void updateActiveProperty(PropertyDrawEntity newActiveProperty, boolean focused) throws SQLException, SQLHandledException {
+        if(activeProperty != null)
+            activeProperty.updateActiveProperty(session, null);
+        if(newActiveProperty != null)
+            newActiveProperty.updateActiveProperty(session, focused ? true : null);
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
@@ -2988,8 +3001,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
 
         //reset all activeTab properties
-        for(ComponentView visibleTab : visibleTabs.values()) {
-                visibleTab.updateActiveTabProperty(session, null);
+        for(ComponentView activeTab : activeTabs.values()) {
+                activeTab.updateActiveTabProperty(session, null);
         }
 
         context.delayUserInteraction(new HideFormClientAction());
