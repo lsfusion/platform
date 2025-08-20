@@ -1,12 +1,13 @@
 package lsfusion.server.physics.admin.interpreter.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.RunCommandActionResult;
+import lsfusion.interop.action.RunCommandClientAction;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
@@ -37,7 +38,7 @@ public class RunCommandAction extends InternalAction {
             try {
                 RunCommandActionResult result = isClient
                         ? (RunCommandActionResult) context.requestUserInteraction(new RunCommandClientAction(command, directory, wait))
-                        : FileUtils.runCmd(command, directory, wait);
+                        : SystemUtils.runCmd(command, directory, wait);
 
                 if (result != null) {
                     findProperty("cmdOut[]").change(result.getCmdOut(), context);

@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -119,6 +120,14 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.base.GwtClientUtils::isTDorTH(*)(element);
             }
         }
+
+        var isFlutter = $wnd.Flutter !== undefined;
+        var isWindowsFlutter = $wnd.chrome !== undefined && $wnd.chrome.webview !== undefined && $wnd.chrome.webview.postMessage !== undefined;
+        if(isFlutter || isWindowsFlutter) {
+            $wnd.flutterCallback = function (command, data, id) {
+                @lsfusion.gwt.client.base.GwtClientUtils::onFlutterCallback(*)(data, id);
+            };
+        }
     }-*/;
 
     public static InputElement createInputElement(String type) {
@@ -169,10 +178,62 @@ public class GwtClientUtils {
         }
     }
 
-    public static void downloadFile(String fileUrl) {
-        if (fileUrl != null)
-            fileDownload(getAppDownloadURL(fileUrl));
+    /*--- flutter methods ---*/
+
+    public static native JavaScriptObject getFlutterObject() /*-{
+        if ($wnd.chrome !== undefined && $wnd.chrome.webview !== undefined)
+            return $wnd.chrome.webview; //windows
+        else if ($wnd.Flutter !== undefined)
+            return $wnd.Flutter; //android, macos, ios
+        return null;
+    }-*/;
+
+    public static void onFlutterCallback(JavaScriptObject data, String id) {
+        AsyncCallback<JavaScriptObject> callback = flutterCallbacks.remove(id);
+        if (callback != null) {
+            callback.done(data);
+        }
     }
+
+    private static final Map<String, AsyncCallback<JavaScriptObject>> flutterCallbacks = new HashMap<>();
+
+    public interface AsyncCallback<T> {
+        void done(T result);
+    }
+
+    public static void executeFlutter(JavaScriptObject flutter, String command, Object[] arguments, AsyncCallback<JavaScriptObject> callback) {
+        String id = String.valueOf(System.currentTimeMillis());
+        flutterCallbacks.put(id, callback);
+        executeFlutterNative(flutter, command, arguments, id);
+    }
+
+    private static native void executeFlutterNative(JavaScriptObject flutter, String command, Object[] arguments, String id) /*-{
+        var convertedArgs = [];
+
+        for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments[i];
+            if (typeof arg === 'object' && arg !== null) {
+                if (arg.toString && !isNaN(Number(arg.toString()))) {
+                    convertedArgs.push(Number(arg.toString()));
+                }
+                else if (Array.isArray(arg)) {
+                    convertedArgs.push(arg);
+                }
+                else {
+                    convertedArgs.push(arg);
+                }
+            } else {
+                convertedArgs.push(arg);
+            }
+        }
+        flutter.postMessage(JSON.stringify({command: command, arguments: convertedArgs, id: id}));
+    }-*/;
+
+    public static native String getFullUrl(String url) /*-{
+        return window.location.origin + url;
+    }-*/;
+
+    /*--- flutter methods end ---*/
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);

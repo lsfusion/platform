@@ -1,14 +1,12 @@
-package lsfusion.server.physics.dev.integration.external.to.file.client;
+package lsfusion.base.file;
 
+import lsfusion.base.FileUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
-
-import java.io.IOException;
 
 public class CopyFileClientAction implements ClientAction {
-    private String source;
-    private String destination;
+    public final String source;
+    public final String destination;
 
     public CopyFileClientAction(String source, String destination) {
         this.source = source;
