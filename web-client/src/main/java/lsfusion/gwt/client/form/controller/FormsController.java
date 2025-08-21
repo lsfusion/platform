@@ -447,7 +447,7 @@ public abstract class FormsController {
         return container;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
 
@@ -468,7 +468,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, false, -1, form.canonicalName, editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, false, syncType, -1, form.canonicalName, editEvent, editContext, formController);
         }
 
         int dispatchPriority = (formController != null ? formController.getDispatchPriority() : 0);
@@ -490,12 +490,12 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
+    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, boolean syncType, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
             formContainer = new ContainerForm(this, formController, async, editEvent, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, formController, async, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
+            formContainer =  new ModalForm(this, formController, async, syncType, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
         } else if(windowType.isDocked()) {
             formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
@@ -516,7 +516,7 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
+                FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
 
                 Widget captionWidget = formContainer.getCaptionWidget();
                 if(captionWidget != null)
