@@ -13,6 +13,7 @@ import net.sf.jasperreports.engine.export.*;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
+import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.util.JRSwapFile;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -885,5 +886,16 @@ public class ReportGenerator {
             BaseUtils.safeDelete(reportFile);
             JRVirtualizationHelper.clearThreadVirtualizer();
         }
+    }
+
+    public boolean checkSubreportsOrientation() {
+        JasperDesign rootDesign = designs.get(rootID);
+        OrientationEnum rootOrientation = rootDesign.getOrientationValue();
+        for(JasperDesign design : designs.values()) {
+            if(!design.getOrientationValue().equals(rootOrientation)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
