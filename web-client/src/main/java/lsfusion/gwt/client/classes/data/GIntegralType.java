@@ -24,9 +24,10 @@ public abstract class GIntegralType extends GFormatType {
     }
 
     protected abstract int getPrecision();
+    protected abstract int getScale();
 
     public String getStep() {
-        return GwtClientUtils.getStep(getPrecision());
+        return GwtClientUtils.getStep(getScale());
     }
 
     @Override
