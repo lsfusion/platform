@@ -33,11 +33,11 @@ public class ModalForm extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, PopupOwner popupOwner) {
+    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, boolean syncType, Event editEvent, PopupOwner popupOwner) {
         super(formsController, contextForm, async, editEvent);
 
         this.popupOwner = popupOwner;
-        ResizableModalWindow window = new ResizableModalWindow() {
+        ResizableModalWindow window = new ResizableModalWindow(syncType) {
             @Override
             public void onShow() {
                 initPreferredSize(); // we need to do it after attach to have correct sizes
