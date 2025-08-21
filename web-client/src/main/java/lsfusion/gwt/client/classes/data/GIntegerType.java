@@ -34,6 +34,11 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
+    protected int getScale() {
+        return 0;
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeIntegerCaption();
     }

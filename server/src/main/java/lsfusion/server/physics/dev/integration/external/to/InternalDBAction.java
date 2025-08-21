@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -26,22 +27,19 @@ public class InternalDBAction extends CallDBAction {
     }
 
     public void readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
-        OperationOwner owner = OperationOwner.unknown;
-
-        DataAdapter adapter = dbManager.getAdapter();
-        SQLSyntax syntax = adapter.syntax;
-        MutableObject connOwner = new MutableObject();
-        ExConnection exConn = adapter.getConnection(connOwner, null, null, dbManager.contextProvider);
-        Connection conn = exConn.sql;
-        boolean prevReadOnly = conn.isReadOnly();
-
+        SQLSession sql = context.getSession().sql;
+        sql.pushNoReadOnly();
         try {
-            readJDBC(context, conn, syntax, owner);
-        } catch (IOException | ExecutionException e) {
-            throw Throwables.propagate(e);
+            ExConnection exConnection = sql.getConnection();
+            try {
+                readJDBC(context, exConnection.sql, sql.syntax, OperationOwner.unknown);
+            } catch (IOException | ExecutionException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                sql.returnConnection(exConnection, OperationOwner.unknown);
+            }
         } finally {
-            conn.setReadOnly(prevReadOnly);
-            dbManager.getAdapter().returnConnection(connOwner, exConn);
+            sql.popNoReadOnly();
         }
     }
 }

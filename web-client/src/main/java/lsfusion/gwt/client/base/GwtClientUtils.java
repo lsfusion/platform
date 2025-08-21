@@ -1469,10 +1469,10 @@ public class GwtClientUtils {
         return epochFrom <= epochTo ? PValue.getPValue(epochFrom, epochTo) : null;
     }
 
-    public static String getStep(int precision) {
-        if(precision == 0)
+    public static String getStep(int scale) {
+        if(scale == 0)
             return "1";
-        return "0." + replicate('0', precision <= 5 ? precision - 1 : 4) + "1";
+        return "0." + replicate('0', scale <= 5 ? scale - 1 : 4) + "1";
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
