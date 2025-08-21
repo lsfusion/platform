@@ -29,22 +29,19 @@ public class InternalDBAction extends CallDBAction {
     }
 
     public void readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
-        OperationOwner owner = OperationOwner.unknown;
-
-        DataAdapter adapter = dbManager.getAdapter();
-        SQLSyntax syntax = adapter.syntax;
-        MutableObject connOwner = new MutableObject();
-        ExConnection exConn = adapter.getPrivate(connOwner, dbManager.contextProvider);
-        Connection conn = exConn.sql;
-        boolean prevReadOnly = conn.isReadOnly();
-
+        SQLSession sql = context.getSession().sql;
+        sql.pushNoReadOnly();
         try {
-            readJDBC(context, conn, syntax, owner);
-        } catch (IOException | ExecutionException e) {
-            throw Throwables.propagate(e);
+            ExConnection exConnection = sql.getConnection();
+            try {
+                readJDBC(context, exConnection.sql, sql.syntax, OperationOwner.unknown);
+            } catch (IOException | ExecutionException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                sql.returnConnection(exConnection, OperationOwner.unknown);
+            }
         } finally {
-            conn.setReadOnly(prevReadOnly);
-            dbManager.getAdapter().returnPrivate(connOwner, exConn);
+            sql.popNoReadOnly();
         }
     }
 }
