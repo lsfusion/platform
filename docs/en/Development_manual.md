@@ -16,7 +16,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
 
 :::info
-To install the plug-in, Intellij IDEA version 2022.2 or higher must be installed on the computer.
+To install the plug-in, Intellij IDEA version 2023.2 or higher must be installed on the computer.
 :::
 
 <iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/7601"></iframe>
