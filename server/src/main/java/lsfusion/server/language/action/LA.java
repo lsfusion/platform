@@ -90,7 +90,7 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LAP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
-        mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), contextMenuCaption);
+        mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), this, contextMenuCaption);
     }
 
     public <P extends PropertyInterface> void setAsEventActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {

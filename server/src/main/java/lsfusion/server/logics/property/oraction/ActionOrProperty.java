@@ -26,6 +26,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -311,10 +312,16 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public static class ContextMenuBinding {
         public final LocalizedString caption;
+        public final LA action;
         public final BiPredicate<PropertyDrawView, FormInstanceContext> show;
 
         public ContextMenuBinding(LocalizedString caption, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
+            this(caption, null, show);
+        }
+
+        public ContextMenuBinding(LocalizedString caption, LA action, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
             this.caption = caption;
+            this.action = action;
             this.show = show;
         }
 
@@ -353,7 +360,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
-        setContextMenuAction(actionSID, new ContextMenuBinding(caption, null));
+        setContextMenuAction(actionSID, null, caption);
+    }
+
+    public void setContextMenuAction(String actionSID, LA contextMenuAction, LocalizedString caption) {
+        setContextMenuAction(actionSID, new ContextMenuBinding(caption, contextMenuAction, null));
     }
 
     @NFLazy
