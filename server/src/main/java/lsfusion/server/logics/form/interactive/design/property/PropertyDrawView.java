@@ -1214,6 +1214,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context));
+        outStream.writeBoolean(entity.hasActiveProperty());
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

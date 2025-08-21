@@ -175,6 +175,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return activeProperty;
     }
 
+    public boolean hasActiveProperty() {
+        return activeProperty != null;
+    }
+
     public void updateActiveProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
         if(activeProperty != null)
             activeProperty.change(session, value);
