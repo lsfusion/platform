@@ -459,6 +459,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean sticky;
 
+    public boolean hasActiveProperty;
+
     public boolean hasFooter;
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)

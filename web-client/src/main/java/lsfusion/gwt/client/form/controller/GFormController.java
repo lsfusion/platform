@@ -1473,6 +1473,14 @@ public class GFormController implements EditManager {
 
         formLayout.updatePanels(); // maybe it's not needed, but we want to make it symmetrical to the container collapsed call
     }
+
+    private GPropertyDraw prevPropertyActive;
+    public void setPropertyActive(GPropertyDraw property, boolean focused) {
+        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
+            asyncResponseDispatch(new SetPropertyActive(property != null ? property.ID : -1, focused));
+        }
+        prevPropertyActive = property;
+    }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));

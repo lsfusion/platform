@@ -1868,7 +1868,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
-	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
+	|	activeDef=activePropertyDefinition[context, dynamic] { $property = $activeDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty[context, dynamic] { $property = $constDef.property; $ci = $constDef.ci; }
 	|	oProp=objectPropertyDefinition { $property = $oProp.property; }
@@ -2381,13 +2381,13 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'ISCLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
-activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+activePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedActiveTabProp($fc.component);
+		$property = self.addScriptedActiveProp($fc.component, $fp.propertyDraw);
 	}
 }
-	: 	'ACTIVE' 'TAB' fc = formComponentID
+	: 	'ACTIVE' ('TAB' fc = formComponentID | 'PROPERTY' fp = formPropertyID)
 	;
 
 roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

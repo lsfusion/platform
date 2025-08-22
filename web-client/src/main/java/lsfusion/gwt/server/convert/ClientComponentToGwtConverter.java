@@ -463,6 +463,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.sticky = clientPropertyDraw.sticky;
 
+        propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
+
         propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 
 //        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)

@@ -57,6 +57,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
@@ -711,12 +712,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
-                logger.debug("setTabVisible Action");
+                logger.debug("setTabActive Action");
             }
 
             ComponentView tab = richDesign.findById(childId);
-            form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), tab);
+            form.setTabActive((ContainerView) richDesign.findById(tabPaneID), tab);
             form.fireEvent(stack, new FormContainerEvent(tab.getSID(), false), null);
+        });
+    }
+
+    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, boolean focused) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("setPropertyActive Action");
+            }
+
+            ComponentView property = richDesign.findById(propertyID);
+            form.setPropertyActive(property != null ? ((PropertyDrawView) property).entity : null, focused);
         });
     }
 

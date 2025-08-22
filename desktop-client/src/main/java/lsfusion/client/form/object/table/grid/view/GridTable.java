@@ -46,8 +46,6 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -150,7 +148,16 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                 List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
                 ClientGroupObjectValue columnKey = getSelectedColumnKey();
                 columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
+                form.setPropertyActive(getSelectedProperty(), true);
             }
+        }
+    }
+
+    @Override
+    public void focusChanged(FocusEvent e, boolean focused) {
+        super.focusChanged(e, focused);
+        if (focused && groupObject != null) {
+            ClientForm.lastActiveGroupObject = groupObject;
         }
     }
 
@@ -236,15 +243,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
             tableHeader.addMouseListener(sortableHeaderManager);
         }
-
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (groupObject != null) {
-                    ClientForm.lastActiveGroupObject = groupObject;
-                }
-            }
-        });
 
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {

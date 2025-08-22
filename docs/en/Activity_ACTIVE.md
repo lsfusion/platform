@@ -10,7 +10,9 @@ The *activity* operator creates a property that determines whether one of the fo
 
 ### Language
 
-To create a property that determines whether a tab is active, use the [`ACTIVE TAB` operator](ACTIVE_TAB_operator.md). Whether a form is active is determined by creating an action using the [`ACTIVE FORM` operator](ACTIVE_FORM_operator.md).
+To create a property that determines whether a tab is active, use the [`ACTIVE TAB` operator](ACTIVE_TAB_operator.md).
+To create a property that determines whether a property is active, use the [`ACTIVE PROPERTY` operator](ACTIVE_PROPERTY_operator.md).
+Whether a form is active is determined by creating an action using the [`ACTIVE FORM` operator](ACTIVE_FORM_operator.md).
 
 ### Examples
 
@@ -42,6 +44,15 @@ DESIGN tabbedForm {
 recentActive() = ACTIVE TAB tabbedForm.recent;
 ```
 
+```lsf
+FORM users
+OBJECTS c = CustomUser
+PROPERTIES(c) name, login;
+
+activeLogin = ACTIVE PROPERTY users.login(c);
+EXTEND FORM users
+PROPERTIES() activeLogin;
+```
 
 ```lsf
 FORM exampleForm;

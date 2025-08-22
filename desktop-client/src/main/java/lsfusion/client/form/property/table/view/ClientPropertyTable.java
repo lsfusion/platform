@@ -33,10 +33,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.text.ParseException;
 import java.util.EventObject;
 
@@ -381,6 +378,12 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
     }
 
     protected abstract ClientPropertyDraw getSelectedProperty();
+
+    @Override
+    public void focusChanged(FocusEvent e, boolean focused) {
+        super.focusChanged(e, focused);
+        form.setPropertyActive(getSelectedProperty(), focused);
+    }
 
     private void checkMouseEvent(MouseEvent e, boolean preview) {
         form.checkMouseEvent(e, preview, getSelectedProperty(), () -> groupObject, this instanceof SingleCellTable);
