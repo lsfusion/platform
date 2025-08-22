@@ -24,7 +24,6 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
-import sun.awt.SunToolkit;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -119,12 +118,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     String content = e.getActionCommand();
                     int mod = e.getModifiers();
                     if ((content != null) && (!content.isEmpty())) {
-                        boolean isPrintableMask = true;
-                        Toolkit tk = Toolkit.getDefaultToolkit();
-                        if (tk instanceof SunToolkit) {
-                            isPrintableMask = ((SunToolkit)tk).isPrintableCharacterModifiersMask(mod);
-                        }
-
+                        boolean isPrintableMask = isPrintableCharacterModifiersMask(mod);
                         char c = content.charAt(0);
                         if ((isPrintableMask && (c == 0x1D || (c >= 0x20) && (c != 0x7F))) ||
                                 (!isPrintableMask && (c >= 0x200C) && (c <= 0x200D))) {
@@ -179,6 +173,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public boolean isPrintableCharacterModifiersMask(int mods) {
+        return ((mods & InputEvent.ALT_MASK) == (mods & InputEvent.CTRL_MASK));
     }
 
     private boolean isScannerEventProperty() {
