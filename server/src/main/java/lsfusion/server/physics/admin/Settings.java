@@ -2521,6 +2521,16 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
+    private boolean inputListOrderByRank = false;
+
+    public boolean isInputListOrderByRank() {
+        return inputListOrderByRank;
+    }
+
+    public void setInputListOrderByRank(boolean inputListOrderByRank) {
+        this.inputListOrderByRank = inputListOrderByRank;
+    }
+
     private boolean inputListSearchInsteadOfContains = true;
 
     public boolean isInputListSearchInsteadOfContains() {
