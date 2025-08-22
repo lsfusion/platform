@@ -1243,12 +1243,25 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setTabActive(final ClientContainer container, final ClientComponent component) {
-        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabActive") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setTabActive(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());
             }
         });
+    }
+
+    private ClientPropertyDraw prevPropertyActive;
+    public void setPropertyActive(ClientPropertyDraw property, boolean focused) {
+        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
+            rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyActive") {
+                @Override
+                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.setPropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, focused);
+                }
+            });
+        }
+        prevPropertyActive = property;
     }
 
     public void setContainerCollapsed(ClientContainer container, boolean collapsed) {

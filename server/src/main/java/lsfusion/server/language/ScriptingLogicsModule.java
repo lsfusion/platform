@@ -5132,8 +5132,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, from);
     }
 
-    public LPWithParams addScriptedActiveTabProp(ComponentView component) {
-        return new LPWithParams(new LP<>(component.getActiveTab()));
+    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property) {
+        Property<?> activeProp = tab != null ? tab.getActiveTab() : property.getActiveProperty();
+        return new LPWithParams(new LP<>(activeProp));
     }
 
     public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {
