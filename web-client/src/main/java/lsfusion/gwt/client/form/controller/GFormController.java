@@ -857,12 +857,12 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
         FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
         if (contextFormDockable != null)
             contextFormDockable.block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, syncType, editEvent, editContext, this, () -> {
             if(contextFormDockable != null) {
                 contextFormDockable.unblock();
 

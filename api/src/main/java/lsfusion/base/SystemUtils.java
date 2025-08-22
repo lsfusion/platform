@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientWebAction;
+import lsfusion.interop.action.RunCommandActionResult;
 import lsfusion.interop.form.remote.serialization.BinarySerializable;
 import org.apache.commons.io.FileUtils;
 
@@ -323,6 +324,37 @@ public class SystemUtils {
             System.setProperty(property, path);
         } else if (!libraryPath.contains(path)) {
             System.setProperty(property, path + ";" + libraryPath);
+        }
+    }
+
+    public static RunCommandActionResult runCmd(String command, String directory, boolean wait) throws IOException {
+        Runtime runtime = Runtime.getRuntime();
+        Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
+        RunCommandActionResult result = null;
+        if (wait) {
+            try {
+                String cmdOut = readInputStreamToString(p.getInputStream());
+                String cmdErr = readInputStreamToString(p.getErrorStream());
+
+                p.waitFor();
+
+                int exitValue = p.exitValue();
+                result = new RunCommandActionResult(cmdOut, cmdErr, exitValue);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
+    }
+
+    private static String readInputStreamToString(InputStream inputStream) throws IOException {
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) { //
+            StringBuilder errS = new StringBuilder();
+            byte[] b = new byte[1024];
+            while (bufferedInputStream.read(b) != -1) {
+                errS.append(new String(b, SystemUtils.IS_OS_WINDOWS ?  "cp866" : "utf-8").trim()).append("\n");
+            }
+            return BaseUtils.trimToNull(errS.toString());
         }
     }
 }

@@ -6,7 +6,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.physics.dev.integration.external.to.file.client.FileExistsClientAction;
+import lsfusion.base.file.FileExistsClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;

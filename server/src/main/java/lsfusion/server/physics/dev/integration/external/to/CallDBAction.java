@@ -99,8 +99,6 @@ public abstract class CallDBAction extends CallAction {
     }
 
     protected void readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner) throws SQLException, SQLHandledException, IOException, ExecutionException {
-        conn.setReadOnly(false);
-
         String exec = (String) context.getKeyObject(this.exec);
         boolean isFile = exec.endsWith(".sql");
         if(isFile)

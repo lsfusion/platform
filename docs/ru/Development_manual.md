@@ -16,7 +16,7 @@ title: 'Для разработки'
 
 
 :::info
-Для установки плагина на компьютере должна быть установлена Intellij IDEA не ниже 2022.2 версии.
+Для установки плагина на компьютере должна быть установлена Intellij IDEA не ниже 2023.2 версии.
 :::
 
 <iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/7601"></iframe>

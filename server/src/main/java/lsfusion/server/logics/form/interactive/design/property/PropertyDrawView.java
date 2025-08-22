@@ -626,23 +626,39 @@ public class PropertyDrawView extends BaseComponentView {
         return aClass != null && aClass.contains(check);
     }
 
-    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
-        if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
+    private OrderedMap<String, ContextMenuInfo> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
+        if (contextMenuBindings == null || contextMenuBindings.isEmpty()) {
             return null;
         }
 
-        OrderedMap<String, LocalizedString> contextMenuItems = new OrderedMap<>();
+        OrderedMap<String, ContextMenuInfo> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
-            ActionOrProperty.ContextMenuBinding contextMenuBinding = contextMenuBindings.getValue(i);
-            if(contextMenuBinding.show(this, context)) {
+            ActionOrProperty.ContextMenuBinding binding = contextMenuBindings.getValue(i);
+            if(binding.show(this, context)) {
                 ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
                 if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
-                    contextMenuItems.put(actionSID, contextMenuBinding.caption);
+                    contextMenuItems.put(actionSID, binding.action != null ?
+                            new ContextMenuInfo(binding.caption, binding.action.getCreationScript(), binding.action.getCreationPath(), binding.action.getPath())
+                            : new ContextMenuInfo(binding.caption, eventAction.getCreationScript(), eventAction.getCreationPath(), eventAction.getPath()));
                 }
             }
         }
         return contextMenuItems;
+    }
+
+    private class ContextMenuInfo {
+        private LocalizedString caption;
+        private String creationScript;
+        private String creationPath;
+        private String path;
+
+        public ContextMenuInfo(LocalizedString caption, String creationScript, String creationPath, String path) {
+            this.caption = caption;
+            this.creationScript = creationScript;
+            this.creationPath = creationPath;
+            this.path = path;
+        }
     }
 
     private LocalizedString getPattern(FormInstanceContext context) {
@@ -1195,19 +1211,20 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
 
-        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
+        OrderedMap<String, ContextMenuInfo> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 String actionSID = contextMenuBindings.getKey(i);
+                ContextMenuInfo info = contextMenuBindings.getValue(i);
                 pool.writeString(outStream, actionSID);
-                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
-                ActionObjectSelector eventAction = entity.getExplicitEventAction(actionSID);
-                pool.writeBoolean(outStream, eventAction != null);
-                if(eventAction instanceof ActionObjectEntity) {
-                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationScript());
-                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getCreationPath());
-                    pool.writeString(outStream, ((ActionObjectEntity) eventAction).getPath());
+                pool.writeString(outStream, ThreadLocalContext.localize(info.caption));
+                boolean hasDebugInfo = info.creationScript != null;
+                pool.writeBoolean(outStream, hasDebugInfo);
+                if(hasDebugInfo) {
+                    pool.writeString(outStream, info.creationScript);
+                    pool.writeString(outStream, info.creationPath);
+                    pool.writeString(outStream, info.path);
                 }
             }
         }

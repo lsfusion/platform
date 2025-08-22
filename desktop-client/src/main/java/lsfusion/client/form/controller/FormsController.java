@@ -253,8 +253,10 @@ public class FormsController implements ColorThemeChangeListener {
 
     public Integer openReport(ReportGenerationData generationData, String formCaption, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         ClientReportDockable page = new ClientReportDockable(generationData, this, formCaption, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);
-        openForm(page);
-        return page.pageCount;
+        if(!page.canceled) {
+            openForm(page);
+            return page.pageCount;
+        } else return null;
     }
 
     @Override

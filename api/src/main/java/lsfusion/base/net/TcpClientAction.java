@@ -1,7 +1,8 @@
-package lsfusion.interop.session;
+package lsfusion.base.net;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
+import lsfusion.interop.session.ExternalUtils;
 
 import java.io.IOException;
 

@@ -1,13 +1,13 @@
-package lsfusion.server.physics.dev.integration.external.to.file.client;
+package lsfusion.base.file;
 
+import lsfusion.base.FileUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 
 import java.io.IOException;
 
 public class FileExistsClientAction implements ClientAction {
-    private String source;
+    public final String source;
 
     public FileExistsClientAction(String source) {
         this.source = source;

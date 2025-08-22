@@ -55,7 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Set;
 import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -630,6 +630,17 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ImMap<ObjectClassField, ObjectValueClassSet> getUpObjectClassFields() {
         return BaseUtils.immutableCast(getUpClassFields(true));
+    }
+
+    public ImSet<ObjectValueClassSet> getObjectValueClassSets(Set<String> disableTableSet) {
+        MSet objectValueClassSets = SetFact.mSet();
+        ImMap<ObjectClassField, ObjectValueClassSet> upObjectClassFields = getUpObjectClassFields();
+        for (ObjectClassField key : upObjectClassFields.keys()) {
+            if (!disableTableSet.contains(key.getTable().getName())) {
+                objectValueClassSets.add(upObjectClassFields.get(key));
+            }
+        }
+        return objectValueClassSets.immutable();
     }
 
     // в отличии от getMapTables, для того чтобы ходить "вверх" было удобно

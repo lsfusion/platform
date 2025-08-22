@@ -4,9 +4,15 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.WriteClientAction;
+import lsfusion.base.com.WriteToComPortClientAction;
+import lsfusion.base.file.*;
+import lsfusion.base.net.PingClientAction;
+import lsfusion.base.net.TcpClientAction;
+import lsfusion.base.net.UdpClientAction;
+import lsfusion.base.net.WriteToSocketClientAction;
+import lsfusion.base.printer.GetAvailablePrintersClientAction;
+import lsfusion.base.printer.PrintFileClientAction;
+import lsfusion.base.printer.WriteToPrinterClientAction;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
@@ -16,6 +22,15 @@ import lsfusion.client.navigator.ClientNavigatorChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.action.file.*;
+import lsfusion.gwt.client.action.net.GPingAction;
+import lsfusion.gwt.client.action.com.GWriteToComPortAction;
+import lsfusion.gwt.client.action.net.GTcpAction;
+import lsfusion.gwt.client.action.net.GUdpAction;
+import lsfusion.gwt.client.action.net.GWriteToSocketAction;
+import lsfusion.gwt.client.action.printer.GGetAvailablePrintersAction;
+import lsfusion.gwt.client.action.printer.GPrintFileAction;
+import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -34,10 +49,9 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.session.HttpClientAction;
+import lsfusion.interop.session.*;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.xerces.impl.dv.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -252,10 +266,91 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
-    //it is actually downloading the file, not opening it in the browser
+    //todo: isBlockingFileRead, isDialog
+    @Converter(from = ReadClientAction.class)
+    public GReadAction convertAction(ReadClientAction action) {
+        return new GReadAction(action.sourcePath, action.isDynamicFormatFileClass);
+    }
+
+    @Converter(from = DeleteFileClientAction.class)
+    public GDeleteFileAction convertAction(DeleteFileClientAction action) {
+        return new GDeleteFileAction(action.source);
+    }
+
+    @Converter(from = FileExistsClientAction.class)
+    public GFileExistsAction convertAction(FileExistsClientAction action) {
+        return new GFileExistsAction(action.source);
+    }
+
+    @Converter(from = MkdirClientAction.class)
+    public GMkDirAction convertAction(MkdirClientAction action) {
+        return new GMkDirAction(action.source);
+    }
+
+    @Converter(from = MoveFileClientAction.class)
+    public GMoveFileAction convertAction(MoveFileClientAction action) {
+        return new GMoveFileAction(action.source, action.destination);
+    }
+
+    @Converter(from = CopyFileClientAction.class)
+    public GCopyFileAction convertAction(CopyFileClientAction action) {
+        return new GCopyFileAction(action.source, action.destination);
+    }
+
+    @Converter(from = ListFilesClientAction.class)
+    public GListFilesAction convertAction(ListFilesClientAction action) {
+        return new GListFilesAction(action.source, action.recursive);
+    }
+
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
-        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)));
+        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)), BaseUtils.addExtension(action.path, action.extension));
+    }
+
+    @Converter(from = GetAvailablePrintersClientAction.class)
+    public GGetAvailablePrintersAction convertAction(GetAvailablePrintersClientAction action) {
+        return new GGetAvailablePrintersAction();
+    }
+
+    @Converter(from = PrintFileClientAction.class)
+    public GPrintFileAction convertAction(PrintFileClientAction action) {
+        return new GPrintFileAction(action.fileData != null ? Base64.encode(action.fileData.getBytes()) : null, action.filePath, action.printerName);
+    }
+
+    @Converter(from = WriteToPrinterClientAction.class)
+    public GWriteToPrinterAction convertAction(WriteToPrinterClientAction action) {
+        return new GWriteToPrinterAction(action.text, action.charset, action.printerName);
+    }
+
+    //todo: directory, wait
+    @Converter(from = RunCommandClientAction.class)
+    public GRunCommandAction convertAction(RunCommandClientAction action) {
+        return new GRunCommandAction(action.command);
+    }
+
+    @Converter(from = TcpClientAction.class)
+    public GTcpAction convertAction(TcpClientAction action) {
+        return new GTcpAction(Base64.encode(action.fileBytes), action.host, action.port, action.timeout);
+    }
+
+    @Converter(from = UdpClientAction.class)
+    public GUdpAction convertAction(UdpClientAction action) {
+        return new GUdpAction(Base64.encode(action.fileBytes), action.host, action.port);
+    }
+
+    @Converter(from = WriteToSocketClientAction.class)
+    public GWriteToSocketAction convertAction(WriteToSocketClientAction action) {
+        return new GWriteToSocketAction(action.text, action.charset, action.ip, action.port);
+    }
+
+    @Converter(from = PingClientAction.class)
+    public GPingAction convertAction(PingClientAction action) {
+        return new GPingAction(action.host);
+    }
+
+    @Converter(from = WriteToComPortClientAction.class)
+    public GWriteToComPortAction convertAction(WriteToComPortClientAction action) {
+        return new GWriteToComPortAction(Base64.encode(action.file.getBytes()), action.comPort, action.baudRate);
     }
 
     @Converter(from = HttpClientAction.class)

@@ -5,7 +5,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.equ.com.client.WriteToComPortClientAction;
+import lsfusion.base.com.WriteToComPortClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
@@ -33,7 +33,7 @@ public class WriteToComPortAction extends InternalAction {
         boolean useJssc = context.getKeyValue(useJsscInterface).getValue() != null;
 
         if(file != null && baudRate != null && comPort != null) {
-            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), baudRate, comPort, useJssc));
+            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), "COM" + comPort, baudRate, useJssc));
             if (result != null) {
                 context.messageError(result);
             }

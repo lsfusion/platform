@@ -28,6 +28,9 @@ import java.util.stream.Stream;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 import static lsfusion.base.file.WriteUtils.appendExtension;
 
+//lsfusion.base.FileUtils is copy of this one
+//todo: Replace all usages to lsfusion.base.FileUtils (available since 6.1)
+
 public class FileUtils {
 
     public static void moveFile(String sourcePath, String destinationPath) throws SQLException, IOException {
@@ -406,37 +409,6 @@ public class FileUtils {
                     throw Throwables.propagate(e);
             }
         });
-    }
-
-    public static RunCommandActionResult runCmd(String command, String directory, boolean wait) throws IOException {
-        Runtime runtime = Runtime.getRuntime();
-        Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
-        RunCommandActionResult result = null;
-        if (wait) {
-            try {
-                String cmdOut = readInputStreamToString(p.getInputStream());
-                String cmdErr = readInputStreamToString(p.getErrorStream());
-
-                p.waitFor();
-
-                int exitValue = p.exitValue();
-                result = new RunCommandActionResult(cmdOut, cmdErr, exitValue);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return result;
-    }
-
-    private static String readInputStreamToString(InputStream inputStream) throws IOException {
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) { //
-            StringBuilder errS = new StringBuilder();
-            byte[] b = new byte[1024];
-            while (bufferedInputStream.read(b) != -1) {
-                errS.append(new String(b, SystemUtils.IS_OS_WINDOWS ?  "cp866" : "utf-8").trim()).append("\n");
-            }
-            return BaseUtils.trimToNull(errS.toString());
-        }
     }
 
     public static String ping(String host) throws IOException {

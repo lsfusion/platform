@@ -61,7 +61,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEventHandler != null ? editEventHandler.event : null, editContext, onClose, action.formId);
+            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, action.syncType, editEventHandler != null ? editEventHandler.event : null, editContext, onClose, action.formId);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;

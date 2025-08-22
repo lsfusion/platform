@@ -569,16 +569,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
-        int count = 0;
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDisableStatsTableSet(session));
-        for (ImplementTable dataTable : tables) {
-            dataTable.recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session, String.format(" %s of %s", ++count, tables.size()));
+        Set<String> disableStatsTableSet = getDisableStatsTableSet(session);
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(disableStatsTableSet);
+        for (int i = 0; i < tables.size(); i++) {
+            tables.get(i).recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session, String.format(" %s of %s", i + 1, tables.size()));
         }
 
-        count = 0;
-        ImCol<ObjectValueClassSet> tableClassesCol = LM.baseClass.getUpObjectClassFields().values();
-        for (ObjectValueClassSet tableClasses : tableClassesCol) {
-            tableClasses.recalculateClassStat(businessLogics.LM, session, String.format(" %s of %s", ++count, tableClassesCol.size()));
+        ImSet<ObjectValueClassSet> objectValueClassSets = LM.baseClass.getObjectValueClassSets(disableStatsTableSet);
+        for (int i = 0; i < objectValueClassSets.size(); i++) {
+            objectValueClassSets.get(i).recalculateClassStat(businessLogics.LM, session, String.format(" %s of %s", i + 1, objectValueClassSets.size()));
         }
     }
 
@@ -2312,7 +2311,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public Set<String> getDisableStatsTableSet(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
-        ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
         Expr expr = reflectionLM.disableStatsTableSID.getExpr(query.getMapExprs().singleValue());
         query.and(expr.getWhere());
         return query.execute(session).keys().mapSetValues(value -> (String) value.singleValue()).toJavaSet();
@@ -2320,7 +2318,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public Set<String> getDisableClassesTableSet(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
-        ImSet<String> disableClassesTableSet = SetFact.EMPTY();
         Expr expr = reflectionLM.disableClassesTableSID.getExpr(query.getMapExprs().singleValue());
         query.and(expr.getWhere());
         return query.execute(session).keys().mapSetValues(value -> (String) value.singleValue()).toJavaSet();

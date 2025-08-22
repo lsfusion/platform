@@ -125,7 +125,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
         ImMap<KeyField, ? extends Expr> mapExprs = mapKeys.join(joinImplement);
-        return fullJoin(table.join(mapExprs), joinImplement);
+        return fullJoin(table.join(mapExprs, isStaticValueExpr()), joinImplement);
+    }
+
+    protected boolean isStaticValueExpr() {
+        return false;
     }
     
     protected Join<V> fullJoin(Join<PropertyField> join, ImMap<K, ? extends Expr> joinImplement) {

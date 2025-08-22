@@ -1,16 +1,12 @@
-package lsfusion.server.physics.dev.integration.external.to.net.client;
+package lsfusion.base.net;
 
+import lsfusion.base.FileUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
-
-import java.io.IOException;
-import java.net.InetAddress;
 
 
 public class PingClientAction implements ClientAction {
-
-    String host;
+    public final String host;
 
     public PingClientAction(String host) {
         this.host = host;
