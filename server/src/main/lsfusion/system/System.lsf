@@ -13,7 +13,8 @@ TABLE staticObject (StaticObject) NODEFAULT;
 
 CLASS NATIVE CustomObjectClass : StaticObject;
 TABLE customObjectClass (CustomObjectClass);
-objectClass = NATIVE CustomObjectClass (Object);
+objectClass = NATIVE CustomObjectClass (Object); // deprecated, use class
+class (Object o) = objectClass(o);
 
 random = NATIVE DOUBLE ();
 randomUUID = FORMULA STRING[100] 'md5(random()::text || clock_timestamp()::text)::cstring';
@@ -139,18 +140,23 @@ dropNoEventsInTransaction()  INTERNAL  <{ context.getSession().setNoEventsInTran
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsAction' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
-staticName '{system.static.name.object}' = DATA BPSTRING[250] (StaticObject) TABLE staticObject;
-nameStatic (name) = GROUP NAGGR StaticObject object BY staticName(object);
+staticName '{system.static.name.object}' = DATA BPSTRING[250] (StaticObject) TABLE staticObject; // deprecated, use name instead
+name '{system.static.name.object}' (StaticObject o) = staticName(o) MATERIALIZED TABLE staticObject;
+nameStatic (name) = GROUP NAGGR StaticObject object BY staticName(object); // deprecated, use staticObject instead
+staticObject (STRING name) = nameStatic(name);
 
 fillingIDs = DATA LOCAL BOOLEAN ();
 CONSTRAINT CHANGED(staticName(StaticObject object)) AND NOT fillingIDs() MESSAGE '{system.constraint.change.staticname.forbidden}';
 
-staticCaption '{system.static.caption.object}' = DATA BPISTRING[100] (StaticObject) TABLE staticObject IN id;
+staticCaption '{system.static.caption.object}' = DATA BPISTRING[100] (StaticObject) TABLE staticObject; // deprecated, use caption instead
+caption '{system.static.caption.object}' (StaticObject o) = staticCaption(o) MATERIALIZED TABLE staticObject IN id;
 order = DATA INTEGER (StaticObject) TABLE staticObject IN id;
 image '{classes.image}' = DATA HTML (StaticObject) TABLE staticObject IN id;
 
-objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o));
-prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o)));
+objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o)); // deprecated, use className instead
+className '{system.object.class.name.object}' (Object o) = caption(class(o));
+prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o))); // deprecated, use prevClassName instead
+prevClassName '{system.object.class.name.object}' (Object o) = caption(PREV(class(o)));
 
 defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();
 defaultOverrideBackgroundColor '{system.default.background.color}' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
