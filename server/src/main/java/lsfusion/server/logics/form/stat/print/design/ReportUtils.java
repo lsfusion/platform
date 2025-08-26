@@ -85,18 +85,20 @@ class ReportUtils {
         return null;
     }
 
+    //getPatternExpression and getZDateTimePatternExpression export date-time fields as texts
+
     //jasper reports doesn't know how to format java.time classes, so we convert it to java.sql classes
     public static JRDesignExpression createConvertExcelDateTimeExpression(FormPrintType printType, String fieldName, Class cls, String pattern) {
         String text = null;
         if(printType == FormPrintType.XLS || printType == FormPrintType.XLSX) {
             if (cls == LocalDate.class) {
-                text = pattern != null ? getPatternExpression(fieldName, pattern) : String.format("java.sql.Date.valueOf($F{%s})", fieldName);
+                text = /*pattern != null ? getPatternExpression(fieldName, pattern) : */String.format("java.sql.Date.valueOf($F{%s})", fieldName);
             } else if (cls == LocalTime.class) {
-                text = pattern != null ? getPatternExpression(fieldName, pattern) : String.format("java.sql.Time.valueOf($F{%s})", fieldName);
+                text = /*pattern != null ? getPatternExpression(fieldName, pattern) : */String.format("java.sql.Time.valueOf($F{%s})", fieldName);
             } else if (cls == LocalDateTime.class) {
-                text = pattern != null ? getPatternExpression(fieldName, pattern) : String.format("java.sql.Timestamp.valueOf($F{%s})", fieldName);
+                text = /*pattern != null ? getPatternExpression(fieldName, pattern) : */String.format("java.sql.Timestamp.valueOf($F{%s})", fieldName);
             } else if (cls == Instant.class) {
-                text = pattern != null ? getZDateTimePatternExpression(fieldName, pattern) : String.format("java.sql.Timestamp.from($F{%s})", fieldName);
+                text = /*pattern != null ? getZDateTimePatternExpression(fieldName, pattern) : */String.format("java.sql.Timestamp.from($F{%s})", fieldName);
             }
         }
         return text != null ? new JRDesignExpression(text) : null;
