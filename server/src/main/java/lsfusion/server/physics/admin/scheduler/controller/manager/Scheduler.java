@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.scheduler.controller.manager;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
@@ -55,11 +54,11 @@ import java.util.stream.Collectors;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.base.DateConverter.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.schedulerLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.schedulerSystemLogger;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
-    public static final Logger schedulerLogger = ServerLoggers.schedulerLogger;
-
     public ScheduledExecutorService daemonTasksExecutor;
 
     private LogicsInstance logicsInstance;
@@ -317,6 +316,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, LocalDateTime startDate, Integer period, boolean fixedDelay) {
             this.task = () -> {
+                Logger schedulerLogger = getSchedulerLogger();
                 schedulerLogger.info("Started running scheduler task - " + name);
                 try {
                     task.run(getStack());
@@ -373,6 +373,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 }
             }
             return scheduledFutureList;
+        }
+
+        private Logger getSchedulerLogger() {
+            return this instanceof SystemSchedulerTask ? schedulerSystemLogger : schedulerLogger;
         }
     }
 
@@ -576,7 +580,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private void logClientTask(DataSession session, DataObject taskLog, AbstractContext.LogMessage logMessage) throws SQLException, SQLHandledException {            
-            ServerLoggers.schedulerLogger.info(logMessage.message);
+            schedulerLogger.info(logMessage.message);
             
             DataObject clientTaskLog = session.addObject(BL.schedulerLM.scheduledClientTaskLog);
             BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog

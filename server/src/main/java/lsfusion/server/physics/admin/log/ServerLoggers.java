@@ -66,6 +66,8 @@ public class ServerLoggers {
 
     public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
 
+    public static final Logger schedulerSystemLogger = Logger.getLogger("SchedulerSystemLogger");
+
     public static final Logger httpServerLogger = Logger.getLogger("HttpServerLogger");
 
     public static final Logger httpFromExternalSystemRequestsLogger = Logger.getLogger("HttpFromExternalSystemRequestsLogger");
