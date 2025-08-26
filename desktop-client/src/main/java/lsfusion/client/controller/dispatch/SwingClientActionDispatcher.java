@@ -242,7 +242,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(FormClientAction action) throws IOException {
-        RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm, RemoteObjectProxy.getRealHostName(getRemote()));
+        PendingRemoteInterface remote = getRemote();
+        if(remote == null) //remote can be null in ClientFormController after destroyForm
+            return;
+
+        RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm, RemoteObjectProxy.getRealHostName(remote));
 
         AsyncFormController asyncFormController = getAsyncFormController(getDispatchingIndex());
 

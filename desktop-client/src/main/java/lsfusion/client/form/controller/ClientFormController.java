@@ -1479,8 +1479,8 @@ public class ClientFormController implements AsyncListener {
     private static ClientAsyncResult convertAsyncResult(ClientAsync[] result) {
         boolean needMoreSymbols = false;
         boolean moreResults = false;
-        List<ClientAsync> values = Arrays.asList(result);
-        if (values.size() > 0) {
+        List<ClientAsync> values = result != null ? Arrays.asList(result) : new ArrayList<>();
+        if (!values.isEmpty()) {
             ClientAsync lastResult = values.get(values.size() - 1);
             if (lastResult.equals(ClientAsync.RECHECK)) {
                 values = values.subList(0, values.size() - 1);
