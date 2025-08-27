@@ -945,6 +945,9 @@ public class PropertyDrawView extends BaseComponentView {
         if(inputType != null)
             return inputType;
 
+        if(echoSymbols != null && echoSymbols)
+            return "password";
+
         if(isProperty(context)) {
             Type type = getAssertCellType(context);
             if(type != null)
