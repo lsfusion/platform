@@ -7,6 +7,8 @@ CLASS Channel 'Channel';
 host 'Host' = DATA STRING (Channel);
 vHost 'vHost' = DATA STRING (Channel);
 queue 'Queue name' = DATA STRING (Channel);
+threadCount 'Thread count' = DATA INTEGER (Channel);
+prefetchCount 'Prefetch count' = DATA INTEGER (Channel);
 user 'User' = DATA STRING (Channel);
 password 'Password' = DATA STRING (Channel) ECHO;
 isConsumer 'Consumer' = DATA BOOLEAN (Channel);
@@ -17,7 +19,7 @@ channel = GROUP AGGR Channel c BY host(c), queue(c);
 
 startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 
-start(Channel c) {
+start 'Start' (Channel c) {
     startConsumer(c);
     started(c) <- TRUE;
     apply();
@@ -32,7 +34,7 @@ onMessage(STRING host, STRING queue, STRING message) {
 
 stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
 
-stop(Channel c) {
+stop 'Stop' (Channel c) {
     stopConsumer(c);
     started(c) <- NULL;
     apply();
@@ -40,17 +42,20 @@ stop(Channel c) {
 
 restartConsumers 'Restart all consumers' () {
     FOR host(Channel c) AND queue(c) AND isConsumer(c) DO {
-        stopConsumer(c);
-        startConsumer(c);
+        stop(c);
+        start(c);
     }
 }
 
+getStatus 'Get Status' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.GetStatusRabbitMQAction' (Channel);
+
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), vHost READONLYIF started(c), queue READONLYIF started(c), user, password, 
+    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), vHost READONLYIF started(c), queue READONLYIF started(c),
+        threadCount, prefetchCount, user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
-        NEW, DELETE
+        getStatus GRID, NEW, DELETE
     PROPERTIES restartConsumers(), VALUE(s), sendMessage(c, s)
 ;
 
