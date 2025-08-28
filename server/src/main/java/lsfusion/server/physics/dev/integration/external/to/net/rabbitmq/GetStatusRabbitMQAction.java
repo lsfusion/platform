@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.net.rabbitmq;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -12,10 +13,10 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class StartConsumerRabbitMQAction extends InternalAction {
+public class GetStatusRabbitMQAction extends InternalAction {
     private final ClassPropertyInterface channelInterface;
 
-    public StartConsumerRabbitMQAction(ScriptingLogicsModule LM, ValueClass... classes) {
+    public GetStatusRabbitMQAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
@@ -31,15 +32,12 @@ public class StartConsumerRabbitMQAction extends InternalAction {
             String queue = (String) findProperty("queue[Channel]").read(context, channelObject); //"hello";
             String user = (String) findProperty("user[Channel]").read(context, channelObject);
             String password = (String) findProperty("password[Channel]").read(context, channelObject);
-            boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
             String virtualHost = (String) findProperty("vHost[Channel]").read(context, channelObject);
-            Integer threadCount = (Integer) findProperty("threadCount[Channel]").read(context, channelObject);
-            Integer prefetchCount = (Integer) findProperty("prefetchCount[Channel]").read(context, channelObject);
 
-            context.getLogicsInstance().getRabbitMQServer().startConsume(host, queue, user, password, local, virtualHost, threadCount, prefetchCount);
+            String status = context.getLogicsInstance().getRabbitMQServer().getStatus(host, queue, user, password, virtualHost);
+            context.requestUserInteraction(new MessageClientAction(status, "RabbitMQ"));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-
     }
 }
