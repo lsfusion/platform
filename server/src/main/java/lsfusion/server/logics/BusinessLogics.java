@@ -18,6 +18,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
@@ -149,6 +150,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithServiceLog;
 import static lsfusion.server.physics.admin.log.ServerLoggers.runWithStartLog;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
@@ -1834,17 +1836,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         ImSet<Action> actions = getRecalculateFollows();
         for (int i = 0; i < actions.size(); i++) {
             final Action<?> action = actions.get(i);
-            long start = System.currentTimeMillis();
-            try {
-                DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
-            } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
-                serviceLogger.info(e.getMessage());
-            }
-            long time = System.currentTimeMillis() - start;
-            String message = String.format("Recalculate Follows %s of %s: %s, %sms", i + 1, actions.size(), action.getSID(), time);
-            serviceLogger.info(message);
+            long time = runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> {
+                try {
+                    DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
+                } catch (ApplyCanceledException e) { // suppress because it's known error
+                    serviceLogger.info(e.getMessage());
+                }
+            }, String.format("Recalculate Follows %s of %s: %s", i + 1, actions.size(), action.getDebugInfo()));
             if (time > maxRecalculateTime)
-                messageList.add(message);
+                messageList.add(String.format("Recalculate Follows: %s, %sms", action.getDebugInfo(), time));
         }
         return formatMessageList(messageList);
     }

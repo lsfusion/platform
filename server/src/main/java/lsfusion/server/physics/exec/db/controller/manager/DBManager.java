@@ -2253,15 +2253,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     @StackProgress
     private void recalculateMaterialization(final DataSession dataSession, SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
-        long start = System.currentTimeMillis();
-        logger.info(String.format("Recalculating materialization %s of %s started: %s", progressBar.progress, progressBar.total, property.getSID()));
-        property.recalculateMaterialization(businessLogics, dataSession, session, isolatedTransaction, LM.baseClass);
-
-        long time = System.currentTimeMillis() - start;
-        String message = String.format("Recalculating materialization: %s, %sms", property.getSID(), time);
-        logger.info(message);
+        long time = runWithLog((E2Runnable<SQLException, SQLHandledException>) () -> property.recalculateMaterialization(businessLogics, dataSession, session, isolatedTransaction, LM.baseClass), String.format("Recalculating materialization %s of %s: %s", progressBar.progress, progressBar.total, property.getSID()), logger);
         if (time > maxRecalculateTime)
-            messageList.add(message);
+            messageList.add(String.format("Recalculating materialization: %s, %sms", property.getSID(), time));
     }
 
     @StackMessage("{logics.recalculating.data.classes}")
@@ -2839,23 +2833,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
-            long start = System.currentTimeMillis();
-            recalculateTableClasses(implementTable, session, isolatedTransactions, LM.baseClass);
-            long time = System.currentTimeMillis() - start;
-            String message = String.format("Recalculate Table Classes: %s, %sms", implementTable.toString(), time);
-            BaseUtils.serviceLogger.info(message);
+            long time = runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> recalculateTableClasses(implementTable, session, isolatedTransactions, LM.baseClass), String.format("Recalculate Table Classes: %s", implementTable));
             if (time > maxRecalculateTime)
-                messageList.add(message);
+                messageList.add(String.format("Recalculate Table Classes: %s, %sms", implementTable, time));
         }
 
         try(DataSession dataSession = createRecalculateSession(session)) {
             for (final AbstractDataProperty property : businessLogics.getStoredDataProperties(dataSession)) {
-                long start = System.currentTimeMillis();
-                property.recalculateClasses(session, isolatedTransactions, LM.baseClass);
-                long time = System.currentTimeMillis() - start;
-                String message = String.format("Recalculate Class: %s, %sms", property.getSID(), time);
-                BaseUtils.serviceLogger.info(message);
-                if (time > maxRecalculateTime) messageList.add(message);
+                long time = runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> property.recalculateClasses(session, isolatedTransactions, LM.baseClass), String.format("Recalculate Class: %s", property.getSID()));
+                if (time > maxRecalculateTime)
+                    messageList.add(String.format("Recalculate Class: %s, %sms", property.getSID(), time));
             }
             return businessLogics.formatMessageList(messageList);
         }
