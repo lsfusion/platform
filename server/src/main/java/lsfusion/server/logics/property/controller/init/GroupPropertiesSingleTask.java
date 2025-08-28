@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.controller.init;
 
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.controller.init.BLGroupSingleTask;
@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithServiceLog;
 
 public abstract class GroupPropertiesSingleTask<T> extends BLGroupSingleTask<T> {
     Context threadLocalContext;
@@ -63,15 +64,9 @@ public abstract class GroupPropertiesSingleTask<T> extends BLGroupSingleTask<T> 
         currentTasks.add(currentTask);
 
         try {
-            long start = System.currentTimeMillis();
-            serviceLogger.info(currentTask);
-
-            runInnerTask(element, ThreadLocalContext.getStack());
-
-            long time = System.currentTimeMillis() - start;
+            long time = runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> runInnerTask(element, ThreadLocalContext.getStack()), currentTask);
             if (time > maxRecalculateTime)
                 addMessage(currentTask, time);
-            serviceLogger.info(String.format("%s, %sms", currentTask, time));
         } catch (SQLException | SQLHandledException e) {
             addMessage(caption + " :", element, e);
             serviceLogger.info(currentTask, e);
