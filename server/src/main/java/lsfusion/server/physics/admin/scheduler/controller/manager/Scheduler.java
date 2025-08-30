@@ -8,10 +8,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;
-import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.base.controller.stack.StackMessage;
-import lsfusion.server.base.controller.stack.StackNewThread;
-import lsfusion.server.base.controller.stack.ThisMessage;
+import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -500,8 +497,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 return false;
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if(throwable != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(throwable), true, ExecutionStackAspect.getExceptionStackTrace()));
+                if(throwable != null) {
+                    ThrowableWithStack throwableWithStack = new ThrowableWithStack(throwable);
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), true, throwableWithStack.getLsfStack()));
+                }
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
             }

@@ -421,16 +421,11 @@ public class ExecutionStackAspect {
     }
 
     public static String getExceptionStackTrace() {
-        return getExceptionStackTrace(true);
-    }
-
-    public static String getExceptionStackTrace(boolean drop) {
         String result = threadLocalExceptionStack.get();
-        if (drop)
-            threadLocalExceptionStack.set(null);
+        threadLocalExceptionStack.set(null);
         return result != null ? result : getStackString();
     }
-    
+
     public static String getStackString() {
         return getStackString(Thread.currentThread(), false, false); // не concurrent по определению
     }

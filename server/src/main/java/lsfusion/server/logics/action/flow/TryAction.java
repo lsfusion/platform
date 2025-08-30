@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.Action;
@@ -109,26 +110,22 @@ public class TryAction extends KeepContextAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         
         FlowResult result;
-        FlowResult catchResult = FlowResult.FINISH;
 
         try {
             // since we want to catch all exceptions
             result = tryAction.execute(context.override(true));
         } catch(Throwable e) {
-            String lsfStack = ExecutionStackAspect.getExceptionStackTrace(finallyAction == null); // drop exception stack string if no finally
+            if(catchAction == null && finallyAction != null)
+                throw Throwables.propagate(e);
+
+            ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
             if(catchAction != null) {
                 context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
-                context.getBL().LM.javaStackTraceCaughtException.change(ExceptionUtils.toString(e), context);
-                context.getBL().LM.lsfStackTraceCaughtException.change(lsfStack, context);
-                catchResult = catchAction.execute(context);
-            }
-
-            //throw exception only if we have no catch and have finally
-            if (catchAction != null || finallyAction == null) {
-                result = catchResult;
-            } else {
-                throw Throwables.propagate(e);
-            }
+                context.getBL().LM.javaStackTraceCaughtException.change(throwableWithStack.getJavaString(), context);
+                context.getBL().LM.lsfStackTraceCaughtException.change(throwableWithStack.getLsfStack(), context);
+                result = catchAction.execute(context);
+            } else
+                result = FlowResult.FINISH;
         } finally {
             if (finallyAction != null) {
                 ThreadUtils.setFinallyMode(Thread.currentThread(), true);
