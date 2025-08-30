@@ -1743,7 +1743,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 rollbackApply();
             } catch (Throwable rs) {
-                ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + ExceptionUtils.toString(rs) + '\n' + ExecutionStackAspect.getExceptionStackTrace());
+                new ThrowableWithStack(rs).log("ROLLBACK EXCEPTION", ServerLoggers.sqlHandLogger);
                 // in theory all rollbacks are inside finally blocks, so the transaction should be rollbacked anyway
                 // but it seems in some extremely rare cases (like deadlocks with VACUUM ANALYZE) the transaction is not properly rollbacked, what can lead to some extremely bad problems
                 throw ExceptionUtils.propagate(rs, SQLException.class, SQLHandledException.class);
