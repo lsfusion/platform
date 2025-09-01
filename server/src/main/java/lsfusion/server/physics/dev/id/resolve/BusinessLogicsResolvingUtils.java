@@ -117,8 +117,17 @@ public class BusinessLogicsResolvingUtils {
         return null;
     }
 
-    public static <L extends LAP<?,?>> L findLAPByExtId(BusinessLogics BL, String extId, ModuleLAPFinder<L> moduleLAPFinder) {
-        return findLAP(BL, null, extId, null, extId, moduleLAPFinder);
+    public static LA<?> findActionByExtId(BusinessLogics BL, String extId) {
+        for (String namespace : BL.getNamespacesList()) {
+            for (LogicsModule module : BL.getNamespaceModules(namespace)) {
+                for (LA<?> la : module.getNamedActions()) {
+                    if (extId.equals(la.getActionOrProperty().getExtId())) {
+                        return la;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static <L extends LAP<?,?>> L findLAPByCompoundName(BusinessLogics BL, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {

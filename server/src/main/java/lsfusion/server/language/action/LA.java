@@ -39,8 +39,6 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
 
     public Action<T> action;
 
-    public String integrationSID;
-
     @Override
     public Action<T> getActionOrProperty() {
         return action;

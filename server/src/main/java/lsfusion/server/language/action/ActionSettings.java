@@ -11,5 +11,4 @@ public class ActionSettings extends ActionOrPropertySettings {
     public Boolean eventActionBefore;
     public ScriptingLogicsModule.ActionOrPropertyUsage eventActionMainPropertyUsage;
     public Boolean askConfirm;
-    public String integrationSID;
 }

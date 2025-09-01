@@ -2897,6 +2897,7 @@ semiActionOrPropertyOption[ActionOrPropertySettings ps]
 	|	stickySetting [ps]
 	|	syncSetting [ps]
 	|   imageSetting [ps]
+	|   extIdSetting[ps]
 	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
     ;
 
@@ -2924,7 +2925,6 @@ semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
 	|	shortcutSetting [as, caption != null ? caption : LocalizedString.create(actionName)]
 	|	asonEventActionSetting [as]
 	|	confirmSetting [as]
-	|   extIdSetting[as]
     ;
 
 nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -3018,6 +3018,10 @@ syncSetting [ActionOrPropertySettings ps]
 imageSetting [ActionOrPropertySettings ps]
 	:   img=imageOption { ps.image = $img.image; }
 	;
+
+extIdSetting [ActionOrPropertySettings ps]
+    :	'EXTID' id = stringLiteral { ps.integrationSID = $id.val; }
+    ;
 
 materializedSetting [PropertySettings ps]
 	:	'MATERIALIZED' (name=stringLiteral)? { ps.isMaterialized = true; ps.field = $name.val; }
@@ -3120,10 +3124,6 @@ asonEventActionSetting [ActionSettings as]
 confirmSetting [ActionSettings as]
 	:	'CONFIRM' { as.askConfirm = true; }
 	;
-
-extIdSetting [ActionSettings as]
-    :	'EXTID' id = stringLiteral { as.integrationSID = $id.val; }
-    ;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 @init {

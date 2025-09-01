@@ -1889,7 +1889,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public LA<?> findActionByExtId(String extId) {
-        return BusinessLogicsResolvingUtils.findLAPByExtId(this, extId, new ModuleLAFinder());
+        return BusinessLogicsResolvingUtils.findActionByExtId(this, extId);
     }
 
     @IdentityLazy

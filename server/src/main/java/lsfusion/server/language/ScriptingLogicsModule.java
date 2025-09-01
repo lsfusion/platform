@@ -1242,6 +1242,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             drawOptions.setSync(ps.sync);
         if (ps.image != null)
             actionOrProperty.setImage(ps.image);
+        if (ps.extId != null)
+            actionOrProperty.setExtId(ps.extId);
 
         if (ps.keyPressKey != null)
             setScriptedKeyPressAction(property, ps.keyPressKey, ps.keyPressAction);
@@ -1270,8 +1272,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             setAsEventActionFor(action, as.eventActionSID, as.eventActionBefore, as.eventActionMainPropertyUsage);
         if(as.askConfirm != null)
             drawOptions.setAskConfirm(as.askConfirm);
-        if(as.integrationSID != null)
-            action.integrationSID =  as.integrationSID;
 
         makeActionPublic(action, name, signature);
     }

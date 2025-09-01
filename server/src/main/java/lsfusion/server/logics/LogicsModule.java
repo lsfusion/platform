@@ -245,8 +245,7 @@ public abstract class LogicsModule {
 
     protected Map<String, List<LP<?>>> namedProperties = new HashMap<>();
     protected Map<String, List<LA<?>>> namedActions = new HashMap<>();
-    protected Map<String, List<LA<?>>> extIdActions = new HashMap<>();
-
+    
     protected final Map<String, Group> groups = new HashMap<>();
     protected final Map<String, CustomClass> classes = new HashMap<>();
     protected final Map<String, AbstractWindow> windows = new HashMap<>();
@@ -316,10 +315,6 @@ public abstract class LogicsModule {
         return createEmptyIfNull(namedActions.get(name));
     }
 
-    public Iterable<LA<?>> getExtIdActions(String name) {
-        return extIdActions.get(name);
-    }
-
     public Collection<CustomClass> getClasses() {
         return classes.values();
     }
@@ -339,9 +334,6 @@ public abstract class LogicsModule {
         if (lap instanceof LA) {
             name = ((LA<?>)lap).action.getName();
             putLAPToMap(namedActions, (LA) lap, name);
-            String integrationSID = ((LA<?>)lap).integrationSID;
-            if (integrationSID != null)
-                putLAPToMap(extIdActions, (LA) lap, integrationSID);
         } else if (lap instanceof LP) {
             name = ((LP<?>)lap).property.getName();
             putLAPToMap(namedProperties, (LP)lap, name);
