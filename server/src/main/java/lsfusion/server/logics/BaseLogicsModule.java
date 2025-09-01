@@ -300,6 +300,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // all these collections are used in the lazy / cached elements creation mechanisms
         namedProperties = NFFact.concurrentMap(namedProperties);
         namedActions = NFFact.concurrentMap(namedActions);
+        extIdActions = NFFact.concurrentMap(extIdActions);
         propClasses = NFFact.concurrentMap(propClasses);
         unnamedForms = SetFact.concurrentSet(unnamedForms);
     }

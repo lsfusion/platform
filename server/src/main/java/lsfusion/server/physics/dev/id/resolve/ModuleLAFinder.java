@@ -6,6 +6,7 @@ import lsfusion.server.logics.LogicsModule;
 public class ModuleLAFinder extends ModuleLAPFinder<LA<?>> {
     @Override
     protected Iterable<LA<?>> getSourceList(LogicsModule module, String name) {
-        return module.getNamedActions(name);
+        Iterable<LA<?>> result = module.getExtIdActions(name);
+        return result != null ? result : module.getNamedActions(name);
     }
 }

@@ -2924,6 +2924,7 @@ semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
 	|	shortcutSetting [as, caption != null ? caption : LocalizedString.create(actionName)]
 	|	asonEventActionSetting [as]
 	|	confirmSetting [as]
+	|   extIdSetting[as]
     ;
 
 nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -3119,6 +3120,10 @@ asonEventActionSetting [ActionSettings as]
 confirmSetting [ActionSettings as]
 	:	'CONFIRM' { as.askConfirm = true; }
 	;
+
+extIdSetting [ActionSettings as]
+    :	'EXTID' id = stringLiteral { as.integrationSID = $id.val; }
+    ;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 @init {

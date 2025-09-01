@@ -355,7 +355,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     String findActionName = actionName;
                     String actionPathInfo = "";
                     while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        if ((action = businessLogics.findActionByCompoundName(findActionName.replace('/', '_'))) != null)
+                        if ((action = businessLogics.findActionByExtId(findActionName.replace('/', '_'))) != null)
                             break;
 
                         int lastSlash = findActionName.lastIndexOf('/'); // if it is url

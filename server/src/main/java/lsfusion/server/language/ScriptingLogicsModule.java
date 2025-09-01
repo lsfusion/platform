@@ -1270,6 +1270,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             setAsEventActionFor(action, as.eventActionSID, as.eventActionBefore, as.eventActionMainPropertyUsage);
         if(as.askConfirm != null)
             drawOptions.setAskConfirm(as.askConfirm);
+        if(as.integrationSID != null)
+            action.integrationSID =  as.integrationSID;
 
         makeActionPublic(action, name, signature);
     }
