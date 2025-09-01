@@ -351,18 +351,20 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public ExternalResponse exec(String actionName, ExternalRequest request) {
             return logFromExternalSystemRequest(() -> {
                 if(actionName != null) {
-                    LA action;
                     String findActionName = actionName;
                     String actionPathInfo = "";
-                    while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        if ((action = businessLogics.findActionByExtId(findActionName.replace('/', '_'))) != null)
-                            break;
+                    LA action = businessLogics.findActionByExtId(findActionName);
+                    if(action == null) {
+                        while (true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
+                            if ((action = businessLogics.findActionByCompoundName(findActionName.replace('/', '_'))) != null)
+                                break;
 
-                        int lastSlash = findActionName.lastIndexOf('/'); // if it is url
-                        if (lastSlash < 0)
-                            break;
-                        findActionName = findActionName.substring(0, lastSlash);
-                        actionPathInfo = actionName.substring(lastSlash + 1);
+                            int lastSlash = findActionName.lastIndexOf('/'); // if it is url
+                            if (lastSlash < 0)
+                                break;
+                            findActionName = findActionName.substring(0, lastSlash);
+                            actionPathInfo = actionName.substring(lastSlash + 1);
+                        }
                     }
                     if (action != null) {
                         return executeExternal(action, actionName, actionPathInfo, false, request);
