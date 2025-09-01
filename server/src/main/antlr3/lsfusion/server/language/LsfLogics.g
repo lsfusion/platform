@@ -3020,7 +3020,7 @@ imageSetting [ActionOrPropertySettings ps]
 	;
 
 extIdSetting [ActionOrPropertySettings ps]
-    :	'EXTID' id = stringLiteral { ps.integrationSID = $id.val; }
+    :	'EXTID' id = stringLiteral { ps.extId = $id.val; }
     ;
 
 materializedSetting [PropertySettings ps]
