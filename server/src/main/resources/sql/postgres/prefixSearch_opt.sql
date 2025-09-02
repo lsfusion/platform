@@ -30,3 +30,14 @@ CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text, separa
 $$
 SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext, separator));
 $$ LANGUAGE 'sql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION prefixSearchExact(config regconfig, querytext text) RETURNS tsquery AS
+$$
+SELECT phraseto_tsquery(config, queryText);
+$$ LANGUAGE 'sql' IMMUTABLE;
+
+
+CREATE OR REPLACE FUNCTION prefixSearchExact(config regconfig, querytext text, separator text) RETURNS tsquery AS
+$$
+SELECT prefixSearchExact(config, prefixSearchPrepareQuery(querytext, separator));
+$$ LANGUAGE 'sql' IMMUTABLE;
