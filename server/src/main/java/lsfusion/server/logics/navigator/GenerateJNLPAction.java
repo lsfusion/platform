@@ -94,7 +94,7 @@ public class GenerateJNLPAction extends InternalAction {
     }
 
     @Override
-    protected ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
+    public ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
         return SetFact.fromJavaSet(new HashSet<>(Arrays.asList(LM.baseLM.url.property, LM.baseLM.query.property, LM.baseLM.appHost.property, LM.baseLM.appPort.property, LM.baseLM.exportName.property)));
     }
 }

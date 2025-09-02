@@ -2,12 +2,9 @@ package lsfusion.server.logics.action.flow;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -26,22 +23,4 @@ public abstract class FlowAction extends Action<PropertyInterface> {
     @Override
     public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException;
 
-    private ActionMapImplement<?, PropertyInterface> compile;
-    private boolean compiled;
-    @Override
-    @ManualLazy
-    public ActionMapImplement<?, PropertyInterface> compile() {
-        if(!compiled) {
-            ActionMapImplement<?, PropertyInterface> compiled = aspectCompile();
-            if(compiled != null)
-                compiled.action.caption = LocalizedString.create("Compiled - " + this, false);
-            this.compile = compiled;
-            this.compiled = true;
-        }
-        return compile;
-    }
-    
-    protected ActionMapImplement<?, PropertyInterface> aspectCompile() {
-        return null;
-    }
 }
