@@ -22,6 +22,7 @@ CHANGEKEY key [SHOW | HIDE]
 ASON eventType [ACTION] propertyId
 IMAGE path
 CONFIRM
+EXTID extID
 ```
 
 ## Description and parameters
@@ -87,6 +88,10 @@ CONFIRM
     - `path`
      
         The relative path to the file. [String literal](Literals.md#strliteral). The path is specified relative to the `images` folder.
+
+- `EXTID extID`
+
+    Specifying the name to be used for [access from an external system](Access_from_an_external_system.md#http).
 
 ### `DESIGN` statement default values block
 

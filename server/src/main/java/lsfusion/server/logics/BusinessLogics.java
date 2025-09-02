@@ -1888,6 +1888,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
+    public LA<?> findActionByExtId(String extId) {
+        return BusinessLogicsResolvingUtils.findActionByExtId(this, extId);
+    }
+
+    @IdentityLazy
     public LA<?> findActionByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLAFinder());
     }

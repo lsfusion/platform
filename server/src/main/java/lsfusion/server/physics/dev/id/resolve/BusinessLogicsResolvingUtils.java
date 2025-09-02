@@ -116,7 +116,20 @@ public class BusinessLogicsResolvingUtils {
         }
         return null;
     }
-    
+
+    public static LA<?> findActionByExtId(BusinessLogics BL, String extId) {
+        for (String namespace : BL.getNamespacesList()) {
+            for (LogicsModule module : BL.getNamespaceModules(namespace)) {
+                for (LA<?> la : module.getNamedActions()) {
+                    if (extId.equals(la.getActionOrProperty().getExtId())) {
+                        return la;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public static <L extends LAP<?,?>> L findLAPByCompoundName(BusinessLogics BL, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {
         PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
         return findLAP(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLAPFinder);
