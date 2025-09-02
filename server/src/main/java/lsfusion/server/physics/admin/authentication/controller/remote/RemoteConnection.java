@@ -44,6 +44,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
@@ -393,8 +394,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     LA action;
                     String findActionName = actionName;
                     String actionPathInfo = "";
-                    while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        if ((action = businessLogics.findActionByCompoundName(findActionName.replace('/', '_'))) != null)
+                    while (true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
+                        if ((action = findAction(findActionName)) != null)
                             break;
 
                         int lastSlash = findActionName.lastIndexOf('/'); // if it is url
@@ -412,6 +413,16 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     throw new RuntimeException("Action was not specified");
                 }
             }, true, actionName, request);
+    }
+
+    private LA findAction(String findActionName) {
+        LA action;
+        try {
+            action = businessLogics.findActionByCompoundName(findActionName.replace('/', '_'));
+        } catch (CompoundNameUtils.ParseException e) {
+            action = null;
+        }
+        return action != null ? action : businessLogics.findActionByExtId(findActionName);
     }
 
     @Override

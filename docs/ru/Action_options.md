@@ -22,6 +22,7 @@ CHANGEKEY key [SHOW | HIDE]
 ASON eventType [ACTION] propertyId
 IMAGE path
 CONFIRM
+EXTID extID
 ```
 
 ## Описание и параметры
@@ -87,6 +88,10 @@ CONFIRM
     - `path`
     
         Относительный путь к файлу. [Строковый литерал](Literals.md#strliteral). Путь указывается относительно каталога `images`.
+
+- `EXTID extID`
+
+    Указание имени, которое будет использоваться для поиска действия при [обращении из внешней системы](Access_from_an_external_system.md#http).
 
 ### Блок значений по умолчанию инструкции `DESIGN`
 

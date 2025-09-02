@@ -76,6 +76,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     private int ID = 0;
     protected String canonicalName;
+    protected String extId;
     public ImSet<String> annotations;
     public ImRevMap<T, String> paramNames;
 
@@ -304,6 +305,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         assert canonicalName == null;
 
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
+    }
+
+    public String getExtId() {
+        return extId;
+    }
+
+    public void setExtId(String extId) {
+        this.extId = extId;
     }
 
     final public boolean isNamed() {
@@ -720,6 +729,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean sticky;
         private Boolean sync;
 
+        private String extId;
+
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
@@ -819,6 +830,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setSticky(options.sticky);
             if(sync == null)
                 setSync(options.sync);
+            if(extId == null)
+                setExtId(options.extId);
             
             processors = options.processors.addList(processors);
         }
@@ -911,6 +924,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setSync(Boolean sync) {
             this.sync = sync;
+        }
+
+        public void setExtId(String extId) {
+            this.extId = extId;
         }
     }
 

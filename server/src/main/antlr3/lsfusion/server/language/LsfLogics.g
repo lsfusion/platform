@@ -2915,6 +2915,7 @@ semiActionOrPropertyOption[ActionOrPropertySettings ps]
 	|	stickySetting [ps]
 	|	syncSetting [ps]
 	|   imageSetting [ps]
+	|   extIdSetting[ps]
 	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
     ;
 
@@ -3035,6 +3036,10 @@ syncSetting [ActionOrPropertySettings ps]
 imageSetting [ActionOrPropertySettings ps]
 	:   img=imageOption { ps.image = $img.image; }
 	;
+
+extIdSetting [ActionOrPropertySettings ps]
+    :	'EXTID' id = stringLiteral { ps.extId = $id.val; }
+    ;
 
 materializedSetting [PropertySettings ps]
 	:	'MATERIALIZED' (name=stringLiteral)? { ps.isMaterialized = true; ps.field = $name.val; }

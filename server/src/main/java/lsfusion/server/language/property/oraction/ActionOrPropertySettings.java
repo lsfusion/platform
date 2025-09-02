@@ -21,6 +21,7 @@ public class ActionOrPropertySettings {
     public Boolean sticky;
     public Boolean sync;
     public String image;
+    public String extId;
     public String keyPressKey;
     public ScriptingLogicsModule.LAWithParams keyPressAction;
     public LocalizedString contextMenuEventCaption;

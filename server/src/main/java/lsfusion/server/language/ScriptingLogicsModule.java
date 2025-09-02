@@ -1247,6 +1247,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             drawOptions.setSync(ps.sync);
         if (ps.image != null)
             actionOrProperty.setImage(ps.image);
+        if (ps.extId != null)
+            actionOrProperty.setExtId(ps.extId);
 
         if (ps.keyPressKey != null)
             setScriptedKeyPressAction(property, ps.keyPressKey, ps.keyPressAction);
