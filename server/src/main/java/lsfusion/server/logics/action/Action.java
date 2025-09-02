@@ -140,16 +140,19 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     protected ImMap<Property, Boolean> getChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
         if(compile!=null)
             return compile.action.getChangeExtProps(recursiveAbstracts);
 
         return aspectChangeExtProps(recursiveAbstracts);
     }
 
-    // убирает Set и Drop, так как с depends будет использоваться
     public ImSet<Property> getChangeProps() {
-        ImMap<Property, Boolean> changeExtProps = getChangeExtProps();
+        return getChangeProps(SetFact.<Action<?>>EMPTY());
+    }
+    // убирает Set и Drop, так как с depends будет использоваться
+    public ImSet<Property> getChangeProps(ImSet<Action<?>> recursiveAbstracts) {
+        ImMap<Property, Boolean> changeExtProps = getChangeExtProps(recursiveAbstracts);
         int size = changeExtProps.size();
         MSet<Property> mResult = SetFact.mSetMax(size);
         for(int i=0;i<size;i++) {
@@ -186,7 +189,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
     
     protected ImMap<Property, Boolean> getUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
         if(compile!=null)
             return compile.action.getUsedExtProps(recursiveAbstracts);
 
@@ -209,7 +212,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getUsedProps(SetFact.EMPTY());
     }
     
-    protected ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
+    public ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
         return getUsedExtProps(recursiveAbstracts).keys();
     }
 
@@ -505,7 +508,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                 return beforeResult;
         }
 
-        ActionMapImplement<?, P> compile = callCompile(true);
+        ActionMapImplement<?, P> compile = callCompile(true, SetFact.EMPTY());
         if (compile != null)
             return compile.execute(context);
 
@@ -520,7 +523,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        callCompile(true);
+        callCompile(true, SetFact.EMPTY());
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -817,21 +820,21 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionCalcDepends(false).filterFn(element -> element instanceof ChangedProperty);
     }
 
-    private ActionMapImplement<?, P> callCompile(boolean forExecution) {
+    private ActionMapImplement<?, P> callCompile(boolean forExecution, ImSet<Action<?>> recursiveAbstracts) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
-            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(SetFact.EMPTY()), getChangePropsLocations())) {
+            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(recursiveAbstracts), getChangePropsLocations())) {
                 return null;
             }
         }
-        return compile();
+        return compile(recursiveAbstracts);
     }
     
     protected boolean forceCompile() {
         return false;
     }
 
-    public ActionMapImplement<?, P> compile() {
+    public ActionMapImplement<?, P> compile(ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
     
