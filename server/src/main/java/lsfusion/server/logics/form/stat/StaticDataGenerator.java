@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -286,8 +287,14 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     mapPropExprs = addObjectValues(valueGroups, mapPropExprs);
 
                     // adding properties
-                    for (SDP queryProp : props)
-                        propQueryBuilder.addProperty(queryProp, queryProp.getReaderProperty().getExpr(mapPropExprs, modifier));
+                    for (SDP queryProp : props) {
+                        Expr propertyExpr = queryProp.getReaderProperty().getExpr(mapPropExprs, modifier);
+                        PropertyObjectEntity showIf = ((PropertyDrawEntity) queryProp).getPropertyExtra(PropertyDrawExtraType.SHOWIF);
+                        if (showIf != null) {
+                            propertyExpr = propertyExpr.ifElse(showIf.getExpr(mapPropExprs, modifier).getWhere(), Expr.NULL());
+                        }
+                        propQueryBuilder.addProperty(queryProp, propertyExpr);
+                    }
 
                     propQueryBuilder.and(queryWhere);
                     Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();
