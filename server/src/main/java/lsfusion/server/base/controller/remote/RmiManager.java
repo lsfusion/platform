@@ -56,6 +56,8 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     private int port = 0;
 
+    private String httpHost;
+    
     private int httpPort = 0;
 
     private boolean https = false;
@@ -76,6 +78,14 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getHttpHost() {
+        return httpHost;
+    }
+
+    public void setHttpHost(String httpHost) {
+        this.httpHost = httpHost;
     }
 
     public int getHttpPort() {

@@ -14,7 +14,6 @@ import lsfusion.server.physics.dev.property.ProjectLSFDirProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class ServiceLogicsModule extends ScriptingLogicsModule {
 
@@ -49,6 +48,10 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP inTestMode;
     public LP projectLSFDir;
 
+    public LP webServerUseHttps;
+    public LP webServerHttpPort;
+    public LP webServerHttpHost;
+    
     public LP useKeystore;
     public LP keystorePassword;
     public LP keyPassword;
@@ -102,6 +105,10 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
+        webServerUseHttps = findProperty("webServerPredefinedHttps[]");
+        webServerHttpHost = findProperty("webServerPredefinedHost[]");
+        webServerHttpPort = findProperty("webServerPredefinedPort[]");
+        
         useKeystore = findProperty("useKeystore[]");
         keystorePassword = findProperty("keystorePassword[]");
         keyPassword = findProperty("keyPassword[]");

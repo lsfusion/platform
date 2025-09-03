@@ -965,6 +965,7 @@
     <!-- Remoting -->
     <bean id="rmiManager" class="lsfusion.server.base.controller.remote.RmiManager">
         <property name="port" value="${rmi.port:7652}"/>
+        <property name="httpHost" value="${http.host:}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="https" value="${https:false}"/>
         <property name="webSocketPort" value="${webSocket.port:8887}"/>

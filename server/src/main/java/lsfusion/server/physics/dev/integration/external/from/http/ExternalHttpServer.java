@@ -78,7 +78,10 @@ public class ExternalHttpServer extends MonitorServer {
         ServerLoggers.systemLogger.info("Binding External" + (useHTTPS ? "HTTPS" : "HTTP") + "Server");
         HttpServer server = null;
         try {
-            server = initServer(useHTTPS, new InetSocketAddress(rmiManager.getHttpPort()));
+            int httpPort = rmiManager.getHttpPort();
+            getLogicsInstance().getDbManager().setExternalHttpServerParams(useHTTPS, rmiManager.getHttpHost(), httpPort);
+            
+            server = initServer(useHTTPS, new InetSocketAddress(httpPort));
 
             server.createContext("/", new HttpRequestHandler());
             server.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
@@ -103,6 +106,12 @@ public class ExternalHttpServer extends MonitorServer {
         HttpServer server;
         if (useHTTPS) {
             KeyStore ks = getKeyStore();
+
+            String alias = ks.aliases().nextElement();
+            java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) ks.getCertificate(alias);
+
+            System.out.println("Certificate subject: " + cert.getSubjectDN());
+            System.out.println("Certificate SAN: " + cert.getSubjectAlternativeNames());
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(SECURITY_ALGORITHM);
             kmf.init(ks, keyPassword != null ? keyPassword : defaultKeyPassword); // keyPassword = null if keystore.jks file is not used

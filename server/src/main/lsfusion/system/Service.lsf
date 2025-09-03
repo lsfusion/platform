@@ -744,6 +744,20 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
+
+// External HTTP server
+
+webServerPredefinedHttps 'HTTPS' = DATA BOOLEAN ();
+webServerHttps 'HTTPS' = DATA TBOOLEAN ();
+isWebServerHttps = IF webServerHttps() THEN webServerHttps() == TTRUE ELSE webServerPredefinedHttps();
+webServerPredefinedHost '{service.external.server.http.host}' = DATA STRING();
+webServerHost '{service.external.server.http.host}' = DATA STRING();
+overrideWebServerHost = OVERRIDE webServerHost(), webServerPredefinedHost();
+webServerPredefinedPort '{service.external.server.http.port}' = DATA INTEGER();
+webServerPort '{service.external.server.http.port}' = DATA INTEGER();
+overrideWebServerPort '{service.external.server.origin}' = OVERRIDE webServerPort(), webServerPredefinedPort();
+webServerOrigin = (IF isWebServerHttps() THEN 'https' ELSE 'http') + '://' + overrideWebServerHost() + ':' + overrideWebServerPort() CHARWIDTH 30;
+
 useKeystore '{service.use.keystore}' = DATA BOOLEAN();
 keystorePassword '{service.keystore.password}' = DATA STRING();
 keyPassword '{service.key.password}' = DATA STRING();
@@ -788,6 +802,8 @@ EXTEND FORM settings
     
     PROPERTIES() pushPublicKey, pushPrivateKey  
     
+    PROPERTIES() READONLY webServerPredefinedHttps, webServerPredefinedHost, webServerPredefinedPort, webServerOrigin
+    PROPERTIES() webServerHost, webServerPort, webServerHttps 
     PROPERTIES() useKeystore
     PROPERTIES() SHOWIF useKeystore() keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
     PROPERTIES() SHOWIF NOT useKeystore() loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
@@ -841,25 +857,53 @@ DESIGN settings {
         }
         NEW externalServerSettings {
             caption = '{service.external.server.settings}';
-            MOVE PROPERTY (useKeystore());
-            NEW keystore {
-                caption = '{service.keystore}';
-                MOVE PROPERTY (loadKeystore());
-                MOVE PROPERTY (openKeystore());
-                MOVE PROPERTY (resetKeystore());
-                MOVE PROPERTY (keystorePassword());
-                MOVE PROPERTY (keyPassword());
-            }
-            NEW pem {
+            NEW urlSettings {
                 lines = 2;
-                caption = '{service.private.key}';
-                MOVE PROPERTY (loadPrivateKey());
-                MOVE PROPERTY (loadChain());
-                MOVE PROPERTY (openPrivateKey());
-                MOVE PROPERTY (openChain());
-                MOVE PROPERTY (resetPrivateKey());
-                MOVE PROPERTY (resetChain());
-                MOVE PROPERTY (privateKeyPassword());
+                flex = 0;
+                NEW predefined {
+                    caption = '{service.external.server.predefined.settings}';
+                    alignment = START;
+                    MOVE PROPERTY (webServerPredefinedHttps());
+                    MOVE PROPERTY (webServerPredefinedHost());
+                    MOVE PROPERTY (webServerPredefinedPort());
+                }
+                NEW override {
+                    caption = '{service.external.server.override.settings}';
+                    MOVE PROPERTY (webServerHttps());
+                    MOVE PROPERTY (webServerHost()) {
+                        alignment = START;
+                    }
+                    MOVE PROPERTY (webServerPort()) {
+                        alignment = START;
+                    }
+                }
+            }
+            MOVE PROPERTY (webServerOrigin()) {
+                alignment = START;
+            }
+            NEW cetificate {
+                caption = '{service.external.server.certificate.settings}';
+                showIf = isWebServerHttps();
+                MOVE PROPERTY (useKeystore());
+                NEW keystore {
+                    caption = '{service.keystore}';
+                    MOVE PROPERTY (loadKeystore());
+                    MOVE PROPERTY (openKeystore());
+                    MOVE PROPERTY (resetKeystore());
+                    MOVE PROPERTY (keystorePassword());
+                    MOVE PROPERTY (keyPassword());
+                }
+                NEW pem {
+                    lines = 2;
+                    caption = '{service.private.key}';
+                    MOVE PROPERTY (loadPrivateKey());
+                    MOVE PROPERTY (loadChain());
+                    MOVE PROPERTY (openPrivateKey());
+                    MOVE PROPERTY (openChain());
+                    MOVE PROPERTY (resetPrivateKey());
+                    MOVE PROPERTY (resetChain());
+                    MOVE PROPERTY (privateKeyPassword());
+                }
             }
         }
         NEW computer {
@@ -1072,11 +1116,41 @@ onStarted() +{
         asyncAddSlave(slave);
 }
 
+
+// App server scaling
+
+CLASS AppServer '{service.scaling.app.server}';
+appServerName '{service.scaling.app.this.server.name}' = DATA STRING();
+thisAppServer = DATA AppServer();
+name '{service.scaling.app.server.name}' = DATA STRING (AppServer);
+connectionString '{service.scaling.app.server.connection.string}' = DATA STRING (AppServer);
+
+onStarted() +{
+    NEW as = AppServer {
+        connectionString(as) <- webServerOrigin();
+        name(as) <- appServerName();
+        thisAppServer() <- as; 
+        apply();
+    }
+}
+
+
 FORM scaling '{service.scaling}'
     OBJECTS s = DBServer
     PROPERTIES (s) GRID name
     PROPERTIES (s) NEW[DBSlave], DELETE
+    
+    OBJECTS as = AppServer
+    PROPERTIES (as) GRID READONLY name, connectionString
+    PROPERTIES (as) NEW, DELETE
+    PROPERTIES appServerName();
 ;
+
+DESIGN scaling {
+    BOX(as) {
+        MOVE PROPERTY(appServerName()) BEFORE FILTERBOX(as);
+    }
+}
 
 NAVIGATOR {
     system {

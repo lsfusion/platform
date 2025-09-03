@@ -1005,6 +1005,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
             throw new RuntimeException(e);
         }
     }
+    
+    public void setExternalHttpServerParams(boolean https, String httpHost, int httpPort) {
+        try {
+            DataSession session = createSession();
+            String host = !isRedundantString(httpHost) ? httpHost : SystemUtils.getLocalHostName();
+            businessLogics.serviceLM.webServerUseHttps.change(https, session);
+            businessLogics.serviceLM.webServerHttpHost.change(host, session);
+            businessLogics.serviceLM.webServerHttpPort.change(httpPort, session);
+            
+            apply(session);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
 
     private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
