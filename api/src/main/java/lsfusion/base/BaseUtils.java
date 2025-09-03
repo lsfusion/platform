@@ -49,6 +49,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -2337,5 +2338,9 @@ public class BaseUtils {
             }
         }
         return true;
+    }
+
+    public static List<String> splitTrim(String value) {
+        return value == null ? new ArrayList<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }
