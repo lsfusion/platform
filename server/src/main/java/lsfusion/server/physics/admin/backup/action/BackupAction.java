@@ -30,6 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.base.BaseUtils.splitTrim;
+
 public class BackupAction extends InternalAction {
 
     public BackupAction(ScriptingLogicsModule LM) {
@@ -54,6 +56,7 @@ public class BackupAction extends InternalAction {
                 String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
 
                 List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
+                List<String> extraExcludeTables = partial ? getExtraExcludeTables(context) : new ArrayList<>();
 
                 String backupFilePath = dbManager.getBackupFilePath(backupFileName);
                 String backupFileLogPath = dbManager.getBackupFileLogPath(backupFileName);
@@ -80,6 +83,7 @@ public class BackupAction extends InternalAction {
 
                 backupObject = new DataObject((Long) backupObject.object, (ConcreteCustomClass) findClass("Backup")); // обновляем класс после backup
 
+                excludeTables.addAll(extraExcludeTables);
                 dbManager.backupDB(context, backupFileName, threadCount, excludeTables);
 
                 findProperty("log[Backup]").change(IOUtils.readFileToString(backupFileLogPath, ExternalUtils.resourceCharset.name()), newContext, backupObject);
@@ -108,6 +112,10 @@ public class BackupAction extends InternalAction {
                 excludeTables.add(sidTable.trim());
         }
         return excludeTables;
+    }
+
+    private List<String> getExtraExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        return splitTrim((String) findProperty("extraExclude[]").read(context));
     }
 
     @Override
