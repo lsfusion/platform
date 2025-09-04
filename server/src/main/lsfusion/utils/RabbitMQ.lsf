@@ -7,6 +7,7 @@ CLASS Channel 'Channel';
 host 'Host' = DATA STRING (Channel);
 vHost 'vHost' = DATA STRING (Channel);
 queue 'Queue name' = DATA STRING (Channel);
+durable 'Durable' = DATA STRING (Channel);
 threadCount 'Thread count' = DATA INTEGER (Channel);
 prefetchCount 'Prefetch count' = DATA INTEGER (Channel);
 user 'User' = DATA STRING (Channel);
@@ -51,8 +52,9 @@ getStatus 'Get Status' INTERNAL 'lsfusion.server.physics.dev.integration.externa
 
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), vHost READONLYIF started(c), queue READONLYIF started(c),
-        threadCount, prefetchCount, user, password, 
+    PROPERTIES(c) local, isConsumer
+    PROPERTIES(c) READONLYIF started(c) host, vHost, queue, durable
+    PROPERTIES(c) threadCount, prefetchCount, user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
         getStatus GRID, NEW, DELETE
