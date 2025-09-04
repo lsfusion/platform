@@ -38,6 +38,7 @@ public abstract class GroupParseNode implements ParseNode {
             return childrenProps.single();
 
         // json_build_object - getKey() + getProperty
-        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getKey), returnString), childrenProps);
+        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(
+                children.mapOrderKeyValues(ChildParseNode::getKey, ChildParseNode::stripNull), returnString), childrenProps);
     }
 }

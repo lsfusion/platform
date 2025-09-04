@@ -23,6 +23,9 @@ public class PropertyParseNode implements ChildParseNode {
     public String getKey() {
         return property.getIntegrationSID();
     }
+    public boolean stripNull() {
+        return !property.extNull;
+    }
     public boolean isAttr() {
         return property.attr;
     }
