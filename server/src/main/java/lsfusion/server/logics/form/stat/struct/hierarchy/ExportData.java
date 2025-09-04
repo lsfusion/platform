@@ -7,6 +7,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 
 public interface ExportData {
 
@@ -16,7 +17,7 @@ public interface ExportData {
     
     // hierarchical
     ImList<ImMap<ObjectEntity, Object>> getObjects(GroupObjectEntity entity, ImMap<ObjectEntity, Object> upKeyValues);
-    Object getProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> keys);
+    Object getProperty(PropertyReaderEntity entity, ImMap<ObjectEntity, Object> keys);
 
     // plain
     ImOrderSet<ImMap<ObjectEntity, Object>> getRows(GroupObjectEntity entity);

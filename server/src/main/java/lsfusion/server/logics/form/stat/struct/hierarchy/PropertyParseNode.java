@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.data.ParseException;
@@ -8,43 +9,64 @@ import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropert
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyParseNode implements ChildParseNode {
-    private final PropertyDrawEntity<?> property;
+    public final PropertyReaderEntity property;
     private final boolean isExclusive;
 
-    public PropertyParseNode(PropertyDrawEntity<?> property, boolean isExclusive) {
+    public PropertyParseNode(PropertyReaderEntity property, boolean isExclusive) {
         this.property = property;
         this.isExclusive = isExclusive;
     }
 
     public String getKey() {
-        return property.getIntegrationSID();
+        if(property instanceof PropertyDrawEntity) {
+          return ((PropertyDrawEntity) property).getIntegrationSID();
+        } else {
+            return property.getReaderProperty().property.getName();
+        }
+
     }
-    public boolean stripNull() {
-        return !property.extNull;
+    public Pair<Boolean, Boolean> getOptions() {
+        if(property instanceof PropertyDrawEntity) {
+            PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
+            return Pair.create(showIfProp != null, !((PropertyDrawEntity) property).extNull);
+        } else{
+            return null;
+        }
     }
     public boolean isAttr() {
-        return property.attr;
+        if(property instanceof PropertyDrawEntity) {
+            return ((PropertyDrawEntity<?>) property).attr;
+        } else {
+            return false;
+        }
     }
 
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
-        Object propertyValue;
-        try {
-            propertyValue = node.getValue(getKey(), property.attr, property.getImportType());
-        } catch (ParseException e) {
-            throw Throwables.propagate(e);
+        if(property instanceof PropertyDrawEntity) {
+            Object propertyValue;
+            try {
+                propertyValue = node.getValue(getKey(), ((PropertyDrawEntity) property).attr, ((PropertyDrawEntity) property).getImportType());
+            } catch (ParseException e) {
+                throw Throwables.propagate(e);
+            }
+            importData.addProperty((PropertyDrawEntity) property, upValues, propertyValue, isExclusive);
         }
-        importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
-        Object value = exportData.getProperty(this.property, upValues);
-        if(value != null || property.extNull) {
-            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
-            return true;
+        if(property instanceof PropertyDrawEntity) {
+            Object value = exportData.getProperty(property, upValues);
+            PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
+            boolean show = showIfProp == null || exportData.getProperty(showIfProp, upValues) != null;
+            if ((show && (value != null || ((PropertyDrawEntity) property).extNull))) {
+                node.addValue(node, getKey(), ((PropertyDrawEntity) property).attr, value, exportData.getType(((PropertyDrawEntity) property)));
+                return true;
+            }
         }
         return false;
     }

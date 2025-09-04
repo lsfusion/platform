@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -78,6 +80,17 @@ public interface ParseNode {
     static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
         MOrderExclSet<PGNode> childGroups = childGroupNodes.get(currentPropertyGroup);
         ImOrderSet<ChildParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(value -> value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex()));
+        MOrderSet<ChildParseNode> resultChildNodes = SetFact.mOrderSet();
+        for(ChildParseNode childNode : childNodes) {
+            resultChildNodes.add(childNode);
+            if(childNode instanceof PropertyParseNode) {
+                PropertyReaderEntity showIf = ((PropertyDrawEntity) ((PropertyParseNode) childNode).property).getShowIfProp();
+                if(showIf != null) {
+                    resultChildNodes.add(new PropertyParseNode(showIf, true));
+                }
+            }
+        }
+        childNodes = resultChildNodes.immutableOrder();
         if(currentPropertyGroup == null) {
             if(currentGroup == null)
                 return new FormParseNode(childNodes);

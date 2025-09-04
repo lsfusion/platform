@@ -125,7 +125,11 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     }
     
     protected void fillQueryProps(PropertyDrawEntity property, MExclSet<SDP> mResult) {
-        mResult.exclAdd((SDP) property);        
+        mResult.exclAdd((SDP) property);
+        PropertyReaderEntity showIf = property.getShowIfProp();
+        if(showIf != null) {
+            mResult.exclAdd((SDP) showIf);
+        }
     }
 
     protected ImMap<ObjectEntity, Expr> addObjectValues(ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) {
@@ -287,14 +291,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     mapPropExprs = addObjectValues(valueGroups, mapPropExprs);
 
                     // adding properties
-                    for (SDP queryProp : props) {
-                        Expr propertyExpr = queryProp.getReaderProperty().getExpr(mapPropExprs, modifier);
-                        PropertyObjectEntity showIf = ((PropertyDrawEntity) queryProp).getPropertyExtra(PropertyDrawExtraType.SHOWIF);
-                        if (showIf != null) {
-                            propertyExpr = propertyExpr.ifElse(showIf.getExpr(mapPropExprs, modifier).getWhere(), Expr.NULL());
-                        }
-                        propQueryBuilder.addProperty(queryProp, propertyExpr);
-                    }
+                    for (SDP queryProp : props)
+                        propQueryBuilder.addProperty(queryProp, queryProp.getReaderProperty().getExpr(mapPropExprs, modifier));
 
                     propQueryBuilder.and(queryWhere);
                     Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();

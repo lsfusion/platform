@@ -197,6 +197,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return mResult.immutable();
     }
 
+    @IdentityStrongLazy
+    public PropertyReaderEntity getShowIfProp() {
+        PropertyObjectEntity showIf = getPropertyExtra(PropertyDrawExtraType.SHOWIF);
+        return showIf != null ? new PropertyDrawEntity.PropertyDrawReader(PropertyDrawExtraType.SHOWIF) : null;
+    }
+
     public class PropertyDrawReader implements PropertyReaderEntity {
         private PropertyDrawExtraType type;
         

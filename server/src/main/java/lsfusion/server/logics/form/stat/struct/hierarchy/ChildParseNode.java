@@ -1,10 +1,12 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
+import lsfusion.base.Pair;
+
 public interface ChildParseNode extends ParseNode {
 
     String getKey();
 
-    default boolean stripNull() {
-        return true;
+    default Pair<Boolean, Boolean> getOptions() {
+        return Pair.create(false, true);
     }
 }
