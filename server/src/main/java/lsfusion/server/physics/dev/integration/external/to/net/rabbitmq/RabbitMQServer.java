@@ -71,7 +71,7 @@ public class RabbitMQServer extends MonitorServer {
 
     public Map<Pair<String, String>, Consumer> consumers = new HashMap<>();
 
-    public void startConsume(String host, String queue, String user, String password, boolean local, String virtualHost, Integer threadCount, Integer prefetchCount) {
+    public void startConsume(String host, String queue, String user, String password, boolean local, boolean durable, String virtualHost, Integer threadCount, Integer prefetchCount) {
         try {
             Consumer consumer = createConsumer(host, user, password, virtualHost, threadCount, prefetchCount);
 
@@ -94,7 +94,7 @@ public class RabbitMQServer extends MonitorServer {
             });
 
             if (local) { //it's local channel, we create it
-                consumer.channel.queueDeclare(queue, false, false, false, null);
+                consumer.channel.queueDeclare(queue, durable, false, false, null);
             }
 
             consumer.channel.basicConsume(queue, false, new DefaultConsumer(consumer.channel) {
