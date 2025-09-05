@@ -22,7 +22,9 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static lsfusion.base.file.IOUtils.readFileToString;
 
@@ -47,6 +49,7 @@ public class BackupAction extends InternalAction {
             String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
 
             List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
+            List<String> extraExcludeTables = partial ? getExtraExcludeTables(context) : new ArrayList<>();
 
             String backupFilePath = context.getDbManager().getBackupFilePath(backupFileName);
             if (backupFilePath != null) {
@@ -75,6 +78,7 @@ public class BackupAction extends InternalAction {
 
                 backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)findClass("Backup")); // обновляем класс после backup
 
+                excludeTables.addAll(extraExcludeTables);
                 context.getDbManager().backupDB(context, backupFileName, threadCount, excludeTables);
 
                 findProperty("log[Backup]").change(readFileToString(backupFileLogPath), newContext, backupObject);
@@ -105,6 +109,10 @@ public class BackupAction extends InternalAction {
         return excludeTables;
     }
 
+    private List<String> getExtraExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        return splitTrim((String) findProperty("extraExclude[]").read(context));
+    }
+
     @Override
     public ImMap<Property, Boolean> aspectChangeExtProps() {
         try {
@@ -112,5 +120,9 @@ public class BackupAction extends InternalAction {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }
+    }
+
+    public static List<String> splitTrim(String value) {
+        return value == null ? new ArrayList<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }
