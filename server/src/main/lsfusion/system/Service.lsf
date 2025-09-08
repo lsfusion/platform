@@ -1041,16 +1041,16 @@ heuristicSize() += CASE
 // DB scaling
 
 CLASS ABSTRACT DBServer '{service.scaling.db.server}';
-name '{service.scaling.db.server.name}' = ABSTRACT STRING (DBServer);
+name '{service.scaling.db.server.name}' = DATA STRING (DBServer);
+host '{service.scaling.db.server.host}' = DATA STRING (DBServer);
+snmpPort '{service.scaling.db.server.snmp.port}' = DATA INTEGER (DBServer);
+dbServer(STRING host) = GROUP MAX DBServer server IF host(server) = host;
 
 CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
 } : DBServer;
-name(DBMaster server) += '{service.scaling.master}' IF server IS DBMaster;
 
 CLASS DBSlave '{service.scaling.db.slave}' : DBServer;
-host '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
-name(DBSlave server) += host(server);
 addSlave INTERNAL 'lsfusion.server.physics.admin.service.action.AddSlaveAction' (DBSlave);
 removeSlave INTERNAL 'lsfusion.server.physics.admin.service.action.RemoveSlaveAction' (DBSlave);
 asyncAddSlave (DBSlave slave) {
@@ -1072,9 +1072,13 @@ onStarted() +{
         asyncAddSlave(slave);
 }
 
+load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
+readLoad INTERNAL 'lsfusion.server.physics.admin.service.action.ReadSqlServerLoad';
+
 FORM scaling '{service.scaling}'
     OBJECTS s = DBServer
-    PROPERTIES (s) GRID name
+    PROPERTIES (s) GRID name, host, snmpPort, load READONLY
+    PROPERTIES () readLoad
     PROPERTIES (s) NEW[DBSlave], DELETE
 ;
 
@@ -1082,4 +1086,13 @@ NAVIGATOR {
     system {
         NEW scaling;
     }
+}
+
+host = DATA LOCAL STRING();
+readMasterDBHost INTERNAL 'lsfusion.server.physics.admin.service.action.ReadMasterDBHost'();
+onStarted() +{
+    INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //todo не создается в базе которая репликант. потому что реплицируются только таблицы, но не функции
+    readMasterDBHost();
+    host(DBMaster server) <- host() IF server IS DBMaster;
+    name(DBMaster server) <- '{service.scaling.master}' IF server IS DBMaster;
 }

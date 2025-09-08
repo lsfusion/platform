@@ -13,7 +13,7 @@ public class MySQLDataAdapter extends DataAdapter {
     protected static final String DB_NAME = "mysql";
 
     public MySQLDataAdapter(String database, String server, String user, String password) throws Exception {
-        super(MySQLSQLSyntax.instance, database, server, user, password, null, false);
+        super(MySQLSQLSyntax.instance, database, server, user, password, null);
     }
 
     public void ensureDB(Server server, boolean cleanDB) throws SQLException {

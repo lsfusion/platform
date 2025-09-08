@@ -43,6 +43,7 @@ import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
@@ -2190,12 +2191,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
+    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
         result.add(getChangeCurrentDateTask(scheduler));
         result.add(getChangeDataCurrentDateTimeTask(scheduler));
         result.add(getFlushAsyncValuesCachesTask(scheduler));
         result.add(resetResourcesCacheTasks(scheduler));
+        result.add(readSQLServerCpuTimeTask(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2376,6 +2378,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 .collect(Collectors.toList()));
 
         return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
+    }
+
+    private Scheduler.SchedulerTask readSQLServerCpuTimeTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            for (DataAdapter.Server server : getDbManager().getAdapter().getServers()) {
+                server.setLastCpuTime(server.getCurrentCpuTime());
+            }
+        }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "read sql server cpu time task");
     }
 
     private class AllocatedInfo {

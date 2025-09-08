@@ -2218,6 +2218,8 @@ public class Settings implements Cloneable {
 
     private int periodProcessDump = 60;
 
+    private int readSQLServerCpuTimePeriod = 5; // in seconds
+
     public int getQueryLengthAverageMax() {
         return queryLengthAverageMax;
     }
@@ -2338,6 +2340,14 @@ public class Settings implements Cloneable {
 
     public void setPeriodProcessDump(int periodProcessDump) {
         this.periodProcessDump = periodProcessDump;
+    }
+
+    public int getReadSQLServerCpuTimePeriod() {
+        return readSQLServerCpuTimePeriod;
+    }
+
+    public void setReadSQLServerCpuTimePeriod(int readSQLServerCpuTimePeriod) {
+        this.readSQLServerCpuTimePeriod = readSQLServerCpuTimePeriod;
     }
 
     public int getMaxUsedTempRowsAverageMax() {

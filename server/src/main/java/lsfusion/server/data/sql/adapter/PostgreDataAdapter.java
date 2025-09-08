@@ -43,19 +43,11 @@ public class PostgreDataAdapter extends DataAdapter {
     private int dbMajorVersion;
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
-        this(dataBase, server, userID, password, false);
-    }
-
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
-        this(dataBase, server, userID, password, null, null, null, cleanDB);
+        this(dataBase, server, userID, password, null, null, null);
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
-        this(dataBase, server, userID, password, connectTimeout, binPath, dumpDir, false);
-    }
-
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(PostgreSQLSyntax.instance, dataBase, server, userID, password, connectTimeout, cleanDB);
+        super(PostgreSQLSyntax.instance, dataBase, server, userID, password, connectTimeout);
 
         this.defaultBinPath = binPath;
         this.defaultDumpDir = dumpDir;
@@ -106,6 +98,10 @@ public class PostgreDataAdapter extends DataAdapter {
         return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase() + " user=" + user + " password=" + password;
     }
 
+    public void initProctab(Server server){
+        executeEnsure(server, "CREATE EXTENSION IF NOT EXISTS pg_proctab;");
+    }
+
     public void ensureDB(Server server, boolean cleanDB) throws Exception {
 
         Connection connect = null;
@@ -138,8 +134,20 @@ public class PostgreDataAdapter extends DataAdapter {
 
         // if there is no subscription on the slave removing replication slot
         LogSequenceNumber logSequenceNumber = readSlaveLSN(server);
-        if(logSequenceNumber == DataAdapter.NO_SUBSCRIPTION)
-            executeEnsure(master, "SELECT pg_drop_replication_slot('" + getSlotName(server) + "');\n");
+//        если не проверить наличие слота, и вызвать pg_drop_replication_slot, то получаем ошибку:
+//        ERROR: replication slot "lsfusion_sub17973" does not exist at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725) at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2412) at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:371) at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:502) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:419) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:341) at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:326) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:302) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:297)
+        if(logSequenceNumber == DataAdapter.NO_SUBSCRIPTION) {
+            boolean exists;
+            try (PreparedStatement ps = server.ensureConnection.prepareStatement(
+                    "SELECT 1 FROM pg_replication_slots WHERE slot_name = ?")) {
+                ps.setString(1, getSlotName(server));
+                try (ResultSet rs = ps.executeQuery()) {
+                    exists = rs.next();
+                }
+            }
+            if (exists)
+                executeEnsure(master, "SELECT pg_drop_replication_slot('" + getSlotName(server) + "');\n");
+        }
 
         boolean isFirstStart = false;
         try {
@@ -215,8 +223,8 @@ public class PostgreDataAdapter extends DataAdapter {
         return DB_SUBSRIPTION + server.id;
     }
 
-    public double getLoad(Server server) {
-        return Math.random();
+    public double getLoad(Server server) throws SQLException {
+        return server.getLoad();
         // for master add coeff, for slave including lag
     }
 

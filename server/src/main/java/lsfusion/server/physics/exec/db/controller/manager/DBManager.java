@@ -129,6 +129,7 @@ import lsfusion.server.physics.exec.db.table.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.postgresql.replication.LogSequenceNumber;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
@@ -1604,7 +1605,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         adapter.removeSlave(getSlave(object, session));
     }
     public DataAdapter.Slave getSlave(DataObject object, DataSession session) throws SQLException, SQLHandledException {
-        return new DataAdapter.Slave((String) serviceLM.hostDBSlave.read(session, object), object.object.toString());
+        DataAdapter.Slave slave = new DataAdapter.Slave((String) serviceLM.hostDBSlave.read(session, object), object.object.toString());
+        slave.setSNMPPort((Integer) serviceLM.snmpPort.read(session, object));
+        return slave;
     }
     public void synchronizeDB() throws Exception {
 
@@ -1617,6 +1620,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
+            Long dbServer = (Long) serviceLM.findProperty("dbServer[STRING]").read(session, new DataObject(adapter.getMaster().host));
+            if (dbServer != null) {
+                Integer snmpPort = (Integer) serviceLM.snmpPort.read(session, new DataObject(dbServer, (ConcreteCustomClass) serviceLM.findClass("DBMaster")));
+                adapter.getMaster().setSNMPPort(snmpPort);
+            }
+
             setDefaultUserLocalePreferences(session);
             setLogicsParams(session);
 
@@ -1740,19 +1749,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             dropTables(sql, oldDBStructure, newDBStructure);
 
-            if(master) {
+            if(master)
                 packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
 
-                startLog("Filling static objects ids");
-                IDChanges idChanges = new IDChanges();
-                LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName, LM.staticOrder,
-                        migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
-                        migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
-                        idChanges, changesController);
 
-                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                    newClass.ID = newClass.customClass.ID;
-                }
+            //It is important to execute fillIDs not only for the master to prevent errors when connecting the slave.
+            IDChanges idChanges = fillIDs(sql, oldDBStructure, newDBStructure);
+
+            if (master) {
 
                 // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
                 new TaskRunner(getBusinessLogics()).runTask(initTask);
@@ -1805,6 +1809,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(master)
                 masterSync = false;
         }
+    }
+
+    @NotNull
+    private IDChanges fillIDs(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+        startLog("Filling static objects ids");
+        IDChanges idChanges = new IDChanges();
+        LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName, LM.staticOrder,
+                migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
+                migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
+                idChanges, changesController);
+
+        for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+            newClass.ID = newClass.customClass.ID;
+        }
+        return idChanges;
     }
 
     private static void packTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, List<DBStoredProperty> dropProperties, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects) throws SQLException, SQLHandledException {

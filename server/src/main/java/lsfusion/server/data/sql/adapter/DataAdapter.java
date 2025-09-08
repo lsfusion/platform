@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.lambda.EConsumer;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -31,6 +30,13 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.postgresql.replication.LogSequenceNumber;
+import org.snmp4j.CommunityTarget;
+import org.snmp4j.PDU;
+import org.snmp4j.Snmp;
+import org.snmp4j.event.ResponseEvent;
+import org.snmp4j.mp.SnmpConstants;
+import org.snmp4j.smi.*;
+import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
@@ -47,6 +53,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public static abstract class Server {
         public final String host;
+        public Integer snmpPort;
 
         public Connection ensureConnection;
 
@@ -54,13 +61,153 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             this.host = host;
         }
 
+        public void setSNMPPort(Integer snmpPort) {
+            this.snmpPort = snmpPort;
+        }
+
         public abstract boolean isMaster();
+
+        public double getLoad() throws SQLException {
+            try {
+                CpuTime prev = getLastCpuTime();
+                CpuTime curr = getCurrentCpuTime();
+                if (prev == null || curr == null || prev.isSnmp() != curr.isSnmp())
+                    return 0.0;
+
+                long userDelta = curr.getUser() - prev.getUser();
+                long niceDelta = curr.getNice() - prev.getNice();
+                long systemDelta = curr.getSystem() - prev.getSystem();
+                long idleDelta = curr.getIdle() - prev.getIdle();
+                long iowaitDelta = curr.getIowait() - prev.getIowait();
+
+                long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
+
+                if (totalDelta <= 0)
+                    return 0.0;
+
+                double usage = 100.0 - (idleDelta * 100.0 / totalDelta);
+                return Math.round(usage * 100.0) / 100.0;
+            } catch (SQLException e) {
+                logger.error("Error while getting server( " + host + " ) load");
+                throw e;
+            }
+        }
+
+        static final List<OID> OIDS = Arrays.asList(
+                new OID("1.3.6.1.4.1.2021.11.50.0"), // user
+                new OID("1.3.6.1.4.1.2021.11.51.0"), // nice
+                new OID("1.3.6.1.4.1.2021.11.52.0"), // system
+                new OID("1.3.6.1.4.1.2021.11.53.0"), // idle
+                new OID("1.3.6.1.4.1.2021.11.54.0") // iowait
+        );
+
+        public CpuTime getCurrentCpuTime() throws SQLException {
+            try (Statement stmt = ensureConnection.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();")) {
+                if (rs.next()) {
+                    return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
+                            rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
+                }
+            } catch (SQLException e) {
+                try {
+                    if (snmpPort == null)
+                        return null;
+
+                    String address = host.split(":")[0] + "/" + snmpPort;
+
+                    CommunityTarget<UdpAddress> target = new CommunityTarget<>();
+                    target.setCommunity(new OctetString("public"));
+                    target.setAddress(new UdpAddress(address));
+                    target.setRetries(2);
+                    target.setTimeout(1500);
+                    target.setVersion(SnmpConstants.version2c);
+
+                    Snmp snmp = new Snmp(new DefaultUdpTransportMapping());
+                    snmp.listen();
+
+                    PDU pdu = new PDU();
+                    for (OID oid : OIDS) {
+                        pdu.add(new VariableBinding(oid));
+                    }
+                    pdu.setType(PDU.GET);
+
+                    ResponseEvent<?> response = snmp.send(pdu, target);
+                    CpuTime cpuTime = null;
+                    if (response != null && response.getResponse() != null) {
+                        long[] vals = new long[OIDS.size()];
+                        for (int i = 0; i < OIDS.size(); i++) {
+                            Variable v = response.getResponse().get(i).getVariable();
+                            vals[i] = v.toLong();
+                        }
+                        cpuTime = new CpuTime(vals[0], vals[1], vals[2], vals[3], vals[4], true);
+                    }
+
+                    snmp.close();
+                    return cpuTime;
+                } catch (IOException ex) {
+                    System.out.println("No response from SNMP agent."); //todo убрать или что-то придумать
+                }
+            }
+            return null;
+        }
+
+        private CpuTime lastCpuTime;
+
+        public CpuTime getLastCpuTime() {
+            return lastCpuTime;
+        }
+
+        public void setLastCpuTime(CpuTime lastCpuTime) {
+            this.lastCpuTime = lastCpuTime;
+        }
     }
+
+    public static class CpuTime {
+        private final long user;
+        private final long nice;
+        private final long system;
+        private final long idle;
+        private final long iowait;
+        private final boolean snmp;
+
+        public CpuTime(long user, long nice, long system, long idle, long iowait, boolean snmp) {
+            this.user = user;
+            this.nice = nice;
+            this.system = system;
+            this.idle = idle;
+            this.iowait = iowait;
+            this.snmp = snmp;
+        }
+
+        public long getUser() {
+            return user;
+        }
+
+        public long getNice() {
+            return nice;
+        }
+
+        public long getSystem() {
+            return system;
+        }
+
+        public long getIdle() {
+            return idle;
+        }
+
+        public long getIowait() {
+            return iowait;
+        }
+
+        public boolean isSnmp() {
+            return snmp;
+        }
+    }
+
     public static class Master extends Server {
         public Master(String host) {
             super(host);
         }
-
         public boolean isMaster() {
             return true;
         }
@@ -127,7 +274,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected final Master master;
 
+    public Master getMaster() {
+        return master;
+    }
+
     protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
+
+    public List<Server> getServers() {
+        return servers;
+    }
 
     public String dataBase;
     public String user;
@@ -136,7 +291,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public abstract void ensureDB(Server server, boolean cleanDB) throws Exception;
 
-    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout, boolean cleanDB) throws Exception {
+    public void initProctab(Server server){
+    }
+
+    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout) throws Exception {
 
         Class.forName(syntax.getClassName());
 
@@ -205,6 +363,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         startEnsureConnection(server);
 
         ensureSqlFuncs(server);
+
+        initProctab(server); //это делается на слэйве для того, чтобы установить расширение. потому что при репликации расширения не копируются
 
         ensureCaches(server);
 
@@ -456,9 +616,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             if(concType.getCompatible(ensuredType)!=null) {
                 String ensuredName = getConcTypeName(ensuredType);
                 executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")", slave);
-                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+//                если вызвать CREATE CAST с typeName равным ensuredName, то получим ошибку:
+//                ERROR: source data type and target data type are the same at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725) at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2412) at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:371) at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:502) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:419) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:341) at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:326) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:302) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:297)
+                if (!typeName.equalsIgnoreCase(ensuredName))
+                    executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
                 executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")", slave);
-                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT", slave);
+                if (!typeName.equalsIgnoreCase(ensuredName))
+                    executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT", slave);
             }
         }
     }
