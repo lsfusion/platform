@@ -32,7 +32,7 @@ public class StartConsumerRabbitMQAction extends InternalAction {
             String user = (String) findProperty("user[Channel]").read(context, channelObject);
             String password = (String) findProperty("password[Channel]").read(context, channelObject);
             boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
-            boolean durable = findProperty("durable[Channel]").read(context, channelObject) != null;
+            boolean durable = findProperty("isDurable[Channel]").read(context, channelObject) != null;
             String virtualHost = (String) findProperty("vHost[Channel]").read(context, channelObject);
             Integer threadCount = (Integer) findProperty("threadCount[Channel]").read(context, channelObject);
             Integer prefetchCount = (Integer) findProperty("prefetchCount[Channel]").read(context, channelObject);
