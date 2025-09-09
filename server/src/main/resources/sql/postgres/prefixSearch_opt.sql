@@ -42,9 +42,16 @@ $$
 SELECT prefixSearchExact(config, prefixSearchPrepareQuery(querytext, separator));
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION prefixSearchLikePrepareQuery(query text) RETURNS text AS
+$$
+SELECT regexp_replace(
+               regexp_replace(query, '[^[:alnum:][:space:]]+', '', 'g'),  -- remove all except letters, numbers and spaces
+               '[[:space:]]+', ' ', 'g'                                   -- replace multi spaces to single spaces
+       );
+$$
+LANGUAGE sql IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION prefixSearchLike(search text, match text) RETURNS numeric AS
 $$
-SELECT CASE --replace all except letters and numbers
-           WHEN regexp_replace(search, '[^[:alnum:]]+', '', 'g') ILIKE regexp_replace(match, '[^[:alnum:]]+', '', 'g') || '%'
-    THEN 0.3 ELSE 0 END;
+SELECT CASE WHEN prefixSearchLikePrepareQuery(search) ILIKE prefixSearchLikePrepareQuery(match) || '%' THEN 0.3 ELSE 0 END;
 $$ LANGUAGE sql IMMUTABLE;
