@@ -132,6 +132,7 @@ public interface SQLSyntax {
     String getDateTime();
 
     String getPrefixSearchQuery(boolean exact);
+    String getPrefixSearchLikeQuery();
 
     String getInsensitiveLike();
 
