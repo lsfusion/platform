@@ -303,6 +303,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return exact ? "prefixSearchExact" : "prefixSearch";
     }
 
+    public String getPrefixSearchLikeQuery() {
+        return "prefixSearchLike";
+    }
+
     public String getInsensitiveLike() {
         return "LIKE";
     }
