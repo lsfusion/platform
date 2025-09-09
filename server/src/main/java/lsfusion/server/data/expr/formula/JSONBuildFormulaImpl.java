@@ -2,11 +2,14 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.JSONTextClass;
+
+import static lsfusion.base.BaseUtils.nullEquals;
 
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
@@ -35,7 +38,11 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     @Override
     public String getSource(ExprSource source) {
-        MList<String> result = ListFact.mList();
+        MList<JSONEntry> result = ListFact.mList();
+        MList<String> currentGroup = ListFact.mList();
+        String currentShowIfSource = null;
+        Boolean currentStripNulls = null;
+
         for (int i = 0; i < fieldNames.size(); i++) {
             String value = fieldNames.getKey(i);
             String valueSource = source.getSource(i);
@@ -44,29 +51,35 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
                 Boolean showIf = options.first;
                 Boolean stripNulls = options.second;
                 String showIfSource = showIf ? source.getSource(i + 1) : null;
-                result.add(getField("'" + value + "'," + valueSource, showIfSource, stripNulls));
+                if(i > 0 && !nullEquals(currentStripNulls, stripNulls) || (showIfSource != null || currentShowIfSource != null)) {
+                    result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
+                    currentGroup = ListFact.mList();
+
+                }
+                currentGroup.add("'" + value + "'," + valueSource);
+                currentShowIfSource = showIfSource;
+                currentStripNulls = stripNulls;
             }
         }
 
-        return "notEmpty(" + result.immutableList().toString(" || ") + ")";
+        if(currentGroup.size() > 0) //last group
+            result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
+
+        return getJSON(result);
     }
 
-    private String getField(String source, String showIfSource, Boolean stripNulls) {
-        String jsonBuildObject = jsonBuildObject(source);
-        String field = stripNulls != null && stripNulls ? jsonStripNulls(jsonBuildObject) : jsonBuildObject;
-        return showIfSource != null ? ("CASE WHEN " + showIfSource + " IS NOT NULL THEN " + field + " ELSE " + empty() + " END") : field;
+    private String getJSON(MList<JSONEntry> list) {
+        boolean convertToJsonb = list.size() > 1;
+        String result = list.immutableList().toString(jsonEntry -> jsonEntry.getJSON(convertToJsonb), " || ");
+        return "notEmpty(" + (returnString && convertToJsonb ? toJson(result) : result) + ")";
     }
 
-    private String jsonBuildObject(String value) {
-        return (returnString ? "json_build_object" : "jsonb_build_object") + "(" + value + ")";
+    private String toJson(String value) {
+        return returnString ? "(" + value + ")::json" : value;
     }
 
-    private String jsonStripNulls(String value) {
-        return (returnString ? "json_strip_nulls" : "jsonb_strip_nulls") + "(" + value + ")";
-    }
-
-    private String empty() {
-        return (returnString ? "'{}'::json" : "'{}'::jsonb");
+    private String toJsonb(String value) {
+        return returnString ? "(" + value + ")::jsonb" : value;
     }
 
     @Override
@@ -81,5 +94,29 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     public Type getType(ExprType source) {
         return returnString ? JSONTextClass.instance : JSONClass.instance;
+    }
+
+    private class JSONEntry {
+        private final ImList<String> sources;
+        private final String showIfSource;
+        private final Boolean stripNulls;
+
+        public JSONEntry(ImList<String> sources, String showIfSource, Boolean stripNulls) {
+            this.sources = sources;
+            this.showIfSource = showIfSource;
+            this.stripNulls = stripNulls;
+        }
+
+        public String getJSON(boolean convertToJsonb) {
+            String jsonBuildObject = (returnString ? "json_build_object" : "jsonb_build_object") + "(" + sources.toString(",") + ")";
+            String field = stripNulls != null && stripNulls ? jsonStripNulls(jsonBuildObject) : jsonBuildObject;
+            String result = showIfSource != null ? ("CASE WHEN " + showIfSource + " IS NOT NULL THEN " + field +
+                    " ELSE '{}'::" + (returnString ? "json" : "jsonb") + " END") : field;
+            return convertToJsonb ? toJsonb(result) : result;
+        }
+
+        private String jsonStripNulls(String value) {
+            return returnString ? ("json_strip_nulls(" + value + ")") : ("jsonb_strip_nulls(" + value + ")");
+        }
     }
 }
