@@ -440,38 +440,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()), limitString, offsetString, distinctValues);
     }
 
-    private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, MStaticExecuteEnvironment mEnv, Result<Cost> mBaseCost, Result<Boolean> mOptAdjustLimit, Result<Stat> mRows, MExclMap<String, SQLQuery> mSubQueries, DebugInfoWriter debugInfoWriter) {
-        return fillFullSelect(mapKeys, SetFact.singleton(innerSelect), innerSelect.getFullWhere(), compiledProps, MapFact.EMPTYORDER(), LimitOptions.NOLIMIT, resultKey, resultProperty, params, syntax, subcontext, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, debugInfoWriter);
-
-/*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
-
-        MapWhere<FJData> joinDatas = new MapWhere<FJData>();
-        for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
-            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE());
-
-        String innerAlias = subcontext+"inalias";
-        Map<String, Expr> joinProps = new HashMap<String, Expr>();
-        // затем все данные по JoinSelect'ам по вариантам
-        for(FJData joinData : joinDatas.keys()) {
-            String joinName = "join_" + joinProps.size();
-            joinProps.put(joinName, joinData.getFJExpr());
-            FJSelect.joinData.put(joinData,joinData.getFJString(innerAlias +'.'+joinName));
-        }
-
-        Map<K, String> keyNames = new HashMap<K, String>();
-        for(K key : mapKeys.keySet()) {
-            String keyName = "jkey" + keyNames.size();
-            keyNames.put(key, keyName);
-            keySelect.put(key, innerAlias +"."+ keyName);
-            FJSelect.keySelect.put(mapKeys.get(key),innerAlias +"."+ keyName);
-        }
-
-        for(Map.Entry<AV, Expr> mapProp : compiledProps.entrySet())
-            propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
-
-        return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, subcontext, true) + ") " + innerAlias;*/
-    }
-    
     private static <K> void fillAreValues(ImMap<K, Expr> exprs, Result<ImSet<K>> result) {
         if(result != null) {
             result.set(exprs.filterFnValues(AbstractOuterContext::isValue).keys());
