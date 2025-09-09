@@ -13,11 +13,13 @@ import static lsfusion.base.BaseUtils.nullEquals;
 
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
-    private final ImOrderMap<String, Pair<Boolean, Boolean>> fieldNames;
+    private final ImList<String> fieldNames;
+    private final ImList<Pair<Boolean, Boolean>> fieldOptions;
     private final boolean returnString;
 
-    public JSONBuildFormulaImpl(ImOrderMap<String, Pair<Boolean, Boolean>> fieldNames, boolean returnString) {
+    public JSONBuildFormulaImpl(ImList<String> fieldNames, ImList<Pair<Boolean, Boolean>> fieldOptions, boolean returnString) {
         this.fieldNames = fieldNames;
+        this.fieldOptions = fieldOptions;
         this.returnString = returnString;
     }
 
@@ -44,9 +46,9 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
         Boolean currentStripNulls = null;
 
         for (int i = 0; i < fieldNames.size(); i++) {
-            String value = fieldNames.getKey(i);
+            String value = fieldNames.get(i);
             String valueSource = source.getSource(i);
-            Pair<Boolean, Boolean> options = fieldNames.getValue(i);
+            Pair<Boolean, Boolean> options = fieldOptions.get(i);
             if(options != null) { //options == null - showIf field, skip
                 Boolean showIf = options.first;
                 Boolean stripNulls = options.second;

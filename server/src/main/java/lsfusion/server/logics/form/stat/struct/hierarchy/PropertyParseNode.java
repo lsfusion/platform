@@ -14,12 +14,16 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyParseNode implements ChildParseNode {
-    public final PropertyReaderEntity property;
+    private final PropertyReaderEntity property;
     private final boolean isExclusive;
 
     public PropertyParseNode(PropertyReaderEntity property, boolean isExclusive) {
         this.property = property;
         this.isExclusive = isExclusive;
+    }
+
+    public PropertyReaderEntity getProperty() {
+        return property;
     }
 
     public String getKey() {
