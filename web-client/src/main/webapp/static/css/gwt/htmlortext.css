@@ -9,9 +9,7 @@
     overflow-wrap: normal; /* it seems that user agent sometimes by default sets it to break-word, word-break in html-or-text-wrap-wordbreak will change it if needed (actually it will be ignored) */
 }
 
-.html-or-text,
-.html-or-text-collapse /* optimization fallback */
-{
+.html-or-text {
     white-space: pre;
 }
 
@@ -24,10 +22,7 @@
     white-space: normal;
 }
 
-.html-or-text-collapse:not(.html-or-text-no-multi-line),
-.html-or-text-collapse.html-or-text-is-html, /* optimization collapse fallback */
-.html-or-text.html-or-text-is-html /* collapse fallback */
-{
+.html-or-text-collapse {
     white-space: nowrap;
 }
 
