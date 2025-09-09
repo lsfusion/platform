@@ -41,3 +41,10 @@ CREATE OR REPLACE FUNCTION prefixSearchExact(config regconfig, querytext text, s
 $$
 SELECT prefixSearchExact(config, prefixSearchPrepareQuery(querytext, separator));
 $$ LANGUAGE 'sql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION prefixSearchLike(search text, match text) RETURNS numeric AS
+$$
+SELECT CASE --replace all except letters and numbers
+           WHEN regexp_replace(search, '[^[:alnum:]]+', '', 'g') ILIKE regexp_replace(match, '[^[:alnum:]]+', '', 'g') || '%'
+    THEN 0.3 ELSE 0 END;
+$$ LANGUAGE sql IMMUTABLE;
