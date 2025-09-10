@@ -11,13 +11,11 @@ import static lsfusion.base.BaseUtils.nullEquals;
 
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
-    private final ImList<String> fieldNames;
-    private final ImList<FieldShowIf> fieldShowIfs;
+    private final ImList<JSONField> fields;
     private final boolean returnString;
 
-    public JSONBuildFormulaImpl(ImList<String> fieldNames, ImList<FieldShowIf> fieldShowIfs, boolean returnString) {
-        this.fieldNames = fieldNames;
-        this.fieldShowIfs = fieldShowIfs;
+    public JSONBuildFormulaImpl(ImList<JSONField> fields, boolean returnString) {
+        this.fields = fields;
         this.returnString = returnString;
     }
 
@@ -43,12 +41,14 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
         String currentShowIfSource = null;
         Boolean currentStripNulls = null;
 
-        for (int i = 0; i < fieldNames.size(); i++) {
-            String value = fieldNames.get(i);
+        int showIfIndex = fields.size();
+        for (int i = 0; i < fields.size(); i++) {
+            JSONField field = fields.get(i);
+            String value = field.name;
             String valueSource = source.getSource(i);
-            FieldShowIf fieldShowIf = fieldShowIfs.get(i);
+            FieldShowIf fieldShowIf = field.showIf;
             Boolean stripNulls = fieldShowIf == null;
-            String showIfSource = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(i + 1) : null;
+            String showIfSource = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(showIfIndex++) : null;
             if(i > 0 && !nullEquals(currentStripNulls, stripNulls) || (showIfSource != null || currentShowIfSource != null)) {
                 result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
                 currentGroup = ListFact.mList();
@@ -81,12 +81,12 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     @Override
     public int hashCode() {
-        return fieldNames.hashCode() + (returnString ? 1 : 0);
+        return fields.hashCode() + (returnString ? 1 : 0);
     }
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof JSONBuildFormulaImpl && fieldNames.equals(((JSONBuildFormulaImpl) o).fieldNames) && returnString == ((JSONBuildFormulaImpl) o).returnString;
+        return this == o || o instanceof JSONBuildFormulaImpl && fields.equals(((JSONBuildFormulaImpl) o).fields) && returnString == ((JSONBuildFormulaImpl) o).returnString;
     }
 
     public Type getType(ExprType source) {

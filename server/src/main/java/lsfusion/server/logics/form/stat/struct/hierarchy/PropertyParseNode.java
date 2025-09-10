@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.formula.FieldShowIf;
+import lsfusion.server.data.expr.formula.JSONField;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
@@ -34,13 +35,15 @@ public class PropertyParseNode implements ChildParseNode {
         }
 
     }
-    public FieldShowIf getFieldShowIf() {
+
+    @Override
+    public JSONField getField() {
+        FieldShowIf fieldShowIf = null;
         if(property instanceof PropertyDrawEntity) {
             PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
-            return showIfProp != null ? FieldShowIf.SHOWIF : ((PropertyDrawEntity) property).extNull ? FieldShowIf.EXTNULL : null;
-        } else{
-            return null;
+            fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : ((PropertyDrawEntity) property).extNull ? FieldShowIf.EXTNULL : null;
         }
+        return new JSONField(getKey(), fieldShowIf);
     }
     public boolean isAttr() {
         if(property instanceof PropertyDrawEntity) {
