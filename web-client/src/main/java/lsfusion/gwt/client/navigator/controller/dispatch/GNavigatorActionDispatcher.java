@@ -32,8 +32,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResults, requestIndex, continueIndex), callback, true);
+    protected void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResult, requestIndex, continueIndex), callback, true);
     }
 
     @Override

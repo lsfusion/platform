@@ -79,8 +79,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
-            public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
-                return RemoteNavigatorContext.this.aspectRequestUserInteraction(actions, messages);
+            public Object aspectRequestUserInteraction(ClientAction action, String message) {
+                return RemoteNavigatorContext.this.aspectRequestUserInteraction(action, message);
             }
 
             @Override
@@ -178,8 +178,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     }
 
     @Override
-    public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
-        return navigator.requestUserInteraction(actions);
+    public Object aspectRequestUserInteraction(ClientAction action, String message) {
+        return navigator.requestUserInteraction(action);
     }
 
     @Override

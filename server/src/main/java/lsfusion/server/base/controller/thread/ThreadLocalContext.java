@@ -311,10 +311,6 @@ public class ThreadLocalContext {
         return get().userInteractionCanBeProcessedInTransaction();
     }
 
-    public static Object[] requestUserInteraction(ClientAction... actions) {
-        return get().requestUserInteraction(actions);
-    }
-
     // есть пока всего одна ветка с assertTop (кроме wrapContext) - rmicontextobject, да и то не до конца понятно в каких стеках
 
     private static final ThreadLocal<NewThreadExecutionStack> stack = new ThreadLocal<>();

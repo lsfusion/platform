@@ -1246,8 +1246,8 @@ public class GFormController implements EditManager {
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
-    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
+    public void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ContinueInvocation(requestIndex, actionResult, continueIndex), callback, true);
     }
 
     public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
