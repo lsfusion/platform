@@ -2382,10 +2382,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask readSQLServerCpuTimeTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
-            for (DataAdapter.Server server : getDbManager().getAdapter().getServers()) {
-                server.setLastCpuTime(server.getCurrentCpuTime());
+            try(DataSession session = createSystemTaskSession()) {
+                for (DataAdapter.Server server : getDbManager().getAdapter().getServers()) {
+                    Long dbServer = (Long) serviceLM.findProperty("dbServer[STRING]").read(session, new DataObject(server.host));
+                    LP<?> load = serviceLM.findProperty("load[DBServer]");
+                    DataObject dbServerClass = new DataObject(dbServer, (ConcreteCustomClass) serviceLM.findClass(server.isMaster() ? "DBMaster" : "DBSlave"));
+
+                    load.change(new DataObject(server.getLoad()), session, dbServerClass);
+                    session.applyException(this, stack);
+                }
+            } catch (Throwable t) {
+                ServerLoggers.serviceLogger.info("Read sql server cpu time task error: ", t);
             }
-        }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "read sql server cpu time task");
+        }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "Read sql server cpu time task");
     }
 
     private class AllocatedInfo {

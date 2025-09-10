@@ -68,17 +68,20 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         public abstract boolean isMaster();
 
         public double getLoad() throws SQLException {
+            if (lastCpuTime == null) {
+                this.lastCpuTime = getCpuTime();
+                return 0.0;
+            }
             try {
-                CpuTime prev = getLastCpuTime();
-                CpuTime curr = getCurrentCpuTime();
-                if (prev == null || curr == null || prev.isSnmp() != curr.isSnmp())
+                CpuTime currentCPUTime = getCpuTime();
+                if (currentCPUTime == null || lastCpuTime.isSnmp() != currentCPUTime.isSnmp())
                     return 0.0;
 
-                long userDelta = curr.getUser() - prev.getUser();
-                long niceDelta = curr.getNice() - prev.getNice();
-                long systemDelta = curr.getSystem() - prev.getSystem();
-                long idleDelta = curr.getIdle() - prev.getIdle();
-                long iowaitDelta = curr.getIowait() - prev.getIowait();
+                long userDelta = currentCPUTime.getUser() - lastCpuTime.getUser();
+                long niceDelta = currentCPUTime.getNice() - lastCpuTime.getNice();
+                long systemDelta = currentCPUTime.getSystem() - lastCpuTime.getSystem();
+                long idleDelta = currentCPUTime.getIdle() - lastCpuTime.getIdle();
+                long iowaitDelta = currentCPUTime.getIowait() - lastCpuTime.getIowait();
 
                 long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
 
@@ -101,18 +104,19 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
                 new OID("1.3.6.1.4.1.2021.11.54.0") // iowait
         );
 
-        public CpuTime getCurrentCpuTime() throws SQLException {
-            try (Statement stmt = ensureConnection.createStatement();
-                ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();")) {
-                if (rs.next()) {
-                    return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
-                            rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
+        public CpuTime getCpuTime() throws SQLException {
+            if (snmpPort == null) {
+                try (Statement stmt = ensureConnection.createStatement();
+                     ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();")) {
+                    if (rs.next()) {
+                        return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
+                                rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
+                    }
+                } catch (SQLException e) {
+                    logger.error(e.getMessage(), e);
                 }
-            } catch (SQLException e) {
+            } else {
                 try {
-                    if (snmpPort == null)
-                        return null;
-
                     String address = host.split(":")[0] + "/" + snmpPort;
 
                     CommunityTarget<UdpAddress> target = new CommunityTarget<>();
@@ -144,22 +148,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
                     snmp.close();
                     return cpuTime;
-                } catch (IOException ex) {
-                    System.out.println("No response from SNMP agent."); //todo убрать или что-то придумать
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
             return null;
         }
 
         private CpuTime lastCpuTime;
-
-        public CpuTime getLastCpuTime() {
-            return lastCpuTime;
-        }
-
-        public void setLastCpuTime(CpuTime lastCpuTime) {
-            this.lastCpuTime = lastCpuTime;
-        }
     }
 
     public static class CpuTime {
@@ -364,7 +360,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
         ensureSqlFuncs(server);
 
-        initProctab(server); //это делается на слэйве для того, чтобы установить расширение. потому что при репликации расширения не копируются
+        initProctab(server); //This runs on the slave in order to install the extension. Because extensions are not copied during replication.
 
         ensureCaches(server);
 
@@ -610,14 +606,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         String typeName = getConcTypeName(concType);
         executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")", slave);
 
-        // создаем cast'ы всем concatenate типам
+        // create casts for all concatenate types
         for(int i=0,size=ensureConcType.cache.size();i<size;i++) {
             ConcatenateType ensuredType = ensureConcType.cache.get(i);
             if(concType.getCompatible(ensuredType)!=null) {
                 String ensuredName = getConcTypeName(ensuredType);
                 executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")", slave);
-//                если вызвать CREATE CAST с typeName равным ensuredName, то получим ошибку:
-//                ERROR: source data type and target data type are the same at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725) at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2412) at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:371) at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:502) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:419) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:341) at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:326) at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:302) at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:297)
+                //If call CREATE CAST with typeName equal to ensuredName, we will get an error.
                 if (!typeName.equalsIgnoreCase(ensuredName))
                     executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
                 executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")", slave);

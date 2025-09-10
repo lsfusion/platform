@@ -411,8 +411,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void assertLock() {
-//        todo если раскоментить, то падает при старте
-//        ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
+        ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
     }
 
     private int explicitNeedPrivate;

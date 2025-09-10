@@ -1045,6 +1045,7 @@ name '{service.scaling.db.server.name}' = DATA STRING (DBServer);
 host '{service.scaling.db.server.host}' = DATA STRING (DBServer);
 snmpPort '{service.scaling.db.server.snmp.port}' = DATA INTEGER (DBServer);
 dbServer(STRING host) = GROUP MAX DBServer server IF host(server) = host;
+dbMaster() = GROUP MAX DBServer server IF server IS DBMaster;
 
 CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
@@ -1073,13 +1074,13 @@ onStarted() +{
 }
 
 load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
-readLoad INTERNAL 'lsfusion.server.physics.admin.service.action.ReadSqlServerLoad';
 
 FORM scaling '{service.scaling}'
     OBJECTS s = DBServer
     PROPERTIES (s) GRID name, host, snmpPort, load READONLY
-    PROPERTIES () readLoad
     PROPERTIES (s) NEW[DBSlave], DELETE
+
+    EVENTS ON SCHEDULE PERIOD 5 formRefresh();
 ;
 
 NAVIGATOR {
@@ -1088,11 +1089,8 @@ NAVIGATOR {
     }
 }
 
-host = DATA LOCAL STRING();
 readMasterDBHost INTERNAL 'lsfusion.server.physics.admin.service.action.ReadMasterDBHost'();
 onStarted() +{
-    INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //todo не создается в базе которая репликант. потому что реплицируются только таблицы, но не функции
+    INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //It is not created in the database that is replicated because only tables are replicated, but not functions.
     readMasterDBHost();
-    host(DBMaster server) <- host() IF server IS DBMaster;
-    name(DBMaster server) <- '{service.scaling.master}' IF server IS DBMaster;
 }
