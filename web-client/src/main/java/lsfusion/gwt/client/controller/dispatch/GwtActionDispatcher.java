@@ -49,7 +49,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
 
     protected ServerResponseResult currentResponse = null;
-    Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
     private Runnable currentOnDispatchFinished = null;
@@ -100,44 +99,42 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         assert !dispatchingPaused;
         onServerInvocationResponse(response);
 
-        dispatchResponse(response, continueIndex, onDispatchFinished, onRequestFinished);
+        dispatchResponse(response, null, null, continueIndex, onDispatchFinished, onRequestFinished);
     }
-    public void continueDispatchResponse() {
+    public void continueDispatchResponse(Object actionResult, Throwable actionThrowable) {
         assert dispatchingPaused;
-        dispatchResponse(null, -1, null, null);
+        dispatchResponse(null, actionResult, actionThrowable, -1, null, null);
     }
-    public void dispatchResponse(ServerResponseResult response, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
-        Object[] actionResults;
-        Throwable actionThrowable = null;
-        int beginIndex;
+
+    // only the last action can be paused / continued with the result (and only it can return the result)
+    public void dispatchResponse(ServerResponseResult response, Object actionResult, Throwable actionThrowable, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
+        int beginIndex = 0;
         if (dispatchingPaused) { // continueDispatching
             beginIndex = currentActionIndex + 1;
-            actionResults = currentActionResults;
             continueIndex = currentContinueIndex;
             response = currentResponse;
             onDispatchFinished = currentOnDispatchFinished;
             onRequestFinished = currentOnRequestFinished;
 
+            assert beginIndex == response.actions.length;
+
             currentActionIndex = -1;
             currentContinueIndex = -1;
-            currentActionResults = null;
             currentResponse = null;
             currentOnDispatchFinished = null;
             currentOnRequestFinished = null;
             dispatchingPaused = false;
-        } else {
-            beginIndex = 0;
-            actionResults = new Object[response.actions.length];
         }
 
         for (int i = beginIndex; i < response.actions.length; i++) {
+            assert actionResult == null;
+
             GAction action = response.actions[i];
-            Object dispatchResult;
             try {
                 dispatchingIndex = response.requestIndex;
                 try {
                     //for unsupported actions null is send to preserve number of actions and thus the order of responses
-                    dispatchResult = action == null ? null : action.dispatch(this);
+                    actionResult = action == null ? null : action.dispatch(this);
                 } finally {
                     dispatchingIndex = -1;
                 }
@@ -146,17 +143,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 break;
             }
 
+            // actionResult can be not null only if not dispatchingPaused and it's the last action
+            assert actionResult == null || (!dispatchingPaused && i == response.actions.length - 1);
+
             if (dispatchingPaused) {
+                assert i == response.actions.length - 1;
                 currentResponse = response;
-                currentActionResults = actionResults;
                 currentActionIndex = i;
                 currentContinueIndex = continueIndex;
                 currentOnDispatchFinished = onDispatchFinished;
                 currentOnRequestFinished = onRequestFinished;
                 return;
             }
-
-            actionResults[i] = dispatchResult;
         }
 
         if(onDispatchFinished != null)
@@ -180,7 +178,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                         }
                     };
             if (actionThrowable == null) {
-                continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
+                continueServerInvocation(response.requestIndex, actionResult, continueIndex, continueRequestCallback);
             } else {
                 throwInServerInvocation(response.requestIndex, LogClientExceptionAction.fromWebClientToWebServer(actionThrowable), continueIndex, continueRequestCallback);
             }
@@ -208,7 +206,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
-    protected abstract void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
+    protected abstract void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
     // synchronization is guaranteed pretty tricky
     // in RemoteDispatchAsync there is a linked list q of all executing actions, where all responses are queued, and all continue invoications are put into it's beginning
@@ -228,18 +226,23 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return currentResponse.requestIndex;
     }
 
-    public void continueDispatching(Object currentActionResult, Result<Object> result) {
+    public <T> void continueDispatching(T actionResult, Result<T> result) {
+        continueDispatching(actionResult, null, result);
+    }
+
+    public <T> void continueDispatching(T actionResult, Throwable actionThrowable, Result<T> result) {
         assert dispatchingPaused;
         if (currentResponse == null) { // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
             // in this case we have to return result as no pauseDispatching happened
             dispatchingPaused = false;
+
+            if(actionThrowable != null)
+                throw GExceptionManager.propagate(actionThrowable);
+
             if(result != null)
-                result.set(currentActionResult);
+                result.set(actionResult);
         } else {
-            if (currentActionResults != null && currentActionIndex >= 0) {
-                currentActionResults[currentActionIndex] = currentActionResult;
-            }
-            continueDispatchResponse();
+            continueDispatchResponse(actionResult, actionThrowable);
         }
     }
 
@@ -813,16 +816,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }-*/;
 
         private void onFileExecuted(GClientWebAction action) {
-            onActionExecuted(action, null);
+            onActionExecuted(action, null, null);
         }
 
-        private void onActionExecuted(GClientWebAction action, Object currentActionResult) {
+        private void onActionExecuted(GClientWebAction action, Object actionResult, Throwable actionThrowable) {
             isExecuting = false;
             actions.remove(action);
 
             if (action.syncType) {
                 Result<Object> result = new Result<>();
-                continueDispatching(currentActionResult, result);
+                continueDispatching(actionResult, actionThrowable, result);
                 action.execResult = result.result;
             }
 
@@ -836,11 +839,21 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }-*/;
 
+        private native JavaScriptObject getOnException(GClientWebAction action) /*-{
+            var thisObj = this;
+            return function (value) {
+                return thisObj.@JSExecutor::onJSFunctionException(*)(action, value);
+            }
+        }-*/;
+
         private JavaScriptObject getController() {
             return GwtActionDispatcher.this.getController();
         }
         private void onJSFunctionExecuted(GClientWebAction action, JavaScriptObject result) {
-            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)));
+            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)), null);
+        }
+        private void onJSFunctionException(GClientWebAction action, String message) {
+            onActionExecuted(action, null, new RuntimeException(message));
         }
 
         private void executeJSFunction(GClientWebAction action) {
@@ -861,6 +874,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 if(fncParams > arguments.length()) { // takes onResult
                     async = true;
                     arguments.push(getOnResult(action));
+                    if(fncParams > arguments.length()) // takes onException
+                        arguments.push(getOnException(action));
                 }
 
                 result = GwtClientUtils.call(fnc, arguments);

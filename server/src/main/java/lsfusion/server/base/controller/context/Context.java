@@ -59,7 +59,6 @@ public interface Context {
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
     boolean userInteractionCanBeProcessedInTransaction();
-    Object[] requestUserInteraction(ClientAction... actions);
 
     // для создания форм
     FocusListener getFocusListener();
