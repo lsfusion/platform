@@ -1,9 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
@@ -14,12 +12,12 @@ import static lsfusion.base.BaseUtils.nullEquals;
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
     private final ImList<String> fieldNames;
-    private final ImList<Pair<Boolean, Boolean>> fieldOptions;
+    private final ImList<FieldShowIf> fieldShowIfs;
     private final boolean returnString;
 
-    public JSONBuildFormulaImpl(ImList<String> fieldNames, ImList<Pair<Boolean, Boolean>> fieldOptions, boolean returnString) {
+    public JSONBuildFormulaImpl(ImList<String> fieldNames, ImList<FieldShowIf> fieldShowIfs, boolean returnString) {
         this.fieldNames = fieldNames;
-        this.fieldOptions = fieldOptions;
+        this.fieldShowIfs = fieldShowIfs;
         this.returnString = returnString;
     }
 
@@ -48,20 +46,17 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
         for (int i = 0; i < fieldNames.size(); i++) {
             String value = fieldNames.get(i);
             String valueSource = source.getSource(i);
-            Pair<Boolean, Boolean> options = fieldOptions.get(i);
-            if(options != null) { //options == null - showIf field, skip
-                Boolean showIf = options.first;
-                Boolean stripNulls = options.second;
-                String showIfSource = showIf ? source.getSource(i + 1) : null;
-                if(i > 0 && !nullEquals(currentStripNulls, stripNulls) || (showIfSource != null || currentShowIfSource != null)) {
-                    result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
-                    currentGroup = ListFact.mList();
+            FieldShowIf fieldShowIf = fieldShowIfs.get(i);
+            Boolean stripNulls = fieldShowIf == null;
+            String showIfSource = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(i + 1) : null;
+            if(i > 0 && !nullEquals(currentStripNulls, stripNulls) || (showIfSource != null || currentShowIfSource != null)) {
+                result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
+                currentGroup = ListFact.mList();
 
-                }
-                currentGroup.add("'" + value + "'," + valueSource);
-                currentShowIfSource = showIfSource;
-                currentStripNulls = stripNulls;
             }
+            currentGroup.add("'" + value + "'," + valueSource);
+            currentShowIfSource = showIfSource;
+            currentStripNulls = stripNulls;
         }
 
         if(currentGroup.size() > 0) //last group

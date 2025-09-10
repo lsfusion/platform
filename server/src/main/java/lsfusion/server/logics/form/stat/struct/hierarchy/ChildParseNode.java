@@ -1,12 +1,12 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
-import lsfusion.base.Pair;
+import lsfusion.server.data.expr.formula.FieldShowIf;
 
 public interface ChildParseNode extends ParseNode {
 
     String getKey();
 
-    default Pair<Boolean, Boolean> getOptions() {
-        return Pair.create(false, true);
+    default FieldShowIf getFieldShowIf() {
+        return null;
     }
 }

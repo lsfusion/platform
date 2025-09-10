@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.expr.formula.FieldShowIf;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
@@ -34,10 +34,10 @@ public class PropertyParseNode implements ChildParseNode {
         }
 
     }
-    public Pair<Boolean, Boolean> getOptions() {
+    public FieldShowIf getFieldShowIf() {
         if(property instanceof PropertyDrawEntity) {
             PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
-            return Pair.create(showIfProp != null, !((PropertyDrawEntity) property).extNull);
+            return showIfProp != null ? FieldShowIf.SHOWIF : ((PropertyDrawEntity) property).extNull ? FieldShowIf.EXTNULL : null;
         } else{
             return null;
         }
