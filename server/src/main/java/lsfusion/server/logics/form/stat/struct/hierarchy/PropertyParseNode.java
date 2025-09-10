@@ -15,10 +15,10 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyParseNode implements ChildParseNode {
-    private final PropertyReaderEntity property;
+    private final PropertyDrawEntity<?> property;
     private final boolean isExclusive;
 
-    public PropertyParseNode(PropertyReaderEntity property, boolean isExclusive) {
+    public PropertyParseNode(PropertyDrawEntity<?> property, boolean isExclusive) {
         this.property = property;
         this.isExclusive = isExclusive;
     }
@@ -28,52 +28,36 @@ public class PropertyParseNode implements ChildParseNode {
     }
 
     public String getKey() {
-        if(property instanceof PropertyDrawEntity) {
-          return ((PropertyDrawEntity) property).getIntegrationSID();
-        } else {
-            return property.getReaderProperty().property.getName();
-        }
-
+        return property.getIntegrationSID();
     }
 
     @Override
     public JSONField getField() {
-        FieldShowIf fieldShowIf = null;
-        if(property instanceof PropertyDrawEntity) {
-            PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
-            fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : ((PropertyDrawEntity) property).extNull ? FieldShowIf.EXTNULL : null;
-        }
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        FieldShowIf fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : property.extNull ? FieldShowIf.EXTNULL : null;
         return new JSONField(getKey(), fieldShowIf);
     }
     public boolean isAttr() {
-        if(property instanceof PropertyDrawEntity) {
-            return ((PropertyDrawEntity<?>) property).attr;
-        } else {
-            return false;
-        }
+        return property.attr;
     }
 
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
-        if(property instanceof PropertyDrawEntity) {
-            Object propertyValue;
-            try {
-                propertyValue = node.getValue(getKey(), ((PropertyDrawEntity) property).attr, ((PropertyDrawEntity) property).getImportType());
-            } catch (ParseException e) {
-                throw Throwables.propagate(e);
-            }
-            importData.addProperty((PropertyDrawEntity) property, upValues, propertyValue, isExclusive);
+        Object propertyValue;
+        try {
+            propertyValue = node.getValue(getKey(), property.attr, property.getImportType());
+        } catch (ParseException e) {
+            throw Throwables.propagate(e);
         }
+        importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
-        if(property instanceof PropertyDrawEntity) {
-            Object value = exportData.getProperty(property, upValues);
-            PropertyReaderEntity showIfProp = ((PropertyDrawEntity) property).getShowIfProp();
-            boolean show = showIfProp == null || exportData.getProperty(showIfProp, upValues) != null;
-            if ((show && (value != null || ((PropertyDrawEntity) property).extNull))) {
-                node.addValue(node, getKey(), ((PropertyDrawEntity) property).attr, value, exportData.getType(((PropertyDrawEntity) property)));
-                return true;
-            }
+        Object value = exportData.getProperty(property, upValues);
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        boolean show = showIfProp == null || exportData.getProperty(showIfProp, upValues) != null;
+        if ((show && (value != null || property.extNull))) {
+            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
+            return true;
         }
         return false;
     }

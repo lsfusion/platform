@@ -38,8 +38,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
     public String getSource(ExprSource source) {
         MList<JSONEntry> result = ListFact.mList();
         MList<String> currentGroup = ListFact.mList();
-        String currentShowIfSource = null;
-        Boolean currentStripNulls = null;
+        Object currentShowIf = null;
 
         int showIfIndex = fields.size();
         for (int i = 0; i < fields.size(); i++) {
@@ -47,20 +46,18 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             String value = field.name;
             String valueSource = source.getSource(i);
             FieldShowIf fieldShowIf = field.showIf;
-            Boolean stripNulls = fieldShowIf == null;
-            String showIfSource = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(showIfIndex++) : null;
-            if(i > 0 && !nullEquals(currentStripNulls, stripNulls) || (showIfSource != null || currentShowIfSource != null)) {
-                result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
+            Object showIf = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(showIfIndex++) : fieldShowIf == FieldShowIf.EXTNULL;
+            if(i > 0 && !nullEquals(currentShowIf, showIf)) {
+                result.add(new JSONEntry(currentGroup.immutableList(), currentShowIf));
                 currentGroup = ListFact.mList();
 
             }
             currentGroup.add("'" + value + "'," + valueSource);
-            currentShowIfSource = showIfSource;
-            currentStripNulls = stripNulls;
+            currentShowIf = showIf;
         }
 
         if(currentGroup.size() > 0) //last group
-            result.add(new JSONEntry(currentGroup.immutableList(), currentShowIfSource, currentStripNulls));
+            result.add(new JSONEntry(currentGroup.immutableList(), currentShowIf));
 
         return getJSON(result);
     }
@@ -95,18 +92,19 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     private class JSONEntry {
         private final ImList<String> sources;
-        private final String showIfSource;
-        private final Boolean stripNulls;
+        private final Object showIf;
 
-        public JSONEntry(ImList<String> sources, String showIfSource, Boolean stripNulls) {
+        public JSONEntry(ImList<String> sources, Object showIf) {
             this.sources = sources;
-            this.showIfSource = showIfSource;
-            this.stripNulls = stripNulls;
+            this.showIf = showIf;
         }
 
         public String getJSON(boolean convertToJsonb) {
+            String showIfSource = showIf instanceof String ? (String) showIf : null;
+            boolean extNull = showIf instanceof Boolean && (Boolean) showIf;
+
             String jsonBuildObject = (returnString ? "json_build_object" : "jsonb_build_object") + "(" + sources.toString(",") + ")";
-            String field = stripNulls != null && stripNulls ? jsonStripNulls(jsonBuildObject) : jsonBuildObject;
+            String field = extNull ? jsonBuildObject : jsonStripNulls(jsonBuildObject);
             String result = showIfSource != null ? ("CASE WHEN " + showIfSource + " IS NOT NULL THEN " + field +
                     " ELSE '{}'::" + (returnString ? "json" : "jsonb") + " END") : field;
             return convertToJsonb ? toJsonb(result) : result;
