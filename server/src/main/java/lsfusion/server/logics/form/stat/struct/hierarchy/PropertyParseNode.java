@@ -57,8 +57,7 @@ public class PropertyParseNode implements ChildParseNode {
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(property, upValues);
         PropertyReaderEntity showIfProp = property.getShowIfProp();
-        boolean show = showIfProp == null || exportData.getProperty(showIfProp, upValues) != null;
-        if ((show && (value != null || property.extNull))) {
+        if (showIfProp != null ? exportData.getProperty(showIfProp, upValues) != null : (value != null || property.extNull)) {
             node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
             return true;
         }

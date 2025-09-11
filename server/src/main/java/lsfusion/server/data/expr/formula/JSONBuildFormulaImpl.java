@@ -103,15 +103,24 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             String showIfSource = showIf instanceof String ? (String) showIf : null;
             boolean extNull = showIf instanceof Boolean && (Boolean) showIf;
 
-            String jsonBuildObject = (returnString ? "json_build_object" : "jsonb_build_object") + "(" + sources.toString(",") + ")";
-            String field = showIfSource != null || extNull ? jsonBuildObject : jsonStripNulls(jsonBuildObject);
-            String result = showIfSource != null ? ("CASE WHEN " + showIfSource + " IS NOT NULL THEN " + field +
-                    " ELSE '{}'::" + (returnString ? "json" : "jsonb") + " END") : field;
-            return convertToJsonb ? toJsonb(result) : result;
+            String jsonBuildObject = jsonBuildObject(sources.toString(","));
+            if (showIfSource != null)
+                jsonBuildObject = "CASE WHEN " + showIfSource + " IS NOT NULL THEN " + jsonBuildObject + " ELSE " + empty() + " END";
+            else if (!extNull)
+                jsonBuildObject = jsonStripNulls(jsonBuildObject);
+
+            return convertToJsonb ? toJsonb(jsonBuildObject) : jsonBuildObject;
         }
 
+        private String jsonBuildObject(String value) {
+            return (returnString ? "json_build_object" : "jsonb_build_object") + "(" + value + ")";
+        }
         private String jsonStripNulls(String value) {
-            return returnString ? ("json_strip_nulls(" + value + ")") : ("jsonb_strip_nulls(" + value + ")");
+            return (returnString ? "json_strip_nulls" : "jsonb_strip_nulls") + "(" + value + ")";
+        }
+
+        private String empty() {
+            return "'{}'::" + (returnString ? "json" : "jsonb");
         }
     }
 }
