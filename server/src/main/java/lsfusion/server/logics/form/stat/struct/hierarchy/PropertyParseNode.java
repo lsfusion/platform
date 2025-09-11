@@ -23,10 +23,6 @@ public class PropertyParseNode implements ChildParseNode {
         this.isExclusive = isExclusive;
     }
 
-    public PropertyReaderEntity getProperty() {
-        return property;
-    }
-
     public String getKey() {
         return property.getIntegrationSID();
     }
@@ -37,6 +33,13 @@ public class PropertyParseNode implements ChildParseNode {
         FieldShowIf fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : property.extNull ? FieldShowIf.EXTNULL : null;
         return new JSONField(getKey(), fieldShowIf);
     }
+
+    @Override
+    public PropertyMapImplement getShowIfProperty(ImRevMap mapObjects) {
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        return showIfProp != null ? showIfProp.getReaderProperty().getImplement(mapObjects) : null;
+    }
+
     public boolean isAttr() {
         return property.attr;
     }

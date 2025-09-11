@@ -41,15 +41,9 @@ public abstract class GroupParseNode implements ParseNode {
 
         MOrderSet<PropertyMapImplement<?, X>> showIfChildrenProps = SetFact.mOrderSet();
         for (ChildParseNode child : children) {
-            if (child instanceof PropertyParseNode) {
-                PropertyReaderEntity property = ((PropertyParseNode) child).getProperty();
-                if (property instanceof PropertyDrawEntity) {
-                    PropertyReaderEntity showIfProp = ((PropertyDrawEntity<?>) property).getShowIfProp();
-                    if(showIfProp != null) {
-                        showIfChildrenProps.add(showIfProp.getReaderProperty().getImplement(mapObjects));
-                    }
-                }
-            }
+            PropertyMapImplement showIfChildrenProp = child.getShowIfProperty(mapObjects);
+            if(showIfChildrenProp != null)
+                showIfChildrenProps.add(showIfChildrenProp);
         }
         if(showIfChildrenProps.size() > 0)
             childrenProps = childrenProps.addOrderExcl(showIfChildrenProps.immutableOrder());
