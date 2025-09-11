@@ -40,9 +40,11 @@ import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
-import static lsfusion.gwt.client.base.GwtClientUtils.executeFlutter;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
@@ -214,10 +216,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         dispatchingPaused = true;
     }
 
-    public void continueDispatching() {
-        continueDispatching(null, null);
-    }
-
     protected long dispatchingIndex = -1;
     public long getDispatchingIndex() {
         if (currentResponse == null) // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
@@ -226,14 +224,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return currentResponse.requestIndex;
     }
 
-    public <T> void continueDispatching(T actionResult, Result<T> result) {
-        continueDispatching(actionResult, null, result);
-    }
-
     public <T> void continueDispatching(T actionResult, Throwable actionThrowable, Result<T> result) {
         assert dispatchingPaused;
         if (currentResponse == null) { // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
             // in this case we have to return result as no pauseDispatching happened
+            // however scheduleDeferred might be used
             dispatchingPaused = false;
 
             if(actionThrowable != null)
@@ -297,12 +292,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         String message = PValue.getStringValue(PValue.convertFileValue(action.message));
         if(!log && !info) {
-            if (action.syncType)
-                pauseDispatching();
-            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
-                if (action.syncType)
-                    continueDispatching();
-            });
+            executeAsyncNoResult(action.syncType, onResult -> {
+                        DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> onResult.accept(null));
+                    });
 
             ifNotFocused = true;
         }
@@ -318,13 +310,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public Object execute(GConfirmAction action) {
-        pauseDispatching();
-
-        Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
-                chosenOption -> continueDispatching(chosenOption.asInteger(), result));
-        return result.result;
+    public Integer execute(GConfirmAction action) {
+        return executeAsyncResult(onResult -> {
+            DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
+                    chosenOption -> onResult.accept(chosenOption.asInteger(), null));
+        });
     }
 
     @Override
@@ -378,101 +368,80 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GReadResult execute(GReadAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "readFile", new String[] {action.sourcePath}, res -> {
-                String errorValue = getJSONError(res);
-                continueDispatching(errorValue != null ?
-                        new GReadResult(errorValue, null, null) :
-                        new GReadResult(null, getJSONStringResult(res), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null), result);
-            });
-            return null;
-        } else {
-            throw new UnsupportedOperationException("ReadFile is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("readFile", new String[] {action.sourcePath}, res -> {
+            String errorValue = getJSONError(res);
+            return errorValue != null ?
+                    new GReadResult(errorValue, null, null) :
+                    new GReadResult(null, getJSONStringResult(res), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null);
+        });
     }
 
     @Override
     public String execute(GDeleteFileAction action) {
+        return executeAsyncResultFlutter("deleteFile", new String[] {action.source}, this::getJSONStringResult);
+    }
+
+    protected <T> T executeAsyncResult(Consumer<BiConsumer<T, Throwable>> run) {
+        pauseDispatching();
+
+        Result<T> result = new Result<>();
+        run.accept((res, actionThrowable) -> continueDispatching(res, actionThrowable, result));
+
+        return result.result;
+    }
+
+    protected void executeAsyncNoResult(boolean sync, Consumer<Consumer<Throwable>> run) {
+        if(sync) {
+            Object result = executeAsyncResult(onResult -> run.accept(throwable -> onResult.accept(null, throwable)));
+            assert result == null;
+        } else
+            run.accept(throwable -> {});
+    }
+
+    private <T> T executeAsyncResultFlutter(String command, Object[] arguments, Function<JavaScriptObject, T> getResult) {
         JavaScriptObject flutter = getFlutterObject();
         if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "deleteFile", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
+            return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> onResult.accept(getResult.apply(res), null)));
         } else {
-            throw new UnsupportedOperationException("DeleteFile is supported only in flutter client");
+            throw new UnsupportedOperationException(command + " is supported only in flutter client");
+        }
+    }
+
+    private static void executeNoResultFlutter(String command, Object[] arguments, Runnable noFlutter) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, command, arguments, res -> {});
+        } else {
+            if(noFlutter == null)
+                throw new UnsupportedOperationException(command + " is supported only in flutter client");
+
+            noFlutter.run();
         }
     }
 
     @Override
     public boolean execute(GFileExistsAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "fileExists", new String[]{action.source}, res -> {
-                Boolean exists = getJSONBoolean(res, "result");
-                continueDispatching(exists != null && exists, result);
-            });
-            return false;
-        } else {
-            throw new UnsupportedOperationException("FileExists is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("fileExists", new String[]{action.source}, this::getJSONBooleanResult);
     }
 
     @Override
     public String execute(GMkDirAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "makeDir", new String[] {action.source}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("MakeDir is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("makeDir", new String[] {action.source}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GMoveFileAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "moveFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("MoveFile is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("moveFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GCopyFileAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "copyFile", new String[] {action.source, action.destination}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("CopyFile is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("copyFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
     }
 
     @Override
     public GListFilesResult execute(GListFilesAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "listFiles", new Object[]{action.source, action.recursive}, res -> continueDispatching(getListFilesResult(new JSONObject(res).get("result")), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("ListFiles is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("listFiles", new Object[] {action.source, action.recursive}, res -> getListFilesResult(new JSONObject(res).get("result")));
     }
 
     private GListFilesResult getListFilesResult(JSONValue res) {
@@ -500,110 +469,54 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GWriteAction action) {
         if (action.fileUrl != null) {
             String downloadURL = getAppDownloadURL(action.fileUrl);
-            JavaScriptObject flutter = getFlutterObject();
-            if (flutter != null) { //todo: status 401 from RestAuthenticationEntryPoint
-                executeFlutter(flutter, "writeFile", new Object[]{getFullUrl(downloadURL), action.filePath},res -> {});
-            } else { //it is actually downloading the file, not opening it in the browser
-                fileDownload(downloadURL);
-            }
+            //todo: status 401 from RestAuthenticationEntryPoint
+            executeNoResultFlutter("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath}, () -> fileDownload(downloadURL));
         }
     }
 
     @Override
     public GRunCommandActionResult execute(GRunCommandAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "runCommand", new String[]{action.command}, res -> continueDispatching(new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("RunCommand is supported only in flutter-client");
-        }
+        return executeAsyncResultFlutter("runCommand", new String[]{action.command}, res -> new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
     }
 
     @Override
     public String execute(GGetAvailablePrintersAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "getAvailablePrinters", new String[] {}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("GetAvailablePrinters is supported only in flutter-client");
-        }
+        return executeAsyncResultFlutter("getAvailablePrinters", new String[] {}, this::getJSONStringResult);
     }
 
     @Override
-    public void execute(GPrintFileAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "print", new String[] {action.fileData, action.filePath, null, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
-        } else {
-            throw new UnsupportedOperationException("PrintFile is supported only in flutter-client");
-        }
+    public String execute(GPrintFileAction action) {
+        return executeAsyncResultFlutter("print", new String[] {action.fileData, action.filePath, null, action.printerName}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GWriteToPrinterAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "print", new String[] {null, null, action.text, action.printerName}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("PrintText is supported only in flutter-client");
-        }
+        return executeAsyncResultFlutter("print", new String[] {null, null, action.text, action.printerName}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GTcpAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "sendTCP", new Object[]{action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)},res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("EXTERNAL TCP is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("sendTCP", new Object[] {action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)}, this::getJSONStringResult);
     }
 
     @Override
     public void execute(GUdpAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            executeFlutter(flutter, "sendUDP", new Object[]{action.host, action.port, action.fileBytes}, res -> {});
-        } else {
-            throw new UnsupportedOperationException("EXTERNAL UDP is supported only in flutter client");
-        }
+        executeNoResultFlutter("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, null);
     }
 
     @Override
     public void execute(GWriteToSocketAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            executeFlutter(flutter, "writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, res -> {});
-        } else {
-            throw new UnsupportedOperationException("WriteToSocket is supported only in flutter client");
-        }
+        executeNoResultFlutter("writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, null);
     }
 
     @Override
     public String execute(GPingAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "ping", new String[] {action.host}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("Ping is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("ping", new String[] {action.host}, this::getJSONStringResult);
+    }
+
+    private boolean getJSONBooleanResult(JavaScriptObject res) {
+        Boolean exists = getJSONBoolean(res, "result");
+        return exists != null && exists;
     }
 
     private String getJSONStringResult(JavaScriptObject res) {
@@ -643,15 +556,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public String execute(GWriteToComPortAction action) {
-        JavaScriptObject flutter = getFlutterObject();
-        if (flutter != null) {
-            pauseDispatching();
-            Result<Object> result = new Result<>();
-            executeFlutter(flutter, "writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, res -> continueDispatching(getJSONStringResult(res), result));
-            return null;
-        } else {
-            throw new UnsupportedOperationException("WriteToComPort is supported only in flutter client");
-        }
+        return executeAsyncResultFlutter("writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, this::getJSONStringResult);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
@@ -709,19 +614,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
+        private final List<BiConsumer<Object, Throwable>> actionOnResults = new ArrayList<>();
 
         public Object addAction(GClientWebAction action) {
-            actions.add(action);
+            Consumer<BiConsumer<Object, Throwable>> run = onResult -> {
+                actions.add(action);
+                actionOnResults.add(onResult);
 
-            boolean syncType = action.syncType;
-            if (syncType)
-                pauseDispatching();
+                flush();
+            };
 
-            flush();
+            if(action.syncType)
+                return executeAsyncResult(run);
 
-            if(syncType)
-                return action.execResult;
-
+            run.accept((actionResult, throwable) -> {});
             return null;
         }
 
@@ -821,13 +727,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         private void onActionExecuted(GClientWebAction action, Object actionResult, Throwable actionThrowable) {
             isExecuting = false;
-            actions.remove(action);
-
-            if (action.syncType) {
-                Result<Object> result = new Result<>();
-                continueDispatching(actionResult, actionThrowable, result);
-                action.execResult = result.result;
-            }
+            GClientWebAction remove = actions.remove(0);
+            assert remove == action;
+            BiConsumer<Object, Throwable> onResult = actionOnResults.remove(0);
+            onResult.accept(actionResult, actionThrowable);
 
             flush();
         }
@@ -896,25 +799,24 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public Object execute(GHttpClientAction action) {
-        pauseDispatching();
-        XMLHttpRequest request = XMLHttpRequest.create();
-        request.open(action.method.name(), action.connectionString);
-        request.setResponseType("arraybuffer");
-        for(Map.Entry<String, String> header : action.headers.entrySet()) {
-            request.setRequestHeader(header.getKey(), header.getValue());
-        }
-        sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
-
-        Result<Object> result = new Result<>();
-        request.setOnReadyStateChange(xhr -> {
-            if(xhr.getReadyState() == XMLHttpRequest.DONE) {
-                ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
-                byte[] bytes = arrayBufferToBytes(arrayBuffer);
-                Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
-                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()), result);
+        return executeAsyncResult(onResult -> {
+            XMLHttpRequest request = XMLHttpRequest.create();
+            request.open(action.method.name(), action.connectionString);
+            request.setResponseType("arraybuffer");
+            for (Map.Entry<String, String> header : action.headers.entrySet()) {
+                request.setRequestHeader(header.getKey(), header.getValue());
             }
+            sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
+
+            request.setOnReadyStateChange(xhr -> {
+                if (xhr.getReadyState() == XMLHttpRequest.DONE) {
+                    ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
+                    byte[] bytes = arrayBufferToBytes(arrayBuffer);
+                    Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
+                    onResult.accept(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()), null);
+                }
+            });
         });
-        return result.result;
     }
 
     private native void sendRequest(XMLHttpRequest request, ArrayBuffer body) /*-{
