@@ -104,7 +104,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             boolean extNull = showIf instanceof Boolean && (Boolean) showIf;
 
             String jsonBuildObject = (returnString ? "json_build_object" : "jsonb_build_object") + "(" + sources.toString(",") + ")";
-            String field = extNull ? jsonBuildObject : jsonStripNulls(jsonBuildObject);
+            String field = showIfSource != null || extNull ? jsonBuildObject : jsonStripNulls(jsonBuildObject);
             String result = showIfSource != null ? ("CASE WHEN " + showIfSource + " IS NOT NULL THEN " + field +
                     " ELSE '{}'::" + (returnString ? "json" : "jsonb") + " END") : field;
             return convertToJsonb ? toJsonb(result) : result;
