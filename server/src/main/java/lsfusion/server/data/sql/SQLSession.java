@@ -43,6 +43,7 @@ import lsfusion.server.data.sql.connection.ConnectionPool;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.exception.*;
+import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.statement.ParsedStatement;
 import lsfusion.server.data.sql.statement.PreParsedStatement;
@@ -2412,6 +2413,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         ParseInterface getKeyParse(K key, KeyField field, SQLSyntax syntax);
         ParseInterface getPropParse(V prop, PropertyField field, SQLSyntax syntax);
     } 
+
+    public void executeAction(SQLConsumer<ExConnection> action, OperationOwner opOwner) throws SQLException {
+        lockRead(opOwner);
+
+        ExConnection connection = null;
+
+        Result<Throwable> firstException = new Result<>();
+        try {
+            connection = getConnection();
+
+            lockConnection(opOwner);
+
+            action.accept(connection);
+        } catch (Throwable e) {
+            firstException.set(e);
+        }
+
+        afterStatementExecute(firstException, null, null, connection, null, opOwner, null, 0);
+    }
 
     private <K, V> void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, K>, ImMap<PropertyField, V>> rows, Parser<K, V> parser, OperationOwner opOwner, RegisterChange registerChange) throws SQLException {
         if(rows.isEmpty())
