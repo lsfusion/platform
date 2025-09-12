@@ -293,8 +293,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         String message = PValue.getStringValue(PValue.convertFileValue(action.message));
         if(!log && !info) {
             executeAsyncNoResult(action.syncType, onResult -> {
-                        DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> onResult.accept(null));
-                    });
+                DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> onResult.accept(null));
+            });
 
             ifNotFocused = true;
         }
@@ -385,7 +385,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         pauseDispatching();
 
         Result<T> result = new Result<>();
-        run.accept((res, actionThrowable) -> continueDispatching(res, actionThrowable, result));
+        BiConsumer<T, Throwable> onResult = (res, actionThrowable) -> continueDispatching(res, actionThrowable, result);
+        try {
+            run.accept(onResult);
+        }  catch (Throwable e) {
+            onResult.accept(null, e);
+            throw e;
+        }
 
         return result.result;
     }

@@ -53,12 +53,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         }
 
         executeAsyncNoResult(action.showFormType.isModal() && action.syncType, onResult -> {
-            try {
-                form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, action.syncType, editEventHandler != null ? editEventHandler.event : null, editContext, () -> onResult.accept(null), action.formId);
-            } catch (Throwable t) {
-                onResult.accept(t);
-                throw t;
-            }
+            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, action.syncType, editEventHandler != null ? editEventHandler.event : null, editContext, () -> onResult.accept(null), action.formId);
         });
     }
 

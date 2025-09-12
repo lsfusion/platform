@@ -39,17 +39,12 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(final GFormAction action) {
         executeAsyncNoResult(action.showFormType.isModal(), onResult -> {
-            try {
-                formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, null, null, null, () -> {
-                    if (action.showFormType.isDocked() || action.showFormType.isDockedModal())
-                        formsController.ensureTabSelected();
+            formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, null, null, null, () -> {
+                if (action.showFormType.isDocked() || action.showFormType.isDockedModal())
+                    formsController.ensureTabSelected();
 
-                    onResult.accept(null);
-                }, action.formId);
-            } catch (Throwable e) {
-                onResult.accept(e);
-                throw e;
-            }
+                onResult.accept(null);
+            }, action.formId);
         });
     }
 
