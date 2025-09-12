@@ -56,7 +56,8 @@ public class BackupAction extends InternalAction {
                 String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
 
                 List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
-                List<String> extraExcludeTables = partial ? getExtraExcludeTables(context) : new ArrayList<>();
+                String extraExcludeTablesString = partial ? getExtraExcludeTables(context) : null;
+                List<String> extraExcludeTables = splitTrim(extraExcludeTablesString);
 
                 String backupFilePath = dbManager.getBackupFilePath(backupFileName);
                 String backupFileLogPath = dbManager.getBackupFileLogPath(backupFileName);
@@ -77,6 +78,7 @@ public class BackupAction extends InternalAction {
                         if (tableObject instanceof DataObject)
                             findProperty("exclude[Backup,Table]").change(true, newContext, backupObject, (DataObject) tableObject);
                     }
+                    findProperty("extraExclude[Backup]").change(extraExcludeTablesString, newContext, backupObject);
                 }
 
                 newContext.apply();
@@ -114,8 +116,8 @@ public class BackupAction extends InternalAction {
         return excludeTables;
     }
 
-    private List<String> getExtraExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        return splitTrim((String) findProperty("extraExclude[]").read(context));
+    private String getExtraExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        return (String) findProperty("extraExclude[]").read(context);
     }
 
     @Override
