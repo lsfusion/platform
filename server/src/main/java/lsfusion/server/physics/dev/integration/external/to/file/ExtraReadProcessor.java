@@ -42,7 +42,7 @@ public class ExtraReadProcessor implements ExtraReadInterface {
     @Override
     public void copyToFile(String type, String query, File file) throws SQLException, IOException {
         switch (type) {
-            case TableClass.extension:
+            case "jdbc":
                 copyJDBCToFile(query, file);
                 break;
             case "mdb":
