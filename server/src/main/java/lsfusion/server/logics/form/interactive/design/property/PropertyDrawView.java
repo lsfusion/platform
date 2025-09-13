@@ -474,9 +474,10 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public LocalizedString getCaption() {
-        return caption != null
-                ? caption
-                : entity.getCaption();
+        if (caption != null)
+            return caption;
+
+        return entity.getCaption();
     }
 
     public AppServerImage.AutoName getAutoName() {

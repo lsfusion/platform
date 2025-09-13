@@ -1211,9 +1211,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamsClasses(params, signature);
         actionOrProperty.paramNames = paramNames.isEmpty() ? MapFact.EMPTYREV() : property.listInterfaces.mapOrderRevValues(paramNames::get);
 
+        if(caption == null)
+            caption = LocalizedString.create(BaseUtils.humanize(name));
+        actionOrProperty.caption = caption;
+
         String groupName = ps.groupName;
         Group group = (groupName == null ? null : findGroup(groupName));
-        actionOrProperty.caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(actionOrProperty, group);
 
         if (ps.viewType != null)
