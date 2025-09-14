@@ -585,7 +585,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checks.checkClassParents(parentNames);
 
-        LocalizedString caption = (captionStr == null ? LocalizedString.create(className) : captionStr);
+        if(captionStr == null)
+            captionStr = LocalizedString.create(BaseUtils.humanize(className));
+        LocalizedString caption = captionStr;
 
         ImList<CustomClass> parents = BaseUtils.immutableCast(findClasses(parentNames));
 
@@ -853,7 +855,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
                                                   boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
-        caption = (caption == null ? LocalizedString.create(formName) : caption);
+        
+        if(caption == null)
+            caption = LocalizedString.create(BaseUtils.humanize(formName));
 
         String canonicalName = elementCanonicalName(formName);
 
