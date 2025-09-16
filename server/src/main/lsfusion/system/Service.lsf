@@ -1089,8 +1089,7 @@ NAVIGATOR {
     }
 }
 
-readMasterDBHost INTERNAL 'lsfusion.server.physics.admin.service.action.ReadMasterDBHost'();
 onStarted() +{
     INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //It is not created in the database that is replicated because only tables are replicated, but not functions.
-    readMasterDBHost();
+    name(DBMaster server) <- '{service.scaling.master}' IF server IS DBMaster;
 }

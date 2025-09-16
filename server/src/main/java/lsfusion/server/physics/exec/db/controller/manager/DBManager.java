@@ -1604,9 +1604,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         adapter.removeSlave(getSlave(object, session));
     }
     public DataAdapter.Slave getSlave(DataObject object, DataSession session) throws SQLException, SQLHandledException {
-        DataAdapter.Slave slave = new DataAdapter.Slave((String) serviceLM.hostDBSlave.read(session, object), object.object.toString());
-        slave.setSNMPPort((Integer) serviceLM.snmpPort.read(session, object));
-        return slave;
+        return new DataAdapter.Slave((String) serviceLM.hostDBSlave.read(session, object), object.object.toString());
     }
     public void synchronizeDB() throws Exception {
 
@@ -1619,11 +1617,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
-            adapter.getMaster()
-                    .setSNMPPort((Integer) serviceLM.snmpPort.read(session,
-                    new DataObject((Long) serviceLM.findProperty("dbMaster[]").read(session),
-                            (ConcreteCustomClass) serviceLM.findClass("DBMaster"))));
-
             setDefaultUserLocalePreferences(session);
             setLogicsParams(session);
 

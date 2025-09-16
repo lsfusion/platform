@@ -99,7 +99,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         dbSlave = (ConcreteCustomClass) findClass("DBSlave");
         hostDBSlave = findProperty("host[DBSlave]");
-        snmpPort = findProperty("snmpPort[DBSlave]");
+        snmpPort = findProperty("snmpPort[DBServer]");
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");

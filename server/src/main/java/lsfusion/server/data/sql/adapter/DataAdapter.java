@@ -30,13 +30,6 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.postgresql.replication.LogSequenceNumber;
-import org.snmp4j.CommunityTarget;
-import org.snmp4j.PDU;
-import org.snmp4j.Snmp;
-import org.snmp4j.event.ResponseEvent;
-import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
-import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
@@ -53,151 +46,31 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public static abstract class Server {
         public final String host;
-        public Integer snmpPort;
-
         public Connection ensureConnection;
+        private CpuTime lastCpuTime;
+        private double load;
 
         public Server(String host) {
             this.host = host;
         }
 
-        public void setSNMPPort(Integer snmpPort) {
-            this.snmpPort = snmpPort;
+        public double getLoad() {
+            return load;
+        }
+
+        public void setLoad(double load) {
+            this.load = load;
+        }
+
+        public CpuTime getLastCpuTime() {
+            return lastCpuTime;
+        }
+
+        public void setLastCpuTime(CpuTime lastCpuTime) {
+            this.lastCpuTime = lastCpuTime;
         }
 
         public abstract boolean isMaster();
-
-        public double getLoad() throws SQLException {
-            if (lastCpuTime == null) {
-                this.lastCpuTime = getCpuTime();
-                return 0.0;
-            }
-            try {
-                CpuTime currentCPUTime = getCpuTime();
-                if (currentCPUTime == null || lastCpuTime.isSnmp() != currentCPUTime.isSnmp())
-                    return 0.0;
-
-                long userDelta = currentCPUTime.getUser() - lastCpuTime.getUser();
-                long niceDelta = currentCPUTime.getNice() - lastCpuTime.getNice();
-                long systemDelta = currentCPUTime.getSystem() - lastCpuTime.getSystem();
-                long idleDelta = currentCPUTime.getIdle() - lastCpuTime.getIdle();
-                long iowaitDelta = currentCPUTime.getIowait() - lastCpuTime.getIowait();
-
-                long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
-
-                if (totalDelta <= 0)
-                    return 0.0;
-
-                double usage = 100.0 - (idleDelta * 100.0 / totalDelta);
-                return Math.round(usage * 100.0) / 100.0;
-            } catch (SQLException e) {
-                logger.error("Error while getting server( " + host + " ) load");
-                throw e;
-            }
-        }
-
-        static final List<OID> OIDS = Arrays.asList(
-                new OID("1.3.6.1.4.1.2021.11.50.0"), // user
-                new OID("1.3.6.1.4.1.2021.11.51.0"), // nice
-                new OID("1.3.6.1.4.1.2021.11.52.0"), // system
-                new OID("1.3.6.1.4.1.2021.11.53.0"), // idle
-                new OID("1.3.6.1.4.1.2021.11.54.0") // iowait
-        );
-
-        public CpuTime getCpuTime() throws SQLException {
-            if (snmpPort == null) {
-                try (Statement stmt = ensureConnection.createStatement();
-                     ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();")) {
-                    if (rs.next()) {
-                        return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
-                                rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
-                    }
-                } catch (SQLException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            } else {
-                try {
-                    String address = host.split(":")[0] + "/" + snmpPort;
-
-                    CommunityTarget<UdpAddress> target = new CommunityTarget<>();
-                    target.setCommunity(new OctetString("public"));
-                    target.setAddress(new UdpAddress(address));
-                    target.setRetries(2);
-                    target.setTimeout(1500);
-                    target.setVersion(SnmpConstants.version2c);
-
-                    Snmp snmp = new Snmp(new DefaultUdpTransportMapping());
-                    snmp.listen();
-
-                    PDU pdu = new PDU();
-                    for (OID oid : OIDS) {
-                        pdu.add(new VariableBinding(oid));
-                    }
-                    pdu.setType(PDU.GET);
-
-                    ResponseEvent<?> response = snmp.send(pdu, target);
-                    CpuTime cpuTime = null;
-                    if (response != null && response.getResponse() != null) {
-                        long[] vals = new long[OIDS.size()];
-                        for (int i = 0; i < OIDS.size(); i++) {
-                            Variable v = response.getResponse().get(i).getVariable();
-                            vals[i] = v.toLong();
-                        }
-                        cpuTime = new CpuTime(vals[0], vals[1], vals[2], vals[3], vals[4], true);
-                    }
-
-                    snmp.close();
-                    return cpuTime;
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-            return null;
-        }
-
-        private CpuTime lastCpuTime;
-    }
-
-    public static class CpuTime {
-        private final long user;
-        private final long nice;
-        private final long system;
-        private final long idle;
-        private final long iowait;
-        private final boolean snmp;
-
-        public CpuTime(long user, long nice, long system, long idle, long iowait, boolean snmp) {
-            this.user = user;
-            this.nice = nice;
-            this.system = system;
-            this.idle = idle;
-            this.iowait = iowait;
-            this.snmp = snmp;
-        }
-
-        public long getUser() {
-            return user;
-        }
-
-        public long getNice() {
-            return nice;
-        }
-
-        public long getSystem() {
-            return system;
-        }
-
-        public long getIdle() {
-            return idle;
-        }
-
-        public long getIowait() {
-            return iowait;
-        }
-
-        public boolean isSnmp() {
-            return snmp;
-        }
     }
 
     public static class Master extends Server {
