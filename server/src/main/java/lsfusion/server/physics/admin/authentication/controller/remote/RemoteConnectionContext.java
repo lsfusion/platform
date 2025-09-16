@@ -50,4 +50,9 @@ public abstract class RemoteConnectionContext extends AbstractContext {
     public Long getCurrentUserRole() {
         return getConnectionObject().userRole;
     }
+
+    @Override
+    public Long getCurrentAppServer() {
+        return getConnectionObject().getCurrentAppServer();
+    }
 }

@@ -344,6 +344,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public final static String projectLSFDirParam = getParamName("projectLSFDirParam");
     public final static String limitParam = getParamName("limitParam");
     public final static String offsetParam = getParamName("offsetParam");
+    public final static String appServerParam = getParamName("appServerParam");
 
     public static String getParamName(String param) {
         return paramPrefix + param + paramPostfix;

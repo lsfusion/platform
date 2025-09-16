@@ -73,6 +73,11 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
+    public Long getCurrentAppServer() {
+        return logicsInstance.getDbManager().getAppServer();
+    }
+
+    @Override
     public Locale getLocale() {
         return Locale.getDefault();
     }

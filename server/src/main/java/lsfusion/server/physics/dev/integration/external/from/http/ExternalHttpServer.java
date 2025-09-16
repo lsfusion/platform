@@ -17,6 +17,7 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
@@ -78,15 +79,14 @@ public class ExternalHttpServer extends MonitorServer {
         ServerLoggers.systemLogger.info("Binding External" + (useHTTPS ? "HTTPS" : "HTTP") + "Server");
         HttpServer server = null;
         try {
-            int httpPort = rmiManager.getHttpPort();
-            getLogicsInstance().getDbManager().setExternalHttpServerParams(useHTTPS, rmiManager.getHttpHost(), httpPort);
-            
-            server = initServer(useHTTPS, new InetSocketAddress(httpPort));
+            server = initServer(useHTTPS, new InetSocketAddress(rmiManager.getHttpPort()));
 
             server.createContext("/", new HttpRequestHandler());
             server.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
 
             server.start();
+
+            getLogicsInstance().getDbManager().setCurrentAppServerStarted(true);
         } catch (ExternalServerException externalServerException) {
             ServerLoggers.systemLogger.error("External server has not been started. " + externalServerException.getMessage());
         } catch (Exception e) {
@@ -106,12 +106,6 @@ public class ExternalHttpServer extends MonitorServer {
         HttpServer server;
         if (useHTTPS) {
             KeyStore ks = getKeyStore();
-
-            String alias = ks.aliases().nextElement();
-            java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) ks.getCertificate(alias);
-
-            System.out.println("Certificate subject: " + cert.getSubjectDN());
-            System.out.println("Certificate SAN: " + cert.getSubjectAlternativeNames());
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(SECURITY_ALGORITHM);
             kmf.init(ks, keyPassword != null ? keyPassword : defaultKeyPassword); // keyPassword = null if keystore.jks file is not used
@@ -143,21 +137,22 @@ public class ExternalHttpServer extends MonitorServer {
             Security.addProvider(new BouncyCastleProvider());
 
         ServiceLogicsModule serviceLM = getLogicsInstance().getBusinessLogics().serviceLM;
+        DataObject currentAppServer = new DataObject(getLogicsInstance().getDbManager().getAppServer(), serviceLM.appServer);
         KeyStore keystore = KeyStore.getInstance("JKS");
         try (DataSession session = createSession()) {
-            Boolean useKeystore = (Boolean) serviceLM.useKeystore.read(session);
+            Boolean useKeystore = (Boolean) serviceLM.useKeystore.read(session, currentAppServer);
             if (useKeystore != null) {
-                keyPassword = getPassword(serviceLM.keyPassword.read(session));
-                char[] keystorePassword = getPassword(serviceLM.keystorePassword.read(session));
+                keyPassword = getPassword(serviceLM.keyPassword.read(session, currentAppServer));
+                char[] keystorePassword = getPassword(serviceLM.keystorePassword.read(session, currentAppServer));
 
-                FileData keystoreFile = (FileData) serviceLM.keystore.read(session);
+                FileData keystoreFile = (FileData) serviceLM.keystore.read(session, currentAppServer);
                 if (keystoreFile == null)
                     throw new ExternalServerException("Using external HTTPS server requires .jks file be loaded");
 
                 keystore.load(keystoreFile.getRawFile().getInputStream(), keystorePassword);
             } else {
                 // Load private key from PEM file
-                FileData privateKeyFile = (FileData) serviceLM.privateKey.read(session);
+                FileData privateKeyFile = (FileData) serviceLM.privateKey.read(session, currentAppServer);
                 if (privateKeyFile == null)
                     throw new ExternalServerException("Using external HTTPS server requires the privateKey-file be loaded");
 
@@ -168,7 +163,7 @@ public class ExternalHttpServer extends MonitorServer {
                     if (o instanceof PEMKeyPair) {
                         pemKeyPair = (PEMKeyPair) o;
                     } else if (o instanceof PEMEncryptedKeyPair) {
-                        String privateKeyPassword = (String) serviceLM.privateKeyPassword.read(session);
+                        String privateKeyPassword = (String) serviceLM.privateKeyPassword.read(session, currentAppServer);
                         if (privateKeyPassword == null)
                             throw new ExternalServerException("PEMEncryptedKeyPair requires privateKeyPassword to be non-null");
 
@@ -181,7 +176,7 @@ public class ExternalHttpServer extends MonitorServer {
                 }
 
                 // Load certificate chain from PEM file
-                FileData chainFile = (FileData) serviceLM.chain.read(session);
+                FileData chainFile = (FileData) serviceLM.chain.read(session, currentAppServer);
                 if (chainFile == null)
                     throw new ExternalServerException("Using external HTTPS server requires that the certificateChain-file be loaded");
 

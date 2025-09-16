@@ -92,6 +92,11 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
+    public Long getCurrentAppServer() {
+        return form.form.session.sql.contextProvider.getCurrentAppServer();
+    }
+
+    @Override
     public Locale getLocale() {
         return form.form.getLocale();
     }

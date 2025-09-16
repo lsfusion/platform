@@ -9,6 +9,7 @@ public interface SQLSessionContextProvider {
     LogInfo getLogInfo();
     Long getCurrentComputer();
     Long getCurrentConnection();
+    Long getCurrentAppServer();
 
     // when called from the external thread (process monitor)
     default Long getThreadCurrentUser() {

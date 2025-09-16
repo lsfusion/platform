@@ -25,6 +25,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.task.PublicTask;
@@ -184,6 +185,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private long systemUser;
     public long serverComputer;
+    public long appServer;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -749,6 +751,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public long getServerComputer() {
         return serverComputer;
     }
+    
+    public Long getAppServer() {
+        return appServer;
+    }
+    
+    public void initAppServer() {
+        try (DataSession session = createSession()) {
+            appServer = (long) getAppServer(session, getStack()).object;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private final Object lsnLock = new Object();
     private LogSequenceNumber lsn;
@@ -826,6 +840,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public Long getThreadCurrentComputer() {
             return getServerComputer();
+        }
+
+        @Override
+        public Long getCurrentAppServer() {
+            return ThreadLocalContext.getCurrentAppServer();
         }
 
         @Override
@@ -1006,22 +1025,36 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
     
-    public void setExternalHttpServerParams(boolean https, String httpHost, int httpPort) {
+    public DataObject getAppServer(DataSession session, ExecutionStack stack) {
         try {
-            DataSession session = createSession();
-            String host = !isRedundantString(httpHost) ? httpHost : SystemUtils.getLocalHostName();
-            businessLogics.serviceLM.webServerUseHttps.change(https, session);
-            businessLogics.serviceLM.webServerHttpHost.change(host, session);
-            businessLogics.serviceLM.webServerHttpPort.change(httpPort, session);
+            RmiManager rmiManager = ThreadLocalContext.getRmiManager();
+            String httpHost = rmiManager.getHttpHost();
             
-            apply(session);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (SQLHandledException e) {
+            String host = !isRedundantString(httpHost) ? httpHost : SystemUtils.getLocalHostName();
+            String origin = (rmiManager.isHttps() ? "https" : "http") + "://" + host +  ":" + rmiManager.getHttpPort();
+            
+            ObjectValue result = businessLogics.serviceLM.appServerByConnectionString.readClasses(session, new DataObject(origin));
+            if (!(result instanceof DataObject)) {
+                result = session.addObject(businessLogics.serviceLM.appServer);
+                businessLogics.serviceLM.appServerConnectionString.change(origin, session, (DataObject) result);
+                apply(session, stack);
+            }
+
+            return (DataObject) result;
+        } catch (Exception e) {
+            logger.error("Error reading app server: ", e);
             throw new RuntimeException(e);
         }
-
-
+    }
+    
+    public void setCurrentAppServerStarted(boolean isStarted) {
+        try (DataSession session = createSession()) {
+            DataObject currentAppServer = new DataObject(getAppServer(), serviceLM.appServer);
+            serviceLM.isStartedAppServer.change(isStarted ? true : NullValue.instance, session, currentAppServer);
+            apply(session, getStack());
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
@@ -1639,6 +1672,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             setLogicsParams(session);
 
             initSystemUser(session);
+            
+            initAppServer();
 
             classForNameSQL();
         }

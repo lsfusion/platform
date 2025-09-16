@@ -745,38 +745,35 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
 
+// App server scaling
+CLASS AppServer '{service.scaling.app.server}';
+currentAppServer = NATIVE AppServer();
+connectionString '{service.scaling.app.server.connection.string}' = DATA STRING (AppServer);
+appServer = GROUP AGGR AppServer appServer BY connectionString(appServer);
+name '{service.scaling.app.server.name}' = DATA STRING (AppServer);
+isStarted '{service.scaling.app.server.started}' = DATA BOOLEAN (AppServer);
+
+
 // External HTTP server
+useKeystore '{service.use.keystore}' = DATA BOOLEAN(AppServer);
+keystorePassword '{service.keystore.password}' = DATA STRING(AppServer);
+keyPassword '{service.key.password}' = DATA STRING(AppServer);
+keystore '{service.keystore}' = DATA FILE(AppServer);
+loadKeystore '{service.keystore.load}' (AppServer as) { INPUT=keystore(as) CHANGE; }
+openKeystore '{service.keystore.open}' (AppServer as) { open(keystore(as)); }
+resetKeystore '{service.keystore.reset}' (AppServer as) { keystore(as) <- NULL; }
 
-webServerPredefinedHttps 'HTTPS' = DATA BOOLEAN ();
-webServerHttps 'HTTPS' = DATA TBOOLEAN ();
-isWebServerHttps = IF webServerHttps() THEN webServerHttps() == TTRUE ELSE webServerPredefinedHttps();
-webServerPredefinedHost '{service.external.server.http.host}' = DATA STRING();
-webServerHost '{service.external.server.http.host}' = DATA STRING();
-overrideWebServerHost = OVERRIDE webServerHost(), webServerPredefinedHost();
-webServerPredefinedPort '{service.external.server.http.port}' = DATA INTEGER();
-webServerPort '{service.external.server.http.port}' = DATA INTEGER();
-overrideWebServerPort '{service.external.server.origin}' = OVERRIDE webServerPort(), webServerPredefinedPort();
-webServerOrigin = (IF isWebServerHttps() THEN 'https' ELSE 'http') + '://' + overrideWebServerHost() + ':' + overrideWebServerPort() CHARWIDTH 30;
+privateKey '{service.private.key}' = DATA FILE(AppServer);
+loadPrivateKey '{service.private.key.load}' (AppServer as) { INPUT=privateKey(as) CHANGE; }
+openPrivateKey '{service.private.key.open}' (AppServer as) { open(privateKey(as)); }
+resetPrivateKey '{service.private.key.reset}' (AppServer as) { privateKey(as) <- NULL; }
 
-useKeystore '{service.use.keystore}' = DATA BOOLEAN();
-keystorePassword '{service.keystore.password}' = DATA STRING();
-keyPassword '{service.key.password}' = DATA STRING();
-keystore '{service.keystore}' = DATA FILE();
-loadKeystore '{service.keystore.load}' () { INPUT=keystore() CHANGE; }
-openKeystore '{service.keystore.open}' () { open(keystore()); }
-resetKeystore '{service.keystore.reset}' () { keystore() <- NULL; }
+privateKeyPassword '{service.private.key.password}' = DATA STRING(AppServer);
 
-privateKey '{service.private.key}' = DATA FILE();
-loadPrivateKey '{service.private.key.load}' () { INPUT=privateKey() CHANGE; }
-openPrivateKey '{service.private.key.open}' () { open(privateKey()); }
-resetPrivateKey '{service.private.key.reset}' () { privateKey() <- NULL; }
-
-privateKeyPassword '{service.private.key.password}' = DATA STRING();
-
-chain '{service.chain}' = DATA FILE();
-loadChain '{service.chain.load}' () { INPUT=chain() CHANGE; }
-openChain '{service.chain.open}' () { open(chain()); }
-resetChain '{service.chain.reset}' () { chain() <- NULL; }
+chain '{service.chain}' = DATA FILE(AppServer);
+loadChain '{service.chain.load}' (AppServer as) { INPUT=chain(as) CHANGE; }
+openChain '{service.chain.open}' (AppServer as) { open(chain(as)); }
+resetChain '{service.chain.reset}' (AppServer as) { chain(as) <- NULL; }
 
 textFieldPropertyEditorScannerSleep = DATA LONG (Computer);
 computerSettings (Computer c) = JSON FROM textFieldPropertyEditorScannerSleep(c);
@@ -802,12 +799,13 @@ EXTEND FORM settings
     
     PROPERTIES() pushPublicKey, pushPrivateKey  
     
-    PROPERTIES() READONLY webServerPredefinedHttps, webServerPredefinedHost, webServerPredefinedPort, webServerOrigin
-    PROPERTIES() webServerHost, webServerPort, webServerHttps 
-    PROPERTIES() useKeystore
-    PROPERTIES() SHOWIF useKeystore() keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
-    PROPERTIES() SHOWIF NOT useKeystore() loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
-
+    OBJECTS as = AppServer PANEL
+    PROPERTIES(as) useKeystore
+    PROPERTIES(as) SHOWIF useKeystore(as) keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
+    PROPERTIES(as) SHOWIF NOT useKeystore(as) loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
+    PROPERTIES(as) READONLY connectionString
+    FILTERS as = currentAppServer()
+    
     OBJECTS c = Computer
     PROPERTIES(c) hostname, textFieldPropertyEditorScannerSleep
 ;
@@ -857,52 +855,28 @@ DESIGN settings {
         }
         NEW externalServerSettings {
             caption = '{service.external.server.settings}';
-            NEW urlSettings {
-                lines = 2;
-                flex = 0;
-                NEW predefined {
-                    caption = '{service.external.server.predefined.settings}';
-                    alignment = START;
-                    MOVE PROPERTY (webServerPredefinedHttps());
-                    MOVE PROPERTY (webServerPredefinedHost());
-                    MOVE PROPERTY (webServerPredefinedPort());
-                }
-                NEW override {
-                    caption = '{service.external.server.override.settings}';
-                    MOVE PROPERTY (webServerHttps());
-                    MOVE PROPERTY (webServerHost()) {
-                        alignment = START;
-                    }
-                    MOVE PROPERTY (webServerPort()) {
-                        alignment = START;
-                    }
-                }
-            }
-            MOVE PROPERTY (webServerOrigin()) {
-                alignment = START;
-            }
+            MOVE PROPERTY(connectionString(as)); 
             NEW cetificate {
                 caption = '{service.external.server.certificate.settings}';
-                showIf = isWebServerHttps();
-                MOVE PROPERTY (useKeystore());
+                MOVE PROPERTY (useKeystore(as));
                 NEW keystore {
                     caption = '{service.keystore}';
-                    MOVE PROPERTY (loadKeystore());
-                    MOVE PROPERTY (openKeystore());
-                    MOVE PROPERTY (resetKeystore());
-                    MOVE PROPERTY (keystorePassword());
-                    MOVE PROPERTY (keyPassword());
+                    MOVE PROPERTY (loadKeystore(as));
+                    MOVE PROPERTY (openKeystore(as));
+                    MOVE PROPERTY (resetKeystore(as));
+                    MOVE PROPERTY (keystorePassword(as));
+                    MOVE PROPERTY (keyPassword(as));
                 }
                 NEW pem {
                     lines = 2;
                     caption = '{service.private.key}';
-                    MOVE PROPERTY (loadPrivateKey());
-                    MOVE PROPERTY (loadChain());
-                    MOVE PROPERTY (openPrivateKey());
-                    MOVE PROPERTY (openChain());
-                    MOVE PROPERTY (resetPrivateKey());
-                    MOVE PROPERTY (resetChain());
-                    MOVE PROPERTY (privateKeyPassword());
+                    MOVE PROPERTY (loadPrivateKey(as));
+                    MOVE PROPERTY (loadChain(as));
+                    MOVE PROPERTY (openPrivateKey(as));
+                    MOVE PROPERTY (openChain(as));
+                    MOVE PROPERTY (resetPrivateKey(as));
+                    MOVE PROPERTY (resetChain(as));
+                    MOVE PROPERTY (privateKeyPassword(as));
                 }
             }
         }
@@ -1117,40 +1091,15 @@ onStarted() +{
 }
 
 
-// App server scaling
-
-CLASS AppServer '{service.scaling.app.server}';
-appServerName '{service.scaling.app.this.server.name}' = DATA STRING();
-thisAppServer = DATA AppServer();
-name '{service.scaling.app.server.name}' = DATA STRING (AppServer);
-connectionString '{service.scaling.app.server.connection.string}' = DATA STRING (AppServer);
-
-onStarted() +{
-    NEW as = AppServer {
-        connectionString(as) <- webServerOrigin();
-        name(as) <- appServerName();
-        thisAppServer() <- as; 
-        apply();
-    }
-}
-
-
 FORM scaling '{service.scaling}'
     OBJECTS s = DBServer
     PROPERTIES (s) GRID name
     PROPERTIES (s) NEW[DBSlave], DELETE
     
     OBJECTS as = AppServer
-    PROPERTIES (as) GRID READONLY name, connectionString
+    PROPERTIES (as) name, connectionString READONLY, isStarted READONLY
     PROPERTIES (as) NEW, DELETE
-    PROPERTIES appServerName();
 ;
-
-DESIGN scaling {
-    BOX(as) {
-        MOVE PROPERTY(appServerName()) BEFORE FILTERBOX(as);
-    }
-}
 
 NAVIGATOR {
     system {

@@ -2279,6 +2279,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public OperationOwner getOpOwner() {
                 return owner;
             }
+
+            @Override
+            public ValueParseInterface getAppServer() {
+                return empty;
+            }
         };
     }
 

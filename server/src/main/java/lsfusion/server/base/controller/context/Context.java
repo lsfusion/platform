@@ -68,6 +68,7 @@ public interface Context {
     Long getCurrentConnection();
     Long getCurrentUser();
     Long getCurrentUserRole();
+    Long getCurrentAppServer();
 
     String localize(LocalizedString s);
     String localize(LocalizedString s, Locale locale);

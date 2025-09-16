@@ -167,6 +167,10 @@ public class ThreadLocalContext {
     public static Long getCurrentRole() {
         return get().getCurrentUserRole();
     }
+    
+    public static Long getCurrentAppServer() {
+        return get().getCurrentAppServer();
+    }
 
     public static LogicsInstance getLogicsInstance() {
         return get().getLogicsInstance();

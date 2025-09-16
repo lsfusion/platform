@@ -16,6 +16,7 @@ public interface QueryEnvironment {
     ValueParseInterface getSQLConnection();
     ValueParseInterface getIsServerRestarting();
     ValueParseInterface getSQLAuthToken();
+    ValueParseInterface getAppServer();
 
     Locale getLocale();
 }

@@ -703,6 +703,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.isLightStartParam, SystemProperties.lightStart ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
         mMapValues.exclAdd(SQLSession.inTestModeParam, SystemProperties.inTestMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
         mMapValues.exclAdd(SQLSession.projectLSFDirParam, SystemProperties.projectLSFDir != null ? new TypeObject(SystemProperties.projectLSFDir, TextClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.appServerParam, env.getAppServer());
     }
 
     private ImRevMap<String, String> getTranslate(ImRevMap<ParseValue, String> mapValues, String limit, String offset) {

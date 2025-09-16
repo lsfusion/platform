@@ -99,4 +99,14 @@ public class ContextQueryEnvironment implements QueryEnvironment {
             }
         };
     }
+
+    @Override
+    public ValueParseInterface getAppServer() {
+        Long currentAppServer = contextProvider.getCurrentAppServer();
+        if (currentAppServer != null) {
+            return new TypeObject(currentAppServer, ObjectType.instance);
+        } else {
+            return NullValue.instance.getParse(ObjectType.instance);
+        }
+    }
 }

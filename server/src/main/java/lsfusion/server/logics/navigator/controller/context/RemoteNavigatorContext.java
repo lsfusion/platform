@@ -119,6 +119,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
+            public Long getCurrentAppServer() {
+                return RemoteNavigatorContext.this.getCurrentAppServer();
+            }
+
+            @Override
             public LogInfo getLogInfo() {
                 return RemoteNavigatorContext.this.getLogInfo();
             }

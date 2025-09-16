@@ -7,6 +7,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
+import lsfusion.server.physics.admin.service.property.CurrentAppServerProperty;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import lsfusion.server.physics.dev.property.IsLightStartProperty;
 import lsfusion.server.physics.dev.property.InTestModeProperty;
@@ -16,6 +17,7 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 
 public class ServiceLogicsModule extends ScriptingLogicsModule {
+    public ConcreteCustomClass appServer;
 
     public LA makeProcessDumpAction;
 
@@ -48,9 +50,10 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP inTestMode;
     public LP projectLSFDir;
 
-    public LP webServerUseHttps;
-    public LP webServerHttpPort;
-    public LP webServerHttpHost;
+    public LP currentAppServer;
+    public LP appServerConnectionString;
+    public LP appServerByConnectionString;
+    public LP isStartedAppServer;
     
     public LP useKeystore;
     public LP keystorePassword;
@@ -65,7 +68,17 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
+
+        appServer = (ConcreteCustomClass) findClass("AppServer");
+    }
+
+    @Override
     public void initMainLogic() throws RecognitionException {
+        currentAppServer = addProperty(null, new LP<>(new CurrentAppServerProperty(appServer)));
+        makePropertyPublic(currentAppServer, "currentAppServer");
+        
         isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingProperty()));
         makePropertyPublic(isServerRestarting, "isServerRestarting");
 
@@ -104,17 +117,17 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
-
-        webServerUseHttps = findProperty("webServerPredefinedHttps[]");
-        webServerHttpHost = findProperty("webServerPredefinedHost[]");
-        webServerHttpPort = findProperty("webServerPredefinedPort[]");
         
-        useKeystore = findProperty("useKeystore[]");
-        keystorePassword = findProperty("keystorePassword[]");
-        keyPassword = findProperty("keyPassword[]");
-        keystore = findProperty("keystore[]");
-        privateKey = findProperty("privateKey[]");
-        chain = findProperty("chain[]");
-        privateKeyPassword = findProperty("privateKeyPassword[]");
+        appServerConnectionString = findProperty("connectionString[AppServer]");
+        appServerByConnectionString = findProperty("appServer[ISTRING[100]]");
+        isStartedAppServer = findProperty("isStarted[AppServer]");
+        
+        useKeystore = findProperty("useKeystore[AppServer]");
+        keystorePassword = findProperty("keystorePassword[AppServer]");
+        keyPassword = findProperty("keyPassword[AppServer]");
+        keystore = findProperty("keystore[AppServer]");
+        privateKey = findProperty("privateKey[AppServer]");
+        chain = findProperty("chain[AppServer]");
+        privateKeyPassword = findProperty("privateKeyPassword[AppServer]");
     }
 }

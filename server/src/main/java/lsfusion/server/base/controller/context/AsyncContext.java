@@ -141,6 +141,11 @@ public class AsyncContext extends AbstractContext {
         return upContext.getCurrentUserRole();
     }
 
+    @Override
+    public Long getCurrentAppServer() {
+        return upContext.getCurrentAppServer();
+    }
+
 //    @Override
 //    public String localize(LocalizedString s) {
 //        return upContext.localize(s);

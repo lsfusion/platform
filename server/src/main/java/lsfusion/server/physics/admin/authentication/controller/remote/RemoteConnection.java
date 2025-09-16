@@ -330,6 +330,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             final RemoteConnection wThis = weakThis.get();
             return wThis == null ? null : wThis.getLocalePreferences();
         }
+
+        @Override
+        public Long getCurrentAppServer() {
+            final RemoteConnection wThis = weakThis.get();
+            if(wThis == null)
+                return null;
+            return wThis.getCurrentAppServer();
+        }
     }
 
     public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -365,6 +373,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     public Long getCurrentComputer() {
         return computer != null ? (Long)computer.object : null;
+    }
+    
+    public Long getCurrentAppServer() {
+        return logicsInstance.getDbManager().getAppServer();
     }
 
     protected abstract Long getConnectionId();
