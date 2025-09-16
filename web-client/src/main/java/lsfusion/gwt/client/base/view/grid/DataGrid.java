@@ -219,8 +219,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 if (firstVisibleRow != -1)
                     GwtClientUtils.addClassName(getChildElement(firstVisibleRow), "first-visible-row");
 
-                if (renderedFirstVisibleRow != -1)
-                    GwtClientUtils.removeClassName(getChildElement(renderedFirstVisibleRow), "first-visible-row");
+                TableRowElement renderedFirstVisibleElement = getChildElement(renderedFirstVisibleRow);
+                if (renderedFirstVisibleElement != null)
+                    GwtClientUtils.removeClassName(renderedFirstVisibleElement, "first-visible-row");
 
                 renderedFirstVisibleRow = firstVisibleRow;
             }
