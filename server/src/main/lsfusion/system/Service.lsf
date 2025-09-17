@@ -1041,11 +1041,12 @@ heuristicSize() += CASE
 // DB scaling
 
 CLASS ABSTRACT DBServer '{service.scaling.db.server}';
-name '{service.scaling.db.server.name}' = DATA STRING (DBServer);
-host '{service.scaling.db.server.host}' = DATA STRING (DBServer);
+host '{service.scaling.db.server.host}' = ABSTRACT STRING (DBServer);
+slaveHost '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
 snmpPort '{service.scaling.db.server.snmp.port}' = DATA INTEGER (DBServer);
-dbServer(STRING host) = GROUP MAX DBServer server IF host(server) = host;
-dbMaster() = GROUP MAX DBServer server IF server IS DBMaster;
+masterHost = DATA STRING();
+host(DBMaster server) += masterHost() IF server IS DBMaster;
+host(DBSlave server) += slaveHost(server);
 
 CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
@@ -1077,7 +1078,7 @@ load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
 
 FORM scaling '{service.scaling}'
     OBJECTS s = DBServer
-    PROPERTIES (s) GRID name, host, snmpPort, load READONLY
+    PROPERTIES (s) GRID host READONLYIF s IS DBMaster, snmpPort, load READONLY
     PROPERTIES (s) NEW[DBSlave], DELETE
 
     EVENTS ON SCHEDULE PERIOD 5 formRefresh();
@@ -1091,5 +1092,4 @@ NAVIGATOR {
 
 onStarted() +{
     INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //It is not created in the database that is replicated because only tables are replicated, but not functions.
-    name(DBMaster server) <- '{service.scaling.master}' IF server IS DBMaster;
 }

@@ -149,8 +149,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
 
-    public List<Server> getServers() {
-        return servers;
+    public Slave findSlave(String id) {
+        for (Server server : servers) {
+            if (!server.isMaster()) {
+                Slave slave = (Slave) server;
+                if (slave.id.equals(id))
+                    return slave;
+            }
+        }
+        return null;
     }
 
     public String dataBase;

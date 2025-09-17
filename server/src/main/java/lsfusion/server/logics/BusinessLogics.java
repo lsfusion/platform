@@ -64,6 +64,7 @@ import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
+import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
@@ -2394,19 +2395,21 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
-                for (DataAdapter.Server server : getDbManager().getAdapter().getServers()) {
-                    //host[DBMaster] always null
-                    Long dbServer = server.isMaster() ? (Long) serviceLM.findProperty("dbMaster[]").read(session) :
-                            (Long) serviceLM.findProperty("dbServer[STRING]").read(session, new DataObject(server.host));
-                    DataObject dbServerClass = new DataObject(dbServer,
-                            (ConcreteCustomClass) serviceLM.findClass(server.isMaster() ? "DBMaster" : "DBSlave"));
+                DataAdapter dataAdapter = getDbManager().getAdapter();
+                for (ImList<DataObject> server : serviceLM.is(serviceLM.dbServer).readAllClasses(session).keys()) {
+                    DataObject serverDataObject = server.get(0);
+                    ConcreteClass serverClass = serverDataObject.objectClass;
+                    DataAdapter.Server dbServer =
+                            (serverClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) serverClass).hasConcreteStaticObjects()) ?
+                            dataAdapter.getMaster() : dataAdapter.findSlave(serverDataObject.object.toString());
+                    // Null check, because scheduler starts working before DataAdapter.servers is filled
+                    if (dbServer != null) {
+                        dbServer.setLoad(calculateServerLoad(dbServer, getCpuTime(dbServer,
+                                (Integer) serviceLM.snmpPort.read(session, serverDataObject))));
 
-                    server.setLoad(calculateServerLoad(server, getCpuTime(server,
-                            (Integer) serviceLM.snmpPort.read(session, dbServerClass))));
-
-                    serviceLM.findProperty("load[DBServer]").change(new DataObject(server.getLoad()), session, dbServerClass);
-
-                    session.applyException(this, stack);
+                        serviceLM.findProperty("load[DBServer]").change(new DataObject(dbServer.getLoad()), session, serverDataObject);
+                        session.applyException(this, stack);
+                    }
                 }
             } catch (Throwable t) {
                 ServerLoggers.serviceLogger.info("Read sql server cpu time task error: ", t);

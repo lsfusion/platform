@@ -1617,6 +1617,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
+            setDefaultDBPreferences(session);
             setDefaultUserLocalePreferences(session);
             setLogicsParams(session);
 
@@ -2091,6 +2092,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             reflectionLM.timeDropColumn.change(LocalDateTime.now(), session, object);
             reflectionLM.revisionDropColumn.change(getRevision(SystemProperties.inDevMode), session, object);
         }
+        apply(session);
+    }
+
+    private void setDefaultDBPreferences(DataSession session) throws SQLException, SQLHandledException {
+        serviceLM.hostDBMaster.change(getAdapter().getMaster().host, session);
         apply(session);
     }
 
