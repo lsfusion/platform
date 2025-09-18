@@ -3,6 +3,7 @@ package lsfusion.server.physics.dev.integration.internal.to;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -104,9 +105,9 @@ public abstract class InternalAction extends ExplicitAction {
 
     public static Object readJSON(ObjectValue result, Type valueType) {
         String charset = ExternalUtils.jsonCharset.toString();
-        FileData file = readFile(result, valueType, charset);
+        RawFileData file = readRawFile(result, valueType, charset);
         if(file != null)
-            return JSONReader.readObject(file.getRawFile(), charset);
+            return JSONReader.readObject(file, charset);
         return null;
     }
 

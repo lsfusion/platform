@@ -5,6 +5,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -28,11 +29,13 @@ import java.util.regex.Pattern;
 public abstract class ReadUtils {
 
     public static ReadResult readFile(String sourcePath, boolean isBlockingFileRead, boolean isDialog, ExtraReadInterface extraReadProcessor) throws IOException, SQLException {
+        String dialogPath = null;
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
             if(sourcePath == null) {
                 return null;
             }
+            dialogPath = sourcePath;
         }
 
         Path filePath = Path.parsePath(sourcePath, true);
@@ -43,28 +46,25 @@ public abstract class ReadUtils {
 
         try {
             File file = localFile;
-            String extension;
+            Pair<String, String> fileNameAndExtension;
             switch (filePath.type) {
                 case "file":
                     file = new File(filePath.path);
-                    extension = BaseUtils.getFileExtension(filePath.path);
+                    fileNameAndExtension = getFileNameAndExtension(filePath.path);
                     break;
                 case "http":
                 case "https":
-                    extension = copyHTTPToFile(filePath, localFile);
+                    fileNameAndExtension = copyHTTPToFile(filePath, localFile);
                     break;
                 case "ftp":
-                    copyFTPToFile(filePath.path, localFile);
-                    extension = getFileExtension(filePath.path);
+                    fileNameAndExtension = copyFTPToFile(filePath.path, localFile);
                     break;
                 case "sftp":
-                    copySFTPToFile(filePath.path, localFile);
-                    extension = getFileExtension(filePath.path);
+                    fileNameAndExtension = copySFTPToFile(filePath.path, localFile);
                     break;
                 default:
                     if(extraReadProcessor != null) {
-                        extraReadProcessor.copyToFile(filePath.type, sourcePath, localFile);
-                        extension = filePath.type;
+                        fileNameAndExtension = new Pair<>("file", extraReadProcessor.copyToFile(filePath.type, sourcePath, localFile));
                     } else {
                         throw new RuntimeException(String.format("READ %s is not supported", filePath.type));
                     }
@@ -83,31 +83,31 @@ public abstract class ReadUtils {
             } else {
                 throw new RuntimeException("Read Error. File not found: " + sourcePath);
             }
-            return new ReadResult(new FileData(rawFileData, extension), filePath.type);
+            return new ReadResult(new NamedFileData(new FileData(rawFileData, fileNameAndExtension.second), fileNameAndExtension.first), filePath.type, dialogPath);
         } finally {
             BaseUtils.safeDelete(localFile);
         }
     }
 
-    private static String readFileExtension(URLConnection connection, URL url) {
+    private static Pair<String, String> readFileExtension(URLConnection connection, URL url) {
         String contentDispositionHeader = connection.getHeaderField("Content-Disposition");
-        String fileExtension = null;
+        Pair<String, String> fileAndNameExtension = null;
         if (contentDispositionHeader != null) {
             try {
-                fileExtension = getFileExtension(ExternalUtils.getContentDispositionFileName(contentDispositionHeader).second);
+                fileAndNameExtension = getFileNameAndExtension(ExternalUtils.getContentDispositionFileName(contentDispositionHeader).second);
             } catch (ParseException e) {
                 //do nothing
             }
         }
 
-        if (fileExtension == null)
-            fileExtension = BaseUtils.getFileExtension(url.getPath());
+        if (fileAndNameExtension == null)
+            fileAndNameExtension = getFileNameAndExtension(url.getPath());
 
         String contentType = connection.getHeaderField("Content-Type");
-        if (fileExtension == null && contentType != null)
-            fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
+        if (fileAndNameExtension == null && contentType != null)
+            fileAndNameExtension = new Pair<>("file", MIMETypeUtils.fileExtensionForMIMEType(contentType));
 
-        return fileExtension;
+        return fileAndNameExtension;
     }
 
     private static String getFileExtension(String filename) {
@@ -142,7 +142,7 @@ public abstract class ReadUtils {
         return result;
     }
 
-    private static String copyHTTPToFile(Path path, File file) throws IOException {
+    private static Pair<String, String> copyHTTPToFile(Path path, File file) throws IOException {
         final List<String> properties = parseHTTPPath(path.path);
         String urlSpec;
         if (properties != null) {
@@ -163,9 +163,8 @@ public abstract class ReadUtils {
         URLConnection connection = url.openConnection();
         connection.connect();
 
-        String extension = readFileExtension(connection, url);
         org.apache.commons.io.FileUtils.copyInputStreamToFile(connection.getInputStream(), file);
-        return extension;
+        return readFileExtension(connection, url);
     }
 
     private static List<String> parseHTTPPath(String path) {
@@ -181,14 +180,14 @@ public abstract class ReadUtils {
         } else return null;
     }
 
-    private static void copyFTPToFile(String path, File file) {
-        IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static Pair<String, String> copyFTPToFile(String path, File file) {
+        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 try(OutputStream outputStream = new FileOutputStream(file)) {
                     if (!ftpClient.retrieveFile(ftpPath.remoteFile, outputStream)) {
                         throw Throwables.propagate(new RuntimeException("Failed to copy '" + path + "'"));
                     }
-                    return null;
+                    return getFileNameAndExtension(ftpPath.remoteFile);
                 }
             } catch (IOException e) {
                 throw Throwables.propagate(e);
@@ -196,8 +195,8 @@ public abstract class ReadUtils {
         });
     }
 
-    private static void copySFTPToFile(String path, File file) {
-        IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
+    private static Pair<String, String> copySFTPToFile(String path, File file) {
+        return IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
             try {
                 channelSftp.get(ftpPath.remoteFile, file.getAbsolutePath());
             } catch (SftpException e) {
@@ -206,7 +205,7 @@ public abstract class ReadUtils {
                 else
                     throw Throwables.propagate(e);
             }
-            return null;
+            return getFileNameAndExtension(ftpPath.remoteFile);
         });
     }
 
@@ -223,12 +222,18 @@ public abstract class ReadUtils {
     }
 
     public static class ReadResult implements Serializable {
-        public final FileData fileData;
+        public final NamedFileData fileData;
         public final String type;
+        public final String dialogPath;
 
-        public ReadResult(FileData fileData, String type) {
+        public ReadResult(NamedFileData fileData, String type, String dialogPath) {
             this.fileData = fileData;
             this.type = type;
+            this.dialogPath = dialogPath;
         }
+    }
+
+    public static Pair<String, String> getFileNameAndExtension(String path) {
+        return new Pair<>(BaseUtils.getFileName(path), BaseUtils.getFileExtension(path));
     }
 }

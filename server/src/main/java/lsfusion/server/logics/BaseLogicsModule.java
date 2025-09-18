@@ -242,6 +242,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP exportFile;
     public LP importFile;
     public LP readFile;
+    public LP readDialogPath;
 
     public LP showResult;
     public LP eventSource;
@@ -613,6 +614,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
         readFile = findProperty("readFile[]");
+        readDialogPath = findProperty("readDialogPath[]");
 
         eventSource = findProperty("eventSource[]");
         showResult = findProperty("showResult[]");

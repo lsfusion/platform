@@ -70,13 +70,13 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected NamedFileData writePropNotNull(RawFileData value, String extension, String charset) {
-        return new NamedFileData(new FileData(value, extension));
+    protected NamedFileData writePropNotNull(NamedFileData value, String charset) {
+        return value;
     }
 
     @Override
-    public FileData readPropNotNull(NamedFileData value, String charset) {
-        return value.getFileData();
+    public NamedFileData readPropNotNull(NamedFileData value, String charset) {
+        return value;
     }
 
     @Override
@@ -110,7 +110,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
 
     @Override
     protected NamedFileData getValue(RawFileData data) {
-        return new NamedFileData(new FileData(data, "dat"));
+        return new NamedFileData(data);
     }
 
     @Override

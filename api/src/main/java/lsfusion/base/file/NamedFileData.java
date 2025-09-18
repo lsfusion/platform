@@ -12,10 +12,12 @@ public class NamedFileData extends TwinImmutableObject<NamedFileData> implements
 
     public final static NamedFileData EMPTY = new NamedFileData(FileData.EMPTY, "");
 
+    public NamedFileData(RawFileData fileData) {
+        this(new FileData(fileData, "dat"));
+    }
     public NamedFileData(FileData fileData) {
         this(fileData, "file");
     }
-
     public NamedFileData(FileData fileData, String name) {
         assert fileData != null;
         this.fileData = fileData;

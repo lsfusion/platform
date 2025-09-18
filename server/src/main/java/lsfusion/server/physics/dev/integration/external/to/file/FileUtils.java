@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
-import static lsfusion.base.file.WriteUtils.appendExtension;
 
 //lsfusion.base.FileUtils is copy of this one
 //todo: Replace all usages to lsfusion.base.FileUtils (available since 6.1)
@@ -48,22 +47,11 @@ public class FileUtils {
         if (srcPath.type.equals("file") && destPath.type.equals("file")) {
             copyFile(new File(srcPath.path), new File(destPath.path), move);
         } else if (move && equalFTPServers(srcPath, destPath)) {
-            renameFTP(srcPath.path, destPath.path, null);
+            renameFTP(srcPath.path, destPath.path);
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, null);
             if (readResult != null) {
-                RawFileData rawFile = readResult.fileData.getRawFile();
-                switch (destPath.type) {
-                    case "file":
-                        rawFile.write(destPath.path);
-                        break;
-                    case "ftp":
-                        WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
-                        break;
-                    case "sftp":
-                        WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
-                        break;
-                }
+                WriteUtils.write(readResult.fileData, destinationPath, false, false);
                 if (move) {
                     delete(srcPath);
                 }
@@ -103,11 +91,11 @@ public class FileUtils {
         } else return false;
     }
 
-    public static void renameFTP(String srcPath, String destPath, String extension) {
+    public static void renameFTP(String srcPath, String destPath) {
         IOUtils.ftpAction(srcPath, (srcProperties, ftpClient) -> {
             try {
                 FTPPath destProperties = FTPPath.parseFTPPath(destPath);
-                boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
+                boolean done = ftpClient.rename(srcProperties.remoteFile, destProperties.remoteFile);
                 if (!done) {
                     throw new RuntimeException("Failed to rename ftp file: " + ftpClient.getReplyString());
                 }

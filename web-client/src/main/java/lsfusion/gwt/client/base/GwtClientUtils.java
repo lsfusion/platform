@@ -1642,6 +1642,17 @@ public class GwtClientUtils {
         return name != null ? prototype[name]() : name;
     }-*/;
 
+    public static String getFileName(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+
+        int slashIndex = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        String fileName = (slashIndex == -1) ? path : path.substring(slashIndex + 1);
+
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+    }
     public static String getFileExtension(String filename) {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);

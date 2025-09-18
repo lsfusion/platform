@@ -326,6 +326,7 @@ inputList = DATA LOCAL STRING (INTEGER);
 displayInputList = DATA LOCAL STRING (INTEGER);
 
 readFile = DATA LOCAL FILE ();
+readDialogPath = DATA LOCAL STRING ();
 
 showResult = DATA LOCAL TEXT();
 

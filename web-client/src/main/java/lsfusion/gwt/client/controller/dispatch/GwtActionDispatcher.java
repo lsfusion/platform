@@ -371,8 +371,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         return executeAsyncResultFlutter("readFile", new String[] {action.sourcePath}, res -> {
             String errorValue = getJSONError(res);
             return errorValue != null ?
-                    new GReadResult(errorValue, null, null) :
-                    new GReadResult(null, getJSONStringResult(res), action.isDynamicFormatFileClass ? getFileExtension(action.sourcePath) : null);
+                    new GReadResult(errorValue, null, null, null) :
+                    new GReadResult(null, getJSONStringResult(res), getFileName(action.sourcePath), getFileExtension(action.sourcePath));
         });
     }
 

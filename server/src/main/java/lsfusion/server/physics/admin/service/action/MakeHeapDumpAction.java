@@ -28,7 +28,7 @@ public class MakeHeapDumpAction extends InternalAction {
             Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
             while(!heapFile.exists())
                 Thread.sleep(1000);
-            context.delayUserInteraction(new WriteClientAction(new RawFileData(heapFile), heapFile.getName(), null, false, true));
+            context.delayUserInteraction(new WriteClientAction(heapFile, heapFile.getName()));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
