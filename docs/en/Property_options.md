@@ -30,6 +30,7 @@ REGEXP rexpr [message]
 ECHO
 DEFAULTCOMPARE [compare]
 LAZY [WEAK | STRONG]
+imageSetting
 ```
 
 ## Description and parameters
@@ -111,6 +112,22 @@ LAZY [WEAK | STRONG]
     - `actionOperator`
 
         [Context-dependent action operator](Action_operators.md#contextdependent). An operator that defines the action executed on an event. You can use the parameters of the property itself as operator parameters.
+
+- `imageSetting`
+
+    Icon settings for the property. This option allows you to configure the icon manually. It can have one of the following forms:
+
+    - `IMAGE [imageLiteral]`
+
+        [Manual icon specification](Icons.md#manual) for the property. If `imageLiteral` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
+
+        - `imageLiteral`
+
+            String literal whose value defines the icon.
+
+    - `NOIMAGE`
+
+        Keyword indicating that the property should have no icon.
 
 ### `DESIGN` statement default values block
 
