@@ -65,12 +65,12 @@ public class SaveBackupAction extends InternalAction {
                                     }
                                 }
                             }
-                            context.delayUserInterfaction(new WriteClientAction(new RawFileData(zipFile), fileBackupName + ".zip", null, false, true));
+                            context.delayUserInterfaction(new WriteClientAction(zipFile, fileBackupName + ".zip"));
                         } finally {
                             BaseUtils.safeDelete(zipFile);
                         }
                     } else {
-                        context.delayUserInterfaction(new WriteClientAction(new RawFileData(file), fileBackupName, null, false, true));
+                        context.delayUserInterfaction(new WriteClientAction(file, fileBackupName));
                     }
                 } else {
                     context.messageError(localize("{backup.file.not.found}"));

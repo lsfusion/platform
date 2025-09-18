@@ -4629,9 +4629,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedReadAction(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLPNoParamsByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new ReadAction(targetProp, clientAction, dialog)),
+        return addScriptedJoinAProp(addAProp(new ReadAction(targetProp, clientAction, dialog, dialog ? baseLM.readDialogPath : null)),
                 Collections.singletonList(sourcePathProp));
     }
 

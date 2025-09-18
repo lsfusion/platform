@@ -67,11 +67,8 @@ public class ExternalDBFAction extends CallAction {
                 DataObject paramObject = (DataObject) paramValue;
                 DataClass paramClass = (DataClass) getFileClass(paramObject, paramTypes.get(paramInterface));
                 if (paramClass instanceof FileClass) {
-                    FileData fileData = readFile(paramObject, paramClass, null);
-                    String extension = fileData.getExtension();
-                    if (extension.equals(TableClass.extension)) { // значит таблица
-                        JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileData.getRawFile());
-
+                    JDBCTable jdbcTable = readTableFile(paramObject, paramClass);
+                    if (jdbcTable != null) {
                         Field[] fields = getFields(jdbcTable);
                         File file = new File(connectionString);
                         boolean append = file.exists();

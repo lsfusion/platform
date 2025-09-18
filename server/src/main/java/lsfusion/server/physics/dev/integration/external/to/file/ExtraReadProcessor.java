@@ -40,14 +40,14 @@ public class ExtraReadProcessor implements ExtraReadInterface {
     }
 
     @Override
-    public void copyToFile(String type, String query, File file) throws SQLException, IOException {
+    public String copyToFile(String type, String query, File file) throws SQLException, IOException {
         switch (type) {
             case "jdbc":
                 copyJDBCToFile(query, file);
-                break;
+                return TableClass.extension;
             case "mdb":
                 copyMDBToFile(query, file);
-                break;
+                return "mdb"; // ??? also save as table ???
             default:
                 throw new RuntimeException(String.format("READ %s is not supported", type));
         }
