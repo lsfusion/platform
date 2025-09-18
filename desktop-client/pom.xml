@@ -50,8 +50,17 @@
                                     <arg value="${assemble.jar}" />
                                 </exec>
 
-                                <!-- settings.xml -->
-                                <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
+                                <property name="signed.jars.dir" value="/usr/share/jenkins/signed-files"/>
+                                
+                                <echo message="The build has stopped. Please sign the file: ${project.build.directory}/${assemble.file.name}"/>
+                                <echo message="Put the signed file into: ${signed.jars.dir}/"/>
+                                
+                                <waitfor maxwait="1" maxwaitunit="hour">
+                                    <available file="${signed.jars.dir}/${assemble.file.name}"/>
+                                </waitfor>
+                                
+                                <echo message="The signed file has been found. Continuing build..."/>
+                                <copy file="${signed.jars.dir}/${assemble.file.name}" todir="${project.build.directory}" overwrite="true"/>
                             </target>
                         </configuration>
                     </execution>
