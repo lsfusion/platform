@@ -128,19 +128,19 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `imageSetting`
 
-    Configuring the display of the navigator element's icon. By default, the icon or its absence is controlled by the [parameters](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold`, `settings.defaultNavigatorImage` and others. This option allows you to manually configure the icon display. It can have one of two forms:
+    Icon settings for the navigator element. This option allows you to configure the icon manually. It can have one of the following forms:
  
-    - `IMAGE [fileExpr]`
+    - `IMAGE [imageExpr]`
 
-        Specifying the relative path to the image file that will be displayed as the navigator element's icon. If `fileExpr` is not specified, the default icon display mode is activated.
+        [Manual icon specification](Icons.md#manual) for the navigator element. If `imageExpr` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
 
-        - `fileExpr`
+        - `imageExpr`
 
-            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+            [Expression](Expression.md) whose string value defines the icon.
 
-      - `NOIMAGE`
+    - `NOIMAGE`
 
-          Keyword indicating that the navigator element should have no icon.
+        Keyword indicating that the navigator element should have no icon.
 
 - `CLASS cssClassExpr`
 
