@@ -127,6 +127,17 @@ public class WriteUtils {
         });
     }
 
+    @Deprecated
+    public static void storeFileToSFTP(String path, RawFileData file, String extension) {
+        assert extension == null;
+        storeFileToSFTP(path, new NamedFileData(file));
+    }
+    @Deprecated
+    public static void storeFileToFTP(String path, RawFileData file, String extension) {
+        assert extension == null;
+        storeFileToFTP(path, new NamedFileData(file));
+    }
+
     public static void storeFileToSFTP(String path, NamedFileData file) {
         IOUtils.sftpAction(path, (ftpPath, channelSftp) -> {
             try {
