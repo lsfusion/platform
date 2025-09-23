@@ -93,7 +93,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             return null;
 
         // ServerResponse can not be dispatched if paused (it will break the assertion), so we have sort of mixed synchronization (when requests can be executed in any order, but one request at a time)
-        return () -> !(callback instanceof GwtActionDispatcher.ServerResponseCallback) || ((GwtActionDispatcher.ServerResponseCallback) callback).canBeDispatched();
+        return () -> !(callback instanceof GwtActionDispatcher.ServerResponseCallback && !((GwtActionDispatcher.ServerResponseCallback) callback).canBeDispatched());
     }
 
     public <A extends RequestAction<R>, R extends Result> long executeQueue(A action, RequestAsyncCallback<R> callback, boolean sync, boolean continueInvocation) {
@@ -203,9 +203,10 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
         q.forEach(queuedAction -> {
             if (queuedAction.preProceed != null && queuedAction.finished && queuedAction.preProceed.getAsBoolean()) {
+                queuedAction.preProceed = () -> false; // we don't need to proceed once again, just in case we do it before proceed if there will be a recursive flush (however it seems that now it is not possible)
+
                 preProceed.run();
                 queuedAction.proceed(postProceed);
-                queuedAction.preProceed = () -> false; // we don't need to proceed once again
             }
         });
 
