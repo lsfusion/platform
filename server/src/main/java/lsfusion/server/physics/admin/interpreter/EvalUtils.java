@@ -39,7 +39,7 @@ public class EvalUtils {
         }
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
+    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
         String parentModule = parentLM != null ? parentLM.getName() : null;
         WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
@@ -56,7 +56,7 @@ public class EvalUtils {
             module.runInit(ScriptingLogicsModule::initModuleDependencies);
             module.runInit(ScriptingLogicsModule::initMetaAndClasses);
             if(locals != null) {
-                for(Pair<LP, List<ResolveClassSet>> local : locals) {
+                for(Pair<LP, LogicsModule.LocalPropertyData> local : locals) {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }
             }

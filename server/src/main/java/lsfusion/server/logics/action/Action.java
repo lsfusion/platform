@@ -23,6 +23,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -86,12 +87,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
-    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
+    private ImSet<Pair<LP, LogicsModule.LocalPropertyData>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
         return debugLocals != null && !debugLocals.isEmpty();
     }
-    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
+    public void setDebugLocals(ImSet<Pair<LP, LogicsModule.LocalPropertyData>> debugLocals) {
         this.debugLocals = debugLocals;
     }
 

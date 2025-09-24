@@ -2236,14 +2236,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedListAProp(List<LAWithParams> properties, List<LP> localProps) {
         List<Object> resultParams = getParamsPlainList(properties);
 
-        MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
+        MExclSet<Pair<LP, LocalPropertyData>> mDebugLocals = null;
         if(debugger.isEnabled()) {
             mDebugLocals = SetFact.mExclSet(localProps.size());
         }
         MSet<SessionDataProperty> mLocals = SetFact.mSet();
         for (LP<?> localProp : localProps) {
             if (mDebugLocals != null) {
-                List<ResolveClassSet> localSignature = getLocalSignature(localProp);
+                LocalPropertyData localSignature = getLocalPropertyData(localProp);
                 mDebugLocals.exclAdd(new Pair<>(localProp, localSignature));
             }
             mLocals.add((SessionDataProperty) localProp.property);
@@ -2491,11 +2491,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
-    public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) {
+    public void addWatchLocalDataProperty(LP lp, LocalPropertyData localPropertyData) {
         assert lp.property instanceof SessionDataProperty;
-        addModuleLAP(lp);
-        propClasses.put(lp, signature);
-        return lp;
+
+        addModuleLAP(lp, localPropertyData.name, localPropertyData.signature);
     }
 
     public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {

@@ -27,6 +27,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
@@ -126,8 +127,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return result.addExcl(super.getAllParamsWithValuesInStack());
         }
 
-        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+        public ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack() {
+            ImSet<Pair<LP, LogicsModule.LocalPropertyData>> result = SetFact.EMPTY();
 
             if(locals != null)
                 result = result.addExcl(locals);
@@ -191,7 +192,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // debug info 
     private ImRevMap<String, P> paramsToInterfaces;
     private ImMap<String, String> paramsToFQN;
-    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
+    private ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals;
     private boolean newDebugStack;
     private Processor<ImMap<String, ObjectValue>> watcher;
     
@@ -240,7 +241,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.paramsToInterfaces = paramsToInterfaces;
     }
 
-    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
+    public void setLocals(ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals) {
         this.locals = locals;
     }
     
@@ -294,8 +295,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return result;
     }
 
-    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+    public ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack() {
+        ImSet<Pair<LP, LogicsModule.LocalPropertyData>> result = SetFact.EMPTY();
         
         if(locals != null)
             result = result.addExcl(locals);

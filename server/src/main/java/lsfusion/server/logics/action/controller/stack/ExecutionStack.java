@@ -8,11 +8,10 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public interface ExecutionStack {
 
@@ -20,7 +19,7 @@ public interface ExecutionStack {
 
     ImMap<String, ObjectValue> getAllParamsWithValuesInStack();
 
-    ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack();
+    ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack();
 
     Processor<ImMap<String, ObjectValue>> getWatcher();
 

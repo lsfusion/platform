@@ -26,6 +26,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -369,7 +370,7 @@ public class ActionDebugger implements DebuggerService {
         ImOrderMap<String, String> paramsWithClasses = stack.getAllParamsWithClassesInStack().toOrderMap();
         ImMap<String, ObjectValue> paramsWithValues = stack.getAllParamsWithValuesInStack();
 
-        ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
+        ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals = stack.getAllLocalsInStack();
 
         ExecutionContext<PropertyInterface> watchContext = context.override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
@@ -400,7 +401,7 @@ public class ActionDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) {
+    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, BusinessLogics bl) {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {

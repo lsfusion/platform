@@ -45,6 +45,10 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             JSONField field = fields.get(i);
             String value = field.name;
             String valueSource = source.getSource(i);
+            Type type = source.getType(i);
+            if(type != null)
+                valueSource = type.formatJSONSource(valueSource, source.getSyntax());
+
             FieldShowIf fieldShowIf = field.showIf;
             Object showIf = fieldShowIf == FieldShowIf.SHOWIF ? source.getSource(showIfIndex++) : fieldShowIf == FieldShowIf.EXTNULL;
             if(i > 0 && !nullEquals(currentShowIf, showIf)) {
