@@ -228,15 +228,28 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
     }
-    protected LogSequenceNumber getMasterLSN() throws SQLException {
+
+    @Override
+    public int getNumberOfConnections(Server server) throws SQLException {
+        try (Statement stmt = server.ensureConnection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state = 'active';")) {
+            if (rs.next())
+                return rs.getInt("cnt");
+        }
+        return 0;
+    }
+
+    @Override
+    public LogSequenceNumber getMasterLSN() throws SQLException {
         return getMasterLSN(master.ensureConnection);
     }
-    protected LogSequenceNumber getSlaveLSN(Slave slave) throws SQLException {
+    @Override
+    public LogSequenceNumber getSlaveLSN(Server slave) throws SQLException {
         // server is removed
         if(!servers.contains(slave))
             return LogSequenceNumber.INVALID_LSN;
 
-        return readSlaveLSN(slave);
+        return readSlaveLSN((Slave) slave);
     }
     private LogSequenceNumber readSlaveLSN(Slave slave) throws SQLException {
         String sql =
@@ -252,12 +265,12 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
     }
-    private boolean readSlaveReady(Server server) throws SQLException {
+    public boolean readSlaveReady(Server slave) throws SQLException {
         String sql =
                 "SELECT bool_and(srsubstate IN ('r','s')) AS all_tables_synced" +
                         " FROM pg_subscription_rel" +
                         " WHERE srsubid = (SELECT oid FROM pg_subscription WHERE subname = '" + DB_SUBSRIPTION + "');";
-        try (Statement stmt = server.ensureConnection.createStatement();
+        try (Statement stmt = slave.ensureConnection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 return rs.getBoolean("all_tables_synced");

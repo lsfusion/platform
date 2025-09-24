@@ -27,8 +27,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public static final LogSequenceNumber NO_SUBSCRIPTION = LogSequenceNumber.valueOf(1);
-    protected abstract LogSequenceNumber getMasterLSN() throws SQLException;
-    protected abstract LogSequenceNumber getSlaveLSN(DataAdapter.Slave slave) throws SQLException;
+    public abstract LogSequenceNumber getMasterLSN() throws SQLException;
+    public abstract LogSequenceNumber getSlaveLSN(DataAdapter.Server slave) throws SQLException;
+    public abstract boolean readSlaveReady(DataAdapter.Server slave) throws SQLException;
 
     private final ConcurrentIdentityWeakHashMap<DataAdapter.Server, ConcurrentLinkedDeque<Connection>> freeConnections = MapFact.getGlobalConcurrentIdentityWeakHashMap();
 

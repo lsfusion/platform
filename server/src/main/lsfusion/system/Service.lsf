@@ -1044,13 +1044,21 @@ CLASS ABSTRACT DBServer '{service.scaling.db.server}';
 host '{service.scaling.db.server.host}' = ABSTRACT STRING (DBServer);
 slaveHost '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
 snmpPort '{service.scaling.db.server.snmp.port}' = DATA INTEGER (DBServer);
-masterHost = DATA STRING();
-host(DBMaster server) += masterHost() IF server IS DBMaster;
+host(DBMaster server) += dbServer() IF server IS DBMaster;
 host(DBSlave server) += slaveHost(server);
 
 CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
 } : DBServer;
+
+load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
+//todo localize
+lsn = DATA STRING(DBServer);
+readyStatus = DATA BOOLEAN(DBServer);
+availability = DATA BOOLEAN(DBServer);
+numberConnections = DATA INTEGER(DBServer);
+
+updateServersAction INTERNAL 'lsfusion.server.physics.admin.monitor.action.UpdateServersAction' (); 
 
 CLASS DBSlave '{service.scaling.db.slave}' : DBServer;
 addSlave INTERNAL 'lsfusion.server.physics.admin.service.action.AddSlaveAction' (DBSlave);
@@ -1074,11 +1082,11 @@ onStarted() +{
         asyncAddSlave(slave);
 }
 
-load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
-
 FORM scaling '{service.scaling}'
+    PROPERTIES() updateServersAction
     OBJECTS s = DBServer
-    PROPERTIES (s) GRID host READONLYIF s IS DBMaster, snmpPort, load READONLY
+    PROPERTIES (s) GRID host READONLYIF s IS DBMaster, snmpPort 
+    PROPERTIES (s) READONLY load, lsn, readyStatus, availability, numberConnections
     PROPERTIES (s) NEW[DBSlave], DELETE
 
     EVENTS ON SCHEDULE PERIOD 5 formRefresh();

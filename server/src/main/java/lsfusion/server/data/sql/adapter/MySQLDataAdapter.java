@@ -42,7 +42,12 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public LogSequenceNumber getSlaveLSN(Slave slave) throws SQLException {
+    public LogSequenceNumber getSlaveLSN(Server slave) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean readSlaveReady(Server slave) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -67,8 +72,13 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected LogSequenceNumber getMasterLSN() throws SQLException {
+    public LogSequenceNumber getMasterLSN() throws SQLException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getNumberOfConnections(Server server) {
+        return 0;
     }
 
     @Override

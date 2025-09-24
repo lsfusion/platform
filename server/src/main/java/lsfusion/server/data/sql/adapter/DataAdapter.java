@@ -149,6 +149,12 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
 
+    public boolean serverAvailability(Server server) {
+        return servers.contains(server);
+    }
+
+    public abstract int getNumberOfConnections(Server server) throws SQLException;
+
     public Slave findSlave(String id) {
         for (Server server : servers) {
             if (!server.isMaster()) {
@@ -199,7 +205,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         if(server.isMaster()) // if master
             return true;
 
-        LogSequenceNumber connectionLSN = getSlaveLSN((Slave)server);
+        LogSequenceNumber connectionLSN = getSlaveLSN(server);
 
         if(connectionLSN == LogSequenceNumber.INVALID_LSN) // first copy / or not yet started wal sync
             return false;

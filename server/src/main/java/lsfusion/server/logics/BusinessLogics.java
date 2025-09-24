@@ -2398,18 +2398,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 DataAdapter dataAdapter = getDbManager().getAdapter();
                 for (ImList<DataObject> server : serviceLM.is(serviceLM.dbServer).readAllClasses(session).keys()) {
                     DataObject serverDataObject = server.get(0);
-                    ConcreteClass serverClass = serverDataObject.objectClass;
-                    DataAdapter.Server dbServer =
-                            (serverClass instanceof ConcreteCustomClass && ((ConcreteCustomClass) serverClass).hasConcreteStaticObjects()) ?
-                            dataAdapter.getMaster() : dataAdapter.findSlave(serverDataObject.object.toString());
+                    DataAdapter.Server dbServer = serverDataObject.objectClass.equals(serviceLM.dbSlave) ?
+                            dataAdapter.findSlave(serverDataObject.object.toString()) : dataAdapter.getMaster();
                     // Null check, because scheduler starts working before DataAdapter.servers is filled
-                    if (dbServer != null) {
-                        dbServer.setLoad(calculateServerLoad(dbServer, getCpuTime(dbServer,
-                                (Integer) serviceLM.snmpPort.read(session, serverDataObject))));
-
-                        serviceLM.findProperty("load[DBServer]").change(new DataObject(dbServer.getLoad()), session, serverDataObject);
-                        session.applyException(this, stack);
-                    }
+                    if (dbServer != null)
+                        dbServer.setLoad(calculateServerLoad(dbServer, getCpuTime(dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject))));
                 }
             } catch (Throwable t) {
                 ServerLoggers.serviceLogger.info("Read sql server cpu time task error: ", t);
