@@ -2410,7 +2410,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "Read sql server cpu time task");
     }
 
-    private double calculateServerLoad(DataAdapter.Server server, CpuTime currentCPUTime) {
+    private double calculateServerLoad(DataAdapter.Server server, CpuTime currentCPUTime) throws SQLException {
         CpuTime lastCpuTime = server.getLastCpuTime();
         server.setLastCpuTime(currentCPUTime);
         if (lastCpuTime == null || currentCPUTime == null || lastCpuTime.isSnmp() != currentCPUTime.isSnmp())
@@ -2428,7 +2428,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             return 0.0;
 
         double usage = 100.0 - (idleDelta * 100.0 / totalDelta);
-        return Math.round(usage * 100.0) / 100.0;
+        return Math.round(usage * 100.0) / 100.0 + (getNumberOfConnections(server) / 100.0);
+    }
+
+    public int getNumberOfConnections(DataAdapter.Server server) throws SQLException {
+        try (Statement stmt = server.ensureConnection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state = 'active';")) {
+            if (rs.next())
+                return rs.getInt("cnt");
+        }
+        return 0;
     }
 
     static final List<OID> OIDS = Arrays.asList(
