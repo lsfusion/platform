@@ -1011,22 +1011,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         delayUserInteraction(action);
     }
 
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        if(currentInvocationExternal) { // temporary for formCancel
-            Object[] result = new Object[actions.length];
-            for (int i = 0; i < actions.length; i++) {
-                ClientAction action = actions[i];
-                if (action instanceof ConfirmClientAction)
-                    result[i] = JOptionPane.YES_OPTION;
-                else {
-                    result = null;
-                    break;
-                }
-            }
-            if(result != null)
-                return result;
-        }
-        return super.requestUserInteraction(actions);
+    public Object requestUserInteraction(ClientAction action) {
+        if (currentInvocationExternal && action instanceof ConfirmClientAction) // temporary for formCancel
+            return JOptionPane.YES_OPTION;
+        return super.requestUserInteraction(action);
     }
 
     public FormClientData initClientData(ExecutionStack stack) {

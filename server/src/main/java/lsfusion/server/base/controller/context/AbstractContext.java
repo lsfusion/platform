@@ -185,13 +185,6 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    private String[] processClientActions(ClientAction[] actions) {
-        String[] messages = new String[actions.length];
-        for (int i = 0; i < actions.length; i++)
-            messages[i] = processClientAction(actions[i]);
-        return messages;
-    }
-
     @Override
     public void delayUserInteraction(ClientAction action) {
         aspectDelayUserInteraction(action, processClientAction(action));
@@ -199,19 +192,11 @@ public abstract class AbstractContext implements Context {
 
     @Override
     public Object requestUserInteraction(ClientAction action) {
-        return requestUserInteraction(new ClientAction[]{action})[0];
-    }
-
-    @Override
-    public Object[] requestUserInteraction(ClientAction... actions) {
         // the problem is that we shouldn't pauseDispatching when it's delay call (not request), and vice a versa
         // usually in server we manage it manually (for now), but for backward compatibility, adding this check
-        for (int i = 0; i < actions.length; i++) {
-            ClientAction action = actions[i];
-            if(action instanceof MessageClientAction)
-                ((MessageClientAction) action).syncType = true;
-        }
-        return aspectRequestUserInteraction(actions, processClientActions(actions));
+        if(action instanceof MessageClientAction)
+            ((MessageClientAction) action).syncType = true;
+        return aspectRequestUserInteraction(action, processClientAction(action));
     }
 
     public void aspectDelayUserInteraction(ClientAction action, String message) {
@@ -222,13 +207,10 @@ public abstract class AbstractContext implements Context {
             throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
     }
 
-    public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
-        for (int i = 0; i < messages.length; i++) {
-            String message = messages[i];
-            if (message == null)
-                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + actions[i].getClass());
-        }
-        return new Object[actions.length];
+    public Object aspectRequestUserInteraction(ClientAction action, String message) {
+        if (message == null)
+            throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + action.getClass());
+        return null;
     }
 
     @Override

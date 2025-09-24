@@ -32,23 +32,20 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResults, requestIndex, continueIndex), callback, true);
+    protected void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResult, requestIndex, continueIndex), callback, true);
     }
 
     @Override
     public void execute(final GFormAction action) {
-        if (action.showFormType.isModal()) {
-            pauseDispatching();
-        }
-        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, null, null, null, () -> {
-            if(action.showFormType.isDocked() || action.showFormType.isDockedModal())
-                formsController.ensureTabSelected();
+        executeAsyncNoResult(action.showFormType.isModal(), onResult -> {
+            formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, null, null, null, () -> {
+                if (action.showFormType.isDocked() || action.showFormType.isDockedModal())
+                    formsController.ensureTabSelected();
 
-            if (action.showFormType.isModal()) {
-                continueDispatching();
-            }
-        }, action.formId);
+                onResult.accept(null);
+            }, action.formId);
+        });
     }
 
     @Override

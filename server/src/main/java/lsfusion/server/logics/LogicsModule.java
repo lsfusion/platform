@@ -327,15 +327,15 @@ public abstract class LogicsModule {
         }
     }
     
-    protected void addModuleLAP(LAP<?, ?> lap) {
+    protected void addModuleLAP(LAP<?, ?> lap, String name, List<ResolveClassSet> signature) {
         assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
-        String name = null;
+
+        propClasses.put(lap, signature);
+
         assert getNamespace().equals(lap.getActionOrProperty().getNamespace());
         if (lap instanceof LA) {
-            name = ((LA<?>)lap).action.getName();
             putLAPToMap(namedActions, (LA) lap, name);
         } else if (lap instanceof LP) {
-            name = ((LP<?>)lap).property.getName();
             putLAPToMap(namedProperties, (LP)lap, name);
         }
         assert name != null;
@@ -359,8 +359,8 @@ public abstract class LogicsModule {
     }
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
-        propClasses.put(lp, signature);
-        addModuleLAP(lp);
+
+        addModuleLAP(lp, name, signature);
     }
 
     protected void makePropertyPublic(LP<?> lp, String name, ResolveClassSet... signature) {
@@ -2626,11 +2626,23 @@ public abstract class LogicsModule {
             this.name = name;
             this.signature = signature;
         }
+
+        @Override
+        public boolean equals(Object actionResult) {
+            return actionResult instanceof LocalPropertyData && name.equals(((LocalPropertyData) actionResult).name) && signature.equals(((LocalPropertyData) actionResult).signature);
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode() * 31 + signature.hashCode();
+        }
     }
 
     protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
 
+        // need this for watch + import / export
+        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
         lcp.setExplicitClasses(data.signature);
     }
 
@@ -2642,6 +2654,11 @@ public abstract class LogicsModule {
     public List<ResolveClassSet> getLocalSignature(LP<?> lcp) {
         assert locals.containsKey(lcp);
         return locals.get(lcp).signature;
+    }
+
+    public LocalPropertyData getLocalPropertyData(LP<?> lcp) {
+        assert locals.containsKey(lcp);
+        return locals.get(lcp);
     }
 
     public Map<LP<?>, LocalPropertyData> getLocals() {

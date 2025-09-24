@@ -20,7 +20,7 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 ASON eventType [ACTION] propertyId
-IMAGE path
+imageSetting
 CONFIRM
 EXTID extID
 ```
@@ -81,13 +81,21 @@ EXTID extID
 
         Keyword. If specified, it is considered that the action is set in `propertyId`. If not specified, it is initially considered that a property is defined in `propertyId`; otherwise, if no property is found, it is considered that an action is specified in `propertyId`.
 
-- `IMAGE path`
+- `imageSetting`
 
-    Specifies the file with the image to be displayed as an action icon.
+    Icon settings for the action. This option allows you to configure the icon manually. It can have one of the following forms:
 
-    - `path`
-     
-        The relative path to the file. [String literal](Literals.md#strliteral). The path is specified relative to the `images` folder.
+    - `IMAGE [imageLiteral]`
+
+        [Manual icon specification](Icons.md#manual) for the action. If `imageLiteral` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
+
+        - `imageLiteral`
+
+            [String literal](Literals.md#strliteral) whose value defines the icon.
+
+    - `NOIMAGE`
+
+        Keyword indicating that the action should have no icon.
 
 - `EXTID extID`
 

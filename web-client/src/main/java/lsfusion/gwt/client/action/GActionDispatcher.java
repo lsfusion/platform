@@ -64,7 +64,7 @@ public interface GActionDispatcher {
 
     String execute(GGetAvailablePrintersAction action);
 
-    void execute(GPrintFileAction action);
+    String execute(GPrintFileAction action);
 
     String execute(GWriteToPrinterAction action);
 

@@ -1,12 +1,14 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.data.expr.formula.JSONBuildFormulaImpl;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -37,7 +39,16 @@ public abstract class GroupParseNode implements ParseNode {
         if(convertValue && children.size() == 1 && children.single().getKey().equals("value"))
             return childrenProps.single();
 
+        MOrderSet<PropertyMapImplement<?, X>> showIfChildrenProps = SetFact.mOrderSet();
+        for (ChildParseNode child : children) {
+            PropertyMapImplement showIfChildrenProp = child.getShowIfProperty(mapObjects);
+            if(showIfChildrenProp != null)
+                showIfChildrenProps.add(showIfChildrenProp);
+        }
+        if(showIfChildrenProps.size() > 0)
+            childrenProps = childrenProps.addOrderExcl(showIfChildrenProps.immutableOrder());
+
         // json_build_object - getKey() + getProperty
-        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getKey), returnString), childrenProps);
+        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getField), returnString), childrenProps);
     }
 }

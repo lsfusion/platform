@@ -144,7 +144,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     if (actionThrowable != null) {
                         serverResponse = throwInServerInvocation(serverResponse.requestIndex, continueIndex, ClientExceptionManager.fromDesktopClientToAppServer(actionThrowable));
                     } else {
-                        serverResponse = continueServerInvocation(serverResponse.requestIndex, continueIndex, actionResults);
+                        serverResponse = continueServerInvocation(serverResponse.requestIndex, continueIndex, actionResults[actions.length - 1]);
                     }
                     onServerResponse(serverResponse);
                 } else {
@@ -163,12 +163,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     protected abstract RmiQueue getRmiQueue();
     protected abstract RemoteRequestInterface getRemoteRequestInterface();
 
-    protected ServerResponse continueServerInvocation(long requestIndex, final int continueIndex, final Object[] actionResults) throws RemoteException {
+    protected ServerResponse continueServerInvocation(long requestIndex, final int continueIndex, final Object actionResult) throws RemoteException {
         ServerResponse result = getRmiQueue().directRequest(requestIndex, new RmiRequest<ServerResponse>("continueServerInvocation") {
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
                 RemoteRequestInterface requestInterface = getRemoteRequestInterface();
                 if (requestInterface != null) // for forms, just like in RmiCheckNullFormRequest
-                    return requestInterface.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+                    return requestInterface.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult);
                 return null;
             }
         });

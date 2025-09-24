@@ -588,7 +588,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checks.checkClassParents(parentNames);
 
-        LocalizedString caption = (captionStr == null ? LocalizedString.create(className) : captionStr);
+        if(captionStr == null)
+            captionStr = LocalizedString.create(BaseUtils.humanize(className));
+        LocalizedString caption = captionStr;
 
         ImList<CustomClass> parents = BaseUtils.immutableCast(findClasses(parentNames));
 
@@ -856,7 +858,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
                                                   boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
-        caption = (caption == null ? LocalizedString.create(formName) : caption);
+        
+        if(caption == null)
+            caption = LocalizedString.create(BaseUtils.humanize(formName));
 
         String canonicalName = elementCanonicalName(formName);
 
@@ -1216,9 +1220,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamsClasses(params, signature);
         actionOrProperty.paramNames = paramNames.isEmpty() ? MapFact.EMPTYREV() : property.listInterfaces.mapOrderRevValues(paramNames::get);
 
+        if(caption == null)
+            caption = LocalizedString.create(BaseUtils.humanize(name));
+        actionOrProperty.caption = caption;
+
         String groupName = ps.groupName;
         Group group = (groupName == null ? null : findGroup(groupName));
-        actionOrProperty.caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(actionOrProperty, group);
 
         if (ps.viewType != null)
@@ -2229,14 +2236,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedListAProp(List<LAWithParams> properties, List<LP> localProps) {
         List<Object> resultParams = getParamsPlainList(properties);
 
-        MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
+        MExclSet<Pair<LP, LocalPropertyData>> mDebugLocals = null;
         if(debugger.isEnabled()) {
             mDebugLocals = SetFact.mExclSet(localProps.size());
         }
         MSet<SessionDataProperty> mLocals = SetFact.mSet();
         for (LP<?> localProp : localProps) {
             if (mDebugLocals != null) {
-                List<ResolveClassSet> localSignature = getLocalSignature(localProp);
+                LocalPropertyData localSignature = getLocalPropertyData(localProp);
                 mDebugLocals.exclAdd(new Pair<>(localProp, localSignature));
             }
             mLocals.add((SessionDataProperty) localProp.property);
@@ -2484,11 +2491,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
-    public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) {
+    public void addWatchLocalDataProperty(LP lp, LocalPropertyData localPropertyData) {
         assert lp.property instanceof SessionDataProperty;
-        addModuleLAP(lp);
-        propClasses.put(lp, signature);
-        return lp;
+
+        addModuleLAP(lp, localPropertyData.name, localPropertyData.signature);
     }
 
     public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
@@ -4615,9 +4621,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedReadAction(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLPNoParamsByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new ReadAction(targetProp, clientAction, dialog)),
+        return addScriptedJoinAProp(addAProp(new ReadAction(targetProp, clientAction, dialog, dialog ? baseLM.readDialogPath : null)),
                 Collections.singletonList(sourcePathProp));
     }
 

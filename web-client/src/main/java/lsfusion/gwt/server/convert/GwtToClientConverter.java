@@ -2,6 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.ReadUtils;
 import lsfusion.client.form.object.ClientCustomObjectValue;
@@ -262,7 +263,7 @@ public class GwtToClientConverter extends ObjectConverter {
         if(readResult.error != null)
             throw new RuntimeException(readResult.error);
         RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
-        return new ReadUtils.ReadResult(new FileData(file, nvl(readResult.extension, "")), "file");
+        return new ReadUtils.ReadResult(new NamedFileData(new FileData(file, readResult.extension), readResult.name), "file", null);
     }
 
     @Converter(from = GListFilesResult.class)

@@ -30,14 +30,15 @@ public class InternalDBAction extends CallDBAction {
         SQLSession sql = context.getSession().sql;
         sql.pushNoReadOnly();
         try {
-            ExConnection exConnection = sql.getConnection();
-            try {
-                readJDBC(context, exConnection.sql, sql.syntax, OperationOwner.unknown);
-            } catch (IOException | ExecutionException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                sql.returnConnection(exConnection, OperationOwner.unknown);
-            }
+            OperationOwner opOwner = OperationOwner.unknown;
+
+            sql.executeAction(exConnection -> {
+                try {
+                    readJDBC(context, exConnection.sql, sql.syntax, opOwner);
+                } catch (IOException | ExecutionException e) {
+                    throw Throwables.propagate(e);
+                }
+            }, opOwner);
         } finally {
             sql.popNoReadOnly();
         }

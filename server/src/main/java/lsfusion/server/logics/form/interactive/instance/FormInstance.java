@@ -39,6 +39,7 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
@@ -1277,7 +1278,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Where listWhere;
         ImRevMap<Q, KeyExpr> groupListKeys;
         boolean needObjects = asyncMode.isObjects();
-        boolean readObjects = needObjects || !orderExprs.isEmpty();
+        boolean readObjects = needObjects || !AbstractOuterContext.getOuterColKeys(orderExprs.keys()).isEmpty(); // because we use value order exprs to enforce ranking ordering
         if(readObjects) {
             groupListKeys = (ImRevMap<Q, KeyExpr>) baseKeys;
             countExpr = ValueExpr.COUNT;

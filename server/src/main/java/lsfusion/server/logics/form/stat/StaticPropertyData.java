@@ -21,7 +21,7 @@ public class StaticPropertyData<Prop extends PropertyReaderEntity> {
     public final MAddExclMap<PropertyDrawEntity, Pair<ImSet<ObjectEntity>, ImSet<ObjectEntity>>> columnObjects = MapFact.mAddExclMap();
     public final MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnData = MapFact.mAddExclMap();
 
-    public static Object getProperty(StaticPropertyData<PropertyDrawEntity> propData, PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> keys) {
+    public static Object getProperty(StaticPropertyData<PropertyReaderEntity> propData, PropertyReaderEntity entity, ImMap<ObjectEntity, Object> keys) {
         return propData.data.get(entity).get(keys.filterIncl(propData.objects.get(entity)));
     }
 
