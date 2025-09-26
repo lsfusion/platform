@@ -339,8 +339,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object actionResult) throws Throwable {
             return syncExecute(object.syncContinueServerInvocationMap, requestIndex, joinPoint);
         }
         @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
