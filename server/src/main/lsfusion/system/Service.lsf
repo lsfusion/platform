@@ -1056,6 +1056,8 @@ load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
 lsn = DATA STRING(DBServer);
 readyStatus = DATA BOOLEAN(DBServer);
 availability = DATA BOOLEAN(DBServer);
+lag = DATA DOUBLE (DBServer);
+usedCpu = DATA DOUBLE (DBServer);
 numberConnections = DATA INTEGER(DBServer);
 
 updateServersAction INTERNAL 'lsfusion.server.physics.admin.monitor.action.UpdateServersAction' (); 

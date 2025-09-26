@@ -47,7 +47,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     public static abstract class Server {
         public final String host;
         public Connection ensureConnection;
-        private CpuTime lastCpuTime;
         private double load;
 
         public Server(String host) {
@@ -62,13 +61,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             this.load = load;
         }
 
-        public CpuTime getLastCpuTime() {
-            return lastCpuTime;
-        }
-
-        public void setLastCpuTime(CpuTime lastCpuTime) {
-            this.lastCpuTime = lastCpuTime;
-        }
+        public CpuTime lastCpuTime;
+        public double usedCpu = 0.5;
 
         public abstract boolean isMaster();
     }
@@ -149,11 +143,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
 
-    public boolean serverAvailability(Server server) {
+    public boolean isServerAvailable(Server server) {
         return servers.contains(server);
     }
-
-    public abstract int getNumberOfConnections(Server server) throws SQLException;
 
     public Slave findSlave(String id) {
         for (Server server : servers) {

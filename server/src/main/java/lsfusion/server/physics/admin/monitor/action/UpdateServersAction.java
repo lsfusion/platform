@@ -30,19 +30,25 @@ public class UpdateServersAction extends ProcessDumpAction {
                         dataAdapter.findSlave(serverDataObject.object.toString()) : dataAdapter.getMaster();
 
                 if (dbServer != null) {
-                    serviceLM.findProperty("load[DBServer]").change(new DataObject(dbServer.getLoad()), session, serverDataObject);
+                    serviceLM.findProperty("load[DBServer]").change(dbServer.getLoad() * 100, session, serverDataObject);
 
                     LogSequenceNumber lsn = dbServer.isMaster() ? dataAdapter.getMasterLSN() : dataAdapter.getSlaveLSN(dbServer);
-                    serviceLM.findProperty("lsn[DBServer]").change(new DataObject(lsn.toString()), session, serverDataObject);
+                    serviceLM.findProperty("lsn[DBServer]").change(lsn.toString(), session, serverDataObject);
 
-                    boolean readyStatus = dbServer.isMaster() || dataAdapter.readSlaveReady(dbServer);
-                    serviceLM.findProperty("readyStatus[DBServer]").change(new DataObject(readyStatus), session, serverDataObject);
+                    boolean readyStatus = dbServer.isMaster() || dataAdapter.readSlaveReady((DataAdapter.Slave) dbServer);
+                    serviceLM.findProperty("readyStatus[DBServer]").change(readyStatus, session, serverDataObject);
 
-                    boolean availability = dataAdapter.serverAvailability(dbServer);
-                    serviceLM.findProperty("availability[DBServer]").change(new DataObject(availability), session, serverDataObject);
+                    boolean availability = dataAdapter.isServerAvailable(dbServer);
+                    serviceLM.findProperty("availability[DBServer]").change(availability, session, serverDataObject);
+
+                    double lag = dbServer.isMaster() ? 0.0 : dataAdapter.readSlaveLag((DataAdapter.Slave) dbServer);
+                    serviceLM.findProperty("lag[DBServer]").change(lag, session, serverDataObject);
+
+                    double usedCpu = dbServer.usedCpu;
+                    serviceLM.findProperty("usedCpu[DBServer]").change(usedCpu * 100, session, serverDataObject);
 
                     int numberConnections = dataAdapter.getNumberOfConnections(dbServer);
-                    serviceLM.findProperty("numberConnections[DBServer]").change(new DataObject(numberConnections), session, serverDataObject);
+                    serviceLM.findProperty("numberConnections[DBServer]").change(numberConnections, session, serverDataObject);
 
                     context.apply();
                 }

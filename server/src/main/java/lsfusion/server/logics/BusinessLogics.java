@@ -64,7 +64,6 @@ import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
-import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
@@ -147,9 +146,7 @@ import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -2392,17 +2389,37 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask readSQLServerCpuTimeTask(Scheduler scheduler) {
-
         return scheduler.createSystemTask(stack -> {
             try(DataSession session = createSystemTaskSession()) {
                 DataAdapter dataAdapter = getDbManager().getAdapter();
+                Map<DataAdapter.Server, Integer> serverConnections = new HashMap<>();
+                int totalConnections = 0;
                 for (ImList<DataObject> server : serviceLM.is(serviceLM.dbServer).readAllClasses(session).keys()) {
                     DataObject serverDataObject = server.get(0);
                     DataAdapter.Server dbServer = serverDataObject.objectClass.equals(serviceLM.dbSlave) ?
                             dataAdapter.findSlave(serverDataObject.object.toString()) : dataAdapter.getMaster();
-                    // Null check, because scheduler starts working before DataAdapter.servers is filled
-                    if (dbServer != null)
-                        dbServer.setLoad(calculateServerLoad(dbServer, getCpuTime(dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject))));
+                    if (dbServer != null) { // Null check, because scheduler starts working before DataAdapter.servers is filled
+                        updateCpuTime(dataAdapter, dbServer, getCpuTime(dataAdapter, dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject)));
+
+                        int numberOfConnections = dataAdapter.getNumberOfConnections(dbServer);
+                        serverConnections.put(dbServer, numberOfConnections);
+                        totalConnections += numberOfConnections;
+                    }
+                }
+
+                Settings cfg = Settings.get();
+                for(Map.Entry<DataAdapter.Server, Integer> serverConnection : serverConnections.entrySet()) {
+                    DataAdapter.Server server = serverConnection.getKey();
+                    boolean isMaster = server.isMaster();
+                    int numberOfConnections = serverConnection.getValue();
+                    double connPct = totalConnections > 0 ? ((double) numberOfConnections) / ((double) totalConnections) : 0.0;
+                    double usedCpu = server.usedCpu;
+                    double lagSec = server.isMaster() ? 0.0 : dataAdapter.readSlaveLag((DataAdapter.Slave) server);
+
+                    server.setLoad(usedCpu
+                            + (cfg.getBaseConnWeight() + cfg.getExtraConnWeight() * usedCpu) * connPct
+                            + cfg.getLagSensitivity() * (lagSec / (cfg.getLagScale() + lagSec))
+                            + (isMaster ? cfg.getMasterPenalty() : 0.0));
                 }
             } catch (Throwable t) {
                 ServerLoggers.serviceLogger.info("Read sql server cpu time task error: ", t);
@@ -2410,34 +2427,22 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "Read sql server cpu time task");
     }
 
-    private double calculateServerLoad(DataAdapter.Server server, CpuTime currentCPUTime) throws SQLException {
-        CpuTime lastCpuTime = server.getLastCpuTime();
-        server.setLastCpuTime(currentCPUTime);
-        if (lastCpuTime == null || currentCPUTime == null || lastCpuTime.isSnmp() != currentCPUTime.isSnmp())
-            return 0.0;
+    private void updateCpuTime(DataAdapter dataAdapter, DataAdapter.Server server, CpuTime currentCPUTime) throws SQLException {
+        CpuTime lastCpuTime = server.lastCpuTime;
 
-        long userDelta = currentCPUTime.getUser() - lastCpuTime.getUser();
-        long niceDelta = currentCPUTime.getNice() - lastCpuTime.getNice();
-        long systemDelta = currentCPUTime.getSystem() - lastCpuTime.getSystem();
-        long idleDelta = currentCPUTime.getIdle() - lastCpuTime.getIdle();
-        long iowaitDelta = currentCPUTime.getIowait() - lastCpuTime.getIowait();
+        if(currentCPUTime != null) {
+            if(lastCpuTime != null) {
+                long userDelta = currentCPUTime.getUser() - lastCpuTime.getUser();
+                long niceDelta = currentCPUTime.getNice() - lastCpuTime.getNice();
+                long systemDelta = currentCPUTime.getSystem() - lastCpuTime.getSystem();
+                long idleDelta = currentCPUTime.getIdle() - lastCpuTime.getIdle();
+                long iowaitDelta = currentCPUTime.getIowait() - lastCpuTime.getIowait();
 
-        long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
-
-        if (totalDelta <= 0)
-            return 0.0;
-
-        double usage = 100.0 - (idleDelta * 100.0 / totalDelta);
-        return Math.round(usage * 100.0) / 100.0 + (getNumberOfConnections(server) / 100.0);
-    }
-
-    public int getNumberOfConnections(DataAdapter.Server server) throws SQLException {
-        try (Statement stmt = server.ensureConnection.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state = 'active';")) {
-            if (rs.next())
-                return rs.getInt("cnt");
+                long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
+                server.usedCpu = 1.0 - ((double)idleDelta) / totalDelta;
+            }
+            server.lastCpuTime = currentCPUTime;
         }
-        return 0;
     }
 
     static final List<OID> OIDS = Arrays.asList(
@@ -2448,14 +2453,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             new OID("1.3.6.1.4.1.2021.11.54.0") // iowait
     );
 
-    private CpuTime getCpuTime(DataAdapter.Server server, Integer snmpPort) {
+    private CpuTime getCpuTime(DataAdapter adapter, DataAdapter.Server server, Integer snmpPort) {
         if (snmpPort == null) {
-            try (Statement stmt = server.ensureConnection.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();")) {
-                if (rs.next()) {
-                    return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
-                            rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
-                }
+            try {
+                return adapter.readServerCpuTime(server);
             } catch (SQLException e) {
                 logger.error(e.getMessage(), e);
             }

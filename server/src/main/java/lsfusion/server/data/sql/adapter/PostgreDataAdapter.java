@@ -232,7 +232,7 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public int getNumberOfConnections(Server server) throws SQLException {
         try (Statement stmt = server.ensureConnection.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state = 'active';")) {
+             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state != 'idle';")) {
             if (rs.next())
                 return rs.getInt("cnt");
         }
@@ -265,7 +265,33 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
     }
-    public boolean readSlaveReady(Server slave) throws SQLException {
+    public double readSlaveLag(Slave slave) throws SQLException {
+        String sql =
+                "SELECT EXTRACT(EPOCH FROM (now() - last_msg_receipt_time)) AS lag_seconds\n" +
+                        "FROM pg_stat_subscription " +
+                        "WHERE subname = '" + DB_SUBSRIPTION + "'";
+        try (Statement stmt = slave.ensureConnection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getDouble("lag_seconds");
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    public CpuTime readServerCpuTime(Server server) throws SQLException {
+        try (Statement stmt = server.ensureConnection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();");
+            if (rs.next()) {
+                return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
+                        rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
+            } else
+                return null;
+        }
+    }
+
+    public boolean readSlaveReady(Slave slave) throws SQLException {
         String sql =
                 "SELECT bool_and(srsubstate IN ('r','s')) AS all_tables_synced" +
                         " FROM pg_subscription_rel" +

@@ -47,8 +47,18 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean readSlaveReady(Server slave) throws SQLException {
+    public boolean readSlaveReady(Slave slave) throws SQLException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double readSlaveLag(Slave slave) throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public CpuTime readServerCpuTime(Server server) throws SQLException {
+        return null;
     }
 
     @Override

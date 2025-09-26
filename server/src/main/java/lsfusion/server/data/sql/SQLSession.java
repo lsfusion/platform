@@ -3357,7 +3357,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         double usedAntiScore = Math.pow((double) usedTablesSize / (double) settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree());
 
         // max load, min temp tables count
-        return connectionPool.getLoad(DataAdapter.getServer(privateConnection.sql)) * 1000 + usedAntiScore;
+        return connectionPool.getLoad(DataAdapter.getServer(privateConnection.sql)) * 1000 - usedAntiScore;
     }
 
     private boolean balanceConnection(DataAdapter.NeedServer needServer, boolean alreadyLocked) throws SQLException, SQLHandledException {
