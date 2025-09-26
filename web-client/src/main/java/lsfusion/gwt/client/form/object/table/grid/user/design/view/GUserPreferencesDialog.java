@@ -53,6 +53,12 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
         this.panelController = panelController;
 
+        FlexPanel filterPanel = new FlexPanel();
+        filterPanel.addCentered(createLabel(messages.formGridPreferencesFilter()));
+        TextBox filterBox = createTextBox();
+        filterBox.addKeyUpHandler(event -> columnsDualListBox.filterChanged(filterBox.getText()));
+        filterPanel.add(filterBox);
+
         // columns
         columnsDualListBox = new ColumnsDualListBox() {
             @Override
@@ -126,6 +132,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
         FlexPanel preferencesPanel = new FlexPanel(true);
         preferencesPanel.setHeight("100%");
+        preferencesPanel.add(filterPanel);
         preferencesPanel.add(columnsDualListBox);
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnSettingsPanel));
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
