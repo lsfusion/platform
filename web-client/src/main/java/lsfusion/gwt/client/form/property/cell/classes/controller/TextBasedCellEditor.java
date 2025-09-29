@@ -343,6 +343,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         GwtClientUtils.initDataHtmlOrText(inputElement, property.getDataHtmlOrTextType());
 
         addPasteListener(inputElement);
+
+        GwtClientUtils.addGroupSeparatorEventListener(inputElement);
     }
 
     protected boolean isMultiLine() {
