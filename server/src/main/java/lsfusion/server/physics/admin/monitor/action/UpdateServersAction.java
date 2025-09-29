@@ -49,8 +49,6 @@ public class UpdateServersAction extends ProcessDumpAction {
 
                     int numberConnections = dataAdapter.getNumberOfConnections(dbServer);
                     serviceLM.findProperty("numberConnections[DBServer]").change(numberConnections, session, serverDataObject);
-
-                    context.apply();
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {

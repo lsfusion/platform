@@ -1051,16 +1051,15 @@ CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
 } : DBServer;
 
-load '{service.scaling.db.server.load}' = DATA DOUBLE (DBServer);
-//todo localize
-lsn = DATA STRING(DBServer);
-readyStatus = DATA BOOLEAN(DBServer);
-availability = DATA BOOLEAN(DBServer);
-lag = DATA DOUBLE (DBServer);
-usedCpu = DATA DOUBLE (DBServer);
-numberConnections = DATA INTEGER(DBServer);
+load '{service.scaling.db.server.load}' = DATA LOCAL DOUBLE (DBServer);
+lsn '{service.scaling.db.server.lsn}' = DATA LOCAL STRING(DBServer);
+readyStatus '{service.scaling.db.server.ready.status}' = DATA LOCAL BOOLEAN(DBServer);
+availability '{service.scaling.db.server.availability}' = DATA LOCAL BOOLEAN(DBServer);
+lag '{service.scaling.db.server.lag}' = DATA LOCAL DOUBLE (DBServer);
+usedCpu '{service.scaling.db.server.used.cpu}' = DATA LOCAL DOUBLE (DBServer);
+numberConnections '{service.scaling.db.server.number.connections}' = DATA LOCAL INTEGER(DBServer);
 
-updateServersAction INTERNAL 'lsfusion.server.physics.admin.monitor.action.UpdateServersAction' (); 
+updateServersAction '{service.scaling.db.server.update.servers}' INTERNAL 'lsfusion.server.physics.admin.monitor.action.UpdateServersAction' (); 
 
 CLASS DBSlave '{service.scaling.db.slave}' : DBServer;
 addSlave INTERNAL 'lsfusion.server.physics.admin.service.action.AddSlaveAction' (DBSlave);
@@ -1085,14 +1084,20 @@ onStarted() +{
 }
 
 FORM scaling '{service.scaling}'
-    PROPERTIES() updateServersAction
+    PROPERTIES() TOOLBAR updateServersAction
     OBJECTS s = DBServer
     PROPERTIES (s) GRID host READONLYIF s IS DBMaster, snmpPort 
-    PROPERTIES (s) READONLY load, lsn, readyStatus, availability, numberConnections
+    PROPERTIES (s) READONLY load, lsn, readyStatus, availability, lag, usedCpu, numberConnections
     PROPERTIES (s) NEW[DBSlave], DELETE
-
-    EVENTS ON SCHEDULE PERIOD 5 formRefresh();
 ;
+
+DESIGN scaling {
+    NEW stats {
+        fill = 1;
+        MOVE BOX(s);
+        MOVE TOOLBARBOX;
+    }
+}
 
 NAVIGATOR {
     system {
