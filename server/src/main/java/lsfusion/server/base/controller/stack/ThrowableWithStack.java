@@ -23,11 +23,17 @@ public class ThrowableWithStack {
     }
 
     public String getLsfStack() {
-        return lsfStack; 
+        String result = lsfStack;
+        if (throwable instanceof NestedThreadException)
+            result += ((NestedThreadException) throwable).getAsyncLSFStacks();
+        return result;
     }
 
     public String getJavaString() {
-        return ExceptionUtils.toString(throwable);
+        String result = ExceptionUtils.toString(throwable);
+        if(throwable instanceof NestedThreadException)
+            result += ((NestedThreadException) throwable).getAsyncStacks();
+        return result;
     }
 
     public boolean isNoStackRequired() {
@@ -45,7 +51,7 @@ public class ThrowableWithStack {
         if(isNoStackRequired())
             return throwable.getMessage();
         else
-            return ExceptionUtils.getExStackTrace(ExceptionUtils.toString(throwable), lsfStack);
+            return ExceptionUtils.getExStackTrace(getJavaString(), getLsfStack());
     }
 
     @Override
