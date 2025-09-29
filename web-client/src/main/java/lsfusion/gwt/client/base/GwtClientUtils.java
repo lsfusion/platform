@@ -2028,4 +2028,20 @@ public class GwtClientUtils {
         $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
     }-*/;
 
+    public static native void addGroupSeparatorEventListener(Element input)/*-{
+        input.addEventListener('keypress', function (e) {
+            if (e.code === 'AltLeft' && e.keyCode === 29) {
+                var start = input.selectionStart;
+                var end = input.selectionEnd;
+
+                // paste U+001D (Group Separator)
+                var val = input.value;
+                input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+
+                // move cursor
+                input.selectionStart = input.selectionEnd = start + 1;
+            }
+        });
+    }-*/;
+
 }
