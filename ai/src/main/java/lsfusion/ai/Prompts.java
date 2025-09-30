@@ -1,3 +1,5 @@
+package lsfusion.ai;
+
 public class Prompts {
 
     public static final String RETRIEVE_DOCS_ON_DEMAND = "[SYSTEM INSTRUCTIONS]\n" +

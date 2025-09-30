@@ -1,3 +1,5 @@
+package lsfusion.ai;
+
 import com.openai.models.chat.completions.ChatCompletionTool;
 
 import java.util.Map;
