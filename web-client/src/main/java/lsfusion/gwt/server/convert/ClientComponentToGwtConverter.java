@@ -304,7 +304,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.contextMenuDebugInfoMap = new HashMap<>();
         for(Map.Entry<String, ClientPropertyDraw.ContextMenuDebugInfo> contextMenuEntry : clientPropertyDraw.contextMenuDebugInfoMap.entrySet()) {
             ClientPropertyDraw.ContextMenuDebugInfo info = contextMenuEntry.getValue();
-            propertyDraw.contextMenuDebugInfoMap.put(contextMenuEntry.getKey(), new GPropertyDraw.ContextMenuDebugInfo(info.creationScript, info.creationPath, info.path));
+            propertyDraw.contextMenuDebugInfoMap.put(contextMenuEntry.getKey(), new GPropertyDraw.ContextMenuDebugInfo(info.sid, info.creationPath, info.path));
         }
 
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);

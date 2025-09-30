@@ -27,7 +27,6 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -640,23 +639,23 @@ public class PropertyDrawView extends BaseComponentView {
                 ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
                 if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
                     contextMenuItems.put(actionSID, binding.action != null ?
-                            new ContextMenuInfo(binding.caption, binding.action.getCreationScript(), binding.action.getCreationPath(), binding.action.getPath())
-                            : new ContextMenuInfo(binding.caption, eventAction.getCreationScript(), eventAction.getCreationPath(), eventAction.getPath()));
+                            new ContextMenuInfo(binding.caption, binding.action.getActionOrProperty().getSID(), binding.action.getCreationPath(), binding.action.getPath())
+                            : new ContextMenuInfo(binding.caption, actionSID, eventAction.getCreationPath(), eventAction.getPath()));
                 }
             }
         }
         return contextMenuItems;
     }
 
-    private class ContextMenuInfo {
+    private static class ContextMenuInfo {
         private LocalizedString caption;
-        private String creationScript;
+        private String sid;
         private String creationPath;
         private String path;
 
-        public ContextMenuInfo(LocalizedString caption, String creationScript, String creationPath, String path) {
+        public ContextMenuInfo(LocalizedString caption, String sid, String creationPath, String path) {
             this.caption = caption;
-            this.creationScript = creationScript;
+            this.sid = sid;
             this.creationPath = creationPath;
             this.path = path;
         }
@@ -1223,10 +1222,10 @@ public class PropertyDrawView extends BaseComponentView {
                 ContextMenuInfo info = contextMenuBindings.getValue(i);
                 pool.writeString(outStream, actionSID);
                 pool.writeString(outStream, ThreadLocalContext.localize(info.caption));
-                boolean hasDebugInfo = info.creationScript != null;
+                boolean hasDebugInfo = info.sid != null;
                 pool.writeBoolean(outStream, hasDebugInfo);
                 if(hasDebugInfo) {
-                    pool.writeString(outStream, info.creationScript);
+                    pool.writeString(outStream, info.sid);
                     pool.writeString(outStream, info.creationPath);
                     pool.writeString(outStream, info.path);
                 }
