@@ -2030,7 +2030,7 @@ public class GwtClientUtils {
 
     public static native void addGroupSeparatorEventListener(Element input)/*-{
         input.addEventListener('keypress', function (e) {
-            if (e.code === 'AltLeft' && e.keyCode === 29) {
+            if (e.keyCode === 29) {
                 var start = input.selectionStart;
                 var end = input.selectionEnd;
 
