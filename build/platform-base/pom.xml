@@ -109,7 +109,8 @@
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
         <jakarta.activation.version>1.2.1</jakarta.activation.version>
         <javax.activation.version>1.1.1</javax.activation.version>
-        
+        <org.snmp4j.version>3.9.6</org.snmp4j.version>
+
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <javax.servlet.jsp.api.version>2.3.3</javax.servlet.jsp.api.version>
 
@@ -692,6 +693,12 @@
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
                 <version>${javax.activation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.snmp4j</groupId>
+                <artifactId>snmp4j</artifactId>
+                <version>${org.snmp4j.version}</version>
             </dependency>
 
             <!--optional dependencies-->

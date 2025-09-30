@@ -43,19 +43,11 @@ public class PostgreDataAdapter extends DataAdapter {
     private int dbMajorVersion;
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
-        this(dataBase, server, userID, password, false);
-    }
-
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
-        this(dataBase, server, userID, password, null, null, null, cleanDB);
+        this(dataBase, server, userID, password, null, null, null);
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
-        this(dataBase, server, userID, password, connectTimeout, binPath, dumpDir, false);
-    }
-
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(PostgreSQLSyntax.instance, dataBase, server, userID, password, connectTimeout, cleanDB);
+        super(PostgreSQLSyntax.instance, dataBase, server, userID, password, connectTimeout);
 
         this.defaultBinPath = binPath;
         this.defaultDumpDir = dumpDir;
@@ -104,6 +96,10 @@ public class PostgreDataAdapter extends DataAdapter {
         }
 
         return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase() + " user=" + user + " password=" + password;
+    }
+
+    public void initProctab(Server server){
+        executeEnsure(server, "CREATE EXTENSION IF NOT EXISTS pg_proctab;");
     }
 
     public void ensureDB(Server server, boolean cleanDB) throws Exception {
@@ -215,8 +211,8 @@ public class PostgreDataAdapter extends DataAdapter {
         return DB_SUBSRIPTION + server.id;
     }
 
-    public double getLoad(Server server) {
-        return Math.random();
+    public double getLoad(Server server) throws SQLException {
+        return server.getLoad();
         // for master add coeff, for slave including lag
     }
 
@@ -232,15 +228,28 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
     }
-    protected LogSequenceNumber getMasterLSN() throws SQLException {
+
+    @Override
+    public int getNumberOfConnections(Server server) throws SQLException {
+        try (Statement stmt = server.ensureConnection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT count(*) AS cnt FROM pg_stat_activity WHERE state != 'idle';")) {
+            if (rs.next())
+                return rs.getInt("cnt");
+        }
+        return 0;
+    }
+
+    @Override
+    public LogSequenceNumber getMasterLSN() throws SQLException {
         return getMasterLSN(master.ensureConnection);
     }
-    protected LogSequenceNumber getSlaveLSN(Slave slave) throws SQLException {
+    @Override
+    public LogSequenceNumber getSlaveLSN(Server slave) throws SQLException {
         // server is removed
         if(!servers.contains(slave))
             return LogSequenceNumber.INVALID_LSN;
 
-        return readSlaveLSN(slave);
+        return readSlaveLSN((Slave) slave);
     }
     private LogSequenceNumber readSlaveLSN(Slave slave) throws SQLException {
         String sql =
@@ -256,12 +265,38 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
     }
-    private boolean readSlaveReady(Server server) throws SQLException {
+    public double readSlaveLag(Slave slave) throws SQLException {
+        String sql =
+                "SELECT EXTRACT(EPOCH FROM (now() - last_msg_receipt_time)) AS lag_seconds\n" +
+                        "FROM pg_stat_subscription " +
+                        "WHERE subname = '" + DB_SUBSRIPTION + "'";
+        try (Statement stmt = slave.ensureConnection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getDouble("lag_seconds");
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    public CpuTime readServerCpuTime(Server server) throws SQLException {
+        try (Statement stmt = server.ensureConnection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT \"user\", nice, system, idle, iowait FROM pg_cputime();");
+            if (rs.next()) {
+                return new CpuTime(rs.getLong("user"), rs.getLong("nice"),
+                        rs.getLong("system"), rs.getLong("idle"), rs.getLong("iowait"), false);
+            } else
+                return null;
+        }
+    }
+
+    public boolean readSlaveReady(Slave slave) throws SQLException {
         String sql =
                 "SELECT bool_and(srsubstate IN ('r','s')) AS all_tables_synced" +
                         " FROM pg_subscription_rel" +
                         " WHERE srsubid = (SELECT oid FROM pg_subscription WHERE subname = '" + DB_SUBSRIPTION + "');";
-        try (Statement stmt = server.ensureConnection.createStatement();
+        try (Statement stmt = slave.ensureConnection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 return rs.getBoolean("all_tables_synced");

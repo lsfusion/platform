@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.lambda.EConsumer;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -47,20 +46,31 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public static abstract class Server {
         public final String host;
-
         public Connection ensureConnection;
+        private double load;
 
         public Server(String host) {
             this.host = host;
         }
 
+        public double getLoad() {
+            return load;
+        }
+
+        public void setLoad(double load) {
+            this.load = load;
+        }
+
+        public CpuTime lastCpuTime;
+        public double usedCpu = 0.5;
+
         public abstract boolean isMaster();
     }
+
     public static class Master extends Server {
         public Master(String host) {
             super(host);
         }
-
         public boolean isMaster() {
             return true;
         }
@@ -127,7 +137,26 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected final Master master;
 
+    public Master getMaster() {
+        return master;
+    }
+
     protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
+
+    public boolean isServerAvailable(Server server) {
+        return servers.contains(server);
+    }
+
+    public Slave findSlave(String id) {
+        for (Server server : servers) {
+            if (!server.isMaster()) {
+                Slave slave = (Slave) server;
+                if (slave.id.equals(id))
+                    return slave;
+            }
+        }
+        return null;
+    }
 
     public String dataBase;
     public String user;
@@ -136,7 +165,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     public abstract void ensureDB(Server server, boolean cleanDB) throws Exception;
 
-    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout, boolean cleanDB) throws Exception {
+    public void initProctab(Server server){
+    }
+
+    protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout) throws Exception {
 
         Class.forName(syntax.getClassName());
 
@@ -165,7 +197,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         if(server.isMaster()) // if master
             return true;
 
-        LogSequenceNumber connectionLSN = getSlaveLSN((Slave)server);
+        LogSequenceNumber connectionLSN = getSlaveLSN(server);
 
         if(connectionLSN == LogSequenceNumber.INVALID_LSN) // first copy / or not yet started wal sync
             return false;
@@ -205,6 +237,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         startEnsureConnection(server);
 
         ensureSqlFuncs(server);
+
+        initProctab(server); //This runs on the slave in order to install the extension. Because extensions are not copied during replication.
 
         ensureCaches(server);
 
@@ -450,15 +484,18 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         String typeName = getConcTypeName(concType);
         executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")", slave);
 
-        // создаем cast'ы всем concatenate типам
+        // create casts for all concatenate types
         for(int i=0,size=ensureConcType.cache.size();i<size;i++) {
             ConcatenateType ensuredType = ensureConcType.cache.get(i);
             if(concType.getCompatible(ensuredType)!=null) {
                 String ensuredName = getConcTypeName(ensuredType);
                 executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")", slave);
-                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+                //If call CREATE CAST with typeName equal to ensuredName, we will get an error.
+                if (!typeName.equalsIgnoreCase(ensuredName))
+                    executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT", slave); // в обе стороны так как containsAll в DataClass по прежнему не направленный
                 executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")", slave);
-                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT", slave);
+                if (!typeName.equalsIgnoreCase(ensuredName))
+                    executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT", slave);
             }
         }
     }

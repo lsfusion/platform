@@ -43,6 +43,8 @@ import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.CpuTime;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
@@ -127,6 +129,13 @@ import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRPropertiesUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.snmp4j.CommunityTarget;
+import org.snmp4j.PDU;
+import org.snmp4j.Snmp;
+import org.snmp4j.event.ResponseEvent;
+import org.snmp4j.mp.SnmpConstants;
+import org.snmp4j.smi.*;
+import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -2190,12 +2199,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler, boolean isServer) {
+    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
         result.add(getChangeCurrentDateTask(scheduler));
         result.add(getChangeDataCurrentDateTimeTask(scheduler));
         result.add(getFlushAsyncValuesCachesTask(scheduler));
         result.add(resetResourcesCacheTasks(scheduler));
+        result.add(readSQLServerCpuTimeTask(scheduler));
+
+        result.add(getBalanceConnectionsTask(scheduler));
+        result.add(getRecalculateAndUpdateStatsTask(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2209,10 +2222,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
         } else {
-            result.add(getBalanceConnectionsTask(scheduler)); // to test
-
             result.add(getSynchronizeSourceTask(scheduler));
-            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         }
         return result;
     }
@@ -2376,6 +2386,118 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 .collect(Collectors.toList()));
 
         return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
+    }
+
+    private Scheduler.SchedulerTask readSQLServerCpuTimeTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                DataAdapter dataAdapter = getDbManager().getAdapter();
+                Map<DataAdapter.Server, Integer> serverConnections = new HashMap<>();
+                int totalConnections = 0;
+                for (ImList<DataObject> server : serviceLM.is(serviceLM.dbServer).readAllClasses(session).keys()) {
+                    DataObject serverDataObject = server.get(0);
+                    DataAdapter.Server dbServer = serverDataObject.objectClass.equals(serviceLM.dbSlave) ?
+                            dataAdapter.findSlave(serverDataObject.object.toString()) : dataAdapter.getMaster();
+                    if (dbServer != null) { // Null check, because scheduler starts working before DataAdapter.servers is filled
+                        updateCpuTime(dataAdapter, dbServer, getCpuTime(dataAdapter, dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject)));
+
+                        int numberOfConnections = dataAdapter.getNumberOfConnections(dbServer);
+                        serverConnections.put(dbServer, numberOfConnections);
+                        totalConnections += numberOfConnections;
+                    }
+                }
+
+                Settings cfg = Settings.get();
+                for(Map.Entry<DataAdapter.Server, Integer> serverConnection : serverConnections.entrySet()) {
+                    DataAdapter.Server server = serverConnection.getKey();
+                    boolean isMaster = server.isMaster();
+                    int numberOfConnections = serverConnection.getValue();
+                    double connPct = totalConnections > 0 ? ((double) numberOfConnections) / ((double) totalConnections) : 0.0;
+                    double usedCpu = server.usedCpu;
+                    double lagSec = server.isMaster() ? 0.0 : dataAdapter.readSlaveLag((DataAdapter.Slave) server);
+
+                    server.setLoad(usedCpu
+                            + (cfg.getBaseConnWeight() + cfg.getExtraConnWeight() * usedCpu) * connPct
+                            + cfg.getLagSensitivity() * (lagSec / (cfg.getLagScale() + lagSec))
+                            + (isMaster ? cfg.getMasterPenalty() : 0.0));
+                }
+            } catch (Throwable t) {
+                ServerLoggers.serviceLogger.info("Read sql server cpu time task error: ", t);
+            }
+        }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "Read sql server cpu time task");
+    }
+
+    private void updateCpuTime(DataAdapter dataAdapter, DataAdapter.Server server, CpuTime currentCPUTime) throws SQLException {
+        CpuTime lastCpuTime = server.lastCpuTime;
+
+        if(currentCPUTime != null) {
+            if(lastCpuTime != null) {
+                long userDelta = currentCPUTime.getUser() - lastCpuTime.getUser();
+                long niceDelta = currentCPUTime.getNice() - lastCpuTime.getNice();
+                long systemDelta = currentCPUTime.getSystem() - lastCpuTime.getSystem();
+                long idleDelta = currentCPUTime.getIdle() - lastCpuTime.getIdle();
+                long iowaitDelta = currentCPUTime.getIowait() - lastCpuTime.getIowait();
+
+                long totalDelta = userDelta + niceDelta + systemDelta + idleDelta + iowaitDelta;
+                server.usedCpu = 1.0 - ((double)idleDelta) / totalDelta;
+            }
+            server.lastCpuTime = currentCPUTime;
+        }
+    }
+
+    static final List<OID> OIDS = Arrays.asList(
+            new OID("1.3.6.1.4.1.2021.11.50.0"), // user
+            new OID("1.3.6.1.4.1.2021.11.51.0"), // nice
+            new OID("1.3.6.1.4.1.2021.11.52.0"), // system
+            new OID("1.3.6.1.4.1.2021.11.53.0"), // idle
+            new OID("1.3.6.1.4.1.2021.11.54.0") // iowait
+    );
+
+    private CpuTime getCpuTime(DataAdapter adapter, DataAdapter.Server server, Integer snmpPort) {
+        if (snmpPort == null) {
+            try {
+                return adapter.readServerCpuTime(server);
+            } catch (SQLException e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else {
+            try {
+                String address = server.host.split(":")[0] + "/" + snmpPort;
+
+                CommunityTarget<UdpAddress> target = new CommunityTarget<>();
+                target.setCommunity(new OctetString("public"));
+                target.setAddress(new UdpAddress(address));
+                target.setRetries(2);
+                target.setTimeout(1500);
+                target.setVersion(SnmpConstants.version2c);
+
+                Snmp snmp = new Snmp(new DefaultUdpTransportMapping());
+                snmp.listen();
+
+                PDU pdu = new PDU();
+                for (OID oid : OIDS) {
+                    pdu.add(new VariableBinding(oid));
+                }
+                pdu.setType(PDU.GET);
+
+                ResponseEvent<?> response = snmp.send(pdu, target);
+                CpuTime cpuTime = null;
+                if (response != null && response.getResponse() != null) {
+                    long[] vals = new long[OIDS.size()];
+                    for (int i = 0; i < OIDS.size(); i++) {
+                        Variable v = response.getResponse().get(i).getVariable();
+                        vals[i] = v.toLong();
+                    }
+                    cpuTime = new CpuTime(vals[0], vals[1], vals[2], vals[3], vals[4], true);
+                }
+
+                snmp.close();
+                return cpuTime;
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return null;
     }
 
     private class AllocatedInfo {

@@ -170,7 +170,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService((threadCount != null ? threadCount : 5) + 1, this); // +1 because resetResourcesCacheTasks() should always be running
 
         boolean isServer = isServer();
-        List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this, isServer));
+        List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this));
         if(isServer)
             fillUserScheduledTasks(context.getSession(), tasks);
 

@@ -311,7 +311,7 @@ onWebClientInit() + {
     
     onWebClientInit('arrow-buttons.css') <- 36;    
 }
-
+dbServer = DATA STRING();
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();
 unusedDBNames = DATA LOCAL STRING (STRING);

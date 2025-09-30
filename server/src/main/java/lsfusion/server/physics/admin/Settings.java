@@ -2218,6 +2218,8 @@ public class Settings implements Cloneable {
 
     private int periodProcessDump = 60;
 
+    private int readSQLServerCpuTimePeriod = 5; // in seconds
+
     public int getQueryLengthAverageMax() {
         return queryLengthAverageMax;
     }
@@ -2316,6 +2318,47 @@ public class Settings implements Cloneable {
         this.periodRestartConnections = periodRestartConnections;
     }
 
+    private double baseConnWeight = 0.3;   // minimum connection weight when CPU is idle
+    private double extraConnWeight = 0.9;  // additional weight as CPU approaches 100%
+    private double lagSensitivity  = 2.0;  // how strongly lag influences the cost
+    private double lagScale        = 2.0;  // "acceptable" lag in seconds (saturates after this)
+    private double masterPenalty   = 0.10; // virtual load added to master
+
+    public double getBaseConnWeight() {
+        return baseConnWeight;
+    }
+    public void setBaseConnWeight(double baseConnWeight) {
+        this.baseConnWeight = baseConnWeight;
+    }
+
+    public double getExtraConnWeight() {
+        return extraConnWeight;
+    }
+    public void setExtraConnWeight(double extraConnWeight) {
+        this.extraConnWeight = extraConnWeight;
+    }
+
+    public double getLagSensitivity() {
+        return lagSensitivity;
+    }
+    public void setLagSensitivity(double lagSensitivity) {
+        this.lagSensitivity = lagSensitivity;
+    }
+
+    public double getLagScale() {
+        return lagScale;
+    }
+    public void setLagScale(double lagScale) {
+        this.lagScale = lagScale;
+    }
+
+    public double getMasterPenalty() {
+        return masterPenalty;
+    }
+    public void setMasterPenalty(double masterPenalty) {
+        this.masterPenalty = masterPenalty;
+    }
+
     public int getPeriodBalanceConnections() {
         return periodBalanceConnections;
     }
@@ -2338,6 +2381,14 @@ public class Settings implements Cloneable {
 
     public void setPeriodProcessDump(int periodProcessDump) {
         this.periodProcessDump = periodProcessDump;
+    }
+
+    public int getReadSQLServerCpuTimePeriod() {
+        return readSQLServerCpuTimePeriod;
+    }
+
+    public void setReadSQLServerCpuTimePeriod(int readSQLServerCpuTimePeriod) {
+        this.readSQLServerCpuTimePeriod = readSQLServerCpuTimePeriod;
     }
 
     public int getMaxUsedTempRowsAverageMax() {

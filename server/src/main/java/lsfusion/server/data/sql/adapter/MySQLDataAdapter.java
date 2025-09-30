@@ -13,7 +13,7 @@ public class MySQLDataAdapter extends DataAdapter {
     protected static final String DB_NAME = "mysql";
 
     public MySQLDataAdapter(String database, String server, String user, String password) throws Exception {
-        super(MySQLSQLSyntax.instance, database, server, user, password, null, false);
+        super(MySQLSQLSyntax.instance, database, server, user, password, null);
     }
 
     public void ensureDB(Server server, boolean cleanDB) throws SQLException {
@@ -42,8 +42,23 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public LogSequenceNumber getSlaveLSN(Slave slave) throws SQLException {
+    public LogSequenceNumber getSlaveLSN(Server slave) throws SQLException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean readSlaveReady(Slave slave) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double readSlaveLag(Slave slave) throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public CpuTime readServerCpuTime(Server server) throws SQLException {
+        return null;
     }
 
     @Override
@@ -67,8 +82,13 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected LogSequenceNumber getMasterLSN() throws SQLException {
+    public LogSequenceNumber getMasterLSN() throws SQLException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getNumberOfConnections(Server server) {
+        return 0;
     }
 
     @Override

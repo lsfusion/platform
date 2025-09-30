@@ -7,6 +7,7 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.CpuTime;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
@@ -27,8 +28,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public static final LogSequenceNumber NO_SUBSCRIPTION = LogSequenceNumber.valueOf(1);
-    protected abstract LogSequenceNumber getMasterLSN() throws SQLException;
-    protected abstract LogSequenceNumber getSlaveLSN(DataAdapter.Slave slave) throws SQLException;
+    public abstract LogSequenceNumber getMasterLSN() throws SQLException;
+    public abstract LogSequenceNumber getSlaveLSN(DataAdapter.Server slave) throws SQLException;
+
+    public abstract double readSlaveLag(DataAdapter.Slave slave) throws SQLException;
+    public abstract CpuTime readServerCpuTime(DataAdapter.Server server) throws SQLException;
+    public abstract boolean readSlaveReady(DataAdapter.Slave slave) throws SQLException;
+    public abstract boolean isServerAvailable(DataAdapter.Server server);
+    public abstract int getNumberOfConnections(DataAdapter.Server server) throws SQLException;
 
     private final ConcurrentIdentityWeakHashMap<DataAdapter.Server, ConcurrentLinkedDeque<Connection>> freeConnections = MapFact.getGlobalConcurrentIdentityWeakHashMap();
 

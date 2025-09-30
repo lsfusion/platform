@@ -1617,6 +1617,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
+            setDefaultDBPreferences(session);
             setDefaultUserLocalePreferences(session);
             setLogicsParams(session);
 
@@ -1740,19 +1741,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             dropTables(sql, oldDBStructure, newDBStructure);
 
+            IDChanges idChanges = new IDChanges();
             if(master) {
                 packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
-
                 startLog("Filling static objects ids");
-                IDChanges idChanges = new IDChanges();
                 LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName, LM.staticOrder,
                         migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                         migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
                         idChanges, changesController);
+            }
 
-                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                    newClass.ID = newClass.customClass.ID;
-                }
+            //It is important to execute this not only for the master to prevent errors when connecting the slave.
+            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                newClass.ID = newClass.customClass.ID;
+            }
+
+            if (master) {
 
                 // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
                 new TaskRunner(getBusinessLogics()).runTask(initTask);
@@ -2088,6 +2092,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             reflectionLM.timeDropColumn.change(LocalDateTime.now(), session, object);
             reflectionLM.revisionDropColumn.change(getRevision(SystemProperties.inDevMode), session, object);
         }
+        apply(session);
+    }
+
+    private void setDefaultDBPreferences(DataSession session) throws SQLException, SQLHandledException {
+        serviceLM.hostDBMaster.change(getAdapter().getMaster().host, session);
         apply(session);
     }
 
