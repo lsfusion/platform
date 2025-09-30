@@ -738,10 +738,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String caption = pool.readString(inStream);
                 editBindingMap.setContextMenuAction(actionSID, caption);
                 if(pool.readBoolean(inStream)) {
-                    String creationScript = pool.readString(inStream);
-                    String creationPath = pool.readString(inStream);
-                    String path = pool.readString(inStream);
-                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(creationScript, creationPath, path));
+                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(pool.readString(inStream),
+                            pool.readString(inStream), pool.readString(inStream)));
                 }
             }
         }
@@ -1140,12 +1138,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public static class ContextMenuDebugInfo implements Serializable {
-        public String creationScript;
+        public String sid;
         public String creationPath;
         public String path;
 
-        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
-            this.creationScript = creationScript;
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
             this.creationPath = creationPath;
             this.path = path;
         }

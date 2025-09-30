@@ -1077,7 +1077,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public static class ContextMenuDebugInfo implements Serializable {
-        public String creationScript;
+        public String sid;
         public String creationPath;
         public String path;
 
@@ -1085,8 +1085,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         public ContextMenuDebugInfo() {
         }
 
-        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
-            this.creationScript = creationScript;
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
             this.creationPath = creationPath;
             this.path = path;
         }
@@ -1095,7 +1095,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             if (!MainFrame.showDetailedInfo) {
                 return caption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, caption);
             } else {
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationScript, ""), nvl(creationPath, ""));
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationPath, ""));
             }
         }
 
@@ -1105,7 +1105,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         public static String getDetailedActionToolTipFormat() {
             return createTooltipHorizontalSeparator() +
                     "<b>sID:</b> %s<br>" +
-                    "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
                     "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
                     "</html>";
         }

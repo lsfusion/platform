@@ -50,7 +50,7 @@ public class GPropertyContextMenuPopup {
                 TooltipManager.initTooltip(new PopupOwner(menuBar, menuItem.getElement()), new TooltipManager.TooltipHelper() {
                     @Override
                     public String getTooltip(String dynamicTooltip) {
-                        return debugInfo.getTooltip(actionSID, menuItem.getText());
+                        return debugInfo.getTooltip(debugInfo.sid, menuItem.getText());
                     }
 
                     @Override
