@@ -2207,6 +2207,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         result.add(resetResourcesCacheTasks(scheduler));
         result.add(readSQLServerCpuTimeTask(scheduler));
 
+        result.add(getBalanceConnectionsTask(scheduler));
+        result.add(getRecalculateAndUpdateStatsTask(scheduler));
+
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
             result.add(getUserLastActivityUpdateTask(scheduler));
@@ -2219,10 +2222,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getUpdateSavePointsInfoTask(scheduler));
             result.add(getProcessDumpTask(scheduler));
         } else {
-            result.add(getBalanceConnectionsTask(scheduler)); // to test
-
             result.add(getSynchronizeSourceTask(scheduler));
-            result.add(getRecalculateAndUpdateStatsTask(scheduler));
         }
         return result;
     }
