@@ -1175,6 +1175,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getField(entity, "dateFrom", "dateTimeFrom") != null;
     }
 
+    @IdentityLazy
+    public boolean isCalendarCompletePeriod(GroupObjectEntity entity) {
+        return getField(entity, "dateTo", "dateTimeTo") != null;
+    }
+
     public PropertyDrawEntity getField(GroupObjectEntity entity, String... fields) {
         List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
@@ -1227,8 +1232,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
 
         for(GroupObjectEntity group : getGroupsIt()) {
-            if(group.listViewType.isCalendar() && !isCalendarDate(group) && !isCalendarDateTime(group)) {
-                throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
+            if(group.listViewType.isCalendar()) {
+                if (!isCalendarDate(group) && !isCalendarDateTime(group))
+                    throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
+                if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
+                    throw new RuntimeException(getCreationPath() + " none of required CALENDAR period propertyDraws found (dateTo or dateTimeTo)");
             }
         }
 
