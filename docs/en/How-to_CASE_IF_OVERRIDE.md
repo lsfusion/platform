@@ -134,7 +134,7 @@ We need to find the number following the maximum book number.
 freeNumber1 () = (GROUP MAX number(Book b)) (+) 1;
 
 // Equivalent to:
-freeNumber2() = (OVERRIDE 0, (GROUP MAX number(Book b))) + 1;
+freeNumber2() = (OVERRIDE (GROUP MAX number(Book b)), 0) + 1;
 ```
 
 We use the operator `(+)` instead of the regular operator `+`, because otherwise if no books are found, then the standard increment by `1` will return `NULL`.
