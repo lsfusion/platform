@@ -25,7 +25,7 @@ public class DumbTable extends DBTable {
     }
 
     public TableStatKeys getTableStatKeys() {
-        return TableStatKeys.createForTable(1, MapFact.singleton(key, 1)); // throw new RuntimeException("not supported");
+        return TableStatKeys.createForTable(1L, MapFact.singleton(key, 1L)); // throw new RuntimeException("not supported");
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {

@@ -11,7 +11,7 @@ import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 public class MaterializedQuery {
     public final String tableName;
     public final String mapFields;
-    public final int count;
+    public final long count;
     public final long timeExec;
 
     // for debug
@@ -31,7 +31,7 @@ public class MaterializedQuery {
         }
     }
 
-    public MaterializedQuery(String tableName, String mapFields, ImOrderSet<KeyField> keyFields, ImSet<PropertyField> propFields, int count, long timeExec, Owner owner) {
+    public MaterializedQuery(String tableName, String mapFields, ImOrderSet<KeyField> keyFields, ImSet<PropertyField> propFields, long count, long timeExec, Owner owner) {
         this.tableName = tableName;
         this.mapFields = mapFields;
         this.count = count;

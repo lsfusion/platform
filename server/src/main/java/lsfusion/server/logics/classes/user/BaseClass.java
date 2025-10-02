@@ -155,7 +155,7 @@ public class BaseClass extends AbstractCustomClass {
             }
     }
 
-    public int getCount() {
+    public long getCount() {
         return getUpSet().getCount();
     }
 

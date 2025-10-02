@@ -702,7 +702,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     // the same is on the client
-    private static int getScaledCharWidth(int count, int charWidth) {
+    private static int getScaledCharWidth(long count, long charWidth) {
         return (int) round((count <= 3.0 ? Math.max(count, 1.0) : 3.0 + pow(count - 3.0, 0.5)) * charWidth);
     }
 
@@ -716,7 +716,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(select != null) {
             Integer charWidth = this.charWidth; // select.elementType.startsWith("Button") && select.actual ? null :
 
-            int elementCharWidth = charWidth != null ? charWidth : (select.count > 0 ? select.length / select.count : 0);
+            long elementCharWidth = charWidth != null ? charWidth : (select.count > 0 ? select.length / select.count : 0);
 
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
                 return getScaledCharWidth(4, elementCharWidth);
@@ -729,7 +729,7 @@ public class PropertyDrawView extends BaseComponentView {
                     return getScaledCharWidth(select.count, (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6))); // couple of symbols for padding
 
                 if (select.elementType.equals("List") || select.elementType.equals("Dropdown"))
-                    return elementCharWidth + 4; // couple of symbols for control elements, && !select.actual
+                    return (int) (elementCharWidth + 4); // couple of symbols for control elements, && !select.actual
             }
 
             return null;

@@ -1223,10 +1223,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             int estNeededRead = (int) BaseUtils.min(((double) neededCount * estDistinctRate), maxLimitRead);
             while (estNeededRead <= maxLimitRead) {
                 // t(o) = LIMIT estX BY t(o)
-                int ceilEstNeedRead = new Stat((long) estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
-                Pair<PropertyAsync<P>[], Integer> result = getAsyncValues(sql, env, baseClass, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
+                long ceilEstNeedRead = new Stat((long) estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
+                Pair<PropertyAsync<P>[], Long> result = getAsyncValues(sql, env, baseClass, SubQueryExpr.create(listExpr, false, (int) ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
                 PropertyAsync<P>[] resultValues = result.first;
-                int count = result.second;
+                long count = result.second;
 
                 boolean foundNeeded = resultValues.length >= neededCount;
                 if (foundNeeded || // found it
@@ -1271,7 +1271,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return -1;
     }
 
-    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(SQLSession sql, QueryEnvironment env, BaseClass baseClass, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
+    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Long> getAsyncValues(SQLSession sql, QueryEnvironment env, BaseClass baseClass, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
         // z = GROUP SUM 1 BY t(o)
         Expr countExpr;
         Expr listExpr;
@@ -1319,13 +1319,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 executeClasses(sql, mOrders.immutableOrder(), new LimitOffset(neededCount), baseClass, env);
 
         PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
-        int count = 0;
-        for(int i = 0, size = result.size(); i < size; i++) {
+        long count = 0;
+        for (int i = 0, size = result.size(); i < size; i++) {
             ImMap<String, ObjectValue> values = result.getValue(i);
-            count += (Integer)values.get("count").getValue();
+            count += (Long) values.get("count").getValue();
             resultValues[i] = new PropertyAsync<P>(BaseUtils.nullToString(values.get("highlight").getValue()), // acutally there is always String, because of isDefaultWYSInput check, except when using in getSelectProperty
-                    readObjects ? BaseUtils.nullToString(values.get("raw").getValue()) : (String)result.getKey(i).singleValue().getValue(),
-                    needObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
+                    readObjects ? BaseUtils.nullToString(values.get("raw").getValue()) : (String) result.getKey(i).singleValue().getValue(),
+                    needObjects ? (ImMap<P, DataObject>) result.getKey(i) : null);
         }
 
         return new Pair<>(resultValues, count);

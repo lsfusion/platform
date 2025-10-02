@@ -81,7 +81,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         if(mapSelect != null) {
             Property.Select<P> select = mapSelect.select;
 
-            Pair<Integer, Integer> stats = select.stat;
+            Pair<Long, Long> stats = select.stat;
             boolean actualStats = false;
             if(select.values != null && context.dbManager != null) {
                 stats = getActualSelectStats(context, select);
@@ -96,10 +96,10 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         return null;
     }
 
-    private static <P extends PropertyInterface> Pair<Integer, Integer> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
-        Pair<Integer, Integer> actualStats = new Pair<>(0, 0);
+    private static <P extends PropertyInterface> Pair<Long, Long> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
+        Pair<Long, Long> actualStats = new Pair<>(0L, 0L);
         for(InputPropertyValueList value : select.values) {
-            Pair<Integer, Integer> readValues = context.getValues(value);
+            Pair<Long, Long> readValues = context.getValues(value);
             if(actualStats.second < readValues.second)
                 actualStats = readValues;
         }

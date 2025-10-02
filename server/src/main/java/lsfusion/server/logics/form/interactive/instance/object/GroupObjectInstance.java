@@ -1299,19 +1299,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                                         (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
                 keys = treeElements.mapOrderValues(MapFact::EMPTY);
 
-                ImOrderMap<ImMap<ObjectInstance, DataObject>, Integer> groupExpandables =
+                ImOrderMap<ImMap<ObjectInstance, DataObject>, Long> groupExpandables =
                         treeElements
                                 .mapOrderValues(
-                                        (Function<ImMap<Object, ObjectValue>, Integer>) value -> {
+                                        (Function<ImMap<Object, ObjectValue>, Long>) value -> {
                                             ObjectValue expandableParent = value.get("expandableParent");
                                             ObjectValue expandableDown = value.get("expandableDown");
                                             if(countTreeSubElements)
-                                                return (expandableParent instanceof DataObject ? (Integer)((DataObject) expandableParent).object : 0) +
-                                                        (expandableDown instanceof DataObject ? (Integer)((DataObject) expandableDown).object : 0);
+                                                return (expandableParent instanceof DataObject ? (Long)((DataObject) expandableParent).object : 0) +
+                                                        (expandableDown instanceof DataObject ? (Long)((DataObject) expandableDown).object : 0);
 
                                             if(expandableParent instanceof DataObject || expandableDown instanceof DataObject)
-                                                return 1;
-                                            return 0;
+                                                return 1L;
+                                            return 0L;
                                         });
 
                 result.expandables.exclAdd(this, groupExpandables.getMap());

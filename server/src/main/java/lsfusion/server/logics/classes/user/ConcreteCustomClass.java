@@ -116,10 +116,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return new AndClassSet[]{this};
     }
 
-    public Integer stat = null;
+    public Long stat = null;
 
     @Override
-    public int getCount() {
+    public long getCount() {
         assert ImplementTable.checkStatProps(null);
         return BaseUtils.max(stat != null ? stat : 0, 1);
     }
@@ -366,10 +366,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public void updateStat(ImMap<String, Integer> classStats, Result<Integer> majorStatChangedCount) {
-        Integer newStat = classStats.get(getSID());
+    public void updateStat(ImMap<String, Long> classStats, Result<Integer> majorStatChangedCount) {
+        Long newStat = classStats.get(getSID());
         if (majorStatChangedCount != null) {
-            if (stat != null && newStat != null && new Stat(stat).majorStatChanged(new Stat((long) newStat), Stat.Mode.CHANGE))
+            if (stat != null && newStat != null && new Stat(stat).majorStatChanged(new Stat(newStat), Stat.Mode.CHANGE))
                 majorStatChangedCount.set(majorStatChangedCount.result + 1);
         } else {
             assert ID == null;

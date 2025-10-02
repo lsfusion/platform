@@ -1177,8 +1177,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //    private final Map<String, String> sessionTablesStackReturned = MapFact.mAddRemoveMap();
 //
     // need to check classes after
-    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, ImMap<KeyField, Integer> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
-        Result<Integer> actual = new Result<>();
+    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count, ImMap<KeyField, Long> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+        Result<Long> actual = new Result<>();
         String temporaryTable = getTemporaryTable(keys, properties, fill, count, actual, owner, opOwner);
         return new SessionTable(temporaryTable, keys, properties, queryClasses.first, queryClasses.second, actual.result, distinctKeys, statProps).checkClasses(this, null, SessionTable.nonead, opOwner);
     }
@@ -1235,7 +1235,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //        privateConnection.temporary.addFifo()
     }
 
-    public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+    public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Long count, Result<Long> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         lockRead(opOwner);
         String table;
         try {
@@ -1305,11 +1305,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //    private final Map<String, String> lastOwner = new HashMap<String, String>();
 
-    public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner, int count) throws SQLException {
+    public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner, long count) throws SQLException {
         lockedReturnTemporaryTable(table.getName(), owner, opOwner, count);
     }
 
-    public void lockedReturnTemporaryTable(String name, TableOwner owner, OperationOwner opOwner, int count) throws SQLException {
+    public void lockedReturnTemporaryTable(String name, TableOwner owner, OperationOwner opOwner, long count) throws SQLException {
         lockRead(opOwner);
 
         try {
@@ -1324,7 +1324,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return OperationOwner.unknown;
     }
 
-    public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate, Integer count) throws SQLException {
+    public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate, Long count) throws SQLException {
         temporaryTablesLock.lock();
 
         try {
@@ -2628,7 +2628,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         truncate(table.getName(syntax), owner, TableOwner.global, false, register(table, TableOwner.global, TableChange.REMOVE));
     }
     
-    public void truncateSession(String table, OperationOwner owner, Integer count, TableOwner tableOwner) throws SQLException {
+    public void truncateSession(String table, OperationOwner owner, Long count, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
 
 //        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
@@ -2691,7 +2691,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // в явную без query так как часто выполняется
-    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<ImMap<KeyField, Integer>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
+    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<ImMap<KeyField, Long>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
@@ -2745,11 +2745,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 int totalCnt = readInt(result.getObject(getCnt("")));
                 if (tableKeys.size() > 1) {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
-                    ImFilterValueMap<KeyField, Integer> mStatKeys = tableKeys.mapFilterValues();
+                    ImFilterValueMap<KeyField, Long> mStatKeys = tableKeys.mapFilterValues();
                     for (int i = 0, size = tableKeys.size(); i < size; i++) {
                         KeyField tableKey = tableKeys.get(i);
                         String fieldName = tableKey.getName();
-                        int cnt = readInt(result.getObject(getCntDist(fieldName)));
+                        long cnt = readInt(result.getObject(getCntDist(fieldName)));
                         if (cnt == 1)
                             mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
                         mStatKeys.mapValue(i, cnt);
@@ -2826,7 +2826,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         checkTableOwner(modify);
         return executeDML(modify.getInsertSelect(syntax, contextProvider));
     }
-    public int insertSessionSelect(SQLExecute execute, final ERunnable out) throws SQLException, SQLHandledException {
+    public long insertSessionSelect(SQLExecute execute, final ERunnable out) throws SQLException, SQLHandledException {
         // out.run();
 
         try {
@@ -2850,11 +2850,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     }
 
-    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
+    public long insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
         return insertSessionSelect(name, query, env, owner, MapFact.EMPTYORDER(), LimitOffset.NOLIMIT);
     }
 
-    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, ImOrderMap<PropertyField, Boolean> ordersTop, LimitOffset limitOffset) throws SQLException, SQLHandledException {
+    public long insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, ImOrderMap<PropertyField, Boolean> ordersTop, LimitOffset limitOffset) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
         return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, registerSession(name, owner, TableChange.INSERT), ordersTop, limitOffset), () -> query.outSelect(SQLSession.this, env, true));
     }

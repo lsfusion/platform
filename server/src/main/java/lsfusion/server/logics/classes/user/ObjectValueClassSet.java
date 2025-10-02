@@ -28,7 +28,7 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.runWithServiceLog;
 
 public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 
-    int getCount();
+    long getCount();
 
     int getClassCount();
 
@@ -69,7 +69,7 @@ public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
         for (int i = 0, size = concreteChilds.size(); i < size; i++) {
             ConcreteCustomClass customClass = concreteChilds.get(i);
             ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
-            LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
+            LM.statCustomObjectClass.change(classStat == null ? 1 : (Long) classStat.singleValue(), session, customClass.getClassObject());
         }
     }
 

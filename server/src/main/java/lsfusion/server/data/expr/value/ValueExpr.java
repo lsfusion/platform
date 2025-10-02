@@ -36,6 +36,7 @@ import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -100,8 +101,8 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return TRUE.and(where);
     }
 
-    public static IntegralClass COUNTCLASS = IntegerClass.instance;
-    public static StaticValueExpr COUNT = new StaticValueExpr(1, COUNTCLASS);
+    public static IntegralClass COUNTCLASS = LongClass.instance;
+    public static StaticValueExpr COUNT = new StaticValueExpr(1L, COUNTCLASS);
 
     public static StaticValueExpr IMPOSSIBLESTRING = new StaticValueExpr(LocalizedString.create(BaseUtils.impossibleString, false), StringClass.text);
 
