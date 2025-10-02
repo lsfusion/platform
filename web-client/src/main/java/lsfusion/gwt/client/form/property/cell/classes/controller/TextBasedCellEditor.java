@@ -292,6 +292,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if(stringToAdd != null && !checkInputValidity(parent, stringToAdd))
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
+            GwtClientUtils.checkGroupSeparatorEvent(inputElement, event);
             handler.consume(isCorrect, false);
         } else if (GKeyStroke.isPlainPasteEvent(event)) {
             plainPaste = true;
@@ -343,8 +344,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         GwtClientUtils.initDataHtmlOrText(inputElement, property.getDataHtmlOrTextType());
 
         addPasteListener(inputElement);
-
-        GwtClientUtils.addGroupSeparatorEventListener(inputElement);
     }
 
     protected boolean isMultiLine() {

@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -2028,20 +2027,18 @@ public class GwtClientUtils {
         $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
     }-*/;
 
-    public static native void addGroupSeparatorEventListener(Element input)/*-{
-        input.addEventListener('keypress', function (e) {
-            if (e.keyCode === 29) {
-                var start = input.selectionStart;
-                var end = input.selectionEnd;
+    public static native void checkGroupSeparatorEvent(Element input, com.google.gwt.user.client.Event e)/*-{
+        if (e.type === 'keypress' && e.keyCode === 29) {
+            var start = input.selectionStart;
+            var end = input.selectionEnd;
 
-                // paste U+001D (Group Separator)
-                var val = input.value;
-                input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+            // paste U+001D (Group Separator)
+            var val = input.value;
+            input.value = val.slice(0, start) + '\u001D' + val.slice(end);
 
-                // move cursor
-                input.selectionStart = input.selectionEnd = start + 1;
-            }
-        });
+            // move cursor
+            input.selectionStart = input.selectionEnd = start + 1;
+        }
     }-*/;
 
 }
