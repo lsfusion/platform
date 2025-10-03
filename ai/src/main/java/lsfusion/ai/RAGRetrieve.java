@@ -17,6 +17,7 @@ import io.pinecone.unsigned_indices_model.QueryResponseWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.ScoredVectorWithUnsignedIndices;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,11 +76,39 @@ public class RAGRetrieve {
                 .build();
     }
 
+    public static List<String> parseArrayOfStrings(String response) throws IOException {
+        List<String> chunks;
+        try {
+            chunks = AIAgent.M.readValue(response, new TypeReference<Map<String, List<String>>>() {
+            }).get(arrayField);
+        } catch (IOException e) {
+            throw new IOException("Failed to parse chunk list from LLM response", e);
+        }
+        return chunks;
+    }
+
     public final static String arrayField = "values";
     /* "values" : ["dfd","dffd"] */
     public static ResponseFormatJsonSchema arrayOfStrings() {
         return arrayOfSchema(JsonValue.from(
                 Collections.singletonMap("type", JsonValue.from("string"))
+        ));
+    }
+
+    public static List<Integer> parseArrayOfIntegers(String response) throws IOException {
+        List<Integer> chunks;
+        try {
+            chunks = AIAgent.M.readValue(response, new TypeReference<Map<String, List<Integer>>>() {
+            }).get(arrayField);
+        } catch (IOException e) {
+            throw new IOException("Failed to parse chunk list from LLM response", e);
+        }
+        return chunks;
+    }
+
+    public static ResponseFormatJsonSchema arrayOfIntegers() {
+        return arrayOfSchema(JsonValue.from(
+                Collections.singletonMap("type", JsonValue.from("integer"))
         ));
     }
 
