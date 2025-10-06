@@ -464,6 +464,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return !disabledFunctions.contains("trgm_opt.sql");
     }
 
+    public static boolean hasPgProctabExtension() {
+        return !disabledFunctions.contains("pgProctab_opt.sql");
+    }
+
     protected static void executeEnsureWithException(Server server, String command) throws SQLException {
         try (Statement statement = server.ensureConnection.createStatement()) {
             statement.execute(command);

@@ -1104,7 +1104,3 @@ NAVIGATOR {
         NEW scaling;
     }
 }
-
-onStarted() +{
-    INTERNAL DB 'CREATE EXTENSION IF NOT EXISTS pg_proctab;'; //It is not created in the database that is replicated because only tables are replicated, but not functions.
-}

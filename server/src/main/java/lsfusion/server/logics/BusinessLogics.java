@@ -2399,7 +2399,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     DataAdapter.Server dbServer = serverDataObject.objectClass.equals(serviceLM.dbSlave) ?
                             dataAdapter.findSlave(serverDataObject.object.toString()) : dataAdapter.getMaster();
                     if (dbServer != null) { // Null check, because scheduler starts working before DataAdapter.servers is filled
-                        updateCpuTime(dataAdapter, dbServer, getCpuTime(dataAdapter, dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject)));
+                        updateCpuTime(dbServer, getCpuTime(dataAdapter, dbServer, (Integer) serviceLM.snmpPort.read(session, serverDataObject)));
 
                         int numberOfConnections = dataAdapter.getNumberOfConnections(dbServer);
                         serverConnections.put(dbServer, numberOfConnections);
@@ -2427,7 +2427,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, true, Settings.get().getReadSQLServerCpuTimePeriod(), true, "Read sql server cpu time task");
     }
 
-    private void updateCpuTime(DataAdapter dataAdapter, DataAdapter.Server server, CpuTime currentCPUTime) throws SQLException {
+    private void updateCpuTime(DataAdapter.Server server, CpuTime currentCPUTime) {
         CpuTime lastCpuTime = server.lastCpuTime;
 
         if(currentCPUTime != null) {
@@ -2455,10 +2455,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private CpuTime getCpuTime(DataAdapter adapter, DataAdapter.Server server, Integer snmpPort) {
         if (snmpPort == null) {
-            try {
-                return adapter.readServerCpuTime(server);
-            } catch (SQLException e) {
-                logger.error(e.getMessage(), e);
+            if (DataAdapter.hasPgProctabExtension()) {
+                try {
+                    return adapter.readServerCpuTime(server);
+                } catch (SQLException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             try {
