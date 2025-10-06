@@ -52,6 +52,12 @@ public class MIMETypeUtils {
         return mimeType == null ? "application/" + extension : mimeType;
     }
 
+    public static boolean isFileExtensionMIMEType(String extension) {
+        loadMappings();
+
+        return extensionToMIMETypeMap.containsKey(extension);
+    }
+
     private static synchronized void loadMappings() {
         if (mimeTypeToExtensionMap != null) return;
 
