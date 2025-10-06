@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.MIMETypeUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -165,12 +166,34 @@ public class WriteUtils {
 
         String pathFileName = BaseUtils.getFileNameAndExtension(path);
 
-        // If no ".", it's a file without extension → add extension
-        if (!pathFileName.contains(".")) {
-            return path + "." + extension;
+        int dotIndex = pathFileName.lastIndexOf('.');
+
+        // Check if there's a potential extension
+        if (dotIndex != -1) {
+            String existingExt = pathFileName.substring(dotIndex + 1);
+
+            // Validate extension: less than 4 chars and more letters than digits
+            if (isSmartExtension(existingExt)) {
+                return path; // already has valid extension → leave unchanged
+            }
         }
 
-        // Already has extension → leave unchanged
-        return path;
+        return path + "." + extension;
     }
+
+    private static boolean isSmartExtension(String ext) {
+        if(MIMETypeUtils.isFileExtensionMIMEType(ext))
+            return true;
+
+        if (ext.length() >= 4) return false;
+
+        int letters = 0, nonLetters = 0;
+        for (char c : ext.toCharArray()) {
+            if (Character.isLetter(c)) letters++;
+            else if (Character.isDigit(c)) nonLetters++;
+            else return false;
+        }
+        return letters > nonLetters;
+    }
+
 }
