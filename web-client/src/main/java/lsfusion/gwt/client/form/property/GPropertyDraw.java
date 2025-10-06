@@ -41,6 +41,8 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
+    public boolean isPivotColumn;
+
     public int ID;
     public String nativeSID;
     public String sID;

@@ -67,10 +67,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -250,6 +247,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private ActionOrProperty inheritedProperty;
+
+    public String pivotGroupObject;
+    public PropertyDrawEntity(String pivotGroupObject) {
+        this(0, null, null, null, null);
+        this.pivotGroupObject = pivotGroupObject;
+    }
 
     public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
         super(ID);
@@ -1058,4 +1061,26 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sid != null && sid.equals("image");
     }
 
+    private static Map<String, PropertyDrawEntity> pivotColumns = new HashMap<>();
+    public static PropertyDrawEntity getPivotColumn(String groupObject) {
+        PropertyDrawEntity pivotColumn = pivotColumns.get(groupObject);
+        if(pivotColumn == null) {
+            pivotColumn = new PropertyDrawEntity(groupObject) {
+                @Override
+                public String getCustomRenderFunction(FormInstanceContext context) {
+                    return null;
+                }
+                @Override
+                public ImSet<ObjectEntity> getObjectInstances(Function getProperty) {
+                    return SetFact.EMPTY();
+                }
+                @Override
+                public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
+                    return null;
+                }
+            };
+            pivotColumns.put(groupObject, pivotColumn);
+        }
+        return pivotColumn;
+    }
 }

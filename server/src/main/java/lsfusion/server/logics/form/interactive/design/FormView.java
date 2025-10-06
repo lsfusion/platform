@@ -261,11 +261,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
-        pivotMeasures.add(get(measure), version);
+        pivotMeasures.add(measure.pivotGroupObject != null ? new PropertyDrawView(measure) : get(measure), version);
     }
 
     private ImList<PropertyDrawView> getPropertyDrawViewList(ImList<PropertyDrawEntity> propertyDrawEntityList) {
-        return propertyDrawEntityList.mapListValues((PropertyDrawEntity value) -> get(value));
+        return propertyDrawEntityList.mapListValues(value -> value.pivotGroupObject != null ? new PropertyDrawView(value) : get(value));
     }
 
     private void addPropertyDrawView(PropertyDrawView property) {

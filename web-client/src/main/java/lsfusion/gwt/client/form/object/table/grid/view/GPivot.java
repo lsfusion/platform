@@ -307,11 +307,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             pivotRows.add(list);
         }
 
-        Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns, COLUMN);
-        Integer[] splitCols = getPivotSplits(pivotColumns, COLUMN);
+        boolean addPivotColumn = !hasPivotColumn(pivotColumns, pivotRows);
+        Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns, addPivotColumn);
+        Integer[] splitCols = getPivotSplits(pivotColumns, addPivotColumn);
 
-        Object[] rows = getPivotCaptions(columnCaptionMap, pivotRows, null);
-        Integer[] splitRows = getPivotSplits(pivotRows, null);
+        Object[] rows = getPivotCaptions(columnCaptionMap, pivotRows, false);
+        Integer[] splitRows = getPivotSplits(pivotRows, false);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
         for(GPropertyDraw property : pivotMeasures) {
@@ -346,14 +347,29 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
     }
 
-    private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, ArrayList<ArrayList<GPropertyDraw>> propertiesList, String defaultElement) {
-        ArrayList<String> captions = new ArrayList<>();
-        if(defaultElement != null) {
-            captions.add(defaultElement);
+    private boolean hasPivotColumn(ArrayList<ArrayList<GPropertyDraw>> pivotColumns, ArrayList<ArrayList<GPropertyDraw>> pivotRows) {
+        for(ArrayList<GPropertyDraw> propertyList : pivotColumns) {
+            for (GPropertyDraw property : propertyList) {
+                if(property.isPivotColumn)
+                    return true;
+            }
         }
+        for (ArrayList<GPropertyDraw> propertyList : pivotRows) {
+            for (GPropertyDraw property : propertyList) {
+                if (property.isPivotColumn)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, ArrayList<ArrayList<GPropertyDraw>> propertiesList, boolean addPivotColumn) {
+        ArrayList<String> captions = new ArrayList<>();
+        if(addPivotColumn)
+            captions.add(COLUMN);
         for (ArrayList<GPropertyDraw> propertyList : propertiesList) {
             for (GPropertyDraw property : propertyList) {
-                String columnCaption = columnCaptionMap.get(property);
+                String columnCaption = property.isPivotColumn ? COLUMN : columnCaptionMap.get(property);
                 if(columnCaption != null)
                     captions.add(columnCaption);
             }
@@ -361,9 +377,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return captions.toArray();
     }
 
-    private Integer[] getPivotSplits(ArrayList<ArrayList<GPropertyDraw>> propertiesList, String defaultElement) {
+    private Integer[] getPivotSplits(ArrayList<ArrayList<GPropertyDraw>> propertiesList, boolean defaultColumn) {
         ArrayList<Integer> sizes = new ArrayList<>();
-        if(defaultElement != null) {
+        if(defaultColumn) {
             sizes.add(1);
         }
         for (ArrayList<GPropertyDraw> propertyList : propertiesList)
