@@ -15,7 +15,11 @@
     <properties>
         <assemble.mainClass>lsfusion.client.controller.MainController</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
+        
         <sign.jar>false</sign.jar>
+        <ssl.dir>/usr/share/jenkins/ssl</ssl.dir>
+        <signed.jars.dir>${ssl.dir}/signed</signed.jars.dir>
+        <signed.jar.file>${signed.jars.dir}/${assemble.file.name}</signed.jar.file>
     </properties>
     
     <profiles>
@@ -42,6 +46,8 @@
                         </goals>
                         <configuration>
                             <target if="${sign.jar}">
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
+                                
                                 <echo message="Repacking jar ${assemble.jar}" />
                                 <exec executable="pack200">
                                     <arg value="--repack" />
@@ -50,17 +56,20 @@
                                     <arg value="${assemble.jar}" />
                                 </exec>
 
-                                <property name="signed.jars.dir" value="/usr/share/jenkins/signed-files"/>
+                                <if>
+                                    <not>
+                                        <available file="${signed.jar.file}"/>
+                                    </not>
+                                    <then>
+                                        <echo message="Signing file ${project.build.directory}/${assemble.file.name}"/>
+                                        <exec executable="${ssl.dir}/sign.sh" failonerror="true">-->
+                                            <arg value="${project.build.directory}/${assemble.file.name}"/>
+                                            <arg value="${signed.jars.dir}"/>
+                                        </exec>
+                                    </then>
+                                </if>
                                 
-                                <echo message="The build has stopped. Please sign the file: ${project.build.directory}/${assemble.file.name}"/>
-                                <echo message="Put the signed file into: ${signed.jars.dir}/"/>
-                                
-                                <waitfor maxwait="1" maxwaitunit="hour">
-                                    <available file="${signed.jars.dir}/${assemble.file.name}"/>
-                                </waitfor>
-                                
-                                <echo message="The signed file has been found. Continuing build..."/>
-                                <copy file="${signed.jars.dir}/${assemble.file.name}" todir="${project.build.directory}" overwrite="true"/>
+                                <copy file="${signed.jar.file}" todir="${project.build.directory}" overwrite="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -83,6 +92,19 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <!-- pack200 : install and deploy -->
