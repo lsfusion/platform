@@ -17,6 +17,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClassSet;
@@ -69,7 +70,7 @@ public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
         for (int i = 0, size = concreteChilds.size(); i < size; i++) {
             ConcreteCustomClass customClass = concreteChilds.get(i);
             ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
-            LM.statCustomObjectClass.change(classStat == null ? 1 : (Long) classStat.singleValue(), session, customClass.getClassObject());
+            LM.statCustomObjectClass.change(classStat == null ? 1 : Stat.restrictLongValuesInStat((Long) classStat.singleValue()), session, customClass.getClassObject());
         }
     }
 

@@ -134,4 +134,11 @@ public class Stat {
             return mult(coeff).lessEquals(changedStat) || changedStat.mult(coeff).lessEquals(this);
         }
     }
+
+    public static Long restrictLongValuesInStat(Long value) {
+        if (Settings.get().isRestrictLongValuesInStat() && value != null)
+            return Math.min(value, Integer.MAX_VALUE);
+        else
+            return value;
+    }
 }

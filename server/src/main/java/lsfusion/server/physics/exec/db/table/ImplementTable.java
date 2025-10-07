@@ -628,7 +628,7 @@ public class ImplementTable extends DBTable { // последний интерф
         }
 
         if (!skipRecalculateAllFields) {
-            reflectionLM.rowsTable.change(total, session, tableObject);
+            reflectionLM.rowsTable.change(Stat.restrictLongValuesInStat(total), session, tableObject);
 
             for (KeyField key : keys) {
                 DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
@@ -637,7 +637,7 @@ public class ImplementTable extends DBTable { // последний интерф
                     reflectionLM.sidTableKey.change(tableName + "." + key.getName(), session, keyObject);
                     reflectionLM.tableTableKey.change(tableObject, session, keyObject);
                 }
-                long quantity = BaseUtils.nvl((Long) result.get(key), 0L);
+                long quantity = BaseUtils.nvl(Stat.restrictLongValuesInStat((Long) result.get(key)), 0L);
                 (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
             }
         }
@@ -659,11 +659,11 @@ public class ImplementTable extends DBTable { // последний интерф
                     reflectionLM.tableSIDProperty.change(tableName, session, propertyObject);
                 }
                 if (propertyObject != null) {
-                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change((Long) result.get(property), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(Stat.restrictLongValuesInStat((Long) result.get(property)), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
 
                     long notNull = BaseUtils.nvl((Long) notNulls.get(property), 0L);
                     long quantity = BaseUtils.nvl((Long) result.get(property), 0L);
-                    reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
+                    reflectionLM.notNullQuantityProperty.change(Stat.restrictLongValuesInStat(notNull), session, propertyObject);
                     propStats = propStats.addExcl(tableName + "." + property.getName(), Pair.create(quantity, notNull));
                 }
             }
@@ -724,8 +724,8 @@ public class ImplementTable extends DBTable { // последний интерф
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
 
                 if (propertyObject != null && propertiesSet.contains((Long) propertyObject.getValue())) {
-                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl((Long) result.get(property), 0), session, propertyObject);
-                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl((Long) notNulls.get(property), 0), session, propertyObject);
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl(Stat.restrictLongValuesInStat((Long) result.get(property)), 0), session, propertyObject);
+                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl(Stat.restrictLongValuesInStat((Long) notNulls.get(property)), 0), session, propertyObject);
                     found = true;
                 }
             }

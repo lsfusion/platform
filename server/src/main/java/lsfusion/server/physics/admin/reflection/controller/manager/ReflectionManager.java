@@ -580,7 +580,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, annotations,
-                            (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
+                            Stat.restrictLongValuesInStat(Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
                 }
             }
 

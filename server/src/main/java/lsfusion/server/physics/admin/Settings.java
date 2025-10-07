@@ -3643,4 +3643,15 @@ public class Settings implements Cloneable {
     public void setMajorStatChangeDegree(int majorStatChangeDegree) {
         this.majorStatChangeDegree = majorStatChangeDegree;
     }
+
+    //backward compatibility between 6 and 7 versions
+    public boolean restrictLongValuesInStat = true;
+
+    public boolean isRestrictLongValuesInStat() {
+        return restrictLongValuesInStat;
+    }
+
+    public void setRestrictLongValuesInStat(boolean restrictLongValuesInStat) {
+        this.restrictLongValuesInStat = restrictLongValuesInStat;
+    }
 }
