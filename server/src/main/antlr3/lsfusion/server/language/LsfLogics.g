@@ -1429,9 +1429,9 @@ formPivotOptionsDeclaration
 }
 	:	'PIVOT'
 	    (   (options=groupObjectPivotOptions { pivotOptions.add(Pair.create($options.groupObject, $options.options)); })
-        |   ('COLUMNS' column=pivotPropertyDrawList[$options.groupObject] { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList[$options.groupObject] { pivotColumns.add($column.props); } )*)
-        |   ('ROWS' row=pivotPropertyDrawList[$options.groupObject] { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList[$options.groupObject] { pivotRows.add($row.props); } )*)
-        |   ('MEASURES' measure=pivotFormPropertyDraw[$options.groupObject] { pivotMeasures.add($measure.property); } (',' measure=pivotFormPropertyDraw[$options.groupObject] { pivotMeasures.add($measure.property); } )*)
+        |   ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)
+        |   ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)
+        |   ('MEASURES' measure=pivotFormPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=pivotFormPropertyDraw { pivotMeasures.add($measure.property); } )*)
         )+
 	;
 
@@ -1449,13 +1449,13 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     )*
     ;
 
-pivotPropertyDrawList[String groupObject] returns [List<PropertyDrawEntityOrPivotColumn> props = new ArrayList<>()]
-	:	prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); }
-	|   '(' prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); } (',' prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); } )* ')'
+pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new ArrayList<>()]
+	:	prop=pivotFormPropertyDraw { props.add($prop.property); }
+	|   '(' prop=pivotFormPropertyDraw { props.add($prop.property); } (',' prop=pivotFormPropertyDraw { props.add($prop.property); } )* ')'
 	;
 
-pivotFormPropertyDraw[String groupObject] returns [PropertyDrawEntityOrPivotColumn property]
-    :   p=formPropertyDraw {property = $p.property; } | 'COLUMN' {property = new PivotColumn(groupObject); }
+pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
+    :   p=formPropertyDraw {property = $p.property; } | 'COLUMN' '(' group=ID { property = new PivotColumn($group.text); } ')'
     ;
 
 ////////////////////////////////////////////////////////////////////////////////
