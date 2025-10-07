@@ -1455,7 +1455,7 @@ pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new
 	;
 
 pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
-    :   p=formPropertyDraw {property = $p.property; } | 'COLUMN' '(' group=ID { property = new PivotColumn($group.text); } ')'
+    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=ID { property = new PivotColumn($group.text); } ')'
     ;
 
 ////////////////////////////////////////////////////////////////////////////////
