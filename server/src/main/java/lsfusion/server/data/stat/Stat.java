@@ -113,6 +113,8 @@ public class Stat {
         int statDegree = Settings.get().getStatDegree();
         long result = 1;
         for(int i=0,size=getWeight();i<size;i++) {
+            if (result > Long.MAX_VALUE / statDegree) //overflow check
+                break;
             result = result * statDegree;
         }
         return result;
