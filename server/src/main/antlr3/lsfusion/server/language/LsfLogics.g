@@ -84,6 +84,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
     import lsfusion.server.logics.form.struct.object.ObjectEntity;
     import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+    import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
+    import lsfusion.server.logics.form.struct.property.PivotColumn;
     import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -1416,9 +1418,9 @@ orderLiteral returns [boolean descending = false]
 formPivotOptionsDeclaration
 @init {
 	List<Pair<String, PivotOptions>> pivotOptions = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
-	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotRows = new ArrayList<>();
+	List<PropertyDrawEntityOrPivotColumn> pivotMeasures = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
@@ -1427,9 +1429,9 @@ formPivotOptionsDeclaration
 }
 	:	'PIVOT'
 	    (   (options=groupObjectPivotOptions { pivotOptions.add(Pair.create($options.groupObject, $options.options)); })
-        |   ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)
-        |   ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)
-        |   ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)
+        |   ('COLUMNS' column=pivotPropertyDrawList[$options.groupObject] { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList[$options.groupObject] { pivotColumns.add($column.props); } )*)
+        |   ('ROWS' row=pivotPropertyDrawList[$options.groupObject] { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList[$options.groupObject] { pivotRows.add($row.props); } )*)
+        |   ('MEASURES' measure=pivotFormPropertyDraw[$options.groupObject] { pivotMeasures.add($measure.property); } (',' measure=pivotFormPropertyDraw[$options.groupObject] { pivotMeasures.add($measure.property); } )*)
         )+
 	;
 
@@ -1447,10 +1449,14 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     )*
     ;
 
-pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
-	:	prop=formPropertyDraw { props.add($prop.property); }
-	|   '(' prop=formPropertyDraw { props.add($prop.property); } (',' prop=formPropertyDraw { props.add($prop.property); } )* ')'
+pivotPropertyDrawList[String groupObject] returns [List<PropertyDrawEntityOrPivotColumn> props = new ArrayList<>()]
+	:	prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); }
+	|   '(' prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); } (',' prop=pivotFormPropertyDraw[groupObject] { props.add($prop.property); } )* ')'
 	;
+
+pivotFormPropertyDraw[String groupObject] returns [PropertyDrawEntityOrPivotColumn property]
+    :   p=formPropertyDraw {property = $p.property; } | 'COLUMN' {property = new PivotColumn(groupObject); }
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// PROPERTY STATEMENT ////////////////////////////

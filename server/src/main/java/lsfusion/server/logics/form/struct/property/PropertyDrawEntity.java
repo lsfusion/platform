@@ -46,7 +46,9 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -75,7 +77,7 @@ import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements PropertyDrawEntityOrPivotColumn, Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
@@ -247,12 +249,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private ActionOrProperty inheritedProperty;
-
-    public String pivotGroupObject;
-    public PropertyDrawEntity(String pivotGroupObject) {
-        this(0, null, null, null, null);
-        this.pivotGroupObject = pivotGroupObject;
-    }
 
     public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
         super(ID);
@@ -570,8 +566,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // interactive
+    @Override
     public GroupObjectEntity getToDraw(FormEntity form) {
         return toDraw==null? getApplyObject(form, SetFact.EMPTY(), true) :toDraw;
+    }
+
+    @Override
+    public PropertyDrawViewOrPivotColumn getPropertyDrawViewOrPivotColumn(FormView formView) {
+        return formView.get(this);
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {
@@ -1061,26 +1063,4 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sid != null && sid.equals("image");
     }
 
-    private static Map<String, PropertyDrawEntity> pivotColumns = new HashMap<>();
-    public static PropertyDrawEntity getPivotColumn(String groupObject) {
-        PropertyDrawEntity pivotColumn = pivotColumns.get(groupObject);
-        if(pivotColumn == null) {
-            pivotColumn = new PropertyDrawEntity(groupObject) {
-                @Override
-                public String getCustomRenderFunction(FormInstanceContext context) {
-                    return null;
-                }
-                @Override
-                public ImSet<ObjectEntity> getObjectInstances(Function getProperty) {
-                    return SetFact.EMPTY();
-                }
-                @Override
-                public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
-                    return null;
-                }
-            };
-            pivotColumns.put(groupObject, pivotColumn);
-        }
-        return pivotColumn;
-    }
 }

@@ -15,7 +15,9 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPivotColumn;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDrawOrPivotColumn;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormEventClose;
@@ -264,213 +266,211 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GPropertyDraw convertPropertyDraw(ClientPropertyDraw clientPropertyDraw) throws IOException {
         GPropertyDraw propertyDraw = initGwtComponent(clientPropertyDraw, new GPropertyDraw());
 
-        propertyDraw.isPivotColumn = clientPropertyDraw.isPivotColumn;
-        if(propertyDraw.isPivotColumn) {
-            propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
-        } else {
-            propertyDraw.ID = clientPropertyDraw.ID;
-            propertyDraw.nativeSID = "p" + clientPropertyDraw.ID;
-            propertyDraw.sID = clientPropertyDraw.getSID();
-            propertyDraw.namespace = clientPropertyDraw.getNamespace();
-            propertyDraw.caption = clientPropertyDraw.caption;
-            propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
-            propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
-            propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
+        propertyDraw.ID = clientPropertyDraw.ID;
+        propertyDraw.nativeSID = "p" + clientPropertyDraw.ID;
+        propertyDraw.sID = clientPropertyDraw.getSID();
+        propertyDraw.namespace = clientPropertyDraw.getNamespace();
+        propertyDraw.caption = clientPropertyDraw.caption;
+        propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
+        propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
+        propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
-            propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
-            propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
-            propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
-            propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
+        propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
+        propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
+        propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
+        propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
+        
+        propertyDraw.wrap = clientPropertyDraw.wrap;
+        propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
+        propertyDraw.collapse = clientPropertyDraw.collapse;
+        propertyDraw.ellipsis = clientPropertyDraw.ellipsis;
 
-            propertyDraw.wrap = clientPropertyDraw.wrap;
-            propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
-            propertyDraw.collapse = clientPropertyDraw.collapse;
-            propertyDraw.ellipsis = clientPropertyDraw.ellipsis;
+        propertyDraw.captionWrap = clientPropertyDraw.captionWrap;
+        propertyDraw.captionWrapWordBreak = clientPropertyDraw.captionWrapWordBreak;
+        propertyDraw.captionCollapse = clientPropertyDraw.captionCollapse;
+        propertyDraw.captionEllipsis = clientPropertyDraw.captionEllipsis;
 
-            propertyDraw.captionWrap = clientPropertyDraw.captionWrap;
-            propertyDraw.captionWrapWordBreak = clientPropertyDraw.captionWrapWordBreak;
-            propertyDraw.captionCollapse = clientPropertyDraw.captionCollapse;
-            propertyDraw.captionEllipsis = clientPropertyDraw.captionEllipsis;
-
-            propertyDraw.clearText = clientPropertyDraw.clearText;
-            propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;
-            propertyDraw.tableName = clientPropertyDraw.tableName;
-            propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
-            propertyDraw.interfacesTypes = new GClass[clientPropertyDraw.interfacesTypes.length];
-            for (int i = 0; i < clientPropertyDraw.interfacesTypes.length; i++) {
-                propertyDraw.interfacesTypes[i] = typeConverter.convertOrCast(clientPropertyDraw.interfacesTypes[i]);
-            }
-            propertyDraw.creationScript = clientPropertyDraw.creationScript;
-            propertyDraw.creationPath = clientPropertyDraw.creationPath;
-            propertyDraw.path = clientPropertyDraw.path;
-            propertyDraw.formPath = clientPropertyDraw.formPath;
-
-            propertyDraw.contextMenuDebugInfoMap = new HashMap<>();
-            for (Map.Entry<String, ClientPropertyDraw.ContextMenuDebugInfo> contextMenuEntry : clientPropertyDraw.contextMenuDebugInfoMap.entrySet()) {
-                ClientPropertyDraw.ContextMenuDebugInfo info = contextMenuEntry.getValue();
-                propertyDraw.contextMenuDebugInfoMap.put(contextMenuEntry.getKey(), new GPropertyDraw.ContextMenuDebugInfo(info.sid, info.creationPath, info.path));
-            }
-
-            propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
-            if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
-                propertyDraw.columnsName = clientPropertyDraw.columnsName;
-                propertyDraw.columnGroupObjects = new ArrayList<>();
-                for (ClientGroupObject clientColumnGroup : clientPropertyDraw.columnGroupObjects) {
-                    GGroupObject columnGroup = convertOrCast(clientColumnGroup);
-                    propertyDraw.columnGroupObjects.add(columnGroup);
-                }
-            }
-
-            propertyDraw.cellType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
-            propertyDraw.differentValue = clientPropertyDraw.valueType != null;
-            propertyDraw.valueType = propertyDraw.differentValue ? typeConverter.convertOrCast(clientPropertyDraw.valueType) : propertyDraw.cellType;
-            propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
-
-            propertyDraw.tag = clientPropertyDraw.tag;
-            propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
-            propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
-            propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
-            propertyDraw.toolbar = clientPropertyDraw.toolbar;
-            propertyDraw.toolbarActions = clientPropertyDraw.toolbarActions;
-
-            propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
-            propertyDraw.asyncExecMap = new HashMap<>();
-            for (Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
-                propertyDraw.asyncExecMap.put(entry.getKey(), asyncConverter.convertOrCast(entry.getValue()));
-            }
-
-            propertyDraw.ignoreHasHeaders = clientPropertyDraw.ignoreHasHeaders;
-
-            propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
-            propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
-
-            propertyDraw.hasEditObjectAction = clientPropertyDraw.hasEditObjectAction;
-            propertyDraw.hasChangeAction = clientPropertyDraw.hasChangeAction;
-            propertyDraw.hasUserChangeAction = clientPropertyDraw.hasUserChangeAction;
-
-            propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
-
-            propertyDraw.editBindingMap = clientPropertyDraw.editBindingMap != null ? bindingConverter.convertBindingMap(clientPropertyDraw.editBindingMap) : null;
-
-            boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-            propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
-
-            propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
-
-            propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
-
-            propertyDraw.noSort = clientPropertyDraw.noSort;
-            if (clientPropertyDraw.defaultCompare != null)
-                propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
-
-            if (clientPropertyDraw.changeKey != null)
-                propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeKey));
-            propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
-            if (clientPropertyDraw.changeMouse != null)
-                propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeMouse));
-            propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
-
-            propertyDraw.inline = clientPropertyDraw.inline;
-            propertyDraw.isList = clientPropertyDraw.isList;
-
-            propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
-
-            propertyDraw.focusable = clientPropertyDraw.focusable;
-            propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
-
-            propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
-            propertyDraw.loadingReader = new GLoadingReader(clientPropertyDraw.getID(), clientPropertyDraw.getGroupObject() != null ? clientPropertyDraw.getGroupObject().ID : -1);
-            propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
-            propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
-            propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
-            propertyDraw.gridElementClassReader = convertGridElementClassReader(clientPropertyDraw.gridElementClassReader);
-            propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
-            propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
-            propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
-            propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
-            propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
-            propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
-            propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
-            propertyDraw.hasDynamicCaption = clientPropertyDraw.hasDynamicCaption;
-            propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
-            propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
-            propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
-            propertyDraw.patternReader = convertExtraPropReader(clientPropertyDraw.patternReader);
-            propertyDraw.regexpReader = convertExtraPropReader(clientPropertyDraw.regexpReader);
-            propertyDraw.regexpMessageReader = convertExtraPropReader(clientPropertyDraw.regexpMessageReader);
-            propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
-            propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
-            propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
-            propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
-            propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
-
-            propertyDraw.formula = clientPropertyDraw.formula;
-            if (clientPropertyDraw.formula != null) {
-                ArrayList<GPropertyDraw> formulaOperands = new ArrayList<>();
-                for (ClientPropertyDraw formulaOperand : clientPropertyDraw.formulaOperands)
-                    formulaOperands.add(convertOrCast(formulaOperand));
-                propertyDraw.formulaOperands = formulaOperands;
-            }
-
-            propertyDraw.aggrFunc = clientPropertyDraw.aggrFunc;
-            propertyDraw.lastAggrDesc = clientPropertyDraw.lastAggrDesc;
-            propertyDraw.lastReaders = new ArrayList<>();
-            for (ClientPropertyDraw.LastReader lastReader : clientPropertyDraw.lastReaders)
-                propertyDraw.lastReaders.add(convertLastReader(lastReader));
-
-            propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
-
-            propertyDraw.charWidth = clientPropertyDraw.charWidth;
-            propertyDraw.charHeight = clientPropertyDraw.charHeight;
-
-            propertyDraw.valueWidth = clientPropertyDraw.valueWidth;
-            propertyDraw.valueHeight = clientPropertyDraw.valueHeight;
-
-            propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
-            propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
-            propertyDraw.captionCharHeight = clientPropertyDraw.captionCharHeight;
-
-            propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
-            propertyDraw.panelCustom = clientPropertyDraw.panelCustom;
-
-            propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
-            propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
-
-            propertyDraw.highlightDuplicateValue = clientPropertyDraw.highlightDuplicateValue;
-
-            propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
-            propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;
-
-            propertyDraw.valueShrinkHorz = clientPropertyDraw.valueShrinkHorz;
-            propertyDraw.valueShrinkVert = clientPropertyDraw.valueShrinkVert;
-
-            propertyDraw.comment = clientPropertyDraw.comment;
-            propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;
-            propertyDraw.panelCommentVertical = clientPropertyDraw.panelCommentVertical;
-            propertyDraw.panelCommentFirst = clientPropertyDraw.panelCommentFirst;
-            propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
-
-            propertyDraw.placeholder = clientPropertyDraw.placeholder;
-            propertyDraw.pattern = clientPropertyDraw.pattern;
-            propertyDraw.regexp = clientPropertyDraw.regexp;
-            propertyDraw.regexpMessage = clientPropertyDraw.regexpMessage;
-
-            propertyDraw.tooltip = clientPropertyDraw.tooltip;
-            propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
-
-            propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
-
-            propertyDraw.hide = clientPropertyDraw.hide;
-            propertyDraw.remove = clientPropertyDraw.remove;
-
-            propertyDraw.notNull = clientPropertyDraw.notNull;
-
-            propertyDraw.sticky = clientPropertyDraw.sticky;
-
-            propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
-
-            propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
+        propertyDraw.clearText = clientPropertyDraw.clearText;
+        propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;
+        propertyDraw.tableName = clientPropertyDraw.tableName;
+        propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
+        propertyDraw.interfacesTypes = new GClass[clientPropertyDraw.interfacesTypes.length];
+        for (int i = 0; i < clientPropertyDraw.interfacesTypes.length; i++) {
+            propertyDraw.interfacesTypes[i] = typeConverter.convertOrCast(clientPropertyDraw.interfacesTypes[i]);
         }
+        propertyDraw.creationScript = clientPropertyDraw.creationScript;
+        propertyDraw.creationPath = clientPropertyDraw.creationPath;
+        propertyDraw.path = clientPropertyDraw.path;
+        propertyDraw.formPath = clientPropertyDraw.formPath;
+
+        propertyDraw.contextMenuDebugInfoMap = new HashMap<>();
+        for(Map.Entry<String, ClientPropertyDraw.ContextMenuDebugInfo> contextMenuEntry : clientPropertyDraw.contextMenuDebugInfoMap.entrySet()) {
+            ClientPropertyDraw.ContextMenuDebugInfo info = contextMenuEntry.getValue();
+            propertyDraw.contextMenuDebugInfoMap.put(contextMenuEntry.getKey(), new GPropertyDraw.ContextMenuDebugInfo(info.sid, info.creationPath, info.path));
+        }
+
+        propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
+        if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
+            propertyDraw.columnsName = clientPropertyDraw.columnsName;
+            propertyDraw.columnGroupObjects = new ArrayList<>();
+            for (ClientGroupObject clientColumnGroup : clientPropertyDraw.columnGroupObjects) {
+                GGroupObject columnGroup = convertOrCast(clientColumnGroup);
+                propertyDraw.columnGroupObjects.add(columnGroup);
+            }
+        }
+
+        propertyDraw.cellType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
+        propertyDraw.differentValue = clientPropertyDraw.valueType != null;
+        propertyDraw.valueType = propertyDraw.differentValue ? typeConverter.convertOrCast(clientPropertyDraw.valueType) : propertyDraw.cellType;
+        propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
+
+        propertyDraw.tag = clientPropertyDraw.tag;
+        propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
+        propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
+        propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
+        propertyDraw.toolbar = clientPropertyDraw.toolbar;
+        propertyDraw.toolbarActions = clientPropertyDraw.toolbarActions;
+
+        propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
+        propertyDraw.asyncExecMap = new HashMap<>();
+        for(Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {
+            propertyDraw.asyncExecMap.put(entry.getKey(), asyncConverter.convertOrCast(entry.getValue()));
+        }
+
+        propertyDraw.ignoreHasHeaders = clientPropertyDraw.ignoreHasHeaders;
+
+        propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
+        propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
+
+        propertyDraw.hasEditObjectAction = clientPropertyDraw.hasEditObjectAction;
+        propertyDraw.hasChangeAction = clientPropertyDraw.hasChangeAction;
+        propertyDraw.hasUserChangeAction = clientPropertyDraw.hasUserChangeAction;
+
+        propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
+
+        propertyDraw.editBindingMap = clientPropertyDraw.editBindingMap != null ? bindingConverter.convertBindingMap(clientPropertyDraw.editBindingMap) : null;
+
+        boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
+        propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
+
+        propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
+
+        propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
+
+        propertyDraw.noSort = clientPropertyDraw.noSort;
+        if(clientPropertyDraw.defaultCompare != null)
+            propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
+
+        if(clientPropertyDraw.changeKey != null)
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeKey));
+        propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
+        if(clientPropertyDraw.changeMouse != null)
+            propertyDraw.bindingEvents.add(bindingConverter.convertBinding(clientPropertyDraw.changeMouse));
+        propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
+
+        propertyDraw.inline = clientPropertyDraw.inline;
+        propertyDraw.isList = clientPropertyDraw.isList;
+
+        propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
+
+        propertyDraw.focusable = clientPropertyDraw.focusable;
+        propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
+
+        propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
+        propertyDraw.loadingReader = new GLoadingReader(clientPropertyDraw.getID(), clientPropertyDraw.getGroupObject() != null ? clientPropertyDraw.getGroupObject().ID : -1);
+        propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
+        propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
+        propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
+        propertyDraw.gridElementClassReader = convertGridElementClassReader(clientPropertyDraw.gridElementClassReader);
+        propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
+        propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
+        propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
+        propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
+        propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
+        propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
+        propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
+        propertyDraw.hasDynamicCaption = clientPropertyDraw.hasDynamicCaption;
+        propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
+        propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
+        propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
+        propertyDraw.patternReader = convertExtraPropReader(clientPropertyDraw.patternReader);
+        propertyDraw.regexpReader = convertExtraPropReader(clientPropertyDraw.regexpReader);
+        propertyDraw.regexpMessageReader = convertExtraPropReader(clientPropertyDraw.regexpMessageReader);
+        propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
+        propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
+        propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
+        propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
+        propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
+
+        propertyDraw.formula = clientPropertyDraw.formula;
+        if(clientPropertyDraw.formula != null) {
+            ArrayList<GPropertyDraw> formulaOperands = new ArrayList<>();
+            for (ClientPropertyDraw formulaOperand : clientPropertyDraw.formulaOperands)
+                formulaOperands.add(convertOrCast(formulaOperand));
+            propertyDraw.formulaOperands = formulaOperands;
+        }
+
+        propertyDraw.aggrFunc = clientPropertyDraw.aggrFunc;
+        propertyDraw.lastAggrDesc = clientPropertyDraw.lastAggrDesc;
+        propertyDraw.lastReaders = new ArrayList<>();
+        for(ClientPropertyDraw.LastReader lastReader : clientPropertyDraw.lastReaders)
+            propertyDraw.lastReaders.add(convertLastReader(lastReader));
+
+        propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
+
+        propertyDraw.charWidth = clientPropertyDraw.charWidth;
+        propertyDraw.charHeight = clientPropertyDraw.charHeight;
+
+        propertyDraw.valueWidth = clientPropertyDraw.valueWidth;
+        propertyDraw.valueHeight = clientPropertyDraw.valueHeight;
+
+        propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
+        propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
+        propertyDraw.captionCharHeight = clientPropertyDraw.captionCharHeight;
+
+        propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
+        propertyDraw.panelCustom = clientPropertyDraw.panelCustom;
+
+        propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
+        propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
+
+        propertyDraw.highlightDuplicateValue = clientPropertyDraw.highlightDuplicateValue;
+
+        propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
+        propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;
+
+        propertyDraw.valueShrinkHorz = clientPropertyDraw.valueShrinkHorz;
+        propertyDraw.valueShrinkVert = clientPropertyDraw.valueShrinkVert;
+
+        propertyDraw.comment = clientPropertyDraw.comment;
+        propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;
+        propertyDraw.panelCommentVertical = clientPropertyDraw.panelCommentVertical;
+        propertyDraw.panelCommentFirst = clientPropertyDraw.panelCommentFirst;
+        propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
+
+        propertyDraw.placeholder = clientPropertyDraw.placeholder;
+        propertyDraw.pattern = clientPropertyDraw.pattern;
+        propertyDraw.regexp = clientPropertyDraw.regexp;
+        propertyDraw.regexpMessage = clientPropertyDraw.regexpMessage;
+
+        propertyDraw.tooltip = clientPropertyDraw.tooltip;
+        propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
+
+        propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
+        
+        propertyDraw.hide = clientPropertyDraw.hide;
+        propertyDraw.remove = clientPropertyDraw.remove;
+
+        propertyDraw.notNull = clientPropertyDraw.notNull;
+
+        propertyDraw.sticky = clientPropertyDraw.sticky;
+
+        propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
+
+        propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
+
+//        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
+
         return propertyDraw;
     }
 
@@ -701,7 +701,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         form.pivotColumns.addAll(convertPivotPropertiesList(clientForm.pivotColumns));
         form.pivotRows.addAll(convertPivotPropertiesList(clientForm.pivotRows));
-        for(ClientPropertyDraw property : clientForm.pivotMeasures) {
+        for(ClientPropertyDrawOrPivotColumn property : clientForm.pivotMeasures) {
             form.pivotMeasures.add(convertOrCast(property));
         }
 
@@ -713,16 +713,21 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         return form;
     }
 
-    private ArrayList<ArrayList<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
-        ArrayList<ArrayList<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
-        for (List<ClientPropertyDraw> pivotPropertiesEntry : pivotPropertiesList) {
-            ArrayList<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
-            for(ClientPropertyDraw property : pivotPropertiesEntry) {
+    private ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> convertPivotPropertiesList(List<List<ClientPropertyDrawOrPivotColumn>> pivotPropertiesList) {
+        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> gPivotPropertiesList = new ArrayList<>();
+        for (List<ClientPropertyDrawOrPivotColumn> pivotPropertiesEntry : pivotPropertiesList) {
+            ArrayList<GPropertyDrawOrPivotColumn> gPivotPropertiesEntry = new ArrayList<>();
+            for(ClientPropertyDrawOrPivotColumn property : pivotPropertiesEntry) {
                 gPivotPropertiesEntry.add(convertOrCast(property));
             }
             gPivotPropertiesList.add(gPivotPropertiesEntry);
         }
         return gPivotPropertiesList;
+    }
+
+    @Converter(from = ClientPivotColumn.class)
+    public GPivotColumn convertAction(ClientPivotColumn pivotColumn) {
+        return new GPivotColumn(pivotColumn.groupObject);
     }
 
     @Converter(from = FormScheduler.class)

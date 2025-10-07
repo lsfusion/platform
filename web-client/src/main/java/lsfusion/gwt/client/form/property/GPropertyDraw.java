@@ -40,9 +40,7 @@ import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
-    public boolean isPivotColumn;
-
+public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
     public int ID;
     public String nativeSID;
     public String sID;
@@ -1076,6 +1074,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isPredefinedImage() {
         String sid = integrationSID;
         return sid != null && sid.equals("image");
+    }
+
+    @Override
+    public boolean equalsGroupObject(GGroupObject group) {
+        return GwtSharedUtils.nullEquals(groupObject, group);
+    }
+
+    @Override
+    public String getCaption(Map<GPropertyDraw, String> columnCaptionMap) {
+        return columnCaptionMap.get(this);
     }
 
     public static class ContextMenuDebugInfo implements Serializable {

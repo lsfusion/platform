@@ -15,7 +15,6 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.FormChangeEvent;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
@@ -49,9 +48,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -876,8 +873,8 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addPivotOptions(List<Pair<String, PivotOptions>> pivotOptionsList, List<List<PropertyDrawEntity>> pivotColumns,
-                                List<List<PropertyDrawEntity>> pivotRows, List<PropertyDrawEntity> pivotMeasures, Version version) {
+    public void addPivotOptions(List<Pair<String, PivotOptions>> pivotOptionsList, List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns,
+                                List<List<PropertyDrawEntityOrPivotColumn>> pivotRows, List<PropertyDrawEntityOrPivotColumn> pivotMeasures, Version version) {
         for(Pair<String, PivotOptions> entry : pivotOptionsList) {
             GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
             if (groupObject != null) {

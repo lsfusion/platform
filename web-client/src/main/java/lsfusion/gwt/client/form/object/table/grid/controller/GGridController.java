@@ -647,15 +647,15 @@ public class GGridController extends GAbstractTableController {
         return formController.getDefaultOrders(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns() {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns() {
         return formController.getPivotColumns(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows() {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows() {
         return formController.getPivotRows(groupObject);
     }
 
-    public ArrayList<GPropertyDraw> getPivotMeasures() {
+    public ArrayList<GPropertyDrawOrPivotColumn> getPivotMeasures() {
         return formController.getPivotMeasures(groupObject);
     }
 

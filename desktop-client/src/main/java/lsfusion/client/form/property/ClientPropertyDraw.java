@@ -48,9 +48,7 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
-
-    public boolean isPivotColumn;
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
@@ -549,215 +547,210 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        isPivotColumn = pool.readBoolean(inStream);
-        if(isPivotColumn) {
-            groupObject = pool.deserializeObject(inStream);
-        } else {
-            caption = pool.readString(inStream);
-            image = pool.readImageIcon(inStream);
+        caption = pool.readString(inStream);
+        image = pool.readImageIcon(inStream);
 
-            maxValue = pool.readLong(inStream);
-            echoSymbols = inStream.readBoolean();
-            noSort = inStream.readBoolean();
-            defaultCompare = Compare.deserialize(inStream);
-            charHeight = inStream.readInt();
-            charWidth = inStream.readInt();
+        maxValue = pool.readLong(inStream);
+        echoSymbols = inStream.readBoolean();
+        noSort = inStream.readBoolean();
+        defaultCompare = Compare.deserialize(inStream);
+        charHeight = inStream.readInt();
+        charWidth = inStream.readInt();
 
-            valueWidth = inStream.readInt();
-            valueHeight = inStream.readInt();
+        valueWidth = inStream.readInt();
+        valueHeight = inStream.readInt();
 
-            captionWidth = inStream.readInt();
-            captionHeight = inStream.readInt();
-            captionCharHeight = inStream.readInt();
+        captionWidth = inStream.readInt();
+        captionHeight = inStream.readInt();
+        captionCharHeight = inStream.readInt();
 
-            changeKey = pool.readObject(inStream);
-            showChangeKey = inStream.readBoolean();
-            changeMouse = pool.readObject(inStream);
-            showChangeMouse = inStream.readBoolean();
+        changeKey = pool.readObject(inStream);
+        showChangeKey = inStream.readBoolean();
+        changeMouse = pool.readObject(inStream);
+        showChangeMouse = inStream.readBoolean();
 
-            drawAsync = inStream.readBoolean();
+        drawAsync = inStream.readBoolean();
 
-            inline = pool.readObject(inStream);
-            isList = inStream.readBoolean();
+        inline = pool.readObject(inStream);
+        isList = inStream.readBoolean();
 
-            focusable = pool.readObject(inStream);
-            editType = PropertyEditType.deserialize(inStream.readByte());
+        focusable = pool.readObject(inStream);
+        editType = PropertyEditType.deserialize(inStream.readByte());
 
-            panelCustom = inStream.readBoolean();
-            panelColumnVertical = inStream.readBoolean();
+        panelCustom = inStream.readBoolean();
+        panelColumnVertical = inStream.readBoolean();
 
-            valueAlignmentHorz = pool.readObject(inStream);
-            valueAlignmentVert = pool.readObject(inStream);
+        valueAlignmentHorz = pool.readObject(inStream);
+        valueAlignmentVert = pool.readObject(inStream);
 
-            highlightDuplicateValue = pool.readBoolean(inStream);
+        highlightDuplicateValue = pool.readBoolean(inStream);
 
-            valueOverflowHorz = pool.readString(inStream);
-            valueOverflowVert = pool.readString(inStream);
+        valueOverflowHorz = pool.readString(inStream);
+        valueOverflowVert = pool.readString(inStream);
 
-            valueShrinkHorz = pool.readBoolean(inStream);
-            valueShrinkVert = pool.readBoolean(inStream);
+        valueShrinkHorz = pool.readBoolean(inStream);
+        valueShrinkVert = pool.readBoolean(inStream);
 
-            comment = pool.readString(inStream);
-            commentElementClass = pool.readString(inStream);
-            panelCommentVertical = inStream.readBoolean();
-            panelCommentFirst = inStream.readBoolean();
-            panelCommentAlignment = pool.readObject(inStream);
+        comment = pool.readString(inStream);
+        commentElementClass = pool.readString(inStream);
+        panelCommentVertical = inStream.readBoolean();
+        panelCommentFirst = inStream.readBoolean();
+        panelCommentAlignment = pool.readObject(inStream);
 
-            placeholder = pool.readString(inStream);
-            pattern = pool.readString(inStream);
-            regexp = pool.readString(inStream);
-            regexpMessage = pool.readString(inStream);
+        placeholder = pool.readString(inStream);
+        pattern = pool.readString(inStream);
+        regexp = pool.readString(inStream);
+        regexpMessage = pool.readString(inStream);
 
-            tooltip = pool.readString(inStream);
-            valueTooltip = pool.readString(inStream);
+        tooltip = pool.readString(inStream);
+        valueTooltip = pool.readString(inStream);
 
-            changeOnSingleClick = pool.readObject(inStream);
-            hide = inStream.readBoolean();
-            remove = inStream.readBoolean();
+        changeOnSingleClick = pool.readObject(inStream);
+        hide = inStream.readBoolean();
+        remove = inStream.readBoolean();
 
-            baseType = ClientTypeSerializer.deserializeClientType(inStream);
-            if (inStream.readBoolean())
-                valueType = ClientTypeSerializer.deserializeClientType(inStream);
+        baseType = ClientTypeSerializer.deserializeClientType(inStream);
+        if(inStream.readBoolean())
+            valueType = ClientTypeSerializer.deserializeClientType(inStream);
 
-            tag = pool.readString(inStream);
-            inputType = pool.readString(inStream);
-            valueElementClass = pool.readString(inStream);
-            captionElementClass = pool.readString(inStream);
-            toolbar = pool.readBoolean(inStream);
-            toolbarActions = pool.readBoolean(inStream);
+        tag = pool.readString(inStream);
+        inputType = pool.readString(inStream);
+        valueElementClass = pool.readString(inStream);
+        captionElementClass = pool.readString(inStream);
+        toolbar = pool.readBoolean(inStream);
+        toolbarActions = pool.readBoolean(inStream);
 
-            if (inStream.readBoolean()) {
-                externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
-            }
-            asyncExecMap = new HashMap<>();
-            int asyncExecSize = inStream.readInt();
-            for (int i = 0; i < asyncExecSize; ++i) {
-                String key = pool.readString(inStream);
-                ClientAsyncEventExec value = ClientAsyncSerializer.deserializeEventExec(inStream);
-                asyncExecMap.put(key, value);
-            }
-
-            ignoreHasHeaders = inStream.readBoolean();
-
-            askConfirm = inStream.readBoolean();
-            if (askConfirm)
-                askConfirmMessage = pool.readString(inStream);
-
-            hasEditObjectAction = inStream.readBoolean();
-            hasChangeAction = inStream.readBoolean();
-            hasUserChangeAction = inStream.readBoolean();
-            hasDynamicImage = inStream.readBoolean();
-            hasDynamicCaption = inStream.readBoolean();
-
-            disableInputList = inStream.readBoolean();
-
-            namespace = pool.readString(inStream);
-            sID = pool.readString(inStream);
-            canonicalName = pool.readString(inStream);
-            propertyFormName = pool.readString(inStream);
-            integrationSID = pool.readString(inStream);
-
-            groupObject = pool.deserializeObject(inStream);
-
-            columnsName = pool.readString(inStream);
-            columnGroupObjects = pool.deserializeList(inStream);
-
-            checkEquals = inStream.readBoolean();
-
-            wrap = inStream.readBoolean();
-            wrapWordBreak = inStream.readBoolean();
-            collapse = inStream.readBoolean();
-            ellipsis = inStream.readBoolean();
-
-            captionWrap = inStream.readBoolean();
-            captionWrapWordBreak = inStream.readBoolean();
-            captionCollapse = inStream.readBoolean();
-            captionEllipsis = inStream.readBoolean();
-
-            clearText = inStream.readBoolean();
-            notSelectAll = inStream.readBoolean();
-
-            // for pivoting
-            formula = pool.readString(inStream);
-            if (formula != null) {
-                int size = inStream.readInt();
-                formulaOperands = new ClientPropertyDraw[size];
-                for (int i = 0; i < size; i++)
-                    formulaOperands[i] = pool.deserializeObject(inStream);
-            }
-
-            aggrFunc = pool.readString(inStream);
-            int size = inStream.readInt();
-            for (int i = 0; i < size; i++)
-                lastReaders.add(new LastReader(i));
-            lastAggrDesc = inStream.readBoolean();
-
-            quickFilterProperty = pool.deserializeObject(inStream);
-
-            tableName = pool.readString(inStream);
-
-            int n = inStream.readInt();
-            interfacesCaptions = new String[n];
-            interfacesTypes = new ClientClass[n];
-            for (int i = 0; i < n; ++i) {
-                interfacesCaptions[i] = pool.readString(inStream);
-                interfacesTypes[i] = inStream.readBoolean()
-                        ? ClientTypeSerializer.deserializeClientClass(inStream)
-                        : null;
-            }
-
-            returnClass = inStream.readBoolean() ? ClientTypeSerializer.deserializeClientClass(inStream) : null;
-
-            customRenderFunction = pool.readString(inStream);
-            customCanBeRenderedInTD = pool.readBoolean(inStream);
-            customNeedPlaceholder = pool.readBoolean(inStream);
-            customNeedReadonly = pool.readBoolean(inStream);
-
-            eventID = pool.readString(inStream);
-
-            creationScript = pool.readString(inStream);
-            creationPath = pool.readString(inStream);
-            path = pool.readString(inStream);
-            formPath = pool.readString(inStream);
-
-            String mouseBinding = pool.readString(inStream);
-            if (mouseBinding != null) {
-                initEditBindingMap();
-                editBindingMap.setMouseAction(mouseBinding);
-            }
-
-            int keyBindingSize = inStream.readInt();
-            if (keyBindingSize > 0) {
-                initEditBindingMap();
-                for (int i = 0; i < keyBindingSize; ++i) {
-                    KeyStroke keyStroke = pool.readObject(inStream);
-                    String actionSID = pool.readString(inStream);
-                    editBindingMap.setKeyAction(keyStroke, actionSID);
-                }
-            }
-
-            int contextMenuBindingsSize = inStream.readInt();
-            if (contextMenuBindingsSize > 0) {
-                initEditBindingMap();
-                for (int i = 0; i < contextMenuBindingsSize; ++i) {
-                    String actionSID = pool.readString(inStream);
-                    String caption = pool.readString(inStream);
-                    editBindingMap.setContextMenuAction(actionSID, caption);
-                    if (pool.readBoolean(inStream)) {
-                        contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(pool.readString(inStream),
-                                pool.readString(inStream), pool.readString(inStream)));
-                    }
-                }
-            }
-
-            notNull = inStream.readBoolean();
-
-            sticky = inStream.readBoolean();
-
-            hasActiveProperty = inStream.readBoolean();
-
-            hasFooter = inStream.readBoolean();
+        if (inStream.readBoolean()) {
+            externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
         }
+        asyncExecMap = new HashMap<>();
+        int asyncExecSize = inStream.readInt();
+        for (int i = 0; i < asyncExecSize; ++i) {
+            String key = pool.readString(inStream);
+            ClientAsyncEventExec value = ClientAsyncSerializer.deserializeEventExec(inStream);
+            asyncExecMap.put(key, value);
+        }
+
+        ignoreHasHeaders = inStream.readBoolean();
+
+        askConfirm = inStream.readBoolean();
+        if(askConfirm)
+            askConfirmMessage = pool.readString(inStream);
+        
+        hasEditObjectAction = inStream.readBoolean();
+        hasChangeAction = inStream.readBoolean();
+        hasUserChangeAction = inStream.readBoolean();
+        hasDynamicImage = inStream.readBoolean();
+        hasDynamicCaption = inStream.readBoolean();
+
+        disableInputList = inStream.readBoolean();
+
+        namespace = pool.readString(inStream);
+        sID = pool.readString(inStream);
+        canonicalName = pool.readString(inStream);
+        propertyFormName = pool.readString(inStream);
+        integrationSID = pool.readString(inStream);
+
+        groupObject = pool.deserializeObject(inStream);
+
+        columnsName = pool.readString(inStream);
+        columnGroupObjects = pool.deserializeList(inStream);
+
+        checkEquals = inStream.readBoolean();
+
+        wrap = inStream.readBoolean();
+        wrapWordBreak = inStream.readBoolean();
+        collapse = inStream.readBoolean();
+        ellipsis = inStream.readBoolean();
+
+        captionWrap = inStream.readBoolean();
+        captionWrapWordBreak = inStream.readBoolean();
+        captionCollapse = inStream.readBoolean();
+        captionEllipsis = inStream.readBoolean();
+
+        clearText = inStream.readBoolean();
+        notSelectAll = inStream.readBoolean();
+
+        // for pivoting
+        formula = pool.readString(inStream);
+        if(formula != null) {
+            int size = inStream.readInt();
+            formulaOperands = new ClientPropertyDraw[size];
+            for (int i = 0; i < size; i++)
+                formulaOperands[i] = pool.deserializeObject(inStream);
+        }
+
+        aggrFunc = pool.readString(inStream);
+        int size = inStream.readInt();
+        for (int i = 0; i < size; i++)
+            lastReaders.add(new LastReader(i));
+        lastAggrDesc = inStream.readBoolean();
+
+        quickFilterProperty = pool.deserializeObject(inStream);
+
+        tableName = pool.readString(inStream);
+
+        int n = inStream.readInt();
+        interfacesCaptions = new String[n];
+        interfacesTypes = new ClientClass[n];
+        for (int i = 0; i < n; ++i) {
+            interfacesCaptions[i] = pool.readString(inStream);
+            interfacesTypes[i] = inStream.readBoolean()
+                                 ? ClientTypeSerializer.deserializeClientClass(inStream)
+                                 : null;
+        }
+
+        returnClass = inStream.readBoolean() ? ClientTypeSerializer.deserializeClientClass(inStream) : null;
+        
+        customRenderFunction = pool.readString(inStream);
+        customCanBeRenderedInTD = pool.readBoolean(inStream);
+        customNeedPlaceholder = pool.readBoolean(inStream);
+        customNeedReadonly = pool.readBoolean(inStream);
+
+        eventID = pool.readString(inStream);
+
+        creationScript = pool.readString(inStream);
+        creationPath = pool.readString(inStream);
+        path = pool.readString(inStream);
+        formPath = pool.readString(inStream);
+
+        String mouseBinding = pool.readString(inStream);
+        if (mouseBinding != null) {
+            initEditBindingMap();
+            editBindingMap.setMouseAction(mouseBinding);
+        }
+
+        int keyBindingSize = inStream.readInt();
+        if (keyBindingSize > 0) {
+            initEditBindingMap();
+            for (int i = 0; i < keyBindingSize; ++i) {
+                KeyStroke keyStroke = pool.readObject(inStream);
+                String actionSID = pool.readString(inStream);
+                editBindingMap.setKeyAction(keyStroke, actionSID);
+            }
+        }
+
+        int contextMenuBindingsSize = inStream.readInt();
+        if (contextMenuBindingsSize > 0) {
+            initEditBindingMap();
+            for (int i = 0; i < contextMenuBindingsSize; ++i) {
+                String actionSID = pool.readString(inStream);
+                String caption = pool.readString(inStream);
+                editBindingMap.setContextMenuAction(actionSID, caption);
+                if(pool.readBoolean(inStream)) {
+                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(pool.readString(inStream),
+                            pool.readString(inStream), pool.readString(inStream)));
+                }
+            }
+        }
+        
+        notNull = inStream.readBoolean();
+
+        sticky = inStream.readBoolean();
+
+        hasActiveProperty = inStream.readBoolean();
+
+        hasFooter = inStream.readBoolean();
     }
 
     public boolean hasColumnGroupObjects() {
