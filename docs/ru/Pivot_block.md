@@ -103,8 +103,8 @@ settingsType
 ```lsf
 FORM PivotTest 
     OBJECTS s = Store
-    PROPERTIES(s) name, storeSizeCode, storeSizeName
+    PROPERTIES(s) name, storeSizeCode, storeSizeName, storeSizeFullName
     PIVOT s 'Bar Chart' NOSETTINGS MAX 
-        ROWS name(s) COLUMNS storeSizeName(s) MEASURES storeSizeCode(s)    
+        ROWS (name(s), MEASURES(s)) COLUMNS storeSizeName(s), storeSizeFullName(s) MEASURES storeSizeCode(s)    
 ;
 ```
