@@ -299,7 +299,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns = gridController.getPivotColumns();
         ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = gridController.getPivotRows();
-        ArrayList<GPropertyDrawOrPivotColumn> pivotMeasures = gridController.getPivotMeasures();
+        ArrayList<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
 
         if(pivotColumns.isEmpty() && pivotRows.isEmpty() && pivotMeasures.isEmpty() && selectedProperty != null) {
             ArrayList<GPropertyDrawOrPivotColumn> list = new ArrayList<>();
@@ -314,7 +314,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         Integer[] splitRows = getPivotSplits(pivotRows);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
-        for(GPropertyDrawOrPivotColumn property : pivotMeasures) {
+        for(GPropertyDraw property : pivotMeasures) {
             String columnCaption = property.getCaption(columnCaptionMap);
             if(columnCaption != null) {
                 measures.push(columnCaption);

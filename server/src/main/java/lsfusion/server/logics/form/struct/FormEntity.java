@@ -224,7 +224,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private NFOrderSet<ImList<PropertyDrawEntityOrPivotColumn>> pivotColumns = NFFact.orderSet();
     private NFOrderSet<ImList<PropertyDrawEntityOrPivotColumn>> pivotRows = NFFact.orderSet();
-    private NFOrderSet<PropertyDrawEntityOrPivotColumn> pivotMeasures = NFFact.orderSet();
+    private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
     public Iterable<ImList<PropertyDrawEntityOrPivotColumn>> getNFPivotColumnsListIt(Version version) {
         return pivotColumns.getNFListIt(version);
@@ -242,11 +242,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return pivotRows.getList();
     }
 
-    public Iterable<PropertyDrawEntityOrPivotColumn> getNFPivotMeasuresListIt(Version version) {
+    public Iterable<PropertyDrawEntity> getNFPivotMeasuresListIt(Version version) {
         return pivotMeasures.getNFListIt(version);
     }
 
-    public ImList<PropertyDrawEntityOrPivotColumn> getPivotMeasuresList() {
+    public ImList<PropertyDrawEntity> getPivotMeasuresList() {
         return pivotMeasures.getList();
     }
 
@@ -271,13 +271,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> getPivotMeasureProps() {
-        MSet<PropertyDrawEntity> mGroupProps = SetFact.mSet();
-        for (PropertyDrawEntityOrPivotColumn entry : getPivotMeasuresList()) {
-            if (entry instanceof PropertyDrawEntity) {
-                mGroupProps.add((PropertyDrawEntity) entry);
-            }
-        }
-        return mGroupProps.immutable().group(key -> key.getToDraw(this));
+        return getPivotMeasuresList().toOrderSet().getSet().group(key -> key.getToDraw(this));
     }
     @IdentityLazy
     public ImSet<PropertyDrawEntity> getUserPrefsHiddenProperties() {
@@ -1563,12 +1557,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void addPivotMeasure(PropertyDrawEntityOrPivotColumn measure, Version version) {
+    public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
         pivotMeasures.add(measure, version);
     }
 
-    public void addPivotMeasures(List<PropertyDrawEntityOrPivotColumn> measures, Version version) {
-        for(PropertyDrawEntityOrPivotColumn measure : measures) {
+    public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {
+        for(PropertyDrawEntity measure : measures) {
             pivotMeasures.add(measure, version);
             addPivotMeasureView(measure, version);
         }
@@ -1584,7 +1578,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(richDesign !=null)
             richDesign.addPivotRow(column, version);
     }
-    private void addPivotMeasureView(PropertyDrawEntityOrPivotColumn column, Version version) {
+    private void addPivotMeasureView(PropertyDrawEntity column, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addPivotMeasure(column, version);

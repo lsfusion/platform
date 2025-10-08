@@ -54,7 +54,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
 
     public List<List<ClientPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
     public List<List<ClientPropertyDrawOrPivotColumn>> pivotRows = new ArrayList<>();
-    public List<ClientPropertyDrawOrPivotColumn> pivotMeasures = new ArrayList<>();
+    public List<ClientPropertyDraw> pivotMeasures = new ArrayList<>();
 
     public transient Set<ClientGroupObject> inputGroupObjects;
 

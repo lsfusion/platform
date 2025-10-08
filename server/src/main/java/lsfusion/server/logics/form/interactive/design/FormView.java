@@ -174,8 +174,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return pivotRows.getOrderSet();
     }
 
-    protected NFOrderSet<PropertyDrawViewOrPivotColumn> pivotMeasures = NFFact.orderSet();
-    public ImOrderSet<PropertyDrawViewOrPivotColumn> getPivotMeasures() {
+    protected NFOrderSet<PropertyDrawView> pivotMeasures = NFFact.orderSet();
+    public ImOrderSet<PropertyDrawView> getPivotMeasures() {
         return pivotMeasures.getOrderSet();
     }
 
@@ -230,7 +230,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addPivotRow(pivotRow, version);
         }
 
-        for (PropertyDrawEntityOrPivotColumn pivotMeasure : entity.getNFPivotMeasuresListIt(version)) {
+        for (PropertyDrawEntity pivotMeasure : entity.getNFPivotMeasuresListIt(version)) {
             addPivotMeasure(pivotMeasure, version);
         }
 
@@ -263,8 +263,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pivotRows.add(getPropertyDrawViewList(row), version);
     }
 
-    public void addPivotMeasure(PropertyDrawEntityOrPivotColumn measure, Version version) {
-        pivotMeasures.add(measure.getPropertyDrawViewOrPivotColumn(this), version);
+    public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
+        pivotMeasures.add(get(measure), version);
     }
 
     private ImList<PropertyDrawViewOrPivotColumn> getPropertyDrawViewList(ImList<PropertyDrawEntityOrPivotColumn> propertyDrawEntityList) {

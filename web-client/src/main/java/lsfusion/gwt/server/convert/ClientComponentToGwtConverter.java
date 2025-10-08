@@ -701,7 +701,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         form.pivotColumns.addAll(convertPivotPropertiesList(clientForm.pivotColumns));
         form.pivotRows.addAll(convertPivotPropertiesList(clientForm.pivotRows));
-        for(ClientPropertyDrawOrPivotColumn property : clientForm.pivotMeasures) {
+        for(ClientPropertyDraw property : clientForm.pivotMeasures) {
             form.pivotMeasures.add(convertOrCast(property));
         }
 

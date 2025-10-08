@@ -874,7 +874,7 @@ public class ScriptingFormEntity {
     }
 
     public void addPivotOptions(List<Pair<String, PivotOptions>> pivotOptionsList, List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns,
-                                List<List<PropertyDrawEntityOrPivotColumn>> pivotRows, List<PropertyDrawEntityOrPivotColumn> pivotMeasures, Version version) {
+                                List<List<PropertyDrawEntityOrPivotColumn>> pivotRows, List<PropertyDrawEntity> pivotMeasures, Version version) {
         for(Pair<String, PivotOptions> entry : pivotOptionsList) {
             GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
             if (groupObject != null) {

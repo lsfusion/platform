@@ -1420,7 +1420,7 @@ formPivotOptionsDeclaration
 	List<Pair<String, PivotOptions>> pivotOptions = new ArrayList<>();
 	List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns = new ArrayList<>();
 	List<List<PropertyDrawEntityOrPivotColumn>> pivotRows = new ArrayList<>();
-	List<PropertyDrawEntityOrPivotColumn> pivotMeasures = new ArrayList<>();
+	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
@@ -1431,7 +1431,7 @@ formPivotOptionsDeclaration
 	    (   (options=groupObjectPivotOptions { pivotOptions.add(Pair.create($options.groupObject, $options.options)); })
         |   ('COLUMNS' column=pivotPropertyDrawList { pivotColumns.add($column.props); } (',' column=pivotPropertyDrawList { pivotColumns.add($column.props); } )*)
         |   ('ROWS' row=pivotPropertyDrawList { pivotRows.add($row.props); } (',' row=pivotPropertyDrawList { pivotRows.add($row.props); } )*)
-        |   ('MEASURES' measure=pivotFormPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=pivotFormPropertyDraw { pivotMeasures.add($measure.property); } )*)
+        |   ('MEASURES' measure=formPropertyDraw { pivotMeasures.add($measure.property); } (',' measure=formPropertyDraw { pivotMeasures.add($measure.property); } )*)
         )+
 	;
 

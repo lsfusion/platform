@@ -40,7 +40,7 @@ public class GForm implements Serializable {
 
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = new ArrayList<>();
-    public ArrayList<GPropertyDrawOrPivotColumn> pivotMeasures = new ArrayList<>();
+    public ArrayList<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
     // caches for faster form changes transformation
     private final transient NativeHashMap<Integer, GPropertyDraw> idProps = new NativeHashMap<>();
@@ -168,9 +168,9 @@ public class GForm implements Serializable {
         return result;
     }
 
-    public ArrayList<GPropertyDrawOrPivotColumn> getPivotMeasures(GGroupObject group) {
-        ArrayList<GPropertyDrawOrPivotColumn> result = new ArrayList<>();
-        for (GPropertyDrawOrPivotColumn property : pivotMeasures) {
+    public ArrayList<GPropertyDraw> getPivotMeasures(GGroupObject group) {
+        ArrayList<GPropertyDraw> result = new ArrayList<>();
+        for (GPropertyDraw property : pivotMeasures) {
             if (property.equalsGroupObject(group)) {
                 result.add(property);
             }
