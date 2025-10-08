@@ -22,11 +22,17 @@ MEASURES measureFormPropertyName1, ..., measureFormPropertyNameL
 objectGroupId pivotOptions 
 ```
 
-Каждый из `colFormPropertyListi` и `rowFormPropertyListj` может описывать либо одиночное свойство на форме, либо группу свойств на форме:
+Каждый из `colFormPropertyListi` и `rowFormPropertyListj` может описывать либо одиночное свойство, либо группу свойств:
 
 ```
-formPropertyName
-(formPropertyName1, ..., formPropertyNameX)
+formProperty
+(formProperty1, ..., formPropertyX)
+```
+
+Каждое `formProperty` описывает либо свойство на форме, либо специальное свойство на форме `(колонка)`.
+
+```
+formPropertyName | MEASURES(groupObject)
 ```
 
 Опции `pivotOptions` могут быть перечислены друг за другом в произвольном порядке. Поддерживается следующий набор опций:
@@ -46,6 +52,10 @@ settingsType
 - `formPropertyName`
 
     [Имя свойства на форме](Properties_and_actions_block.md#name). 
+
+- `MEASURES(groupObject)`
+
+  Ключевое слово `MEASURES` с идентификатором группы объектов в круглых скобках обозначает специальное свойство на форме `(колонка)`. 
 
 - `measureFormPropertyName1, ..., measureFormPropertyNameL`
 

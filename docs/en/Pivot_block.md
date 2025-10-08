@@ -22,11 +22,17 @@ MEASURES measureFormPropertyName1, ..., measureFormPropertyNameL
 objectGroupId pivotOptions 
 ```
 
-Each of `colFormPropertyListi` and `rowFormPropertyListj` can describe either a single property on a form or a group of properties on a form:
+Each of `colFormPropertyListi` and `rowFormPropertyListj` can describe either a single property or a group of properties:
 
 ```
-formPropertyName
-(formPropertyName1, ..., formPropertyNameX)
+formProperty
+(formProperty1, ..., formPropertyX)
+```
+
+Each `formProperty` describes either a property on form, or special property on form `(column)`.
+
+```
+formPropertyName | MEASURES(groupObject)
 ```
 
 The `pivotOptions` options can be listed one after another in any order. The following set of options is supported:
@@ -46,6 +52,10 @@ Pivot table settings block allows you to set the initial settings for the form's
 - `formPropertyName`
 
     [Name of the property on a form](Properties_and_actions_block.md#name). 
+
+- `MEASURES(groupObject)`
+
+  Keyword `MEASURES` with parenthesised group object id means special property on form `(column)`.
 
 - `measureFormPropertyName1, ..., measureFormPropertyNameL`
 
