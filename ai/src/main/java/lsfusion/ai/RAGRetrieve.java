@@ -8,6 +8,7 @@ import com.openai.core.JsonValue;
 import com.openai.models.FunctionDefinition;
 import com.openai.models.FunctionParameters;
 import com.openai.models.ResponseFormatJsonSchema;
+import com.openai.models.chat.completions.ChatCompletionFunctionTool;
 import com.openai.models.chat.completions.ChatCompletionTool;
 import com.openai.models.embeddings.CreateEmbeddingResponse;
 import com.openai.models.embeddings.EmbeddingCreateParams;
@@ -224,7 +225,7 @@ public class RAGRetrieve {
                         .model(EMBEDDING) // should correspond index embedding
                         .input(query)
                         .build());
-        return emb.data().get(0).embedding().stream().map(Double::floatValue).collect(Collectors.toList());
+        return new ArrayList<>(emb.data().get(0).embedding());
     }
 
     public static final String RETRIEVE_FN = "retrieve_docs";
@@ -254,8 +255,8 @@ public class RAGRetrieve {
                                 .build()
                 )
                 .build();
-        return new CustomFunction(ChatCompletionTool.builder()
+        return new CustomFunction(ChatCompletionTool.ofFunction(ChatCompletionFunctionTool.builder()
                 .function(function)
-                .build(), args -> retrieveDocs((String) args.get("query"), false));
+                .build()), args -> retrieveDocs((String) args.get("query"), false));
     }
 }

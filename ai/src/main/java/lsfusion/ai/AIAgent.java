@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 public class AIAgent {
 
-    public static final ChatModel baseModel = ChatModel.GPT_4_1_MINI;
+    public static final ChatModel baseModel = ChatModel.GPT_5;
     public static final ChatModel model = baseModel;
 
     public static final ObjectMapper M = new ObjectMapper();
@@ -31,7 +31,7 @@ public class AIAgent {
             List<ChatCompletionTool> fns = new ArrayList<>();
             for (CustomFunction cf : allFunctions) {
                 fns.add(cf.def);
-                handlers.put(cf.def.function().name(), cf.handler);
+                handlers.put(cf.def.asFunction().function().name(), cf.handler);
             }
 
             List<ChatCompletionMessageParam> history = new ArrayList<>();
@@ -59,7 +59,8 @@ public class AIAgent {
                     List<ChatCompletionMessageToolCall> toolCalls = msg.toolCalls().get();
 
                     for (ChatCompletionMessageToolCall tc : toolCalls) {
-                        ChatCompletionMessageToolCall.Function functionCall = tc.function();
+                        ChatCompletionMessageFunctionToolCall fc = tc.asFunction();
+                        ChatCompletionMessageFunctionToolCall.Function functionCall = fc.function();
                         Map<String, Object> args = M.readValue(
                                 functionCall.arguments(),
                                 new TypeReference<Map<String, Object>>() {
@@ -80,7 +81,7 @@ public class AIAgent {
                                 )
                         );
                         history.add(ChatCompletionMessageParam.ofTool(ChatCompletionToolMessageParam.builder()
-                                .toolCallId(tc.id())
+                                .toolCallId(fc.id())
                                 .content(rj)
                                 .build()));
                     }

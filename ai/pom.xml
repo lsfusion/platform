@@ -23,7 +23,7 @@
 
     <properties>
         <jackson.version>2.15.2</jackson.version>
-        <openai.version>1.6.1</openai.version>
+        <openai.version>4.2.0</openai.version>
         <pinecone.version>4.0.1</pinecone.version>
         <langchain4j.version>1.0.0</langchain4j.version>
         <assemble.finalName>lsfusion-ai-${project.version}</assemble.finalName>
