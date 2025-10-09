@@ -85,6 +85,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
     import lsfusion.server.logics.form.struct.object.ObjectEntity;
     import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+    import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
+    import lsfusion.server.logics.form.struct.property.PivotColumn;
     import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -1417,8 +1419,8 @@ orderLiteral returns [boolean descending = false]
 formPivotOptionsDeclaration
 @init {
 	List<Pair<String, PivotOptions>> pivotOptions = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotRows = new ArrayList<>();
 	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
 }
 @after {
@@ -1448,10 +1450,14 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     )*
     ;
 
-pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
-	:	prop=formPropertyDraw { props.add($prop.property); }
-	|   '(' prop=formPropertyDraw { props.add($prop.property); } (',' prop=formPropertyDraw { props.add($prop.property); } )* ')'
+pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new ArrayList<>()]
+	:	prop=pivotFormPropertyDraw { props.add($prop.property); }
+	|   '(' prop=pivotFormPropertyDraw { props.add($prop.property); } (',' prop=pivotFormPropertyDraw { props.add($prop.property); } )* ')'
 	;
+
+pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
+    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=ID { property = new PivotColumn($group.text); } ')'
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// PROPERTY STATEMENT ////////////////////////////

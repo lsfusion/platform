@@ -48,7 +48,7 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();

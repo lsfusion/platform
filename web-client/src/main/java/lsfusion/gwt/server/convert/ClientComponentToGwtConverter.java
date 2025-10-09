@@ -15,7 +15,9 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPivotColumn;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDrawOrPivotColumn;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormEventClose;
@@ -711,16 +713,21 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         return form;
     }
 
-    private ArrayList<ArrayList<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
-        ArrayList<ArrayList<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
-        for (List<ClientPropertyDraw> pivotPropertiesEntry : pivotPropertiesList) {
-            ArrayList<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
-            for(ClientPropertyDraw property : pivotPropertiesEntry) {
+    private ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> convertPivotPropertiesList(List<List<ClientPropertyDrawOrPivotColumn>> pivotPropertiesList) {
+        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> gPivotPropertiesList = new ArrayList<>();
+        for (List<ClientPropertyDrawOrPivotColumn> pivotPropertiesEntry : pivotPropertiesList) {
+            ArrayList<GPropertyDrawOrPivotColumn> gPivotPropertiesEntry = new ArrayList<>();
+            for(ClientPropertyDrawOrPivotColumn property : pivotPropertiesEntry) {
                 gPivotPropertiesEntry.add(convertOrCast(property));
             }
             gPivotPropertiesList.add(gPivotPropertiesEntry);
         }
         return gPivotPropertiesList;
+    }
+
+    @Converter(from = ClientPivotColumn.class)
+    public GPivotColumn convertAction(ClientPivotColumn pivotColumn) {
+        return new GPivotColumn(pivotColumn.groupObject);
     }
 
     @Converter(from = FormScheduler.class)

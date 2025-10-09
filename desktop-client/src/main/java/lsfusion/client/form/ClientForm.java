@@ -15,6 +15,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDrawOrPivotColumn;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.interop.form.event.FormEvent;
@@ -51,8 +52,8 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
-    public List<List<ClientPropertyDraw>> pivotColumns = new ArrayList<>();
-    public List<List<ClientPropertyDraw>> pivotRows = new ArrayList<>();
+    public List<List<ClientPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
+    public List<List<ClientPropertyDrawOrPivotColumn>> pivotRows = new ArrayList<>();
     public List<ClientPropertyDraw> pivotMeasures = new ArrayList<>();
 
     public transient Set<ClientGroupObject> inputGroupObjects;
@@ -221,8 +222,8 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         asyncExecMap = deserializeAsyncExecMap(inStream);
     }
 
-    private List<List<ClientPropertyDraw>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        List<List<ClientPropertyDraw>> properties = new ArrayList<>();
+    private List<List<ClientPropertyDrawOrPivotColumn>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        List<List<ClientPropertyDrawOrPivotColumn>> properties = new ArrayList<>();
         int size = inStream.readInt();
         for(int i = 0; i < size; i++) {
             properties.add(pool.deserializeList(inStream));
