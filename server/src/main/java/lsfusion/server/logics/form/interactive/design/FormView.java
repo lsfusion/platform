@@ -1,7 +1,9 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -34,6 +36,7 @@ import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.object.ObjectView;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -42,7 +45,7 @@ import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -161,13 +164,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilterGroups = synchronizedMap(new HashMap<>());
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilterGroups.get(filterGroup); }
 
-    protected NFOrderSet<ImList<PropertyDrawView>> pivotColumns = NFFact.orderSet();
-    public ImOrderSet<ImList<PropertyDrawView>> getPivotColumns() {
+    protected NFOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotColumns = NFFact.orderSet();
+    public ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> getPivotColumns() {
         return pivotColumns.getOrderSet();
     }
 
-    protected NFOrderSet<ImList<PropertyDrawView>> pivotRows = NFFact.orderSet();
-    public ImOrderSet<ImList<PropertyDrawView>> getPivotRows() {
+    protected NFOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotRows = NFFact.orderSet();
+    public ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> getPivotRows() {
         return pivotRows.getOrderSet();
     }
 
@@ -219,11 +222,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addFilter(propertyDrawEntity, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
+        for (ImList<PropertyDrawEntityOrPivotColumn> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
             addPivotColumn(pivotColumn, version);
         }
 
-        for (ImList<PropertyDrawEntity> pivotRow : entity.getNFPivotRowsListIt(version)) {
+        for (ImList<PropertyDrawEntityOrPivotColumn> pivotRow : entity.getNFPivotRowsListIt(version)) {
             addPivotRow(pivotRow, version);
         }
 
@@ -252,11 +255,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         defaultOrders.add(get(property), descending, version);
     }
 
-    public void addPivotColumn(ImList<PropertyDrawEntity> column, Version version) {
+    public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
         pivotColumns.add(getPropertyDrawViewList(column), version);
     }
 
-    public void addPivotRow(ImList<PropertyDrawEntity> row, Version version) {
+    public void addPivotRow(ImList<PropertyDrawEntityOrPivotColumn> row, Version version) {
         pivotRows.add(getPropertyDrawViewList(row), version);
     }
 
@@ -264,8 +267,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pivotMeasures.add(get(measure), version);
     }
 
-    private ImList<PropertyDrawView> getPropertyDrawViewList(ImList<PropertyDrawEntity> propertyDrawEntityList) {
-        return propertyDrawEntityList.mapListValues((PropertyDrawEntity value) -> get(value));
+    private ImList<PropertyDrawViewOrPivotColumn> getPropertyDrawViewList(ImList<PropertyDrawEntityOrPivotColumn> propertyDrawEntityList) {
+        return propertyDrawEntityList.mapListValues(value -> value.getPropertyDrawViewOrPivotColumn(this));
     }
 
     private void addPropertyDrawView(PropertyDrawView property) {
@@ -702,8 +705,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             outStream.writeBoolean(defaultOrders.getValue(i));
         }
 
-        serializePivot(pool, outStream, getPivotColumns());
-        serializePivot(pool, outStream, getPivotRows());
+        ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotColumns = getPivotColumns();
+        ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotRows = getPivotRows();
+        for(GroupObjectView groupObject : getGroupObjectsIt()) {
+            if(!hasPivotColumn(pivotColumns, pivotRows, groupObject.getSID())) {
+                pivotColumns = SetFact.<ImList<PropertyDrawViewOrPivotColumn>>singletonOrder(ListFact.singleton(new PivotColumn(groupObject.getSID()))).addOrderExcl(pivotColumns);
+            }
+        }
+
+        serializePivot(pool, outStream, pivotColumns);
+        serializePivot(pool, outStream, pivotRows);
         pool.serializeCollection(outStream, getPivotMeasures());
 
         pool.writeString(outStream, canonicalName);
@@ -712,6 +723,22 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
         serializeAsyncExecMap(outStream, entity.getAsyncExecMap(pool.context), pool.context);
+    }
+
+    private boolean hasPivotColumn(ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotColumns, ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotRows, String groupObject) {
+        for(ImList<PropertyDrawViewOrPivotColumn> propertyList : pivotColumns) {
+            for (PropertyDrawViewOrPivotColumn property : propertyList) {
+                if(property instanceof PivotColumn && ((PivotColumn) property).groupObject.equals(groupObject))
+                    return true;
+            }
+        }
+        for(ImList<PropertyDrawViewOrPivotColumn> propertyList : pivotRows) {
+            for (PropertyDrawViewOrPivotColumn property : propertyList) {
+                if(property instanceof PivotColumn && ((PivotColumn) property).groupObject.equals(groupObject))
+                    return true;
+            }
+        }
+        return false;
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -740,10 +767,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         fillComponentMaps();
     }
 
-    private void serializePivot(ServerSerializationPool pool, DataOutputStream outStream, ImOrderSet<ImList<PropertyDrawView>> list) throws IOException {
+    private void serializePivot(ServerSerializationPool pool, DataOutputStream outStream, ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> list) throws IOException {
         int pivotColumnsSize = list.size();
         outStream.writeInt(pivotColumnsSize);
-        for(ImList<PropertyDrawView> pivotColumn : list) {
+        for(ImList<PropertyDrawViewOrPivotColumn> pivotColumn : list) {
             pool.serializeCollection(outStream, pivotColumn);
         }
     }

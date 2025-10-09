@@ -63,7 +63,7 @@ import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
-public class PropertyDrawView extends BaseComponentView {
+public class PropertyDrawView extends BaseComponentView implements PropertyDrawViewOrPivotColumn {
 
     public PropertyDrawEntity<?> entity;
 

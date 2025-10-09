@@ -507,11 +507,11 @@ public class GFormController implements EditManager {
         return form.getDefaultOrders(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns(GGroupObject groupObject) {
         return form.getPivotColumns(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows(GGroupObject groupObject) {
         return form.getPivotRows(groupObject);
     }
 
