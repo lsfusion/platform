@@ -27,11 +27,12 @@ public class AppFileImage implements BaseImage, AppBaseImage {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof AppFileImage && path.equals(((AppFileImage) o).path);
+        return this == o || o instanceof AppFileImage && GwtClientUtils.nullEquals(path, ((AppFileImage) o).path)
+                && GwtClientUtils.nullEquals(extension, ((AppFileImage) o).extension);
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return GwtClientUtils.nullHash(path) * 31 + GwtClientUtils.nullHash(extension);
     }
 }

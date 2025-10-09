@@ -59,11 +59,12 @@ public class AppStaticImage extends BaseStaticImage implements AppBaseImage {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof AppStaticImage && GwtClientUtils.nullEquals(images, ((AppStaticImage) o).images);
+        return this == o || o instanceof AppStaticImage && GwtClientUtils.nullEquals(images, ((AppStaticImage) o).images)
+                && GwtClientUtils.nullEquals(fontClasses, ((AppStaticImage) o).fontClasses);
     }
 
     @Override
     public int hashCode() {
-        return GwtClientUtils.nullHash(images);
+        return GwtClientUtils.nullHash(images) * 31 + GwtClientUtils.nullHash(fontClasses);
     }
 }
