@@ -1302,15 +1302,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap();
         mProps.exclAdd("highlight", value.isEmpty() || !highlight ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
 
-        for(int i = 0, size = orderExprs.size(); i < size; i++) {
-            mProps.exclAdd("order" + i, orderExprs.getKey(i));
-            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
-        }
-
         mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
         mOrders.exclAdd("rank", true);
         mProps.exclAdd("count", countExpr);
         mOrders.exclAdd("count", true);
+
+        for(int i = 0, size = orderExprs.size(); i < size; i++) {
+            mProps.exclAdd("order" + i, orderExprs.getKey(i));
+            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
+        }
 
         if(readObjects)
             mProps.exclAdd("raw", listExpr);
