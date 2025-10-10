@@ -133,6 +133,13 @@ portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
+//todo localize
+useDefaultAuthentication = DATA BOOLEAN() LAZY;
+
+useServiceUser = DATA BOOLEAN();
+serviceUser = DATA STRING();
+serviceUserPassword = DATA STRING() ECHO;
+
 // OAuth and Web-client authentication
 CLASS OAuth2;
 id 'Id' = DATA STRING (OAuth2);
@@ -537,7 +544,7 @@ FORM customUsers '{authentication.users}'
     PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart, defaultUserDateFormat, defaultUserTimeFormat
     PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart, serverDateFormat, serverTimeFormat
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, useDefaultAuthentication, useServiceUser, serviceUser , serviceUserPassword
     
     OBJECTS auth = OAuth2 
     PROPERTIES(auth)  NEW, DELETE,
@@ -588,10 +595,19 @@ DESIGN customUsers {
             NEW LDAP {
                 caption = 'LDAP';
                 MOVE PROPERTY(useLDAP());
+                MOVE PROPERTY(useDefaultAuthentication()) {
+                    tooltip = 'If the LDAP server is unavailable, allow default authentication';
+                };
                 MOVE PROPERTY(serverLDAP());
                 MOVE PROPERTY(portLDAP());
                 MOVE PROPERTY(baseDNLDAP());
                 MOVE PROPERTY(userDNSuffixLDAP());
+                MOVE PROPERTY(useServiceUser());
+                MOVE PROPERTY(serviceUser()) {
+                    tooltip = 'String that looks like "CN=LDAP Reader,OU=ServiceAccounts,dc=foo,dc=bar" where "LDAP Reader" is the user name.
+                                The exact meaning of this string can be seen in AD, in the user properties, in the Attribute Editor tab, with the attribute name distinguishedName';
+                };
+                MOVE PROPERTY(serviceUserPassword());
             } 
             NEW OAUTH2 {
                 caption = 'OAUTH2';
