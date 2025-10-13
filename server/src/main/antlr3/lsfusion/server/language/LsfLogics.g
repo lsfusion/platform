@@ -4417,6 +4417,7 @@ changeOrExecActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	LPWithParams condition = null;
 	boolean isChange = false;
     DebugInfo.DebugPoint point = getCurrentDebugPoint();
+    boolean allServers = false;
 }
 @after {
 	if (inMainParseState()) {
@@ -4425,12 +4426,12 @@ changeOrExecActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
         else {
             if(!dynamic)
                 self.checkNoExtendContext(context.size(), newContext);
-			$action = self.addScriptedJoinAProp($propUsage.propUsage, $params.props, context);
+			$action = self.addScriptedJoinAProp($propUsage.propUsage, $params.props, context, allServers);
 			$isKeepContext = true;
         }
 	}
 }
-	:	('CHANGE' | 'EXEC')?
+	:	('CHANGE' | ('EXEC' ('ALL' { allServers = true; })?))?
 		propUsage=propertyUsage
 		'(' params=propertyExpressionList[newContext, true] ')'
 		('<-' { isChange = true; }

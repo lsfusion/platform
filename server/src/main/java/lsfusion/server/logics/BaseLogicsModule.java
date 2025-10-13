@@ -1400,4 +1400,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
         return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
     }
+    
+    public LP<?> getCurrentAppServerProperty() {
+        return BL.serviceLM.currentAppServer;
+    } 
+    
+    public LP<?> getAppServerConnectionStringProperty() {
+        return BL.serviceLM.appServerConnectionString;
+    }
 }

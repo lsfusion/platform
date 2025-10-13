@@ -2492,15 +2492,23 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(pUsage, properties, params, false);
+    }
+
+    public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params, boolean allServers) throws ScriptingErrorLog.SemanticErrorException {
         LA mainAction = findLAByPropertyUsage(pUsage, properties, params);
-        return addScriptedJoinAProp(mainAction, properties);
+        return addScriptedJoinAProp(mainAction, properties, allServers);
     }
 
     public LAWithParams addScriptedJoinAProp(LA mainAction, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(mainAction, properties, false);
+    }
+
+    public LAWithParams addScriptedJoinAProp(LA mainAction, List<LPWithParams> properties, boolean allServers) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkParamCount(mainAction, properties.size());
 
         List<Object> resultParams = getParamsPlainList(properties);
-        LA action = addJoinAProp(null, LocalizedString.NONAME, mainAction, resultParams.toArray());
+        LA action = addJoinAProp(null, LocalizedString.NONAME, mainAction, allServers, resultParams.toArray());
         return new LAWithParams(action, mergeAllParams(properties));
     }
 

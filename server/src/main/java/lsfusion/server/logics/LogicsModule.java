@@ -143,6 +143,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
+import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
@@ -1032,13 +1033,27 @@ public abstract class LogicsModule {
     }
 
     protected LA addJoinAProp(Group group, LocalizedString caption, LA action, Object... params) {
-        return addJoinAProp(group, caption, null, action, params);
+        return addJoinAProp(group, caption, action, false, params);
+    }
+
+    protected LA addJoinAProp(Group group, LocalizedString caption, LA action, boolean allServers, Object... params) {
+        return addJoinAProp(group, caption, null, action, allServers, params);
     }
 
     protected LA addJoinAProp(Group group, LocalizedString caption, ValueClass[] classes, LA action, Object... params) {
+        return addJoinAProp(group, caption, classes, action, false, params);
+    }
+
+    protected LA addJoinAProp(Group group, LocalizedString caption, ValueClass[] classes, LA action, boolean allServers, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(listInterfaces, params);
-        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements))));
+        
+        LA allServersExternalAction = null;
+        if (allServers) {
+            ImList<Type> types = listInterfaces.mapListValues(propertyInterface -> propertyInterface.getChangeExpr().getSelfType());
+            allServersExternalAction = new LA(new ExternalLSFAction(types, ListFact.EMPTY(), false, false));
+        }
+        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements), allServersExternalAction)));
     }
 
     // ------------------------ APPLY / CANCEL ----------------- //

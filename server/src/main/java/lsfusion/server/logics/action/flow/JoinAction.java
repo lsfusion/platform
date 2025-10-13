@@ -1,12 +1,15 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
@@ -22,14 +25,19 @@ import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     public final ActionImplement<T, PropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
+    private LA allServersExternalAction;
 
     public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement) {
+        this(caption, listInterfaces, implement, null);
+    }
+
+    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement, LA allServersExternalAction) {
         super(caption, listInterfaces.size());
+        this.allServersExternalAction = allServersExternalAction;
 
         action = PropertyFact.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
         assert checkProps(action.mapping.values());
@@ -42,6 +50,24 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         for (int i=0,size=action.mapping.size();i<size;i++)
             mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context));
         action.action.execute(context.override(mvReadValues.immutableValue(), action.mapping));
+        
+        if (allServersExternalAction != null) {
+            String actionCanonicalName = action.action.getCanonicalName();
+
+            ImMap<ImList<Object>, Object> connectionStrings = getBaseLM().getAppServerConnectionStringProperty().readAll(context);
+            ImList<Object> currentAppServer = ListFact.singleton(getBaseLM().getCurrentAppServerProperty().read(context));
+            for (ImList<Object> objects : connectionStrings.keyIt()) {
+                String connectionString = (String) connectionStrings.get(objects);
+                if (!objects.equals(currentAppServer)) {
+                    ImList<ObjectValue> args = ListFact.EMPTY();
+                    args = args.addList(new DataObject(connectionString))
+                            .addList(new DataObject(actionCanonicalName))
+                            .addList(mvReadValues.immutableValue().values().toList());
+                    allServersExternalAction.execute(context, args.toArray(new ObjectValue[args.size()]));
+                }
+            }
+        }
+        
         return FlowResult.FINISH;
     }
 
