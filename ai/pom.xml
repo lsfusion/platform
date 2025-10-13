@@ -37,6 +37,12 @@
             <version>${openai.version}</version>
         </dependency> <!-- ([mvnrepository.com](https://mvnrepository.com/artifact/com.openai/openai-java?utm_source=chatgpt.com)) -->
 
+        <dependency>
+            <groupId>com.knuddels</groupId>
+            <artifactId>jtokkit</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
         <!-- Pinecone Java Client -->
         <dependency>
             <groupId>io.pinecone</groupId>
