@@ -7,9 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -19,10 +17,8 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ListAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -30,7 +26,6 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -87,10 +82,6 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     }
     public <U extends PropertyInterface> ActionMapImplement<T, U> getImplement(ImOrderSet<U> mapping) {
         return new ActionMapImplement<>(action, getRevMap(mapping));
-    }
-
-    public <P extends PropertyInterface> void addToContextMenuFor(LAP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
-        mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), this, contextMenuCaption);
     }
 
     public <P extends PropertyInterface> void setAsEventActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {

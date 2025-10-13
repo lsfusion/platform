@@ -862,9 +862,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $et.before, $prop.action); }
-		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
-		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
+		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($prop.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
@@ -2928,15 +2926,12 @@ semiPropertyOption[PropertySettings ps]
 
 semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
     :	semiActionOrPropertyOption[as]
-	|	shortcutSetting [as, caption != null ? caption : LocalizedString.create(actionName)]
 	|	asonEventActionSetting [as]
 	|	confirmSetting [as]
     ;
 
 nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
     :	onEditEventSetting [ps, context]
-    |	onContextMenuEventSetting [ps, context]
-    |	onKeyPressEventSetting [ps, context]
     ;
 
 nonSemiPropertyOption[PropertySettings ps, List<TypedParameter> context]
@@ -3114,17 +3109,8 @@ lazySetting [PropertySettings ps]
 	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
 	;
 
-shortcutSetting [ActionSettings as, LocalizedString caption]
-@after {
-	if (inMainParseState()) {
-		self.addToContextMenuFor(as, $c.val != null ? $c.val : caption, $usage.propUsage);
-	}
-}
-	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? usage = actionOrPropertyUsage
-	;
-
 asonEventActionSetting [ActionSettings as]
-	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.eventActionSID = $et.type; as.eventActionBefore = $et.before; as.eventActionMainPropertyUsage = $usage.propUsage; }
+	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.addActionEditEvent($usage.propUsage, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 	;
 
 confirmSetting [ActionSettings as]
@@ -3140,24 +3126,17 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 	;
 
 onEditEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
-	:	'ON' et=formEventType { ps.editEventActionType = $et.type; ps.editEventBefore = $et.before; }
-		aDB=listTopContextDependentActionDefinitionBody[context, false, false]  { ps.editEventAction = $aDB.action; }
+	:	'ON' et=formEventType aDB=listTopContextDependentActionDefinitionBody[context, false, false]  {
+		    ps.addEditEvent($aDB.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 	;
 
-formEventType returns [String type, Boolean before]
+formEventType returns [String type, Boolean before, LocalizedString contextMenuCaption, String keyPress]
 	:	'CHANGE' { $type = ServerResponse.CHANGE; } ('BEFORE' { $before = true; } | 'AFTER' { $before = false; })?
 	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
-	;
-
-onContextMenuEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
-	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID { ps.contextMenuEventCaption = $c.val; })?
-		action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.contextMenuEventAction = $action.action; }
-	;
-
-onKeyPressEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
-	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.keyPressKey = $key.val; ps.keyPressAction = $action.action; }
+	|   'CONTEXTMENU' { $type = ServerResponse.CONTEXTMENU; } (c=localizedStringLiteralNoID { $contextMenuCaption = $c.val; })?
+	|   'KEYPRESS' { $type = ServerResponse.KEYPRESS; } key=stringLiteral { $keyPress = $key.val; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
