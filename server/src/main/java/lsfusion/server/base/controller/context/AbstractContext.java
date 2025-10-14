@@ -49,16 +49,16 @@ public abstract class AbstractContext implements Context {
     public static class LogMessage {
         public final long time;
         public final String message;
-        public final boolean failed;
+        public final MessageClientType type;
         public final String lsfStackTrace;
 
-        public LogMessage(String message, boolean failed) {
-            this(message, failed, null);
+        public LogMessage(String message, MessageClientType type) {
+            this(message, type, null);
         }
 
-        public LogMessage(String message, boolean failed, String lsfStackTrace) {
+        public LogMessage(String message, MessageClientType type, String lsfStackTrace) {
             this.message = message;
-            this.failed = failed;
+            this.type = type;
             this.lsfStackTrace = lsfStackTrace;
             this.time = System.currentTimeMillis();
         }
@@ -68,8 +68,8 @@ public abstract class AbstractContext implements Context {
         private final List<LogMessage> messages = new ArrayList<>();
         private final Stack<Integer> startIndexes = new Stack<>();
         
-        public void add(String message, boolean failed) {
-            messages.add(new LogMessage(message, failed));
+        public void add(String message, MessageClientType type) {
+            messages.add(new LogMessage(message, type));
         }
         
         public void addAll(ImList<LogMessage> addMessages) {
@@ -179,7 +179,7 @@ public abstract class AbstractContext implements Context {
         if(message != null) {
             MessageLogger messageLogger = logMessage.get();
             if(messageLogger != null)
-                messageLogger.add(message, action instanceof MessageClientAction && ((MessageClientAction) action).type == MessageClientType.ERROR);
+                messageLogger.add(message, action instanceof MessageClientAction ? ((MessageClientAction) action).type : null);
             return message;
         }
         return null;
