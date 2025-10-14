@@ -447,6 +447,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public String tooltip;
     public String valueTooltip;
 
+    public String eventID;
     public Boolean changeOnSingleClick;
 
     public boolean hide;

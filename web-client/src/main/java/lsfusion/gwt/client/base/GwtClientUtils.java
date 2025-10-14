@@ -2027,18 +2027,39 @@ public class GwtClientUtils {
         $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
     }-*/;
 
-    public static native void checkGroupSeparatorEvent(Element input, com.google.gwt.user.client.Event e)/*-{
-        if (e.type === 'keypress' && e.keyCode === 29) {
-            var start = input.selectionStart;
-            var end = input.selectionEnd;
+    public static native void addGroupSeparatorEventListener(Element input)/*-{
+        input.sequence = [];
+        var targets = [['F8'], ['Control', ']'], ['Alt', '0', '0', '2', '9']];
+        input.addEventListener('keydown', function (e) {
+            input.sequence.push(e.key);
+            if (input.sequence.length > 5) //max target length
+                input.sequence.shift();
 
-            // paste U+001D (Group Separator)
-            var val = input.value;
-            input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+            for (var i = 0; i < targets.length; i++) {
+                var target = targets[i];
+                if(compareFromEnd(input.sequence, target)) {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    // paste U+001D (Group Separator)
+                    var val = input.value;
+                    input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+                    // move cursor
+                    input.selectionStart = input.selectionEnd = start + 1;
+                }
+            }
 
-            // move cursor
-            input.selectionStart = input.selectionEnd = start + 1;
-        }
+            function compareFromEnd(arr1, arr2) {
+                var len1 = arr1.length;
+                var len2 = arr2.length;
+                if (len1 < len2) return false;
+                for (var i = 0; i < len2; i++) {
+                    if (arr1[len1 - len2 + i] !== arr2[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
     }-*/;
 
 }
