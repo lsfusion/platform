@@ -55,11 +55,12 @@ EXTID extID
 
         A [form event](Form_events.md) type. It is specified by one of the keywords:
 
-        - `CHANGE` - occurs when the user tries to change the value of the specified property
-        - `CHANGEWYS` - occurs when the user tries to change the value of the specified property using a special input mechanism. You can read more in the description of the [form events](Form_events.md) 
-        - `GROUPCHANGE` - occurs when the user tries to change the property value for all objects in the table (group editing)
-        - `EDIT` - occurs when the user tries to edit the object that is the value of the specified property
+        - `CHANGE` - occurs when the user tries to change the value of the specified property.
+        - `CHANGEWYS` - occurs when the user tries to change the value of the specified property using a special input mechanism. You can read more in the description of the [form events](Form_events.md).
+        - `GROUPCHANGE` - occurs when the user tries to change the property value for all objects in the table (group editing).
+        - `EDIT` - occurs when the user tries to edit the object that is the value of the specified property.
         - `CONTEXTMENU [caption]` - the user has selected the specified item in the property context menu on the form. If necessary, you can also define the caption of this menu item ([string literal](Literals.md#strliteral)). If it is not specified, then, by default, it will be the same as the action caption.
+        - `KEYPRESS key` - the user has pressed the specified `key` ([string literal](Literals.md#strliteral)) on keyboard.
 
     - `actionOperator`
 
