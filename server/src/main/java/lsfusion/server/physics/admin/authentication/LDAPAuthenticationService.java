@@ -5,10 +5,10 @@ import lsfusion.base.BaseUtils;
 import javax.naming.*;
 import javax.naming.directory.*;
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.*;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import java.security.Principal;
@@ -66,38 +66,98 @@ public class LDAPAuthenticationService implements LoginModule {
         }
     }
 
+    private static String getRealm(String dn) {
+        if (dn == null)
+            return null;
+
+        StringBuilder realm = new StringBuilder();
+        for (String p : dn.split(",")) {
+            p = p.trim();
+            if (p.toUpperCase().startsWith("DC=")) {
+                if (realm.length() > 0)
+                    realm.append('.');
+                realm.append(p.substring(3));
+            }
+        }
+        return realm.toString().toUpperCase(); // Kerberos needs UpperCase
+    }
+
+    public static boolean checkKerberosCredentials(String username, String password, String server, String realm) {
+        try {
+            //may be need to set these properties only once
+            System.setProperty("java.security.krb5.realm", realm);
+            System.setProperty("java.security.krb5.kdc", server);
+            System.setProperty("java.security.auth.login.config", "");
+
+            Configuration jaasConfig = new Configuration() {
+                @Override
+                public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                    Map<String, String> options = new HashMap<>();
+                    options.put("useTicketCache", "false");
+                    options.put("doNotPrompt", "false");
+                    options.put("storeKey", "false");
+                    options.put("useKeyTab", "false");
+                    options.put("refreshKrb5Config", "true");
+                    options.put("isInitiator", "true");
+                    options.put("principal", username);
+
+                    return new AppConfigurationEntry[] {
+                            new AppConfigurationEntry(
+                                    "com.sun.security.auth.module.Krb5LoginModule",
+                                    AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                    options)
+                    };
+                }
+            };
+
+            CallbackHandler callbackHandler = callbacks -> {
+                for (Callback cb : callbacks) {
+                    if (cb instanceof NameCallback)
+                        ((NameCallback) cb).setName(username);
+                    else if (cb instanceof PasswordCallback)
+                        ((PasswordCallback) cb).setPassword(password.toCharArray());
+                }
+            };
+
+            new LoginContext("KerberosLogin", null, callbackHandler, jaasConfig).login();
+            return true;
+        } catch (LoginException e) {
+            return false;
+        }
+    }
+
     @Override
     public boolean login() throws LoginException {
-        NameCallback nameCb = new NameCallback("Username: ");
-        PasswordCallback passCb = new PasswordCallback("Password: ", false);
         try {
+            NameCallback nameCb = new NameCallback("Username: ");
+            PasswordCallback passCb = new PasswordCallback("Password: ", false);
             callbackHandler.handle(new Callback[]{nameCb, passCb});
-        } catch (Exception e) {
-            throw new LoginException("Error in callback: " + e.getMessage());
-        }
 
-        try {
             String baseDN = getOptionAsString("baseDN", null);
             String principal = nameCb.getName() + getOptionAsString("userDNSuffix", "");
+            String password = new String(passCb.getPassword());
+            String server = getOptionAsString("server", "localhost");
+            String providerURL = "ldap://" + server + ":" + Integer.parseInt(getOptionAsString("port", "389"));
 
-            if ((boolean) options.get("useServiceUser")) {
-                DirContext serviceCtx = new InitialDirContext(getEnv(getOptionAsString("serviceUser", null),
-                        getOptionAsString("serviceUserPassword", null)));
-                SearchControls controls = new SearchControls();
-                controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                NamingEnumeration<SearchResult> results = serviceCtx.search(baseDN, "(sAMAccountName=" + nameCb.getName() + ")", controls);
-
-                if (!results.hasMore())
-                    throw new LoginException(); // user not found
-
-                SearchResult result = results.next();
-                String userDN = result.getNameInNamespace();
-
-                if (userDN != null)
-                    readAttributes(new InitialDirContext(getEnv(userDN, new String(passCb.getPassword()))), userDN, principal);
-            } else {
-                if (baseDN != null)
-                    readAttributes(new InitialDirContext(getEnv(principal, new String(passCb.getPassword()))), baseDN, principal);
+            InitialDirContext authContext = null;
+            try {
+                if ((boolean) options.get("useServiceUser")) {
+                    if (checkKerberosCredentials(principal, password, server, getRealm(baseDN))) {
+                        authContext = new InitialDirContext(getEnv(getOptionAsString("serviceUser", null),
+                                getOptionAsString("serviceUserPassword", null), providerURL));
+                        readAttributes(authContext, baseDN, principal);
+                    } else {
+                        throw new LoginException(); // user not found
+                    }
+                } else {
+                    if (baseDN != null) {
+                        authContext = new InitialDirContext(getEnv(principal, password, providerURL));
+                        readAttributes(authContext, baseDN, principal);
+                    }
+                }
+            } finally {
+                if (authContext != null)
+                    authContext.close();
             }
 
             success = true;
@@ -109,13 +169,10 @@ public class LDAPAuthenticationService implements LoginModule {
         }
     }
 
-    private Hashtable<String, String> getEnv(String principal, String password) {
-        String server = getOptionAsString("server", "localhost");
-        int port = Integer.parseInt(getOptionAsString("port", "389"));
-
+    private Hashtable<String, String> getEnv(String principal, String password, String providerURL) {
         Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, "ldap://" + server + ":" + port);
+        env.put(Context.PROVIDER_URL, providerURL);
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.SECURITY_PRINCIPAL, principal);
         env.put(Context.SECURITY_CREDENTIALS, password);
@@ -124,14 +181,13 @@ public class LDAPAuthenticationService implements LoginModule {
     }
 
     private void readAttributes(DirContext authContext, String DN, String principal) throws NamingException {
-        List<String> groupNames = new ArrayList<>();
-        SearchControls controls = new SearchControls();
-        controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-        NamingEnumeration<SearchResult> personResults =
-                authContext.search(DN, "(userPrincipalName=" + principal + ")", controls);
-
+        NamingEnumeration<SearchResult> personResults = null;
         try {
+            List<String> groupNames = new ArrayList<>();
+            SearchControls controls = new SearchControls();
+            controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            personResults =
+                    authContext.search(DN, "(userPrincipalName=" + principal + ")", controls);
             while (personResults.hasMore()) {
                 SearchResult searchResult = personResults.next();
 
@@ -174,6 +230,9 @@ public class LDAPAuthenticationService implements LoginModule {
             }
         } catch (PartialResultException e) {
             //do nothing. not critical for AD
+        } finally {
+            if (personResults != null)
+                personResults.close();
         }
     }
 
@@ -193,6 +252,8 @@ public class LDAPAuthenticationService implements LoginModule {
 
     @Override
     public boolean abort() {
+        principals.clear();
+        success = false;
         return false;
     }
 

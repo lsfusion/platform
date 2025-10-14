@@ -352,7 +352,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                                 Map<String, Object> opts = new HashMap<>();
                                 opts.put("server", server);
                                 opts.put("port", port);
-                                opts.put("userDNSuffix", userDNSuffix);
+                                opts.put("userDNSuffix", userDNSuffix.toUpperCase());
                                 opts.put("baseDN", baseDN);
                                 opts.put("useServiceUser", useServiceUser);
                                 opts.put("serviceUser", serviceUser);
