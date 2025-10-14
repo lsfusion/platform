@@ -193,8 +193,7 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isInputKeyEvent(Event event, boolean isNavigateInput, boolean isMultiLine) {
         return isCharModifyKeyEvent(event, null) || isMobileKeyEvent(event) ||
-                (isNavigateInput && (isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine))) ||
-                isPasteFromClipboardEvent(event) || isGroupSeparatorEvent(event);
+                (isNavigateInput && (isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine))) || isPasteFromClipboardEvent(event);
     }
 
     //https://stackoverflow.com/questions/65453381/android-keyboard-keypress-not-returning-anything-keydown-returning-229
@@ -294,11 +293,6 @@ public class GKeyStroke implements Serializable {
 //                (event.getKeyCode() == KEY_INSERT && event.getShiftKey())))
 //                || event.getTypeInt() == Event.ONPASTE;
         return event.getTypeInt() == Event.ONPASTE;
-    }
-
-    //will be processed in GwtClientUtils.checkGroupSeparatorEvent
-    public static boolean isGroupSeparatorEvent(Event event) {
-        return KEYPRESS.equals(event.getType()) && event.getKeyCode() == 29;
     }
 
     public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {

@@ -456,6 +456,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.tooltip = clientPropertyDraw.tooltip;
         propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
 
+        propertyDraw.eventID = clientPropertyDraw.eventID;
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;

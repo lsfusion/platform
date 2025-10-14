@@ -29,6 +29,7 @@ CHARWIDTH width [FLEX | NOFLEX]
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
+EVENTID eventId
 LAZY [WEAK | STRONG]
 imageSetting
 ```
@@ -281,6 +282,14 @@ imageSetting
     - `compare`
 
         Тип фильтра по умолчанию. [Строковый литерал](Literals.md#strliteral). Может принимать следующие значения: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. По умолчанию принимает значение `=` для всех типов данных кроме строковых регистронезависимых, для которых принимает значение `CONTAINS`. При включенной настройке `System.defaultCompareForStringContains` по умолчанию принимает значение `CONTAINS` для всех строковых данных независимо от регистрозависимости. Может быть переопределено в инструкции `DESIGN`.
+
+- `EVENTID eventId`
+
+  Указание для свойства специального режима обработки ввода. 
+  	
+    - `eventId`
+        
+        Строковый литерал. На данный момент поддерживается только значение `SCANNER`. Включает специальный режим обработки нажатий клавиш для выявления ввода GS (group separator). 
 
 - `LAZY [WEAK | STRONG]`
 

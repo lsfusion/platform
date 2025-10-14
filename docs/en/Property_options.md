@@ -29,6 +29,7 @@ CHARWIDTH width [FLEX | NOFLEX]
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
+EVENTID eventId
 LAZY [WEAK | STRONG]
 imageSetting
 ```
@@ -252,7 +253,7 @@ imageSetting
 
     - `key`
 
-    [String literal](Literals.md#strliteral)describing a mouse key combination. Syntax:
+    [String literal](Literals.md#strliteral), describing a mouse key combination. Syntax:
         ```
         keyStroke [;(modeKey=modeValue;)*]
         ```
@@ -278,6 +279,14 @@ imageSetting
     - `compare`
 
         Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
+
+- `EVENTID eventId`
+
+    Specifies special input mode for the property.
+  
+    - `eventId`
+        
+        String literal. Now only `SCANNER` value is supported. Enables special keydown handling mode to detect GS (group separator) input.
 
 - `LAZY [WEAK | STRONG]`
 
