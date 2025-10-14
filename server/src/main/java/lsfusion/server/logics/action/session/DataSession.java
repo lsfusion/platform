@@ -23,6 +23,7 @@ import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.stack.*;
@@ -1631,7 +1632,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(AbstractContext.LogMessage message : messages) {
             if (logBuilder.length() > 0) 
                 logBuilder.append('\n');
-            if(addFailed && message.failed)
+            if(addFailed && message.type == MessageClientType.ERROR)
                 logBuilder.append("(failed) ");
             logBuilder.append(message.message);
         }

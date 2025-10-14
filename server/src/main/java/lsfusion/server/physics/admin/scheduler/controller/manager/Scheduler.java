@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.scheduler.controller.manager;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -34,7 +34,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -499,7 +498,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
                 if(throwable != null) {
                     ThrowableWithStack throwableWithStack = new ThrowableWithStack(throwable);
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), true, throwableWithStack.getLsfStack()));
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
                 }
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
@@ -588,10 +587,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             String lsfStack = logMessage.lsfStackTrace;
             if(lsfStack != null)
                 BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
-            if(logMessage.failed)
+            if(failed(logMessage.type))
                 BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
             BL.schedulerLM.dateScheduledClientTaskLog.change(sqlTimestampToLocalDateTime(new Timestamp(logMessage.time)), session, clientTaskLog);
         }
+    }
+
+    private boolean failed(MessageClientType type) {
+        return type == MessageClientType.ERROR || type == MessageClientType.WARN;
     }
 
     private class ScheduledTaskDetail {
