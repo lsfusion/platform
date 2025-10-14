@@ -1,4 +1,4 @@
-function gantt() {
+function frappeGantt() {
     return {
         render: function (element) {
             // element.style.setProperty("min-height", "0px");
