@@ -270,6 +270,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 LA LA = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
                 if(LA != null)
                     propertySIDMap.put(orderProperty, new ScheduledTaskDetail(LA, script, ignoreExceptions, timeout, params));
+            } else {
+                schedulerLogger.warn("Ignored empty scheduled task detail for " + nameScheduledTask);
             }
         }
         return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo,
