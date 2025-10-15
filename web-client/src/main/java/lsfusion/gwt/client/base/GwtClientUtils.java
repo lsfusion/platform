@@ -2029,10 +2029,20 @@ public class GwtClientUtils {
 
     public static native void addGroupSeparatorEventListener(Element input)/*-{
         input.sequence = [];
-        var targets = [['F8'], ['Control', ']'], ['Alt', '0', '2', '9'], ['Alt', '0', '0', '2', '9']];
+        var targets = [['F8'], ['Control', ']'], ['AltDown', '0', '2', '9', 'AltUp'], ['AltDown', '0', '0', '2', '9', 'AltUp']];
         input.addEventListener('keydown', function (e) {
-            input.sequence.push(e.key);
-            if (input.sequence.length > 5) //max target length
+            input.sequence.push(e.key === 'Alt' ? 'AltDown' : e.key);
+            checkSequence();
+        });
+        input.addEventListener('keyup', function (e) {
+            if(e.key === 'Alt') {
+                input.sequence.push('AltUp');
+                checkSequence();
+            }
+        });
+
+        function checkSequence() {
+            if (input.sequence.length > 6) //max target length
                 input.sequence.shift();
 
             for (var i = 0; i < targets.length; i++) {
@@ -2044,22 +2054,24 @@ public class GwtClientUtils {
                     var val = input.value;
                     input.value = val.slice(0, start) + '\u001D' + val.slice(end);
                     // move cursor
+                    console.log('before ' + input.selectionStart + '/' + input.selectionEnd);
                     input.selectionStart = input.selectionEnd = start + 1;
+                    console.log('after ' + input.selectionStart + '/' + input.selectionEnd);
                 }
             }
+        }
 
-            function compareFromEnd(arr1, arr2) {
-                var len1 = arr1.length;
-                var len2 = arr2.length;
-                if (len1 < len2) return false;
-                for (var i = 0; i < len2; i++) {
-                    if (arr1[len1 - len2 + i] !== arr2[i]) {
-                        return false;
-                    }
+        function compareFromEnd(arr1, arr2) {
+            var len1 = arr1.length;
+            var len2 = arr2.length;
+            if (len1 < len2) return false;
+            for (var i = 0; i < len2; i++) {
+                if (arr1[len1 - len2 + i] !== arr2[i]) {
+                    return false;
                 }
-                return true;
             }
-        });
+            return true;
+        }
     }-*/;
 
 }
