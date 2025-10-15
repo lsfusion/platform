@@ -25,7 +25,9 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class NewThreadAction extends AroundAspectAction {
@@ -61,11 +63,15 @@ public class NewThreadAction extends AroundAspectAction {
     @StackMessage("NEWTHREAD")
     @ThisMessage
     protected void run(ExecutionContext<PropertyInterface> context) { //, @ParamMessage (profile = false) String callThreadStack) {
+        String lsfStack = null;
         try {
             proceed(context);
         } catch (Throwable t) {
             ServerLoggers.schedulerLogger.error("New thread error : ", t);
+            lsfStack = ExecutionStackAspect.getExceptionStackTrace();
             throw Throwables.propagate(t);
+        } finally {
+            context.addLsfStack(lsfStack);
         }
     }
 
@@ -113,8 +119,11 @@ public class NewThreadAction extends AroundAspectAction {
             ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
             if (period != null)
                 executor.scheduleAtFixedRate(runContext, delay, period, TimeUnit.MILLISECONDS);
-            else
-                executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
+            else {
+                ScheduledFuture<?> future = executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
+                if(externalExecutor)
+                    context.addFuture(future);
+            }
             if (!externalExecutor && period == null)
                 executor.shutdown();
         }

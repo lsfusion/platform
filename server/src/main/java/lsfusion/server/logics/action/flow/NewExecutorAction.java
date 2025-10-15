@@ -1,10 +1,10 @@
 package lsfusion.server.logics.action.flow;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.server.base.controller.stack.NestedThreadException;
+import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
@@ -23,7 +23,11 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class NewExecutorAction extends AroundAspectAction {
@@ -70,14 +74,34 @@ public class NewExecutorAction extends AroundAspectAction {
             executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
             FlowResult result;
 
+            ExecutionContext<PropertyInterface> newExecutorContext = context.override(executor, ListFact.mList(), ListFact.mList());
             try {
-                result = proceed(context.override(executor));
+                result = proceed(newExecutorContext);
             } finally {
                 executor.shutdown();
             }
 
-            if(sync && result.isFinish())
+            if(sync && result.isFinish()) {
                 executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                List<ThrowableWithStack> throwables = new ArrayList<>();
+                try {
+                    ImList<ScheduledFuture> futures = newExecutorContext.getFutures();
+                    ImList<String> lsfStacks = newExecutorContext.getLsfStacks();
+                    for (int i = 0; i < futures.size(); i++) {
+                        try {
+                            futures.get(i).get();
+                        } catch (ExecutionException | InterruptedException e) {
+                            throwables.add(new ThrowableWithStack(e, lsfStacks.get(i)));
+                        }
+                    }
+                } finally {
+                    newExecutorContext.clearFutures();
+                    newExecutorContext.clearLsfStacks();
+                }
+                if(!throwables.isEmpty()) {
+                    throw new NestedThreadException(throwables.toArray(new ThrowableWithStack[0]));
+                }
+            }
 
             return result;
         } catch (InterruptedException e) {

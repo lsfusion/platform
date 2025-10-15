@@ -22,6 +22,11 @@ public class ThrowableWithStack {
         this.lsfStack = ExecutionStackAspect.getExceptionStackTrace();
     }
 
+    public ThrowableWithStack(Throwable throwable, String lsfStack) {
+        this.throwable = packStackOverflow(throwable);
+        this.lsfStack = lsfStack;
+    }
+
     public String getLsfStack() {
         String result = lsfStack;
         if (throwable instanceof NestedThreadException)
