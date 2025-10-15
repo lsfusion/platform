@@ -2029,7 +2029,7 @@ public class GwtClientUtils {
 
     public static native void addGroupSeparatorEventListener(Element input)/*-{
         input.sequence = [];
-        var targets = [['F8'], ['Control', ']'], ['Alt', '0', '0', '2', '9']];
+        var targets = [['F8'], ['Control', ']'], ['Alt', '0', '2', '9'], ['Alt', '0', '0', '2', '9']];
         input.addEventListener('keydown', function (e) {
             input.sequence.push(e.key);
             if (input.sequence.length > 5) //max target length
