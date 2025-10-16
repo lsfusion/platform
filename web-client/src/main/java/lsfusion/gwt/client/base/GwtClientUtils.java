@@ -2028,15 +2028,24 @@ public class GwtClientUtils {
     }-*/;
 
     public static native void addGroupSeparatorEventListener(Element input)/*-{
+        var altPressed = false; //alt+digit switches tab in browser in linux, need to prevent it
         input.sequence = [];
-        var targets = [['F8'], ['Control', ']'], ['AltDown', '0', '2', '9', 'AltUp'], ['AltDown', '0', '0', '2', '9', 'AltUp']];
+        //F8 = 119; CTRL + ] = 17 + 221;
+        // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 48 [+ 48] + 50 + 57 + 18
+        // Alt down + 0 [+ 0]+ 2 + 9 + Alt up (num pad) = 18 + 96 [+ 98] + 105 + 10018
+        var targets = [[119], [17, 221], [18, 48, 50, 57, 10018], [18, 48, 48, 50, 57, 10018], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
         input.addEventListener('keydown', function (e) {
-            input.sequence.push(e.key === 'Alt' ? 'AltDown' : e.key);
+            input.sequence.push(e.keyCode);
             checkSequence();
+            if(e.keyCode === 18)
+                altPressed = true;
+            if(altPressed)
+                e.preventDefault();
         });
         input.addEventListener('keyup', function (e) {
-            if(e.key === 'Alt') {
-                input.sequence.push('AltUp');
+            if(e.keyCode === 18) { //alt
+                altPressed = false;
+                input.sequence.push(10000 + e.keyCode);
                 checkSequence();
             }
         });
@@ -2054,9 +2063,7 @@ public class GwtClientUtils {
                     var val = input.value;
                     input.value = val.slice(0, start) + '\u001D' + val.slice(end);
                     // move cursor
-                    console.log('before ' + input.selectionStart + '/' + input.selectionEnd);
                     input.selectionStart = input.selectionEnd = start + 1;
-                    console.log('after ' + input.selectionStart + '/' + input.selectionEnd);
                 }
             }
         }
