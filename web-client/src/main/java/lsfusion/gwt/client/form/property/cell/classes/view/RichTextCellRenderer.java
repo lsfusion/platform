@@ -168,6 +168,18 @@ public class RichTextCellRenderer extends CellRenderer {
                 element.innerHTML = '';
 
             element.quill = null;
+
+            // We need to remove all CSS classes associated with Quill
+            // because when updating the config and changing theme from bubble to snow,
+            // quillParent also changes, which makes some buttons in toolbar not work.
+            element.classList.remove(
+                'ql-bubble',
+                'ql-snow',
+                'ql-toolbar',
+                'ql-container',
+                'ql-editor',
+                'ql-disabled'
+            );
         }
     }-*/;
 
