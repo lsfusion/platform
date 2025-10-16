@@ -2031,9 +2031,8 @@ public class GwtClientUtils {
         var altPressed = false; //alt+digit switches tab in browser in linux, need to prevent it
         input.sequence = [];
         //F8 = 119; CTRL + ] = 17 + 221;
-        // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 48 [+ 48] + 50 + 57 + 18
-        // Alt down + 0 [+ 0]+ 2 + 9 + Alt up (num pad) = 18 + 96 [+ 98] + 105 + 10018
-        var targets = [[119], [17, 221], [18, 48, 50, 57, 10018], [18, 48, 48, 50, 57, 10018], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
+        // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 96 [+ 96] + 98 + 105 + 10018
+        var targets = [[119], [17, 221], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
         input.addEventListener('keydown', function (e) {
             input.sequence.push(e.keyCode);
             checkSequence();
