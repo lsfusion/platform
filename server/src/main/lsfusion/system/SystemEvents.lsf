@@ -657,7 +657,7 @@ toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigat
 logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
-nameUser '{system.events.user.session}' (Session session) = name(user(session));
+nameUser '{system.events.user.session}' (Session session) = name(user(session)) IN id;
 nameContact '{system.events.user.session}' (Session session) = name[Contact](user(session));
 user (Session session) <- currentUser() WHEN SET(session IS Session);
 
@@ -682,7 +682,7 @@ dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) INDEXED I
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
 form '{system.events.form.session}' = DATA Form (Session);
-captionForm '{system.events.caption.form.session}' (Session session) = caption(form(session));
+captionForm '{system.events.caption.form.session}' (Session session) = caption(form(session)) IN id;
 
 connection '{system.events.connection.session}' = DATA Connection(Session) INDEXED;
 hostnameComputerConnection '{system.events.hostname.computer.connection.session}' = hostnameComputer(connection(Session session))IN id;
