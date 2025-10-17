@@ -128,7 +128,7 @@ captionSize '{system.events.size}' (DesignEnv d) = staticCaption(designEnvSize(d
 serverSize '{system.events.size}' = DATA Size ();
 captionServerSize '{system.events.size}' = staticCaption(serverSize());
 
-heuristicSize = ABSTRACT Size();
+heuristicSize = ABSTRACT VALUE Size();
 size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), heuristicSize();
 isMini = size(currentDesignEnv()) == Size.mini;
 isTiny = size(currentDesignEnv()) == Size.tiny;
