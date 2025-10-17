@@ -2028,22 +2028,23 @@ public class GwtClientUtils {
     }-*/;
 
     public static native void addGroupSeparatorEventListener(Element input)/*-{
-        var altPressed = false; //alt+digit switches tab in browser in linux, need to prevent it
+        var preventDefaultMode = false; //alt+digit switches tab in browser in linux; F12 opens console - need to prevent it
         input.sequence = [];
-        //F8 = 119; CTRL + ] = 17 + 221;
+        //F8 = 119; F12 = 123; CTRL + ] = 17 + 221;
         // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 96 [+ 96] + 98 + 105 + 10018
-        var targets = [[119], [17, 221], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
+        var targets = [[119], [123], [17, 221], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
         input.addEventListener('keydown', function (e) {
             input.sequence.push(e.keyCode);
             checkSequence();
-            if(e.keyCode === 18)
-                altPressed = true;
-            if(altPressed)
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = true;
+            if(preventDefaultMode)
                 e.preventDefault();
         });
         input.addEventListener('keyup', function (e) {
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = false;
             if(e.keyCode === 18) { //alt
-                altPressed = false;
                 input.sequence.push(10000 + e.keyCode);
                 checkSequence();
             }
