@@ -109,16 +109,16 @@ public class NewThreadAction extends AroundAspectAction {
                     }
                 }
             };
-            boolean externalExecutor = context.getExecutorService() != null;
-            ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
+            ScheduledFutureService scheduledService = context.getScheduledService();
+            ScheduledExecutorService executor = scheduledService != null ? scheduledService.getExecutor() : ExecutorFactory.createNewThreadService(context);
             if (period != null)
                 executor.scheduleAtFixedRate(runContext, delay, period, TimeUnit.MILLISECONDS);
             else {
                 ScheduledFuture<?> future = executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-                if(externalExecutor)
-                    context.addFuture(future);
+                if(scheduledService != null)
+                    scheduledService.addFuture(future);
             }
-            if (!externalExecutor && period == null)
+            if (scheduledService == null && period == null)
                 executor.shutdown();
         }
         return FlowResult.FINISH;

@@ -1,10 +1,8 @@
 package lsfusion.server.logics.action.flow;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.base.controller.stack.NestedThreadException;
-import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
@@ -25,14 +23,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class NewExecutorAction extends AroundAspectAction {
-    private ScheduledExecutorService executor;
+    private ScheduledFutureService scheduledService;
     private final PropertyInterfaceImplement<PropertyInterface> threadsProp;
     Boolean sync;
 
@@ -72,38 +65,26 @@ public class NewExecutorAction extends AroundAspectAction {
         if(nThreads == null || nThreads == 0)
             nThreads = TaskRunner.availableProcessors();
         try {
-            executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
+            scheduledService = new ScheduledFutureService(ExecutorFactory.createNewThreadService(context, nThreads, sync), Collections.synchronizedList(new ArrayList<>()));
             FlowResult result;
 
-            ExecutionContext<PropertyInterface> newExecutorContext = context.override(executor, Collections.synchronizedList(new ArrayList<>()));
+            ExecutionContext<PropertyInterface> newExecutorContext = context.override(scheduledService);
             try {
                 result = proceed(newExecutorContext);
             } finally {
-                executor.shutdown();
+                scheduledService.shutdown();
             }
 
             if(sync && result.isFinish()) {
-                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                List<ThrowableWithStack> throwables = new ArrayList<>();
-                for (ScheduledFuture future : newExecutorContext.getFutures()) {
-                    try {
-                        future.get();
-                    } catch (ExecutionException e) {
-                        if (e.getCause() instanceof RuntimeExceptionWithStack) {
-                            throwables.add(new ThrowableWithStack(e.getCause().getCause(), ((RuntimeExceptionWithStack) e.getCause()).lsfStack));
-                        } else {
-                            throw Throwables.propagate(e);
-                        }
-                    }
-                }
-                if(!throwables.isEmpty()) {
-                    throw new NestedThreadException(throwables.toArray(new ThrowableWithStack[0]));
+                NestedThreadException nestedThreadException = scheduledService.await();
+                if(nestedThreadException != null) {
+                    throw nestedThreadException;
                 }
             }
 
             return result;
         } catch (InterruptedException e) {
-            ThreadUtils.interruptThreadExecutor(executor, context);
+            ThreadUtils.interruptThreadExecutor(scheduledService.getExecutor(), context);
 
             throw Throwables.propagate(e);
         }
