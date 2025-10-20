@@ -1,6 +1,5 @@
 package lsfusion.server.logics.action.flow;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -25,7 +24,6 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -63,15 +61,11 @@ public class NewThreadAction extends AroundAspectAction {
     @StackMessage("NEWTHREAD")
     @ThisMessage
     protected void run(ExecutionContext<PropertyInterface> context) { //, @ParamMessage (profile = false) String callThreadStack) {
-        String lsfStack = null;
         try {
             proceed(context);
         } catch (Throwable t) {
             ServerLoggers.schedulerLogger.error("New thread error : ", t);
-            lsfStack = ExecutionStackAspect.getExceptionStackTrace();
-            throw Throwables.propagate(t);
-        } finally {
-            context.addLsfStack(lsfStack);
+            throw new RuntimeExceptionWithStack(t);
         }
     }
 

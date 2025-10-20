@@ -24,6 +24,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -74,7 +75,7 @@ public class NewExecutorAction extends AroundAspectAction {
             executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
             FlowResult result;
 
-            ExecutionContext<PropertyInterface> newExecutorContext = context.override(executor, ListFact.mList(), ListFact.mList());
+            ExecutionContext<PropertyInterface> newExecutorContext = context.override(executor, Collections.synchronizedList(new ArrayList<>()));
             try {
                 result = proceed(newExecutorContext);
             } finally {
@@ -84,19 +85,16 @@ public class NewExecutorAction extends AroundAspectAction {
             if(sync && result.isFinish()) {
                 executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 List<ThrowableWithStack> throwables = new ArrayList<>();
-                try {
-                    ImList<ScheduledFuture> futures = newExecutorContext.getFutures();
-                    ImList<String> lsfStacks = newExecutorContext.getLsfStacks();
-                    for (int i = 0; i < futures.size(); i++) {
-                        try {
-                            futures.get(i).get();
-                        } catch (ExecutionException | InterruptedException e) {
-                            throwables.add(new ThrowableWithStack(e, lsfStacks.get(i)));
+                for (ScheduledFuture future : newExecutorContext.getFutures()) {
+                    try {
+                        future.get();
+                    } catch (ExecutionException e) {
+                        if (e.getCause() instanceof RuntimeExceptionWithStack) {
+                            throwables.add(new ThrowableWithStack(e.getCause().getCause(), ((RuntimeExceptionWithStack) e.getCause()).lsfStack));
+                        } else {
+                            throw Throwables.propagate(e);
                         }
                     }
-                } finally {
-                    newExecutorContext.clearFutures();
-                    newExecutorContext.clearLsfStacks();
                 }
                 if(!throwables.isEmpty()) {
                     throw new NestedThreadException(throwables.toArray(new ThrowableWithStack[0]));
