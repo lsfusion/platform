@@ -157,15 +157,15 @@ isFailed '{scheduler.is.failed.scheduled.client.task.log}' (ScheduledTaskLog stl
 isMessages '{scheduler.is.messages.scheduled.client.task.log}' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler '{scheduler.stop.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.StopSchedulerAction' ();
-stopSchedulerApply '{scheduler.stop.scheduler}'  { 
+stopSchedulerApply '{scheduler.stop.scheduler}'  {
     stopScheduler();
     apply();
-}
+} CONFIRM;
 runSetupScheduler '{scheduler.run.setup.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupSchedulerAction' ();
 runSetupSchedulerApply '{scheduler.run.setup.scheduler}'  { 
     runSetupScheduler();
     apply();
-}
+} CONFIRM;
 isStartedScheduler '{scheduler.is.started.scheduler}'  = DATA BOOLEAN ();
 isStoppedScheduler = NOT isStartedScheduler();
 onlySystemTasks '{scheduler.only.system.tasks}' = DATA BOOLEAN();
