@@ -393,7 +393,11 @@ xmlFile = DATA LOCAL XMLFILE();
 tableFile = DATA LOCAL TABLEFILE();
 
 // --------------------------------- Logging --------------------------------- //
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction' (TEXT);
+printToLog (TEXT message, STRING logger, STRING level) INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction';
+printToLog (TEXT message, STRING logger) { printToLog(message, logger, 'info');}
+printToLog (TEXT message) { printToLog(message, 'system');}
+
+//deprecated, use printToLog
 logToFile (STRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', toChar(currentDateTimeMillis(), 'YYYY-MM-DD HH24:MI:SS.MS'), message, '\n'));
 }
