@@ -4,13 +4,12 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
-import lsfusion.interop.action.RunCommandActionResult;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.net.ftp.FTPFile;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -25,6 +24,8 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.awt.image.BufferedImage.TYPE_BYTE_INDEXED;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
 //lsfusion.base.FileUtils is copy of this one
@@ -401,5 +402,20 @@ public class FileUtils {
 
     public static String ping(String host) throws IOException {
         return InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
+    }
+
+    public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scale) throws IOException {
+        return createThumbnails(inputFile, image, scale, scale);
+    }
+
+    public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scaleWidth, double scaleHeight) throws IOException {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Thumbnails.Builder<? extends InputStream> builder = Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight);
+            if (image.getType() == TYPE_BYTE_INDEXED) {
+                builder.imageType(TYPE_INT_ARGB);
+            }
+            builder.toOutputStream(os);
+            return new RawFileData(os);
+        }
     }
 }
