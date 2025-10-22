@@ -3030,7 +3030,7 @@ extIdSetting [ActionOrPropertySettings ps]
     ;
 
 annotationSetting [ActionOrPropertySettings ps]
-    :   '@@' ann = ID { ps.addAnnotation($ann.text); } ('(' stringLiteral (',', stringLiteral ')')?)?
+    :   '@@' ann = ID { ps.addAnnotation($ann.text); } ('(' stringLiteral (',' stringLiteral)?  ')')?
     ;
 
 materializedSetting [PropertySettings ps]
