@@ -2922,7 +2922,7 @@ semiActionOrPropertyOption[ActionOrPropertySettings ps]
 	|	syncSetting [ps]
 	|   imageSetting [ps]
 	|   extIdSetting[ps]
-	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
+	|   annotationSetting[ps]
     ;
 
 semiPropertyOption[PropertySettings ps]
@@ -3045,6 +3045,10 @@ imageSetting [ActionOrPropertySettings ps]
 
 extIdSetting [ActionOrPropertySettings ps]
     :	'EXTID' id = stringLiteral { ps.extId = $id.val; }
+    ;
+
+annotationSetting [ActionOrPropertySettings ps]
+    :   '@@' ann = ID { ps.addAnnotation($ann.text); } stringLiteral?
     ;
 
 materializedSetting [PropertySettings ps]
