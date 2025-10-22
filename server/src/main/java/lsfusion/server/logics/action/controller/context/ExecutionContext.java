@@ -31,6 +31,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
+import lsfusion.server.logics.action.flow.ScheduledFutureService;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
@@ -73,6 +74,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -183,7 +185,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     
     private final ExecutionEnvironment env;
 
-    private final ScheduledExecutorService executorService;
+    private final ScheduledFutureService scheduledService;
 
     private final ConnectionService connectionService;
 
@@ -217,12 +219,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this(keys, null, env, null, null, formEnv, stack, false);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, ExecutionEnvironment env, ScheduledExecutorService executorService,
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, ExecutionEnvironment env, ScheduledFutureService scheduledService,
                             ConnectionService connectionService, FormEnvironment<P> form, ExecutionStack stack, boolean hasMoreSessionUsages) {
         this.keys = keys;
         this.pushedAsyncResult = pushedAsyncResult;
         this.env = env;
-        this.executorService = executorService;
+        this.scheduledService = scheduledService;
         this.connectionService = connectionService;
         this.form = form;
         this.stack = new ContextStack(stack);
@@ -230,11 +232,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
     
     public ExecutionContext<P> override(boolean hasMoreSessionUsages) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -257,8 +259,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.watcher = watcher;
     }
 
-    public ScheduledExecutorService getExecutorService() {
-        return executorService;
+    public ScheduledFutureService getScheduledService() {
+        return scheduledService;
     }
 
     public ConnectionService getConnectionService() {
@@ -472,9 +474,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public static class NewSession<P extends PropertyInterface> extends ExecutionContext<P> implements AutoCloseable {
 
-        public NewSession(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, DataSession session, ScheduledExecutorService executorService,
+        public NewSession(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, DataSession session, ScheduledFutureService scheduledService,
                           ConnectionService connectionService, FormEnvironment<P> form, ExecutionStack stack) {
-            super(keys, pushedAsyncResult, session, executorService, connectionService, form, stack, false);
+            super(keys, pushedAsyncResult, session, scheduledService, connectionService, form, stack, false);
         }
 
         @Override
@@ -489,7 +491,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return newSession(getSession().sql, fixedForms);
     }
     public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
-        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), executorService, connectionService, form, stack);
+        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), scheduledService, connectionService, form, stack);
     }
 
     public ActionOrProperty getSecurityProperty() {
@@ -604,20 +606,20 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         getEnv().cancel(stack, keep);
     }
 
-    public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, newExecutorService, connectionService, form, stack, hasMoreSessionUsages);
+    public ExecutionContext<P> override(ScheduledFutureService newScheduledService) {
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, newScheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ConnectionService newConnectionService) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, newConnectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, newConnectionService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack, PushAsyncResult pushedAsyncResult) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, executorService, connectionService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, scheduledService, connectionService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends PropertyInterfaceImplement<P>> mapInterfaces) {
@@ -633,11 +635,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys, boolean hasMoreSessionUsages) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public QueryEnvironment getQueryEnv() {
