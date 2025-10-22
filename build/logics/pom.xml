@@ -24,7 +24,7 @@
         <docker.template.subfolder>docker</docker.template.subfolder>
         
         <docker.compose.projectName>${project.artifactId}</docker.compose.projectName>
-        <docker.compose.outputDirectory>${project.basedir}${file.separator}target</docker.compose.outputDirectory>
+        <docker.compose.outputDirectory>${project.build.directory}</docker.compose.outputDirectory>
     </properties>
 
     <profiles>
@@ -60,7 +60,7 @@
                                             <artifactId>server</artifactId>
                                             <type>jar</type>
                                             <overWrite>true</overWrite>
-                                            <outputDirectory>${project.basedir}/target/templates</outputDirectory>
+                                            <outputDirectory>${project.build.directory}/templates</outputDirectory>
                                             <includes>logics/${docker.template.subfolder}/**</includes>
                                         </artifactItem>
                                     </artifactItems>
@@ -72,19 +72,20 @@
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>copy-dockerfile</id>
+                                <id>copy-docker-files</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.basedir}/target</outputDirectory>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
                                     <resources>
                                         <resource>  
-                                            <directory>${project.basedir}/target/templates/logics/${docker.template.subfolder}</directory>
+                                            <directory>${project.build.directory}/templates/logics/${docker.template.subfolder}</directory>
                                             <filtering>true</filtering> <!-- filling property placeholders -->
                                             <includes>
                                                 <include>Dockerfile</include>
+                                                <include>entrypoint.sh</include>
                                             </includes>
                                         </resource>
                                     </resources>
@@ -100,7 +101,7 @@
                                     <outputDirectory>${docker.compose.outputDirectory}</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>${project.basedir}/target/templates/logics/${docker.template.subfolder}</directory>
+                                            <directory>${project.build.directory}/templates/logics/${docker.template.subfolder}</directory>
                                             <filtering>true</filtering> <!-- filling property placeholders -->
                                             <includes>
                                                 <include>compose.yaml</include>
@@ -148,17 +149,18 @@
                                         <argument>build</argument>
                                         <argument>--progress=plain</argument>
                                         <argument>--build-arg</argument>
-                                        <argument>FILENAME=target/${docker.logics.file.name}</argument>
+                                        <argument>FILENAME=${docker.logics.file.name}</argument>
 
                                         <argument>-t</argument>
                                         <!--namespace/repoName:tag-->
                                         <argument>${docker.image.fullName}</argument>
                                         <!--Dockerfile location-->
                                         <argument>-f</argument>
-                                        <argument>target/Dockerfile</argument>
+                                        <argument>Dockerfile</argument>
                                         <!--Docker context-->
                                         <argument>.</argument>
                                     </arguments>
+                                    <workingDirectory>${project.build.directory}</workingDirectory>
                                 </configuration>
                             </execution>
 
