@@ -1,6 +1,5 @@
 package lsfusion.server.logics.action.flow;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -26,6 +25,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class NewThreadAction extends AroundAspectAction {
@@ -65,7 +65,7 @@ public class NewThreadAction extends AroundAspectAction {
             proceed(context);
         } catch (Throwable t) {
             ServerLoggers.schedulerLogger.error("New thread error : ", t);
-            throw Throwables.propagate(t);
+            throw new RuntimeExceptionWithStack(t);
         }
     }
 
@@ -109,13 +109,16 @@ public class NewThreadAction extends AroundAspectAction {
                     }
                 }
             };
-            boolean externalExecutor = context.getExecutorService() != null;
-            ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
+            ScheduledFutureService scheduledService = context.getScheduledService();
+            ScheduledExecutorService executor = scheduledService != null ? scheduledService.getExecutor() : ExecutorFactory.createNewThreadService(context);
             if (period != null)
                 executor.scheduleAtFixedRate(runContext, delay, period, TimeUnit.MILLISECONDS);
-            else
-                executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-            if (!externalExecutor && period == null)
+            else {
+                ScheduledFuture<?> future = executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
+                if(scheduledService != null)
+                    scheduledService.addFuture(future);
+            }
+            if (scheduledService == null && period == null)
                 executor.shutdown();
         }
         return FlowResult.FINISH;
