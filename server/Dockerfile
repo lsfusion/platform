@@ -13,4 +13,8 @@ WORKDIR /lsfusion
 
 EXPOSE 7652
 
-CMD ["java",  "-cp", ".:./*:../server.jar", "lsfusion.server.logics.BusinessLogicsBootstrap"]
+# Moved to enrypoint to be able to pass JAVA_OPTS, leaving exec-form
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
