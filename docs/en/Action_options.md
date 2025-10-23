@@ -114,6 +114,7 @@ Action annotation. Begins with `@@`. The following annotations are supported:
         When the API is disabled, allows external requests for this action.
 
     - `@@deprecated`
+    - `@@deprecated(since)`
     - `@@deprecated(since, message)`
 
         Marks the action as deprecated and not recommended for use.

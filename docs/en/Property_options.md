@@ -139,6 +139,7 @@ annotationSetting
 Property annotation. Begins with `@@`. The following annotations are supported:
 
     - `@@deprecated`
+    - `@@deprecated(since)`
     - `@@deprecated(since, message)`
 
         Marks the property as deprecated and not recommended for use.

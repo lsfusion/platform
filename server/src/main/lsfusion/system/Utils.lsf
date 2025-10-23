@@ -92,7 +92,7 @@ resourcePaths = DATA LOCAL STRING (STRING);
 readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
 readResourcePaths (STRING pattern) { readResourcePaths(pattern, NULL); }
 
-resourceFile '{utils.resource.file}' = resource(); // deprecated
+resourceFile '{utils.resource.file}' = resource() @@deprecated('6.1');
 
 properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
@@ -201,8 +201,8 @@ encodeBase64Unchunked (NAMEDFILE f) = encodeBase64Unchunked(RAWFILE(f));
 encodeBytes = FORMULA TEXT 'encode(($1),($2))';
 encodeBytesBase64(bytes) = encodeBytes(bytes, 'base64');
 
-encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))'; // deprecated
-decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')'; // deprecated
+encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))' @@deprecated('6.1');
+decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')' @@deprecated('6.1');
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64Action' (TEXT);
