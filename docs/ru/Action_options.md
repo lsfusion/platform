@@ -19,8 +19,12 @@ IN groupName
 viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
+CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 ASON eventType [ACTION] propertyId
 imageSetting
+annotationSetting
 CONFIRM
 EXTID extID
 ```
@@ -97,6 +101,31 @@ EXTID extID
 
         Ключевое слово, указывающее на то, что иконка действия должна отсутствовать.
 
+- `annotationSetting`
+
+  Аннотация действия. Начинается с @@. Поддерживаются следующие аннотации:
+
+    - `@@noauth`
+
+      Отключение проверки авторизации при внешнем запросе для данного действия.
+
+    - `@@api`
+
+      При выключенном api разрешает внешний запрос для данного действия.
+
+    - `@@deprecated`
+    - `@@deprecated(since,message)`
+
+      Пометка действия как устаревшего и не рекомендованного для использования. Плагин показывает использование таких действий перечёркнутым.
+
+        - `since`
+
+          Строковый литерал, версия платформы, начиная с которой действие считается устаревшим.
+
+        - `message`
+
+          Строковый литерал, сообщение, поясняющее, почему действие помечено устаревшим.
+
 - `EXTID extID`
 
     Указание имени, которое будет использоваться для поиска действия при [обращении из внешней системы](Access_from_an_external_system.md#http).
@@ -108,8 +137,76 @@ EXTID extID
     Указание [комбинации клавиш](Form_events.md#keyboard), при нажатии которой будет выполнено это действие. Устанавливает значение для [дизайна по умолчанию](Form_design.md#defaultDesign), может быть переопределено в [инструкции `DESIGN`](DESIGN_statement.md).
 
     - `key`
-    
-        [Строковый литерал](Literals.md#strliteral), описывающий комбинацию клавиш. Принцип задания аналогичен способу задания параметра в методе Java-класса [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+
+  [Строковый литерал](Literals.md#strliteral), описывающий комбинацию клавиш. Синтаксис:
+  ```
+  keyStroke [;(modeKey=modeValue;)*]
+  ```
+
+  	- `keyStroke`
+  		Строковое представление комбинации клавиш. Принцип задания аналогичен способу задания параметра в методе Java-класса [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+  		
+  	- `(modeKey=modeValue;)*`
+  		Опции, задающие условия выполнения для `keyStroke`. Поддерживаются следующие опции:
+  		
+  		- `priority = priorityValue` 
+  			Приоритет, целочисленное значение. Если несколько действий имеют подходящий под условия `CHANGEKEY`, выполнится то, у которого приоритет будет выше.
+  			Если приоритет не задан, он равняется порядковому номеру свойства на форме. Кроме того, в любом случае к значению приоритета добавляется 1000, если совпадает группа объектов.
+  		
+  		- `preview = previewValue`
+  			Все события проверяются на выполнение дважды: сначала с isPreview=true, потом - с isPreview=false. Поддерживаемые значения `previewValue`:
+  			- `AUTO`, `ONLY` -> isPreview
+  			- `NO` -> !isPreview
+  			- `ALL` -> true
+  			
+  		- `dialog = dialogValue`
+  			Проверка, выполнять ли `CHANGEKEY` в диалоговом окне. Поддерживаемые значения `dialogValue`:
+  			- `AUTO`, `ALL` -> true
+  			- `ONLY` -> isDialog
+  			- `NO` -> !isDialog
+  			
+  		- `window = windowValue`
+  			Проверка, выполнять ли `CHANGEKEY` в модальном окне. Поддерживаемые значения `windowValue`:
+  			- `AUTO`, `ALL` -> true
+  			- `ONLY` -> isWindow
+  			- `NO` -> !isWindow	
+  		
+  		- `group = groupValue`
+  			Проверка, совпадает ли группа объектов. Поддерживаемые значения `groupValue`:
+  			- `AUTO`, `ALL` -> true
+  			- `ONLY` -> equalGroup
+  			- `NO` -> !equalGroup
+  		
+  		- `editing = editingValue`
+  			Проверка, выполнять ли `CHANGEKEY` в режиме редактирования свойства. Поддерживаемые значения `editingValue`:
+  			- `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+  			- `ALL` -> true
+  			- `ONLY` -> isEditing
+  			- `NO` -> !isEditing
+  			
+  		- `showing = showingValue`
+  			Проверка, показывается ли в данный момент свойство на форме. Поддерживаемые значения `showingValue`:
+  			- `AUTO`, `ONLY` -> isShowing
+  			- `ALL` -> true
+  			- `NO` -> !isShowing
+  			
+  		- `panel = panelValue`
+  			Проверка, находится ли действие в панели. Поддерживаемые значения `panelValue`:
+  			- `AUTO` -> !isMouse || !isPanel
+  			- `ALL` -> true
+  			- `ONLY` -> isPanel
+  			- `NO` -> !isPanel	
+  	
+  		- `cell = cellValue`
+  			Проверка, находится ли действие в таблице. Поддерживаемые значения `cellValue`:
+  			- `AUTO` -> !isMouse || isCell
+  			- `ALL` -> true
+  			- `ONLY` -> isCell
+  			- `NO` -> !isCell
+
+  	
+  		Для всех опций кроме `priority` значением по умолчанию является `AUTO`.	
+
 
     - `SHOW`
     
@@ -119,8 +216,42 @@ EXTID extID
     
         Ключевое слово, при указании которого комбинация клавиш не будет отображаться в заголовке действия. 
 
+- `CHANGEMOUSE key [SHOW | HIDE]`
+
+  Указание комбинации клавиш мыши, при нажатии которых будет выполнено это действие. Устанавливает значение для дизайна по умолчанию, может быть переопределено в инструкции `DESIGN`.
+
+    - `key`
+
+  [Строковый литерал](Literals.md#strliteral), описывающий комбинацию клавиш. Синтаксис:
+  ```
+  keyStroke [;(modeKey=modeValue;)*]
+  ```
+
+  	- `keyStroke`
+  		Строковое представление комбинации клавиш мыши. В данный момент единственное поддерживаемое значение - `DBLCLK` - двойной клик.
+  		
+  	- `(modeKey=modeValue;)*`
+  		Синтаксис полностью совпадает с `CHANGEKEY`.		
+
+    - `SHOW`
+
+      Ключевое слово, при указании которого комбинация клавиш мыши будет отображаться в заголовке действия. Используется по умолчанию.
+
+    - `HIDE`
+
+      Ключевое слово, при указании которого комбинация клавиш мыши не будет отображаться в заголовке действия.
+
+- `STICKY` | `NOSTICKY`
+
+    Ключевые слова. `STICKY` указывает на то, что действие в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
+
+- `syncType`
+
+  Определяет, выполняется действие синхронно или асинхронно:
+
+    - `WAIT` - синхронно.
+    - `NOWAIT` - асинхронно. Это значение используется по умолчанию.
+
 - `CONFIRM`
 
     Ключевое слово. Если указано, то при запуске действия будет задан вопрос о подтверждении запуска. Устанавливает значение для дизайна по умолчанию, может быть переопределено в инструкции `DESIGN`.
-
-  
