@@ -24,10 +24,10 @@ onLoginInit() +{
 }
 
 // todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
-onWebClientLoad ABSTRACT LIST ();
+onWebClientLoad ABSTRACT LIST () @@deprecated('6.1');
 onWebClientStarted () +{
     onWebClientLoad();
-} @@deprecated('6.1');
+}
 
 onInitApply {
     onInit();
