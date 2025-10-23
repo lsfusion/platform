@@ -87,8 +87,7 @@ lowerEmail(CustomUser c) = lower(email(c)) IF c IS CustomUser;
 customUserLowerEmail = GROUP LAST CustomUser customUser ORDER lowerLogin(customUser), customUser BY lowerEmail(customUser);
 customUserEmail(ISTRING email) = customUserLowerEmail(lower(email)) LAZY;
 
-// deprecated
-customUserLower(ISTRING[100] login) = customUserLowerLogin(login);
+customUserLower(ISTRING[100] login) = customUserLowerLogin(login) @@deprecated('6.1');
 customUserNormalized(ISTRING[100] login) = customUserLogin(login);
 
 //customUserNormalized (ISTRING[100] login) = customUserLower(lower(login)) LAZY;

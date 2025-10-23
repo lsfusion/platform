@@ -13,7 +13,7 @@ onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
 // todo onLoginLoad = ABSTRACT CASE INTEGER(STRING) IS DEPRECATED! DO NOT USE! Only for backward compatibility
-onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onLoginLoad = ABSTRACT CASE INTEGER(STRING) @@deprecated('6.1');
 onLoginInit ABSTRACT LIST ();
 onLoginInit = DATA LOCAL INTEGER (STRING);
 
@@ -27,7 +27,7 @@ onLoginInit() +{
 onWebClientLoad ABSTRACT LIST ();
 onWebClientStarted () +{
     onWebClientLoad();
-}
+} @@deprecated('6.1');
 
 onInitApply {
     onInit();
@@ -544,8 +544,7 @@ currentOriginUrl(STRING relativeUrl) = IF currentConnection() THEN originUrl(cur
 currentContextUrl(STRING relativeUrl) = IF currentConnection() THEN contextUrl(currentConnection(), relativeUrl) ELSE apiOriginUrl(relativeUrl);
 currentOriginUrl(LINK relativeLink) = IF currentConnection() THEN originUrl(currentConnection(), relativeLink) ELSE apiOriginUrl(relativeLink);
 
-// deprecated, current * should be used instead
-originUrl(STRING relativeUrl) = currentOriginUrl(relativeUrl);
+originUrl(STRING relativeUrl) = currentOriginUrl(relativeUrl) @@deprecated('6.1','current * should be used instead');
 contextUrl(STRING relativeUrl) = currentContextUrl(relativeUrl);
 originUrl(LINK relativeLink) = currentOriginUrl(relativeLink);
 
