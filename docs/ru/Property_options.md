@@ -20,18 +20,22 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
+PATTERN patternExpr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
 EVENTID eventId
 LAZY [WEAK | STRONG]
 imageSetting
+annotationSetting
 ```
 
 ## Описание и параметры
@@ -66,11 +70,11 @@ imageSetting
 
     - `LIKE`
 
-        Ключевое слово, указание которого создает вместо обычного индекса GIN индекс.
+        Ключевое слово, указание которого создает кроме обычного индекса дополнительно GIN индекс.
 
     - `MATCH`
 
-        Ключевое слово, указание которого создает вместо обычного индекса два: GIN индекс и GIN индекс с to_tsvector.
+        Ключевое слово, указание которого создает кроме обычного индекса ещё два: GIN индекс и GIN индекс с to_tsvector.
 
 
 - `NONULL [DELETE] eventClause`
@@ -131,6 +135,22 @@ imageSetting
 
         Ключевое слово, указывающее на то, что иконка свойства должна отсутствовать.
 
+- `annotationSetting`
+
+    Аннотация свойства. Начинается с @@. Поддерживаются следующие аннотации:
+
+    - `@@deprecated`
+    - `@@deprecated(since,message)`
+
+       Пометка свойства как устаревшего и не рекомендованного для использования. Плагин показывает использование таких свойств перечёркнутым.
+
+      - `since`
+
+        Строковый литерал, версия платформы, начиная с которой свойство считается устаревшим.
+      
+      - `message`
+
+        Строковый литерал, сообщение, поясняющее, почему свойство помечено устаревшим.
 
 ### Блок значений по умолчанию инструкции `DESIGN`
 
@@ -149,6 +169,14 @@ imageSetting
     - `NOFLEX`
 
         Ключевое слово. Если указано, коэффициент расширения значения свойства автоматически устанавливается равным нулю.
+
+- `PATTERN patternExpr`
+
+    Указание шаблона форматирования значения свойства. Синтаксис задания шаблона аналогичен синтаксису [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) либо [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) в зависимости от типа значения.
+    
+    - `patternExpr`
+
+      [Выражение](Expression.md), значение которого задает шаблон форматирования.
 
 - `REGEXP rexpr [message]`
 
@@ -274,6 +302,18 @@ imageSetting
     - `HIDE`
 
         Ключевое слово, при указании которого комбинация клавиш мыши не будет отображаться в заголовке свойства. 		
+
+- `STICKY` | `NOSTICKY`
+
+  Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
+
+- `syncType`
+
+  Определяет, включены ли для свойства асинхронные действия:
+
+    - `WAIT` - асинхронные действия выключены.
+    - `NOWAIT` - асинхронные действия включены. Это значение используется по умолчанию.
+
 
 - `DEFAULTCOMPARE [compare]`
 

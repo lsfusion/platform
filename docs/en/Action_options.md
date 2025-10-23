@@ -19,8 +19,12 @@ IN groupName
 viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
+CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 ASON eventType [ACTION] propertyId
 imageSetting
+annotationSetting
 CONFIRM
 EXTID extID
 ```
@@ -97,6 +101,30 @@ EXTID extID
 
         Keyword indicating that the action should have no icon.
 
+- `annotationSetting`
+
+Action annotation. Begins with `@@`. The following annotations are supported:
+
+    - `@@noauth`
+
+        Disables authorization check for external requests for this action.
+
+    - `@@api`
+
+        When the API is disabled, allows external requests for this action.
+
+    - `@@deprecated`
+    - `@@deprecated(since, message)`
+
+        Marks the action as deprecated and not recommended for use.
+        The plugin displays such properties as strikethrough.
+
+      - `since`
+          String literal indicating the platform version since which the action is considered deprecated.
+
+      - `message`
+          String literal providing an explanation of why the action is marked as deprecated.
+
 - `EXTID extID`
 
     Specifying the name to be used for [access from an external system](Access_from_an_external_system.md#http).
@@ -108,16 +136,120 @@ EXTID extID
     Specifies a [keyboard shortcut](Form_events.md#keyboard) which triggers this action. Sets the value for the [default design](Form_design.md#defaultDesign) and can be overridden in the [`DESIGN` statement](DESIGN_statement.md).
 
     - `key`
-     
-        [String literal](Literals.md#strliteral) that defines a keyboard shortcut. The definition method is identical to that for a parameter in the Java class method [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+
+  [String literal](Literals.md#strliteral), that defines a keyboard shortcut. Syntax:
+  ```
+  keyStroke [;(modeKey=modeValue;)*]
+  ```
+
+          - `keyStroke`
+              String representation of a key combination. The definition principle is similar to the way the parameter is specified in the Java class method KeyStroke.getKeyStroke(String). (http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+    
+          - `(modeKey=modeValue;)*`
+              Options specifying the execution conditions for keyStroke. The following options are supported:
+    
+              - `priority = priorityValue`
+                  Priority, an integer value. If multiple actions meet the CHANGEKEY conditions, the one with the higher priority will be executed.
+                  If the priority is not set, it is equal to the sequential number of the property in the form. Additionally, in any case, 1000 is added to the priority value if the object group matches.
+    
+              - `preview = previewValue`
+                  All events are checked for execution twice: first with isPreview = true, then with isPreview = false. Supported `previewValue` values:
+                  - `AUTO`, `ONLY` -> isPreview
+                  - `NO` -> !isPreview
+                  - `ALL` -> true
+    
+              - `dialog = dialogValue`
+                  Checks whether CHANGEKEY should be executed in a dialog window. Supported `dialogValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> isDialog
+                  - `NO` -> !isDialog
+    
+              - `window = windowValue`
+                  Checks whether CHANGEKEY should be executed in a modal window. Supported `windowValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> isWindow
+                  - `NO` -> !isWindow
+    
+              - `group = groupValue`
+                  Checks whether the object group matches. Supported `groupValue` values:
+                  - `AUTO`, `ALL` -> true
+                  - `ONLY` -> equalGroup
+                  - `NO` -> !equalGroup
+    
+              - `editing = editingValue`
+                  Checks whether CHANGEKEY should be executed in property editing mode. Supported `editingValue` values:
+                  - `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+                  - `ALL` -> true
+                  - `ONLY` -> isEditing
+                  - `NO` -> !isEditing
+    
+              - `showing = showingValue`
+                  Checks whether the action is currently visible on the form. Supported `showingValue` values:
+                  - `AUTO`, `ONLY` -> isShowing
+                  - `ALL` -> true
+                  - `NO` -> !isShowing
+    
+              - `panel = panelValue`
+                  Checks whether the action is located in a panel. Supported `panelValue` values:
+                  - `AUTO` -> !isMouse || !isPanel
+                  - `ALL` -> true
+                  - `ONLY` -> isPanel
+                  - `NO` -> !isPanel
+    
+              - `cell = cellValue`
+                  Checks whether the action is located in a table cell. Supported `cellValue` values:
+                   - `AUTO` -> !isMouse || isCell
+                   - `ALL` -> true
+                   - `ONLY` -> isCell
+                   - `NO` -> !isCell
+    
+    
+              For all options except `priority`, the default value is `AUTO`.
 
     - `SHOW`
-    
-        A keyword. If specified, the keyboard shortcut will be displayed in the action caption. Used by default.
+
+      Keyword. When specified, the key combination will be displayed in the action caption. Used by default.
 
     - `HIDE`
-     
-        A keyword. If specified, the keyboard shortcut will not be displayed in the action caption. 
+
+      Keyword. When specified, the key combination will not be displayed in the action caption.
+
+- `CHANGEMOUSE key [SHOW | HIDE]`
+
+  Specifies the mouse key combination that triggers this action. Sets the default value for the design, which can be overridden in the `DESIGN` instruction.
+
+    - `key`
+
+  [String literal](Literals.md#strliteral)describing a mouse key combination. Syntax:
+  ```
+  keyStroke [;(modeKey=modeValue;)*]
+  ```
+
+  	    - `keyStroke`
+  		    String representation of a mouse key combination. Currently, the only supported value is `DBLCLK` — double click.
+  		
+  	    - `(modeKey=modeValue;)*`
+  		    The syntax is identical to that of `CHANGEKEY`.		
+
+    - `SHOW`
+
+        Keyword indicating that the mouse key combination should be displayed in the action header. This is the default behavior.
+
+    - `HIDE`
+
+        Keyword indicating that the mouse key combination should not be displayed in the action header.
+
+- `STICKY` | `NOSTICKY`
+
+    Keywords. `STICKY` indicates that the action in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically.
+
+- `syncType`
+
+    Defines whether the action is executed synchronously or asynchronously:
+
+    - `WAIT` — synchronously.
+
+    - `NOWAIT` — asynchronously. This is the default behaviour.
 
 - `CONFIRM`
 

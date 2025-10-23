@@ -20,18 +20,22 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
+PATTERN patternExpr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
 EVENTID eventId
 LAZY [WEAK | STRONG]
 imageSetting
+annotationSetting
 ```
 
 ## Description and parameters
@@ -66,11 +70,11 @@ imageSetting
 
     - `LIKE`
 
-        Keyword. If specified, creates GIN index instead of the usual index.
+        Keyword. If specified, creates GIN index additionally to the usual index.
 
     - `MATCH`
 
-        Keyword. If specified, creates GIN index and GIN index with to_tsvector instead of the usual index.
+        Keyword. If specified, creates GIN index and GIN index with to_tsvector additionally to the usual index.
 
 - `NONULL [DELETE] eventClause`
 
@@ -130,6 +134,22 @@ imageSetting
 
         Keyword indicating that the property should have no icon.
 
+- `annotationSetting`
+
+Property annotation. Begins with `@@`. The following annotations are supported:
+
+    - `@@deprecated`
+    - `@@deprecated(since, message)`
+
+        Marks the property as deprecated and not recommended for use.
+        The plugin displays such properties as strikethrough.
+
+      - `since`
+          String literal indicating the platform version since which the property is considered deprecated.
+
+      - `message`
+          String literal providing an explanation of why the property is marked as deprecated.
+
 ### `DESIGN` statement default values block
 
 - `CHARWIDTH width [FLEX | NOFLEX]`
@@ -147,6 +167,14 @@ imageSetting
     - `NOFLEX`
 
         Keyword. If specified, the extension coefficient of the property value is automatically set equal to zero.
+
+- `PATTERN patternExpr`
+
+    Specifies the formatting pattern for the property value. The syntax for defining the pattern is similar to [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) or [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) depending on the value type.
+
+    - `patternExpr`
+
+      [Expression](Expression.md), whose value defines the formatting pattern.
 
 - `REGEXP rexpr [message]`
 
@@ -271,6 +299,18 @@ imageSetting
     - `HIDE`
 
         Keyword indicating that the mouse key combination should not be displayed in the property header.
+
+- `STICKY` | `NOSTICKY`
+
+    Keywords. `STICKY` indicates that the property in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically.
+
+- `syncType`
+
+    Defines whether the property is executed synchronously or asynchronously:
+
+    - `WAIT` — synchronously.
+
+    - `NOWAIT` — asynchronously. This is the default behaviour.
 
 - `DEFAULTCOMPARE [compare]`
 
