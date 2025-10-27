@@ -11,10 +11,16 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import net.coobird.thumbnailator.Thumbnails;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
+
+import static java.awt.image.BufferedImage.TYPE_BYTE_INDEXED;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class ResizeImageScaleAction extends InternalAction {
     private final ClassPropertyInterface fileInterface;
@@ -36,7 +42,12 @@ public class ResizeImageScaleAction extends InternalAction {
 
             if (scale != 0) {
                 try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale).toOutputStream(os);
+                    BufferedImage image = ImageIO.read(inputFile.getInputStream());
+                    Thumbnails.Builder<? extends InputStream> builder = Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale);
+                    if (image.getType() == TYPE_BYTE_INDEXED) {
+                        builder.imageType(TYPE_INT_ARGB);
+                    }
+                    builder.toOutputStream(os);
                     findProperty("resizedImage[]").change(new RawFileData(os), context);
                 }
             }

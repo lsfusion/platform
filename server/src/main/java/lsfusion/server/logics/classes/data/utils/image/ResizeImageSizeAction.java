@@ -15,8 +15,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
+
+import static java.awt.image.BufferedImage.TYPE_BYTE_INDEXED;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class ResizeImageSizeAction extends InternalAction {
     private final ClassPropertyInterface fileInterface;
@@ -51,7 +55,11 @@ public class ResizeImageSizeAction extends InternalAction {
 
                         if (scaleWidth != 0 && scaleHeight != 0) {
                             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                                Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight).toOutputStream(os);
+                                Thumbnails.Builder<? extends InputStream> builder = Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight);
+                                if (image.getType() == TYPE_BYTE_INDEXED) {
+                                    builder.imageType(TYPE_INT_ARGB);
+                                }
+                                builder.toOutputStream(os);
                                 findProperty("resizedImage[]").change(new RawFileData(os), context);
                             }
                         }
