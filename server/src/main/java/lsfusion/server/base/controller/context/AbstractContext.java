@@ -27,6 +27,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -208,8 +209,12 @@ public abstract class AbstractContext implements Context {
     }
 
     public Object aspectRequestUserInteraction(ClientAction action, String message) {
-        if (message == null)
-            throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + action.getClass());
+        if (message == null) {
+            if (action instanceof ConfirmClientAction)
+                return JOptionPane.YES_OPTION;
+            else
+                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + action.getClass());
+        }
         return null;
     }
 
