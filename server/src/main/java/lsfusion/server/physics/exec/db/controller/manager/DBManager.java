@@ -897,11 +897,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return createSession();
     }
 
-    @Deprecated
-    public DataSession createSession(SQLSession sql) throws SQLException {
-        return createSession(sql, null);
-    }
-
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
         Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
 
