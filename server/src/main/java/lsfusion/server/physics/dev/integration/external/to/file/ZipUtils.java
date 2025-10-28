@@ -22,26 +22,28 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipUtils {
 
-    public static File makeZipFile(File[] files) throws IOException {
+    public static FileData makeZipFile(Map<String, RawFileData> files, boolean zeroTime) throws IOException {
         File zipFile = File.createTempFile("zip", ".zip");
-        try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
-            if (files != null) {
-                for (File f : files) {
-                    if (f.isFile()) {
-                        String fileName = f.getName();
-                        InputStream bis = Files.newInputStream(f.toPath());
-                        zos.putNextEntry(new ZipEntry(fileName));
-                        byte[] buf = new byte[1024];
-                        int len;
-                        while ((len = bis.read(buf)) > 0) {
-                            zos.write(buf, 0, len);
-                        }
-                        bis.close();
+        try {
+            try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
+                for (Map.Entry<String, RawFileData> logFile : files.entrySet()) {
+                    InputStream bis = logFile.getValue().getInputStream();
+                    ZipEntry ze = new ZipEntry(logFile.getKey());
+                    if(zeroTime)
+                        ze.setTime(0); //to make zip file deterministic
+                    zos.putNextEntry(ze);
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = bis.read(buf)) > 0) {
+                        zos.write(buf, 0, len);
                     }
+                    bis.close();
                 }
             }
+            return new FileData(new RawFileData(zipFile), "zip");
+        } finally {
+            BaseUtils.safeDelete(zipFile);
         }
-        return zipFile;
     }
 
     public static Map<String, FileData> unpackFile(RawFileData file, String extension, boolean throwUnsupported) {
