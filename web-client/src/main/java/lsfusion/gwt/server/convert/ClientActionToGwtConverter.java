@@ -304,7 +304,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = WriteClientAction.class)
     public GWriteAction convertAction(WriteClientAction action) {
-        return new GWriteAction(FileUtils.saveActionFile(action.file.getRawFile(), action.file.getExtension(), action.file.getName()), WriteUtils.appendExtension(action.path, action.file));
+        String filePath = WriteUtils.appendExtension(action.path, action.file);
+        return new GWriteAction(FileUtils.saveActionFile(action.file.getRawFile(), BaseUtils.getFileExtension(filePath), BaseUtils.getFileName(filePath)), filePath);
     }
 
     @Converter(from = GetAvailablePrintersClientAction.class)
