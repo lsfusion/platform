@@ -1,6 +1,9 @@
 package lsfusion.server.physics.admin.service.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -22,13 +25,14 @@ public class MakeHeapDumpAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
-        try { 
-            File heapFile = new File("heap-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")) + ".hprof");
+        try {
+            String name = "heap-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
+            File heapFile = new File(name + ".hprof");
             int pid = getProcessID();
             Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
             while(!heapFile.exists())
                 Thread.sleep(1000);
-            context.delayUserInteraction(new WriteClientAction(heapFile, heapFile.getName()));
+            context.delayUserInteraction(new WriteClientAction(new NamedFileData(new FileData(new RawFileData(heapFile), BaseUtils.getFileExtension(heapFile)), name), name, false, true));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
