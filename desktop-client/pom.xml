@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-assemble</artifactId>
-        <version>6.1-SNAPSHOT</version>
+        <version>6.1</version>
         <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 
@@ -58,18 +58,18 @@
 
                                 <if>
                                     <not>
-                                        <available file="${signed.jar.file}"/>
+                                        <available file="${signed.jar.file}" />
                                     </not>
                                     <then>
-                                        <echo message="Signing file ${project.build.directory}/${assemble.file.name}"/>
-                                        <exec executable="${ssl.dir}/sign.sh" failonerror="true">-->
-                                            <arg value="${project.build.directory}/${assemble.file.name}"/>
-                                            <arg value="${signed.jars.dir}"/>
+                                        <echo message="Signing file ${project.build.directory}/${assemble.file.name}" />
+                                        <exec executable="${ssl.dir}/sign.sh" failonerror="true">--&gt;
+                                            <arg value="${project.build.directory}/${assemble.file.name}" />
+                                            <arg value="${signed.jars.dir}" />
                                         </exec>
                                     </then>
                                 </if>
                                 
-                                <copy file="${signed.jar.file}" todir="${project.build.directory}" overwrite="true"/>
+                                <copy file="${signed.jar.file}" todir="${project.build.directory}" overwrite="true" />
                             </target>
                         </configuration>
                     </execution>
