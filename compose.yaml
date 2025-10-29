@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=11111
 
   server:
-    image: lsfusion/server:6.1
+    image: lsfusion/server:6.2-SNAPSHOT
     depends_on:
       - db
     volumes:
@@ -19,7 +19,7 @@ services:
       - DB_PASSWORD=11111
 
   client:
-    image: lsfusion/client:6.1
+    image: lsfusion/client:6.2-SNAPSHOT
     depends_on:
       - server
     volumes:
