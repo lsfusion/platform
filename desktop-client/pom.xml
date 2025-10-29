@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-assemble</artifactId>
-        <version>6.1</version>
+        <version>6.2-SNAPSHOT</version>
         <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 

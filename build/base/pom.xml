@@ -3,7 +3,7 @@
     <groupId>lsfusion.platform.build</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>6.1</version>
+    <version>6.2-SNAPSHOT</version>
     <name>Base</name>
 
     <properties>
@@ -39,7 +39,7 @@
         <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
 
         <!-- DEPENDENCY VERSIONS -->
-        <lsfusion.version>6.1</lsfusion.version>
+        <lsfusion.version>6.2-SNAPSHOT</lsfusion.version>
 
         <google.guava.version>19.0</google.guava.version>
         
