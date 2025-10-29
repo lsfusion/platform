@@ -19,7 +19,7 @@ services:
       - DB_PASSWORD=11111
 
   client:
-    image: lsfusion/client:6.1-SNAPSHOT
+    image: lsfusion/client:6.1
     depends_on:
       - logics
     volumes:
