@@ -30,9 +30,21 @@ public class JSNIHelper {
         return (ret == null || ret === undefined) ? false : ret;
     }-*/;
 
-    public static native String getAttributeOrNull(Element elem, String name) /*-{
+    public static native boolean hasAttribute(Element elem, String name) /*-{
+        if (elem == null) return false;
+
         var ret = elem.getAttribute(name);
-        return (ret === undefined || ret == null) ? null : String(ret);
+        if (!(ret === undefined || ret == null))
+            return true;
+
+        var children = elem.children;
+        for (var i = 0; i < children.length; i++) {
+            if (@JSNIHelper::hasAttribute(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(children[i], name)) {
+                return true;
+            }
+        }
+
+        return false;
     }-*/;
 
     public static void consoleLog(String message) {

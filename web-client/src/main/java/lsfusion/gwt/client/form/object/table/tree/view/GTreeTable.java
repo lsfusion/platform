@@ -123,7 +123,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         return node != null && node.isExpandable();
                     },
                     event -> {
-                        fireExpandSelectedNode(null);
+                        if (!hasTreeNode(event)) {
+                            fireExpandSelectedNode(null);
+                        }
                     }, getWidget(), groupObject);
     }
 
@@ -367,16 +369,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
             Event event = handler.event;
-            boolean changeEvent = GMouseStroke.isChangeEvent(event);
-            if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
-                String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
-                if (attrID != null) {
-                    boolean consumed = false;
-                    if(changeEvent)
-                        consumed = changeTreeState(editCell);
-                    if(consumed)
-                        handler.consume();
-                }
+            if (GMouseStroke.isDownEvent(event) && hasTreeNode(event)) {
+                if (changeTreeState(editCell))
+                    handler.consume();
             }
         }
 
@@ -1262,5 +1257,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             ((GGridPropertyTableHeader) getHeader(0)).updateCaption(caption);
             headersChanged();
         }
+    }
+
+    private boolean hasTreeNode(Event event) {
+        return JSNIHelper.hasAttribute(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
     }
 }

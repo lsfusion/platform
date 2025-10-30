@@ -22,6 +22,7 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
         target.boxed = boxed;
     }
 
+    @Deprecated //deprecated since 6.2; removed in 7.0
     @SuppressWarnings("unused")
     public void setExpandOnClick(boolean expandOnClick) {
         target.expandOnClick = expandOnClick;
