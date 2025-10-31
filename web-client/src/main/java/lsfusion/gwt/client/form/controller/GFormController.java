@@ -331,19 +331,14 @@ public class GFormController implements EditManager {
             }
         }
 
-        filterBox.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
-            }
-        });
+        filterBox.addChangeHandler(event -> setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - (filterGroup.noNull ? 0 : 1)));
 
         GwtClientUtils.addClassName(filterBox, "filter-group-select");
         GwtClientUtils.addClassName(filterBox, "form-select");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
-            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + (filterGroup.noNull ? 0 : 1));
         }
     }
 
