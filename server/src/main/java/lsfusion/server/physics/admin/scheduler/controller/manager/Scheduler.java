@@ -495,10 +495,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             Calendar calendarTo = Calendar.getInstance();
             calendarTo.setTime(timeTo);
             calendarTo.set(Calendar.DAY_OF_MONTH, currentCal.get(Calendar.DAY_OF_MONTH));
-            if(timeFrom.compareTo(timeTo) > 0)
-                calendarTo.add(Calendar.DAY_OF_MONTH, 1);
             calendarTo.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
             calendarTo.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+            if(timeFrom.compareTo(timeTo) > 0)
+                calendarTo.add(Calendar.DAY_OF_MONTH, 1);
 
             return currentCal.getTimeInMillis() >= calendarFrom.getTimeInMillis() && currentCal.getTimeInMillis() <= calendarTo.getTimeInMillis();
         }
