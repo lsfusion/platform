@@ -1,5 +1,8 @@
 package lsfusion.base;
 
+import com.google.common.base.Throwables;
+
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,19 +67,30 @@ public class MIMETypeUtils {
         mimeTypeToExtensionMap = new HashMap<>();
         extensionToMIMETypeMap = new HashMap<>();
 
-        ResourceBundle bundle = ResourceBundle.getBundle("MIMETypes");
-        for (Enumeration e = bundle.getKeys(); e.hasMoreElements(); ) {
-            String type = (String) e.nextElement();
+        try (InputStream is = MIMETypeUtils.class.getClassLoader().getResourceAsStream("MIMETypes.properties")) {
+            if(is != null) {
+                Scanner scanner = new Scanner(is);
+                String line;
+                while (scanner.hasNextLine()) {
+                    line = scanner.nextLine().trim();
+                    if (line.isEmpty() || line.startsWith("#")) continue;
 
-            String[] extensions = split(bundle.getString(type));
-
-            if (mimeTypeToExtensionMap.get(type) == null) {
-                mimeTypeToExtensionMap.put(type, extensions[0]);
+                    int separator = line.indexOf(':');
+                    if (separator > 0) {
+                        String type = line.substring(0, separator).trim();
+                        String[] extensions = split(line.substring(separator + 1).trim());
+                        if (mimeTypeToExtensionMap.get(type) == null) {
+                            mimeTypeToExtensionMap.put(type, extensions[0]);
+                        }
+                        for (String extension : extensions) {
+                            extensionToMIMETypeMap.put(extension, type);
+                        }
+                    }
+                }
+                scanner.close();
             }
-
-            for (int i = 0; i < extensions.length; i++) {
-                extensionToMIMETypeMap.putIfAbsent(extensions[i], type);
-            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 
