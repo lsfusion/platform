@@ -40,6 +40,8 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
         - `docker-client-conf` - client configuration.
         - `docker-db` - database data.
         - `docker-server` - server files.
+
+        These directories are bind-mounted into their respective containers.
     - In the `docker-server` folder put the lsFusion language modules (`.lsf` files or folders with them), as well as additional resources (reports, Java files, images, CSS, JS, etc.). The server logs and the `settings.properties` file are also in the same folder.
 
 ---
@@ -100,4 +102,3 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
 
   Startup and configuration are similar to the steps described in [Launching the lsFusion platform](#docker-platform) with some specifics:
     - The Docker Compose project name defaults to `artifactId` tag value. To generate a different project name, override the Maven property `docker.compose.projectName`.
-    - If you do not use the `embedded-server` profile, the `docker-server` folder is not created when you start the application server container. The data will be stored in a Docker volume managed by the Docker Engine.
