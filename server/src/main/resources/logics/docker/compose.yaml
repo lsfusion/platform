@@ -1,8 +1,5 @@
 name: ${docker.compose.projectName}
 
-volumes:
-  docker-server:
-
 services:
   db:
     image: postgres:latest
@@ -14,15 +11,17 @@ services:
   logics:
     image: ${docker.image.fullName}
     volumes:
-      - docker-server:/lsfusion
+      - ./docker-server:/lsfusion
 
   server:
     image: lsfusion/server:6.2-SNAPSHOT
     depends_on:
-      - db
-      - logics
+      db:
+        condition: service_started
+      logics:
+        condition: service_completed_successfully
     volumes:
-      - docker-server:/lsfusion
+      - ./docker-server:/lsfusion
     environment:
       - DB_SERVER=db
       - DB_PASSWORD=11111
