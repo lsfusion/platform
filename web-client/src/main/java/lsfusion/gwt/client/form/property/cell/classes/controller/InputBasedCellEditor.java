@@ -85,8 +85,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     public void stop(Element parent, boolean cancel, boolean blurred) {
         if (!needReplace(parent)) {
             GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
-
-            setInputValue(parent, oldValue);
+            setInputValue(oldValue);
         }
 
         CellRenderer.setIsEditing(parent, inputElement, false);
@@ -95,13 +94,10 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         inputElementType = null;
     }
 
-    protected void setInputValue(Element parent, String value) {
-        setInputValue(inputElement, value);
+    protected void setInputValue(String value) {
+        inputElement.setValue(value);
     }
-    public static void setInputValue(InputElement element, String value) {
-        element.setValue(value);
-    }
-    private String getInputValue() {
+    protected String getInputValue() {
         return inputElement.getValue();
     }
 

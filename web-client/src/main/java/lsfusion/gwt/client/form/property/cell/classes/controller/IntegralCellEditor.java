@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.LocaleInfo;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -66,4 +65,18 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
 
         return result;
     }
+
+    @Override
+    protected void setInputValue(String value) {
+        // input type="number" in IOS crashes if value is an empty string or zero
+        if (value == null || value.isEmpty())
+            return;
+
+        // input type number does not support does not support commas, only periods are allowed.
+        if (property.inputType.isNumber())
+            inputElement.setValue(value.replace(",", "."));
+        else
+            super.setInputValue(value);
+    }
+
 }

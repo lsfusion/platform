@@ -135,6 +135,11 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         //title is shown as an embedded tooltip on mouseover
         element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
 
+        // input type number does not support formatting(e.g., spaces).
+        // It also does not support commas, only periods are allowed.
+        if (property.inputType.isNumber() && !isNull)
+            innerText = PValue.getStringValue(value).replace(",", ".");
+
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
@@ -145,7 +150,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
                     GwtClientUtils.removeClassName(inputElement, "is-invalid");
                 }
             }
-            updateInputContent(inputElement.cast(), innerText, value, rendererType);
+            updateInputContent(inputElement.cast(), innerText);
             if (placeholder != null)
                 inputElement.setAttribute("placeholder", placeholder);
             else
@@ -158,7 +163,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         return true;
     }
 
-    protected void updateInputContent(InputElement inputElement, String innerText, PValue value, RendererType rendererType) {
+    protected void updateInputContent(InputElement inputElement, String innerText) {
         TextBasedCellEditor.setTextInputValue(inputElement, innerText);
     }
 
