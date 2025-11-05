@@ -262,6 +262,12 @@ public class DefaultFormView extends FormView {
             setupFormButton(shareFunction);
         }
 
+        PropertyDrawView customizeFunction = null;
+        if(entity.customizeActionPropertyDraw != null) {
+            customizeFunction = get(entity.customizeActionPropertyDraw);
+            setupFormButton(customizeFunction);
+        }
+
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
@@ -286,6 +292,8 @@ public class DefaultFormView extends FormView {
         popupContainer.add(editFunction, version);
         if(shareFunction != null)
             popupContainer.add(shareFunction, version);
+        if(customizeFunction != null)
+            popupContainer.add(customizeFunction, version);
     }
 
     private void setupFormButton(PropertyDrawView action) {

@@ -26,6 +26,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -79,6 +80,7 @@ import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
@@ -108,6 +110,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public PropertyDrawEntity xlsActionPropertyDraw;
     public PropertyDrawEntity dropActionPropertyDraw;
     public PropertyDrawEntity shareActionPropertyDraw;
+    public PropertyDrawEntity customizeActionPropertyDraw;
     public PropertyDrawEntity refreshActionPropertyDraw;
     public PropertyDrawEntity applyActionPropertyDraw;
     public PropertyDrawEntity cancelActionPropertyDraw;
@@ -122,6 +125,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private final LocalizedString initCaption;
     private final String initImage;
     private final DebugInfo.DebugPoint debugPoint;
+
+    public List<String> formOrDesignStatementList = new ArrayList<>();
+    public void addFormOrDesignStatementTokens(List<String> tokens) {
+        formOrDesignStatementList.add(StringUtils.join(tokens, ""));
+    }
+    public String getCode() {
+        return StringUtils.join(formOrDesignStatementList, "\n");
+    }
 
     public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionObjectEntity<?>>> getEventActions() {
@@ -311,8 +322,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         closeActionPropertyDraw = addPropertyDraw(formClose, version);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
 
-        if(isNamed())
+        if(isNamed()) {
             shareActionPropertyDraw = addPropertyDraw(baseLM.getFormShare(), version);
+            customizeActionPropertyDraw = addPropertyDraw(baseLM.getFormCustomize(), version);
+        }
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
@@ -1630,7 +1643,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return this;
     }
 
-    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
+    @Override
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, String extendCode) {
+        if(extendCode != null) {
+            Pair<LA, EvalScriptingLogicsModule> evalResult = LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
+            FormEntity newForm = evalResult.second.getForm(getName());
+            return new Pair<>(newForm, getObjects().mapItValues(objectEntity -> newForm.getObject(objectEntity.getSID())).toRevMap());
+        }
         return new Pair<>(this, getObjects().toRevMap());
     }
 

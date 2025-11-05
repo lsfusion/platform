@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
@@ -102,12 +103,17 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<O, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL().LM, context.getSession(), mapObjectValues);
+        String extendCode = form instanceof FormEntity ? (String) context.getBL().systemEventsLM.extendCode.read(context, new DataObject(((FormEntity) form).getSID())) : null;
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL().LM, context.getSession(), mapObjectValues, extendCode);
         if(resolvedForm == null)
             return;
 
-        executeInternal(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second,
-                getContextFilterEntities().mapSetValues(entity -> entity.getInstance(context.getKeys(), resolvedForm.second.reverse())));
+        ImRevMap<ObjectEntity, O> mapResolvedObjects = resolvedForm.second;
+        if(extendCode != null) {
+            mapObjectValues = mapObjectValues.mapKeys(o -> o instanceof ObjectEntity ? mapResolvedObjects.get((ObjectEntity) o) : o);
+        }
+        executeInternal(resolvedForm.first, (ImMap<ObjectEntity, ? extends ObjectValue>) mapResolvedObjects.mapRevKeys((o, objectEntity) -> o).rightJoin(mapObjectValues), context, mapResolvedObjects,
+                getContextFilterEntities().mapSetValues(entity -> entity.getInstance(context.getKeys(), mapResolvedObjects.reverse())));
     }
 
     @IdentityInstanceLazy

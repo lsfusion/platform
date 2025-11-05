@@ -412,14 +412,18 @@ scope {
 }
 @init {
 	boolean initialDeclaration = false;
+	List<String> formStatementTokens;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-	if (inMainParseState() && initialDeclaration) {
-		self.finalizeScriptedForm($formStatement::form);
+	if (inMainParseState()) {
+	    $formStatement::form.getForm().addFormOrDesignStatementTokens(formStatementTokens);
+        if(initialDeclaration)
+    		self.finalizeScriptedForm($formStatement::form);
 	}
 }
-	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
+	:	{ self.getParser().enterFormOrDesignStatementState(); }
+	    (	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
 		(	formGroupObjectsList
@@ -440,6 +444,7 @@ scope {
 		|   formExtIDDeclaration
 		)*
 		';'
+		{ formStatementTokens = self.getParser().leaveFormOrDesignStatementState(); }
 	;
 
 dialogFormDeclaration
@@ -5209,9 +5214,17 @@ scope {
 @init {
 	ScriptingFormView formView = null;
 	boolean applyDefault = false;
+	List<String> designStatementTokens;
 }
-	:	header=designHeader	{ $designStatement::design = formView = $header.view; }
+@after {
+	if (inMainParseState()) {
+	    formView.getView().entity.addFormOrDesignStatementTokens(designStatementTokens);
+	}
+}
+	:   { self.getParser().enterFormOrDesignStatementState(); }
+	    header=designHeader	{ $designStatement::design = formView = $header.view; }
 		componentStatementBody[formView == null ? null : formView.getMainContainer()]
+		{ designStatementTokens = self.getParser().leaveFormOrDesignStatementState(); }
 	;
 
 designHeader returns [ScriptingFormView view]

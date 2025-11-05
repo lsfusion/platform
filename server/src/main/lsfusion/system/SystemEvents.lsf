@@ -1017,7 +1017,7 @@ EXTEND FORM computers
     PROPERTIES(c) READONLY javaVersionNativeDesktop, javaVersionNativeMobile, javaVersionWebDesktop, javaVersionWebMobile
 ;
 
-// NOTIFY, PUSH, SHARE actions
+// NOTIFY, PUSH, SHARE, CUSTOMIZE actions
 
 FORM shareUrlForm
     OBJECTS share = TEXT PANEL
@@ -1044,6 +1044,61 @@ share(STRING url, STRING text, STRING title) {
 
 shareAction(STRING relativeUrl) {
     share(currentContextUrl(relativeUrl), 'The link to share the form', 'Share');
+}
+
+dataExtendCode = DATA TEXT (Form);
+dataExtendCode = DATA TEXT (Form, User);
+extendCode(Form f) = OVERRIDE dataExtendCode(f), dataExtendCode(f,currentUser()); 
+extendCode(STRING sid) = extendCode(form(sid));
+
+saveCustomize(STRING formSID, TEXT extendCode) {
+    NEWSESSION {
+        dataExtendCode(form(formSID)) <- extendCode;
+        APPLY;
+    }
+    MESSAGE 'Need reopen form to apply changes';
+}
+
+saveCustomizeCurrentUser(STRING formSID, TEXT extendCode) {
+    NEWSESSION {
+        dataExtendCode(form(formSID), currentUser()) <- extendCode;
+        APPLY;
+    }
+    MESSAGE 'Need reopen form to apply changes';
+}
+
+FORM customizeForm
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCode = TEXT PANEL
+    PROPERTIES sid = VALUE(sid), code = VALUE(code), extendCode = VALUE(extendCode)
+    PROPERTIES saveCustomize(sid, extendCode), saveCustomizeCurrentUser(sid, extendCode)
+;
+
+DESIGN customizeForm {
+    NEW main BEFORE TOOLBARBOX {
+        MOVE PROPERTY(code) {
+            charHeight = 20;
+            caption = '';
+        }
+        MOVE PROPERTY(extendCode) {
+            charHeight = 20;
+            caption = '';
+        }
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            MOVE PROPERTY(saveCustomize(sid, extendCode));
+            MOVE PROPERTY(saveCustomizeCurrentUser(sid, extendCode));
+        }
+    }
+    REMOVE PROPERTY(sid);
+}
+
+customize(STRING sid, STRING code, STRING extendCode) {
+    SHOW customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode NULL;
+}
+
+customize(STRING sid, STRING code) {
+    customize(sid, code, extendCode(form(sid)));
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

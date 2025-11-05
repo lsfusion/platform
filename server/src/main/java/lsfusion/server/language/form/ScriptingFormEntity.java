@@ -68,6 +68,7 @@ import static lsfusion.server.logics.form.interactive.action.edit.FormSessionSco
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
     private FormEntity form;
+    public String code;
 
     public ScriptingFormEntity(ScriptingLogicsModule LM, FormEntity form) {
         assert form != null && LM != null;

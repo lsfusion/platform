@@ -400,6 +400,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
+    public LA getFormCustomize() {
+        try {
+            return findAction("formCustomize[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
     public LA<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");

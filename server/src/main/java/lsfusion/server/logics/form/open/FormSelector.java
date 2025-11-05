@@ -31,12 +31,12 @@ public interface FormSelector<O extends ObjectSelector> {
     }
     default Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BaseLogicsModule LM) {
         try {
-            return getForm(LM, null, MapFact.EMPTY()); // always not null since session is null
+            return getForm(LM, null, MapFact.EMPTY(), null); // always not null since session is null
         } catch (SQLException | SQLHandledException e) { // can't be since session is null
             throw Throwables.propagate(e);
         }
     }
-    Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BaseLogicsModule LM, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException;
+    Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BaseLogicsModule LM, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues, String extendCode) throws SQLException, SQLHandledException;
     default FormEntity getStaticForm(BaseLogicsModule LM, CustomClass customClass) {
         return getStaticForm(LM);
     } 
