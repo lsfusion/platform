@@ -57,7 +57,18 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (###object object)  { SHOW dialog###property###object###propPostfix OBJECTS a = object; }  ASON CONTEXTMENU property[###object] ASON CHANGE property[###object];
+    dialog###property caption (###object object)  { SHOW dialog###property###object###propPostfix OBJECTS a = object; }  ASON CHANGE property[###object];
+
+    FORM show###property###object###propPostfix caption
+        OBJECTS a=###object PANEL, d=DATE
+        PROPERTIES READONLY name(a), VALUE(d), data###property(a, d)
+        FILTERS data###property(a, d)
+    ;
+    DESIGN show###property###object###propPostfix {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
+
+    show###property caption (###object object)  { SHOW show###property###object###propPostfix OBJECTS a = object; }  ASON CONTEXTMENU property[###object];
 END
 
 // ---------------------------------- Object-date ------------------------------------------ //
@@ -92,7 +103,18 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
         PROPERTY(typeIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (###object object)  { SHOW dialog###property###object OBJECTS a = object; }  ASON CONTEXTMENU typeIdentity###classIdentity###property[###object] ASON CHANGE typeIdentity###classIdentity###property[###object];
+    dialog###property caption (###object object)  { SHOW dialog###property###object OBJECTS a = object; }  ASON CHANGE typeIdentity###classIdentity###property[###object];
+    
+    FORM show###property###object caption
+        OBJECTS a=###object PANEL, d=DATE
+        PROPERTIES READONLY typeIdentity(a), VALUE(d), data###typeIdentity###classIdentity###property(a, d)
+        FILTERS data###property(a, d)
+    ;
+    DESIGN show###property###object {
+        PROPERTY(typeIdentity(a)) { focusable = FALSE; }
+    }
+
+    show###property caption (###object object)  { SHOW show###property###object OBJECTS a = object; }  ASON CONTEXTMENU typeIdentity###classIdentity###property[###object];
 END
 
 // ----------------------------------- Object1-object2-date ------------------------------------------ //
