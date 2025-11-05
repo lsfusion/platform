@@ -13,6 +13,8 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class FormCustomizeAction extends FormFlowAction {
 
     private static LP showIf = createIfProperty(new Property[]{FormEntity.isAdd, FormEntity.isEditing}, new boolean[]{true, true});
@@ -28,7 +30,8 @@ public class FormCustomizeAction extends FormFlowAction {
 
     @Override
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getBL().systemEventsLM.customize.execute(context, new DataObject(form.entity.getSID()), new DataObject(form.entity.getCode()));
+        FormEntity formEntity = nvl(form.entity.originalForm, form.entity);
+        context.getBL().systemEventsLM.customize.execute(context, new DataObject(formEntity.getSID()), new DataObject(formEntity.getCode()));
     }
 
     @Override

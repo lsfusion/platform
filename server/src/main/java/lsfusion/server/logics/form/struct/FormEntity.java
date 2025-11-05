@@ -126,6 +126,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private final String initImage;
     private final DebugInfo.DebugPoint debugPoint;
 
+    public FormEntity originalForm;
+
     public List<String> formOrDesignStatementList = new ArrayList<>();
     public void addFormOrDesignStatementTokens(List<String> tokens) {
         formOrDesignStatementList.add(StringUtils.join(tokens, ""));
@@ -1648,6 +1650,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(extendCode != null) {
             Pair<LA, EvalScriptingLogicsModule> evalResult = LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
             FormEntity newForm = evalResult.second.getForm(getName());
+            newForm.originalForm = this;
             return new Pair<>(newForm, getObjects().mapItValues(objectEntity -> newForm.getObject(objectEntity.getSID())).toRevMap());
         }
         return new Pair<>(this, getObjects().toRevMap());
