@@ -619,6 +619,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return ThreadLocalContext.getBaseLM();
     }
 
+    protected BusinessLogics getBusinessLogics() {
+        return ThreadLocalContext.getBusinessLogics();
+    }
+
     public static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, Object object, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;

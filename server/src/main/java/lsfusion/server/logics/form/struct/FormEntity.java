@@ -24,13 +24,16 @@ import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
@@ -84,6 +87,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -1641,17 +1645,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @Override
-    public FormEntity getStaticForm(BaseLogicsModule LM) {
+    public FormEntity getStaticForm(BusinessLogics BL) {
         return this;
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, String extendCode) {
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
+        String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getSID())) : null;
         if(extendCode != null) {
-            Pair<LA, EvalScriptingLogicsModule> evalResult = LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
+            Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
             FormEntity newForm = evalResult.second.getForm(getName());
             newForm.originalForm = this;
-            return new Pair<>(newForm, getObjects().mapItValues(objectEntity -> newForm.getObject(objectEntity.getSID())).toRevMap());
+
+            //тут павінны быць мэпінг новыя -> старыя
+            return new Pair<>(newForm, newForm.getObjects().mapItValues(objectEntity -> getObject(objectEntity.getSID())).toRevMap());
         }
         return new Pair<>(this, getObjects().toRevMap());
     }

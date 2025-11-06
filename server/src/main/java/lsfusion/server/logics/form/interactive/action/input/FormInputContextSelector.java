@@ -28,7 +28,7 @@ public class FormInputContextSelector<O extends ObjectSelector, V extends Proper
 
     @Override
     public Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> getFilterAndOrders() {
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticFormMap = form.getForm(ThreadLocalContext.getBaseLM());
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticFormMap = form.getForm(ThreadLocalContext.getBusinessLogics());
         if(staticFormMap == null)
             return null;
 

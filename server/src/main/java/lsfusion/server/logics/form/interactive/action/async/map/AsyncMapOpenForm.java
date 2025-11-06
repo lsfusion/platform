@@ -96,7 +96,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
             }
         }
         
-        FormEntity staticForm = formSelector != null ? formSelector.getStaticForm(ThreadLocalContext.getBaseLM(), objectClass) : null;
+        FormEntity staticForm = formSelector != null ? formSelector.getStaticForm(ThreadLocalContext.getBusinessLogics(), objectClass) : null;
 
         return new AsyncOpenForm(staticForm != null ? staticForm.getCanonicalName() : null, 
                                  staticForm != null ? staticForm.getLocalizedCaption() : null,
