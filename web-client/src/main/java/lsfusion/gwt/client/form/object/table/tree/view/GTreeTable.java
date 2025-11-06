@@ -366,13 +366,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return null;
         }
 
+        EventTarget prevDownEventTarget = null;
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
             Event event = handler.event;
-            if (GMouseStroke.isDownEvent(event) && hasTreeNode(event)) {
-                if (changeTreeState(editCell))
+            if (GMouseStroke.isDownEvent(event) && hasTreeNode(event) && !ignoreDoubleDown(event)) {
+                if (changeTreeState(editCell)) {
+                    prevDownEventTarget = event.getEventTarget();
                     handler.consume();
+                }
             }
+        }
+
+        private boolean ignoreDoubleDown(Event event) {
+            return GMouseStroke.isDblDownEvent(event) && event.getEventTarget().equals(prevDownEventTarget);
         }
 
         private boolean changeTreeState(Cell cell) {
