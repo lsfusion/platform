@@ -144,7 +144,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         stopCellEditing();
         if (!properties.isEmpty()) {
             int selectedColumn = getSelectedColumn();
-            if (selectedColumn != -1) {
+            if (selectedColumn != -1 && model.getColumnCount() > selectedColumn) {
                 List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
                 ClientGroupObjectValue columnKey = getSelectedColumnKey();
                 columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
