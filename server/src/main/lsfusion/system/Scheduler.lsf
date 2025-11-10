@@ -66,6 +66,10 @@ active '{scheduler.active.scheduled.task}' = ABSTRACT BOOLEAN (ScheduledTask);
 active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (UserScheduledTask);
 active[ScheduledTask](UserScheduledTask t) += active(t);
 
+WHEN DROPPED(serverComputer()) DO {
+    active(ScheduledTask t) <- NULL WHERE t IS ScheduledTask;
+}
+
 daysOfMonth '{scheduler.days.of.month.scheduled.task}' = ABSTRACT STRING[255] (ScheduledTask);
 daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA STRING[255] (UserScheduledTask);
 daysOfMonth[ScheduledTask](UserScheduledTask t) += daysOfMonth(t);
