@@ -981,10 +981,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum '{document.markup.sum}'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 8;
+    prefix###markupSum '{document.markup.sum}'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 8 PATTERN '#,##0.00##';
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum '{document.markup.sum}'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 8 MATERIALIZED;
+    prefix###markupSum '{document.markup.sum}'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 8 MATERIALIZED PATTERN '#,##0.00##';
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
