@@ -1260,7 +1260,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (ActionOrPropertySettings.EditEvent editEvent : ps.editEvents) {
             LAWithParams action = (LAWithParams) editEvent.action;
             if (editEvent.isContextMenu())
-                setScriptedContextMenuAction(property, action, editEvent.contextMenuCaption);
+                setScriptedContextMenuAction(property, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.getLP().action));
             else if (editEvent.isKeyPress())
                 setScriptedKeyPressAction(property, action, editEvent.keyPress);
             else
@@ -1280,7 +1280,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage((ActionOrPropertyUsage) editEvent.action);
             String actionSID = action.action.getSID();
             if (editEvent.isContextMenu()) {
-                mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, editEvent.contextMenuCaption);
+                mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action));
                 action.setAsEventActionFor(actionSID, mainProperty);
             } else if (editEvent.isKeyPress()) {
                 mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
