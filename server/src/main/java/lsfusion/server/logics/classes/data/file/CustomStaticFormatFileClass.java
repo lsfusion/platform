@@ -22,11 +22,11 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return isRawFile() ? "RAWFILE" : "FILE";
     }
 
-    @Deprecated
+    @Deprecated //removed in 7.0
     public static CustomStaticFormatFileClass get(String description, String extensions) {
         return get(false, false, description, extensions);
     }
-    @Deprecated
+    @Deprecated //removed in 7.0
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {
         return get(multiple, storeName, description, SetFact.toExclSet(extensions.split(" ")));
     }
