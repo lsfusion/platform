@@ -1051,24 +1051,29 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
-showCustomizeAll = DATA LOCAL BOOLEAN(); 
-showCustomizeCurrentUser = DATA LOCAL BOOLEAN();
+formCustomizeBackground() += RGB(211, 229, 232);// IF extendCode(currentOriginalForm());
+
+enableOriginalCode = DATA LOCAL BOOLEAN(); 
+enableExtendCodeAll = DATA LOCAL BOOLEAN(); 
+enableExtendCodeCurrentUser = DATA LOCAL BOOLEAN();
 recreate = DATA LOCAL BOOLEAN();
 
 FORM customizeForm
-    PROPERTIES() showCustomizeAll, showCustomizeCurrentUser
+    PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
     OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL, extendCodeCurrentUser = TEXT PANEL
-    PROPERTIES sid = VALUE(sid), code = VALUE(code) READONLY, 
-        extendCodeAll = VALUE(extendCodeAll) SHOWIF showCustomizeAll(),
-        extendCodeCurrentUser = VALUE(extendCodeCurrentUser) SHOWIF showCustomizeCurrentUser()
-    ON INIT { 
-        showCustomizeAll() <- TRUE IF extendCodeAll; 
-        showCustomizeCurrentUser() <- TRUE IF extendCodeCurrentUser; 
+    PROPERTIES sid = VALUE(sid), 
+        code = VALUE(code) READONLY SHOWIF enableOriginalCode(), 
+        extendCodeAll = VALUE(extendCodeAll) SHOWIF enableExtendCodeAll(),
+        extendCodeCurrentUser = VALUE(extendCodeCurrentUser) SHOWIF enableExtendCodeCurrentUser()
+    ON INIT {
+        enableOriginalCode() <- TRUE;
+        enableExtendCodeAll() <- TRUE IF extendCodeAll;
+        enableExtendCodeCurrentUser() <- TRUE; 
     }
     ON OK {
-        IF showCustomizeAll() THEN
+        IF enableExtendCodeAll() THEN
             dataExtendCode(form(sid)) <- extendCodeAll;
-        IF showCustomizeCurrentUser() THEN
+        IF enableExtendCodeCurrentUser() THEN
             dataExtendCode(form(sid), currentUser()) <- extendCodeCurrentUser;
         recreate() <- TRUE;
     }
@@ -1080,8 +1085,10 @@ DESIGN customizeForm {
         NEW showPanel {
             horizontal = TRUE;
             caption = '';
-            MOVE PROPERTY(showCustomizeAll());
-            MOVE PROPERTY(showCustomizeCurrentUser());
+            alignment = CENTER;
+            MOVE PROPERTY(enableOriginalCode());
+            MOVE PROPERTY(enableExtendCodeAll());
+            MOVE PROPERTY(enableExtendCodeCurrentUser());
         }
         NEW codePanel {
             fill = 1;
@@ -1090,16 +1097,19 @@ DESIGN customizeForm {
                 caption = 'Original code';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
+                charWidth = 30;
             }
             MOVE PROPERTY(extendCodeAll) {
-                caption = 'Extend for all';
+                caption = 'Extend code for all';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
+                charWidth = 30;
             }
             MOVE PROPERTY(extendCodeCurrentUser) {
-                caption = 'Extend for current user';
+                caption = 'Extend code for current user';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
+                charWidth = 30;
             }
         }
     }

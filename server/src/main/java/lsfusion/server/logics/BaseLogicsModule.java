@@ -411,6 +411,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
+    public LP getFormCustomizeBackground() {
+        try {
+            return findProperty("formCustomizeBackground[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
     public LA<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");

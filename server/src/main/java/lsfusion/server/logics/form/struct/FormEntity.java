@@ -138,7 +138,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
     public void addFormOrDesignStatementTokens(List<String> tokens) {
-        formOrDesignStatementList.add(StringUtils.join(tokens, ""));
+        String result = StringUtils.join(tokens, "");
+        while(result.startsWith("\r") || result.startsWith("\n"))
+            result = result.substring(1);
+        formOrDesignStatementList.add(result);
     }
     public String getCode() {
         return StringUtils.join(formOrDesignStatementList, "\n");
@@ -378,6 +381,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(isNamed()) {
             shareActionPropertyDraw = addPropertyDraw(baseLM.getFormShare(), version);
             customizeActionPropertyDraw = addPropertyDraw(baseLM.getFormCustomize(), version);
+            customizeActionPropertyDraw.setPropertyExtra((PropertyObjectEntity<?>) baseLM.getFormCustomizeBackground().createObjectEntity(SetFact.EMPTYORDER()), PropertyDrawExtraType.BACKGROUND, version);
         }
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);

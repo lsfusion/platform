@@ -13,8 +13,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-import static lsfusion.base.BaseUtils.nvl;
-
 public class FormCustomizeAction extends FormFlowAction {
 
     private static LP showIf = createIfProperty(new Property[]{FormEntity.isAdd, FormEntity.isEditing}, new boolean[]{true, true});
