@@ -22,15 +22,6 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return isRawFile() ? "RAWFILE" : "FILE";
     }
 
-    @Deprecated //removed in 7.0
-    public static CustomStaticFormatFileClass get(String description, String extensions) {
-        return get(false, false, description, extensions);
-    }
-    @Deprecated //removed in 7.0
-    public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {
-        return get(multiple, storeName, description, SetFact.toExclSet(extensions.split(" ")));
-    }
-
     private static final List<CustomStaticFormatFileClass> instances = new ArrayList<>();
     
     public static CustomStaticFormatFileClass get() { // RAWFILE
