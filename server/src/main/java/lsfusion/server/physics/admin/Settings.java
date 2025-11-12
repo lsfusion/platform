@@ -3643,8 +3643,7 @@ public class Settings implements Cloneable {
         this.restrictLongValuesInStat = restrictLongValuesInStat;
     }
 
-    //since 7.0 default value will be true
-    public boolean hideDesktopClientLink = false;
+    public boolean hideDesktopClientLink = true;
 
     public boolean isHideDesktopClientLink() {
         return hideDesktopClientLink;
