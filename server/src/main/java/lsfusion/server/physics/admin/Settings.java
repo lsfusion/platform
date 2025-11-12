@@ -3573,4 +3573,15 @@ public class Settings implements Cloneable {
     public void setMajorStatChangeDegree(int majorStatChangeDegree) {
         this.majorStatChangeDegree = majorStatChangeDegree;
     }
+
+    //since 7.0 default value will be true
+    public boolean hideDesktopClientLink = false;
+
+    public boolean isHideDesktopClientLink() {
+        return hideDesktopClientLink;
+    }
+
+    public void setHideDesktopClientLink(boolean hideDesktopClientLink) {
+        this.hideDesktopClientLink = hideDesktopClientLink;
+    }
 }

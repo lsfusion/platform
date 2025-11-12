@@ -504,8 +504,9 @@ getServerSettings() + WHEN TRUE THEN {
             noAuthResourcesOrder(actualUrl) <- order;
         }
     }
-    
-    generateJnlpUrls();
+
+    IF NOT valueSettingBoolean('hideDesktopClientLink') THEN
+        generateJnlpUrls();
     EXPORT JSON FROM logicsName(), displayName(), logicsLogo = encodeBytesBase64(FILE(logicsLogo())), logicsIcon = encodeBytesBase64(FILE(logicsIcon())),
     PWAIcon = encodeBytesBase64(FILE(PWAIcon())), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
