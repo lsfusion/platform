@@ -3285,13 +3285,13 @@ public class Settings implements Cloneable {
     public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
         this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
     }
-    
+
     private boolean userFiltersManualApplyMode = false;
-    
+
     public boolean isUserFiltersManualApplyMode() {
         return userFiltersManualApplyMode;
     }
-    
+
     public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
@@ -3641,5 +3641,16 @@ public class Settings implements Cloneable {
 
     public void setRestrictLongValuesInStat(boolean restrictLongValuesInStat) {
         this.restrictLongValuesInStat = restrictLongValuesInStat;
+    }
+
+    //since 7.0 default value will be true
+    public boolean hideDesktopClientLink = false;
+
+    public boolean isHideDesktopClientLink() {
+        return hideDesktopClientLink;
+    }
+
+    public void setHideDesktopClientLink(boolean hideDesktopClientLink) {
+        this.hideDesktopClientLink = hideDesktopClientLink;
     }
 }
