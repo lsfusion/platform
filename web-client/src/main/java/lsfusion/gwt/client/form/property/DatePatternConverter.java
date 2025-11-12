@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import static lsfusion.gwt.client.form.property.SimpleDatePatternConverter.repeat;
 
@@ -11,10 +11,10 @@ public class DatePatternConverter {
         if(pattern == null)
             return null;
 
-        JavaScriptObject options = JSNIHelper.createObject();
-        JSNIHelper.setAttribute(options, "prefillYear", false);
+        JavaScriptObject options = GwtClientUtils.newObject();
+        GwtClientUtils.setAttribute(options, "prefillYear", false);
         String mask = SimpleDatePatternConverter.patternToMask(pattern, DatePatternConverter::convertSymbol);
-        JSNIHelper.setAttribute(options, "inputFormat", mask);
+        GwtClientUtils.setAttribute(options, "inputFormat", mask);
         return options;
     }
     

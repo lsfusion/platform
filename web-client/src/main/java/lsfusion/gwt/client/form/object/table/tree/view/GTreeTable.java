@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
@@ -1266,6 +1265,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private boolean hasTreeNode(Event event) {
-        return JSNIHelper.hasAttribute(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
+        return GwtClientUtils.hasAttribute(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
     }
 }

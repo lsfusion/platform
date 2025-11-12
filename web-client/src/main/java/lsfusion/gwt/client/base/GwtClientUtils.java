@@ -2081,4 +2081,29 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native void setAttribute(JavaScriptObject elem, String attr, String value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native void setAttribute(JavaScriptObject elem, String attr, boolean value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native boolean hasAttribute(Element elem, String name) /*-{
+        if (elem == null) return false;
+
+        var ret = elem.getAttribute(name);
+        if (!(ret === undefined || ret == null))
+            return true;
+
+        var children = elem.children;
+        for (var i = 0; i < children.length; i++) {
+            if (@GwtClientUtils::hasAttribute(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(children[i], name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }-*/;
+
 }
