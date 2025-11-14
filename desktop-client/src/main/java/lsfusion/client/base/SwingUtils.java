@@ -222,7 +222,7 @@ public class SwingUtils {
         textPane.setContentType("text/html");
         textPane.setText(toHtml(message)); //message can be null
         textPane.setEditable(false);
-        JRootPane rootPane = MainFrame.instance.getRootPane();
+        JRootPane rootPane = MainFrame.instance != null ? MainFrame.instance.getRootPane() : null;
         if (rootPane != null) {
             int width = (int) (rootPane.getWidth() * 0.3);
             textPane.setSize(new Dimension(width, 10));
