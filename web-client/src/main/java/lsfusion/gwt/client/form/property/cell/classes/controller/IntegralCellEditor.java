@@ -65,18 +65,4 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
 
         return result;
     }
-
-    @Override
-    protected void setInputValue(String value) {
-        // input type="number" in IOS crashes if value is an empty string or zero
-        if (value == null || value.isEmpty())
-            return;
-
-        // input type number does not support does not support commas, only periods are allowed.
-        if (property.inputType.isNumber())
-            inputElement.setValue(value.replace(",", "."));
-        else
-            super.setInputValue(value);
-    }
-
 }

@@ -22,11 +22,9 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 import java.util.function.*;
 
-import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.MainFrame.v5;
+import static lsfusion.gwt.client.view.MainFrame.*;
 
 public class GwtClientUtils {
 
@@ -135,10 +133,16 @@ public class GwtClientUtils {
             input = createFocusElement("textarea");
         } else {
             input = createFocusElement("input");
-            input.setAttribute("type", type);
+            if (mobile && type.equals("number")) {
+                input.setPropertyBoolean("isFakeNumber", true);
+                input.setAttribute("type", "text");
+                input.setAttribute("inputmode", "decimal");
+            } else {
+                input.setAttribute("type", type);
+            }
         }
         return (InputElement) input;
-    };
+    }
 
     public static InputElement createImageElement(String type) {
         Element element = Document.get().createElement(type);

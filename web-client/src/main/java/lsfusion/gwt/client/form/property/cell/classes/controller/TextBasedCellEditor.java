@@ -29,7 +29,6 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
-import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -155,7 +154,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
 
         if(value != null)
-            setTextInputValue(value);
+            setInputValue(value);
 
         if (selectAll && !property.notSelectAll)
             inputElement.select();
@@ -226,22 +225,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
-    protected void setTextInputValue(String value) {
-        setTextInputValue(inputElement, value);
-    }
-    public static void setTextInputValue(InputElement element, String value) {
-        element.setValue(value);
-
-        InputBasedCellRenderer.updateAutosizeTextarea(element);
-    }
-    private String getTextInputValue() {
-        return getTextInputValue(inputElement);
-    }
-
-    public static String getTextInputValue(InputElement element) {
-        return element.getValue();
-    }
-
     boolean plainPaste = false;
     private void addPasteListener(InputElement inputElement) {
         GwtClientUtils.setEventListener(inputElement, ONPASTE, event -> {
@@ -309,7 +292,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected boolean checkInputValidity(Element parent, String stringToAdd) {
         int cursorPosition = textBoxImpl.getCursorPos(inputElement);
         int selectionLength = textBoxImpl.getSelectionLength(inputElement);
-        String currentValue = getTextInputValue();
+        String currentValue = getInputValue();
 
 //        When opening the form and moving by keyboard to the date field and entering any digit from the keyboard
 //        get an error: IndexOutOfBoundsException. E.g. because currentValue != null, but just an empty string, and cursorPosition + selectionLength = 10
@@ -382,7 +365,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             throw new InvalidEditException(true);
         }
 
-        String stringValue = getTextInputValue();
+        String stringValue = getInputValue();
         if (hasList && contextAction == null && completionType.isCheckCommitInputInList() && !suggestBox.isValidValue(stringValue)) {
             throw new InvalidEditException();
         }

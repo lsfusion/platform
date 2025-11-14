@@ -95,10 +95,24 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     }
 
     protected void setInputValue(String value) {
-        inputElement.setValue(value);
+        setInputValue(inputElement, value);
     }
+    public static void setInputValue(InputElement element, String value) {
+        element.setValue(getInputNumberValue(element, value));
+        InputBasedCellRenderer.updateAutosizeTextarea(element);
+    }
+
     protected String getInputValue() {
-        return inputElement.getValue();
+        return getInputNumberValue(inputElement, getInputValue(inputElement));
+    }
+    public static String getInputValue(InputElement element) {
+        return element.getValue();
+    }
+
+    // input type number does not support commas, only periods are allowed.
+    private static String getInputNumberValue(Element element, String value) {
+        return element.getPropertyBoolean("isFakeNumber") ?
+                value.replace(",", ".") :  value;
     }
 
     @Override
