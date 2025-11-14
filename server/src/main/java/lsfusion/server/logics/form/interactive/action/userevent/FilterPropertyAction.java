@@ -16,11 +16,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class FilterPropertyAction extends SystemExplicitAction {
-    private final PropertyDrawEntity property;
+    private final String property;
 
     private final ClassPropertyInterface fromInterface;
 
-    public FilterPropertyAction(PropertyDrawEntity property, ValueClass... valueClasses) {
+    public FilterPropertyAction(String property, ValueClass... valueClasses) {
         super(valueClasses);
         this.property = property;
 
@@ -31,11 +31,13 @@ public class FilterPropertyAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-
-        GroupObjectEntity toDraw = property.getToDraw(formInstance.entity);
-        String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
-        String value = (String) context.getKeyObject(fromInterface);
-        context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()),
-                ObjectValue.getValue(value, StringClass.instance));
+        PropertyDrawEntity propertyEntity = formInstance.entity.getPropertyDraw(property);
+        if(propertyEntity != null) {
+            GroupObjectEntity toDraw = propertyEntity.getToDraw(formInstance.entity);
+            String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
+            String value = (String) context.getKeyObject(fromInterface);
+            context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(propertyEntity.getSID()),
+                    ObjectValue.getValue(value, StringClass.instance));
+        }
     }
 }

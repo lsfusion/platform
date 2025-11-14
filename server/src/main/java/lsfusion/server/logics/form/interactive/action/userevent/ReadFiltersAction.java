@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 public class ReadFiltersAction extends ReadUserEventsAction<List<FilterInstance>> {
-    public ReadFiltersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
+    public ReadFiltersAction(String groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        List<FilterInstance> userFilters = formInstance.getGroupObjectInstance(groupObject.ID).getUserFilters();
+        List<FilterInstance> userFilters = formInstance.getGroupObjectInstance(groupObject).getUserFilters();
         store(context, userFilters);
     }
 

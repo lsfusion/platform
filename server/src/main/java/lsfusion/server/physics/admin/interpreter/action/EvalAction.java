@@ -19,11 +19,14 @@ import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+
+import static lsfusion.base.BaseUtils.nvl;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
@@ -79,7 +82,9 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         String script = getScript(context);
 
         ExecutionStack stack = context.stack;
-        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, stack.getEvalLM(), action);
+
+        FormEntity formEntity = context.getFormInstance(false, false).entity;
+        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, nvl(formEntity.getEvalLM(), stack.getEvalLM()), action);
         return evalResult.first.execute(context.override(new EvalStack(evalResult.second, context.getSession(), stack)), getParams(context));
     }
     @Override

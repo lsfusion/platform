@@ -93,6 +93,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.or;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
@@ -130,7 +132,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private final String initImage;
     private final DebugInfo.DebugPoint debugPoint;
 
-    public FormEntity originalForm;
+    private EvalScriptingLogicsModule evalLM;
+    public EvalScriptingLogicsModule getEvalLM() {
+        return evalLM;
+    }
+    private FormEntity originalForm;
+    public FormEntity getOriginalForm() {
+        return nvl(originalForm, this);
+    }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
     public void addFormOrDesignStatementTokens(List<String> tokens) {
@@ -531,6 +540,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public RegularFilterGroupEntity getRegularFilterGroup(int id) {
         for (RegularFilterGroupEntity filterGroup : getRegularFilterGroupsIt()) {
             if (filterGroup.getID() == id) {
+                return filterGroup;
+            }
+        }
+
+        return null;
+    }
+
+    public RegularFilterGroupEntity getRegularFilterGroup(String sid) {
+        for (RegularFilterGroupEntity filterGroup : getRegularFilterGroupsIt()) {
+            if (filterGroup.getSID().equals(sid)) {
                 return filterGroup;
             }
         }
@@ -961,6 +980,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
         for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
             if (propertyDraw.getID() == iID) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
+
+    public PropertyDrawEntity<?> getPropertyDraw(String sid) {
+        for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
+            if (propertyDraw.getSID().equals(sid)) {
                 return propertyDraw;
             }
         }
@@ -1655,9 +1684,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(extendCode != null) {
             Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
             FormEntity newForm = evalResult.second.getForm(getName());
+            newForm.evalLM = evalResult.second;
             newForm.originalForm = this;
 
-            //тут павінны быць мэпінг новыя -> старыя
             return new Pair<>(newForm, newForm.getObjects().mapItValues(objectEntity -> getObject(objectEntity.getSID())).toRevMap());
         }
         return new Pair<>(this, getObjects().toRevMap());

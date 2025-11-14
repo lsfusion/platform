@@ -447,6 +447,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return componentSIDHandler.find(sid, version);
     }
 
+    public ComponentView getComponentBySID(String sid) {
+        return componentSIDHandler.find(sid);
+    }
+
     public PropertyDrawView getEditButton() {
         return editButton;
     }
@@ -656,6 +660,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public ContainerView getContainerBySID(String sid, Version version) {
         ComponentView component = getComponentBySID(sid, version);
+        if (component != null && !(component instanceof ContainerView)) {
+            throw new IllegalStateException(sid + " component has to be container");
+        }
+        return (ContainerView) component;
+    }
+
+    public ContainerView getContainerBySID(String sid) {
+        ComponentView component = getComponentBySID(sid);
         if (component != null && !(component instanceof ContainerView)) {
             throw new IllegalStateException(sid + " component has to be container");
         }

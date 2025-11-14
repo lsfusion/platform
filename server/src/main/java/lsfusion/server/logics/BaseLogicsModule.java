@@ -1193,42 +1193,42 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addOrderAProp(GroupObjectEntity object, DataClass fromType) {
+    public LA addOrderAProp(String object, DataClass fromType) {
         return addAction(null, new LA<>(new OrderAction(object, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
+    public LA addReadOrdersAProp(String object, LP toProperty) {
         return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA addFilterAProp(GroupObjectEntity object, DataClass fromType) {
+    public LA addFilterAProp(String object, DataClass fromType) {
         return addAction(null, new LA<>(new FilterAction(object, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
+    public LA addReadFiltersAProp(String object, LP toProperty) {
         return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterGroupAProp(Integer filterGroup, DataClass fromType) {
+    public LA<?> addFilterGroupAProp(String filterGroup, DataClass fromType) {
         return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
+    public LA<?> addReadFilterGroupsAProp(String filterGroup, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, DataClass fromType) {
+    public LA<?> addFilterPropertyAProp(String property, DataClass fromType) {
         return addAction(null, new LA<>(new FilterPropertyAction(property, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFiltersPropertyAProp(PropertyDrawEntity property, LP<?> toProperty) {
+    public LA<?> addReadFiltersPropertyAProp(String property, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
     }
 

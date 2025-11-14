@@ -32,6 +32,16 @@ public abstract class SIDHandler<K> {
             return iterator.hasNext() ? iterator.next() : null;
         }
     }
+
+    public K find(String sid) {
+        Iterable<K> list = sidToObject.getListIt(sid);
+        if (list == null) {
+            return null;
+        } else {
+            Iterator<K> iterator = list.iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        }
+    }
     
     public void remove(K object, Version version) {
         sidToObject.removeAll(getSID(object), version);

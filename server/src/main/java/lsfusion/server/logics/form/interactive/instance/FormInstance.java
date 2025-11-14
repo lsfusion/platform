@@ -847,6 +847,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
+    public ObjectInstance getObjectInstance(String sid) {
+        for (ObjectInstance object : getObjects())
+            if (object.getSID().equals(sid))
+                return object;
+        return null;
+    }
+
     public PropertyDrawInstance getPropertyDraw(int propertyID) {
         for (PropertyDrawInstance property : properties)
             if (property.getID() == propertyID)

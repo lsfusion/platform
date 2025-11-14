@@ -17,10 +17,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
-    protected final GroupObjectEntity groupObject;
+    protected final String groupObject;
     protected final LP<?> toProperty;
 
-    public ReadUserEventsAction(GroupObjectEntity groupObject, LP<?> toProperty) {
+    public ReadUserEventsAction(String groupObject, LP<?> toProperty) {
         this.groupObject = groupObject;
         this.toProperty = toProperty;
     }
@@ -37,7 +37,7 @@ public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
             writeObject = new JSONArray(objects).toString();
         }
         Charset jsonCharset = ExternalUtils.jsonCharset;
-        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : null, "json", context, jsonCharset.toString());
+        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : RawFileData.EMPTY, "json", context, jsonCharset.toString());
     }
 
     public abstract List<JSONObject> createJSON(T items);

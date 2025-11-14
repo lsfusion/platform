@@ -15,10 +15,10 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class ReadFiltersPropertyAction extends SystemExplicitAction {
-    private final PropertyDrawEntity property;
+    private final String property;
     private final LP<?> toProperty;
 
-    public ReadFiltersPropertyAction(PropertyDrawEntity property, LP<?> toProperty) {
+    public ReadFiltersPropertyAction(String property, LP<?> toProperty) {
         this.property = property;
         this.toProperty = toProperty;
     }
@@ -26,12 +26,14 @@ public class ReadFiltersPropertyAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
+        PropertyDrawEntity propertyEntity = formInstance.entity.getPropertyDraw(property);
+        if(propertyEntity != null) {
+            GroupObjectEntity toDraw = propertyEntity.getToDraw(formInstance.entity);
+            String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
+            context.getBL().userEventsLM.filtersPropertyAction.execute(context, new DataObject(groupObject), new DataObject(propertyEntity.getSID()));
 
-        GroupObjectEntity toDraw = property.getToDraw(formInstance.entity);
-        String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
-        context.getBL().userEventsLM.filtersPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()));
-
-        if(toProperty != null)
-            toProperty.change((String) context.getBL().userEventsLM.filtersProperty.read(context), context);
+            if (toProperty != null)
+                toProperty.change((String) context.getBL().userEventsLM.filtersProperty.read(context), context);
+        }
     }
 }

@@ -15,10 +15,10 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class ReadFilterGroupsAction extends SystemExplicitAction {
-    private final Integer filterGroup;
+    private final String filterGroup;
     private final LP<?> toProperty;
 
-    public ReadFilterGroupsAction(Integer filterGroup, LP<?> toProperty) {
+    public ReadFilterGroupsAction(String filterGroup, LP<?> toProperty) {
         this.filterGroup = filterGroup;
         this.toProperty = toProperty;
     }
@@ -30,7 +30,7 @@ public class ReadFilterGroupsAction extends SystemExplicitAction {
         Integer index = 0;
         for(Map.Entry<RegularFilterGroupInstance, RegularFilterInstance> entry : formInstance.regularFilterValues.entrySet()) {
             RegularFilterGroupInstance regularFilterGroup = entry.getKey();
-            if(regularFilterGroup.getID() == filterGroup) {
+            if(regularFilterGroup.entity.getSID().equals(filterGroup)) {
                 index = regularFilterGroup.filters.indexOf(entry.getValue()) + 1;
             }
         }
