@@ -40,10 +40,9 @@ public class SystemProperties {
 
     public static void setDGCParams() {
         if (System.getProperty("sun.rmi.dgc.server.leaseValue") == null) {
-            System.setProperty("java.rmi.dgc.leaseValue", "7200000");
+            System.setProperty("java.rmi.dgc.leaseValue", "1800000");
             System.setProperty("java.rmi.dgc.checkInterval", "900000");
-            System.setProperty("sun.rmi.transport.tcp.handshakeTimeout", "60000");
-            System.setProperty("sun.rmi.dgc.server.gcInterval", "7200000");
+            System.setProperty("sun.rmi.dgc.server.gcInterval", String.valueOf(Long.MAX_VALUE)); // отключаем по сути
         }
     }
 
