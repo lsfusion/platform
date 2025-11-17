@@ -28,7 +28,7 @@ public class SeekObjectAction extends SeekAction {
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        form.seekObjects(null, MapFact.singleton(form.instanceFactory.getInstance(form.entity.getObject(object.getSID())), context.getSingleKeyValue()), type);
+        form.seekObjects(null, MapFact.singleton(form.instanceFactory.getExInstance(object), context.getSingleKeyValue()), type);
     }
 
     @Override

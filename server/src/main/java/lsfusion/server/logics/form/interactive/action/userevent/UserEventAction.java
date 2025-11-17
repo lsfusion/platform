@@ -21,11 +21,11 @@ import java.util.List;
 public abstract class UserEventAction extends SystemExplicitAction {
     public static final String PROPERTY_KEY = "property";
     
-    protected final String groupObject;
+    protected final GroupObjectEntity groupObject;
 
     private final ClassPropertyInterface fromInterface;
 
-    public UserEventAction(String groupObject, ValueClass... valueClasses) {
+    public UserEventAction(GroupObjectEntity groupObject, ValueClass... valueClasses) {
         super(valueClasses);
         this.groupObject = groupObject;
 

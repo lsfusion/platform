@@ -20,14 +20,14 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 public class OrderAction extends UserEventAction {
     public static final String DESC_KEY = "desc";
     
-    public OrderAction(String groupObject, ValueClass... valueClasses) {
+    public OrderAction(GroupObjectEntity groupObject, ValueClass... valueClasses) {
         super(groupObject, valueClasses);
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        GroupObjectInstance groupObjectInstance = formInstance.getGroupObjectInstance(groupObject);
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         if(groupObjectInstance != null) {
             List<JSONObject> objectList = readJSON(context);
             LinkedHashMap<Integer, Boolean> orders = new LinkedHashMap<>();

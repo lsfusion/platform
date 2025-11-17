@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 
 public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyDrawInstance, Boolean>> {
-    public ReadOrdersAction(String groupObject, LP<?> toProperty) {
+    public ReadOrdersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        GroupObjectInstance groupObjectInstance = formInstance.getGroupObjectInstance(groupObject);
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         ImOrderMap<OrderInstance, Boolean> userOrders = groupObjectInstance.getUserOrders();
         ImMap<OrderInstance, PropertyDrawInstance> propMapping = groupObjectInstance.getUserOrdersPropertyMapping();
 

@@ -554,7 +554,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance form = getFormFlowInstance();
-        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, getPushedAddObject(), stack);
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getExInstance(object), cls, getPushedAddObject(), stack);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {

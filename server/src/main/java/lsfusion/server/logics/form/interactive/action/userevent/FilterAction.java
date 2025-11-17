@@ -27,7 +27,7 @@ public class FilterAction extends UserEventAction {
     public static final String VALUE_KEY = "value";
     public static final String OR_KEY = "or";
     
-    public FilterAction(String groupObject, ValueClass... valueClasses) {
+    public FilterAction(GroupObjectEntity groupObject, ValueClass... valueClasses) {
         super(groupObject, valueClasses);
     }
     
@@ -36,7 +36,7 @@ public class FilterAction extends UserEventAction {
         FormInstance formInstance = context.getFormInstance(true, true);
         List<JSONObject> objectList = readJSON(context);
 
-        GroupObjectInstance groupObjectInstance = formInstance.getGroupObjectInstance(groupObject);
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         if(groupObjectInstance != null) {
 
             List<FilterClientAction.FilterItem> filters = new ArrayList<>();

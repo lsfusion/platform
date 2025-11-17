@@ -66,6 +66,7 @@ import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -1193,42 +1194,42 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addOrderAProp(String object, DataClass fromType) {
+    public LA addOrderAProp(GroupObjectEntity object, DataClass fromType) {
         return addAction(null, new LA<>(new OrderAction(object, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA addReadOrdersAProp(String object, LP toProperty) {
+    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
         return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA addFilterAProp(String object, DataClass fromType) {
+    public LA addFilterAProp(GroupObjectEntity object, DataClass fromType) {
         return addAction(null, new LA<>(new FilterAction(object, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA addReadFiltersAProp(String object, LP toProperty) {
+    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
         return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterGroupAProp(String filterGroup, DataClass fromType) {
+    public LA<?> addFilterGroupAProp(RegularFilterGroupEntity filterGroup, DataClass fromType) {
         return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFilterGroupsAProp(String filterGroup, LP<?> toProperty) {
+    public LA<?> addReadFilterGroupsAProp(RegularFilterGroupEntity filterGroup, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterPropertyAProp(String property, DataClass fromType) {
+    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, DataClass fromType) {
         return addAction(null, new LA<>(new FilterPropertyAction(property, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFiltersPropertyAProp(String property, LP<?> toProperty) {
+    public LA<?> addReadFiltersPropertyAProp(PropertyDrawEntity property, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
     }
 

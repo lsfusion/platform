@@ -12,13 +12,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-import static lsfusion.base.BaseUtils.nvl;
-
 public class ReadFiltersPropertyAction extends SystemExplicitAction {
-    private final String property;
+    private final PropertyDrawEntity property;
     private final LP<?> toProperty;
 
-    public ReadFiltersPropertyAction(String property, LP<?> toProperty) {
+    public ReadFiltersPropertyAction(PropertyDrawEntity property, LP<?> toProperty) {
         this.property = property;
         this.toProperty = toProperty;
     }
@@ -26,7 +24,7 @@ public class ReadFiltersPropertyAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        PropertyDrawEntity propertyEntity = formInstance.entity.getPropertyDraw(property);
+        PropertyDrawEntity propertyEntity = (PropertyDrawEntity) formInstance.instanceFactory.getExInstance(property).entity;
         if(propertyEntity != null) {
             GroupObjectEntity toDraw = propertyEntity.getToDraw(formInstance.entity);
             String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();

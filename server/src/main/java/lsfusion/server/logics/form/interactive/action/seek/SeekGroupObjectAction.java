@@ -28,6 +28,6 @@ public class SeekGroupObjectAction extends SeekAction {
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        form.seekObjects(form.getGroupObjectInstance(groupObject.getSID()), objects.mapOrderSetValues(objectEntity -> form.getObjectInstance(objectEntity.getSID())).mapOrderValues((int i) -> context.getKeyValue(getOrderInterfaces().get(i))), type);
+        form.seekObjects(form.instanceFactory.getExInstance(groupObject), objects.mapOrderSetValues(form.instanceFactory::getExInstance).mapOrderValues((int i) -> context.getKeyValue(getOrderInterfaces().get(i))), type);
     }
 }

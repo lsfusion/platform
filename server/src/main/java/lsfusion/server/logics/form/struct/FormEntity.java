@@ -93,8 +93,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.or;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
@@ -138,7 +136,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     private FormEntity originalForm;
     public FormEntity getOriginalForm() {
-        return nvl(originalForm, this);
+        return originalForm;
     }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();

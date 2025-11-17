@@ -54,7 +54,11 @@ public class InstanceFactory {
     private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<ContainerView, ContainerViewInstance> containerViewInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<ComponentView, BaseComponentViewInstance> baseComponentViewInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<RegularFilterGroupEntity, RegularFilterGroupInstance> regularFilterGroupInstances = MapFact.mSmallStrongMap();
 
+    public ObjectInstance getExInstance(ObjectEntity entity) {
+        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getObject(entity.getSID()) : entity);
+    }
 
     public ObjectInstance getInstance(ObjectEntity entity) {
         ObjectInstance objectInstance = objectInstances.get(entity);
@@ -63,6 +67,10 @@ public class InstanceFactory {
             objectInstances.exclAdd(entity, objectInstance);
         }
         return objectInstance;
+    }
+
+    public GroupObjectInstance getExInstance(GroupObjectEntity entity) {
+        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getGroupObject(entity.getSID()) : entity);
     }
 
     public GroupObjectInstance getInstance(GroupObjectEntity entity) {
@@ -147,6 +155,10 @@ public class InstanceFactory {
         return actionInstance;
     }
 
+    public PropertyDrawInstance getExInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
+        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getPropertyDraw(entity.getSID()) : entity);
+    }
+
     public PropertyDrawInstance getInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
 
         PropertyDrawInstance propertyDrawInstance = propertyDrawInstances.get(entity);
@@ -185,6 +197,10 @@ public class InstanceFactory {
         return containerViewInstance;
     }
 
+    public BaseComponentViewInstance getExInstance(ComponentView entity) {
+        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getRichDesign().getContainerBySID(entity.getSID()) : entity);
+    }
+
     public BaseComponentViewInstance getInstance(ComponentView entity) {
         BaseComponentViewInstance baseComponentViewInstance = baseComponentViewInstances.get(entity);
         if (baseComponentViewInstance == null) {
@@ -208,15 +224,21 @@ public class InstanceFactory {
         return baseComponentViewInstance;
     }
 
+    public RegularFilterGroupInstance getExInstance(RegularFilterGroupEntity entity) {
+        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getRegularFilterGroup(entity.getSID()) : entity);
+    }
+
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {
-
-        RegularFilterGroupInstance group = new RegularFilterGroupInstance(entity);
-
-        for (RegularFilterEntity filter : entity.getFiltersList()) {
-            group.addFilter(getInstance(filter));
+        RegularFilterGroupInstance regularFilterGroupInstance = regularFilterGroupInstances.get(entity);
+        if(regularFilterGroupInstance == null) {
+            RegularFilterGroupInstance group = new RegularFilterGroupInstance(entity);
+            for (RegularFilterEntity filter : entity.getFiltersList()) {
+                group.addFilter(getInstance(filter));
+            }
+            regularFilterGroupInstances.exclAdd(entity, group);
+            return group;
         }
-
-        return group;
+        return regularFilterGroupInstance;
     }
 
     public RegularFilterInstance getInstance(RegularFilterEntity entity) {

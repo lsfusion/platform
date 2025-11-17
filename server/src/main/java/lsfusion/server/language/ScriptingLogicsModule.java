@@ -2642,7 +2642,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.orders);
             }
-            return addScriptedJoinAProp(baseLM.addOrderAProp(go.getSID(), (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addOrderAProp(go, (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2654,7 +2654,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(baseLM.addReadOrdersAProp(go.getSID(), targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadOrdersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2669,7 +2669,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.filters);
             }
-            return addScriptedJoinAProp(baseLM.addFilterAProp(go.getSID(), (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addFilterAProp(go, (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2681,7 +2681,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(baseLM.addReadFiltersAProp(go.getSID(), targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFiltersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2694,7 +2694,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.filterGroups);
             }
-            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup.getSID(), (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup, (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2705,7 +2705,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
         if (filterGroup != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup.getSID(), targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup, targetProp), Collections.emptyList());
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2716,12 +2716,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(from == null) {
             from = new LPWithParams(BL.userEventsLM.filtersProperty);
         }
-        return addScriptedJoinAProp(baseLM.addFilterPropertyAProp(property.getSID(), (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
+        return addScriptedJoinAProp(baseLM.addFilterPropertyAProp(property, (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
     }
 
     public LAWithParams addScriptedReadFiltersPropertyProp(PropertyDrawEntity property, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
         LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-        return new LAWithParams(baseLM.addReadFiltersPropertyAProp(property.getSID(), targetProp), Collections.emptyList());
+        return new LAWithParams(baseLM.addReadFiltersPropertyAProp(property, targetProp), Collections.emptyList());
     }
 
     public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {

@@ -175,7 +175,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                 MList<RequestResult> mResult = ListFact.mList(resolvedInputObjects.size());
                 for (int i = 0; i < resolvedInputObjects.size(); i++) {
                     ObjectEntity inputObject = resolvedInputObjects.get(i);
-                    ObjectInstance object = newFormInstance.instanceFactory.getInstance(inputObject);
+                    ObjectInstance object = newFormInstance.instanceFactory.getExInstance(inputObject);
 
                     ObjectValue chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
                     mResult.add(new RequestResult(chosenValue, object.getType(), inputProps.get(i)));

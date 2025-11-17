@@ -17,10 +17,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
-    protected final String groupObject;
+    protected final GroupObjectEntity groupObject;
     protected final LP<?> toProperty;
 
-    public ReadUserEventsAction(String groupObject, LP<?> toProperty) {
+    public ReadUserEventsAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         this.groupObject = groupObject;
         this.toProperty = toProperty;
     }

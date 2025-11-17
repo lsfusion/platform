@@ -16,11 +16,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class FilterPropertyAction extends SystemExplicitAction {
-    private final String property;
+    private final PropertyDrawEntity property;
 
     private final ClassPropertyInterface fromInterface;
 
-    public FilterPropertyAction(String property, ValueClass... valueClasses) {
+    public FilterPropertyAction(PropertyDrawEntity property, ValueClass... valueClasses) {
         super(valueClasses);
         this.property = property;
 
@@ -31,7 +31,7 @@ public class FilterPropertyAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        PropertyDrawEntity propertyEntity = formInstance.entity.getPropertyDraw(property);
+        PropertyDrawEntity propertyEntity = (PropertyDrawEntity) formInstance.instanceFactory.getExInstance(property).entity;
         if(propertyEntity != null) {
             GroupObjectEntity toDraw = propertyEntity.getToDraw(formInstance.entity);
             String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();

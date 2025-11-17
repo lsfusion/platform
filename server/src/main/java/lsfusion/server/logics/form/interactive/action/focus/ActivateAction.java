@@ -32,7 +32,7 @@ public class ActivateAction extends SystemExplicitAction {
             } else {
                 //activate tab
                 FormInstance formInstance = context.getFormInstance(false, true);
-                formInstance.activateTab(formInstance.entity.getRichDesign().getContainerBySID(requestedTab.getSID()));
+                formInstance.activateTab(formInstance.instanceFactory.getExInstance(requestedTab).entity);
             }
         }
 

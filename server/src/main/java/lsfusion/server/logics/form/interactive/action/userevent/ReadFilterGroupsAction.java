@@ -7,18 +7,18 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
 
 public class ReadFilterGroupsAction extends SystemExplicitAction {
-    private final String filterGroup;
+    private final RegularFilterGroupEntity filterGroup;
     private final LP<?> toProperty;
 
-    public ReadFilterGroupsAction(String filterGroup, LP<?> toProperty) {
+    public ReadFilterGroupsAction(RegularFilterGroupEntity filterGroup, LP<?> toProperty) {
         this.filterGroup = filterGroup;
         this.toProperty = toProperty;
     }
@@ -26,12 +26,14 @@ public class ReadFilterGroupsAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
+        RegularFilterGroupInstance regularFilterGroup = formInstance.instanceFactory.getExInstance(filterGroup);
 
         Integer index = 0;
-        for(Map.Entry<RegularFilterGroupInstance, RegularFilterInstance> entry : formInstance.regularFilterValues.entrySet()) {
-            RegularFilterGroupInstance regularFilterGroup = entry.getKey();
-            if(regularFilterGroup.entity.getSID().equals(filterGroup)) {
-                index = regularFilterGroup.filters.indexOf(entry.getValue()) + 1;
+        for (RegularFilterInstance filter : formInstance.regularFilterValues.values()) {
+            int filterIndex = regularFilterGroup.filters.indexOf(filter);
+            if (filterIndex >= 0) {
+                index = filterIndex + 1;
+                break;
             }
         }
 
