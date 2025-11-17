@@ -25,8 +25,8 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-
-import static lsfusion.base.BaseUtils.nvl;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
@@ -84,7 +84,14 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         ExecutionStack stack = context.stack;
 
         FormEntity formEntity = context.getFormInstance(false, false).entity;
-        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, nvl(formEntity.getEvalLM(), stack.getEvalLM()), action);
+        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
+        EvalScriptingLogicsModule customizeEvalLM = formEntity.getEvalLM();
+        if (customizeEvalLM != null)
+            parentLMs.add(customizeEvalLM);
+        EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
+        if (stackEvalLM != null)
+            parentLMs.add(stackEvalLM);
+        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, parentLMs, action);
         return evalResult.first.execute(context.override(new EvalStack(evalResult.second, context.getSession(), stack)), getParams(context));
     }
     @Override

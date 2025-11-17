@@ -1410,7 +1410,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
+    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+        return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
     }
 }

@@ -10,12 +10,12 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.LazyProperty;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class EvalUtils {
@@ -25,8 +25,8 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
-        return evaluateAndFindAction(BL, parentLM, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
+    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
+        return evaluateAndFindAction(BL, parentLMs, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
     private static class WrapResult {
@@ -39,13 +39,15 @@ public class EvalUtils {
         }
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, String action) {
+    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
-        String parentModule = parentLM != null ? parentLM.getName() : null;
-        WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
+        Set<String> parentModules = new HashSet<>();
+        if(parentLMs != null)
+            parentLMs.forEach(parentLM -> parentModules.add(parentLM.getName()));
+        WrapResult wrapResult = wrapScript(BL, parentModules, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code);
+        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLMs, code);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         
         module.order = BL.getLogicModules().size() + 1;
@@ -86,7 +88,7 @@ public class EvalUtils {
         }
     }
 
-    private static WrapResult wrapScript(BusinessLogics BL, String parentModule, String namespace, String require, String priorities, String script, String name) {
+    private static WrapResult wrapScript(BusinessLogics BL, Set<String> parentModules, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -104,7 +106,7 @@ public class EvalUtils {
                 isFirst = false;
                 strBuilder.append(module.getName());
             }
-            if(parentModule != null) {
+            for(String parentModule : parentModules) {
                 strBuilder.append(isFirst ? "" : ", ").append(parentModule);
             }
         }
