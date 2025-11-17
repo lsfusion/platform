@@ -107,8 +107,8 @@ public class MainController {
 //        http://stackoverflow.com/questions/2808582/memory-leak-with-swing-drag-and-drop/2860372#2860372
         System.setProperty("swing.bufferPerWindow", "false");
 
-        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-//        System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
+        System.setProperty("java.rmi.dgc.leaseValue", "7200000");
+        System.setProperty("sun.rmi.dgc.client.gcInterval", "7200000");
 
         // попытка исправить падающий иногда IllegalArgumentException, связанный с TimSort. исправлено в Java9
         // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7075600
