@@ -66,8 +66,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.nvl;
-
 @SuppressWarnings("UnusedDeclaration")
 public class GwtToClientConverter extends ObjectConverter {
     private static final class InstanceHolder {
@@ -109,7 +107,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GNumericDTO.class)
     public BigDecimal convertBigDecimal(GNumericDTO dto) {
-        return new BigDecimal(dto.value);
+        return BigDecimal.valueOf(dto.value);
     }
 
     @Converter(from = GIntervalValue.class)
