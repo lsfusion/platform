@@ -1005,7 +1005,7 @@ public abstract class LogicsModule {
         mapInterfaces = SetFact.addOrderExcl(mapInterfaces, selectOrderInterfaces);
 
         return addAction(null, new LA<>(
-                new ForAction<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, selectTopInterfaces, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
+                new ForAction<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, selectTopInterfaces, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline, true))
         );
     }
 
@@ -1139,7 +1139,17 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
                                                              T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
-                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull) {
+        return addInputAProp(valueClass, targetProp, hasDrawOldValue, objectOldValue, orderInterfaces, contextList, contextScope,
+                contextSelector,  contextActions, customEditorFunction, notNull, true);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
+                                                             T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
+                                                             FormSessionScope contextScope, InputContextSelector<T> contextSelector,
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull, boolean hasNewEdit) {
         // adding reset action
         if (!notNull && targetProp != null) {
             contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
@@ -1151,7 +1161,7 @@ public abstract class LogicsModule {
                 contextList = contextList.newSession();
             }
 
-            if (valueClass instanceof ConcreteCustomClass) {
+            if (valueClass instanceof ConcreteCustomClass && hasNewEdit) {
                 // adding newedit action
                 contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
             }
@@ -1215,7 +1225,7 @@ public abstract class LogicsModule {
             return addInputAProp((CustomClass)objectClass, inputProp, false, formAction.mapObjects.get(inputObject), listInterfaces,
                     mappedList.result, scope, inputSelector,
                     mappedContextActions.result.addList(new InputContextAction<>(AppServerImage.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)),
-                    customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    customChangeFunction, notNull, form.getNFStaticForm().hasNewEdit()); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));

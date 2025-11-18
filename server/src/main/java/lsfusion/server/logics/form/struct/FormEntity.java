@@ -31,6 +31,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
@@ -1710,5 +1711,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return this;
         
         return null;
+    }
+
+    public boolean hasNewEdit() {
+        for(PropertyDrawEntity propertyDraw : getPropertyDrawsList()) {
+            ActionOrProperty prop = propertyDraw.actionOrProperty.property;
+            if(prop instanceof ForAction && ((ForAction<?>) prop).isNewEdit)
+                return true;
+        }
+        return false;
     }
 }
