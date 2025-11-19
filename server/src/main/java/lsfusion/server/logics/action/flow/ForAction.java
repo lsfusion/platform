@@ -75,10 +75,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     private final ImSet<I> noInline; // из extend interfaces
     private final boolean forceInline;
-
-    public final boolean isNewEdit;
    
-    public ForAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, SelectTop<I> selectTop, ActionMapImplement<?, I> action, ActionMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline, boolean isNewEdit) {
+    public ForAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, SelectTop<I> selectTop, ActionMapImplement<?, I> action, ActionMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline) {
        super(caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
@@ -97,7 +95,6 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         this.noInline = noInline;
         this.forceInline = forceInline;
-        this.isNewEdit = isNewEdit;
 
         this.selectTop = selectTop;
 

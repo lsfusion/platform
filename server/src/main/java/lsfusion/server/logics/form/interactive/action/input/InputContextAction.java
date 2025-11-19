@@ -16,9 +16,11 @@ import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.Function;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
@@ -28,21 +30,28 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     public final Map<String, BindingMode> bindingModesMap;
     public final Integer priority;
     public final ImList<QuickAccess> quickAccessList;
+    public final Function<SecurityPolicy, Boolean> check;
     
     public final Action<P> action;
 
     public final ImRevMap<P, V> mapValues; // external context
 
     public InputContextAction(String image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
-        this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
+        this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, null, action, mapValues);
     }
-    public InputContextAction(AppServerImage.Reader image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
+
+    public InputContextAction(String image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Function<SecurityPolicy, Boolean> check, Action<P> action, ImRevMap<P, V> mapValues) {
+        this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, check, action, mapValues);
+    }
+    public InputContextAction(AppServerImage.Reader image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority,
+                              ImList<QuickAccess> quickAccessList, Function<SecurityPolicy, Boolean> check, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
         this.id = id;
         this.keyStroke = keyStroke;
         this.bindingModesMap = bindingModesMap;
         this.priority = priority;
         this.quickAccessList = quickAccessList;
+        this.check = check;
         this.action = action;
 
         this.mapValues = mapValues;
@@ -62,7 +71,7 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     }
 
     public <C extends PropertyInterface> InputContextAction<P, C> map(ImRevMap<V, C> map) {
-        return new InputContextAction<>(image, id, keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues.join(map));
+        return new InputContextAction<>(image, id, keyStroke, bindingModesMap, priority, quickAccessList, check, action, mapValues.join(map));
     }
 
     public AsyncMapEventExec<V> getAsyncEventExec() {

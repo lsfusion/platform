@@ -854,7 +854,7 @@ public class PropertyFact {
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, SelectTop<L> selectTop, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
-        ForAction<L> forAction = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, selectTop, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline, true);
+        ForAction<L> forAction = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, selectTop, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
         return forAction.getMapImplement();
     }
 
