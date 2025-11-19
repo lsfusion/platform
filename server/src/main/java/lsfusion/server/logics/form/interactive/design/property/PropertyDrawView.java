@@ -332,7 +332,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         if (isProperty(context)) {
             Type type = getAssertCellType(context);
-            if (type instanceof TextClass)
+            if (type instanceof StringClass)
                 return false;
         }
 
