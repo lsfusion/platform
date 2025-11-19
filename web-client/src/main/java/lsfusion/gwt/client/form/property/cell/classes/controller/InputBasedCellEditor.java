@@ -85,8 +85,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     public void stop(Element parent, boolean cancel, boolean blurred) {
         if (!needReplace(parent)) {
             GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
-
-            setInputValue(parent, oldValue);
+            setInputValue(oldValue);
         }
 
         CellRenderer.setIsEditing(parent, inputElement, false);
@@ -95,14 +94,25 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         inputElementType = null;
     }
 
-    protected void setInputValue(Element parent, String value) {
+    protected void setInputValue(String value) {
         setInputValue(inputElement, value);
     }
     public static void setInputValue(InputElement element, String value) {
-        element.setValue(value);
+        element.setValue(getInputNumberValue(element, value));
+        InputBasedCellRenderer.updateAutosizeTextarea(element);
     }
-    private String getInputValue() {
-        return inputElement.getValue();
+
+    protected String getInputValue() {
+        return getInputNumberValue(inputElement, getInputValue(inputElement));
+    }
+    public static String getInputValue(InputElement element) {
+        return element.getValue();
+    }
+
+    // input type number does not support commas, only periods are allowed.
+    private static String getInputNumberValue(Element element, String value) {
+        return element.getAttribute("inputmode").equals("decimal") ?
+                value.replace(",", ".") :  value;
     }
 
     @Override
