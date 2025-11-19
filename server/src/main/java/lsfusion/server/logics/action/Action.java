@@ -899,6 +899,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public boolean ignoreChangeSecurityPolicy;
+    public boolean isNewEdit;
 
     @Override
     public ApplyGlobalEvent getApplyEvent() {
