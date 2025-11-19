@@ -133,11 +133,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         }
         //title is shown as an embedded tooltip on mouseover
         element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
-
-        // input type number does not support formatting(e.g., spaces).
-        if (property.inputType.isNumber() && !isNull)
-            innerText = PValue.getStringValue(value);
-
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();

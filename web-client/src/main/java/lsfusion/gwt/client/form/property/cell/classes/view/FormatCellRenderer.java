@@ -5,8 +5,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-
 public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer {
 
     protected GFormatType getFormatType(RendererType rendererType) {
@@ -15,6 +13,10 @@ public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer {
 
     @Override
     public String format(PValue value, RendererType rendererType, String pattern) {
+        // input type number does not support formatting(e.g., spaces).
+        if(rendererType == RendererType.CELL && isTagInput() && getInputType(rendererType).inputType.isNumber())
+            return PValue.getStringValue(value);
+
         return getFormatType(rendererType).formatString(value, pattern);
     }
 

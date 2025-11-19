@@ -133,8 +133,9 @@ public class GwtClientUtils {
             input = createFocusElement("textarea");
         } else {
             input = createFocusElement("input");
+            //change to type="text" to disable validation of entered values at the mobile browser level
+            // for example, a separator that does not match the device locale causes errors
             if (mobile && type.equals("number")) {
-                input.setPropertyBoolean("isFakeNumber", true);
                 input.setAttribute("type", "text");
                 input.setAttribute("inputmode", "decimal");
             } else {
