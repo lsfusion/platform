@@ -27,6 +27,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.function.Predicate;
+
 public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T> {
 
     public final InputContextListEntity<?, T> list;
@@ -93,7 +95,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
         if (policy != null && actions != null) {
             for (int i = 0; i < actions.length; i++) {
                 if (actions[i].id.equals(AppImage.INPUT_NEW)) {
-                    if (!policy.checkPropertyEditObjectsPermission(securityProperty)) {
+                    Predicate<SecurityPolicy> check = actions[i].check;
+                    if ((check != null && !check.test(policy)) || !policy.checkPropertyEditObjectsPermission(securityProperty)) {
                         return ArrayUtils.remove(actions, i);
                     }
                     break;
