@@ -20,7 +20,7 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
@@ -30,7 +30,7 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     public final Map<String, BindingMode> bindingModesMap;
     public final Integer priority;
     public final ImList<QuickAccess> quickAccessList;
-    public final Function<SecurityPolicy, Boolean> check;
+    public final Predicate<SecurityPolicy> check;
     
     public final Action<P> action;
 
@@ -40,11 +40,8 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
         this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, null, action, mapValues);
     }
 
-    public InputContextAction(String image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Function<SecurityPolicy, Boolean> check, Action<P> action, ImRevMap<P, V> mapValues) {
-        this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, check, action, mapValues);
-    }
     public InputContextAction(AppServerImage.Reader image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority,
-                              ImList<QuickAccess> quickAccessList, Function<SecurityPolicy, Boolean> check, Action<P> action, ImRevMap<P, V> mapValues) {
+                              ImList<QuickAccess> quickAccessList, Predicate<SecurityPolicy> check, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
         this.id = id;
         this.keyStroke = keyStroke;

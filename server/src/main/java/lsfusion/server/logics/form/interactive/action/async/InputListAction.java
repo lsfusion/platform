@@ -6,7 +6,7 @@ import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class InputListAction {
     public AppServerImage.Reader action;
@@ -16,11 +16,11 @@ public class InputListAction {
     public Map<String, BindingMode> bindingModesMap;
     public Integer priority;
     public ImList<QuickAccess> quickAccessList;
-    public Function<SecurityPolicy, Boolean> check;
+    public Predicate<SecurityPolicy> check;
     public int index;
 
     public InputListAction(AppServerImage.Reader action, String id, AsyncEventExec asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap,
-                           Integer priority, ImList<QuickAccess> quickAccessList, Function<SecurityPolicy, Boolean> check, int index) {
+                           Integer priority, ImList<QuickAccess> quickAccessList, Predicate<SecurityPolicy> check, int index) {
         this.action = action;
         this.id = id;
         this.asyncExec = asyncExec;

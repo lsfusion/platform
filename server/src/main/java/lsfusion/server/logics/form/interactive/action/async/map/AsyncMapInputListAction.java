@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class AsyncMapInputListAction<T extends PropertyInterface> {
 
@@ -33,12 +33,12 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     public Map<String, BindingMode> bindingModesMap;
     public Integer priority;
     public ImList<QuickAccess> quickAccessList;
-    public Function<SecurityPolicy, Boolean> check;
+    public Predicate<SecurityPolicy> check;
     public int index;
 
     public AsyncMapInputListAction(AppServerImage.Reader action, String id, AsyncMapEventExec<T> asyncExec, String keyStroke,
                                    Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList,
-                                   Function<SecurityPolicy, Boolean> check, int index) {
+                                   Predicate<SecurityPolicy> check, int index) {
         this.action = action;
         this.id = id;
         this.asyncExec = asyncExec;

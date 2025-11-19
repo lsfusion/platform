@@ -31,7 +31,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.Collections;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class InputPropertyListEntity<P extends PropertyInterface, V extends PropertyInterface> extends InputListEntity<P, V, Property<P>> {
 
@@ -56,7 +56,7 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
     }
 
     public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp,
-                                                                                   FormSessionScope scope, Function<SecurityPolicy, Boolean> check) {
+                                                                                   FormSessionScope scope, Predicate<SecurityPolicy> check) {
         LP<P> lp = new LP<>(property);
         ImOrderSet<P> listInterfaces = lp.listInterfaces;
         P singleInterface = singleInterface();
@@ -68,7 +68,7 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
                 BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
                         singleIndex)); // replacing property with the string
 
-        return new InputContextAction<>(AppServerImage.ADD, AppImage.INPUT_NEW, "INSERT", Collections.singletonMap("editing", BindingMode.ONLY), null,
+        return new InputContextAction<>(AppServerImage.createActionImage(AppServerImage.ADD), AppImage.INPUT_NEW, "INSERT", Collections.singletonMap("editing", BindingMode.ONLY), null,
                 QuickAccess.EMPTY, check, newEdit.getActionOrProperty(), listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
     }
 

@@ -1164,7 +1164,7 @@ public abstract class LogicsModule {
             if (valueClass instanceof ConcreteCustomClass) {
                 // adding newedit action
                 contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass,
-                        targetProp, contextScope, policy -> form.getNFStaticForm().showNewEdit(policy)), contextActions);
+                        targetProp, contextScope, policy -> form.getStaticForm(baseLM).showNewEdit(policy)), contextActions);
             }
         }
 
