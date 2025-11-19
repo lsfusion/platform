@@ -19,4 +19,8 @@ public abstract class GFormatType extends GTextBasedType {
     protected PValue getDefaultWidthValue() {
         return null;
     }
+
+    public String formatISOString(PValue value) {
+        throw new UnsupportedOperationException();
+    }
 }
