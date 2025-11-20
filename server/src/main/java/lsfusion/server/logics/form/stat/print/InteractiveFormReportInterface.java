@@ -20,7 +20,7 @@ public class InteractiveFormReportInterface extends InteractiveFormDataInterface
         super(form, groupId, preferences);
     }
     
-    @Deprecated
+    @Deprecated //removed in 7.0
     public FormInstance getForm() {
         return form;
     }
