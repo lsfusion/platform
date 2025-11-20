@@ -19,11 +19,6 @@ public class InteractiveFormReportInterface extends InteractiveFormDataInterface
     public InteractiveFormReportInterface(FormInstance form, Integer groupId, FormUserPreferences preferences) {
         super(form, groupId, preferences);
     }
-    
-    @Deprecated //removed in 7.0
-    public FormInstance getForm() {
-        return form;
-    }
 
     @Override
     public BusinessLogics getBL() {
