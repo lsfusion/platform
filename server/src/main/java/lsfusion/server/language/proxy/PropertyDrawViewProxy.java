@@ -95,8 +95,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
         }
     }
-
-    //deprecated
+    @Deprecated //removed in 7.0
     public void setChangeKeyPriority(int priority) {
         if(target.changeKey != null)
             target.changeKey.priority = priority;
@@ -118,7 +117,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //deprecated
+    @Deprecated //removed in 7.0
     public void setChangeMousePriority(int priority) {
         if(target.changeMouse != null)
         target.changeMouse.priority = priority;
@@ -298,7 +297,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //deprecated
+    @Deprecated
     public void setValueAlignment(FlexAlignment valueAlignment) {
         setValueAlignmentHorz(valueAlignment);
     }
