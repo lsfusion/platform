@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -15,7 +14,6 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
@@ -30,7 +28,6 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -40,7 +37,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class RemoteUIContext extends AbstractContext {
@@ -122,15 +118,10 @@ public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                                           DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack,
-                                           boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters,
-                                           boolean readonly, FormOptions options) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
-                session,
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
-                mapObjects, stack, isModal,
-                noCancel, manageSession,
-                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale(), options);
+                                           DataSession session, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive,
+                                           FormOptions options) throws SQLException, SQLHandledException {
+        return new FormInstance(formEntity, getLogicsInstance(), inputObjects, session, getSecurityPolicy(), getFocusListener(),
+                getClassListener(), mapObjects, stack, checkOnOk, showDrop, interactive, isExternal(), getLocale(), options);
     }
 
     protected abstract int getExportPort();

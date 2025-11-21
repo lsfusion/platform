@@ -165,7 +165,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
             context.executeSessionEvents();
 
-        FormInstance newFormInstance = createFormInstance(context, syncType, form, resolvedInputObjects.getCol().toSet(), mapObjectValues, showFormType, contextFilters);
+        FormInstance newFormInstance = context.createAndRequestFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, checkOnOk, isShowDrop(),
+                new FormOptions(noCancel, manageSession, showFormType, contextFilters, readOnly, forbidDuplicate, syncType, formId));
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
 
@@ -183,14 +184,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             }
             context.writeRequested(result);
         }
-    }
-
-    private FormInstance createFormInstance(ExecutionContext<ClassPropertyInterface> context, boolean syncType, FormEntity form, ImSet<ObjectEntity> inputObjects,  ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ShowFormType showFormType, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
-        FormInstance newFormInstance = context.createFormInstance(form, inputObjects, mapObjects, context.getSession(), syncType,
-                noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly,
-                new FormOptions(noCancel, manageSession, mapObjects, showFormType, contextFilters, readOnly, forbidDuplicate, syncType, formId));
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
-        return newFormInstance;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -25,13 +26,7 @@ public class FormRecreateAction extends InternalAction {
         FormInstance form = context.getFormInstance(true, true);
         form.formClose(context, true);
 
-        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getForm().getForm(context.getBL(), context.getSession(), form.options.mapObjects);
-        FormEntity formEntity = resolvedForm.first;
-        FormInstance newFormInstance = context.createFormInstance(formEntity, form.inputObjects, form.options.mapObjects, context.getSession(),
-                form.isModal(), form.options.noCancel, form.options.manageSession, form.checkOnOk, form.showDrop,
-                true, form.options.type.getWindowType(), form.options.contextFilters, form.options.showReadonly, form.options);
-        context.requestFormUserInteraction(newFormInstance, form.options.type, form.options.forbidDuplicate, form.options.syncType, form.options.formId);
-
-        context.getSession().navigator.refresh();
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
+        context.createAndRequestFormInstance(resolvedForm.first, form.inputObjects, MapFact.EMPTY(), form.checkOnOk, form.showDrop, form.options);
     }
 }

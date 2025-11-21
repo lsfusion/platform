@@ -239,14 +239,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public final FormInstanceContext context;
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener focusListener, CustomClassListener classListener,
-                        ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack,
-                        boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
-                        boolean showDrop, boolean interactive, WindowFormType type,
-                        boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
-                        boolean showReadOnly, Locale locale, FormOptions options) throws SQLException, SQLHandledException {
-        this.isSync = isSync;
+                        FocusListener focusListener, CustomClassListener classListener, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                        ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isExternal,
+                        Locale locale, FormOptions options) throws SQLException, SQLHandledException {
+        WindowFormType type = options.getWindowFormType();
+        this.isSync = options.syncType;
         this.isModal = type.isModal();
         this.isEditing = type.isEditing();
         this.checkOnOk = checkOnOk;
@@ -258,7 +255,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.BL = logicsInstance.getBusinessLogics();
         this.inputObjects = inputObjects;
 
-        if(showReadOnly)
+        if(options.showReadonly)
             securityPolicy = securityPolicy.add(logicsInstance.getSecurityManager().getReadOnlySecurityPolicy(session));
         this.securityPolicy = securityPolicy;
 
@@ -340,8 +337,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         properties = mProperties.immutableList();
 
         ImSet<FilterEntityInstance> allFixedFilters = BaseUtils.immutableCast(entity.getFixedFilters());
-        if (contextFilters != null)
-            allFixedFilters = allFixedFilters.addExcl(contextFilters);
+        if (options.contextFilters != null)
+            allFixedFilters = allFixedFilters.addExcl(options.contextFilters);
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
@@ -416,22 +413,22 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(interactive) {
             int prevOwners = updateSessionOwner(true, stack);
 
-            if(manageSession == ManageSessionType.AUTO)
-                adjManageSession = heuristicManageSession(context, showReadOnly, prevOwners, session.isNested());
+            if(options.manageSession == ManageSessionType.AUTO)
+                adjManageSession = heuristicManageSession(context, options.showReadonly, prevOwners, session.isNested());
             else
-                adjManageSession = manageSession.isManageSession();
+                adjManageSession = options.manageSession.isManageSession();
 
-            if(noCancel == null)
+            if(options.noCancel == null)
                 adjNoCancel = heuristicNoCancel(mapObjects);
             else
-                adjNoCancel = noCancel;
+                adjNoCancel = options.noCancel;
         } else { // deprecated ветка, в будущем должна уйти
             adjManageSession = false;
             adjNoCancel = false; // temp
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(options.syncType || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
 
         this.options = options;
 
