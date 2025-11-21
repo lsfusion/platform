@@ -93,6 +93,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
@@ -137,6 +138,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private FormEntity originalForm;
     public FormEntity getOriginalForm() {
         return originalForm;
+    }
+    public FormEntity getForm() {
+        return nvl(originalForm, this);
     }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
@@ -1680,7 +1684,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getSID())) : null;
         if(extendCode != null) {
-            Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", null, false);
+            Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", Collections.emptySet(), false);
             FormEntity newForm = evalResult.second.getForm(getName());
             newForm.evalLM = evalResult.second;
             newForm.originalForm = this;

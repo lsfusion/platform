@@ -1781,7 +1781,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void destroyForm() {
+    public void destroyForm(boolean keepRemoteForm) {
         if(remoteForm != null) {
             RemoteFormInterface closeRemoteForm = remoteForm;
             closeService.submit(() -> {
@@ -1790,7 +1790,8 @@ public class ClientFormController implements AsyncListener {
                 } catch (RemoteException ignored) {
                 }
             });
-            remoteForm = null;
+            if(!keepRemoteForm)
+                remoteForm = null;
         }
     }
 

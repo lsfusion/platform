@@ -16,6 +16,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
@@ -119,16 +120,17 @@ public abstract class RemoteUIContext extends AbstractContext {
         return false;
     }
 
+    @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                                            DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack,
                                            boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters,
-                                           boolean readonly) throws SQLException, SQLHandledException {
+                                           boolean readonly, FormOptions options) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale());
+                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale(), options);
     }
 
     protected abstract int getExportPort();

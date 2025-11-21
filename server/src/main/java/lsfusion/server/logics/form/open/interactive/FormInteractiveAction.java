@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapOpenForm;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
@@ -164,9 +165,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
             context.executeSessionEvents();
 
-        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
-
+        FormInstance newFormInstance = createFormInstance(context, syncType, form, resolvedInputObjects.getCol().toSet(), mapObjectValues, showFormType, contextFilters);
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
 
@@ -184,6 +183,14 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             }
             context.writeRequested(result);
         }
+    }
+
+    private FormInstance createFormInstance(ExecutionContext<ClassPropertyInterface> context, boolean syncType, FormEntity form, ImSet<ObjectEntity> inputObjects,  ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ShowFormType showFormType, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
+        FormInstance newFormInstance = context.createFormInstance(form, inputObjects, mapObjects, context.getSession(), syncType,
+                noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly,
+                new FormOptions(noCancel, manageSession, mapObjects, showFormType, contextFilters, readOnly, forbidDuplicate, syncType, formId));
+        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
+        return newFormInstance;
     }
 
     @Override

@@ -103,6 +103,7 @@ formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.ac
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
 formCustomize '{action.form.customize}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormCustomizeAction' () IMAGE 'customize.png';
+formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 
 navigatorRefresh INTERNAL 'lsfusion.server.logics.navigator.NavigatorRefreshAction' ();
 

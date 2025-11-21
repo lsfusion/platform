@@ -42,8 +42,7 @@ public class EvalUtils {
     public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
         Set<String> parentModules = new HashSet<>();
-        if(parentLMs != null)
-            parentLMs.forEach(parentLM -> parentModules.add(parentLM.getName()));
+        parentLMs.forEach(parentLM -> parentModules.add(parentLM.getName()));
         WrapResult wrapResult = wrapScript(BL, parentModules, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;

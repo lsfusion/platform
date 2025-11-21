@@ -1051,20 +1051,23 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = OVERRIDE dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
+recreate = DATA LOCAL NESTED BOOLEAN();
 saveCustomize(STRING formSID, TEXT extendCode) {
     NEWSESSION {
         dataExtendCode(form(formSID)) <- extendCode;
+        recreate() <- TRUE;
         APPLY;
     }
-    MESSAGE 'Need reopen form to apply changes';
+    formClose();
 }
 
 saveCustomizeCurrentUser(STRING formSID, TEXT extendCode) {
     NEWSESSION {
         dataExtendCode(form(formSID), currentUser()) <- extendCode;
+        recreate() <- TRUE;
         APPLY;
     }
-    MESSAGE 'Need reopen form to apply changes';
+    formClose();
 }
 
 FORM customizeForm
@@ -1094,7 +1097,10 @@ DESIGN customizeForm {
 }
 
 customize(STRING sid, STRING code, STRING extendCode) {
-    SHOW customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode NULL;
+    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode NULL;
+    IF recreate() THEN {
+        formRecreate();
+    }
 }
 
 customize(STRING sid, STRING code) {

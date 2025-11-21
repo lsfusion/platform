@@ -30,7 +30,7 @@ public class FormCustomizeAction extends FormFlowAction {
 
     @Override
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        FormEntity formEntity = nvl(form.entity.getOriginalForm(), form.entity);
+        FormEntity formEntity = form.entity.getForm();
         context.getBL().systemEventsLM.customize.execute(context, new DataObject(formEntity.getSID()), new DataObject(formEntity.getCode()));
     }
 

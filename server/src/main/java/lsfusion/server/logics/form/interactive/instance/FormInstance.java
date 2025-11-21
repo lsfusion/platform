@@ -94,6 +94,7 @@ import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.input.*;
@@ -194,6 +195,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public final ImSet<ObjectEntity> inputObjects;
 
+    public FormOptions options;
+
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
     protected Set<PropertyDrawInstance> isStaticShown = new HashSet<>();
@@ -205,7 +208,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isShownHidden.remove(property);
     }
 
-    private final boolean checkOnOk;
+    public final boolean checkOnOk;
 
     private final boolean isSync;
     private final boolean isModal;
@@ -218,9 +221,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isModal;
     }
 
-    private final boolean manageSession;
+    public final boolean manageSession;
 
-    private final boolean showDrop;
+    public final boolean showDrop;
     
     private final Locale locale;
 
@@ -242,7 +245,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, WindowFormType type,
                         boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
-                        boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
+                        boolean showReadOnly, Locale locale, FormOptions options) throws SQLException, SQLHandledException {
         this.isSync = isSync;
         this.isModal = type.isModal();
         this.isEditing = type.isEditing();
@@ -429,6 +432,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         this.manageSession = adjManageSession;
         environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
+
+        this.options = options;
 
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
@@ -2993,8 +2998,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return manageSession && session.isStoredDataChanged() && !isEditing;
     }
 
-    public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (!context.isPushedConfirmedClose() && needConfirm()) {
+    public void formClose(ExecutionContext<ClassPropertyInterface> context, boolean keepRemoteForm) throws SQLException, SQLHandledException {
+        if (!context.isPushedConfirmedClose() && needConfirm() && !keepRemoteForm) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
@@ -3002,10 +3007,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         fireOnClose(context.stack);
-        formHideAndDestroy(context);
+        formHideAndDestroy(context, keepRemoteForm);
     }
 
     private void formHideAndDestroy(ExecutionContext context) throws SQLException, SQLHandledException {
+        formHideAndDestroy(context, false);
+    }
+
+    private void formHideAndDestroy(ExecutionContext context, boolean keepRemoteForm) throws SQLException, SQLHandledException {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
 
         //reset all activeTab properties
@@ -3016,7 +3025,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         context.delayUserInteraction(new HideFormClientAction());
 
         // destroy will be postponed to the last response
-        context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
+        context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay(), keepRemoteForm));
     }
 
     public void formDrop(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

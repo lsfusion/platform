@@ -231,7 +231,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public LA<?> evaluateRun(String script, boolean action) {
-        return LM.evaluateRun(script, null, action).first;
+        return LM.evaluateRun(script, Collections.emptySet(), action).first;
     }
 
     public void setTopModule(String topModule) {
