@@ -197,7 +197,8 @@ TREE treeSelector
 |`focusable`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`valueClass`|todo|Строковый литерал|NULL|todo|
-|`captionClass`|todo|Строковый литерал|NULL|todo|
+|`captionClass`|CSS класс для заголовка|Строковый литерал|NULL|custom-caption-class|
+|`footerClass`|todo|CSS класс для футера|NULL|custom-footer-class|
 |`caption`|Заголовок свойства или действия|Строковый литерал|заголовок свойства или действия|`'Заголовок'`|
 |`tag`|todo|Строковый литерал|NULL|todo|
 |`imagePath`<br/>`image`|Путь к файлу с картинкой, которая будет отображаться в качестве иконки действия. Путь указывается относительно каталога `images`|Строковый литерал|`NULL`|`'image.png'`|

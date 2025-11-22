@@ -50,6 +50,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<List<GGroupObjectValue>> columnKeys = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> captions = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> footerElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> values = new ArrayList<>();
     protected List<List<NativeHashMap<GGroupObjectValue, PValue>>> lastAggrs = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> readOnlys = new ArrayList<>();
@@ -256,6 +257,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public void updateCaptionElementClasses(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.captionElementClasses.set(properties.indexOf(property), values);
+
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateFooterElementClasses(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.footerElementClasses.set(properties.indexOf(property), values);
 
         dataUpdated = true;
     }
