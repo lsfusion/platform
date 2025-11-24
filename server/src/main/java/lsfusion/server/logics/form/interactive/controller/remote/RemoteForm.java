@@ -181,16 +181,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return outStream.toByteArray();
     }
 
-    public Set<Integer> getInputGroupObjects() {
-        Set<Integer> inputObjects = new HashSet<>();
-        if(form.inputObjects != null) {
-            for (ObjectEntity objectEntity : form.inputObjects) {
-                inputObjects.add(objectEntity.groupTo.ID);
-            }
-        }
-        return inputObjects;
-    }
-
     /**
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
      */
@@ -1019,7 +1009,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public FormClientData initClientData(ExecutionStack stack) {
         FormInstanceContext context = getRemoteContext();
-        return new FormClientData(getSID(), getCanonicalName(), getUserPreferences(), getRichDesignByteArray(context), getInputGroupObjects(), Settings.get().isDisableFirstChangesOptimization() ? null : getFormChangesByteArray(stack, context));
+        return new FormClientData(getSID(), getCanonicalName(), getUserPreferences(), getRichDesignByteArray(context), form.options.getInputGroupObjects(), Settings.get().isDisableFirstChangesOptimization() ? null : getFormChangesByteArray(stack, context));
     }
 
     @Override

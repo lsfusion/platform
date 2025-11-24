@@ -666,9 +666,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, FormOptions options) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, syncType, formId, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, options, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException { // have to be used with getRequestChangeExtProps
@@ -755,19 +755,19 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean checkOnOk, boolean showDrop, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, checkOnOk, showDrop, interactive, options);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, interactive, options);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, false, false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, false, false, false, null));
+        return createFormInstance(formEntity, MapFact.EMPTY(), getSession(), false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, null, false, false, false, false, false, null));
     }
 
-    public FormInstance createAndRequestFormInstance(FormEntity form, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                                                     boolean checkOnOk, boolean isShowDrop, FormOptions options) throws SQLException, SQLHandledException {
-        FormInstance newFormInstance = createFormInstance(form, inputObjects, mapObjects, getSession(), checkOnOk, isShowDrop, true, options);
-        requestFormUserInteraction(newFormInstance, options.type, options.forbidDuplicate, options.syncType, options.formId);
+    public FormInstance createAndRequestFormInstance(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                                                     FormOptions options) throws SQLException, SQLHandledException {
+        FormInstance newFormInstance = createFormInstance(form, mapObjects, getSession(), true, options);
+        requestFormUserInteraction(newFormInstance, options);
         return newFormInstance;
     }
 

@@ -27,6 +27,6 @@ public class FormRecreateAction extends InternalAction {
         form.formClose(context, true);
 
         Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
-        context.createAndRequestFormInstance(resolvedForm.first, form.inputObjects, MapFact.EMPTY(), form.checkOnOk, form.showDrop, form.options);
+        context.createAndRequestFormInstance(resolvedForm.first, MapFact.EMPTY(), form.options);
     }
 }

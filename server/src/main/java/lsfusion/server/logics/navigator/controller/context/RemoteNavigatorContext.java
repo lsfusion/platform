@@ -5,8 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -14,7 +12,6 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
@@ -27,7 +24,6 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -140,12 +136,12 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
-            protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+            protected void requestFormUserInteraction(RemoteForm remoteForm, FormOptions options, ExecutionStack stack) throws SQLException, SQLHandledException {
                 Stack<Result<RemoteForm>> getForms = getForm.get();
                 if(getForms != null)
                     getForms.peek().set(remoteForm);
                 else
-                    super.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, syncType, formId, stack);
+                    super.requestFormUserInteraction(remoteForm, options, stack);
             }
         };
     }
@@ -199,8 +195,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     // UI interfaces, multiple inheritance
     
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        uiContext.requestFormUserInteraction(formInstance, showFormType, forbidDuplicate, syncType, formId, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, FormOptions formOptions, ExecutionStack stack) throws SQLException, SQLHandledException {
+        uiContext.requestFormUserInteraction(formInstance, formOptions, stack);
     }
 
     @Override
@@ -218,8 +214,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
-        return uiContext.createFormInstance(formEntity, inputObjects, mapObjects, session, stack, checkOnOk, showDrop, interactive, options);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+        return uiContext.createFormInstance(formEntity, mapObjects, session, stack, interactive, options);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

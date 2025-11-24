@@ -137,7 +137,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         return true;
     }
 
-    private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context) {
+    private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context, Boolean syncType) {
+        if(syncType != null)
+            return syncType;
         FormInstance formInstance;
         return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isModal()) || (windowType != null && windowType.isModal());
     }
@@ -152,11 +154,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
 
         // sync and modality types
-        boolean syncType; 
-        if(this.syncType != null)
-            syncType = this.syncType;
-        else
-            syncType = heuristicSyncType(context);
+        boolean syncType = heuristicSyncType(context, this.syncType);
         ShowFormType showFormType = getShowFormType(syncType);
 
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
@@ -165,8 +163,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
             context.executeSessionEvents();
 
-        FormInstance newFormInstance = context.createAndRequestFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, checkOnOk, isShowDrop(),
-                new FormOptions(noCancel, manageSession, showFormType, contextFilters, readOnly, forbidDuplicate, syncType, formId));
+        FormInstance newFormInstance = context.createAndRequestFormInstance(form, mapObjectValues,
+                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, forbidDuplicate, syncType, isShowDrop(), checkOnOk, formId));
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
 

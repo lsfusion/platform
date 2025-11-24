@@ -236,8 +236,8 @@ public class ThreadLocalContext {
         return get().getCurrentForm();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean checkOnOk, boolean showDrop, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, inputObjects, mapObjects, session, stack, checkOnOk, showDrop, interactive, options);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, stack, interactive, options);
     }
 
     public static InputContext lockInputContext() {
@@ -302,8 +302,8 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(action);
     }
 
-    public static void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        get().requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, syncType, formId, stack);
+    public static void requestFormUserInteraction(FormInstance formInstance, FormOptions formOptions, ExecutionStack stack) throws SQLException, SQLHandledException {
+        get().requestFormUserInteraction(formInstance, formOptions, stack);
     }
 
     public static boolean userInteractionCanBeProcessedInTransaction() {

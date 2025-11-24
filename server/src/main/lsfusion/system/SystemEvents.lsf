@@ -1051,33 +1051,41 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = OVERRIDE dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
+CLASS CustomizeUser {
+    currentUser '{action.form.customize.current.user}',
+    allUsers '{action.form.customize.all.users}'
+}
+customizeUser = DATA LOCAL CustomizeUser() SELECT 'button';
+captionCustomizeUser '' = caption(customizeUser());
+
 recreate = DATA LOCAL NESTED BOOLEAN();
-saveCustomize(STRING formSID, TEXT extendCode) {
+saveCustomize '{action.form.customize.save}' (STRING formSID, TEXT extendCode) {
     NEWSESSION {
-        dataExtendCode(form(formSID)) <- extendCode;
+        IF customizeUser() THEN {
+            dataExtendCode(form(formSID), currentUser()) <- extendCode;            
+        } ELSE {
+            dataExtendCode(form(formSID)) <- extendCode;
+        }
         recreate() <- TRUE;
         APPLY;
     }
     formClose();
 }
 
-saveCustomizeCurrentUser(STRING formSID, TEXT extendCode) {
-    NEWSESSION {
-        dataExtendCode(form(formSID), currentUser()) <- extendCode;
-        recreate() <- TRUE;
-        APPLY;
-    }
-    formClose();
+resetCustomize '{action.form.customize.reset}' (STRING formSID) {
+    saveCustomize(formSID, NULL);
 }
 
 FORM customizeForm
     OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCode = TEXT PANEL
     PROPERTIES sid = VALUE(sid), code = VALUE(code), extendCode = VALUE(extendCode)
-    PROPERTIES saveCustomize(sid, extendCode), saveCustomizeCurrentUser(sid, extendCode)
+    PROPERTIES saveCustomize(sid, extendCode), resetCustomize(sid), captionCustomizeUser()
+    ON INIT { customizeUser() <- CustomizeUser.currentUser; }
 ;
 
 DESIGN customizeForm {
     NEW main BEFORE TOOLBARBOX {
+        fill = 1;
         MOVE PROPERTY(code) {
             charHeight = 20;
             caption = '';
@@ -1090,7 +1098,8 @@ DESIGN customizeForm {
             caption = 'Actions';
             horizontal = TRUE;
             MOVE PROPERTY(saveCustomize(sid, extendCode));
-            MOVE PROPERTY(saveCustomizeCurrentUser(sid, extendCode));
+            MOVE PROPERTY(resetCustomize(sid));
+            MOVE PROPERTY(captionCustomizeUser());
         }
     }
     REMOVE PROPERTY(sid);

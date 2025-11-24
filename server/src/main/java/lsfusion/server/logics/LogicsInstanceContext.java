@@ -1,7 +1,6 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -83,13 +82,11 @@ public class LogicsInstanceContext extends AbstractContext {
     // used in some deprecated actions
     @Deprecated
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
         assert false;
-        return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
-                session,
+        return new FormInstance(formEntity, getLogicsInstance(), session,
                 SecurityManager.baseServerSecurityPolicy, getFocusListener(), getClassListener(),
-                mapObjects, stack,
-                checkOnOk, showDrop, interactive, false, getLocale(), options);
+                mapObjects, stack, interactive, false, getLocale(), options);
     }
 
     @Override

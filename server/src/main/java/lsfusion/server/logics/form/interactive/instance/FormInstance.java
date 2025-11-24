@@ -123,7 +123,6 @@ import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -193,8 +192,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance<?>> properties;
 
-    public final ImSet<ObjectEntity> inputObjects;
-
     public FormOptions options;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
@@ -208,8 +205,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isShownHidden.remove(property);
     }
 
-    public final boolean checkOnOk;
-
     private final boolean isSync;
     private final boolean isModal;
     private final boolean isEditing;
@@ -222,8 +217,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public final boolean manageSession;
-
-    public final boolean showDrop;
     
     private final Locale locale;
 
@@ -238,22 +231,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // init form instance + some rare / deprecated branches
     public final FormInstanceContext context;
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, boolean isExternal,
-                        Locale locale, FormOptions options) throws SQLException, SQLHandledException {
+                        ExecutionStack stack, boolean interactive, boolean isExternal, Locale locale, FormOptions options) throws SQLException, SQLHandledException {
         WindowFormType type = options.getWindowFormType();
         this.isSync = options.syncType;
         this.isModal = type.isModal();
         this.isEditing = type.isEditing();
-        this.checkOnOk = checkOnOk;
-        this.showDrop = showDrop;
 
         this.session = session;
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
-        this.inputObjects = inputObjects;
 
         if(options.showReadonly)
             securityPolicy = securityPolicy.add(logicsInstance.getSecurityManager().getReadOnlySecurityPolicy(session));
@@ -428,7 +417,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(options.syncType || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(options.syncType || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, options.showDrop);
 
         this.options = options;
 
@@ -3033,7 +3022,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void formOk(ExecutionContext context) throws SQLException, SQLHandledException {
         assert context.getEnv() == this;
         
-        if (checkOnOk) {
+        if (options.checkOnOk) {
             if (!checkApply(context.stack, context)) {
                 return;
             }

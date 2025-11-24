@@ -37,10 +37,10 @@ public interface Context {
 
     FormEntity getCurrentForm();
 
-    FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, FormOptions options) throws SQLException, SQLHandledException;
+    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException;
     RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack);
 
-    void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException;
+    void requestFormUserInteraction(FormInstance formInstance, FormOptions formOptions, ExecutionStack stack) throws SQLException, SQLHandledException;
 
     InputContext lockInputContext();
     void unlockInputContext();
