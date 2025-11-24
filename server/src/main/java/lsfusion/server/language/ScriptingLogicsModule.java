@@ -5762,7 +5762,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(usedExtendParams.size() == (newContext.size() - oldContext.size())) { // все использованы
             return lpWithParams;
         }
-        
+
+        if(lpWithParams.getLP() == null)
+            lpWithParams = new LPWithParams(baseLM.object, lpWithParams.usedParams);
+
         // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает 
         List<LPWithParams> allCreationParams = new ArrayList<>();
         allCreationParams.add(lpWithParams);
