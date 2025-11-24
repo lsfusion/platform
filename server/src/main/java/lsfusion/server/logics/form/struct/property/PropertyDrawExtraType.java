@@ -118,6 +118,22 @@ public enum PropertyDrawExtraType {
             return "CAPTIONELEMENTCLASS";
         }
     },
+    FOOTERELEMENTCLASS {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.FOOTERELEMENTCLASS;
+        }
+
+        @Override
+        public String getText() {
+            return "FOOTERELEMENTCLASS";
+        }
+    },
     FONT {
         @Override
         public ReportFieldExtraType getReportExtraType() {

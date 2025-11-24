@@ -48,6 +48,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public String caption;
     public String captionElementClass;
+    public String footerElementClass;
     public AppStaticImage appImage;
 
     public String canonicalName;
@@ -378,7 +379,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GGridElementClassReader gridElementClassReader;
     public GValueElementClassReader valueElementClassReader;
 
-    public GCaptionElementClassReader captionElementClassReader;
+    public GExtraPropReader captionElementClassReader;
+    public GExtraPropReader footerElementClassReader;
     public GExtraPropReader fontReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;

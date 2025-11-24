@@ -328,6 +328,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
+        propertyDraw.footerElementClass = clientPropertyDraw.footerElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
         propertyDraw.toolbarActions = clientPropertyDraw.toolbarActions;
 
@@ -383,7 +384,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.gridElementClassReader = convertGridElementClassReader(clientPropertyDraw.gridElementClassReader);
         propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
-        propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
+        propertyDraw.captionElementClassReader = convertExtraPropReader(clientPropertyDraw.captionElementClassReader);
+        propertyDraw.footerElementClassReader = convertExtraPropReader(clientPropertyDraw.footerElementClassReader);
         propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
@@ -501,10 +503,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {
         return reader == null ? null : new GValueElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GCaptionElementClassReader convertCaptionElementClassReader(ClientPropertyDraw.CaptionElementClassReader reader) {
-        return reader == null ? null : new GCaptionElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {
