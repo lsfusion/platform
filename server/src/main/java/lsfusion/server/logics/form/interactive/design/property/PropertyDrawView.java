@@ -90,6 +90,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
+    public String footerElementClass;
 
     public Boolean panelCustom;
 
@@ -1087,6 +1088,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         pool.writeString(outStream, getInputType(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
+        pool.writeString(outStream, getFooterElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
         pool.writeBoolean(outStream, hasToolbarActions(pool.context));
 
@@ -1252,6 +1254,12 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
                 return "text-secondary";
         }
 
+        return null;
+    }
+
+    public String getFooterElementClass(FormInstanceContext context) {
+        if (footerElementClass != null)
+            return footerElementClass;
         return null;
     }
 

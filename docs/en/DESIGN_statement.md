@@ -198,7 +198,8 @@ To access design components, you can use their names or address property compone
 |`focusable`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`valueClass`|todo|String literal|NULL|todo|
-|`captionClass`|todo|String literal|NULL|todo|
+|`captionClass`|CSS class for caption|String literal|NULL|custom-caption-class|
+|`footerClass`|CSS class for footer|String literal|NULL|custom-footer-class|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
 |`tag`|todo|String literal|NULL|todo|
 |`imagePath`<br/>`image`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|

@@ -166,7 +166,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 //                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
 //                String tooltip = property.getTooltip(propertyCaption);
                 GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, property, gridColumn);
-                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky(), form);
+                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, null, property, null, null, gridColumn.isSticky(), form);
 
                 insertColumn(index, gridColumn, header, footer);
 

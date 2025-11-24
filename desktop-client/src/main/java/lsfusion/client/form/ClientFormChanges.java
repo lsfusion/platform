@@ -153,6 +153,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CAPTIONELEMENTCLASS:
                 return clientForm.getProperty(inStream.readInt()).captionElementClassReader;
+            case PropertyReadType.FOOTERELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).footerElementClassReader;
             case PropertyReadType.CELL_FONT:
                 return clientForm.getProperty(inStream.readInt()).fontReader;
             case PropertyReadType.CELL_BACKGROUND:
