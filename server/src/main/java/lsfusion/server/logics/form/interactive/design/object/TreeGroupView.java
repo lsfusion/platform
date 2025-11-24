@@ -45,8 +45,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
     public ContainerView filtersContainer;
     public FilterControlsView filterControls;
-    
-    public boolean expandOnClick = true;
+
     public int hierarchicalWidth;
     public String hierarchicalCaption;
     public PropertyObjectEntity propertyHierarchicalCaption;
@@ -135,8 +134,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         pool.serializeCollection(outStream, getFilters());
 
         outStream.writeBoolean(entity.plainTreeMode);
-        
-        outStream.writeBoolean(expandOnClick);
+
         outStream.writeInt(hierarchicalWidth);
         pool.writeString(outStream, hierarchicalCaption);
     }

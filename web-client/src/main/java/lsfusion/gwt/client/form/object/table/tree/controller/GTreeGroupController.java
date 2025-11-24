@@ -350,10 +350,6 @@ public class GTreeGroupController extends GAbstractTableController {
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
         return formController.changeFilter(treeGroup, conditions);
     }
-    
-    public boolean isExpandOnClick() {
-        return treeGroup.expandOnClick;
-    }
 
     public void fireExpandNodeRecursive(boolean current) {
         tree.fireExpandNodeRecursive(current, true);

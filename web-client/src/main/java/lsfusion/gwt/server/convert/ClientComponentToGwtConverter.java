@@ -560,8 +560,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         treeGroup.valueClass = clientTreeGroup.valueClass;
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
-        
-        treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
+
         treeGroup.hierarchicalWidth = clientTreeGroup.hierarchicalWidth;
         treeGroup.hierarchicalCaption = clientTreeGroup.hierarchicalCaption;
 
