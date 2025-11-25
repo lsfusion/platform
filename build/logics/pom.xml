@@ -16,6 +16,8 @@
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
 
+        <docker.singlearch>true</docker.singlearch>
+        <docker.multiarch>false</docker.multiarch>
         <docker.image.namespace>local</docker.image.namespace>
         <docker.image.repository>${project.artifactId}</docker.image.repository>
         <docker.image.tag>${project.version}</docker.image.tag>
@@ -33,6 +35,13 @@
             <properties>
                 <docker.image.repository>${project.artifactId}-embed-server</docker.image.repository>
                 <docker.template.subfolder>docker-embed-server</docker.template.subfolder>
+            </properties>
+        </profile>
+        <profile>
+            <id>multiarch</id>
+            <properties>
+                <docker.singlearch>false</docker.singlearch>
+                <docker.multiarch>true</docker.multiarch>
             </properties>
         </profile>
         <profile>
@@ -137,6 +146,67 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
+
+                            <!-- MULTIARCH SETUP -->
+                            <execution>
+                                <id>docker-buildx-setup</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${docker.singlearch}</skip>
+
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>buildx</argument>
+                                        <argument>create</argument>
+                                        <argument>--name</argument>
+                                        <argument>multiarch-builder</argument>
+                                        <argument>--driver</argument>
+                                        <argument>docker-container</argument>
+                                        <argument>--use</argument>
+                                    </arguments>
+
+                                    <!-- ignore "builder already exists" -->
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                </configuration>
+                            </execution>
+
+                            <!-- MULTIARCH BUILD/PUSH -->
+                            <execution>
+                                <id>docker-build-push-multiarch</id>
+                                <phase>deploy</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <skip>${docker.singlearch}</skip>
+
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>buildx</argument>
+                                        <argument>build</argument>
+                                        <argument>--builder</argument>
+                                        <argument>multiarch-builder</argument>
+                                        <argument>--platform</argument>
+                                        <argument>linux/amd64,linux/arm64</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.image.fullName}</argument>
+                                        <argument>--build-arg</argument>
+                                        <argument>FILENAME=${docker.logics.file.name}</argument>
+                                        <argument>--push</argument>
+                                        <argument>-f</argument>
+                                        <argument>Dockerfile</argument>
+                                        <argument>.</argument>
+                                    </arguments>
+
+                                    <workingDirectory>${project.build.directory}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- NORMAL docker build (install) -->
                             <execution>
                                 <id>docker-build</id>
                                 <goals>
@@ -164,6 +234,7 @@
                                 </configuration>
                             </execution>
 
+                            <!-- NORMAL docker push (deploy) -->
                             <execution>
                                 <id>docker-push</id>
                                 <goals>
@@ -171,6 +242,8 @@
                                 </goals>
                                 <phase>deploy</phase>
                                 <configuration>
+                                    <skip>${docker.multiarch}</skip>
+
                                     <executable>docker</executable>
                                     <arguments>
                                         <argument>push</argument>
