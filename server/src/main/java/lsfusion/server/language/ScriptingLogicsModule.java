@@ -5807,6 +5807,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext, boolean dynamic, DebugInfo.DebugPoint debugPoint) {
         LP<?> lp = lpWithParams.getLP();
         if((!dynamic && lp.listInterfaces.size() != newContext.size()) || propertyNeedsToBeWrapped(lp)) { // all are used and we don't need to wrapProperty
+            if(lpWithParams.getLP() == null)
+                lpWithParams = new LPWithParams(baseLM.object, lpWithParams.usedParams);
+
             // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает
             List<LPWithParams> allCreationParams = new ArrayList<>();
             allCreationParams.add(lpWithParams);

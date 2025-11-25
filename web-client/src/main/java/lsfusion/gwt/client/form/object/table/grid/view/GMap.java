@@ -270,6 +270,13 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                         //all possible mapOptions available in the documentation in options parameter https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map
                         mapOptions: {} // see options https://yandex.com/dev/jsapi-v2-1/doc/en/v2-1/ref/reference/Map#field_detail
                     }, options));
+            } else if (tileProvider === 'twoGis') {
+                tile = L.tileLayer('https://tile{s}.maps.2gis.com/tiles/?x={x}&y={y}&z={z}',
+                    $wnd.mergeObjects({
+                            attribution: '&copy; <a href="https://2gis.com/">2GIS</a>',
+                            subdomains: ['0', '1', '2', '3'],
+                            tileSize: 256
+                        }, options));
             } else {
                 tile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                     $wnd.mergeObjects({attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
