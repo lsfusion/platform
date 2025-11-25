@@ -41,13 +41,14 @@ public class SendMessageRabbitMQAction extends InternalAction {
             String user = (String) findProperty("user[Channel]").read(context, channelObject);
             String password = (String) findProperty("password[Channel]").read(context, channelObject);
             boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
+            boolean durable = findProperty("isDurable[Channel]").read(context, channelObject) != null;
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
             factory.setCredentialsProvider(new DefaultCredentialsProvider(user, password));
             try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
                 if(local) { //it's local channel, we create it
-                    channel.queueDeclare(queue, false, false, false, null);
+                    channel.queueDeclare(queue, durable, false, false, null);
                 }
                 channel.basicPublish("", queue, null, message.getBytes(StandardCharsets.UTF_8));
             }
