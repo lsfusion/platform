@@ -48,7 +48,12 @@ restartConsumers 'Restart all consumers' () {
     }
 }
 
-getStatus 'Get Status' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.GetStatusRabbitMQAction' (Channel);
+status = DATA LOCAL STRING(Channel);
+getStatus INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.GetStatusRabbitMQAction' (Channel);
+showStatus 'Show Status' (Channel c) {
+    getStatus(c);
+    MESSAGE status(c) HEADER 'RabbitMQ';
+}
 
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
@@ -57,7 +62,7 @@ FORM rabbitMQ
     PROPERTIES(c) threadCount, prefetchCount, user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
-        getStatus GRID, NEW, DELETE
+        showStatus GRID, NEW, DELETE
     PROPERTIES restartConsumers(), VALUE(s), sendMessage(c, s)
 ;
 
