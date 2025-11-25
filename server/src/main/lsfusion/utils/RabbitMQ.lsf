@@ -8,6 +8,7 @@ host 'Host' = DATA STRING (Channel);
 vHost 'vHost' = DATA STRING (Channel);
 queue 'Queue name' = DATA STRING (Channel);
 isDurable 'Durable' = DATA BOOLEAN (Channel);
+persistentDeliveryMode 'Persistent Delivery Mode' = DATA BOOLEAN (Channel);
 threadCount 'Thread count' = DATA INTEGER (Channel);
 prefetchCount 'Prefetch count' = DATA INTEGER (Channel);
 user 'User' = DATA STRING (Channel);
@@ -58,7 +59,7 @@ showStatus 'Show Status' (Channel c) {
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
     PROPERTIES(c) local, isConsumer
-    PROPERTIES(c) READONLYIF started(c) host, vHost, queue, isDurable
+    PROPERTIES(c) READONLYIF started(c) host, vHost, queue, isDurable, persistentDeliveryMode SHOWIF isDurable(c)
     PROPERTIES(c) threadCount, prefetchCount, user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),

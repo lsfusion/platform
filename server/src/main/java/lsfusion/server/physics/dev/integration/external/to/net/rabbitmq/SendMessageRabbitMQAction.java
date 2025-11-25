@@ -1,9 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.net.rabbitmq;
 
 import com.google.common.base.Throwables;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 import com.rabbitmq.client.impl.DefaultCredentialsProvider;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -42,6 +40,7 @@ public class SendMessageRabbitMQAction extends InternalAction {
             String password = (String) findProperty("password[Channel]").read(context, channelObject);
             boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
             boolean durable = findProperty("isDurable[Channel]").read(context, channelObject) != null;
+            boolean persistentDeliveryMode = findProperty("persistentDeliveryMode[Channel]").read(context, channelObject) != null;
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
@@ -50,7 +49,8 @@ public class SendMessageRabbitMQAction extends InternalAction {
                 if(local) { //it's local channel, we create it
                     channel.queueDeclare(queue, durable, false, false, null);
                 }
-                channel.basicPublish("", queue, null, message.getBytes(StandardCharsets.UTF_8));
+                AMQP.BasicProperties props = durable && persistentDeliveryMode ? MessageProperties.PERSISTENT_TEXT_PLAIN : null;
+                channel.basicPublish("", queue, props, message.getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
