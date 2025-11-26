@@ -59,6 +59,8 @@ public class ExternalHttpServer extends MonitorServer {
     private RemoteLogics remoteLogics;
     private final Map<InetSocketAddress, String> hostMap = new HashMap<>();
 
+    private static String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
+
     @Override
     public String getEventName() {
         return "external-http-server";
@@ -357,7 +359,7 @@ public class ExternalHttpServer extends MonitorServer {
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
             request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
-            addResponseHeaders(request);
+            request.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             byte[] responseBytes = response.getBytes(bodyCharset);
             request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
             OutputStream os = request.getResponseBody();
@@ -382,43 +384,42 @@ public class ExternalHttpServer extends MonitorServer {
             String[] cookieValues = responseHttpEntity.cookieValues;
             int statusHttp = responseHttpEntity.statusHttp;
 
+            Headers responseHeaders = response.getResponseHeaders();
+
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
-            if(headerNames != null) {
+            boolean hasAccessControlAllowOrigin = false;
+            if (headerNames != null) {
                 for (int i = 0; i < headerNames.length; i++) {
                     String headerName = headerNames[i];
                     if (headerName.equals("Content-Type")) {
                         hasContentType = true;
-                        response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                        responseHeaders.add("Content-Type", headerValues[i]);
                     } else
-                        response.getResponseHeaders().add(headerName, headerValues[i]);
+                        responseHeaders.add(headerName, headerValues[i]);
                     hasContentDisposition = hasContentDisposition || headerName.equals(ExternalUtils.CONTENT_DISPOSITION_HEADER);
+                    hasAccessControlAllowOrigin = hasAccessControlAllowOrigin || headerName.equals(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
                 }
             }
 
-            if(cookieNames != null) {
+            if (cookieNames != null) {
                 String cookie = "";
                 for (int i = 0; i < cookieNames.length; i++) {
                     String cookieName = cookieNames[i];
                     String cookieValue = cookieValues[i];
                     cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
                 }
-                response.getResponseHeaders().add("Cookie", cookie);
+                responseHeaders.add("Cookie", cookie);
             }
 
             if (contentType != null && !hasContentType)
-                response.getResponseHeaders().add("Content-Type", contentType);
-            if(contentDisposition != null && !hasContentDisposition)
-                response.getResponseHeaders().add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
-            addResponseHeaders(response);
+                responseHeaders.add("Content-Type", contentType);
+            if (contentDisposition != null && !hasContentDisposition)
+                responseHeaders.add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
+            if (!hasAccessControlAllowOrigin)
+                responseHeaders.add("Access-Control-Allow-Origin", "*");
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
-    }
-
-    private void addResponseHeaders(HttpExchange request) {
-        Headers responseHeaders = request.getResponseHeaders();
-        if(!responseHeaders.containsKey("Access-Control-Allow-Origin"))
-            responseHeaders.add("Access-Control-Allow-Origin","*");
     }
 }
