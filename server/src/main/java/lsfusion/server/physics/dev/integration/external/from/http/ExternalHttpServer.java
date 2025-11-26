@@ -354,18 +354,10 @@ public class ExternalHttpServer extends MonitorServer {
             return contentType;
         }
 
-        private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
-            String[] headerValuesArray = new String[headerNames.length];
-            for (int i = 0; i < headerNames.length; i++) {
-                headerValuesArray[i] = StringUtils.join(headers.get(headerNames[i]).iterator(), ",");
-            }
-            return headerValuesArray;
-        }
-
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
             request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
-            request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
+            addResponseHeaders(request);
             byte[] responseBytes = response.getBytes(bodyCharset);
             request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
             OutputStream os = request.getResponseBody();
@@ -418,9 +410,15 @@ public class ExternalHttpServer extends MonitorServer {
                 response.getResponseHeaders().add("Content-Type", contentType);
             if(contentDisposition != null && !hasContentDisposition)
                 response.getResponseHeaders().add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
-            response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
+            addResponseHeaders(response);
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
+    }
+
+    private void addResponseHeaders(HttpExchange request) {
+        Headers responseHeaders = request.getResponseHeaders();
+        if(!responseHeaders.containsKey("Access-Control-Allow-Origin"))
+            responseHeaders.add("Access-Control-Allow-Origin","*");
     }
 }
