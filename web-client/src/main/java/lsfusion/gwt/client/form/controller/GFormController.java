@@ -110,7 +110,7 @@ public class GFormController implements EditManager {
     private final FormContainer formContainer;
 
     public final GForm form;
-    public final GFormLayout formLayout;
+    public GFormLayout formLayout;
 
     private final boolean isDialog;
 
