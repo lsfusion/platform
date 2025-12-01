@@ -56,7 +56,7 @@ public abstract class GroupType implements AggrType {
             return syntax.getNotZero(getAggrSource("SUM", getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orders, syntax), type, typeEnv);
         }
         public String name() {
-            return "STRING";
+            return "SUM";
         }
     };
 
