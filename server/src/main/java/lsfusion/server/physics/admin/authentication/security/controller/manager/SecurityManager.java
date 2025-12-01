@@ -367,6 +367,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                             }
                         };
 
+                        if (!krbProps)
+                            setKrbProps(server, LDAPAuthenticationService.getRealm(baseDN));
                         Subject subject = getSubject(userName, password, config);
                         Map<String, Object> userPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserPrincipal.class).stream()
                                 .collect(Collectors.toMap(LDAPAuthenticationService.UserPrincipal::getName, LDAPAuthenticationService.UserPrincipal::getValue));
@@ -381,12 +383,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
                         userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password, firstName, lastName,
                                 email, groupNames, false, userAttributesPrincipals);
-                    } catch (LDAPAuthenticationService.LDAPCommunicationException e) {
+                    } catch (javax.security.auth.login.LoginException e) {
                         String errorMessage = "LDAP authentication failed";
                         systemLogger.error(errorMessage, e);
                         ldapException = errorMessage + ", " + e.getMessage();
-                    } catch (javax.security.auth.login.LoginException e) {
-                        throw new LoginException();
                     }
                 }
 
@@ -417,7 +417,16 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static Subject getSubject(String userName, String password, Configuration config) throws javax.security.auth.login.LoginException {
+    private boolean krbProps = false;
+    private void setKrbProps(String server, String realm) {
+        System.setProperty("java.security.krb5.realm", realm);
+        System.setProperty("java.security.krb5.kdc", server);
+        System.setProperty("java.security.auth.login.config", "");
+
+        krbProps = true;
+    }
+
+    private Subject getSubject(String userName, String password, Configuration config) throws javax.security.auth.login.LoginException {
         CallbackHandler handler = callbacks -> {
             for (Callback cb : callbacks) {
                 if (cb instanceof NameCallback)

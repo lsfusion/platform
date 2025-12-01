@@ -66,7 +66,7 @@ public class LDAPAuthenticationService implements LoginModule {
         }
     }
 
-    private static String getRealm(String dn) {
+    public static String getRealm(String dn) {
         if (dn == null)
             return null;
 
@@ -80,50 +80,6 @@ public class LDAPAuthenticationService implements LoginModule {
             }
         }
         return realm.toString().toUpperCase(); // Kerberos needs UpperCase
-    }
-
-    public static boolean checkKerberosCredentials(String username, String password, String server, String realm) {
-        try {
-            //may be need to set these properties only once
-            System.setProperty("java.security.krb5.realm", realm);
-            System.setProperty("java.security.krb5.kdc", server);
-            System.setProperty("java.security.auth.login.config", "");
-
-            Configuration jaasConfig = new Configuration() {
-                @Override
-                public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-                    Map<String, String> options = new HashMap<>();
-                    options.put("useTicketCache", "false");
-                    options.put("doNotPrompt", "false");
-                    options.put("storeKey", "false");
-                    options.put("useKeyTab", "false");
-                    options.put("refreshKrb5Config", "true");
-                    options.put("isInitiator", "true");
-                    options.put("principal", username);
-
-                    return new AppConfigurationEntry[] {
-                            new AppConfigurationEntry(
-                                    "com.sun.security.auth.module.Krb5LoginModule",
-                                    AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-                                    options)
-                    };
-                }
-            };
-
-            CallbackHandler callbackHandler = callbacks -> {
-                for (Callback cb : callbacks) {
-                    if (cb instanceof NameCallback)
-                        ((NameCallback) cb).setName(username);
-                    else if (cb instanceof PasswordCallback)
-                        ((PasswordCallback) cb).setPassword(password.toCharArray());
-                }
-            };
-
-            new LoginContext("KerberosLogin", null, callbackHandler, jaasConfig).login();
-            return true;
-        } catch (LoginException e) {
-            return false;
-        }
     }
 
     @Override
@@ -142,13 +98,41 @@ public class LDAPAuthenticationService implements LoginModule {
             InitialDirContext authContext = null;
             try {
                 if ((boolean) options.get("useServiceUser")) {
-                    if (checkKerberosCredentials(principal, password, server, getRealm(baseDN))) {
-                        authContext = new InitialDirContext(getEnv(getOptionAsString("serviceUser", null),
-                                getOptionAsString("serviceUserPassword", null), providerURL));
-                        readAttributes(authContext, baseDN, principal);
-                    } else {
-                        throw new LoginException(); // user not found
-                    }
+                    Configuration jaasConfig = new Configuration() {
+                        @Override
+                        public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                            Map<String, String> options = new HashMap<>();
+                            options.put("useTicketCache", "false");
+                            options.put("doNotPrompt", "false");
+                            options.put("storeKey", "false");
+                            options.put("useKeyTab", "false");
+                            options.put("refreshKrb5Config", "true");
+                            options.put("isInitiator", "true");
+                            options.put("principal", principal);
+
+                            return new AppConfigurationEntry[] {
+                                    new AppConfigurationEntry(
+                                            "com.sun.security.auth.module.Krb5LoginModule",
+                                            AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                            options)
+                            };
+                        }
+                    };
+
+                    CallbackHandler callbackHandler = callbacks -> {
+                        for (Callback cb : callbacks) {
+                            if (cb instanceof NameCallback)
+                                ((NameCallback) cb).setName(principal);
+                            else if (cb instanceof PasswordCallback)
+                                ((PasswordCallback) cb).setPassword(password.toCharArray());
+                        }
+                    };
+                    new LoginContext("KerberosLogin", null, callbackHandler, jaasConfig).login();
+
+                    authContext = new InitialDirContext(getEnv(getOptionAsString("serviceUser", null),
+                            getOptionAsString("serviceUserPassword", null), providerURL));
+                    readAttributes(authContext, baseDN, principal);
+
                 } else {
                     if (baseDN != null) {
                         authContext = new InitialDirContext(getEnv(principal, password, providerURL));
@@ -162,10 +146,8 @@ public class LDAPAuthenticationService implements LoginModule {
 
             success = true;
             return true;
-        } catch (CommunicationException e) {
-            throw  new LDAPCommunicationException(e.getCause().getMessage());
         } catch (Exception e) {
-            throw new LoginException("LDAP auth failed: " + e.getMessage());
+            throw new LoginException(e.getMessage());
         }
     }
 
@@ -233,12 +215,6 @@ public class LDAPAuthenticationService implements LoginModule {
         } finally {
             if (personResults != null)
                 personResults.close();
-        }
-    }
-
-    public static class LDAPCommunicationException extends LoginException {
-        public LDAPCommunicationException(String msg) {
-            super(msg);
         }
     }
 

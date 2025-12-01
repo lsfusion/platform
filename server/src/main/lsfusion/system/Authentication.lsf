@@ -133,12 +133,10 @@ portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
-//todo localize
-useDefaultAuthentication = DATA BOOLEAN() LAZY;
-
-useServiceUser = DATA BOOLEAN();
-serviceUser = DATA STRING();
-serviceUserPassword = DATA STRING() ECHO;
+useDefaultAuthentication '{authentication.use.default.authentication}' = DATA BOOLEAN() LAZY;
+useServiceUser '{authentication.use.service.user}' = DATA BOOLEAN();
+serviceUser '{authentication.service.user}' = DATA STRING();
+serviceUserPassword '{authentication.service.user.password}' = DATA STRING() ECHO;
 
 // OAuth and Web-client authentication
 CLASS OAuth2;
