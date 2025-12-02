@@ -23,6 +23,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -1374,5 +1375,90 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     protected boolean isCustom(FormInstanceContext context) {
         return getCustomRenderFunction(context) != null;
+    }
+
+    // copy-constructor
+    public PropertyDrawView(PropertyDrawView src) {
+        super(src);
+        this.changeOnSingleClick = src.changeOnSingleClick;
+        this.maxValue = src.maxValue;
+        this.echoSymbols = src.echoSymbols;
+        this.noSort = src.noSort;
+        this.defaultCompare = src.defaultCompare;
+        this.charWidth = src.charWidth;
+        this.charHeight = src.charHeight;
+        this.valueSize =  src.valueSize;
+        this.valueWidth = src.valueWidth;
+        this.valueHeight = src.valueHeight;
+        this.captionWidth = src.captionWidth;
+        this.captionHeight = src.captionHeight;
+        this.captionCharHeight = src.captionCharHeight;
+        this.valueFlex = src.valueFlex;
+        this.tag = src.tag;
+        this.inputType =  src.inputType;
+        this.valueElementClass = src.valueElementClass;
+        this.captionElementClass = src.captionElementClass;
+        this.panelCustom = src.panelCustom;
+        this.changeKey = src.changeKey;
+        this.showChangeKey = src.showChangeKey;
+        this.changeMouse = src.changeMouse;
+        this.showChangeMouse = src.showChangeMouse;
+        this.drawAsync = src.drawAsync;
+        this.inline = src.inline;
+        this.focusable = src.focusable;
+        this.panelColumnVertical = src.panelColumnVertical;
+        this.valueAlignmentHorz = src.valueAlignmentHorz;
+        this.valueAlignmentVert = src.valueAlignmentVert;
+        this.valueOverflowHorz = src.valueOverflowHorz;
+        this.valueOverflowVert = src.valueOverflowVert;
+        this.valueShrinkHorz = src.valueShrinkHorz;
+        this.valueShrinkVert = src.valueShrinkVert;
+        this.comment =  src.comment;
+        this.commentElementClass = src.commentElementClass;
+        this.panelCommentVertical = src.panelCommentVertical;
+        this.panelCommentFirst = src.panelCommentFirst;
+        this.panelCommentAlignment = src.panelCommentAlignment;
+        this.placeholder =  src.placeholder;
+        this.pattern =  src.pattern;
+        this.regexp =  src.regexp;
+        this.regexpMessage = src.regexpMessage;
+        this.tooltip =  src.tooltip;
+        this.valueTooltip = src.valueTooltip;
+        this.caption = src.caption;
+        this.image = src.image;
+        this.wrap = src.wrap;
+        this.wrapWordBreak = src.wrapWordBreak;
+        this.collapse = src.collapse;
+        this.ellipsis = src.ellipsis;
+        this.captionWrap = src.captionWrap;
+        this.captionWrapWordBreak = src.captionWrapWordBreak;
+        this.captionCollapse = src.captionCollapse;
+        this.captionEllipsis = src.captionEllipsis;
+        this.clearText = src.clearText;
+        this.notSelectAll = src.notSelectAll;
+        this.toolbar = src.toolbar;
+        this.toolbarActions = src.toolbarActions;
+        this.notNull = src.notNull;
+        this.sticky = src.sticky;
+        this.sync = src.sync;
+        this.highlightDuplicate = src.highlightDuplicate;
+        this.boxed = src.boxed;
+    }
+
+    public void copy(PropertyDrawView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
+        this.entity = mapping.get(src.entity);
+        this.ID = entity.ID; //need to be in copy, not in constructor, because entity is copied in constructor
+    }
+
+    public void proceedDefaultDesign() {
+        if (!entity.remapped) {//for new properties from extend
+            if (showChangeKey == null)
+                showChangeKey = true;
+            if (showChangeMouse == null)
+                showChangeMouse = true;
+            if (echoSymbols == null)
+                echoSymbols = false;
+        }
     }
 }

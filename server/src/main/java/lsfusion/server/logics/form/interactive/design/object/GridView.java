@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -66,5 +67,18 @@ public class GridView extends GridPropertyView {
 
     protected boolean isCustom() {
         return groupObject.entity.isCustom();
+    }
+
+    // copy-constructor
+    public GridView(GridView src) {
+        super(src);
+        this.tabVertical = src.tabVertical;
+        this.quickSearch = src.quickSearch;
+    }
+
+    public void copy(GridView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
+        this.groupObject = mapping.get(src.groupObject);
+        this.record = mapping.get(src.record);
     }
 }

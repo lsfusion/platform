@@ -36,6 +36,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -81,7 +82,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    public final ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
+    public ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
     
     public GroupObjectEntity toDraw;
     public boolean hide;
@@ -1069,4 +1070,61 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sid != null && sid.equals("image");
     }
 
+    // copy-constructor
+    public PropertyDrawEntity(PropertyDrawEntity<P> src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.editType = src.editType;
+        this.hide = src.hide;
+        this.remove = src.remove;
+        this.mouseBinding = src.mouseBinding;
+        this.keyBindings = src.keyBindings;
+        this.contextMenuBindings = src.contextMenuBindings;
+        this.eventActions = src.eventActions; //?
+        this.isSelector = src.isSelector;
+        this.optimisticAsync = src.optimisticAsync;
+        this.askConfirm = src.askConfirm;
+        this.askConfirmMessage = src.askConfirmMessage;
+        this.viewType = src.viewType;
+        this.customRenderFunction = src.customRenderFunction;
+        this.customChangeFunction = src.customChangeFunction;
+        this.eventID = src.eventID;
+        this.sticky = src.sticky;
+        this.sync = src.sync;
+        this.formPath =  src.formPath;
+        this.scriptIndex = src.scriptIndex;
+        this.initCaption = src.initCaption;
+        this.initImage = src.initImage;
+        this.ignoreHasHeaders = src.ignoreHasHeaders;
+        this.columnsName =  src.columnsName;
+        this.group = src.group;
+        this.attr = src.attr;
+        this.extNull = src.extNull;
+        this.formula = src.formula;
+        this.aggrFunc = src.aggrFunc;
+        this.lastAggrDesc =  src.lastAggrDesc;
+        this.activeProperty =  src.activeProperty;
+        this.inheritedProperty = src.inheritedProperty;
+        this.defaultChangeEventScope = src.defaultChangeEventScope;
+        this.integrationSID = src.integrationSID;
+    }
+
+    public boolean remapped = false;
+
+    public void copy(PropertyDrawEntity<P> src, ObjectMapping mapping) {
+        this.remapped = true;
+        this.actionOrProperty = src.actionOrProperty instanceof ActionObjectEntity ?
+                mapping.get((ActionObjectEntity) src.actionOrProperty) :
+                mapping.get((PropertyObjectEntity) src.actionOrProperty);
+        this.toDraw = mapping.get(src.toDraw);
+        this.columnGroupObjects = src.columnGroupObjects.mapOrderSetValues((Function<GroupObjectEntity, GroupObjectEntity>) mapping::get);
+        ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtrasMap = src.propertyExtras.getMap();
+        for(int i = 0; i < propertyExtrasMap.size(); i++) {
+            this.propertyExtras.add(propertyExtrasMap.getKey(i), mapping.get(propertyExtrasMap.getValue(i)), mapping.version);
+        }
+        this.formulaOperands = src.formulaOperands != null ? src.formulaOperands.mapListValues((Function<PropertyDrawEntity, PropertyDrawEntity>) mapping::get) : null;
+        this.lastAggrColumns = src.lastAggrColumns.mapListValues(e -> mapping.get(e));
+        this.quickFilterProperty = mapping.get(src.quickFilterProperty);
+        this.cellProperty = mapping.get(src.cellProperty);
+    }
 }

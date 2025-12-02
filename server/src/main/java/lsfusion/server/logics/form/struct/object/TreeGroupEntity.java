@@ -5,6 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 public class TreeGroupEntity extends IdentityObject {
@@ -48,5 +50,18 @@ public class TreeGroupEntity extends IdentityObject {
         assert !finalizedGroups;
         finalizedGroups = true;
         this.groups = groups;
+    }
+
+    // copy-constructor
+    public TreeGroupEntity(TreeGroupEntity src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.plainTreeMode = src.plainTreeMode;
+        this.debugPoint = src.debugPoint;
+    }
+
+    public void copy(TreeGroupEntity src, ObjectMapping mapping) {
+        this.setGroups(getGroups().mapOrderSetValues(e -> mapping.get(e)));
+        this.finalizedGroups = false;
     }
 }

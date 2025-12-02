@@ -2473,10 +2473,10 @@ public abstract class LogicsModule {
         return namedForms.get(name);
     }
     
-    public void addFormEntity(FormEntity form) {
+    public void addFormEntity(FormEntity form, boolean assertFormsFinalized) {
         assert form.isNamed();
         assert !(form instanceof AutoFormEntity);
-        assert !formsFinalized;
+        assert !assertFormsFinalized || !formsFinalized;
 
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);

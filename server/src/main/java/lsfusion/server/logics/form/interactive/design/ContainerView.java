@@ -10,6 +10,8 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
@@ -579,5 +581,48 @@ public class ContainerView extends ComponentView {
     @Override
     public String toString() {
         return (caption != null ? ThreadLocalContext.localize(caption) + " " : "") + super.toString();
+    }
+
+    // copy-constructor
+    public ContainerView(ContainerView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.caption = src.caption;
+        this.name = src.name;
+        this.image = src.image;
+        this.captionClass = src.captionClass;
+        this.valueClass = src.valueClass;
+        this.collapsible = src.collapsible;
+        this.popup = src.popup;
+        this.border = src.border;
+        this.collapsed = src.collapsed;
+        this.debugPoint = src.debugPoint;
+        this.horizontal = src.horizontal;
+        this.tabbed = src.tabbed;
+        this.childrenAlignment = src.childrenAlignment;
+        this.grid = src.grid;
+        this.wrap = src.wrap;
+        this.alignCaptions = src.alignCaptions;
+        this.resizeOverflow = src.resizeOverflow;
+        this.lines = src.lines;
+        this.reversed = src.reversed;
+        this.lineSize = src.lineSize;
+        this.captionLineSize = src.captionLineSize;
+        this.lineShrink = src.lineShrink;
+        this.customDesign = src.customDesign;
+        this.main = src.main;
+    }
+
+    public void copy(ContainerView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
+        for (ComponentView child : src.getChildrenIt())
+            this.children.add(mapping.get(child), ComplexLocation.DEFAULT(), mapping.version);
+        this.recordContainer = mapping.get(src.recordContainer);
+        this.propertyCaption = mapping.get(src.propertyCaption);
+        this.propertyCaptionClass = mapping.get(src.propertyCaptionClass);
+        this.propertyValueClass = mapping.get(src.propertyValueClass);
+        this.propertyImage = mapping.get(src.propertyImage);
+        this.propertyCustomDesign = mapping.get(src.propertyCustomDesign);
+        this.lazyChildren = src.lazyChildren.mapListValues(v -> mapping.get(v));
     }
 }

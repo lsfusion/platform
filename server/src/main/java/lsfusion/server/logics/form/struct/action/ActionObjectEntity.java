@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -83,5 +84,14 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     @Override
     public ActionObjectEntity<P> getAction(FormInstanceContext context) {
         return this;
+    }
+
+    // copy-constructor
+    public ActionObjectEntity(ActionObjectEntity src) {
+        super(src);
+    }
+
+    public void copy(ActionObjectEntity src, ObjectMapping mapping) {
+        super.copy(src, mapping);
     }
 }

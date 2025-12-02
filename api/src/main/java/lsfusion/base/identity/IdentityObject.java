@@ -36,4 +36,10 @@ public class IdentityObject implements IdentityInterface {
     public void setSID(String sID) {
         this.sID = sID;
     }
+
+    // copy-constructor
+    public IdentityObject(IdentityObject src) {
+        //this.ID = src.ID;
+        this.sID = src.sID;
+    }
 }

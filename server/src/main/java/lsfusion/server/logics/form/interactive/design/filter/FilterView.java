@@ -1,8 +1,9 @@
 package lsfusion.server.logics.form.interactive.design.filter;
 
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 
 import java.io.DataInputStream;
@@ -30,5 +31,16 @@ public class FilterView extends BaseComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
         property = pool.deserializeObject(inStream);
+    }
+
+    // copy-constructor
+    public FilterView(FilterView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+    }
+
+    public void copy(FilterView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
+        this.property = mapping.get(src.property);
     }
 }

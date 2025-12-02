@@ -24,6 +24,8 @@ import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
@@ -849,5 +851,66 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
         removedComponents.add(component);
         component.removeFromParent(version);
+    }
+
+    // copy-constructor
+    public FormView(FormView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.canonicalName = src.canonicalName;
+        this.creationPath = src.creationPath;
+        this.path = src.path;
+        this.overridePageWidth = src.overridePageWidth;
+        this.formSchedulers = src.formSchedulers;
+    }
+
+    public void copy(FormView src, ObjectMapping mapping) {
+        this.entity = mapping.get(src.entity);
+        for(TreeGroupView v : src.getTreeGroupsIt()) {
+            this.treeGroups.add(mapping.get(v), mapping.version);
+        }
+        for(GroupObjectView v : src.getGroupObjectsIt()) {
+            this.groupObjects.add(mapping.get(v), ComplexLocation.DEFAULT(), mapping.version);
+        }
+        for(PropertyDrawView v : src.getPropertiesList()) {
+            PropertyDrawView newV = mapping.get(v);
+            System.out.println("PropertyDrawView copy: " + newV.getSID() + "=" + newV.ID);
+            this.properties.add(newV, ComplexLocation.DEFAULT(), mapping.version);
+        }
+        for(RegularFilterGroupView v : src.getRegularFiltersIt()) {
+            this.regularFilters.add(mapping.get(v), mapping.version);
+        }
+        ImOrderMap<PropertyDrawView, Boolean> srcDefaultOrders = src.defaultOrders.getListMap();
+        for(PropertyDrawView p : srcDefaultOrders.keyIt()) {
+            this.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
+        }
+        this.mainContainer = mapping.get(src.mainContainer);
+        this.editButton = mapping.get(src.editButton);
+        this.xlsButton = mapping.get(src.xlsButton);
+        this.dropButton =  mapping.get(src.dropButton);
+        this.refreshButton = mapping.get(src.refreshButton);
+        this.applyButton = mapping.get(src.applyButton);
+        this.cancelButton = mapping.get(src.cancelButton);
+        this.okButton = mapping.get(src.okButton);
+        this.closeButton = mapping.get(src.closeButton);
+
+        src.mtreeGroups.forEach((e, v) -> mtreeGroups.put(mapping.get(e), mapping.get(v)));
+        src.mgroupObjects.forEach((e, v) -> mgroupObjects.put(mapping.get(e), mapping.get(v)));
+        src.mobjects.forEach((e, v) -> mobjects.put(mapping.get(e), mapping.get(v)));
+        src.mproperties.forEach((e, v) -> mproperties.put(mapping.get(e), mapping.get(v)));
+        src.mfilters.forEach((e, v) -> mfilters.put(mapping.get(e), mapping.get(v)));
+        src.mfilterGroups.forEach((e, v) -> mfilterGroups.put(mapping.get(e), mapping.get(v)));
+        for(ImList<PropertyDrawViewOrPivotColumn> pivotColumns : src.getPivotColumns()) {
+            this.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
+        }
+        for(ImList<PropertyDrawViewOrPivotColumn> pivotRows : src.getPivotRows()) {
+            this.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
+        }
+        for(PropertyDrawView p : src.getPivotMeasures()) {
+            this.pivotMeasures.add(mapping.get(p), mapping.version);
+        }
+        for(ComponentView v : src.removedComponents) {
+            this.removedComponents.add(mapping.get(v));
+        }
     }
 }

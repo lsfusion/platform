@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -29,6 +30,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -42,6 +44,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -110,9 +113,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public static final SessionDataProperty isExternal = new SessionDataProperty(LocalizedString.create("Is external"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
 
-    public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
-    public PropertyDrawEntity xlsActionPropertyDraw;
     public PropertyDrawEntity dropActionPropertyDraw;
     public PropertyDrawEntity shareActionPropertyDraw;
     public PropertyDrawEntity customizeActionPropertyDraw;
@@ -1680,16 +1681,45 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return this;
     }
 
+    Map<String, Integer> formsCount = new HashMap<>();
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getSID())) : null;
         if(extendCode != null) {
-            Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(getCode() + "\n" + extendCode + ";\nrun{}", Collections.emptySet(), false);
-            FormEntity newForm = evalResult.second.getForm(getName());
-            newForm.evalLM = evalResult.second;
-            newForm.originalForm = this;
+            try {
+                //1. create empty eval module
+                Pair<LA, EvalScriptingLogicsModule> emptyEval = BL.LM.evaluateRun("run{}", Collections.emptySet(), false);
+                EvalScriptingLogicsModule emptyEvalLM = emptyEval.second;
+                Version version = emptyEvalLM.getVersion();
 
-            return new Pair<>(newForm, newForm.getObjects().mapItValues(objectEntity -> getObject(objectEntity.getSID())).toRevMap());
+                //2. find original form
+                FormEntity originalForm = emptyEvalLM.findForm(getSID());
+                String originalFormName = originalForm.getName();
+
+                //3. copy original form
+                int count = formsCount.getOrDefault(originalFormName, 0);
+                formsCount.put(originalFormName, ++count);
+                String copyFormName = originalFormName + "_" + count;
+                String copyFormCanonicalName = originalForm.getCanonicalName() + "_" + count;
+                FormEntity copyForm = new ObjectMapping(version).get(originalForm, copyFormCanonicalName);
+
+                //4. add form copy to empty eval module
+                emptyEvalLM.addFormEntity(copyForm, false);
+
+                //4. create new eval module with extend form
+                extendCode = extendCode.replace(originalFormName, copyFormName); //hack
+                Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(extendCode + ";\nrun{}", Collections.singleton(emptyEvalLM), false);
+                copyForm.evalLM = evalResult.second;
+                copyForm.originalForm = this;
+
+                for(PropertyDrawView property : copyForm.richDesign.get().getPropertiesList()) {
+                    property.proceedDefaultDesign();
+                }
+
+                return new Pair<>(copyForm, copyForm.getObjects().mapItValues(objectEntity -> getObject(objectEntity.getSID())).toRevMap());
+            } catch (ScriptingErrorLog.SemanticErrorException e) {
+                throw Throwables.propagate(e);
+            }
         }
         return new Pair<>(this, getObjects().toRevMap());
     }
@@ -1770,5 +1800,83 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return this;
         
         return null;
+    }
+
+    // copy-constructor
+    public FormEntity(FormEntity src, String canonicalName, Version version) {
+        this(canonicalName, src.debugPoint, src.initCaption, src.initImage, version);
+        this.evalLM = src.evalLM;
+        this.formOrDesignStatementList = src.formOrDesignStatementList;
+        this.localAsync = src.localAsync;
+        this.hintsIncrementTable =  src.hintsIncrementTable;
+        this.hintsNoUpdate = src.hintsNoUpdate;
+        this.integrationSID = src.integrationSID;
+        this.context = src.context;
+    }
+
+    public ObjectMapping mapping; //store mapping for FormInstance
+
+    public void copy(FormEntity src, ObjectMapping mapping) {
+        this.mapping = mapping;
+        this.editActionPropertyDraw = mapping.get(src.editActionPropertyDraw);
+        this.dropActionPropertyDraw = mapping.get(src.dropActionPropertyDraw);
+        this.shareActionPropertyDraw = mapping.get(src.shareActionPropertyDraw);
+        this.customizeActionPropertyDraw = mapping.get(src.customizeActionPropertyDraw);
+        this.refreshActionPropertyDraw = mapping.get(src.refreshActionPropertyDraw);
+        this.applyActionPropertyDraw =  mapping.get(src.applyActionPropertyDraw);
+        this.cancelActionPropertyDraw = mapping.get(src.cancelActionPropertyDraw);
+        this.okActionPropertyDraw = mapping.get(src.okActionPropertyDraw);
+        this.closeActionPropertyDraw = mapping.get(src.closeActionPropertyDraw);
+        this.logMessagePropertyDraw = mapping.get(src.logMessagePropertyDraw);
+        this.originalForm = mapping.get(src.originalForm);
+        this.eventActions = NFFact.mapList();
+        ImMap<Object, ImList<ActionObjectEntity<?>>> srcEventActions = src.getEventActions();
+        for (Object key : srcEventActions.keys()) {
+            this.eventActions.addAll(key, srcEventActions.get(key).mapListValues(e -> mapping.get(e)), mapping.version);
+        }
+        for (FormScheduler scheduler : src.formSchedulers.getIt()) {
+            this.formSchedulers.add(scheduler, mapping.version);
+        }
+        for (GroupObjectEntity g : src.getGroups()) {
+            this.groups.add(mapping.get(g), ComplexLocation.DEFAULT(), mapping.version);
+        }
+        for (TreeGroupEntity t : src.getTreeGroupsIt()) {
+            this.treeGroups.add(mapping.get(t), mapping.version);
+        }
+        propertyDraws = NFFact.complexOrderSet();
+        for (PropertyDrawEntity p : src.getPropertyDrawsList()) {
+            PropertyDrawEntity newP = mapping.get(p);
+            System.out.println("PropertyDrawEntity copy: " + newP.getSID() + "=" + newP.ID);
+            this.propertyDraws.add(newP, ComplexLocation.DEFAULT(), mapping.version);
+        }
+        for(FilterEntity f : src.getFixedFilters()) {
+            this.fixedFilters.add(mapping.get(f), mapping.version);
+        }
+        for(RegularFilterGroupEntity f : src.getRegularFilterGroupsList()) {
+            this.regularFilterGroups.add(mapping.get(f), mapping.version);
+        }
+        for(PropertyDrawEntity p : src.userFilters.getOrderSet()) {
+            this.userFilters.add(mapping.get(p), mapping.version);
+        }
+        ImOrderMap<PropertyDrawEntity<?>, Boolean> srcDefaultOrders = src.defaultOrders.getListMap();
+        for(PropertyDrawEntity p : srcDefaultOrders.keyIt()) {
+            this.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
+        }
+        ImOrderMap<OrderEntity<?>, Boolean> srcFixedOrders = src.fixedOrders.getListMap();
+        for(OrderEntity<?> o : srcFixedOrders.keyIt()) {
+            OrderEntity orderEntity = o instanceof ObjectEntity ? mapping.get((ObjectEntity)o) : mapping.get((PropertyObjectEntity) o);
+            this.fixedOrders.add(orderEntity, srcFixedOrders.get(o), mapping.version);
+        }
+        for(ImList<PropertyDrawEntityOrPivotColumn> pivotColumns : src.getPivotColumnsList()) {
+            this.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
+        }
+        for(ImList<PropertyDrawEntityOrPivotColumn> pivotRows : src.getPivotRowsList()) {
+            this.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
+        }
+        for(PropertyDrawEntity p : src.getPivotMeasuresList()) {
+            this.pivotMeasures.add(mapping.get(p), mapping.version);
+        }
+        this.setRichDesign(mapping.get(src.getRichDesign()), mapping.version);
+        this.reportPathProp = mapping.get(src.reportPathProp);
     }
 }

@@ -17,11 +17,11 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -177,5 +177,22 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     @Override
     public <T extends PropertyInterface> InputOrderEntity<?, T> getInputOrderEntity(ObjectEntity object, ImRevMap<ObjectEntity, T> mapObjects) {
         return null; // temporary
+    }
+
+    // copy-constructor
+    public ObjectEntity(ObjectEntity src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.caption = src.caption;
+        this.baseClass = src.baseClass;
+        this.noClasses = src.noClasses;
+        this.integrationSID = src.integrationSID;
+        this.isValue = src.isValue;
+        this.finalizedValueProperty = src.finalizedValueProperty;
+        this.valueProperty = src.valueProperty;
+    }
+
+    public void copy(ObjectEntity src, ObjectMapping mapping) {
+        this.groupTo = mapping.get(src.groupTo);
     }
 }

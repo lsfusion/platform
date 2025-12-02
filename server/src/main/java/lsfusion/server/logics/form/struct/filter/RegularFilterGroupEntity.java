@@ -8,6 +8,8 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -86,5 +88,19 @@ public class RegularFilterGroupEntity extends IdentityObject {
     public void finalizeAroundInit() {
         filters.finalizeChanges();
         defaultFilterIndex.finalizeChanges();
+    }
+
+    // copy-constructor
+    public RegularFilterGroupEntity(RegularFilterGroupEntity src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.noNull = src.noNull;
+    }
+
+    public void copy(RegularFilterGroupEntity src, ObjectMapping mapping) {
+        for (RegularFilterEntity rfe : src.getFiltersList()) {
+            this.addFilter(mapping.get(rfe), mapping.version);
+        }
+        this.setDefault(src.getDefault(), mapping.version);
     }
 }

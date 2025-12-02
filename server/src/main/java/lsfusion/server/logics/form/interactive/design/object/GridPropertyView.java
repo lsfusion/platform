@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -140,5 +142,23 @@ public abstract class GridPropertyView extends BaseComponentView {
             return -1;
 
         return -2;
+    }
+
+    // copy-constructor
+    public GridPropertyView(GridPropertyView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.captionHeight = src.captionHeight;
+        this.captionCharHeight = src.captionCharHeight;
+        this.resizeOverflow = src.resizeOverflow;
+        this.valueClass = src.valueClass;
+        this.lineWidth = src.lineWidth;
+        this.lineHeight = src.lineHeight;
+        this.boxed = src.boxed;
+    }
+
+    public void copy(GridPropertyView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
+        this.propertyValueClass = mapping.get(src.propertyValueClass);
     }
 }

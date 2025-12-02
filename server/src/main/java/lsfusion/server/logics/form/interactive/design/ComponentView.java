@@ -12,6 +12,7 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
@@ -525,5 +526,39 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public void prereadAutoIcons(FormView formView, ConnectionContext context) {
+    }
+
+    // copy-constructor
+    public ComponentView(ComponentView src) {
+        super(src);
+        this.design = src.design;
+        this.elementClass = src.elementClass;
+        this.width = src.width;
+        this.height = src.height;
+        this.span = src.span;
+        this.flex = src.flex;
+        this.alignment = src.alignment;
+        this.shrink = src.shrink;
+        this.alignShrink = src.alignShrink;
+        this.alignCaption = src.alignCaption;
+        this.overflowHorz = src.overflowHorz;
+        this.overflowVert = src.overflowVert;
+        this.captionVertical = src.captionVertical;
+        this.captionLast = src.captionLast;
+        this.captionAlignmentHorz = src.captionAlignmentHorz;
+        this.captionAlignmentVert = src.captionAlignmentVert;
+        this.marginTop = src.marginTop;
+        this.marginBottom = src.marginBottom;
+        this.marginLeft = src.marginLeft;
+        this.marginRight = src.marginRight;
+        this.defaultComponent = src.defaultComponent;
+        this.activated = src.activated;
+        this.activeTab = src.activeTab;
+    }
+
+    public void copy(ComponentView src, ObjectMapping mapping) {
+        this.propertyElementClass = mapping.get(src.propertyElementClass);
+        this.showIf = mapping.get(src.showIf);
+        this.setContainer(mapping.get(src.getContainer()), mapping.version);
     }
 }

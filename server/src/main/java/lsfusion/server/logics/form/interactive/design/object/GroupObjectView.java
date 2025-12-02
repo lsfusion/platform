@@ -6,6 +6,7 @@ import lsfusion.interop.form.object.AbstractGroupObject;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -214,5 +215,28 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         
         for(ObjectView object : this) 
             object.finalizeAroundInit();
+    }
+
+    // copy-constructor
+    public GroupObjectView(GroupObjectView src) {
+        this.idGen = src.idGen;
+        this.needVerticalScroll = src.needVerticalScroll;
+    }
+
+    public void copy(GroupObjectView src, ObjectMapping mapping) {
+        this.entity = mapping.get(src.entity);
+        this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor
+        this.grid = mapping.get(src.grid);
+        this.toolbarSystem = mapping.get(src.toolbarSystem);
+        this.filters = NFFact.orderSet();
+        for (FilterView f : src.getFilters()) {
+            this.filters.add(mapping.get(f), mapping.version);
+        }
+        this.filtersContainer = mapping.get(src.filtersContainer);
+        this.filterControls = mapping.get(src.filterControls);
+        this.calculations = mapping.get(src.calculations);
+        for(ObjectView objectView : src) {
+            this.add(mapping.get(objectView));
+        }
     }
 }

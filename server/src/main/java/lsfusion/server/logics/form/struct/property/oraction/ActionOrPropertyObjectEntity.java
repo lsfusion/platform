@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -15,6 +16,8 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+
+import java.util.function.Function;
 
 public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
 
@@ -104,5 +107,17 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
                 actualStats = readValues;
         }
         return actualStats;
+    }
+
+    // copy-constructor
+    public ActionOrPropertyObjectEntity(ActionOrPropertyObjectEntity src) {
+        this.property = (T) src.property;
+        this.creationScript = src.creationScript;
+        this.creationPath = src.creationPath;
+        this.path = src.path;
+    }
+
+    public void copy(ActionOrPropertyObjectEntity src, ObjectMapping mapping) {
+        this.mapping = (ImRevMap<P, ObjectEntity>) src.mapping.mapValues((Function<ObjectEntity, ObjectEntity>) mapping::get);
     }
 }

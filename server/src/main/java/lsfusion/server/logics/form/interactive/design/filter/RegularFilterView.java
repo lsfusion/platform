@@ -2,6 +2,8 @@ package lsfusion.server.logics.form.interactive.design.filter;
 
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -35,5 +37,15 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) {
         entity = pool.context.entity.getRegularFilter(ID);
+    }
+
+    // copy-constructor
+    public RegularFilterView(RegularFilterView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+    }
+
+    public void copy(RegularFilterView src, ObjectMapping mapping) {
+        this.entity = mapping.get(src.entity);
     }
 }

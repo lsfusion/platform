@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -42,5 +44,23 @@ public class ToolbarView extends BaseComponentView {
     protected FlexAlignment getDefaultAlignment(FormInstanceContext context) {
         // we want the toolbar to always be on the same distance from the grid
         return FlexAlignment.START;
+    }
+
+    // copy-constructor
+    public ToolbarView(ToolbarView src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.visible = src.visible;
+        this.showViews = src.showViews;
+        this.showFilters = src.showFilters;
+        this.showSettings = src.showSettings;
+        this.showCountQuantity = src.showCountQuantity;
+        this.showCalculateSum = src.showCalculateSum;
+        this.showPrintGroupXls = src.showPrintGroupXls;
+        this.showManualUpdate = src.showManualUpdate;
+    }
+
+    public void copy(ToolbarView src, ObjectMapping mapping) {
+        super.copy(src, mapping);
     }
 }

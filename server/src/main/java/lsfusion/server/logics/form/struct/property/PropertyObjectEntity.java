@@ -12,6 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
@@ -129,5 +130,14 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
     public boolean hasNoGridReadOnly(ImSet<ObjectEntity> gridObjects) {
         return property.hasNoGridReadOnly(mapping.filterValuesRev(gridObjects).keys());
+    }
+
+    // copy-constructor
+    public PropertyObjectEntity(PropertyObjectEntity src) {
+        super(src);
+    }
+
+    public void copy(PropertyObjectEntity src, ObjectMapping mapping) {
+        super.copy(src, mapping);
     }
 }

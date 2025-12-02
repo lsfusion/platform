@@ -6,6 +6,7 @@ import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -154,5 +155,28 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     @Override
     protected boolean isCustom() {
         return false;
+    }
+
+    // copy-constructor
+    public TreeGroupView(TreeGroupView src) {
+        super(src);
+        this.expandOnClick = src.expandOnClick;
+        this.hierarchicalWidth = src.hierarchicalWidth;
+        this.hierarchicalCaption = src.hierarchicalCaption;
+        this.idGenerator = src.idGenerator;
+    }
+
+    public void copy(TreeGroupView src, ObjectMapping mapping) {
+        for(GroupObjectView g : src.groups) {
+            groups.add(mapping.get(g));
+        }
+        this.entity = mapping.get(src.entity);
+        this.toolbarSystem = mapping.get(src.toolbarSystem);
+        for(FilterView f : src.getFilters()) {
+            this.filters.add(mapping.get(f), mapping.version);
+        }
+        this.filtersContainer = mapping.get(src.filtersContainer);
+        this.filterControls = mapping.get(src.filterControls);
+        this.propertyHierarchicalCaption = mapping.get(src.propertyHierarchicalCaption);
     }
 }

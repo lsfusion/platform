@@ -18,9 +18,11 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
@@ -416,5 +418,43 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public boolean isSimpleList() {
         return getObjects().size() == 1 && viewType.isList() && !isInTree();
+    }
+
+    // copy-constructor
+    public GroupObjectEntity(GroupObjectEntity src) {
+        super(src);
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.isSubReport = src.isSubReport;
+        this.debugPoint = src.debugPoint;
+        this.updateType = src.updateType;
+        this.propertyGroup = src.propertyGroup;
+        this.scriptIndex = src.scriptIndex;
+        this.enableManualUpdate = src.enableManualUpdate;
+        this.integrationSID = src.integrationSID;
+        this.integrationKey = src.integrationKey;
+        this.listViewTypeProp = src.listViewTypeProp;
+        this.viewType = src.viewType;
+        this.listViewType = src.listViewType;
+        this.pivotOptions = src.pivotOptions;
+        this.customRenderFunction = src.customRenderFunction;
+        this.mapTileProvider = src.mapTileProvider;
+        this.asyncInit =  src.asyncInit;
+        this.pageSize = src.pageSize;
+        this.isFilterExplicitlyUsed =  src.isFilterExplicitlyUsed;
+        this.isOrderExplicitlyUsed =  src.isOrderExplicitlyUsed;
+    }
+
+    public void copy(GroupObjectEntity src, ObjectMapping mapping) {
+        this.treeGroup = mapping.get(src.treeGroup);
+        this.reportPathProp = mapping.get(src.reportPathProp);
+        this.propertyCustomOptions = mapping.get(src.propertyCustomOptions);
+        this.propertyBackground = mapping.get(src.propertyBackground);
+        this.propertyForeground = mapping.get(src.propertyForeground);
+        ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> srcProps = (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) src.props;
+        this.props = srcProps.mapValues(p -> new PropertyRevImplement<>(p.property, p.mapping.mapRevValues((Function<ObjectEntity, ObjectEntity>) mapping::get)));
+        this.isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
+        for(ObjectEntity e : ((ImOrderSet<ObjectEntity>) src.objects)) {
+            this.add(mapping.get(e));
+        }
     }
 }

@@ -9,6 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -66,5 +67,14 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return property.getImplement(mapObjects);
+    }
+
+    // copy-constructor
+    public FilterEntity(FilterEntity src) {
+        this.resolveAdd = src.resolveAdd;
+    }
+
+    public void copy(FilterEntity src, ObjectMapping mapping) {
+        this.property = mapping.get(src.property);
     }
 }

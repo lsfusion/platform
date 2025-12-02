@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.design.object;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -44,5 +45,16 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
     }
 
     public void finalizeAroundInit() {
+    }
+
+    // copy-constructor
+    public ObjectView(ObjectView src) {
+        super(src);
+    }
+
+    public void copy(ObjectView src, ObjectMapping mapping) {
+        this.entity = mapping.get(src.entity);
+        this.groupObject = mapping.get(src.groupObject);
+        this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor
     }
 }

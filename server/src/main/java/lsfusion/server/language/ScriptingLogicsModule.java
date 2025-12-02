@@ -865,7 +865,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String canonicalName = elementCanonicalName(formName);
 
         FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, getVersion());
-        addFormEntity(formEntity);
+        addFormEntity(formEntity, true);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setLocalAsync(localAsync);
