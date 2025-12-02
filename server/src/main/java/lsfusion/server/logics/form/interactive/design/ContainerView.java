@@ -584,8 +584,9 @@ public class ContainerView extends ComponentView {
     }
 
     // copy-constructor
-    public ContainerView(ContainerView src) {
-        super(src);
+    public ContainerView(ContainerView src, ObjectMapping mapping) {
+        super(src, mapping);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = src.caption;
         this.name = src.name;
@@ -611,10 +612,7 @@ public class ContainerView extends ComponentView {
         this.lineShrink = src.lineShrink;
         this.customDesign = src.customDesign;
         this.main = src.main;
-    }
 
-    public void copy(ContainerView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
         for (ComponentView child : src.getChildrenIt())
             this.children.add(mapping.get(child), ComplexLocation.DEFAULT(), mapping.version);
         this.recordContainer = mapping.get(src.recordContainer);

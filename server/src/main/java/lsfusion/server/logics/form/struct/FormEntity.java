@@ -1803,8 +1803,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     // copy-constructor
-    public FormEntity(FormEntity src, String canonicalName, Version version) {
-        this(canonicalName, src.debugPoint, src.initCaption, src.initImage, version);
+    public FormEntity(FormEntity src, String canonicalName, ObjectMapping mapping) {
+        this(canonicalName, src.debugPoint, src.initCaption, src.initImage, mapping.version);
+        mapping.put(src, this);
         this.evalLM = src.evalLM;
         this.formOrDesignStatementList = src.formOrDesignStatementList;
         this.localAsync = src.localAsync;
@@ -1812,11 +1813,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this.hintsNoUpdate = src.hintsNoUpdate;
         this.integrationSID = src.integrationSID;
         this.context = src.context;
-    }
 
-    public ObjectMapping mapping; //store mapping for FormInstance
-
-    public void copy(FormEntity src, ObjectMapping mapping) {
         this.mapping = mapping;
         this.editActionPropertyDraw = mapping.get(src.editActionPropertyDraw);
         this.dropActionPropertyDraw = mapping.get(src.dropActionPropertyDraw);
@@ -1846,7 +1843,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         propertyDraws = NFFact.complexOrderSet();
         for (PropertyDrawEntity p : src.getPropertyDrawsList()) {
             PropertyDrawEntity newP = mapping.get(p);
-            System.out.println("PropertyDrawEntity copy: " + newP.getSID() + "=" + newP.ID);
             this.propertyDraws.add(newP, ComplexLocation.DEFAULT(), mapping.version);
         }
         for(FilterEntity f : src.getFixedFilters()) {
@@ -1879,4 +1875,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this.setRichDesign(mapping.get(src.getRichDesign()), mapping.version);
         this.reportPathProp = mapping.get(src.reportPathProp);
     }
+
+    public ObjectMapping mapping; //store mapping for FormInstance
 }

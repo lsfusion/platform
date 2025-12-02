@@ -24,11 +24,7 @@ public class BaseComponentView extends ComponentView {
     }
 
     // copy-constructor
-    public BaseComponentView(BaseComponentView src) {
-        super(src);
-    }
-
-    public void copy(BaseComponentView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
+    public BaseComponentView(BaseComponentView src, ObjectMapping mapping) {
+        super(src, mapping);
     }
 }

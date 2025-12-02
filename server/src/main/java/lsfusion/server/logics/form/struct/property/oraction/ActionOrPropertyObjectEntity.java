@@ -110,14 +110,12 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
     }
 
     // copy-constructor
-    public ActionOrPropertyObjectEntity(ActionOrPropertyObjectEntity src) {
+    public ActionOrPropertyObjectEntity(ActionOrPropertyObjectEntity src, ObjectMapping mapping) {
         this.property = (T) src.property;
         this.creationScript = src.creationScript;
         this.creationPath = src.creationPath;
         this.path = src.path;
-    }
 
-    public void copy(ActionOrPropertyObjectEntity src, ObjectMapping mapping) {
         this.mapping = (ImRevMap<P, ObjectEntity>) src.mapping.mapValues((Function<ObjectEntity, ObjectEntity>) mapping::get);
     }
 }

@@ -1378,8 +1378,8 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     // copy-constructor
-    public PropertyDrawView(PropertyDrawView src) {
-        super(src);
+    public PropertyDrawView(PropertyDrawView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.changeOnSingleClick = src.changeOnSingleClick;
         this.maxValue = src.maxValue;
         this.echoSymbols = src.echoSymbols;
@@ -1443,10 +1443,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         this.sync = src.sync;
         this.highlightDuplicate = src.highlightDuplicate;
         this.boxed = src.boxed;
-    }
 
-    public void copy(PropertyDrawView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
         this.entity = mapping.get(src.entity);
         this.ID = entity.ID; //need to be in copy, not in constructor, because entity is copied in constructor
     }

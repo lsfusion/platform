@@ -91,13 +91,12 @@ public class RegularFilterGroupEntity extends IdentityObject {
     }
 
     // copy-constructor
-    public RegularFilterGroupEntity(RegularFilterGroupEntity src) {
+    public RegularFilterGroupEntity(RegularFilterGroupEntity src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.noNull = src.noNull;
-    }
 
-    public void copy(RegularFilterGroupEntity src, ObjectMapping mapping) {
         for (RegularFilterEntity rfe : src.getFiltersList()) {
             this.addFilter(mapping.get(rfe), mapping.version);
         }

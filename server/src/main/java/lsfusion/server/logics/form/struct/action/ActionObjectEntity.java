@@ -87,11 +87,8 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     // copy-constructor
-    public ActionObjectEntity(ActionObjectEntity src) {
-        super(src);
-    }
-
-    public void copy(ActionObjectEntity src, ObjectMapping mapping) {
-        super.copy(src, mapping);
+    public ActionObjectEntity(ActionObjectEntity src, ObjectMapping mapping) {
+        super(src, mapping);
+        mapping.put(src, this);
     }
 }

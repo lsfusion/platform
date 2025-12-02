@@ -1071,8 +1071,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // copy-constructor
-    public PropertyDrawEntity(PropertyDrawEntity<P> src) {
+    public PropertyDrawEntity(PropertyDrawEntity<P> src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.editType = src.editType;
         this.hide = src.hide;
@@ -1107,11 +1108,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.inheritedProperty = src.inheritedProperty;
         this.defaultChangeEventScope = src.defaultChangeEventScope;
         this.integrationSID = src.integrationSID;
-    }
 
-    public boolean remapped = false;
-
-    public void copy(PropertyDrawEntity<P> src, ObjectMapping mapping) {
         this.remapped = true;
         this.actionOrProperty = src.actionOrProperty instanceof ActionObjectEntity ?
                 mapping.get((ActionObjectEntity) src.actionOrProperty) :
@@ -1127,4 +1124,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.quickFilterProperty = mapping.get(src.quickFilterProperty);
         this.cellProperty = mapping.get(src.cellProperty);
     }
+
+    public boolean remapped = false;
 }

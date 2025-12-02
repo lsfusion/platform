@@ -48,11 +48,10 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
     }
 
     // copy-constructor
-    public ObjectView(ObjectView src) {
+    public ObjectView(ObjectView src, ObjectMapping mapping) {
         super(src);
-    }
+        mapping.put(src, this);
 
-    public void copy(ObjectView src, ObjectMapping mapping) {
         this.entity = mapping.get(src.entity);
         this.groupObject = mapping.get(src.groupObject);
         this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor

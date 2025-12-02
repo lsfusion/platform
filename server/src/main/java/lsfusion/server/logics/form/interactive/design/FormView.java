@@ -854,17 +854,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     // copy-constructor
-    public FormView(FormView src) {
+    public FormView(FormView src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.canonicalName = src.canonicalName;
         this.creationPath = src.creationPath;
         this.path = src.path;
         this.overridePageWidth = src.overridePageWidth;
         this.formSchedulers = src.formSchedulers;
-    }
 
-    public void copy(FormView src, ObjectMapping mapping) {
         this.entity = mapping.get(src.entity);
         for(TreeGroupView v : src.getTreeGroupsIt()) {
             this.treeGroups.add(mapping.get(v), mapping.version);
@@ -874,7 +873,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
         for(PropertyDrawView v : src.getPropertiesList()) {
             PropertyDrawView newV = mapping.get(v);
-            System.out.println("PropertyDrawView copy: " + newV.getSID() + "=" + newV.ID);
             this.properties.add(newV, ComplexLocation.DEFAULT(), mapping.version);
         }
         for(RegularFilterGroupView v : src.getRegularFiltersIt()) {

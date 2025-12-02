@@ -34,13 +34,10 @@ public class FilterView extends BaseComponentView {
     }
 
     // copy-constructor
-    public FilterView(FilterView src) {
-        super(src);
+    public FilterView(FilterView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.ID = BaseLogicsModule.generateStaticNewID();
-    }
 
-    public void copy(FilterView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
         this.property = mapping.get(src.property);
     }
 }

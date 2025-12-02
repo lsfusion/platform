@@ -180,8 +180,9 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     }
 
     // copy-constructor
-    public ObjectEntity(ObjectEntity src) {
+    public ObjectEntity(ObjectEntity src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = src.caption;
         this.baseClass = src.baseClass;
@@ -190,9 +191,7 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         this.isValue = src.isValue;
         this.finalizedValueProperty = src.finalizedValueProperty;
         this.valueProperty = src.valueProperty;
-    }
 
-    public void copy(ObjectEntity src, ObjectMapping mapping) {
         this.groupTo = mapping.get(src.groupTo);
     }
 }

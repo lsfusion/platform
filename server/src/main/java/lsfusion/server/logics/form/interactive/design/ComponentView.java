@@ -529,8 +529,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     // copy-constructor
-    public ComponentView(ComponentView src) {
+    public ComponentView(ComponentView src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.design = src.design;
         this.elementClass = src.elementClass;
         this.width = src.width;
@@ -554,9 +555,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.defaultComponent = src.defaultComponent;
         this.activated = src.activated;
         this.activeTab = src.activeTab;
-    }
 
-    public void copy(ComponentView src, ObjectMapping mapping) {
         this.propertyElementClass = mapping.get(src.propertyElementClass);
         this.showIf = mapping.get(src.showIf);
         this.setContainer(mapping.get(src.getContainer()), mapping.version);

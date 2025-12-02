@@ -218,12 +218,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     // copy-constructor
-    public GroupObjectView(GroupObjectView src) {
+    public GroupObjectView(GroupObjectView src, ObjectMapping mapping) {
+        mapping.put(src, this);
         this.idGen = src.idGen;
         this.needVerticalScroll = src.needVerticalScroll;
-    }
 
-    public void copy(GroupObjectView src, ObjectMapping mapping) {
         this.entity = mapping.get(src.entity);
         this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor
         this.grid = mapping.get(src.grid);

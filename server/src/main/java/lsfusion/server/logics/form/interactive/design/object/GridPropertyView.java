@@ -145,8 +145,8 @@ public abstract class GridPropertyView extends BaseComponentView {
     }
 
     // copy-constructor
-    public GridPropertyView(GridPropertyView src) {
-        super(src);
+    public GridPropertyView(GridPropertyView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.captionHeight = src.captionHeight;
         this.captionCharHeight = src.captionCharHeight;
@@ -155,10 +155,7 @@ public abstract class GridPropertyView extends BaseComponentView {
         this.lineWidth = src.lineWidth;
         this.lineHeight = src.lineHeight;
         this.boxed = src.boxed;
-    }
 
-    public void copy(GridPropertyView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
         this.propertyValueClass = mapping.get(src.propertyValueClass);
     }
 }

@@ -47,8 +47,8 @@ public class ToolbarView extends BaseComponentView {
     }
 
     // copy-constructor
-    public ToolbarView(ToolbarView src) {
-        super(src);
+    public ToolbarView(ToolbarView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.visible = src.visible;
         this.showViews = src.showViews;
@@ -58,9 +58,5 @@ public class ToolbarView extends BaseComponentView {
         this.showCalculateSum = src.showCalculateSum;
         this.showPrintGroupXls = src.showPrintGroupXls;
         this.showManualUpdate = src.showManualUpdate;
-    }
-
-    public void copy(ToolbarView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
     }
 }

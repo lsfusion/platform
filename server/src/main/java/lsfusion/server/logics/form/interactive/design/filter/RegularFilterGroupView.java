@@ -67,13 +67,10 @@ public class RegularFilterGroupView extends BaseComponentView {
     }
 
     // copy-constructor
-    public RegularFilterGroupView(RegularFilterGroupView src) {
-        super(src);
+    public RegularFilterGroupView(RegularFilterGroupView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.ID = BaseLogicsModule.generateStaticNewID();
-    }
 
-    public void copy(RegularFilterGroupView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
         this.entity = mapping.get(src.entity);
         for(RegularFilterView f : src.filters.getOrderSet())
             this.filters.add(f, mapping.version);

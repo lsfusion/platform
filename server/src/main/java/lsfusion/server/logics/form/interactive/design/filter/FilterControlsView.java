@@ -10,12 +10,8 @@ public class FilterControlsView extends BaseComponentView {
     }
 
     // copy-constructor
-    public FilterControlsView(FilterControlsView src) {
-        super(src);
+    public FilterControlsView(FilterControlsView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.ID = BaseLogicsModule.generateStaticNewID();
-    }
-
-    public void copy(FilterControlsView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
     }
 }

@@ -40,12 +40,11 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
     }
 
     // copy-constructor
-    public RegularFilterView(RegularFilterView src) {
+    public RegularFilterView(RegularFilterView src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
-    }
 
-    public void copy(RegularFilterView src, ObjectMapping mapping) {
         this.entity = mapping.get(src.entity);
     }
 }

@@ -53,14 +53,13 @@ public class TreeGroupEntity extends IdentityObject {
     }
 
     // copy-constructor
-    public TreeGroupEntity(TreeGroupEntity src) {
+    public TreeGroupEntity(TreeGroupEntity src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.plainTreeMode = src.plainTreeMode;
         this.debugPoint = src.debugPoint;
-    }
 
-    public void copy(TreeGroupEntity src, ObjectMapping mapping) {
         this.setGroups(getGroups().mapOrderSetValues(e -> mapping.get(e)));
         this.finalizedGroups = false;
     }

@@ -70,11 +70,10 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     }
 
     // copy-constructor
-    public FilterEntity(FilterEntity src) {
+    public FilterEntity(FilterEntity src, ObjectMapping mapping) {
+        mapping.put(src, this);
         this.resolveAdd = src.resolveAdd;
-    }
 
-    public void copy(FilterEntity src, ObjectMapping mapping) {
         this.property = mapping.get(src.property);
     }
 }

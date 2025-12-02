@@ -158,15 +158,13 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     }
 
     // copy-constructor
-    public TreeGroupView(TreeGroupView src) {
-        super(src);
+    public TreeGroupView(TreeGroupView src, ObjectMapping mapping) {
+        super(src, mapping);
         this.expandOnClick = src.expandOnClick;
         this.hierarchicalWidth = src.hierarchicalWidth;
         this.hierarchicalCaption = src.hierarchicalCaption;
         this.idGenerator = src.idGenerator;
-    }
 
-    public void copy(TreeGroupView src, ObjectMapping mapping) {
         for(GroupObjectView g : src.groups) {
             groups.add(mapping.get(g));
         }

@@ -421,8 +421,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     // copy-constructor
-    public GroupObjectEntity(GroupObjectEntity src) {
+    public GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
         super(src);
+        mapping.put(src, this);
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.isSubReport = src.isSubReport;
         this.debugPoint = src.debugPoint;
@@ -442,9 +443,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.pageSize = src.pageSize;
         this.isFilterExplicitlyUsed =  src.isFilterExplicitlyUsed;
         this.isOrderExplicitlyUsed =  src.isOrderExplicitlyUsed;
-    }
 
-    public void copy(GroupObjectEntity src, ObjectMapping mapping) {
         this.treeGroup = mapping.get(src.treeGroup);
         this.reportPathProp = mapping.get(src.reportPathProp);
         this.propertyCustomOptions = mapping.get(src.propertyCustomOptions);
