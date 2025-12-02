@@ -336,53 +336,24 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 String ldapException = null;
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
-                    Integer port = (Integer) authenticationLM.portLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
-                    String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
-
                     boolean useServiceUser = authenticationLM.useServiceUser.read(session) != null;
-                    String serviceUser = (String) authenticationLM.serviceUser.read(session);
-                    String serviceUserPassword = (String) authenticationLM.serviceUserPassword.read(session);
-
                     useDefaultAuthentication = authenticationLM.useDefaultAuthentication.read(session) != null;
                     try {
-                        Configuration config = new Configuration() {
-                            @Override
-                            public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-                                Map<String, Object> opts = new HashMap<>();
-                                opts.put("server", server);
-                                opts.put("port", port);
-                                opts.put("userDNSuffix", userDNSuffix.toUpperCase());
-                                opts.put("baseDN", baseDN);
-                                opts.put("useServiceUser", useServiceUser);
-                                opts.put("serviceUser", serviceUser);
-                                opts.put("serviceUserPassword", serviceUserPassword);
-                                return new AppConfigurationEntry[]{
-                                        new AppConfigurationEntry(
-                                                LDAPAuthenticationService.class.getName(),
-                                                AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-                                                opts
-                                        )
-                                };
-                            }
-                        };
-
-                        if (!krbProps)
+                        if (useServiceUser && !krbProps)
                             setKrbProps(server, LDAPAuthenticationService.getRealm(baseDN));
-                        Subject subject = getSubject(userName, password, config);
+
+                        Subject subject = getSubject(session, userName, password, server, baseDN, useServiceUser);
                         Map<String, Object> userPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserPrincipal.class).stream()
                                 .collect(Collectors.toMap(LDAPAuthenticationService.UserPrincipal::getName, LDAPAuthenticationService.UserPrincipal::getValue));
-
-                        String firstName = (String) userPrincipals.get("firstName");
-                        String lastName = (String) userPrincipals.get("lastName");
-                        String email = (String) userPrincipals.get("email");
-                        List<String> groupNames = (List<String>) userPrincipals.get("groupNames");
 
                         Map<String, String> userAttributesPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserAttributePrincipal.class).stream()
                                 .collect(Collectors.toMap(LDAPAuthenticationService.UserAttributePrincipal::getName, LDAPAuthenticationService.UserAttributePrincipal::getValue));
 
-                        userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password, firstName, lastName,
-                                email, groupNames, false, userAttributesPrincipals);
+                        userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password,
+                                (String) userPrincipals.get("firstName"), (String) userPrincipals.get("lastName"),
+                                (String) userPrincipals.get("email"), (List<String>) userPrincipals.get("groupNames"),
+                                false, userAttributesPrincipals);
                     } catch (javax.security.auth.login.LoginException e) {
                         String errorMessage = "LDAP authentication failed";
                         systemLogger.error(errorMessage, e);
@@ -426,7 +397,33 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         krbProps = true;
     }
 
-    private Subject getSubject(String userName, String password, Configuration config) throws javax.security.auth.login.LoginException {
+    private Subject getSubject(DataSession session, String userName, String password, String server, String baseDN, boolean useServiceUser) throws javax.security.auth.login.LoginException, SQLException, SQLHandledException {
+        Integer port = (Integer) authenticationLM.portLDAP.read(session);
+        String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
+        String serviceUser = (String) authenticationLM.serviceUser.read(session);
+        String serviceUserPassword = (String) authenticationLM.serviceUserPassword.read(session);
+
+        Configuration config = new Configuration() {
+            @Override
+            public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                Map<String, Object> opts = new HashMap<>();
+                opts.put("server", server);
+                opts.put("port", port);
+                opts.put("userDNSuffix", userDNSuffix.toUpperCase());
+                opts.put("baseDN", baseDN);
+                opts.put("useServiceUser", useServiceUser);
+                opts.put("serviceUser", serviceUser);
+                opts.put("serviceUserPassword", serviceUserPassword);
+                return new AppConfigurationEntry[]{
+                        new AppConfigurationEntry(
+                                LDAPAuthenticationService.class.getName(),
+                                AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                opts
+                        )
+                };
+            }
+        };
+
         CallbackHandler handler = callbacks -> {
             for (Callback cb : callbacks) {
                 if (cb instanceof NameCallback)
