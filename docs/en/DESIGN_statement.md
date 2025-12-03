@@ -131,8 +131,8 @@ To access design components, you can use their names or address property compone
 |`overflowVert`|todo|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
-|`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginLeft`|Left margin|Integer literal|`0`|`1`|
+|`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
 |`captionFont`|The font to be used for displaying caption of the component|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[Expression](Expression.md)(string value)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
@@ -196,10 +196,8 @@ To access design components, you can use their names or address property compone
 |`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
 |`valueFlex` |todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|Expression (string value)|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
-|`changeKeyPriority`|**deprecated since version 6, use parameter `priority` in `changeKey`**|Integer literal|`NULL`|`'1000'`|
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`changeMouse`|The mouse action that will trigger the property change event|Expression (string value)|`NULL`|`'DBLCLK'`|
-|`changeMousePriority`|**deprecated since version 6, use parameter `priority` in `changeMouse`**|Integer literal|`NULL`|`'1000'`|
 |`showChangeMouse`|Specifying that the property caption will include that name of the mouse action that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|`NULL`|`TRUE`<br/>`FALSE`|
 |`inline`|todo|Extended Boolean literal|`NULL`|`TRUE`<br/>`FALSE`|
