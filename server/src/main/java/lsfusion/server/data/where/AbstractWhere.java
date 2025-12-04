@@ -169,14 +169,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public ClassExprWhere classWhere = null;
     @ManualLazy
     public ClassExprWhere getClassWhere() {
-        if(classWhere==null) {
-            try {
-                classWhere = calculateClassWhere();
-            } catch (Throwable t) {
-                System.out.println("THROWING EXCEPTION: " + t.getMessage() + " IN " + this);
-                throw t;
-            }
-        }
+        if(classWhere==null)
+            classWhere = calculateClassWhere();
         return classWhere;
     }
     public abstract ClassExprWhere calculateClassWhere();
