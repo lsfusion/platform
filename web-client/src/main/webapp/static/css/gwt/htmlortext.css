@@ -44,3 +44,7 @@
 :not(.is-chrome) .html-or-text-wrap-fixed {
     max-height: var(--fixed-lines) !important;
 }
+
+.force-break {
+    word-break: break-all;
+}

@@ -270,7 +270,34 @@ function clearHtmlOrText(element, renderer) {
     element.classList.remove("html-or-text-is-html");
 }
 
+// detects extremely long sequences of non-whitespace characters
+// Browsers can fail to render very long unbroken strings (e.g. >1.1M characters),
+// causing infinite growth, or layout freeze.
+function hasLongStringWithoutSpacesAndHTMLTags(text, limit = 1100000) {
+    let current = 0;
+    let length = text.length;
+    for (let i = 0; i < length; i++) {
+        if (current === 0 && (length - i) <= limit)
+            return false;
+
+        let c = text[i];
+        if (c === " " || c === "\n" || c === "\t") {
+            current = 0;
+        } else {
+            current++;
+            if (current > limit)
+                return true;
+        }
+    }
+    return false;
+}
+
 function setHtmlOrText(element, value, html) {
+    if (!html && value != null && hasLongStringWithoutSpacesAndHTMLTags(value))
+        element.classList.add("force-break");
+    else
+        element.classList.remove("force-break");
+
     if(!html && (value == null || value.indexOf("\n") === -1)) // optimization
         element.classList.add("html-or-text-no-multi-line");
     else
