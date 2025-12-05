@@ -2086,24 +2086,4 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static boolean hasLongStringWithoutSpaces(String text, int limit) {
-        int current = 0;
-        int length = text.length();
-        for (int i = 0; i < length; i++) {
-            if (current == 0 && i > length - limit)
-                return false;
-
-            char c = text.charAt(i);
-            if (c == ' ' || c == '\n' || c == '\t') {
-                current = 0;
-            } else {
-                current++;
-                if (current > limit)
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
 }
