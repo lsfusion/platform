@@ -309,13 +309,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public boolean localAsync = false;
 
-    public List<FormEntity> formAggrs;
+    public FormEntity extendForm;
     public ObjectMapping mapping;
+    public List<Pair<FormEntity, ObjectMapping>> forms = new ArrayList<>();
 
     public PropertyObjectEntity<?> reportPathProp;
 
     public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath,
-                      List<FormEntity> formAggrs, ObjectMapping mapping, Version version) {
+                      FormEntity extendForm, ObjectMapping mapping, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
 
         this.initCaption = caption;
@@ -326,9 +327,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
-        this.formAggrs = formAggrs;
+        this.extendForm = extendForm;
         this.mapping = mapping;
-        if(formAggrs.isEmpty())
+        if(extendForm == null)
             initDefaultElements(version);
     }
 
@@ -410,7 +411,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void finalizeInit(Version version) {
-        setRichDesign(createDefaultRichDesign(formAggrs, version), version);
+        setRichDesign(createDefaultRichDesign(extendForm, mapping, forms, version), version);
     }
 
     private static LP externalShowIf = FormToolbarAction.createIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
@@ -1120,11 +1121,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public FormView createDefaultRichDesign(Version version) {
-        return createDefaultRichDesign(Collections.EMPTY_LIST, version);
+        return createDefaultRichDesign(null, null, null, version);
     }
 
-    public FormView createDefaultRichDesign(List<FormEntity> formAggrs, Version version) {
-        return new DefaultFormView(this, formAggrs, mapping, version);
+    public FormView createDefaultRichDesign(FormEntity extendForm, ObjectMapping mapping, List<Pair<FormEntity, ObjectMapping>> forms, Version version) {
+        return new DefaultFormView(this, extendForm, mapping, forms, version);
     }
 
     private NFProperty<FormView> richDesign = NFFact.property();
@@ -1702,7 +1703,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
                 //create new eval module with extend form
                 extendCode = extendCode.replace(originalFormName, copyFormName); //hack
-                String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
+                //String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
+                String script = "FORM " + copyFormName + "\n FORMS tables;\n" + extendCode + ";\nrun{}";
                 Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
 
                 FormEntity copyForm = evalResult.second.findForm(copyFormName);
@@ -1794,71 +1796,71 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public void copy(FormEntity target, ObjectMapping mapping) {
-        target.evalLM = this.evalLM;
-        //target.formOrDesignStatementList = this.formOrDesignStatementList;
-        target.localAsync = this.localAsync;
-        target.hintsIncrementTable =  this.hintsIncrementTable;
-        target.hintsNoUpdate = this.hintsNoUpdate;
-        //target.integrationSID = this.integrationSID;
-        target.context = this.context;
+    public void copy(FormEntity src, ObjectMapping mapping, boolean full) {
+        if(full) {
+            this.evalLM = src.evalLM;
+            this.localAsync = src.localAsync;
+            this.hintsIncrementTable = src.hintsIncrementTable;
+            this.hintsNoUpdate = src.hintsNoUpdate;
+            this.integrationSID = src.integrationSID;
+            this.context = src.context;
 
-        target.editActionPropertyDraw = mapping.get(this.editActionPropertyDraw);
-        target.dropActionPropertyDraw = mapping.get(this.dropActionPropertyDraw);
-        target.shareActionPropertyDraw = mapping.get(this.shareActionPropertyDraw);
-        target.customizeActionPropertyDraw = mapping.get(this.customizeActionPropertyDraw);
-        target.refreshActionPropertyDraw = mapping.get(this.refreshActionPropertyDraw);
-        target.applyActionPropertyDraw =  mapping.get(this.applyActionPropertyDraw);
-        target.cancelActionPropertyDraw = mapping.get(this.cancelActionPropertyDraw);
-        target.okActionPropertyDraw = mapping.get(this.okActionPropertyDraw);
-        target.closeActionPropertyDraw = mapping.get(this.closeActionPropertyDraw);
-        target.logMessagePropertyDraw = mapping.get(this.logMessagePropertyDraw);
-        //target.originalForm = mapping.get(this.originalForm);
+            this.editActionPropertyDraw = mapping.get(src.editActionPropertyDraw);
+            this.dropActionPropertyDraw = mapping.get(src.dropActionPropertyDraw);
+            this.shareActionPropertyDraw = mapping.get(src.shareActionPropertyDraw);
+            this.customizeActionPropertyDraw = mapping.get(src.customizeActionPropertyDraw);
+            this.refreshActionPropertyDraw = mapping.get(src.refreshActionPropertyDraw);
+            this.applyActionPropertyDraw =  mapping.get(src.applyActionPropertyDraw);
+            this.cancelActionPropertyDraw = mapping.get(src.cancelActionPropertyDraw);
+            this.okActionPropertyDraw = mapping.get(src.okActionPropertyDraw);
+            this.closeActionPropertyDraw = mapping.get(src.closeActionPropertyDraw);
+            this.logMessagePropertyDraw = mapping.get(src.logMessagePropertyDraw);
+            this.reportPathProp = mapping.get(src.reportPathProp);
+            //this.originalForm = mapping.get(src.originalForm);
+        }
 
-        ImMap<Object, ImList<ActionObjectEntity<?>>> srcEventActions = this.getEventActions();
+        ImMap<Object, ImList<ActionObjectEntity<?>>> srcEventActions = src.getEventActions();
         for (Object key : srcEventActions.keys()) {
-            target.eventActions.addAll(key, srcEventActions.get(key).mapListValues(mapping::get), mapping.version);
+            this.eventActions.addAll(key, srcEventActions.get(key).mapListValues(mapping::get), mapping.version);
         }
-        for (FormScheduler scheduler : this.formSchedulers.getIt()) {
-            target.formSchedulers.add(scheduler, mapping.version);
+        for (FormScheduler scheduler : src.formSchedulers.getIt()) {
+            this.formSchedulers.add(scheduler, mapping.version);
         }
-        for (GroupObjectEntity g : this.getGroups()) {
-            target.groups.add(mapping.get(g), ComplexLocation.DEFAULT(), mapping.version);
+        for (GroupObjectEntity g : src.getGroups()) {
+            this.groups.add(mapping.get(g), ComplexLocation.DEFAULT(), mapping.version);
         }
-        for (TreeGroupEntity t : this.getTreeGroupsIt()) {
-            target.treeGroups.add(mapping.get(t), mapping.version);
+        for (TreeGroupEntity t : src.getTreeGroupsIt()) {
+            this.treeGroups.add(mapping.get(t), mapping.version);
         }
-        for (PropertyDrawEntity p : this.getPropertyDrawsList()) {
-            target.propertyDraws.add(mapping.get(p), ComplexLocation.DEFAULT(), mapping.version);
+        for (PropertyDrawEntity p : src.getPropertyDrawsList()) {
+            this.propertyDraws.add(mapping.get(p), ComplexLocation.DEFAULT(), mapping.version);
         }
-        for(FilterEntity f : this.getFixedFilters()) {
-            target.fixedFilters.add(mapping.get(f), mapping.version);
+        for(FilterEntity f : src.getFixedFilters()) {
+            this.fixedFilters.add(mapping.get(f), mapping.version);
         }
-        for(RegularFilterGroupEntity f : this.getRegularFilterGroupsList()) {
-            target.regularFilterGroups.add(mapping.get(f), mapping.version);
+        for(RegularFilterGroupEntity f : src.getRegularFilterGroupsList()) {
+            this.regularFilterGroups.add(mapping.get(f), mapping.version);
         }
-        for(PropertyDrawEntity p : this.userFilters.getOrderSet()) {
-            target.userFilters.add(mapping.get(p), mapping.version);
+        for(PropertyDrawEntity p : src.userFilters.getOrderSet()) {
+            this.userFilters.add(mapping.get(p), mapping.version);
         }
-        ImOrderMap<PropertyDrawEntity<?>, Boolean> srcDefaultOrders = this.defaultOrders.getListMap();
+        ImOrderMap<PropertyDrawEntity<?>, Boolean> srcDefaultOrders = src.defaultOrders.getListMap();
         for(PropertyDrawEntity p : srcDefaultOrders.keyIt()) {
-            target.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
+            this.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
         }
-        ImOrderMap<OrderEntity<?>, Boolean> srcFixedOrders = this.fixedOrders.getListMap();
+        ImOrderMap<OrderEntity<?>, Boolean> srcFixedOrders = src.fixedOrders.getListMap();
         for(OrderEntity<?> o : srcFixedOrders.keyIt()) {
             OrderEntity orderEntity = o instanceof ObjectEntity ? mapping.get((ObjectEntity)o) : mapping.get((PropertyObjectEntity) o);
-            target.fixedOrders.add(orderEntity, srcFixedOrders.get(o), mapping.version);
+            this.fixedOrders.add(orderEntity, srcFixedOrders.get(o), mapping.version);
         }
-        for(ImList<PropertyDrawEntityOrPivotColumn> pivotColumns : this.getPivotColumnsList()) {
-            target.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
+        for(ImList<PropertyDrawEntityOrPivotColumn> pivotColumns : src.getPivotColumnsList()) {
+            this.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
         }
-        for(ImList<PropertyDrawEntityOrPivotColumn> pivotRows : this.getPivotRowsList()) {
-            target.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
+        for(ImList<PropertyDrawEntityOrPivotColumn> pivotRows : src.getPivotRowsList()) {
+            this.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawEntity ? mapping.get((PropertyDrawEntity) p) : p), mapping.version);
         }
-        for(PropertyDrawEntity p : this.getPivotMeasuresList()) {
-            target.pivotMeasures.add(mapping.get(p), mapping.version);
+        for(PropertyDrawEntity p : src.getPivotMeasuresList()) {
+            this.pivotMeasures.add(mapping.get(p), mapping.version);
         }
-        //target.richDesign.set(mapping.get(this.getRichDesign()), mapping.version);
-        target.reportPathProp = mapping.get(this.reportPathProp);
     }
 }

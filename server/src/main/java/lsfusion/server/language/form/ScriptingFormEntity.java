@@ -35,6 +35,7 @@ import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -84,6 +85,15 @@ public class ScriptingFormEntity {
 
     public void addDeclaredTypedParameter(ScriptingLogicsModule.TypedParameter typedParameter) {
         declaredTypedParameters.add(typedParameter);
+    }
+
+    public void addScriptingForms(List<String> forms) throws ScriptingErrorLog.SemanticErrorException {
+        for (String f : forms) {
+            FormEntity fe = LM.findForm(f);
+            ObjectMapping mapping = new ObjectMapping(LM.getVersion());
+            form.forms.add(Pair.create(fe, mapping));
+            form.copy(fe, mapping, false);
+        }
     }
 
     public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {

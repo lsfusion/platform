@@ -426,7 +426,8 @@ scope {
 	    (	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
-		(	formGroupObjectsList
+		(	formFormsList
+		|	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
 		|	formPropertiesList
@@ -514,19 +515,19 @@ formDeclaration returns [ScriptingFormEntity form]
 	String image = null;
 	String title = null;
 	boolean localAsync = false;
-	List<String> formAggrList = null;
+	String extendForm = null;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync, formAggrList);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync, extendForm);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		(	img=imageOption
 		|	('LOCALASYNC' { localAsync = true; })
-		|   f = formAggrList { formAggrList = $f.formAggrList; }
+		|   ':' formName=compoundID { extendForm = $formName.sid; }
 		)*
 	;
 
@@ -540,9 +541,18 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 	:	'EXTEND' 'FORM' formName=compoundID
 	;
 
-formAggrList returns [List<String> formAggrList = new ArrayList<>()]
-	:	':' formName=compoundID { formAggrList.add($formName.sid); }
-		(',' formName=compoundID { formAggrList.add($formName.sid); })*
+formFormsList
+@init {
+	List<String> forms = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addScriptingForms(forms);
+	}
+}
+	:	'FORMS'
+		formName=compoundID { forms.add($formName.sid); }
+		(',' formName=compoundID { forms.add($formName.sid); })*
 	;
 
 formGroupObjectsList

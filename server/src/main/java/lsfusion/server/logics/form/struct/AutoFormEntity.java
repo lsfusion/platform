@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class AutoFormEntity extends FormEntity {
 
     public AutoFormEntity(LocalizedString caption, Version version) {
-        super(null, null, caption, null, Collections.EMPTY_LIST, null, version);
+        super(null, null, caption, null, null, null, version);
     }
 
     public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {

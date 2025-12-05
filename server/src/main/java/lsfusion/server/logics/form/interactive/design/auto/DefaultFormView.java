@@ -100,7 +100,7 @@ public class DefaultFormView extends FormView {
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
 
-    public DefaultFormView(FormEntity formEntity, List<FormEntity> formAggrs, ObjectMapping mapping, Version version) {
+    public DefaultFormView(FormEntity formEntity, FormEntity extendForm, ObjectMapping mapping, List<Pair<FormEntity, ObjectMapping>> forms, Version version) {
         super(formEntity, version);
 
         setCaption(entity.getInitCaption());
@@ -162,9 +162,15 @@ public class DefaultFormView extends FormView {
 
         initFormButtons(version);
 
-        for (FormEntity formAggr : formAggrs) {
-            DefaultFormView richDesign = (DefaultFormView) formAggr.getRichDesign();
-            richDesign.copy(this, mapping);
+        if(extendForm != null) {
+            DefaultFormView richDesign = (DefaultFormView) extendForm.getRichDesign();
+            this.copy(richDesign, mapping, true);
+        }
+        if(forms != null) {
+            for(Pair<FormEntity, ObjectMapping> form : forms) {
+                DefaultFormView richDesign = (DefaultFormView) form.first.getRichDesign();
+                this.copy(richDesign, form.second, false);
+            }
         }
     }
 
@@ -551,108 +557,72 @@ public class DefaultFormView extends FormView {
         return currentGroupContainerSID;
     }
 
-    public void copy(DefaultFormView target, ObjectMapping mapping) {
-        super.copy(target, mapping);
+    public void copy(DefaultFormView src, ObjectMapping mapping, boolean full) {
+        super.copy(src, mapping, full);
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.boxContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.boxContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.boxContainers.entrySet()) {
+            this.boxContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.filterBoxContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.filterBoxContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.filterBoxContainers.entrySet()) {
+            this.filterBoxContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.filtersContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.filtersContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.filtersContainers.entrySet()) {
+            this.filtersContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.gridContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.gridContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.gridContainers.entrySet()) {
+            this.gridContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.panelContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.panelContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.panelContainers.entrySet()) {
+            this.panelContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.groupContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.groupContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.groupContainers.entrySet()) {
+            this.groupContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.toolbarBoxContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.toolbarBoxContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.toolbarBoxContainers.entrySet()) {
+            this.toolbarBoxContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.toolbarContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.toolbarContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.toolbarContainers.entrySet()) {
+            this.toolbarContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.popupContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.popupContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.popupContainers.entrySet()) {
+            this.popupContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.toolbarLeftContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.toolbarLeftContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.toolbarLeftContainers.entrySet()) {
+            this.toolbarLeftContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.toolbarRightContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.toolbarRightContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.toolbarRightContainers.entrySet()) {
+            this.toolbarRightContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.filterGroupsContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            target.filterGroupsContainers.put(v, mapping.get(e.getValue()));
+        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.filterGroupsContainers.entrySet()) {
+            this.filterGroupsContainers.put(mapping.getPropertyGroupContainerView(e.getKey()), mapping.get(e.getValue()));
         }
 
-/*        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : this.groupPropertyContainers.entrySet()) {
+/*        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.groupPropertyContainers.entrySet()) {
             PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
                     mapping.get((GroupObjectView) e.getKey()) :
                     mapping.get((TreeGroupView) e.getKey());
-            target.groupPropertyContainers.put(v, mapping.get(e.getValue()));
+            this.groupPropertyContainers.put(v, mapping.get(e.getValue()));
         }*/
 
-        target.objectsContainer = mapping.get(this.objectsContainer);
-        target.panelContainer = mapping.get(this.panelContainer);
-        target.groupContainer = mapping.get(this.groupContainer);
-        target.toolbarBoxContainer = mapping.get(this.toolbarBoxContainer);
-        target.toolbarLeftContainer = mapping.get(this.toolbarLeftContainer);
-        target.toolbarRightContainer = mapping.get(this.toolbarRightContainer);
-        target.toolbarContainer = mapping.get(this.toolbarContainer);
-        target.popupContainer = mapping.get(this.popupContainer);
+        this.objectsContainer = mapping.get(src.objectsContainer);
+        this.panelContainer = mapping.get(src.panelContainer);
+        this.groupContainer = mapping.get(src.groupContainer);
+        this.toolbarBoxContainer = mapping.get(src.toolbarBoxContainer);
+        this.toolbarLeftContainer = mapping.get(src.toolbarLeftContainer);
+        this.toolbarRightContainer = mapping.get(src.toolbarRightContainer);
+        this.toolbarContainer = mapping.get(src.toolbarContainer);
+        this.popupContainer = mapping.get(src.popupContainer);
 
     }
 }

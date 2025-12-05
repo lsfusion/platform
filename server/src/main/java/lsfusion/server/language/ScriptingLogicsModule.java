@@ -857,7 +857,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  boolean localAsync, List<String> formAggrList) throws ScriptingErrorLog.SemanticErrorException {
+                                                  boolean localAsync, String extendForm) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         
         if(caption == null)
@@ -865,18 +865,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String canonicalName = elementCanonicalName(formName);
 
-        List<FormEntity> formAggrs = new ArrayList<>();
-        if(formAggrList != null) {
-            for (String formAggr : formAggrList) {
-                formAggrs.add(findForm(formAggr));
-            }
-        }
-
+        FormEntity extendFormEntity = extendForm != null ? findForm(extendForm) : null;
         ObjectMapping mapping = new ObjectMapping(getVersion());
-        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, formAggrs, mapping, getVersion());
-        for (FormEntity formAggr : formAggrs) {
-            formAggr.copy(formEntity, mapping);
-        }
+        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, extendFormEntity, mapping, getVersion());
+        if(extendFormEntity != null)
+            formEntity.copy(extendFormEntity, mapping, true);
         addFormEntity(formEntity, true);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);

@@ -3,14 +3,13 @@ package lsfusion.server.logics.form;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -229,5 +228,9 @@ public class ObjectMapping {
             componentViewMap.put(componentView, result);
         }
         return (T) result;
+    }
+
+    public PropertyGroupContainerView getPropertyGroupContainerView(PropertyGroupContainerView key) {
+        return key instanceof GroupObjectView ? get((GroupObjectView) key) : get((TreeGroupView) key);
     }
 }
