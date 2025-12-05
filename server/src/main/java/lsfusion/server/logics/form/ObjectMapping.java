@@ -31,7 +31,7 @@ public class ObjectMapping {
         this.version = version;
     }
 
-    private Map<FormEntity, FormEntity> formEntityMap = new HashMap<>();
+    //private Map<FormEntity, FormEntity> formEntityMap = new HashMap<>();
     private Map<ActionObjectEntity, ActionObjectEntity> actionObjectEntityMap = new HashMap<>();
     private Map<ObjectEntity, ObjectEntity> objectEntityMap = new HashMap<>();
     private Map<GroupObjectEntity, GroupObjectEntity> groupObjectEntityMap = new HashMap<>();
@@ -42,26 +42,21 @@ public class ObjectMapping {
     private Map<RegularFilterGroupEntity, RegularFilterGroupEntity> regularFilterGroupEntityMap = new HashMap<>();
     private Map<TreeGroupEntity, TreeGroupEntity> treeGroupEntityMap = new HashMap<>();
 
-    private Map<FormView, FormView> formViewMap = new HashMap<>();
+    //private Map<FormView, FormView> formViewMap = new HashMap<>();
     private Map<ObjectView, ObjectView> objectViewMap = new HashMap<>();
     private Map<GroupObjectView, GroupObjectView> groupObjectViewMap = new HashMap<>();
     private Map<RegularFilterView, RegularFilterView> regularFilterViewMap = new HashMap<>();
     private Map<ComponentView, ComponentView> componentViewMap = new HashMap<>();
 
-    public FormEntity get(FormEntity formEntity) {
-        return get(formEntity, formEntity != null ? formEntity.getCanonicalName() : null);
-    }
-
-    public void put(FormEntity key, FormEntity value) {
-        formEntityMap.put(key, value);
-    }
-    public FormEntity get(FormEntity formEntity, String canonicalName) {
-        FormEntity result = formEntityMap.get(formEntity);
-        if (result == null && formEntity != null) {
-            result = new FormEntity(formEntity, canonicalName, this);
+/*    public FormEntity get(FormEntity key) {
+        FormEntity result = formEntityMap.get(key);
+        if (result == null && key != null) {
+            result = new FormEntity(null, null, null, null, false, version);
+            key.copy(result, this);
+            formEntityMap.put(key, result);
         }
         return result;
-    }
+    }*/
 
     public void put(ActionObjectEntity key, ActionObjectEntity value) {
         actionObjectEntityMap.put(key, value);
@@ -162,7 +157,7 @@ public class ObjectMapping {
         return result;
     }
 
-    public void put(FormView key, FormView value) {
+/*    public void put(FormView key, FormView value) {
         formViewMap.put(key, value);
     }
     public FormView get(FormView formView) {
@@ -171,7 +166,7 @@ public class ObjectMapping {
             result = new FormView(formView, this);
         }
         return result;
-    }
+    }*/
 
     public void put(ObjectView key, ObjectView value) {
         objectViewMap.put(key, value);

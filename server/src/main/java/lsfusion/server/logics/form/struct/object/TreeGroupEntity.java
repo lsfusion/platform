@@ -60,7 +60,6 @@ public class TreeGroupEntity extends IdentityObject {
         this.plainTreeMode = src.plainTreeMode;
         this.debugPoint = src.debugPoint;
 
-        this.setGroups(getGroups().mapOrderSetValues(e -> mapping.get(e)));
-        this.finalizedGroups = false;
+        this.groups = getGroups().mapOrderSetValues(mapping::get);
     }
 }

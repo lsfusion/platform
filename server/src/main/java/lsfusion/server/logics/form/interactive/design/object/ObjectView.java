@@ -54,6 +54,6 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
 
         this.entity = mapping.get(src.entity);
         this.groupObject = mapping.get(src.groupObject);
-        this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor
+        this.ID = entity.getID();
     }
 }

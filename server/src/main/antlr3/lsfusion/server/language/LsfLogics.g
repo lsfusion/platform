@@ -514,17 +514,19 @@ formDeclaration returns [ScriptingFormEntity form]
 	String image = null;
 	String title = null;
 	boolean localAsync = false;
+	List<String> formAggrList = null;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync, formAggrList);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		(	img=imageOption
 		|	('LOCALASYNC' { localAsync = true; })
+		|   f = formAggrList { formAggrList = $f.formAggrList; }
 		)*
 	;
 
@@ -536,6 +538,11 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 	}
 }
 	:	'EXTEND' 'FORM' formName=compoundID
+	;
+
+formAggrList returns [List<String> formAggrList = new ArrayList<>()]
+	:	':' formName=compoundID { formAggrList.add($formName.sid); }
+		(',' formName=compoundID { formAggrList.add($formName.sid); })*
 	;
 
 formGroupObjectsList

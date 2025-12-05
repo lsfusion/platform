@@ -621,6 +621,6 @@ public class ContainerView extends ComponentView {
         this.propertyValueClass = mapping.get(src.propertyValueClass);
         this.propertyImage = mapping.get(src.propertyImage);
         this.propertyCustomDesign = mapping.get(src.propertyCustomDesign);
-        this.lazyChildren = src.lazyChildren.mapListValues(v -> mapping.get(v));
+        this.lazyChildren = src.lazyChildren.mapListValues(mapping::get);
     }
 }

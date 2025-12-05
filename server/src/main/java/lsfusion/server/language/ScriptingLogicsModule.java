@@ -77,6 +77,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.event.Event;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
@@ -856,7 +857,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  boolean localAsync, List<String> formAggrList) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         
         if(caption == null)
@@ -864,7 +865,18 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String canonicalName = elementCanonicalName(formName);
 
-        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, getVersion());
+        List<FormEntity> formAggrs = new ArrayList<>();
+        if(formAggrList != null) {
+            for (String formAggr : formAggrList) {
+                formAggrs.add(findForm(formAggr));
+            }
+        }
+
+        ObjectMapping mapping = new ObjectMapping(getVersion());
+        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, formAggrs, mapping, getVersion());
+        for (FormEntity formAggr : formAggrs) {
+            formAggr.copy(formEntity, mapping);
+        }
         addFormEntity(formEntity, true);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);

@@ -1445,17 +1445,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         this.boxed = src.boxed;
 
         this.entity = mapping.get(src.entity);
-        this.ID = entity.ID; //need to be in copy, not in constructor, because entity is copied in constructor
-    }
-
-    public void proceedDefaultDesign() {
-        if (!entity.remapped) {//for new properties from extend
-            if (showChangeKey == null)
-                showChangeKey = true;
-            if (showChangeMouse == null)
-                showChangeMouse = true;
-            if (echoSymbols == null)
-                echoSymbols = false;
-        }
+        this.ID = entity.ID;
     }
 }

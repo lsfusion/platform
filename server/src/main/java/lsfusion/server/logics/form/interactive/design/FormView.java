@@ -24,7 +24,6 @@ import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -853,62 +852,66 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         component.removeFromParent(version);
     }
 
-    // copy-constructor
-    public FormView(FormView src, ObjectMapping mapping) {
-        super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.canonicalName = src.canonicalName;
-        this.creationPath = src.creationPath;
-        this.path = src.path;
-        this.overridePageWidth = src.overridePageWidth;
-        this.formSchedulers = src.formSchedulers;
+    public void copy(FormView target, ObjectMapping mapping) {
+        //mapping.put(src, this);
+        //target.ID = BaseLogicsModule.generateStaticNewID();
+        //target.sID = this.sID;
+        //target.canonicalName = this.canonicalName;
+        //target.creationPath = this.creationPath;
+        //target.path = this.path;
+        target.overridePageWidth = this.overridePageWidth;
 
-        this.entity = mapping.get(src.entity);
-        for(TreeGroupView v : src.getTreeGroupsIt()) {
-            this.treeGroups.add(mapping.get(v), mapping.version);
+        for(FormScheduler f : this.formSchedulers.getIt()) {
+            target.formSchedulers.add(f, mapping.version);
         }
-        for(GroupObjectView v : src.getGroupObjectsIt()) {
-            this.groupObjects.add(mapping.get(v), ComplexLocation.DEFAULT(), mapping.version);
+
+        //target.entity = mapping.get(src.entity);
+        for(TreeGroupView v : this.getTreeGroupsIt()) {
+            target.treeGroups.add(mapping.get(v), mapping.version);
         }
-        for(PropertyDrawView v : src.getPropertiesList()) {
+        for(GroupObjectView v : this.getGroupObjectsIt()) {
+            GroupObjectView newV = mapping.get(v);
+            //target.groupObjects.add(newV, ComplexLocation.DEFAULT(), mapping.version);
+            target.addGroupObjectView(newV, mapping.version);
+        }
+        for(PropertyDrawView v : this.getPropertiesList()) {
             PropertyDrawView newV = mapping.get(v);
-            this.properties.add(newV, ComplexLocation.DEFAULT(), mapping.version);
+            target.properties.add(newV, ComplexLocation.DEFAULT(), mapping.version);
         }
-        for(RegularFilterGroupView v : src.getRegularFiltersIt()) {
-            this.regularFilters.add(mapping.get(v), mapping.version);
+        for(RegularFilterGroupView v : this.getRegularFiltersIt()) {
+            target.regularFilters.add(mapping.get(v), mapping.version);
         }
-        ImOrderMap<PropertyDrawView, Boolean> srcDefaultOrders = src.defaultOrders.getListMap();
+        ImOrderMap<PropertyDrawView, Boolean> srcDefaultOrders = this.defaultOrders.getListMap();
         for(PropertyDrawView p : srcDefaultOrders.keyIt()) {
-            this.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
+            target.defaultOrders.add(mapping.get(p), srcDefaultOrders.get(p), mapping.version);
         }
-        this.mainContainer = mapping.get(src.mainContainer);
-        this.editButton = mapping.get(src.editButton);
-        this.xlsButton = mapping.get(src.xlsButton);
-        this.dropButton =  mapping.get(src.dropButton);
-        this.refreshButton = mapping.get(src.refreshButton);
-        this.applyButton = mapping.get(src.applyButton);
-        this.cancelButton = mapping.get(src.cancelButton);
-        this.okButton = mapping.get(src.okButton);
-        this.closeButton = mapping.get(src.closeButton);
+        target.mainContainer = mapping.get(this.mainContainer);
+//        target.editButton = mapping.get(this.editButton);
+//        target.xlsButton = mapping.get(this.xlsButton);
+//        target.dropButton =  mapping.get(this.dropButton);
+//        target.refreshButton = mapping.get(this.refreshButton);
+//        target.applyButton = mapping.get(this.applyButton);
+//        target.cancelButton = mapping.get(this.cancelButton);
+//        target.okButton = mapping.get(this.okButton);
+//        target.closeButton = mapping.get(this.closeButton);
 
-        src.mtreeGroups.forEach((e, v) -> mtreeGroups.put(mapping.get(e), mapping.get(v)));
-        src.mgroupObjects.forEach((e, v) -> mgroupObjects.put(mapping.get(e), mapping.get(v)));
-        src.mobjects.forEach((e, v) -> mobjects.put(mapping.get(e), mapping.get(v)));
-        src.mproperties.forEach((e, v) -> mproperties.put(mapping.get(e), mapping.get(v)));
-        src.mfilters.forEach((e, v) -> mfilters.put(mapping.get(e), mapping.get(v)));
-        src.mfilterGroups.forEach((e, v) -> mfilterGroups.put(mapping.get(e), mapping.get(v)));
-        for(ImList<PropertyDrawViewOrPivotColumn> pivotColumns : src.getPivotColumns()) {
-            this.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
+        this.mtreeGroups.forEach((e, v) -> target.mtreeGroups.put(mapping.get(e), mapping.get(v)));
+        this.mgroupObjects.forEach((e, v) -> target.mgroupObjects.put(mapping.get(e), mapping.get(v)));
+        this.mobjects.forEach((e, v) -> target.mobjects.put(mapping.get(e), mapping.get(v)));
+        this.mproperties.forEach((e, v) -> target.mproperties.put(mapping.get(e), mapping.get(v)));
+        this.mfilters.forEach((e, v) -> target.mfilters.put(mapping.get(e), mapping.get(v)));
+        this.mfilterGroups.forEach((e, v) -> target.mfilterGroups.put(mapping.get(e), mapping.get(v)));
+        for(ImList<PropertyDrawViewOrPivotColumn> pivotColumns : this.getPivotColumns()) {
+            target.pivotColumns.add(pivotColumns.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
         }
-        for(ImList<PropertyDrawViewOrPivotColumn> pivotRows : src.getPivotRows()) {
-            this.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
+        for(ImList<PropertyDrawViewOrPivotColumn> pivotRows : this.getPivotRows()) {
+            target.pivotRows.add(pivotRows.mapItListValues(p -> p instanceof PropertyDrawView ? mapping.get((PropertyDrawView) p) : p), mapping.version);
         }
-        for(PropertyDrawView p : src.getPivotMeasures()) {
-            this.pivotMeasures.add(mapping.get(p), mapping.version);
+        for(PropertyDrawView p : this.getPivotMeasures()) {
+            target.pivotMeasures.add(mapping.get(p), mapping.version);
         }
-        for(ComponentView v : src.removedComponents) {
-            this.removedComponents.add(mapping.get(v));
+        for(ComponentView v : this.removedComponents) {
+            target.removedComponents.add(mapping.get(v));
         }
     }
 }

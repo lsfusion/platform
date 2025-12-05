@@ -17,13 +17,14 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.Collections;
 import java.util.List;
 
 // should be added with addAutoFormEntity to be finalized
 public abstract class AutoFormEntity extends FormEntity {
 
     public AutoFormEntity(LocalizedString caption, Version version) {
-        super(null, null, caption, null, version);
+        super(null, null, caption, null, Collections.EMPTY_LIST, null, version);
     }
 
     public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {

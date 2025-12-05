@@ -224,7 +224,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         this.needVerticalScroll = src.needVerticalScroll;
 
         this.entity = mapping.get(src.entity);
-        this.ID = entity.getID(); //need to be in copy, not in constructor, because entity is copied in constructor
+        this.ID = this.entity.getID();
         this.grid = mapping.get(src.grid);
         this.toolbarSystem = mapping.get(src.toolbarSystem);
         this.filters = NFFact.orderSet();
