@@ -124,6 +124,9 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         if(isNull) {
             GwtClientUtils.addClassName(element, "text-based-value-null");
         } else {
+            if (GwtClientUtils.hasLongStringWithoutSpaces(innerText, 1000))
+                GwtClientUtils.addClassName(element, "force-break");
+
             GwtClientUtils.removeClassName(element, "text-based-value-null");
             if(innerText.isEmpty()) {
                 innerText = EMPTY_VALUE;
