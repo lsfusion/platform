@@ -77,9 +77,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
-
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
         valueContainer.add(design.get(implPropertyDraw), version);
         for (int i = propProperties.size()-1; i >= 0; i--) {
             ContainerView propsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where}" + " " + (i + 1)), version);
@@ -89,6 +87,5 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 propsContainer.add(design.get(whereProperties.get(i)), version);
             design.mainContainer.addAfter(propsContainer, valueContainer, version);
         }
-        return design;
     }
 }

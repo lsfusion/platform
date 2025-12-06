@@ -59,6 +59,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         setNFEditType(PropertyEditType.READONLY);
 
         finalizeInit(); // не красиво конечно, но иначе по хорошему надо во все setEditType version'ы вставлять
+
+        setupDrillDownDesign(getInitDesign(), baseVersion);
     }
 
     protected void setupDrillDownForm() {
@@ -68,10 +70,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     protected ContainerView paramsContainer;
     protected ContainerView detailsContainer;
 
-    @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
-
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
         paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"), version);
         paramsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addFirst(paramsContainer, version);
@@ -87,8 +86,6 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         detailsContainer.setFlex(1.0);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);
-
-        return design;
     }
 
     protected boolean isNotId(PropertyMapImplement<?, ?> mapImplement) {

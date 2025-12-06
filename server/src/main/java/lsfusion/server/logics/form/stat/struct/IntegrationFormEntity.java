@@ -36,7 +36,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> explicitInnerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
                                                                PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, boolean interactive, Version version) {
-        super(LocalizedString.NONAME, version);
+        super(LocalizedString.NONAME, interactive, version);
 
         this.interactive = interactive;
 
@@ -149,13 +149,6 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 formView.removeComponent(toolbarBoxContainer, version);
             }
         }
-    }
-
-    @Override
-    public FormView createDefaultRichDesign(Version version) {
-        if(interactive)
-            return super.createDefaultRichDesign(version);
-        return null;
     }
 
     @Override

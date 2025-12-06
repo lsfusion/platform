@@ -26,15 +26,13 @@ public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInt
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
 
         valueContainer.add(design.get(propertyDraw), version);
         ContainerView oldValueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.old.value}"), version);
         oldValueContainer.add(design.get(oldPropertyDraw), version);
 
         design.mainContainer.addAfter(oldValueContainer, valueContainer, version);
-
-        return design;
     }
 }

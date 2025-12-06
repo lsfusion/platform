@@ -138,15 +138,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public ContainerView mainContainer;
 
-    protected PropertyDrawView editButton;
-    protected PropertyDrawView xlsButton;
-    protected PropertyDrawView dropButton;
-    protected PropertyDrawView refreshButton;
-    protected PropertyDrawView applyButton;
-    protected PropertyDrawView cancelButton;
-    protected PropertyDrawView okButton;
-    protected PropertyDrawView closeButton;
-
     protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = synchronizedMap(new HashMap<>());
     public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
 
@@ -195,47 +186,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mainContainer.width = -3;
         mainContainer.height = -3;
         setComponentSID(mainContainer, getBoxContainerSID(), version);
-
-        Pair<ImOrderSet<GroupObjectEntity>, ImList<Integer>> groups = entity.getNFGroupsComplexOrderSet(version);
-        for (int i = 0, size = groups.first.size() ; i < size ; i++) {
-            addGroupObjectBase(groups.first.get(i), ComplexLocation.LAST(groups.second.get(i)), version);
-        }
-
-        for (TreeGroupEntity treeGroup : entity.getNFTreeGroupsIt(version)) {
-            addTreeGroupBase(treeGroup, version);
-        }
-
-        Pair<ImOrderSet<PropertyDrawEntity>, ImList<Integer>> properties = entity.getNFPropertyDrawsComplexOrderSet(version);
-        for (int i = 0, size = properties.first.size() ; i < size ; i++) {
-            PropertyDrawEntity property = properties.first.get(i);
-            PropertyDrawView view = addPropertyDrawBase(property, ComplexLocation.LAST(properties.second.get(i)), version);
-            view.caption = property.initCaption;
-            String initImage = property.initImage;
-            if(initImage != null)
-                view.setImage(initImage);
-        }
-
-        for (RegularFilterGroupEntity filterGroup : entity.getNFRegularFilterGroupsListIt(version)) {
-            addRegularFilterGroupBase(filterGroup, version);
-        }
-
-        for (PropertyDrawEntity propertyDrawEntity : entity.getUserFiltersIt(version)) {
-            addFilter(propertyDrawEntity, version);
-        }
-
-        for (ImList<PropertyDrawEntityOrPivotColumn> pivotColumn : entity.getNFPivotColumnsListIt(version)) {
-            addPivotColumn(pivotColumn, version);
-        }
-
-        for (ImList<PropertyDrawEntityOrPivotColumn> pivotRow : entity.getNFPivotRowsListIt(version)) {
-            addPivotRow(pivotRow, version);
-        }
-
-        for (PropertyDrawEntity pivotMeasure : entity.getNFPivotMeasuresListIt(version)) {
-            addPivotMeasure(pivotMeasure, version);
-        }
-
-        initButtons(version);
     }
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
@@ -382,18 +332,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         for (RegularFilterGroupView filterGroup : getRegularFiltersIt()) {
             addRegularFilterGroupView(filterGroup, Version.descriptor());
         }
-
-        initButtons(Version.descriptor());
-    }
-
-    private void initButtons(Version version) {
-        editButton = getNFProperty(entity.editActionPropertyDraw, version);
-        refreshButton = getNFProperty(entity.refreshActionPropertyDraw, version);
-        applyButton = getNFProperty(entity.applyActionPropertyDraw, version);
-        cancelButton = getNFProperty(entity.cancelActionPropertyDraw, version);
-        okButton = getNFProperty(entity.okActionPropertyDraw, version);
-        closeButton = getNFProperty(entity.closeActionPropertyDraw, version);
-        dropButton = getNFProperty(entity.dropActionPropertyDraw, version);
     }
 
     public ContainerView createContainer() {
@@ -450,38 +388,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public ComponentView getComponentBySID(String sid) {
         return componentSIDHandler.find(sid);
-    }
-
-    public PropertyDrawView getEditButton() {
-        return editButton;
-    }
-
-    public PropertyDrawView getXlsButton() {
-        return xlsButton;
-    }
-
-    public PropertyDrawView getDropButton() {
-        return dropButton;
-    }
-
-    public PropertyDrawView getRefreshButton() {
-        return refreshButton;
-    }
-
-    public PropertyDrawView getApplyButton() {
-        return applyButton;
-    }
-
-    public PropertyDrawView getCancelButton() {
-        return cancelButton;
-    }
-
-    public PropertyDrawView getOkButton() {
-        return okButton;
-    }
-
-    public PropertyDrawView getCloseButton() {
-        return closeButton;
     }
 
     public ContainerView getMainContainer() {
@@ -859,14 +765,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             this.creationPath = src.creationPath;
             this.path = src.path;
             this.overridePageWidth = src.overridePageWidth;
-            this.editButton = mapping.get(src.editButton);
-            this.xlsButton = mapping.get(src.xlsButton);
-            this.dropButton =  mapping.get(src.dropButton);
-            this.refreshButton = mapping.get(src.refreshButton);
-            this.applyButton = mapping.get(src.applyButton);
-            this.cancelButton = mapping.get(src.cancelButton);
-            this.okButton = mapping.get(src.okButton);
-            this.closeButton = mapping.get(src.closeButton);
         }
 
         for(FormScheduler f : src.formSchedulers.getIt()) {

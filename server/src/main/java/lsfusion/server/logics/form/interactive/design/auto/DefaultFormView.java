@@ -3,10 +3,6 @@ package lsfusion.server.logics.form.interactive.design.auto;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -35,7 +31,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.admin.Settings;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
@@ -100,7 +95,7 @@ public class DefaultFormView extends FormView {
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
 
-    public DefaultFormView(FormEntity formEntity, FormEntity extendForm, ObjectMapping mapping, List<Pair<FormEntity, ObjectMapping>> forms, Version version) {
+    public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
         setCaption(entity.getInitCaption());
@@ -137,41 +132,6 @@ public class DefaultFormView extends FormView {
         
         groupContainer = formSet.getGroupContainer();
         registerComponent(groupContainers, groupContainer, null, version);
-        
-        TreeGroupEntity prevTree = null;
-        for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
-            TreeGroupEntity newTree = groupObject.entity.treeGroup;
-            if(prevTree != null && !BaseUtils.nullEquals(prevTree, newTree))
-                addTreeGroupView(get(prevTree), version);            
-            prevTree = newTree;
-
-            addGroupObjectView(groupObject, version);
-        }
-        if(prevTree != null)
-            addTreeGroupView(get(prevTree), version);
-
-        Pair<ImOrderSet<PropertyDrawView>, ImList<Integer>> properties = getNFPropertiesComplexOrderSet(version);
-        for (int i = 0, size = properties.first.size() ; i < size ; i++) {
-            PropertyDrawView propertyDraw = properties.first.get(i);
-            addPropertyDrawView(propertyDraw, ComplexLocation.LAST(properties.second.get(i)), version);
-        }
-
-        for (RegularFilterGroupView filterGroup : getNFRegularFiltersListIt(version)) {
-            addRegularFilterGroupView(filterGroup, version);
-        }
-
-        initFormButtons(version);
-
-        if(extendForm != null) {
-            DefaultFormView richDesign = (DefaultFormView) extendForm.getRichDesign();
-            this.copy(richDesign, mapping, true);
-        }
-        if(forms != null) {
-            for(Pair<FormEntity, ObjectMapping> form : forms) {
-                DefaultFormView richDesign = (DefaultFormView) form.first.getRichDesign();
-                this.copy(richDesign, form.second, false);
-            }
-        }
     }
 
     public static String getToolbarBoxContainerSID(String goName) {
@@ -246,7 +206,7 @@ public class DefaultFormView extends FormView {
         return FormContainerSet.POPUP_CONTAINER;
     }
 
-    private void initFormButtons(Version version) {
+    public void setupFormButtons(Version version) {
         PropertyDrawView editFunction = get(entity.editActionPropertyDraw);
         setupFormButton(editFunction);
 

@@ -131,13 +131,11 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
 
         detailsContainer.add(design.getBoxContainer(detailsGroup), version);
 
         valueContainer.add(design.get(implPropertyDraw), version);
-
-        return design;
     }
 }

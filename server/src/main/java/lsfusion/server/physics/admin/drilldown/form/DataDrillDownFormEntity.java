@@ -37,8 +37,9 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
+
         valueContainer.add(design.get(implPropertyDraw), version);
 
         ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"), version);
@@ -48,7 +49,5 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         design.mainContainer.addAfter(whereParamsContainer, valueContainer, version);
         design.mainContainer.addAfter(expressionParamsContainer, whereParamsContainer, version);
-
-        return design;
     }
 }

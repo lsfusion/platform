@@ -12,6 +12,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -30,9 +31,13 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     protected Version baseVersion;
 
     public AutoFinalFormEntity(LocalizedString caption, BaseLogicsModule LM) {
-        super(caption, LM.getVersion());
+        super(caption, true, LM.getVersion());
 
         baseVersion = LM.getVersion();
+    }
+
+    protected DefaultFormView getInitDesign() {
+        return (DefaultFormView) getNFRichDesign(baseVersion);
     }
 
     protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(Group group, ValueClass cls) {

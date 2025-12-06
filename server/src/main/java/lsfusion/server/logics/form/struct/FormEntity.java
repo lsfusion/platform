@@ -309,14 +309,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public boolean localAsync = false;
 
-    public FormEntity extendForm;
-    public ObjectMapping mapping;
-    public List<Pair<FormEntity, ObjectMapping>> forms = new ArrayList<>();
-
     public PropertyObjectEntity<?> reportPathProp;
 
-    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath,
-                      FormEntity extendForm, ObjectMapping mapping, Version version) {
+    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, boolean needDesign, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
 
         this.initCaption = caption;
@@ -327,10 +322,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
-        this.extendForm = extendForm;
-        this.mapping = mapping;
-        if(extendForm == null)
+        if(needDesign) {
+            richDesign = new DefaultFormView(this, version); // ??? interactive
+
             initDefaultElements(version);
+        }
     }
 
     public void initDefaultElements(Version version) {
@@ -355,6 +351,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
+
+        ((DefaultFormView)richDesign).setupFormButtons(version);
 
         addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied));
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk));
@@ -405,13 +403,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType)))), PropertyDrawExtraType.SHOWIF, version);
             propertyDraw.ignoreHasHeaders = true;
-
-            addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version); // because it's called after form constructor
         }
     }
 
     public void finalizeInit(Version version) {
-        setRichDesign(createDefaultRichDesign(extendForm, mapping, forms, version), version);
     }
 
     private static LP externalShowIf = FormToolbarAction.createIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false});
@@ -927,7 +922,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        return addPropertyDraw(propertyImplement, formPath, null, interfaces, location, version);
+        return addPropertyDraw(propertyImplement, null, formPath, interfaces, location, version);
+    }
+    // auto form constructors + initDefault elements
+    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement,Pair<ActionOrProperty, List<String>> inherited, String formPath,
+                                                                                                            ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
+        PropertyDrawEntity<P> propertyDraw = addPropertyDraw(propertyImplement, formPath, inherited, interfaces, location, version);
+
+        addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version);
+
+        return propertyDraw;
     }
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
@@ -1120,31 +1124,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         hintsNoUpdate.add(prop, version);
     }
 
-    public FormView createDefaultRichDesign(Version version) {
-        return createDefaultRichDesign(null, null, null, version);
-    }
-
-    public FormView createDefaultRichDesign(FormEntity extendForm, ObjectMapping mapping, List<Pair<FormEntity, ObjectMapping>> forms, Version version) {
-        return new DefaultFormView(this, extendForm, mapping, forms, version);
-    }
-
-    private NFProperty<FormView> richDesign = NFFact.property();
+    private FormView richDesign = null;
 
     public FormView getRichDesign() {
-        return richDesign.get(); // assert что не null см. последнюю строку в конструкторе
-/*        return richDesign.getDefault(new NFDefault<FormView>() {
-            public FormView create() {
-                return createDefaultRichDesign(Version.LAST);
-            }
-        });*/
+        return richDesign;
     }
 
     public FormView getNFRichDesign(Version version) {
-        return richDesign.getNF(version);
-    }
-
-    public void setRichDesign(FormView view, Version version) {
-        richDesign.set(view, version);
+        return richDesign;
     }
 
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
@@ -1862,5 +1849,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(PropertyDrawEntity p : src.getPivotMeasuresList()) {
             this.pivotMeasures.add(mapping.get(p), mapping.version);
         }
+
+        richDesign.copy(src.richDesign, mapping, false);
     }
 }

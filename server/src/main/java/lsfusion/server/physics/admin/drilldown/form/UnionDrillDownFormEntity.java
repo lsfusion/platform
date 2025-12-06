@@ -57,8 +57,8 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
@@ -68,6 +68,5 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
             operandsContainer.add(design.get(operandProperty), version);
         }
         design.mainContainer.addAfter(operandsContainer, valueContainer, version);
-        return design;
     }
 }

@@ -4,7 +4,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
@@ -17,14 +16,13 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.util.Collections;
 import java.util.List;
 
 // should be added with addAutoFormEntity to be finalized
 public abstract class AutoFormEntity extends FormEntity {
 
-    public AutoFormEntity(LocalizedString caption, Version version) {
-        super(null, null, caption, null, null, null, version);
+    public AutoFormEntity(LocalizedString caption, boolean needDesign, Version version) {
+        super(null, null, caption, null, needDesign, version);
     }
 
     public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
@@ -43,6 +41,6 @@ public abstract class AutoFormEntity extends FormEntity {
 
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<I> orderInterfaces, ImRevMap<I, ObjectEntity> mapping, Version version) {
         ActionOrPropertyObjectEntity<I, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
-        return addPropertyDraw(entity, null, inherited, orderInterfaces, ComplexLocation.DEFAULT(), version);
+        return addPropertyDraw(entity, inherited, null, orderInterfaces, ComplexLocation.DEFAULT(), version);
     }
 }

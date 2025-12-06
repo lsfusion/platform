@@ -77,7 +77,6 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
@@ -865,16 +864,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String canonicalName = elementCanonicalName(formName);
 
-        FormEntity extendFormEntity = extendForm != null ? findForm(extendForm) : null;
-        ObjectMapping mapping = new ObjectMapping(getVersion());
-        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, extendFormEntity, mapping, getVersion());
-        if(extendFormEntity != null)
-            formEntity.copy(extendFormEntity, mapping, true);
+        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, true, getVersion());
         addFormEntity(formEntity, true);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setLocalAsync(localAsync);
 
+        form.addScriptingForms(extendForm != null ? Collections.singletonList(extendForm) : Collections.emptyList(), true);
         return form;
     }
 
@@ -883,12 +879,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         FormEntity form = findForm(formName);
         FormView view;
-        if (custom) {
-            view = new FormView(form, version);
-            form.setRichDesign(view, version);
-        } else {
+//        if (custom) {
+//            view = new FormView(form, version);
+//            form.setRichDesign(view, version);
+//        } else {
             view = form.getNFRichDesign(version);
-        }
+//        }
 
         if (view != null && caption != null) {
             view.setCaption(caption);

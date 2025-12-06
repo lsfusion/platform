@@ -14,15 +14,8 @@ public class EditFormEntity extends BaseClassFormEntity {
         object.groupTo.setViewTypePanel();
 
         finalizeInit();
+
+        DefaultFormView design = getInitDesign();
+        design.removeComponent(design.get(dropActionPropertyDraw), baseVersion);
     }
-
-    @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
-
-        design.removeComponent(design.getDropButton(), version);
-
-        return design;
-    }
-
 }

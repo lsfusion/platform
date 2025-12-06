@@ -88,11 +88,12 @@ public class ScriptingFormEntity {
     }
 
     public void addScriptingForms(List<String> forms) throws ScriptingErrorLog.SemanticErrorException {
+        addScriptingForms(forms, false);
+    }
+
+    public void addScriptingForms(List<String> forms, boolean full) throws ScriptingErrorLog.SemanticErrorException {
         for (String f : forms) {
-            FormEntity fe = LM.findForm(f);
-            ObjectMapping mapping = new ObjectMapping(LM.getVersion());
-            form.forms.add(Pair.create(fe, mapping));
-            form.copy(fe, mapping, false);
+            form.copy(LM.findForm(f), new ObjectMapping(LM.getVersion()), full);
         }
     }
 
