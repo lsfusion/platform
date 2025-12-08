@@ -25,7 +25,16 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     public ImList<T> getNFList(Version version) {
-        ImList<T> result = proceedVersionFinal(version);
+        return getNFList(version, false);
+    }
+
+    @Override
+    public ImList<T> getNFCopyList(Version version) {
+        return getNFList(version, true);
+    }
+
+    public ImList<T> getNFList(Version version, boolean allowRead) {
+        ImList<T> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
             
@@ -49,7 +58,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     public Iterable<T> getNFListIt(Version version) {
         return getNFListIt(this, version);
     }
-    
+
     // множественное наследование
     
     public static <T> Iterable<T> getListIt(NFList<T> list) {
@@ -58,6 +67,10 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
 
     public static <T> Iterable<T> getNFListIt(NFList<T> list, Version version) {
         return list.getNFList(version);
+    }
+
+    public static <T> ImList<T> getNFCopyList(NFList<T> list, Version version) {
+        return list.getNFCopyList(version);
     }
 
     @Override

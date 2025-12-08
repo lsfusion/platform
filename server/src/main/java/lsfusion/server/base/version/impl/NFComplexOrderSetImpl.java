@@ -45,7 +45,16 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
 
     @Override
     public Pair<ImOrderSet<T>, ImList<Integer>> getNF(Version version) {
-        Pair<ImOrderSet<T>, ImList<Integer>> result = proceedVersionFinal(version);
+        return getNF(version, false);
+    }
+
+    @Override
+    public Pair<ImOrderSet<T>, ImList<Integer>> getNFCopy(Version version) {
+        return getNF(version, true);
+    }
+
+    private Pair<ImOrderSet<T>, ImList<Integer>> getNF(Version version, boolean allowRead) {
+        Pair<ImOrderSet<T>, ImList<Integer>> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
 

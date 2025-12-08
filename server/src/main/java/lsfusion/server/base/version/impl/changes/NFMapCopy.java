@@ -17,6 +17,6 @@ public class NFMapCopy<K, V> implements NFMapChange<K, V> {
 
     @Override
     public void proceedMap(MMap<K, V> mMap, Version version) {
-        mMap.addAll(map.getNF(version).mapValues(mapping));
+        mMap.addAll(map.getNFCopy(version).mapValues(mapping));
     }
 }

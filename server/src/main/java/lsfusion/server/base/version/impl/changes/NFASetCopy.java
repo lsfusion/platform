@@ -14,7 +14,7 @@ public class NFASetCopy<This extends NFSet<K>, K> extends NFCopy<This, K> implem
 
     @Override
     public void proceedSet(Set<K> mSet, Version version) {
-        for(K element : col.getNFSet(version))
+        for(K element : col.getNFCopySet(version))
             mSet.add(this.mapping.apply(element));
     }
 }

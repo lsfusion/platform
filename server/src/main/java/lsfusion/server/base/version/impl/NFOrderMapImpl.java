@@ -25,7 +25,16 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
     }
 
     public ImOrderMap<K, V> getNF(Version version) {
-        ImOrderMap<K, V> result = proceedVersionFinal(version);
+        return getNF(version, false);
+    }
+
+    @Override
+    public ImOrderMap<K, V> getNFCopy(Version version) {
+        return getNF(version, true);
+    }
+
+    public ImOrderMap<K, V> getNF(Version version, boolean allowRead) {
+        ImOrderMap<K, V> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
 

@@ -16,7 +16,7 @@ public interface NFOrderMap<K, V> extends NF {
 
     void add(NFOrderMap<K, V> map, Function<K, K> mapping, Version version);
     
-    ImOrderMap<K, V> getNF(Version version);
+    ImOrderMap<K, V> getNFCopy(Version version);
     ImOrderMap<K, V> getListMap();
     V getNFValue(K key, Version version);
 

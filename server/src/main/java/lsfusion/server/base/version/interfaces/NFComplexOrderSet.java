@@ -29,7 +29,7 @@ public interface NFComplexOrderSet<T> extends NF {
     Iterable<T> getNFIt(Version version);
     Iterable<T> getIt();
 
-    Pair<ImOrderSet<T>, ImList<Integer>> getNF(Version version);
+    Pair<ImOrderSet<T>, ImList<Integer>> getNFCopy(Version version);
     ImList<T> getNFList(Version version);
     Iterable<T> getNFListIt(Version version);
     Iterable<T> getListIt();

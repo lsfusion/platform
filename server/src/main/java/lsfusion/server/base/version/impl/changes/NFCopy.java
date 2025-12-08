@@ -25,7 +25,7 @@ public class NFCopy<This extends NFCol<T>, T> implements NFColChange<T> {
 
     @Override
     public void proceedCol(MCol<T> mCol, Version version) {
-        for(T element : col.getNFIt(version))
+        for(T element : col.getNFCopyIt(version))
             mCol.add(this.mapping.apply(element));
     }
 }

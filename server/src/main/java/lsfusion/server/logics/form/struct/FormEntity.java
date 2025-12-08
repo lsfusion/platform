@@ -1358,7 +1358,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void checkInternalClientAction() {
-        Version version = Version.last();
+        Version version = Version.current();
         Iterable<ActionObjectEntity<?>> eventActionsNFList = getNFEventActionsListIt(FormEventType.INIT, version);
         if (eventActionsNFList != null) {
             for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList) {

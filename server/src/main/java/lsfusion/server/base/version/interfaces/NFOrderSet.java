@@ -15,6 +15,7 @@ public interface NFOrderSet<T> extends NFSet<T>, NFList<T> {
 
     int size(Version version);
 
+    ImOrderSet<T> getNFCopyOrderSet(Version version);
     ImOrderSet<T> getNFOrderSet(Version version);
 
     ImOrderSet<T> getOrderSet();

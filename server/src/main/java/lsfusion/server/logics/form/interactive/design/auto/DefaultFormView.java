@@ -125,7 +125,7 @@ public class DefaultFormView extends FormView {
         super(formEntity, caption, imagePath, src, mapping, version);
 
         if (src != null) {
-            containers = new ContainerSet(containers, mapping);
+            containers = new ContainerSet(src.containers, mapping);
         } else {
             FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
             containers = formSet.getContainerSet(this, null, version);

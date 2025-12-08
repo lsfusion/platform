@@ -25,13 +25,22 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     }
 
     public ImOrderSet<T> getNF(Version version) {
-        ImOrderSet<T> result = proceedVersionFinal(version);
+        return getNF(version, false);
+    }
+
+    private ImOrderSet<T> getNF(Version version, boolean allowRead) {
+        ImOrderSet<T> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
         proceedChanges(change -> change.proceedOrderSet(mSet, version), version);
         return SetFact.fromJavaOrderSet(mSet);
+    }
+
+    @Override
+    public ImOrderSet<T> getNFCopyOrderSet(Version version) {
+        return getNF(version, true);
     }
 
     public ImOrderSet<T> getNFOrderSet(Version version) {
@@ -82,6 +91,10 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
 
     public Iterable<T> getNFListIt(Version version) {
         return NFListImpl.getNFListIt(this, version);
+    }
+
+    public ImList<T> getNFCopyList(Version version) {
+        return NFListImpl.getNFCopyList(this, version);
     }
 
     protected ImSet<T> getFinalSet(ImOrderSet<T> fcol) {

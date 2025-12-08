@@ -13,6 +13,7 @@ public interface NFCol<T> extends NF {
 
     void add(NFCol<T> element, Function<T, T> mapper, Version version);
     
+    Iterable<T> getNFCopyIt(Version version);
     Iterable<T> getNFIt(Version version);
     Iterable<T> getIt();
 }

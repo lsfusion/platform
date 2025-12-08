@@ -1167,7 +1167,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         outStream.writeInt(entity.lastAggrColumns.size());
         outStream.writeBoolean(entity.lastAggrDesc);
 
-        pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
+        pool.serializeObject(outStream, entity.quickFilterProperty != null ? pool.context.view.get(entity.quickFilterProperty) : null);
 
         MapKeysTable<? extends PropertyInterface> mapTable = isProperty(pool.context) ?
                         ((Property<?>)debugBinding).mapTable : null;

@@ -1,10 +1,12 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.AbstractGroupObject;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
@@ -33,9 +35,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public GridView grid;
     public ToolbarView toolbarSystem;
-    public NFSet<FilterView> filters;
-    public ImSet<FilterView> getFilters() {
-        return filters.getSet();
+    public NFList<FilterView> filters = NFFact.list();
+    public ImList<FilterView> getFilters() {
+        return filters.getList();
     }
     public Iterable<FilterView> getFiltersIt() {
         return filters.getIt();
@@ -86,7 +88,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         filterControls = new FilterControlsView(idGen.idShift());
 
-        filters = NFFact.orderSet();
         calculations = new CalculationsView(idGen.idShift());
     }
 

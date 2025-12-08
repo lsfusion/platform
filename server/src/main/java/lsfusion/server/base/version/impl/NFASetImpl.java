@@ -7,6 +7,7 @@ import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.impl.changes.NFRemove;
 import lsfusion.server.base.version.impl.changes.NFSetChange;
 import lsfusion.server.base.version.impl.changes.NFSetCopy;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.Set;
@@ -32,7 +33,16 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     protected abstract ImSet<T> getFinalSet(R fcol);
 
     public ImSet<T> getNFSet(Version version) {
-        R result = proceedVersionFinal(version);
+        return getNFSet(version, false);
+    }
+
+    @Override
+    public ImSet<T> getNFCopySet(Version version) {
+        return getNFSet(version, true);
+    }
+
+    public ImSet<T> getNFSet(Version version, boolean allowRead) {
+        R result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalSet(result);
 
@@ -46,7 +56,13 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     }
 
     @Override
+    public Iterable<T> getNFCopyIt(Version version) {
+        return getNFCopySet(version);
+    }
+
+    @Override
     public void add(NFSet<T> element, Function<T, T> mapper, Version version) {
+        assert !(this instanceof NFOrderSet);
         addChange((CH) new NFSetCopy<>(element, mapper), version);
     }
 

@@ -15,7 +15,7 @@ public class NFOrderSetCopy<K> extends NFASetCopy<NFOrderSet<K>, K> implements N
 
     @Override
     public void proceedOrderSet(List<K> list, Version version) {
-        for(K element : col.getNFOrderSet(version))
+        for(K element : col.getNFCopyOrderSet(version))
             list.add(this.mapping.apply(element));
     }
 

@@ -9,7 +9,7 @@ public interface NFSet<T> extends NFCol<T> {
 
     void add(NFSet<T> element, Function<T, T> mapper, Version version);
 
-    ImSet<T> getNFSet(Version version);
+    ImSet<T> getNFCopySet(Version version);
     boolean containsNF(T element, Version version);
     ImSet<T> getSet();
 

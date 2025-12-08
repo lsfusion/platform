@@ -21,7 +21,7 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
 
     @Override
     public void proceedComplexOrderSet(List<K> list, List<Integer> groupList, Version version) {
-        Pair<ImOrderSet<K>, ImList<Integer>> nf = col.getNF(version);
+        Pair<ImOrderSet<K>, ImList<Integer>> nf = col.getNFCopy(version);
         for(int i=0,size=nf.first.size(); i<size; i++) {
             list.add(mapping.apply(nf.first.get(i)));
 

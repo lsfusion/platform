@@ -15,7 +15,7 @@ public class NFListCopy<K> extends NFCopy<NFList<K>, K> implements NFListChange<
 
     @Override
     public void proceedList(MList<K> list, Version version) {
-        for(K element : col.getNFListIt(version))
+        for(K element : col.getNFCopyList(version))
             list.add(this.mapping.apply(element));
     }
 }

@@ -18,7 +18,7 @@ public class NFOrderMapCopy<K, V> implements NFOrderMapChange<K, V> {
 
     @Override
     public void proceedOrderMap(List<K> keysList, List<V> valuesList, Version version) {
-        ImOrderMap<K, V> nf = map.getNF(version);
+        ImOrderMap<K, V> nf = map.getNFCopy(version);
         for(int i = 0, size = nf.size(); i < size; i++) {
             keysList.add(mapping.apply(nf.getKey(i)));
             valuesList.add(nf.getValue(i));

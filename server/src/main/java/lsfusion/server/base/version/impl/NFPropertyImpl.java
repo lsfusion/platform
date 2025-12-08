@@ -2,7 +2,6 @@ package lsfusion.server.base.version.impl;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFDefault;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFProperty;
 
@@ -37,7 +36,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     }
 
     public K getNF(Version version) {
-        if(checkVersionFinal(version)) // не proceedVersionFinal, так как результат может быть null и его не отличишь
+        if(checkVersionFinal(version, false)) // не proceedVersionFinal, так как результат может быть null и его не отличишь
             return getFinalChanges();
         
         ImList<K> list = getChanges().getNFList(version);
@@ -57,7 +56,12 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     }
 
     public void set(NFProperty<K> value, Function<K, K> mapping, Version version) {
-        getChanges().add(((NFPropertyImpl<K>)value).getChanges(), mapping, version);
+        Object setChanges = ((NFPropertyImpl<K>) value).getChangesAsIs();
+        NFList<K> changes = getChanges();
+        if(setChanges instanceof NFList) {
+            changes.add((NFList<K>)setChanges, mapping, version);
+        } else
+            changes.add((K)setChanges, version);
     }
 
     public K get() {

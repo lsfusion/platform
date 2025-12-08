@@ -18,7 +18,11 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
     protected abstract ImCol<T> getFinalCol(F fcol);  
     
     public ImCol<T> getNFCol(Version version) {
-        F result = proceedVersionFinal(version);
+        return getNFCol(version, false);
+    }
+
+    private ImCol<T> getNFCol(Version version, boolean allowRead) {
+        F result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalCol(result);
         
@@ -29,5 +33,9 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
 
     public Iterable<T> getNFIt(Version version) {
         return getNFCol(version);
+    }
+
+    public Iterable<T> getNFCopyIt(Version version) {
+        return getNFCol(version, true);
     }
 }

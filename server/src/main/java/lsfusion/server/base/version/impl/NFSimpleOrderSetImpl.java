@@ -72,6 +72,26 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public ImOrderSet<T> getNFCopyOrderSet(Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ImList<T> getNFCopyList(Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ImSet<T> getNFCopySet(Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterable<T> getNFCopyIt(Version version) {
+        throw new UnsupportedOperationException();
+    }
+
     public void finalizeCol() {
         throw new UnsupportedOperationException();
     }
