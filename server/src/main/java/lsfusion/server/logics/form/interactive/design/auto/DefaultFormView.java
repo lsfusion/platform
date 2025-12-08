@@ -425,7 +425,7 @@ public class DefaultFormView extends FormView {
     public void addForm(FormView src, ObjectMapping mapping) {
         super.addForm(src, mapping);
 
-        addToObjectsContainer(src.mainContainer, ComplexLocation.DEFAULT(), mapping.version);
+        addToObjectsContainer(mapping.get(src.mainContainer), ComplexLocation.DEFAULT(), mapping.version);
 
         // todo: we need to change containers sid's
     }
