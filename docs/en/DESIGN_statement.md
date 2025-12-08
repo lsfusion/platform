@@ -141,11 +141,11 @@ To access design components, you can use their names or address property compone
 |`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|The color to be used for the component background|Expression ([COLOR](Literals.md#colorliteral) value)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
 |`foreground`|The color to be used for the component text|Expression (COLOR value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
-|`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCaptionAlignment`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`panelCaptionVertical`|**deprecated since version 6, use `captionVertical`**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`captionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`captionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`captionLast`|**deprecated since version 6, use `captionLast`**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCaptionAlignment`|**deprecated since version 6, use `captionAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
 |`captionAlignmentHorz`|Component caption horizontal alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`captionAlignmentVert`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`showIf`|Specifies a condition under which the container will be displayed.|Expression (logical value)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|

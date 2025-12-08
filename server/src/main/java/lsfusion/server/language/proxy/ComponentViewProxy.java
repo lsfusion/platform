@@ -170,27 +170,27 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
-    // deprecated
+    @Deprecated //since 6.2
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
-        target.captionVertical = panelCaptionVertical;
-    }
-
-    // deprecated
-    public void setPanelCaptionLast(boolean panelCaptionLast) {
-        target.captionLast = panelCaptionLast;
-    }
-
-    // deprecated
-    public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
-        target.captionAlignmentHorz = panelCaptionAlignment;
+        setCaptionVertical(panelCaptionVertical);
     }
 
     public void setCaptionVertical(boolean captionVertical) {
         target.captionVertical = captionVertical;
     }
 
+    @Deprecated //since 6.2
+    public void setPanelCaptionLast(boolean panelCaptionLast) {
+        setCaptionLast(panelCaptionLast);
+    }
+
     public void setCaptionLast(boolean captionLast) {
         target.captionLast = captionLast;
+    }
+
+    @Deprecated //since 6.2
+    public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
+        setCaptionAlignmentHorz(panelCaptionAlignment);
     }
 
     public void setCaptionAlignmentHorz(FlexAlignment captionAlignment) {
