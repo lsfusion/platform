@@ -78,6 +78,9 @@ public class ObjectMapping {
     public void put(ObjectEntity key, ObjectEntity value) {
         objectEntityMap.put(key, value);
     }
+    public ObjectEntity getFinal(ObjectEntity objectEntity) {
+        return objectEntityMap.get(objectEntity);
+    }
     public synchronized ObjectEntity get(ObjectEntity objectEntity) {
         ObjectEntity result = objectEntityMap.get(objectEntity);
         if (result == null) {
@@ -89,6 +92,9 @@ public class ObjectMapping {
     public void put(GroupObjectEntity key, GroupObjectEntity value) {
         groupObjectEntityMap.put(key, value);
     }
+    public GroupObjectEntity getFinal(GroupObjectEntity groupObjectEntity) {
+        return groupObjectEntityMap.get(groupObjectEntity);
+    }
     public synchronized GroupObjectEntity get(GroupObjectEntity groupObjectEntity) {
         GroupObjectEntity result = groupObjectEntityMap.get(groupObjectEntity);
         if (result == null) {
@@ -99,6 +105,9 @@ public class ObjectMapping {
 
     public void put(PropertyDrawEntity key, PropertyDrawEntity value) {
         propertyDrawEntityMap.put(key, value);
+    }
+    public PropertyDrawEntity getFinal(PropertyDrawEntity propertyDrawEntity) {
+        return propertyDrawEntityMap.get(propertyDrawEntity);
     }
     public synchronized PropertyDrawEntity get(PropertyDrawEntity propertyDrawEntity) {
         PropertyDrawEntity result = propertyDrawEntityMap.get(propertyDrawEntity);
@@ -146,6 +155,9 @@ public class ObjectMapping {
 
     public void put(RegularFilterGroupEntity key, RegularFilterGroupEntity value) {
         regularFilterGroupEntityMap.put(key, value);
+    }
+    public RegularFilterGroupEntity getFinal(RegularFilterGroupEntity regularFilterGroupEntity) {
+        return regularFilterGroupEntityMap.get(regularFilterGroupEntity);
     }
     public synchronized RegularFilterGroupEntity get(RegularFilterGroupEntity regularFilterGroupEntity) {
         RegularFilterGroupEntity result = regularFilterGroupEntityMap.get(regularFilterGroupEntity);
@@ -231,6 +243,9 @@ public class ObjectMapping {
 
     public void put(ComponentView key, ComponentView value) {
         componentViewMap.put(key, value);
+    }
+    public <T extends ComponentView> T getFinal(T componentView) {
+        return (T) componentViewMap.get(componentView);
     }
     public synchronized <T extends ComponentView> T get(T componentView) {
         if(componentView == null)

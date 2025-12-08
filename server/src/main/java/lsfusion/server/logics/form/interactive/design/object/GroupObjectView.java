@@ -231,6 +231,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         for(ObjectView objectView : src)
             add(mapping.get(objectView));
 
-        containers = new DefaultFormView.ContainerSet(src.containers, mapping);
+        if(!entity.isInTree())
+            containers = new DefaultFormView.ContainerSet(src.containers, mapping);
     }
 }

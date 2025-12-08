@@ -10,13 +10,14 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
 public class FormRecreateAction extends InternalAction {
 
-    public FormRecreateAction(BaseLogicsModule lm) {
+    public FormRecreateAction(SystemEventsLogicsModule lm) {
         super(lm);
     }
 
@@ -26,7 +27,7 @@ public class FormRecreateAction extends InternalAction {
         FormInstance form = context.getFormInstance(true, true);
         form.formClose(context, true);
 
-        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
         context.createAndRequestFormInstance(resolvedForm.first, MapFact.EMPTY(), form.options);
     }
 }

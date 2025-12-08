@@ -1105,15 +1105,12 @@ DESIGN customizeForm {
     REMOVE PROPERTY(sid);
 }
 
-customize(STRING sid, STRING code, STRING extendCode) {
-    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode NULL;
+formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
+customize(STRING sid, STRING code) {
+    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode(form(sid)) NULL;
     IF recreate() THEN {
         formRecreate();
     }
-}
-
-customize(STRING sid, STRING code) {
-    customize(sid, code, extendCode(form(sid)));
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

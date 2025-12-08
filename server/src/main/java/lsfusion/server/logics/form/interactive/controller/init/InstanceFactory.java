@@ -57,7 +57,7 @@ public class InstanceFactory {
     private final MAddExclMap<RegularFilterGroupEntity, RegularFilterGroupInstance> regularFilterGroupInstances = MapFact.mSmallStrongMap();
 
     public ObjectInstance getExInstance(ObjectEntity entity) {
-        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getObject(entity.getSID()) : entity);
+        return getInstance(context.entity.getExEntity(entity));
     }
 
     public ObjectInstance getInstance(ObjectEntity entity) {
@@ -70,7 +70,7 @@ public class InstanceFactory {
     }
 
     public GroupObjectInstance getExInstance(GroupObjectEntity entity) {
-        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getGroupObject(entity.getSID()) : entity);
+        return getInstance(context.entity.getExEntity(entity));
     }
 
     public GroupObjectInstance getInstance(GroupObjectEntity entity) {
@@ -156,7 +156,7 @@ public class InstanceFactory {
     }
 
     public PropertyDrawInstance getExInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
-        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getPropertyDraw(entity.getSID()) : entity);
+        return getInstance(context.entity.getExEntity(entity));
     }
 
     public PropertyDrawInstance getInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
@@ -198,7 +198,7 @@ public class InstanceFactory {
     }
 
     public BaseComponentViewInstance getExInstance(ComponentView entity) {
-        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getRichDesign().getContainerBySID(entity.getSID()) : entity);
+        return getInstance(context.entity.getExEntity(entity));
     }
 
     public BaseComponentViewInstance getInstance(ComponentView entity) {
@@ -225,7 +225,7 @@ public class InstanceFactory {
     }
 
     public RegularFilterGroupInstance getExInstance(RegularFilterGroupEntity entity) {
-        return getInstance(context.entity.getOriginalForm() != null ? context.entity.getRegularFilterGroup(entity.getSID()) : entity);
+        return getInstance(context.entity.getExEntity(entity));
     }
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {

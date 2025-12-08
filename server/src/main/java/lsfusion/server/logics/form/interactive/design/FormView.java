@@ -294,6 +294,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public NFOrderSet<ComponentView> components = NFFact.orderSet();
 
+    public ImOrderSet<ComponentView> getComponents() {
+        return components.getOrderSet();
+    }
+
     public ComponentView getComponentBySID(String sid, Version version) {
         for(ComponentView component : components.getNFListIt(version))
             if(sid.equals(component.getSID()))

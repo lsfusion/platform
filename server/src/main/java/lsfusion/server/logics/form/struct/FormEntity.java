@@ -134,13 +134,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public EvalScriptingLogicsModule getEvalLM() {
         return evalLM;
     }
-    private FormEntity originalForm;
-    public FormEntity getOriginalForm() {
-        return originalForm;
-    }
-    public FormEntity getForm() {
-        return nvl(originalForm, this);
-    }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
     public void addFormOrDesignStatementTokens(List<String> tokens) {
@@ -1703,18 +1696,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(extendCode != null) {
             try {
                 String originalFormName = getName();
-                String copyFormName = originalFormName + "_copy";
+                String copyFormName = originalFormName; // + "_copy";
 
                 //create new eval module with extend form
-                extendCode = extendCode.replace(originalFormName, copyFormName); //hack
+//                extendCode = extendCode.replace(originalFormName, copyFormName); //hack
                 //String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
-                String script = "FORM " + copyFormName + "\n FORMS tables;\n" + extendCode + ";\nrun{}";
+                String script = "FORM " + copyFormName + " : " + originalFormName + ";\n" + extendCode + ";\nrun{}";
                 Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
 
                 FormEntity copyForm = evalResult.second.findForm(copyFormName);
-                copyForm.originalForm = this;
+                copyForm.customizeForm = this;
 
-                return new Pair<>(copyForm, copyForm.getObjects().mapItValues(objectEntity -> getObject(objectEntity.getSID())).toRevMap());
+                return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);
             }
@@ -1829,5 +1822,86 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         pivotRows.add(src.pivotColumns, prop -> prop.mapItListValues(mapping::get), mapping.version);
 
         pivotMeasures.add(src.pivotMeasures, mapping::get, mapping.version);
+
+        forms.add(new Pair<>(src, mapping));
     }
+
+    List<Pair<FormEntity, ObjectMapping>> forms = Collections.synchronizedList(new ArrayList<>());
+
+    public GroupObjectEntity getExEntity(GroupObjectEntity entity) {
+        if(getGroups().contains(entity))
+            return entity;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms) {
+            GroupObjectEntity exEntity = form.first.getExEntity(entity);
+            if(exEntity != null)
+                return form.second.getFinal(exEntity);
+        }
+        return null;
+    }
+
+    public PropertyDrawEntity getExEntity(PropertyDrawEntity entity) {
+        if(getPropertyDrawsList().contains(entity))
+            return entity;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms) {
+            PropertyDrawEntity exEntity = form.first.getExEntity(entity);
+            if(exEntity != null)
+                return form.second.getFinal(exEntity);
+        }
+        return null;
+    }
+
+    public ComponentView getExEntity(ComponentView entity) {
+        if(getRichDesign().getComponents().contains(entity))
+            return entity;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms) {
+            ComponentView exEntity = form.first.getExEntity(entity);
+            if(exEntity != null)
+                return form.second.getFinal(exEntity);
+        }
+        return null;
+    }
+
+    public RegularFilterGroupEntity getExEntity(RegularFilterGroupEntity entity) {
+        if(getRegularFilterGroupsList().contains(entity))
+            return entity;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms) {
+            RegularFilterGroupEntity exEntity = form.first.getExEntity(entity);
+            if(exEntity != null)
+                return form.second.getFinal(exEntity);
+        }
+        return null;
+    }
+
+    public ObjectEntity getExEntity(ObjectEntity entity) {
+        if(getObjects().contains(entity))
+            return entity;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms) {
+            ObjectEntity exEntity = form.first.getExEntity(entity);
+            if(exEntity != null)
+                return form.second.getFinal(exEntity);
+        }
+        return null;
+    }
+
+    public boolean isOrHasExEntity(FormEntity entity) {
+        if(equals(entity))
+            return true;
+
+        for(Pair<FormEntity, ObjectMapping> form : forms)
+            if(form.first.isOrHasExEntity(entity))
+                return true;
+
+        return false;
+    }
+
+    public FormEntity customizeForm;
+    public FormEntity getCustomizeForm() {
+        return nvl(customizeForm, this);
+    }
+
 }

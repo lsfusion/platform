@@ -5,6 +5,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
@@ -36,7 +37,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     public TreeGroupEntity entity;
 
     public ToolbarView toolbarSystem;
-    public NFSet<FilterView> filters;
+    public NFOrderSet<FilterView> filters = NFFact.orderSet();
     public ImSet<FilterView> getFilters() {
         return filters.getSet();
     }
@@ -97,8 +98,6 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGenerator.idShift());
-
-        filters = NFFact.orderSet();
     }
 
     @Override
