@@ -57,6 +57,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP hostnameCurrentComputer;
 
     public LP useLDAP;
+    public LP useDefaultAuthentication;
+    public LP useServiceUser;
+    public LP serviceUser;
+    public LP serviceUserPassword;
     public LP serverLDAP;
     public LP portLDAP;
     public LP baseDNLDAP;
@@ -168,6 +172,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         resultAuthToken = findProperty("resultAuthToken[]");
 
         useLDAP = findProperty("useLDAP[]");
+        useDefaultAuthentication = findProperty("useDefaultAuthentication[]");
+        useServiceUser = findProperty("useServiceUser[]");
+        serviceUser = findProperty("serviceUser[]");
+        serviceUserPassword = findProperty("serviceUserPassword[]");
         serverLDAP = findProperty("serverLDAP[]");
         portLDAP = findProperty("portLDAP[]");
         baseDNLDAP = findProperty("baseDNLDAP[]");
