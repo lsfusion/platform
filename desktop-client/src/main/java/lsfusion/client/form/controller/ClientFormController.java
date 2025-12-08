@@ -433,12 +433,13 @@ public class ClientFormController implements AsyncListener {
 
     private void initializeFormSchedulers() {
         formSchedulers = new ArrayList<>();
-        for(int i = 0; i < form.formSchedulers.size(); i++) {
-            FormScheduler formScheduler = form.formSchedulers.get(i);
-            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-            formSchedulers.add(scheduler);
-            scheduleFormScheduler(scheduler, formScheduler);
-        }
+        for(FormEvent formEvent : form.asyncExecMap.keySet())
+            if(formEvent instanceof FormScheduler) {
+                FormScheduler formScheduler = (FormScheduler) formEvent;
+                ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+                formSchedulers.add(scheduler);
+                scheduleFormScheduler(scheduler, formScheduler);
+            }
     }
 
     private void scheduleFormScheduler(ScheduledExecutorService scheduler, FormScheduler formScheduler) {

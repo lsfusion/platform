@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -42,9 +41,9 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"), version);
+        ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"));
         whereParamsContainer.add(design.get(wherePropertyDraw), version);
-        ContainerView expressionParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.expr.params}"), version);
+        ContainerView expressionParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.expr.params}"));
         expressionParamsContainer.add(design.get(writeFromPropertyDraw), version);
 
         design.mainContainer.addAfter(whereParamsContainer, valueContainer, version);

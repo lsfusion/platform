@@ -20,6 +20,7 @@ public class CalculationsView extends BaseComponentView {
     // copy-constructor
     public CalculationsView(CalculationsView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.ID = BaseLogicsModule.generateStaticNewID();
+
+        ID = BaseLogicsModule.generateStaticNewID();
     }
 }

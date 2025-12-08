@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form;
 
 import lsfusion.server.base.version.Version;
+import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
@@ -9,7 +10,9 @@ import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupV
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -17,8 +20,12 @@ import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.form.struct.property.PivotColumn;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -156,6 +163,25 @@ public class ObjectMapping {
         return result;
     }
 
+    public OrderEntity get(OrderEntity key) {
+        return key instanceof ObjectEntity ? get((ObjectEntity) key) : get((PropertyObjectEntity) key);
+    }
+
+    public ActionOrPropertyObjectEntity get(ActionOrPropertyObjectEntity key) {
+        return key instanceof ActionObjectEntity ?  get((ActionObjectEntity) key) : get((PropertyObjectEntity) key);
+    }
+
+    public PropertyDrawEntityOrPivotColumn get(PropertyDrawEntityOrPivotColumn key) {
+        return key instanceof PropertyDrawEntity ? get((PropertyDrawEntity) key) : get((PivotColumn) key);
+    }
+
+    public PivotColumn get(PivotColumn pivotColumn) {
+        return new PivotColumn(get(pivotColumn.groupObject));
+    }
+    public FormEntity.EventAction get(FormEntity.EventAction eventAction) {
+        return new FormEntity.EventAction(eventAction, this);
+    }
+
 /*    public void put(FormView key, FormView value) {
         formViewMap.put(key, value);
     }
@@ -172,7 +198,7 @@ public class ObjectMapping {
     }
     public ObjectView get(ObjectView objectView) {
         ObjectView result = objectViewMap.get(objectView);
-        if (result == null &&   objectView != null) {
+        if (result == null && objectView != null) {
             result = new ObjectView(objectView, this);
         }
         return result;
@@ -224,13 +250,28 @@ public class ObjectMapping {
                 result = new TreeGroupView((TreeGroupView) componentView, this);
             else if (componentView instanceof ContainerView)
                 result = new ContainerView((ContainerView) componentView, this);
-            else result = new ComponentView(componentView, this);
+            else
+                result = new ComponentView(componentView, this);
             componentViewMap.put(componentView, result);
         }
         return (T) result;
     }
 
-    public PropertyGroupContainerView getPropertyGroupContainerView(PropertyGroupContainerView key) {
+    public PropertyGroupContainerView get(PropertyGroupContainerView key) {
         return key instanceof GroupObjectView ? get((GroupObjectView) key) : get((TreeGroupView) key);
     }
+    public PropertyDrawViewOrPivotColumn get(PropertyDrawViewOrPivotColumn key) {
+        return key instanceof PropertyDrawView ? get((PropertyDrawView) key) : get((PivotColumn) key);
+    }
+    public TreeGroupView get(TreeGroupView key) {
+        return (TreeGroupView) get((ComponentView) key);
+    }
+    public PropertyDrawView get(PropertyDrawView key) {
+        return (PropertyDrawView) get((ComponentView) key);
+    }
+
+    public ActionObjectSelector get(ActionObjectSelector key) {
+        return key instanceof ActionObjectEntity ? get((ActionObjectEntity) key) : (context) -> get(key.getAction(context)); // first check is basically optimization
+    }
+
 }

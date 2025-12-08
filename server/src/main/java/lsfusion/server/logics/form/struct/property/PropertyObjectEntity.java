@@ -135,6 +135,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     // copy-constructor
     public PropertyObjectEntity(PropertyObjectEntity src, ObjectMapping mapping) {
         super(src, mapping);
+
         mapping.put(src, this);
     }
 }

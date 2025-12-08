@@ -6,10 +6,14 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFOrderSetChange;
+import lsfusion.server.base.version.impl.changes.NFOrderSetCopy;
 import lsfusion.server.base.version.impl.changes.NFRemoveAll;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrderSet<T>> implements NFOrderSet<T> {
 
@@ -26,7 +30,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
             return result;
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
-        proceedChanges(change -> change.proceedOrderSet(mSet), version);
+        proceedChanges(change -> change.proceedOrderSet(mSet, version), version);
         return SetFact.fromJavaOrderSet(mSet);
     }
 
@@ -55,10 +59,21 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         return getFinal();
     }
 
+    @Override
+    public void add(NFOrderSet<T> element, Function<T, T> mapper, Version version) {
+        addChange(new NFOrderSetCopy<>(element, mapper), version);
+    }
+
+
     // множественное наследование
 
-    public void removeAll(Version version) {
-        addChange(NFRemoveAll.getInstance(), version);
+    @Override
+    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void removeAll(Predicate<T> filter, Version version) {
+        addChange(new NFRemoveAll<>(filter), version);
     }
 
     public Iterable<T> getListIt() {

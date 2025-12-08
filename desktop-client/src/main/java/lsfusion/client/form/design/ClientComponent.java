@@ -1,6 +1,7 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.context.ContextIdentityObject;
+import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -22,7 +23,7 @@ import java.util.Map;
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
-public abstract class ClientComponent extends ContextIdentityObject implements IdentitySerializable<ClientSerializationPool>, AbstractComponent {
+public abstract class ClientComponent extends ContextIdentityObject implements ClientIdentitySerializable, AbstractComponent {
 
     public ComponentDesign design;
 
@@ -77,30 +78,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
     public boolean isTab() {
         return container != null && container.tabbed;
-    }
-
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeObject(outStream, design);
-        pool.serializeObject(outStream, container);
-
-        outStream.writeInt(width);
-        outStream.writeInt(height);
-
-        outStream.writeInt(span);
-
-        outStream.writeDouble(flex);
-        pool.writeObject(outStream, alignment);
-        outStream.writeBoolean(shrink);
-        outStream.writeBoolean(alignShrink);
-        pool.writeObject(outStream, alignCaption);
-        outStream.writeInt(marginTop);
-        outStream.writeInt(marginBottom);
-        outStream.writeInt(marginLeft);
-        outStream.writeInt(marginRight);
-
-        outStream.writeBoolean(defaultComponent);
-
-        pool.writeString(outStream, sID);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

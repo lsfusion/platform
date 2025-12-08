@@ -26,7 +26,9 @@ public class RegularFilterGroupView extends BaseComponentView {
     
     public RegularFilterGroupView(RegularFilterGroupEntity entity, Version version) {
         super(entity.ID);
+
         this.entity = entity;
+        this.entity.view = this;
 
         for (RegularFilterEntity filterEntity : entity.getNFFilters(version)) {
             addFilter(filterEntity, version);
@@ -52,14 +54,6 @@ public class RegularFilterGroupView extends BaseComponentView {
     }
 
     @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        entity = pool.context.entity.getRegularFilterGroup(ID);
-//        filters = NFFact.finalOrderSet(pool.deserializeList(inStream));
-    }
-
-    @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
         
@@ -69,10 +63,12 @@ public class RegularFilterGroupView extends BaseComponentView {
     // copy-constructor
     public RegularFilterGroupView(RegularFilterGroupView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.ID = BaseLogicsModule.generateStaticNewID();
 
-        this.entity = mapping.get(src.entity);
-        for(RegularFilterView f : src.filters.getOrderSet())
-            this.filters.add(f, mapping.version);
+        entity = mapping.get(src.entity);
+        entity.view = this;
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        filters.add(src.filters, mapping::get, mapping.version);
     }
 }

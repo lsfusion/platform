@@ -1,6 +1,7 @@
 package lsfusion.base.col.interfaces.mutable;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
+import java.util.function.Predicate;
 
 public interface MList<K> {
 
@@ -14,6 +15,7 @@ public interface MList<K> {
     
     // hacks for extremely rear cases
     void removeAll();
+    void removeAll(Predicate<? super K> filter);
     void removeLast();
 
     void addAll(ImList<? extends K> list);

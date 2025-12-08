@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.event.FormChangeEvent;
+import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -40,6 +40,8 @@ import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.event.FormServerEvent;
+import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -88,12 +90,8 @@ public class ScriptingFormEntity {
     }
 
     public void addScriptingForms(List<String> forms) throws ScriptingErrorLog.SemanticErrorException {
-        addScriptingForms(forms, false);
-    }
-
-    public void addScriptingForms(List<String> forms, boolean full) throws ScriptingErrorLog.SemanticErrorException {
         for (String f : forms) {
-            form.copy(LM.findForm(f), new ObjectMapping(LM.getVersion()), full);
+            form.addForm(LM.findForm(f), new ObjectMapping(LM.getVersion()), LM.getVersion());
         }
     }
 
@@ -132,7 +130,7 @@ public class ScriptingFormEntity {
             addObjectEntity(objectName, obj, groupObj, version);
 
             if (groupObject.events.get(j) != null) {
-                form.addActionsOnEvent(obj, false, version, groupObject.events.get(j));
+                form.addActionsOnEvent(new ObjectEventObject(obj.getSID()), version, groupObject.events.get(j));
             }
 
             if (groupObject.integrationSIDs.get(j) != null) {
@@ -456,7 +454,7 @@ public class ScriptingFormEntity {
             propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
             if(selectorAction != null)
-                propertyDraw.setSelectorAction(selectorAction);
+                propertyDraw.setSelectorAction(selectorAction, version);
 
             propertyDraw.defaultChangeEventScope = scope;
 
@@ -628,17 +626,17 @@ public class ScriptingFormEntity {
         Boolean isSelector = options.getSelector();
         boolean hasSelector = isSelector != null && isSelector;
         if (hasSelector)
-            property.setSelectorAction(property::getSelectorAction);
+            property.setSelectorAction(property::getSelectorAction, version);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null)
             for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet())
-                property.setEventAction(e.getKey(), e.getValue());
+                property.setEventAction(e.getKey(), e.getValue(), version);
 
         List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions = options.getFormChangeEventActions();
         if (formChangeEventActions != null) {
             for (Pair<ActionObjectEntity, Boolean> entry : formChangeEventActions) {
-                form.addActionsOnEvent(new FormChangeEvent(property, entry.second), false, version, entry.first);
+                form.addActionsOnEvent(new FormChangeEvent(property, entry.second), version, entry.first);
             }
         }
 
@@ -833,20 +831,21 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, List<Boolean> replaces, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<FormServerEvent> types, List<Boolean> replaces, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert actions.size() == types.size();
         for (int i = 0; i < actions.size(); i++) {
-            Object eventType = types.get(i);
-            Boolean replace = replaces.get(i);
-            if(replace == null)
-                replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
-            if (eventType instanceof String) {
-                form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
-            } else if (eventType instanceof FormChangeEvent && ((FormChangeEvent) eventType).before == null) {
-                PropertyDrawEntity propertyDrawEntity = (PropertyDrawEntity) ((FormChangeEvent) eventType).propertyDrawEntity;
-                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i));
+            FormServerEvent eventType = types.get(i);
+            if (eventType instanceof FormChangeEvent && ((FormChangeEvent) eventType).before == null) {
+                PropertyDrawEntity propertyDrawEntity = ((FormChangeEvent) eventType).propertyDrawEntity;
+                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i), version);
             } else {
-                form.addActionsOnEvent(eventType, replace, version, actions.get(i));
+                Boolean replace = replaces.get(i);
+                if(replace == null)
+                    replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
+                if(replace)
+                    form.removeActionsOnEvent(eventType, version);
+
+                form.addActionsOnEvent(eventType, version, actions.get(i));
             }
         }
     }

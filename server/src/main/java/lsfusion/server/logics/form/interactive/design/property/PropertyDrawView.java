@@ -33,6 +33,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -161,7 +162,10 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     public PropertyDrawView(PropertyDrawEntity entity) {
         super(entity.ID);
+
         this.entity = entity;
+        this.entity.view = this;
+
         setMargin(2);
         setSID("PROPERTY(" + entity.getSID() + ")");
     }
@@ -1377,74 +1381,79 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         return getCustomRenderFunction(context) != null;
     }
 
+    public FilterView filter;
+
     // copy-constructor
     public PropertyDrawView(PropertyDrawView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.changeOnSingleClick = src.changeOnSingleClick;
-        this.maxValue = src.maxValue;
-        this.echoSymbols = src.echoSymbols;
-        this.noSort = src.noSort;
-        this.defaultCompare = src.defaultCompare;
-        this.charWidth = src.charWidth;
-        this.charHeight = src.charHeight;
-        this.valueSize =  src.valueSize;
-        this.valueWidth = src.valueWidth;
-        this.valueHeight = src.valueHeight;
-        this.captionWidth = src.captionWidth;
-        this.captionHeight = src.captionHeight;
-        this.captionCharHeight = src.captionCharHeight;
-        this.valueFlex = src.valueFlex;
-        this.tag = src.tag;
-        this.inputType =  src.inputType;
-        this.valueElementClass = src.valueElementClass;
-        this.captionElementClass = src.captionElementClass;
-        this.panelCustom = src.panelCustom;
-        this.changeKey = src.changeKey;
-        this.showChangeKey = src.showChangeKey;
-        this.changeMouse = src.changeMouse;
-        this.showChangeMouse = src.showChangeMouse;
-        this.drawAsync = src.drawAsync;
-        this.inline = src.inline;
-        this.focusable = src.focusable;
-        this.panelColumnVertical = src.panelColumnVertical;
-        this.valueAlignmentHorz = src.valueAlignmentHorz;
-        this.valueAlignmentVert = src.valueAlignmentVert;
-        this.valueOverflowHorz = src.valueOverflowHorz;
-        this.valueOverflowVert = src.valueOverflowVert;
-        this.valueShrinkHorz = src.valueShrinkHorz;
-        this.valueShrinkVert = src.valueShrinkVert;
-        this.comment =  src.comment;
-        this.commentElementClass = src.commentElementClass;
-        this.panelCommentVertical = src.panelCommentVertical;
-        this.panelCommentFirst = src.panelCommentFirst;
-        this.panelCommentAlignment = src.panelCommentAlignment;
-        this.placeholder =  src.placeholder;
-        this.pattern =  src.pattern;
-        this.regexp =  src.regexp;
-        this.regexpMessage = src.regexpMessage;
-        this.tooltip =  src.tooltip;
-        this.valueTooltip = src.valueTooltip;
-        this.caption = src.caption;
-        this.image = src.image;
-        this.wrap = src.wrap;
-        this.wrapWordBreak = src.wrapWordBreak;
-        this.collapse = src.collapse;
-        this.ellipsis = src.ellipsis;
-        this.captionWrap = src.captionWrap;
-        this.captionWrapWordBreak = src.captionWrapWordBreak;
-        this.captionCollapse = src.captionCollapse;
-        this.captionEllipsis = src.captionEllipsis;
-        this.clearText = src.clearText;
-        this.notSelectAll = src.notSelectAll;
-        this.toolbar = src.toolbar;
-        this.toolbarActions = src.toolbarActions;
-        this.notNull = src.notNull;
-        this.sticky = src.sticky;
-        this.sync = src.sync;
-        this.highlightDuplicate = src.highlightDuplicate;
-        this.boxed = src.boxed;
 
-        this.entity = mapping.get(src.entity);
-        this.ID = entity.ID;
+        entity = mapping.get(src.entity);
+        entity.view = this;
+
+        ID = entity.ID;
+
+        changeOnSingleClick = src.changeOnSingleClick;
+        maxValue = src.maxValue;
+        echoSymbols = src.echoSymbols;
+        noSort = src.noSort;
+        defaultCompare = src.defaultCompare;
+        charWidth = src.charWidth;
+        charHeight = src.charHeight;
+        valueSize =  src.valueSize;
+        valueWidth = src.valueWidth;
+        valueHeight = src.valueHeight;
+        captionWidth = src.captionWidth;
+        captionHeight = src.captionHeight;
+        captionCharHeight = src.captionCharHeight;
+        valueFlex = src.valueFlex;
+        tag = src.tag;
+        inputType =  src.inputType;
+        valueElementClass = src.valueElementClass;
+        captionElementClass = src.captionElementClass;
+        panelCustom = src.panelCustom;
+        changeKey = src.changeKey;
+        showChangeKey = src.showChangeKey;
+        changeMouse = src.changeMouse;
+        showChangeMouse = src.showChangeMouse;
+        drawAsync = src.drawAsync;
+        inline = src.inline;
+        focusable = src.focusable;
+        panelColumnVertical = src.panelColumnVertical;
+        valueAlignmentHorz = src.valueAlignmentHorz;
+        valueAlignmentVert = src.valueAlignmentVert;
+        valueOverflowHorz = src.valueOverflowHorz;
+        valueOverflowVert = src.valueOverflowVert;
+        valueShrinkHorz = src.valueShrinkHorz;
+        valueShrinkVert = src.valueShrinkVert;
+        comment =  src.comment;
+        commentElementClass = src.commentElementClass;
+        panelCommentVertical = src.panelCommentVertical;
+        panelCommentFirst = src.panelCommentFirst;
+        panelCommentAlignment = src.panelCommentAlignment;
+        placeholder =  src.placeholder;
+        pattern =  src.pattern;
+        regexp =  src.regexp;
+        regexpMessage = src.regexpMessage;
+        tooltip =  src.tooltip;
+        valueTooltip = src.valueTooltip;
+        caption = src.caption;
+        image = src.image;
+        wrap = src.wrap;
+        wrapWordBreak = src.wrapWordBreak;
+        collapse = src.collapse;
+        ellipsis = src.ellipsis;
+        captionWrap = src.captionWrap;
+        captionWrapWordBreak = src.captionWrapWordBreak;
+        captionCollapse = src.captionCollapse;
+        captionEllipsis = src.captionEllipsis;
+        clearText = src.clearText;
+        notSelectAll = src.notSelectAll;
+        toolbar = src.toolbar;
+        toolbarActions = src.toolbarActions;
+        notNull = src.notNull;
+        sticky = src.sticky;
+        sync = src.sync;
+        highlightDuplicate = src.highlightDuplicate;
+        boxed = src.boxed;
     }
 }

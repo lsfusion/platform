@@ -72,10 +72,11 @@ public class GridView extends GridPropertyView {
     // copy-constructor
     public GridView(GridView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.tabVertical = src.tabVertical;
-        this.quickSearch = src.quickSearch;
 
-        this.groupObject = mapping.get(src.groupObject);
-        this.record = mapping.get(src.record);
+        tabVertical = src.tabVertical;
+        quickSearch = src.quickSearch;
+
+        groupObject = mapping.get(src.groupObject);
+        record = mapping.get(src.record);
     }
 }

@@ -37,6 +37,10 @@ public class GroupObjectContainerSet {
     private ContainerView toolbarContainer;
     private ContainerView popupContainer;
 
+    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, GroupObjectView groupObjectView, Version version) {
+        return new DefaultFormView.ContainerSet(formView, groupObjectView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, groupObjectView.getFiltersContainer(), version);
+    }
+
     public ContainerView getBoxContainer() {
         return boxContainer;
     }

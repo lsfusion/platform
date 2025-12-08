@@ -532,38 +532,6 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        assert false;
-//        children = NFFact.finalOrderSet(pool.deserializeList(inStream));
-
-        caption = LocalizedString.create(pool.readString(inStream));
-        
-        collapsible = inStream.readBoolean();
-        popup = inStream.readBoolean();
-
-//        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
-
-        horizontal = pool.readBoolean(inStream);
-        tabbed = pool.readBoolean(inStream);
-
-        childrenAlignment = pool.readObject(inStream);
-        
-        grid = inStream.readBoolean();
-        wrap = inStream.readBoolean();
-        alignCaptions = inStream.readBoolean();
-
-        lines = inStream.readInt();
-        lineSize = pool.readInt(inStream);
-        captionLineSize = pool.readInt(inStream);
-        lineShrink = inStream.readBoolean();
-
-        if (inStream.readBoolean())
-            customDesign = pool.readString(inStream);
-    }
-
-    @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
         
@@ -586,41 +554,43 @@ public class ContainerView extends ComponentView {
     // copy-constructor
     public ContainerView(ContainerView src, ObjectMapping mapping) {
         super(src, mapping);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.caption = src.caption;
-        this.name = src.name;
-        this.image = src.image;
-        this.captionClass = src.captionClass;
-        this.valueClass = src.valueClass;
-        this.collapsible = src.collapsible;
-        this.popup = src.popup;
-        this.border = src.border;
-        this.collapsed = src.collapsed;
-        this.debugPoint = src.debugPoint;
-        this.horizontal = src.horizontal;
-        this.tabbed = src.tabbed;
-        this.childrenAlignment = src.childrenAlignment;
-        this.grid = src.grid;
-        this.wrap = src.wrap;
-        this.alignCaptions = src.alignCaptions;
-        this.resizeOverflow = src.resizeOverflow;
-        this.lines = src.lines;
-        this.reversed = src.reversed;
-        this.lineSize = src.lineSize;
-        this.captionLineSize = src.captionLineSize;
-        this.lineShrink = src.lineShrink;
-        this.customDesign = src.customDesign;
-        this.main = src.main;
 
-        for (ComponentView child : src.getChildrenIt())
-            this.children.add(mapping.get(child), ComplexLocation.DEFAULT(), mapping.version);
-        this.recordContainer = mapping.get(src.recordContainer);
-        this.propertyCaption = mapping.get(src.propertyCaption);
-        this.propertyCaptionClass = mapping.get(src.propertyCaptionClass);
-        this.propertyValueClass = mapping.get(src.propertyValueClass);
-        this.propertyImage = mapping.get(src.propertyImage);
-        this.propertyCustomDesign = mapping.get(src.propertyCustomDesign);
-        this.lazyChildren = src.lazyChildren.mapListValues(mapping::get);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        caption = src.caption;
+        name = src.name;
+        image = src.image;
+        captionClass = src.captionClass;
+        valueClass = src.valueClass;
+        collapsible = src.collapsible;
+        popup = src.popup;
+        border = src.border;
+        collapsed = src.collapsed;
+        debugPoint = src.debugPoint;
+        horizontal = src.horizontal;
+        tabbed = src.tabbed;
+        childrenAlignment = src.childrenAlignment;
+        grid = src.grid;
+        wrap = src.wrap;
+        alignCaptions = src.alignCaptions;
+        resizeOverflow = src.resizeOverflow;
+        lines = src.lines;
+        reversed = src.reversed;
+        lineSize = src.lineSize;
+        captionLineSize = src.captionLineSize;
+        lineShrink = src.lineShrink;
+        customDesign = src.customDesign;
+        main = src.main;
+
+        children.add(src.children, mapping::get, mapping.version);
+
+        recordContainer = mapping.get(src.recordContainer);
+        propertyCaption = mapping.get(src.propertyCaption);
+        propertyCaptionClass = mapping.get(src.propertyCaptionClass);
+        propertyValueClass = mapping.get(src.propertyValueClass);
+        propertyImage = mapping.get(src.propertyImage);
+        propertyCustomDesign = mapping.get(src.propertyCustomDesign);
     }
 }

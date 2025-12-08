@@ -22,6 +22,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -51,6 +52,7 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -91,7 +93,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
     private OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings;
-    private Map<String, ActionObjectSelector> eventActions;
+
+    private NFMap<String, ActionObjectSelector> eventActions = NFFact.map();
 
     public boolean isSelector;
 
@@ -367,9 +370,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ActionObjectSelector getExplicitEventAction(String actionId) {
-        if (eventActions != null)
-            return eventActions.get(actionId);
-        return null;
+        return eventActions.getMap().get(actionId);
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormInstanceContext context) {
@@ -451,20 +452,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // VALUE, INTERVAL or SELECTOR
     // assert that it is single panel object, VALUE, INTERVAL - Data with classes, SELECT - Object
-    public void setSelectorAction(ActionObjectSelector eventAction) {
-        setEventAction(CHANGE, eventAction);
+    public void setSelectorAction(ActionObjectSelector eventAction, Version version) {
+        setEventAction(CHANGE, eventAction, version);
         this.isSelector = true;
     }
-    public void setEventAction(String actionSID, ActionObjectSelector eventAction) {
+    public void setEventAction(String actionSID, ActionObjectSelector eventAction, Version version) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }
 
-        if(eventActions ==null) {
-            eventActions = new HashMap<>();
-        }
-        eventActions.put(actionSID, eventAction);
+        eventActions.add(actionSID, eventAction, version);
     }
 
     public FormSessionScope defaultChangeEventScope = null;
@@ -1070,59 +1068,59 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sid != null && sid.equals("image");
     }
 
+    public PropertyDrawView view;
+
     // copy-constructor
     public PropertyDrawEntity(PropertyDrawEntity<P> src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.editType = src.editType;
-        this.hide = src.hide;
-        this.remove = src.remove;
-        this.mouseBinding = src.mouseBinding;
-        this.keyBindings = src.keyBindings;
-        this.contextMenuBindings = src.contextMenuBindings;
-        this.eventActions = src.eventActions; //?
-        this.isSelector = src.isSelector;
-        this.optimisticAsync = src.optimisticAsync;
-        this.askConfirm = src.askConfirm;
-        this.askConfirmMessage = src.askConfirmMessage;
-        this.viewType = src.viewType;
-        this.customRenderFunction = src.customRenderFunction;
-        this.customChangeFunction = src.customChangeFunction;
-        this.eventID = src.eventID;
-        this.sticky = src.sticky;
-        this.sync = src.sync;
-        this.formPath =  src.formPath;
-        this.scriptIndex = src.scriptIndex;
-        this.initCaption = src.initCaption;
-        this.initImage = src.initImage;
-        this.ignoreHasHeaders = src.ignoreHasHeaders;
-        this.columnsName =  src.columnsName;
-        this.group = src.group;
-        this.attr = src.attr;
-        this.extNull = src.extNull;
-        this.formula = src.formula;
-        this.aggrFunc = src.aggrFunc;
-        this.lastAggrDesc =  src.lastAggrDesc;
-        this.activeProperty =  src.activeProperty;
-        this.inheritedProperty = src.inheritedProperty;
-        this.defaultChangeEventScope = src.defaultChangeEventScope;
-        this.integrationSID = src.integrationSID;
 
-        this.remapped = true;
-        this.actionOrProperty = src.actionOrProperty instanceof ActionObjectEntity ?
-                mapping.get((ActionObjectEntity) src.actionOrProperty) :
-                mapping.get((PropertyObjectEntity) src.actionOrProperty);
-        this.toDraw = mapping.get(src.toDraw);
-        this.columnGroupObjects = src.columnGroupObjects.mapOrderSetValues((Function<GroupObjectEntity, GroupObjectEntity>) mapping::get);
-        ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtrasMap = src.propertyExtras.getMap();
-        for(int i = 0; i < propertyExtrasMap.size(); i++) {
-            this.propertyExtras.add(propertyExtrasMap.getKey(i), mapping.get(propertyExtrasMap.getValue(i)), mapping.version);
-        }
-        this.formulaOperands = src.formulaOperands != null ? src.formulaOperands.mapListValues((Function<PropertyDrawEntity, PropertyDrawEntity>) mapping::get) : null;
-        this.lastAggrColumns = src.lastAggrColumns.mapListValues(e -> mapping.get(e));
-        this.quickFilterProperty = mapping.get(src.quickFilterProperty);
-        this.cellProperty = mapping.get(src.cellProperty);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        editType = src.editType;
+        hide = src.hide;
+        remove = src.remove;
+        mouseBinding = src.mouseBinding;
+        keyBindings = src.keyBindings;
+        contextMenuBindings = src.contextMenuBindings;
+        isSelector = src.isSelector;
+        optimisticAsync = src.optimisticAsync;
+        askConfirm = src.askConfirm;
+        askConfirmMessage = src.askConfirmMessage;
+        viewType = src.viewType;
+        customRenderFunction = src.customRenderFunction;
+        customChangeFunction = src.customChangeFunction;
+        eventID = src.eventID;
+        sticky = src.sticky;
+        sync = src.sync;
+        formPath =  src.formPath;
+        scriptIndex = src.scriptIndex;
+        initCaption = src.initCaption;
+        initImage = src.initImage;
+        ignoreHasHeaders = src.ignoreHasHeaders;
+        columnsName =  src.columnsName;
+        group = src.group;
+        attr = src.attr;
+        extNull = src.extNull;
+        formula = src.formula;
+        aggrFunc = src.aggrFunc;
+        lastAggrDesc =  src.lastAggrDesc;
+        activeProperty =  src.activeProperty;
+        inheritedProperty = src.inheritedProperty;
+        defaultChangeEventScope = src.defaultChangeEventScope;
+        integrationSID = src.integrationSID;
+
+        remapped = true;
+        actionOrProperty = mapping.get(src.actionOrProperty);
+        toDraw = mapping.get(src.toDraw);
+        columnGroupObjects = src.columnGroupObjects.mapOrderSetValues(mapping::get);
+        propertyExtras.add(src.propertyExtras, mapping::get, mapping.version);
+        eventActions.add(src.eventActions, mapping::get, mapping.version);
+        formulaOperands = src.formulaOperands != null ? src.formulaOperands.mapListValues(mapping::get) : null;
+        lastAggrColumns = src.lastAggrColumns.mapListValues(mapping::get);
+        quickFilterProperty = mapping.get(src.quickFilterProperty);
+        cellProperty = mapping.get(src.cellProperty);
     }
 
     public boolean remapped = false;

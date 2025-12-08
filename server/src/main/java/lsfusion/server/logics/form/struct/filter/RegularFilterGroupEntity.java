@@ -10,6 +10,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -30,10 +31,6 @@ public class RegularFilterGroupEntity extends IdentityObject {
         this.ID = ID;
         this.defaultFilterIndex.set(noNull ? 0 : -1, version);
         this.noNull = noNull;
-    }
-
-    public void addFilter(RegularFilterEntity filter, Version version) {
-        filters.add(filter, version);
     }
 
     public void addFilter(RegularFilterEntity filter, boolean setDefault, Version version) {
@@ -90,16 +87,18 @@ public class RegularFilterGroupEntity extends IdentityObject {
         defaultFilterIndex.finalizeChanges();
     }
 
+    public RegularFilterGroupView view;
+
     // copy-constructor
     public RegularFilterGroupEntity(RegularFilterGroupEntity src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.noNull = src.noNull;
 
-        for (RegularFilterEntity rfe : src.getFiltersList()) {
-            this.addFilter(mapping.get(rfe), mapping.version);
-        }
-        this.setDefault(src.getDefault(), mapping.version);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+        noNull = src.noNull;
+
+        filters.add(src.filters, mapping::get, mapping.version);
+        defaultFilterIndex.set(src.defaultFilterIndex, v -> v, mapping.version);
     }
 }

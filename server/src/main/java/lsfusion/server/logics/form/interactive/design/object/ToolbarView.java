@@ -49,14 +49,16 @@ public class ToolbarView extends BaseComponentView {
     // copy-constructor
     public ToolbarView(ToolbarView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.visible = src.visible;
-        this.showViews = src.showViews;
-        this.showFilters = src.showFilters;
-        this.showSettings = src.showSettings;
-        this.showCountQuantity = src.showCountQuantity;
-        this.showCalculateSum = src.showCalculateSum;
-        this.showPrintGroupXls = src.showPrintGroupXls;
-        this.showManualUpdate = src.showManualUpdate;
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        visible = src.visible;
+        showViews = src.showViews;
+        showFilters = src.showFilters;
+        showSettings = src.showSettings;
+        showCountQuantity = src.showCountQuantity;
+        showCalculateSum = src.showCalculateSum;
+        showPrintGroupXls = src.showPrintGroupXls;
+        showManualUpdate = src.showManualUpdate;
     }
 }

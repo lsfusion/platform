@@ -11,15 +11,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PivotColumn implements PropertyDrawEntityOrPivotColumn, PropertyDrawViewOrPivotColumn {
-    public String groupObject;
+    public GroupObjectEntity groupObject;
 
-    public PivotColumn(String groupObject) {
+    public PivotColumn(GroupObjectEntity groupObject) {
         this.groupObject = groupObject;
     }
 
     @Override
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return form.getGroupObject(groupObject);
+        return groupObject;
     }
 
     @Override
@@ -29,11 +29,6 @@ public class PivotColumn implements PropertyDrawEntityOrPivotColumn, PropertyDra
 
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeString(outStream, groupObject);
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) {
-        //not used
+        pool.writeString(outStream, groupObject.getSID());
     }
 }

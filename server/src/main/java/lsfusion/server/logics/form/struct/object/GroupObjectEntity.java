@@ -28,6 +28,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -420,40 +421,47 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return getObjects().size() == 1 && viewType.isList() && !isInTree();
     }
 
+    public GroupObjectView view;
+
     // copy-constructor
     public GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.isSubReport = src.isSubReport;
-        this.debugPoint = src.debugPoint;
-        this.updateType = src.updateType;
-        this.propertyGroup = src.propertyGroup;
-        this.scriptIndex = src.scriptIndex;
-        this.enableManualUpdate = src.enableManualUpdate;
-        this.integrationSID = src.integrationSID;
-        this.integrationKey = src.integrationKey;
-        this.listViewTypeProp = src.listViewTypeProp;
-        this.viewType = src.viewType;
-        this.listViewType = src.listViewType;
-        this.pivotOptions = src.pivotOptions;
-        this.customRenderFunction = src.customRenderFunction;
-        this.mapTileProvider = src.mapTileProvider;
-        this.asyncInit =  src.asyncInit;
-        this.pageSize = src.pageSize;
-        this.isFilterExplicitlyUsed =  src.isFilterExplicitlyUsed;
-        this.isOrderExplicitlyUsed =  src.isOrderExplicitlyUsed;
 
-        this.treeGroup = mapping.get(src.treeGroup);
-        this.reportPathProp = mapping.get(src.reportPathProp);
-        this.propertyCustomOptions = mapping.get(src.propertyCustomOptions);
-        this.propertyBackground = mapping.get(src.propertyBackground);
-        this.propertyForeground = mapping.get(src.propertyForeground);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        isSubReport = src.isSubReport;
+        debugPoint = src.debugPoint;
+        updateType = src.updateType;
+        propertyGroup = src.propertyGroup;
+        scriptIndex = src.scriptIndex;
+        enableManualUpdate = src.enableManualUpdate;
+        integrationSID = src.integrationSID;
+        integrationKey = src.integrationKey;
+        listViewTypeProp = src.listViewTypeProp;
+        viewType = src.viewType;
+        listViewType = src.listViewType;
+        pivotOptions = src.pivotOptions;
+        customRenderFunction = src.customRenderFunction;
+        mapTileProvider = src.mapTileProvider;
+        asyncInit =  src.asyncInit;
+        pageSize = src.pageSize;
+        isFilterExplicitlyUsed =  src.isFilterExplicitlyUsed;
+        isOrderExplicitlyUsed =  src.isOrderExplicitlyUsed;
+
+        for(ObjectEntity e : src.getOrderObjects())
+            add(mapping.get(e));
+
+        treeGroup = mapping.get(src.treeGroup);
+        reportPathProp = mapping.get(src.reportPathProp);
+        propertyCustomOptions = mapping.get(src.propertyCustomOptions);
+        propertyBackground = mapping.get(src.propertyBackground);
+        propertyForeground = mapping.get(src.propertyForeground);
+        isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
+
+        // todo: should be refactored somehow
         ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> srcProps = (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) src.props;
         this.props = srcProps.mapValues(p -> new PropertyRevImplement<>(p.property, p.mapping.mapRevValues((Function<ObjectEntity, ObjectEntity>) mapping::get)));
-        this.isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
-        for(ObjectEntity e : ((ImOrderSet<ObjectEntity>) src.objects)) {
-            this.add(mapping.get(e));
-        }
     }
 }

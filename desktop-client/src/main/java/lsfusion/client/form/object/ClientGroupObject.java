@@ -157,18 +157,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return calculations;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.serializeCollection(outStream, objects);
-        pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream,filtersContainer);
-        pool.serializeObject(outStream, filterControls);
-        pool.serializeCollection(outStream, filters);
-        pool.serializeObject(outStream, calculations);
-        outStream.writeBoolean(needVerticalScroll);
-        outStream.writeBoolean(enableManualUpdate);
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         viewType = pool.readObject(inStream);
         listViewType = pool.readObject(inStream);

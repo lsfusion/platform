@@ -7,6 +7,7 @@ import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFProperty;
 
 import java.lang.ref.WeakReference;
+import java.util.function.Function;
 
 public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
 
@@ -53,6 +54,10 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
 
     public void set(K value, Version version) {
         getChanges().add(value, version);
+    }
+
+    public void set(NFProperty<K> value, Function<K, K> mapping, Version version) {
+        getChanges().add(((NFPropertyImpl<K>)value).getChanges(), mapping, version);
     }
 
     public K get() {

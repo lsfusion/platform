@@ -1,5 +1,7 @@
 package lsfusion.server.base.version.impl.changes;
 
+import lsfusion.server.base.version.Version;
+
 import java.util.List;
 import java.util.Set;
 
@@ -10,16 +12,16 @@ public class NFRemove<T> implements NFOrderSetChange<T>, NFComplexOrderSetChange
         this.element = element;
     }
 
-    public void proceedSet(Set<T> mSet) {
+    public void proceedSet(Set<T> mSet, Version version) {
         mSet.remove(element);
     }
 
-    public void proceedOrderSet(List<T> list) {
+    public void proceedOrderSet(List<T> list, Version version) {
         list.remove(element);
     }
 
     @Override
-    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList) {
+    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList, Version version) {
         int index = list.indexOf(element);
         if(index >= 0) { // can be already removed (moved) in "parallel" module
             list.remove(index);

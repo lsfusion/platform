@@ -22,14 +22,14 @@ import java.util.List;
 public abstract class AutoFormEntity extends FormEntity {
 
     public AutoFormEntity(LocalizedString caption, boolean needDesign, Version version) {
-        super(null, null, caption, null, needDesign, version);
+        super(null, null, caption, null, needDesign, null, null, version);
     }
 
     public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
         Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(this, object);
         PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, SetFact.singletonOrder(object));
         if(valueProp.second != null)
-            propertyDraw.setSelectorAction(valueProp.second);
+            propertyDraw.setSelectorAction(valueProp.second, version);
         // assert that there is no richDesign / FormView yet
         propertyDraw.initCaption = LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
         return propertyDraw;

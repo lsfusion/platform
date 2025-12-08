@@ -9,9 +9,11 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFMapAdd;
 import lsfusion.server.base.version.impl.changes.NFMapMove;
 import lsfusion.server.base.version.impl.changes.NFOrderMapChange;
+import lsfusion.server.base.version.impl.changes.NFOrderMapCopy;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, ImOrderMap<K, V>> implements NFOrderMap<K, V> {
 
@@ -29,7 +31,7 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
 
         final List<K> mKeys = SetFact.mAddRemoveOrderSet();
         final List<V> mValues = SetFact.mAddRemoveOrderSet();
-        proceedChanges(change -> change.proceedOrderMap(mKeys, mValues), version);
+        proceedChanges(change -> change.proceedOrderMap(mKeys, mValues, version), version);
         OrderedMap<K, V> mMap = MapFact.mAddRemoveOrderMap();
 
         for(int i = 0; i < mKeys.size(); i++) {
@@ -62,6 +64,11 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
 
     public void add(K key, V value, Version version) {
         addChange(new NFMapAdd<>(key, value), version);
+    }
+
+    @Override
+    public void add(NFOrderMap<K, V> map, Function<K, K> mapping, Version version) {
+        addChange(new NFOrderMapCopy<>(map, mapping), version);
     }
 
     public void move(K key, V value, FindIndex<K> finder, Version version) {

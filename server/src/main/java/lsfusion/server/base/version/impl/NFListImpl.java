@@ -5,10 +5,11 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.impl.changes.NFAddFirstList;
-import lsfusion.server.base.version.impl.changes.NFListChange;
-import lsfusion.server.base.version.impl.changes.NFRemoveAll;
+import lsfusion.server.base.version.impl.changes.*;
 import lsfusion.server.base.version.interfaces.NFList;
+
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> implements NFList<T> {
 
@@ -29,7 +30,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
             return result;
             
         final MList<T> mList = ListFact.mList();
-        proceedChanges(change -> change.proceedList(mList), version);
+        proceedChanges(change -> change.proceedList(mList, version), version);
         return mList.immutableList();
     }
 
@@ -59,8 +60,13 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
         return list.getNFList(version);
     }
 
-    public void removeAll(Version version) {
-        addChange(NFRemoveAll.getInstance(), version);
+    @Override
+    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+        addChange(new NFListCopy<>(element, mapper), version);
+    }
+
+    public void removeAll(Predicate<T> filter, Version version) {
+        addChange(new NFRemoveAll<>(filter), version);
     }
 
     public void addFirst(T element, Version version) {

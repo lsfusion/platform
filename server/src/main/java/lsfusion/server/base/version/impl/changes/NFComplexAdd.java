@@ -2,6 +2,7 @@ package lsfusion.server.base.version.impl.changes;
 
 import lsfusion.base.Pair;
 import lsfusion.server.base.version.ComplexLocation;
+import lsfusion.server.base.version.Version;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class NFComplexAdd<T> implements NFComplexOrderSetChange<T> {
     }
 
     @Override
-    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList) {
+    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList, Version version) {
         if (!list.contains(element)) {
             Pair<Integer, Integer> insert;
 

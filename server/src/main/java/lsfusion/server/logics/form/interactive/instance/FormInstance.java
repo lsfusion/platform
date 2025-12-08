@@ -21,8 +21,7 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.FormChangeEvent;
-import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.interactive.event.*;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -105,8 +104,6 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
-import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
-import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.*;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
@@ -338,8 +335,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        for(Property property : entity.asyncInitPropertyChanges)
-            asyncPropertyChanges.put(property, HasChanges.NULL);
+//        for(Property property : entity.asyncInitPropertyChanges)
+//            asyncPropertyChanges.put(property, HasChanges.NULL);
 
         ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
             public GroupObjectInstance group(OrderInstance key) {
@@ -1784,14 +1781,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         object.changeValue(session, this, value);
     }
 
-    private boolean hasEventActions() {
-        ImMap<Object, ImList<ActionObjectEntity<?>>> eventActions = entity.getEventActions();
-        for(ImList<ActionObjectEntity<?>> list : eventActions.valueIt())
-            if(list.size() > 0)
-                return true;
-        return false;
-    }
-
     // explicit SEEK with explicit updateType
     public void seekObjects(GroupObjectInstance group, ImMap<ObjectInstance, ObjectValue> objectInstances, UpdateType type) throws SQLException, SQLHandledException {
         if(group == null)
@@ -2757,7 +2746,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // ---------------------------------------- Events ----------------------------------------
 
     public void fireObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(object.entity, stack);
+        fireEvent(new ObjectEventObject(object.entity.getSID()), stack);
     }
 
     private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
@@ -2838,32 +2827,36 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(new UserEventObject(filter, type), stack);
     }
 
-    public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
-        fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
+    public void fireContainerEvent(ExecutionStack stack, ComponentView container, boolean collapse) throws SQLException, SQLHandledException {
+        fireEvent(new FormContainerEvent(container, collapse), stack, null, null);
+    }
+
+    public void fireClientEvent(ExecutionStack stack, FormServerEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+        fireEvent(formEvent, stack, null, pushedAsyncResult);
     }
 
     public void fireChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
         fireEvent(new FormChangeEvent(property.getEntity(), before), stack, keys);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(eventObject, stack, null);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
         fireEvent(eventObject, stack, keys, null);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         for(ActionValueImplement event : getEvents(eventObject, keys))
             event.execute(this, stack, pushedAsyncResult);
     }
 
-    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {
+    private ImOrderSet<ActionValueImplement> getEvents(FormServerEvent eventObject) {
         return getEvents(eventObject, null);
     }
 
-    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+    private ImOrderSet<ActionValueImplement> getEvents(FormServerEvent eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
         MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {

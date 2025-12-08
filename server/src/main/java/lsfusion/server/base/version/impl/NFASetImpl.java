@@ -3,11 +3,14 @@ package lsfusion.server.base.version.impl;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.impl.changes.NFRemove;
 import lsfusion.server.base.version.impl.changes.NFSetChange;
+import lsfusion.server.base.version.impl.changes.NFSetCopy;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.Set;
+import java.util.function.Function;
 
 public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterable<T>> extends NFColChangeImpl<T, CH, R> implements NFSet<T> {
 
@@ -34,12 +37,17 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
             return getFinalSet(result);
 
         final Set<T> mSet = SetFact.mAddRemoveSet(); 
-        proceedChanges(change -> change.proceedSet(mSet), version);
+        proceedChanges(change -> change.proceedSet(mSet, version), version);
         return SetFact.fromJavaSet(mSet);
     }
 
     public Iterable<T> getNFIt(Version version) {
         return getNFSet(version);
+    }
+
+    @Override
+    public void add(NFSet<T> element, Function<T, T> mapper, Version version) {
+        addChange((CH) new NFSetCopy<>(element, mapper), version);
     }
 
     @Override

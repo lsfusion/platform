@@ -22,6 +22,10 @@ public class TreeGroupContainerSet {
     private ContainerView toolbarContainer;
     private ContainerView popupContainer;
 
+    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, TreeGroupView treeView, Version version) {
+        return new DefaultFormView.ContainerSet(formView, treeView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, treeView.getFiltersContainer(), version);
+    }
+
     public ContainerView getBoxContainer() {
         return boxContainer;
     }

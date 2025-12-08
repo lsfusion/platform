@@ -19,7 +19,6 @@ import lsfusion.client.form.property.ClientPropertyDrawOrPivotColumn;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormScheduler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -35,8 +34,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public String creationPath = "";
     public String path = "";
 
-    public List<FormScheduler> formSchedulers = new ArrayList<>();
-    public Map<FormEvent, ClientAsyncEventExec> asyncExecMap;
+    public OrderedMap<FormEvent, ClientAsyncEventExec> asyncExecMap;
 
     public static ClientGroupObject lastActiveGroupObject;
 
@@ -175,25 +173,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         return result;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.serializeObject(outStream, mainContainer);
-        pool.serializeCollection(outStream, treeGroups);
-        pool.serializeCollection(outStream, groupObjects);
-        pool.serializeCollection(outStream, propertyDraws);
-        pool.serializeCollection(outStream, regularFilterGroups);
-
-        outStream.writeInt(defaultOrders.size());
-        for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey());
-            outStream.writeBoolean(entry.getValue());
-        }
-
-        pool.writeString(outStream, canonicalName);
-        pool.writeString(outStream, creationPath);
-        pool.writeString(outStream, path);
-        pool.writeInt(outStream, overridePageWidth);
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         ClientContainer mainContainer = pool.deserializeObject(inStream);
         mainContainer.main = true;
@@ -218,7 +197,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         creationPath = pool.readString(inStream);
         path = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
-        formSchedulers = deserializeFormSchedulers(inStream);
         asyncExecMap = deserializeAsyncExecMap(inStream);
     }
 
@@ -231,17 +209,8 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         return properties;
     }
 
-    private List<FormScheduler> deserializeFormSchedulers(DataInputStream inStream) throws IOException {
-        List<FormScheduler> formSchedulers = new ArrayList<>();
-        int size = inStream.readInt();
-        for(int i = 0; i < size; i++) {
-            formSchedulers.add((FormScheduler) FormEvent.deserialize(inStream));
-        }
-        return formSchedulers;
-    }
-
-    private Map<FormEvent, ClientAsyncEventExec> deserializeAsyncExecMap(DataInputStream inStream) throws IOException {
-        Map<FormEvent, ClientAsyncEventExec> asyncExecMap = new HashMap<>();
+    private OrderedMap<FormEvent, ClientAsyncEventExec> deserializeAsyncExecMap(DataInputStream inStream) throws IOException {
+        OrderedMap<FormEvent, ClientAsyncEventExec> asyncExecMap = new OrderedMap<>();
         int size = inStream.readInt();
         for(int i = 0; i < size; i++) {
             asyncExecMap.put(FormEvent.deserialize(inStream), ClientAsyncSerializer.deserializeEventExec(inStream));

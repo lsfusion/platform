@@ -1,12 +1,20 @@
 package lsfusion.server.logics.form.interactive.event;
 
-public class UserEventObject {
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.ObjectMapping;
+
+public class UserEventObject extends FormServerEvent {
     public final String obj;
     public final Type type;
 
     public UserEventObject(String obj, Type type) {
         this.obj = obj;
         this.type = type;
+    }
+
+    @Override
+    public FormServerEvent get(ObjectMapping mapping) {
+        return this;
     }
 
     @Override

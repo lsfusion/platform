@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 
+import java.util.function.Predicate;
+
 public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
 
     public int size;
@@ -89,6 +91,24 @@ public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
     public void removeAll() {
         size = 0;
         array = new Object[4];
+    }
+
+    public void removeAll(Predicate<? super K> filter) {
+        int write = 0;
+        for (int read = 0; read < size; read++) {
+            K value = (K) array[read];
+            if (!filter.test(value)) {
+                if (write != read) {
+                    array[write] = value;
+                }
+                write++;
+            }
+        }
+        // null out trailing references and adjust size
+        for (int i = write; i < size; i++) {
+            array[i] = null;
+        }
+        size = write;
     }
 
     public void removeLast() {

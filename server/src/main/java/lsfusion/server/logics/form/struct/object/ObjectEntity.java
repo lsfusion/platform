@@ -24,6 +24,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
+import lsfusion.server.logics.form.interactive.design.object.ObjectView;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -179,19 +180,23 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         return null; // temporary
     }
 
+    public ObjectView view;
+
     // copy-constructor
     public ObjectEntity(ObjectEntity src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.caption = src.caption;
-        this.baseClass = src.baseClass;
-        this.noClasses = src.noClasses;
-        this.integrationSID = src.integrationSID;
-        this.isValue = src.isValue;
-        this.finalizedValueProperty = src.finalizedValueProperty;
-        this.valueProperty = src.valueProperty;
 
-        this.groupTo = mapping.get(src.groupTo);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+        caption = src.caption;
+        baseClass = src.baseClass;
+        noClasses = src.noClasses;
+        integrationSID = src.integrationSID;
+        isValue = src.isValue;
+        finalizedValueProperty = src.finalizedValueProperty;
+        valueProperty = src.valueProperty;
+
+        groupTo = mapping.get(src.groupTo);
     }
 }

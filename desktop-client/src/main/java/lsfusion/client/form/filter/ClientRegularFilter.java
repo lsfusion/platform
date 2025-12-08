@@ -36,9 +36,6 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
         return getFullCaption() + " (" + getID() + ")";
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
 

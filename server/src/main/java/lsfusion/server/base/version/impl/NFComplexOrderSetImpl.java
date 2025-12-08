@@ -10,11 +10,13 @@ import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFComplexOrderSetChange;
 import lsfusion.server.base.version.impl.changes.NFComplexAdd;
+import lsfusion.server.base.version.impl.changes.NFComplexOrderSetCopy;
 import lsfusion.server.base.version.impl.changes.NFRemove;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 
 
 import java.util.List;
+import java.util.function.Function;
 
 public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChange<T>, Pair<ImOrderSet<T>, ImList<Integer>>> implements NFComplexOrderSet<T> {
 
@@ -31,6 +33,11 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
     }
 
     @Override
+    public void add(NFComplexOrderSet<T> elements, Function<T, T> mapping, Version version) {
+        addChange(new NFComplexOrderSetCopy<>(elements, mapping), version);
+    }
+
+    @Override
     public void remove(T element, Version version) {
         // assert included
         addChange(new NFRemove<>(element), version);
@@ -44,7 +51,7 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
         final List<Integer> mGroup = SetFact.mAddRemoveOrderSet();
-        proceedChanges(change -> change.proceedComplexOrderSet(mSet, mGroup), version);
+        proceedChanges(change -> change.proceedComplexOrderSet(mSet, mGroup, version), version);
         return new Pair<>(SetFact.fromJavaOrderSet(mSet), ListFact.fromJavaList(mGroup));
     }
 
@@ -86,11 +93,6 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
     @Override
     public ImList<T> getNFList(Version version) {
         return getNF(version).first;
-    }
-
-    @Override
-    public Pair<ImOrderSet<T>, ImList<Integer>> getNFComplexOrderSet(Version version) {
-        return getNF(version);
     }
 
     @Override

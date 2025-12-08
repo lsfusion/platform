@@ -72,14 +72,6 @@ public class NFFact {
         return new NFOrderMapImpl<>(map);
     }
 
-    public static <K, V> NFMapList<K, V> mapList() {
-        return new NFMapListImpl<>();
-    }
-
-    public static <K, V> NFMapList<K, V> finalMapList(ImMap<K, ImList<V>> map) {
-        return new NFMapListImpl<>(map);
-    }
-
     public static <K> NFProperty<K> property() {
         return new NFPropertyImpl<>();
     }

@@ -665,9 +665,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         form.creationPath = clientForm.creationPath;
         form.path = clientForm.path;
-        for(FormScheduler formScheduler : clientForm.formSchedulers) {
-            form.formSchedulers.add(convertOrCast(formScheduler));
-        }
         for(Map.Entry<FormEvent, ClientAsyncEventExec> asyncExec : clientForm.asyncExecMap.entrySet()) {
             form.asyncExecMap.put(convertOrCast(asyncExec.getKey()), asyncConverter.convertOrCast(asyncExec.getValue()));
         }

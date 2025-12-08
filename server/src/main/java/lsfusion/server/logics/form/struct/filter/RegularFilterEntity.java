@@ -37,14 +37,16 @@ public class RegularFilterEntity extends IdentityObject {
     // copy-constructor
     public RegularFilterEntity(RegularFilterEntity src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.name = src.name;
-        this.keyInputEvent = src.keyInputEvent;
-        this.showKey = src.showKey;
-        this.mouseInputEvent = src.mouseInputEvent;
-        this.showMouse = src.showMouse;
 
-        this.filter = mapping.get(src.filter);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+        name = src.name;
+        keyInputEvent = src.keyInputEvent;
+        showKey = src.showKey;
+        mouseInputEvent = src.mouseInputEvent;
+        showMouse = src.showMouse;
+
+        filter = mapping.get(src.filter);
     }
 }

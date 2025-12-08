@@ -11,7 +11,6 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -91,7 +90,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     protected void setupDrillDownDesign(DefaultFormView design, Version version) {
         super.setupDrillDownDesign(design, version);
 
-        ContainerView extraParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.inner.params}"), version);
+        ContainerView extraParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.inner.params}"));
         design.mainContainer.addAfter(extraParamsContainer, valueContainer, version);
 
         if(implPropertyDraw != null) {

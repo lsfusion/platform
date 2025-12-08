@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -133,8 +134,9 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 //            border = FALSE;
 //            class = '';
 //        }
-            formView.objectsContainer.setBorder(false);
-            formView.objectsContainer.setElementClass(null);
+            ContainerView objectsContainer = formView.getBoxContainer((PropertyGroupContainerView) null);
+            objectsContainer.setBorder(false);
+            objectsContainer.setElementClass(null);
 
 //        BOX(i) {
 //            caption = NULL;
@@ -167,7 +169,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     public LocalizedString getCaption() {
         if(interactive)
             return super.getCaption();
-        return getInitCaption();
+        return LocalizedString.NONAME;
     }
 
     @Override

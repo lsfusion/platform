@@ -77,6 +77,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         super(entity.getID());
 
         this.entity = entity;
+        this.entity.view = this;
 
         for (GroupObjectEntity group : entity.getGroups()) {
             groups.add(form.getNFGroupObject(group, version));
@@ -157,24 +158,36 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         return false;
     }
 
+    public DefaultFormView.ContainerSet containers;
+
+    @Override
+    public DefaultFormView.ContainerSet getContainers() {
+        return containers;
+    }
+
     // copy-constructor
     public TreeGroupView(TreeGroupView src, ObjectMapping mapping) {
         super(src, mapping);
-        this.expandOnClick = src.expandOnClick;
-        this.hierarchicalWidth = src.hierarchicalWidth;
-        this.hierarchicalCaption = src.hierarchicalCaption;
-        this.idGenerator = src.idGenerator;
 
-        for(GroupObjectView g : src.groups) {
+        entity = mapping.get(src.entity);
+        entity.view = this;
+
+        idGenerator = src.idGenerator; // todo: ??
+
+        expandOnClick = src.expandOnClick;
+        hierarchicalWidth = src.hierarchicalWidth;
+        hierarchicalCaption = src.hierarchicalCaption;
+
+        for(GroupObjectView g : src.groups)
             groups.add(mapping.get(g));
-        }
-        this.entity = mapping.get(src.entity);
-        this.toolbarSystem = mapping.get(src.toolbarSystem);
-        for(FilterView f : src.getFilters()) {
-            this.filters.add(mapping.get(f), mapping.version);
-        }
-        this.filtersContainer = mapping.get(src.filtersContainer);
-        this.filterControls = mapping.get(src.filterControls);
-        this.propertyHierarchicalCaption = mapping.get(src.propertyHierarchicalCaption);
+        toolbarSystem = mapping.get(src.toolbarSystem);
+
+        filters.add(src.filters, mapping::get, mapping.version);
+
+        filtersContainer = mapping.get(src.filtersContainer);
+        filterControls = mapping.get(src.filterControls);
+        propertyHierarchicalCaption = mapping.get(src.propertyHierarchicalCaption);
+
+        containers = new DefaultFormView.ContainerSet(src.containers, mapping);
     }
 }

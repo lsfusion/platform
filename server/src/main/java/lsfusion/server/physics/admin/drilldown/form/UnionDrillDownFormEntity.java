@@ -6,7 +6,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -62,7 +61,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView operandsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.operands}"), version);
+        ContainerView operandsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.operands}"));
         operandsContainer.setAlignment(FlexAlignment.STRETCH);
         for (PropertyDrawEntity operandProperty : operandProperties) {
             operandsContainer.add(design.get(operandProperty), version);

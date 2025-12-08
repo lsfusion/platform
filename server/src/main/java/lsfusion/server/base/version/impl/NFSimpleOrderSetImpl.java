@@ -1,13 +1,19 @@
 package lsfusion.server.base.version.impl;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFCol;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
@@ -46,6 +52,26 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
         list.add(element);
     }
 
+    @Override
+    public void add(NFCol<T> element, Function<T, T> mapper, Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(NFOrderSet<T> element, Function<T, T> mapper, Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(NFSet<T> element, Function<T, T> mapper, Version version) {
+        throw new UnsupportedOperationException();
+    }
+
     public void finalizeCol() {
         throw new UnsupportedOperationException();
     }
@@ -69,9 +95,9 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
         list.remove(element);
     }
 
-    public void removeAll(Version version) {
+    public void removeAll(Predicate<T> filter, Version version) {
         assert false;
-        list.clear();
+        BaseUtils.removeList(list, filter);
     }
 
     public ImList<T> getList() {

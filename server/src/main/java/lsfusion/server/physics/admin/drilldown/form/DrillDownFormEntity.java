@@ -13,7 +13,6 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -71,18 +70,18 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     protected ContainerView detailsContainer;
 
     protected void setupDrillDownDesign(DefaultFormView design, Version version) {
-        paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"), version);
+        paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"));
         paramsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addFirst(paramsContainer, version);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getBoxContainer(obj.groupTo), version);
         }
 
-        valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"), version);
+        valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"));
         valueContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
-        detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"), version);
+        detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"));
         detailsContainer.setFlex(1.0);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);

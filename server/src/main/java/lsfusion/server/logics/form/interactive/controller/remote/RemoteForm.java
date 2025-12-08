@@ -18,7 +18,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.FormContainerEvent;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -58,6 +57,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
@@ -79,7 +79,6 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
@@ -693,8 +692,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug("executeEventAction");
             }
 
-            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent, context);
-            form.fireEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
+            FormServerEvent formServerEvent = FormServerEvent.getEventObject(formEvent);
+            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formServerEvent, context);
+            form.fireClientEvent(stack, formServerEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
 
@@ -707,7 +707,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             ComponentView tab = richDesign.findById(childId);
             form.setTabActive((ContainerView) richDesign.findById(tabPaneID), tab);
-            form.fireEvent(stack, new FormContainerEvent(tab.getSID(), false), null);
+            form.fireContainerEvent(stack, tab, false);
         });
     }
 
@@ -733,7 +733,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             ContainerView containerView = (ContainerView) richDesign.findById(containerID);
             form.setContainerCollapsed(containerView, collapsed);
-            form.fireEvent(stack, new FormContainerEvent(containerView.getSID(), collapsed), null);
+            form.fireContainerEvent(stack, containerView, collapsed);
         });
     }
 

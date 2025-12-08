@@ -494,33 +494,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeString(outStream, sID);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        design = pool.readObject(inStream);
-
-        container = NFFact.finalProperty(pool.deserializeObject(inStream));
-
-        width = pool.readInt(inStream);
-        height = pool.readInt(inStream);
-
-        span = inStream.readInt();
-
-        flex = inStream.readDouble();
-        alignment = pool.readObject(inStream);
-        shrink = inStream.readBoolean();
-        alignShrink = inStream.readBoolean();
-        alignCaption = pool.readObject(inStream);
-        overflowHorz = pool.readString(inStream);
-        overflowVert = pool.readString(inStream);
-        marginTop = inStream.readInt();
-        marginBottom = inStream.readInt();
-        marginLeft = inStream.readInt();
-        marginRight = inStream.readInt();
-
-        defaultComponent = inStream.readBoolean();
-
-        sID = pool.readString(inStream);
-    }
-
     public void finalizeAroundInit() {
         container.finalizeChanges();
     }
@@ -531,33 +504,35 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     // copy-constructor
     public ComponentView(ComponentView src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.design = src.design;
-        this.elementClass = src.elementClass;
-        this.width = src.width;
-        this.height = src.height;
-        this.span = src.span;
-        this.flex = src.flex;
-        this.alignment = src.alignment;
-        this.shrink = src.shrink;
-        this.alignShrink = src.alignShrink;
-        this.alignCaption = src.alignCaption;
-        this.overflowHorz = src.overflowHorz;
-        this.overflowVert = src.overflowVert;
-        this.captionVertical = src.captionVertical;
-        this.captionLast = src.captionLast;
-        this.captionAlignmentHorz = src.captionAlignmentHorz;
-        this.captionAlignmentVert = src.captionAlignmentVert;
-        this.marginTop = src.marginTop;
-        this.marginBottom = src.marginBottom;
-        this.marginLeft = src.marginLeft;
-        this.marginRight = src.marginRight;
-        this.defaultComponent = src.defaultComponent;
-        this.activated = src.activated;
-        this.activeTab = src.activeTab;
 
-        this.propertyElementClass = mapping.get(src.propertyElementClass);
-        this.showIf = mapping.get(src.showIf);
-        this.setContainer(mapping.get(src.getContainer()), mapping.version);
+        mapping.put(src, this);
+
+        design = src.design;
+        elementClass = src.elementClass;
+        width = src.width;
+        height = src.height;
+        span = src.span;
+        flex = src.flex;
+        alignment = src.alignment;
+        shrink = src.shrink;
+        alignShrink = src.alignShrink;
+        alignCaption = src.alignCaption;
+        overflowHorz = src.overflowHorz;
+        overflowVert = src.overflowVert;
+        captionVertical = src.captionVertical;
+        captionLast = src.captionLast;
+        captionAlignmentHorz = src.captionAlignmentHorz;
+        captionAlignmentVert = src.captionAlignmentVert;
+        marginTop = src.marginTop;
+        marginBottom = src.marginBottom;
+        marginLeft = src.marginLeft;
+        marginRight = src.marginRight;
+        defaultComponent = src.defaultComponent;
+        activated = src.activated;
+        activeTab = src.activeTab;
+
+        propertyElementClass = mapping.get(src.propertyElementClass);
+        showIf = mapping.get(src.showIf);
+        container.set(src.container, mapping::get, mapping.version);
     }
 }

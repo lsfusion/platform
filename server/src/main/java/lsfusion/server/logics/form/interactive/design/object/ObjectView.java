@@ -26,6 +26,8 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
         super(entity.getID(), entity.getSID());
 
         this.entity = entity;
+        this.entity.view = this;
+
         this.groupObject = groupTo;
     }
 
@@ -40,20 +42,19 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
         entity.baseClass.serialize(outStream);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        entity = pool.context.entity.getObject(ID);
-    }
-
     public void finalizeAroundInit() {
     }
 
     // copy-constructor
     public ObjectView(ObjectView src, ObjectMapping mapping) {
         super(src);
+
         mapping.put(src, this);
 
-        this.entity = mapping.get(src.entity);
-        this.groupObject = mapping.get(src.groupObject);
-        this.ID = entity.getID();
+        entity = mapping.get(src.entity);
+        entity.view = this;
+
+        groupObject = mapping.get(src.groupObject);
+        ID = entity.getID();
     }
 }

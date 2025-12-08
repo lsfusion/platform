@@ -22,7 +22,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,9 +48,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     private int ID;
 
-    public GroupObjectView() {
-    }
-
     public ObjectView getObjectView(ObjectEntity object) {
         for (ObjectView view : this) {
             if (view.entity.equals(object)) {
@@ -62,8 +58,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
-        this.idGen = idGen;
         this.entity = entity;
+        this.entity.view = this;
+
+        this.idGen = idGen;
 
         for (ObjectEntity object : this.entity.getObjects())
             add(new ObjectView(idGen, object, this));
@@ -190,21 +188,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         outStream.writeUTF(getSID());
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        entity = pool.context.entity.getGroupObject(ID);
-
-        pool.deserializeCollection(this, inStream);
-
-        grid = pool.deserializeObject(inStream);
-        toolbarSystem = pool.deserializeObject(inStream);
-        filtersContainer = pool.deserializeObject(inStream);
-        filterControls = pool.deserializeObject(inStream);
-        filters = NFFact.finalSet(pool.deserializeSet(inStream));
-        calculations = pool.deserializeObject(inStream);
-
-        needVerticalScroll = inStream.readBoolean();
-    }
-
     public void finalizeAroundInit() {
         grid.finalizeAroundInit();
         toolbarSystem.finalizeAroundInit();
@@ -217,25 +200,36 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
             object.finalizeAroundInit();
     }
 
+    public DefaultFormView.ContainerSet containers;
+
+    @Override
+    public DefaultFormView.ContainerSet getContainers() {
+        return containers;
+    }
+
     // copy-constructor
     public GroupObjectView(GroupObjectView src, ObjectMapping mapping) {
         mapping.put(src, this);
-        this.idGen = src.idGen;
-        this.needVerticalScroll = src.needVerticalScroll;
 
-        this.entity = mapping.get(src.entity);
-        this.ID = this.entity.getID();
-        this.grid = mapping.get(src.grid);
-        this.toolbarSystem = mapping.get(src.toolbarSystem);
-        this.filters = NFFact.orderSet();
-        for (FilterView f : src.getFilters()) {
-            this.filters.add(mapping.get(f), mapping.version);
-        }
-        this.filtersContainer = mapping.get(src.filtersContainer);
-        this.filterControls = mapping.get(src.filterControls);
-        this.calculations = mapping.get(src.calculations);
-        for(ObjectView objectView : src) {
-            this.add(mapping.get(objectView));
-        }
+        entity = mapping.get(src.entity);
+        entity.view = this;
+
+        idGen = src.idGen;
+        needVerticalScroll = src.needVerticalScroll;
+
+        ID = entity.getID();
+        grid = mapping.get(src.grid);
+        toolbarSystem = mapping.get(src.toolbarSystem);
+
+        filters.add(src.filters, mapping::get, mapping.version);
+
+        filtersContainer = mapping.get(src.filtersContainer);
+        filterControls = mapping.get(src.filterControls);
+        calculations = mapping.get(src.calculations);
+
+        for(ObjectView objectView : src)
+            add(mapping.get(objectView));
+
+        containers = new DefaultFormView.ContainerSet(src.containers, mapping);
     }
 }

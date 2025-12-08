@@ -58,36 +58,6 @@ public class ClientContainer extends ClientComponent {
     }
 
     @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        pool.serializeCollection(outStream, children);
-
-        pool.writeString(outStream, caption);
-        
-        outStream.writeBoolean(collapsible);
-        outStream.writeBoolean(popup);
-
-        pool.writeBoolean(outStream, horizontal);
-        pool.writeBoolean(outStream, tabbed);
-
-        pool.writeObject(outStream, childrenAlignment);
-        
-        outStream.writeBoolean(grid);
-        outStream.writeBoolean(wrap);
-        outStream.writeBoolean(alignCaptions);
-
-        outStream.writeInt(lines);
-        pool.writeInt(outStream, lineSize);
-        pool.writeInt(outStream, captionLineSize);
-        outStream.writeBoolean(lineShrink);
-
-        outStream.writeBoolean(isCustomDesign());
-        if (isCustomDesign())
-            pool.writeString(outStream, customDesign);
-    }
-
-    @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
@@ -114,7 +84,7 @@ public class ClientContainer extends ClientComponent {
         }
 
         childrenAlignment = pool.readObject(inStream);
-        
+
         grid = inStream.readBoolean();
         wrap = inStream.readBoolean();
         alignCaptions = pool.readObject(inStream);

@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 public class TreeGroupEntity extends IdentityObject {
@@ -52,14 +53,18 @@ public class TreeGroupEntity extends IdentityObject {
         this.groups = groups;
     }
 
+    public TreeGroupView view;
+
     // copy-constructor
     public TreeGroupEntity(TreeGroupEntity src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.plainTreeMode = src.plainTreeMode;
-        this.debugPoint = src.debugPoint;
 
-        this.groups = getGroups().mapOrderSetValues(mapping::get);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+        plainTreeMode = src.plainTreeMode;
+        debugPoint = src.debugPoint;
+
+        groups = getGroups().mapOrderSetValues(mapping::get);
     }
 }

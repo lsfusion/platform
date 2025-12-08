@@ -519,8 +519,9 @@ public class GFormController implements EditManager {
     }
 
     private void initializeFormSchedulers() {
-        for(GFormScheduler formScheduler : form.formSchedulers) {
-            scheduleFormScheduler(formScheduler);
+        for(GFormEvent formEvent : form.asyncExecMap.keySet()) {
+            if(formEvent instanceof GFormScheduler)
+                scheduleFormScheduler((GFormScheduler) formEvent);
         }
     }
 

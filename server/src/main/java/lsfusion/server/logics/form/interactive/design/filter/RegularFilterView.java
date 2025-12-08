@@ -35,16 +35,14 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
         outStream.writeBoolean(entity.showMouse);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) {
-        entity = pool.context.entity.getRegularFilter(ID);
-    }
-
     // copy-constructor
     public RegularFilterView(RegularFilterView src, ObjectMapping mapping) {
         super(src);
-        mapping.put(src, this);
-        this.ID = BaseLogicsModule.generateStaticNewID();
 
-        this.entity = mapping.get(src.entity);
+        mapping.put(src, this);
+
+        ID = BaseLogicsModule.generateStaticNewID();
+
+        entity = mapping.get(src.entity);
     }
 }

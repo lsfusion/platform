@@ -16,9 +16,9 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
-    import lsfusion.interop.form.event.FormChangeEvent;
-    import lsfusion.interop.form.event.FormContainerEvent;
-    import lsfusion.interop.form.event.FormScheduler;
+    import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
+    import lsfusion.server.logics.form.interactive.event.FormContainerEvent;
+    import lsfusion.server.logics.form.interactive.event.FormServerScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PivotOptions;
@@ -73,6 +73,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+    import lsfusion.server.logics.form.interactive.event.FormServerEvent;
+    import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -1218,7 +1220,7 @@ formHintsList
 formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
-	List<Object> types = new ArrayList<>();
+	List<FormServerEvent> types = new ArrayList<>();
 	List<Boolean> replaces = new ArrayList<>();
 }
 @after {
@@ -1232,7 +1234,7 @@ formEventsList
 	;
 
 
-formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean replace = null]
+formEventDeclaration returns [ActionObjectEntity action, FormServerEvent type, Boolean replace = null]
 @init {
     Boolean before = null;
 }
@@ -1246,22 +1248,22 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
-		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
-		| 	schedule = scheduleEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
+		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.component, $containerEvent.collapse); }
+		| 	schedule = scheduleEventDeclaration { $type = new FormServerScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
 
-changeEventDeclaration returns [Object type]
+changeEventDeclaration returns [FormServerEvent type]
 @init {
     Boolean before = null;
 }
     :
-    'CHANGE' objectId=ID { $type = $objectId.text; }
+    'CHANGE' objectId=ID { $type = new ObjectEventObject($objectId.text); }
     |
     'CHANGE'? (
-        ('OBJECT' objectId=ID { $type = $objectId.text; }
+        ('OBJECT' objectId=ID { $type = new ObjectEventObject($objectId.text); }
         |  'FILTER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.FILTER); }
         |  'ORDER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.ORDER); }
         |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER); }
@@ -1273,11 +1275,21 @@ changeEventDeclaration returns [Object type]
      )
     ;
 
-formContainerEventDeclaration returns [String sid, boolean collapse = false]
+formContainerEventDeclaration returns [ComponentView component, boolean collapse = false]
+@init {
+	ScriptingFormView formView = null;
+}
     :   ('COLLAPSE' { $collapse = true; } | 'EXPAND' | 'TAB')
-        (   obj=ID { $sid = $obj.text; }
-        |   comp=formContainersComponentSelector { $sid = $comp.sid; }
-        )
+        {
+            if(inMainParseState()) {
+                formView = self.getFormDesign($formStatement::form.getForm());
+            }
+        }
+        comp=formComponentSelector[formView] {
+            if (inMainParseState()) {
+                $component = $comp.component;
+            }
+        }
     ;
 
 scheduleEventDeclaration returns [int period, boolean fixed]
@@ -1478,7 +1490,7 @@ pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new
 	;
 
 pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
-    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=ID { property = new PivotColumn($group.text); } ')'
+    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=formGroupObjectEntity { property = new PivotColumn($group.groupObject); } ')'
     ;
 
 ////////////////////////////////////////////////////////////////////////////////

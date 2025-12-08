@@ -21,9 +21,6 @@ public class ClientObject extends IdentityObject implements ClientIdentitySerial
 
     public ClientClass baseClass;
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         groupObject = pool.deserializeObject(inStream);
 

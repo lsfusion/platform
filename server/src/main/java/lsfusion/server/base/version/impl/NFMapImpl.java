@@ -6,7 +6,10 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFMapAdd;
 import lsfusion.server.base.version.impl.changes.NFMapChange;
+import lsfusion.server.base.version.impl.changes.NFMapCopy;
 import lsfusion.server.base.version.interfaces.NFMap;
+
+import java.util.function.Function;
 
 public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>> implements NFMap<K, V> {
 
@@ -19,7 +22,7 @@ public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>
             return result;
 
         final MMap<K, V> mMap = MapFact.mMap(MapFact.override());
-        proceedChanges(change -> change.proceedMap(mMap), version);
+        proceedChanges(change -> change.proceedMap(mMap, version), version);
 
         return mMap.immutable();
     }
@@ -34,6 +37,11 @@ public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>
 
     public void add(K key, V value, Version version) {
         addChange(new NFMapAdd<>(key, value), version);
+    }
+
+    @Override
+    public void add(NFMap<K, V> map, Function<V, V> mapping, Version version) {
+        addChange(new NFMapCopy<>(map, mapping), version);
     }
 
     @Override
