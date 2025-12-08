@@ -118,9 +118,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private Pair<Integer, Integer> scriptIndex;
     
-    public LocalizedString initCaption = null;
-    public String initImage = null;
-
     public boolean ignoreHasHeaders = false; // hack for property count property
     
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
@@ -1096,8 +1093,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         sync = src.sync;
         formPath =  src.formPath;
         scriptIndex = src.scriptIndex;
-        initCaption = src.initCaption;
-        initImage = src.initImage;
         ignoreHasHeaders = src.ignoreHasHeaders;
         columnsName =  src.columnsName;
         group = src.group;

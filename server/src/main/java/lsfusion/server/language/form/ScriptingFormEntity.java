@@ -474,15 +474,15 @@ public class ScriptingFormEntity {
             // Добавляем PropertyDrawView в FormView, если он уже был создан
             PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
 
-            LocalizedString caption = captions.get(i);
-            String appImage = propertyOptions.getAppImage();
             if(view != null) {
-                view.caption = caption;
+                Boolean filter = propertyOptions.getFilter();
+                if(filter != null && filter) // have to do it after adding property draw view (because it uses it)
+                    form.addUserFilter(propertyDraw, version);
+
+                view.caption = captions.get(i);
+                String appImage = propertyOptions.getAppImage();
                 if(appImage != null)
                     view.setImage(appImage);
-            } else {
-                propertyDraw.initCaption = caption;
-                propertyDraw.initImage = appImage;
             }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
@@ -682,10 +682,6 @@ public class ScriptingFormEntity {
         Boolean descending = options.getDescending();
         if(descending != null)
             form.addDefaultOrder(property, descending, version);
-
-        Boolean filter = options.getFilter();
-        if(filter != null && filter)
-            form.addUserFilter(property, version);
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)

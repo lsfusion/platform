@@ -127,7 +127,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public TreeGroupView get(TreeGroupEntity treeGroup) { return treeGroup.view; }
     public GroupObjectView get(GroupObjectEntity groupObject) { return groupObject.view; }
     public ObjectView get(ObjectEntity object) { return object.view; }
-    public PropertyDrawView get(PropertyDrawEntity property) { return property != null ? property.view : null; }
+    public PropertyDrawView get(PropertyDrawEntity property) { return property.view; }
     public FilterView getFilter(PropertyDrawEntity property) { return property.view.filter; }
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return filterGroup.view; }
 
@@ -174,9 +174,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
-        if (filterProperty.view.filter == null) {
+        PropertyDrawView propertyDrawView = get(filterProperty);
+        if (propertyDrawView.filter == null) {
             GroupObjectEntity groupObjectEntity = filterProperty.getNFToDraw(entity, version);
-            PropertyDrawView propertyDrawView = get(filterProperty);
             if (groupObjectEntity.isInTree()) {
                 get(groupObjectEntity.treeGroup).addFilter(propertyDrawView, version);
             } else {

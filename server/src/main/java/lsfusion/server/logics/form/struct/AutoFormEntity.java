@@ -9,6 +9,8 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
@@ -30,8 +32,12 @@ public abstract class AutoFormEntity extends FormEntity {
         PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, SetFact.singletonOrder(object));
         if(valueProp.second != null)
             propertyDraw.setSelectorAction(valueProp.second, version);
-        // assert that there is no richDesign / FormView yet
-        propertyDraw.initCaption = LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
+
+        FormView view = getNFRichDesign(version);
+        if(view != null) { // if !needDesign there is no view
+            PropertyDrawView propertyDrawView = view.get(propertyDraw);
+            propertyDrawView.caption = LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
+        }
         return propertyDraw;
     }
 

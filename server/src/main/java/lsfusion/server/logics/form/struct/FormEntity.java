@@ -250,11 +250,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
     }
 
-    public NFOrderSet<PropertyDrawEntity> userFilters = NFFact.orderSet();
-    public Iterable<PropertyDrawEntity> getUserFiltersIt(Version version) {
-        return userFilters.getNFListIt(version);
-    }
-
     private NFOrderMap<PropertyDrawEntity<?>,Boolean> defaultOrders = NFFact.orderMap();
     public ImOrderMap<PropertyDrawEntity<?>,Boolean> getDefaultOrdersList() {
         return defaultOrders.getListMap();
@@ -1336,7 +1331,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         propertyDraws.finalizeChanges();
         fixedFilters.finalizeChanges();
         eventActions.finalizeChanges();
-        userFilters.finalizeChanges();
         defaultOrders.finalizeChanges();
         fixedOrders.finalizeChanges();
         
@@ -1580,8 +1574,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     
     public void addUserFilter(PropertyDrawEntity property, Version version) {
-        userFilters.add(property, version);
-        
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addFilter(property, version);
@@ -1827,8 +1819,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         fixedFilters.add(src.fixedFilters, mapping::get, mapping.version);
 
         regularFilterGroups.add(src.regularFilterGroups, mapping::get, mapping.version);
-
-        userFilters.add(src.userFilters, mapping::get, mapping.version);
 
         defaultOrders.add(src.defaultOrders, mapping::get, mapping.version);
 
