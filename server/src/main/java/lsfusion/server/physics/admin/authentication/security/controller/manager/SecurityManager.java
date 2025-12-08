@@ -34,7 +34,6 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.LDAPAuthenticationService;
-import lsfusion.server.physics.admin.authentication.LDAPParameters;
 import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.policy.RoleSecurityPolicy;
@@ -48,12 +47,20 @@ import org.springframework.util.Assert;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.naming.CommunicationException;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.trim;
@@ -325,27 +332,41 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (authentication instanceof PasswordAuthentication) {
                 String password = ((PasswordAuthentication) authentication).getPassword();
 
+                boolean useDefaultAuthentication = true;
+                String ldapException = null;
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
-                    Integer port = (Integer) authenticationLM.portLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
-                    String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
+                    boolean useServiceUser = authenticationLM.useServiceUser.read(session) != null;
+                    useDefaultAuthentication = authenticationLM.useDefaultAuthentication.read(session) != null;
                     try {
-                        LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(userName, password);
+                        if (useServiceUser && !krbProps)
+                            setKrbProps(server, LDAPAuthenticationService.getRealm(baseDN));
 
-                        if(!ldapParameters.isConnected())
-                            throw new LoginException();
-                        userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), false, ldapParameters.getAttributes());
-                    } catch (CommunicationException e) {
-                        systemLogger.error("LDAP authentication failed", e);
+                        Subject subject = getSubject(session, userName, password, server, baseDN, useServiceUser);
+                        Map<String, Object> userPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserPrincipal.class).stream()
+                                .collect(Collectors.toMap(LDAPAuthenticationService.UserPrincipal::getName, LDAPAuthenticationService.UserPrincipal::getValue));
+
+                        Map<String, String> userAttributesPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserAttributePrincipal.class).stream()
+                                .collect(Collectors.toMap(LDAPAuthenticationService.UserAttributePrincipal::getName, LDAPAuthenticationService.UserAttributePrincipal::getValue));
+
+                        userObjectAndLogin = initAndUpdateUser(session, stack, userName, () -> password,
+                                (String) userPrincipals.get("firstName"), (String) userPrincipals.get("lastName"),
+                                (String) userPrincipals.get("email"), (List<String>) userPrincipals.get("groupNames"),
+                                false, userAttributesPrincipals);
+                    } catch (javax.security.auth.login.LoginException e) {
+                        String errorMessage = "LDAP authentication failed";
+                        systemLogger.error(errorMessage, e);
+                        ldapException = errorMessage + ", " + e.getMessage();
                     }
                 }
 
                 if(userObjectAndLogin == null) {
-                    userObjectAndLogin = readUser(userName, userName, session);
+                    if (useDefaultAuthentication)
+                        userObjectAndLogin = readUser(userName, userName, session);
 
                     if (userObjectAndLogin == null || userObjectAndLogin.second == null || !authenticationLM.checkPassword(session, userObjectAndLogin.first, password))
-                        throw new LoginException();
+                        throw ldapException == null ? new LoginException() : new LoginException(ldapException);
                 }
             } else {
                 OAuth2Authentication oauth2 = (OAuth2Authentication) authentication;
@@ -365,6 +386,57 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private boolean krbProps = false;
+    private void setKrbProps(String server, String realm) {
+        System.setProperty("java.security.krb5.realm", realm);
+        System.setProperty("java.security.krb5.kdc", server);
+        System.setProperty("java.security.auth.login.config", "");
+
+        krbProps = true;
+    }
+
+    private Subject getSubject(DataSession session, String userName, String password, String server, String baseDN, boolean useServiceUser) throws javax.security.auth.login.LoginException, SQLException, SQLHandledException {
+        Integer port = (Integer) authenticationLM.portLDAP.read(session);
+        String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
+        String serviceUser = (String) authenticationLM.serviceUser.read(session);
+        String serviceUserPassword = (String) authenticationLM.serviceUserPassword.read(session);
+
+        Configuration config = new Configuration() {
+            @Override
+            public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                Map<String, Object> opts = new HashMap<>();
+                opts.put("server", server);
+                opts.put("port", port);
+                opts.put("userDNSuffix", userDNSuffix.toUpperCase());
+                opts.put("baseDN", baseDN);
+                opts.put("useServiceUser", useServiceUser);
+                opts.put("serviceUser", serviceUser);
+                opts.put("serviceUserPassword", serviceUserPassword);
+                return new AppConfigurationEntry[]{
+                        new AppConfigurationEntry(
+                                LDAPAuthenticationService.class.getName(),
+                                AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                opts
+                        )
+                };
+            }
+        };
+
+        CallbackHandler handler = callbacks -> {
+            for (Callback cb : callbacks) {
+                if (cb instanceof NameCallback)
+                    ((NameCallback) cb).setName(userName);
+                else if (cb instanceof PasswordCallback)
+                    ((PasswordCallback) cb).setPassword(password.toCharArray());
+            }
+        };
+
+        LoginContext lc = new LoginContext("LdapLogin", null, handler, config);
+        lc.login();
+
+        return lc.getSubject();
     }
 
     public SecurityPolicy getSecurityPolicy(DataSession session, DataObject userObject) {
