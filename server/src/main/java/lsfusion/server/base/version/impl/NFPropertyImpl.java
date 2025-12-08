@@ -61,7 +61,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
         if(setChanges instanceof NFList) {
             changes.add((NFList<K>)setChanges, mapping, version);
         } else
-            changes.add((K)setChanges, version);
+            changes.add(mapping.apply((K)setChanges), version);
     }
 
     public K get() {
