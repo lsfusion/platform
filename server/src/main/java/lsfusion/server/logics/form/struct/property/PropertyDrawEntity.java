@@ -1108,13 +1108,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         remapped = true;
         actionOrProperty = mapping.get(src.actionOrProperty);
-        toDraw = mapping.get(src.toDraw);
+        toDraw = src.toDraw != null ? mapping.get(src.toDraw) : null;
         columnGroupObjects = src.columnGroupObjects.mapOrderSetValues(mapping::get);
         propertyExtras.add(src.propertyExtras, mapping::get, mapping.version);
         eventActions.add(src.eventActions, mapping::get, mapping.version);
         formulaOperands = src.formulaOperands != null ? src.formulaOperands.mapListValues(mapping::get) : null;
         lastAggrColumns = src.lastAggrColumns.mapListValues(mapping::get);
-        quickFilterProperty = mapping.get(src.quickFilterProperty);
+        quickFilterProperty = src.quickFilterProperty != null ? mapping.get(src.quickFilterProperty) : null;
         cellProperty = mapping.get(src.cellProperty);
     }
 

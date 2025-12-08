@@ -637,7 +637,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         component.removeFromParent(version);
     }
 
-    public void addForm(FormView src, ObjectMapping mapping, Version version) {
+    public void addForm(FormView src, ObjectMapping mapping) {
         copy(src, mapping);
     }
     public void copy(FormView src, ObjectMapping mapping) {

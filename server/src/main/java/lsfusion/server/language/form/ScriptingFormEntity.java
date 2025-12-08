@@ -91,7 +91,7 @@ public class ScriptingFormEntity {
 
     public void addScriptingForms(List<String> forms) throws ScriptingErrorLog.SemanticErrorException {
         for (String f : forms) {
-            form.addForm(LM.findForm(f), new ObjectMapping(LM.getVersion()), LM.getVersion());
+            form.addForm(LM.findForm(f), new ObjectMapping(LM.getVersion()));
         }
     }
 

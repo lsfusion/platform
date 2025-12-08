@@ -67,9 +67,9 @@ public class ObjectMapping {
     public void put(ActionObjectEntity key, ActionObjectEntity value) {
         actionObjectEntityMap.put(key, value);
     }
-    public ActionObjectEntity get(ActionObjectEntity actionObjectEntity) {
+    public synchronized ActionObjectEntity get(ActionObjectEntity actionObjectEntity) {
         ActionObjectEntity result = actionObjectEntityMap.get(actionObjectEntity);
-        if (result == null && actionObjectEntity != null) {
+        if (result == null) {
             result = new ActionObjectEntity(actionObjectEntity, this);
         }
         return result;
@@ -78,9 +78,9 @@ public class ObjectMapping {
     public void put(ObjectEntity key, ObjectEntity value) {
         objectEntityMap.put(key, value);
     }
-    public ObjectEntity get(ObjectEntity objectEntity) {
+    public synchronized ObjectEntity get(ObjectEntity objectEntity) {
         ObjectEntity result = objectEntityMap.get(objectEntity);
-        if (result == null && objectEntity != null) {
+        if (result == null) {
             result = new ObjectEntity(objectEntity, this);
         }
         return result;
@@ -89,9 +89,9 @@ public class ObjectMapping {
     public void put(GroupObjectEntity key, GroupObjectEntity value) {
         groupObjectEntityMap.put(key, value);
     }
-    public GroupObjectEntity get(GroupObjectEntity groupObjectEntity) {
+    public synchronized GroupObjectEntity get(GroupObjectEntity groupObjectEntity) {
         GroupObjectEntity result = groupObjectEntityMap.get(groupObjectEntity);
-        if (result == null &&  groupObjectEntity != null) {
+        if (result == null) {
             result = new GroupObjectEntity(groupObjectEntity,  this);
         }
         return result;
@@ -100,9 +100,9 @@ public class ObjectMapping {
     public void put(PropertyDrawEntity key, PropertyDrawEntity value) {
         propertyDrawEntityMap.put(key, value);
     }
-    public PropertyDrawEntity get(PropertyDrawEntity propertyDrawEntity) {
+    public synchronized PropertyDrawEntity get(PropertyDrawEntity propertyDrawEntity) {
         PropertyDrawEntity result = propertyDrawEntityMap.get(propertyDrawEntity);
-        if (result == null && propertyDrawEntity != null) {
+        if (result == null) {
             result = new PropertyDrawEntity(propertyDrawEntity,  this);
         }
         return result;
@@ -111,9 +111,12 @@ public class ObjectMapping {
     public void put(PropertyObjectEntity key, PropertyObjectEntity value) {
         propertyObjectEntityMap.put(key, value);
     }
-    public PropertyObjectEntity get(PropertyObjectEntity propertyObjectEntity) {
+    public synchronized PropertyObjectEntity get(PropertyObjectEntity propertyObjectEntity) {
+        if(propertyObjectEntity == null)
+            return null;
+
         PropertyObjectEntity result = propertyObjectEntityMap.get(propertyObjectEntity);
-        if (result == null &&  propertyObjectEntity != null) {
+        if (result == null) {
             result = new PropertyObjectEntity(propertyObjectEntity, this);
         }
         return result;
@@ -122,9 +125,9 @@ public class ObjectMapping {
     public void put(FilterEntity key, FilterEntity value) {
         filterEntityMap.put(key, value);
     }
-    public FilterEntity get(FilterEntity filterEntity) {
+    public synchronized FilterEntity get(FilterEntity filterEntity) {
         FilterEntity result = filterEntityMap.get(filterEntity);
-        if (result == null && filterEntity != null) {
+        if (result == null) {
             result = new FilterEntity(filterEntity, this);
         }
         return result;
@@ -133,9 +136,9 @@ public class ObjectMapping {
     public void put(RegularFilterEntity key, RegularFilterEntity value) {
         regularFilterEntityMap.put(key, value);
     }
-    public RegularFilterEntity get(RegularFilterEntity regularFilterEntity) {
+    public synchronized RegularFilterEntity get(RegularFilterEntity regularFilterEntity) {
         RegularFilterEntity result = regularFilterEntityMap.get(regularFilterEntity);
-        if (result == null && regularFilterEntity != null) {
+        if (result == null) {
             result = new RegularFilterEntity(regularFilterEntity, this);
         }
         return result;
@@ -144,9 +147,9 @@ public class ObjectMapping {
     public void put(RegularFilterGroupEntity key, RegularFilterGroupEntity value) {
         regularFilterGroupEntityMap.put(key, value);
     }
-    public RegularFilterGroupEntity get(RegularFilterGroupEntity regularFilterGroupEntity) {
+    public synchronized RegularFilterGroupEntity get(RegularFilterGroupEntity regularFilterGroupEntity) {
         RegularFilterGroupEntity result = regularFilterGroupEntityMap.get(regularFilterGroupEntity);
-        if (result == null &&  regularFilterGroupEntity != null) {
+        if (result == null) {
             result = new RegularFilterGroupEntity(regularFilterGroupEntity, this);
         }
         return result;
@@ -155,9 +158,9 @@ public class ObjectMapping {
     public void put(TreeGroupEntity key, TreeGroupEntity value) {
         treeGroupEntityMap.put(key, value);
     }
-    public TreeGroupEntity get(TreeGroupEntity treeGroupEntity) {
+    public synchronized TreeGroupEntity get(TreeGroupEntity treeGroupEntity) {
         TreeGroupEntity result = treeGroupEntityMap.get(treeGroupEntity);
-        if (result == null &&  treeGroupEntity != null) {
+        if (result == null) {
             result = new TreeGroupEntity(treeGroupEntity, this);
         }
         return result;
@@ -196,9 +199,9 @@ public class ObjectMapping {
     public void put(ObjectView key, ObjectView value) {
         objectViewMap.put(key, value);
     }
-    public ObjectView get(ObjectView objectView) {
+    public synchronized ObjectView get(ObjectView objectView) {
         ObjectView result = objectViewMap.get(objectView);
-        if (result == null && objectView != null) {
+        if (result == null) {
             result = new ObjectView(objectView, this);
         }
         return result;
@@ -207,9 +210,9 @@ public class ObjectMapping {
     public void put(GroupObjectView key, GroupObjectView value) {
         groupObjectViewMap.put(key, value);
     }
-    public GroupObjectView get(GroupObjectView groupObjectView) {
+    public synchronized GroupObjectView get(GroupObjectView groupObjectView) {
         GroupObjectView result = groupObjectViewMap.get(groupObjectView);
-        if (result == null &&  groupObjectView != null) {
+        if (result == null) {
             result = new GroupObjectView(groupObjectView, this);
         }
         return result;
@@ -218,9 +221,9 @@ public class ObjectMapping {
     public void put(RegularFilterView key, RegularFilterView value) {
         regularFilterViewMap.put(key, value);
     }
-    public RegularFilterView get(RegularFilterView regularFilterView) {
+    public synchronized RegularFilterView get(RegularFilterView regularFilterView) {
         RegularFilterView result = regularFilterViewMap.get(regularFilterView);
-        if (result == null &&   regularFilterView != null) {
+        if (result == null) {
             result = new RegularFilterView(regularFilterView, this);
         }
         return result;
@@ -229,9 +232,12 @@ public class ObjectMapping {
     public void put(ComponentView key, ComponentView value) {
         componentViewMap.put(key, value);
     }
-    public <T extends ComponentView> T get(T componentView) {
+    public synchronized <T extends ComponentView> T get(T componentView) {
+        if(componentView == null)
+            return null;
+
         ComponentView result = componentViewMap.get(componentView);
-        if (result == null && componentView != null) {
+        if (result == null) {
             if(componentView instanceof CalculationsView)
                 result = new CalculationsView((CalculationsView) componentView, this);
             else if (componentView instanceof FilterControlsView)

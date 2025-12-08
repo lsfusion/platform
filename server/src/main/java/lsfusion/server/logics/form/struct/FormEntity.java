@@ -1799,12 +1799,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public void addForm(FormEntity src, ObjectMapping mapping, Version version) {
+    public void addForm(FormEntity src, ObjectMapping mapping) {
         copy(src, mapping);
 
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = getNFRichDesign(mapping.version);
         if (richDesign != null) {
-            richDesign.addForm(src.richDesign, mapping, version);
+            richDesign.addForm(src.richDesign, mapping);
         }
     }
     public void copy(FormEntity src, ObjectMapping mapping) {
