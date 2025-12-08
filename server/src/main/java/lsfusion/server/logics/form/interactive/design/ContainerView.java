@@ -10,6 +10,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -24,6 +25,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ContainerView extends ComponentView {
 
@@ -33,7 +36,6 @@ public class ContainerView extends ComponentView {
     public String name; // actually used only for icons
     public AppServerImage.Reader image;
 
-    public String captionClass;
     public String valueClass;
 
     public void setImage(String imagePath, FormView formView) {
@@ -91,6 +93,8 @@ public class ContainerView extends ComponentView {
 
     // temp hack ???
     public GridView recordContainer;
+
+    public Map<String, NFProperty> options = new LinkedHashMap<>();
 
     public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
         if(addOrMoveChecked(component, location, version) != null)
@@ -494,7 +498,7 @@ public class ContainerView extends ComponentView {
         pool.writeString(outStream, name); // optimization
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
-        pool.writeString(outStream, captionClass);
+        pool.writeString(outStream, getCaptionClass());
         pool.writeString(outStream, valueClass);
 
         outStream.writeBoolean(isCollapsible());
@@ -531,6 +535,19 @@ public class ContainerView extends ComponentView {
             pool.writeString(outStream, customDesign);
     }
 
+    public String getCaptionClass() {
+        NFProperty<String> property = options.get("captionClass");
+        return property != null ? property.get() : null;
+    }
+    public void setCaptionClass(String captionClass) {
+        NFProperty<String> property = options.get("captionClass");
+        if(property == null) {
+            property = NFFact.property();
+            options.put("captionClass", property);
+        }
+        property.set(captionClass, Version.current());
+    }
+
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
@@ -562,7 +579,6 @@ public class ContainerView extends ComponentView {
         caption = src.caption;
         name = src.name;
         image = src.image;
-        captionClass = src.captionClass;
         valueClass = src.valueClass;
         collapsible = src.collapsible;
         popup = src.popup;
@@ -587,6 +603,9 @@ public class ContainerView extends ComponentView {
         children.add(src.children, mapping::get, mapping.version);
 
         recordContainer = mapping.get(src.recordContainer);
+
+        this.options.putAll(src.options);
+
         propertyCaption = mapping.get(src.propertyCaption);
         propertyCaptionClass = mapping.get(src.propertyCaptionClass);
         propertyValueClass = mapping.get(src.propertyValueClass);
