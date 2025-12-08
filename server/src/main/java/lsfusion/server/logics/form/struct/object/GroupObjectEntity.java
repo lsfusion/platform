@@ -453,7 +453,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         for(ObjectEntity e : src.getOrderObjects())
             add(mapping.get(e));
 
-        treeGroup = mapping.get(src.treeGroup);
+        treeGroup = src.treeGroup != null ? mapping.get(src.treeGroup) : null;
         reportPathProp = mapping.get(src.reportPathProp);
         propertyCustomOptions = mapping.get(src.propertyCustomOptions);
         propertyBackground = mapping.get(src.propertyBackground);
