@@ -67,7 +67,7 @@ public class RegularFilterGroupView extends BaseComponentView {
         entity = mapping.get(src.entity);
         entity.view = this;
 
-        ID = BaseLogicsModule.generateStaticNewID();
+        ID = entity.ID;
 
         filters.add(src.filters, mapping::get, mapping.version);
     }
