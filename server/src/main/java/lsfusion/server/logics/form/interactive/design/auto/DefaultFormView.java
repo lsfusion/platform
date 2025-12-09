@@ -213,7 +213,7 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
         setupFormButton(refreshFunction, version);
-        refreshFunction.drawAsync = true;
+        refreshFunction.setDrawAsync(true, version);
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
         setupFormButton(applyFunction, version);
@@ -272,9 +272,9 @@ public class DefaultFormView extends FormView {
     }
 
     private void setupFormButton(PropertyDrawView action, Version version) {
-        action.showChangeKey = false;
-        action.showChangeMouse = false;
-        action.focusable = false;
+        action.setShowChangeKey(false, version);
+        action.setShowChangeMouse(false, version);
+        action.setFocusable(false, version);
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH, version);
     }
@@ -326,7 +326,7 @@ public class DefaultFormView extends FormView {
         PropertyDrawView view = super.addPropertyDraw(propertyDraw, location, version);
 
         PropertyDrawEntity drawEntity = view.entity;
-        drawEntity.proceedDefaultDesign(view, this);
+        drawEntity.proceedDefaultDesign(view, this, version);
 
         ContainerView propertyContainer;
         if (view.entity.isToolbar(entity)) {

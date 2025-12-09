@@ -689,7 +689,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
         void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version);
-        void proceedDefaultDesign(PropertyDrawView propertyView);
+        void proceedDefaultDesign(PropertyDrawView propertyView, Version version);
     }
 
     // + caption, который одновременно и draw и не draw
@@ -749,48 +749,48 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 processor.proceedDefaultDraw(entity, form, version);
         }
 
-        public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.charWidth == null)
-                propertyView.setCharWidth(charWidth);
-            if(propertyView.getValueFlex() == null)
-                propertyView.setValueFlex(valueFlex);
-            if(propertyView.valueWidth == null)
-                propertyView.setValueWidth(valueWidth);
-            if(propertyView.valueHeight == null)
-                propertyView.setValueHeight(valueHeight);
-            if(propertyView.captionWidth == null)
-                propertyView.setCaptionWidth(captionWidth);
-            if(propertyView.captionHeight == null)
-                propertyView.setCaptionHeight(captionHeight);
-            if (propertyView.changeKey == null)
-                propertyView.changeKey = changeKey;
-            if (propertyView.showChangeKey == null)
-                propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
-            if (propertyView.changeMouse == null)
-                propertyView.changeMouse = changeMouse;
-            if (propertyView.showChangeMouse == null)
-                propertyView.showChangeMouse = BaseUtils.nvl(showChangeMouse, true);
+        public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
+            if(propertyView.getCharWidthNF(version) == null)
+                propertyView.setCharWidth(charWidth, version);
+            if(propertyView.getValueFlexNF(version) == null)
+                propertyView.setValueFlex(valueFlex, version);
+            if(propertyView.getValueWidthNF(version) == null)
+                propertyView.setValueWidth(valueWidth, version);
+            if(propertyView.getValueHeightNF(version) == null)
+                propertyView.setValueHeight(valueHeight, version);
+            if(propertyView.getCaptionWidthNF(version) == null)
+                propertyView.setCaptionWidth(captionWidth, version);
+            if(propertyView.getCaptionHeightNF(version) == null)
+                propertyView.setCaptionHeight(captionHeight, version);
+            if (propertyView.getChangeKeyNF(version) == null)
+                propertyView.setChangeKey(changeKey, version);
+            if (propertyView.getShowChangeKeyNF(version) == null)
+                propertyView.setShowChangeKey(BaseUtils.nvl(showChangeKey, true), version);
+            if (propertyView.getChangeMouseNF(version) == null)
+                propertyView.setChangeMouse(changeMouse, version);
+            if (propertyView.getShowChangeMouseNF(version) == null)
+                propertyView.setShowChangeMouse(BaseUtils.nvl(showChangeMouse, true), version);
 
-            if(propertyView.pattern == null)
-                propertyView.pattern = pattern;
-            if(propertyView.regexp == null)
-                propertyView.regexp = regexp;
-            if(propertyView.regexpMessage == null)
-                propertyView.regexpMessage = regexpMessage;
+            if(propertyView.getPatternNF(version) == null)
+                propertyView.setPattern(pattern, version);
+            if(propertyView.getRegexpNF(version) == null)
+                propertyView.setRegexp(regexp, version);
+            if(propertyView.getRegexpMessageNF(version) == null)
+                propertyView.setRegexpMessage(regexpMessage, version);
 
-            if (propertyView.echoSymbols == null)
-                propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
+            if (propertyView.getEchoSymbolsNF(version) == null)
+                propertyView.setEchoSymbols(BaseUtils.nvl(echoSymbols, false), version);
             
-            if(propertyView.defaultCompare == null)
-                propertyView.defaultCompare = defaultCompare;
+            if(propertyView.getDefaultCompareNF(version) == null)
+                propertyView.setDefaultCompare(defaultCompare, version);
 
-            if(propertyView.sticky == null)
-                propertyView.sticky = sticky;
-            if(propertyView.sync == null)
-                propertyView.sync = sync;
+            if(propertyView.getStickyNF(version) == null)
+                propertyView.setSticky(sticky, version);
+            if(propertyView.getSyncNF(version) == null)
+                propertyView.setSync(sync, version);
 
             for(DefaultProcessor processor : processors)
-                processor.proceedDefaultDesign(propertyView);
+                processor.proceedDefaultDesign(propertyView, version);
         }
         
         public void inheritDrawOptions(DrawOptions options) {

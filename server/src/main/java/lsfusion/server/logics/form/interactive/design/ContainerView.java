@@ -161,21 +161,6 @@ public class ContainerView extends ComponentView {
         this.main = main;
     }
 
-    public boolean isCollapsible() {
-        Boolean collapsible = getCollapsible();
-        if(collapsible != null)
-            return collapsible;
-
-        if(Settings.get().isDisableCollapsibleContainers())
-            return false;
-
-        return isDefaultCollapsible();
-    }
-
-    protected boolean isDefaultCollapsible() {
-        return hasCaption();
-    }
-
     private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(getCaption(), propertyCaption, null);
     }
@@ -425,6 +410,9 @@ public class ContainerView extends ComponentView {
     public AppServerImage.Reader getImage() {
         return image.get();
     }
+    public AppServerImage.Reader getImageNF(Version version) {
+        return image.getNF(version);
+    }
     public void setName(AppServerImage.Reader value, Version version) {
         image.set(value, version);
     }
@@ -450,8 +438,28 @@ public class ContainerView extends ComponentView {
         captionClass.set(value, version);
     }
 
-    public Boolean getCollapsible() {
-        return collapsible.get();
+    public boolean isCollapsible() {
+        Boolean collapsibleValue = collapsible.get();
+        if(collapsibleValue != null)
+            return collapsibleValue;
+
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
+        return isDefaultCollapsible();
+    }
+    public boolean isCollapsibleNF(Version version) {
+        Boolean collapsibleValue = collapsible.getNF(version);
+        if(collapsibleValue != null)
+            return collapsibleValue;
+
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
+        return isDefaultCollapsible();
+    }
+    protected boolean isDefaultCollapsible() {
+        return hasCaption();
     }
     public void setCollapsible(Boolean value, Version version) {
         collapsible.set(value, version);
@@ -476,7 +484,8 @@ public class ContainerView extends ComponentView {
         return nvl(collapsed.get(), false);
     }
     public void setCollapsed(boolean value, Version version) {
-        collapsed.set(value, version);
+        if(isCollapsibleNF(version))
+            collapsed.set(value, version);
     }
 
     public boolean isHorizontal() {

@@ -73,8 +73,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     @SuppressWarnings("unused")
     public void setCollapsed(boolean collapsed) {
-        if(target.isCollapsible())
-            target.setCollapsed(collapsed, getVersion());
+        target.setCollapsed(collapsed, getVersion());
     }
 
     @SuppressWarnings("unused")

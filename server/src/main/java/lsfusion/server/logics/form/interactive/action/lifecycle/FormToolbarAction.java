@@ -40,14 +40,14 @@ public abstract class FormToolbarAction extends InternalAction {
                     entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
                 }
             }
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
                 if (!isShowCaption()) {
-                    propertyView.caption = LocalizedString.NONAME;
+                    propertyView.setCaption(LocalizedString.NONAME, version);
                 }
 
                 String valueElementClass = getValueElementClass();
                 if(valueElementClass != null)
-                    propertyView.valueElementClass = valueElementClass;
+                    propertyView.setValueElementClass(valueElementClass, version);
             }
         });
     }

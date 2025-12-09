@@ -107,7 +107,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             }
 
             @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
             }
         });
     }

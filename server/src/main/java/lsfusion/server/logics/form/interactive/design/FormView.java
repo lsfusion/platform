@@ -442,32 +442,33 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.design.background = background;
     }
 
-    public void setFocusable(boolean focusable, GroupObjectEntity groupObject) {
+    public void setFocusable(boolean focusable, GroupObjectEntity groupObject, Version version) {
 
         for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            setFocusable(propertyView, focusable);
+            setFocusable(propertyView, focusable, version);
         }
     }
 
-    public void setFocusable(ObjectEntity objectEntity, boolean focusable) {
+    public void setFocusable(ObjectEntity objectEntity, boolean focusable, Version version) {
         for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
-            setFocusable(property, focusable);
+            setFocusable(property, focusable, version);
         }
     }
 
-    public void setFocusable(PropertyDrawView property, boolean focusable) {
-        property.focusable = focusable;
+    public void setFocusable(PropertyDrawView property, boolean focusable, Version version) {
+        property.setFocusable(focusable, version);
     }
 
-    public void setChangeOnSingleClick(PropertyDrawView property, Boolean changeOnSingleClick) {
-        property.changeOnSingleClick = changeOnSingleClick;
+    //todo: remove unused?
+    public void setChangeOnSingleClick(PropertyDrawView property, Boolean changeOnSingleClick, Version version) {
+        property.setChangeOnSingleClick(changeOnSingleClick, version);
     }
 
-    public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {
-        property.changeKey = new InputBindingEvent(keyStroke != null ? new KeyInputEvent(keyStroke) : null, null);
+    public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke, Version version) {
+        property.setChangeKey(new InputBindingEvent(keyStroke != null ? new KeyInputEvent(keyStroke) : null, null), version);
     }
-    public void setChangeMouse(PropertyDrawView property, String mouseStroke) {
-        property.changeMouse = new InputBindingEvent(new MouseInputEvent(mouseStroke), null);
+    public void setChangeMouse(PropertyDrawView property, String mouseStroke, Version version) {
+        property.setChangeMouse(new InputBindingEvent(new MouseInputEvent(mouseStroke), null), version);
     }
 
     protected void setComponentSID(ContainerView container, String sid, Version version) {

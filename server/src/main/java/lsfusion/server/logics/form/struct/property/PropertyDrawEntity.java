@@ -554,8 +554,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return editType == PropertyEditType.EDITABLE;
     }
 
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
-        getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView);
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView, Version version) {
+        getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView, version);
     }
 
     public void proceedDefaultDraw(FormEntity form, Version version) {

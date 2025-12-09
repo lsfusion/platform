@@ -479,10 +479,10 @@ public class ScriptingFormEntity {
                 if(filter != null && filter) // have to do it after adding property draw view (because it uses it)
                     form.addUserFilter(propertyDraw, version);
 
-                view.caption = captions.get(i);
+                view.setCaption(captions.get(i), version);
                 String appImage = propertyOptions.getAppImage();
                 if(appImage != null)
-                    view.setImage(appImage);
+                    view.setImage(appImage, version);
             }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)

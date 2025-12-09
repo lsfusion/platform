@@ -2049,7 +2049,7 @@ public abstract class LogicsModule {
                         if(entity.toDraw == null)
                             entity.toDraw = objectEntity.groupTo;
                     }
-                    public void proceedDefaultDesign(PropertyDrawView propertyView) {
+                    public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
                     }
                 });
         }

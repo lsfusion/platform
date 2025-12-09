@@ -5487,7 +5487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.getImage();
+            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.getImageNF(getVersion());
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;
