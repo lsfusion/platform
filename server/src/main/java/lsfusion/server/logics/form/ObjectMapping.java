@@ -292,7 +292,10 @@ public class ObjectMapping {
     }
 
     public ActionObjectSelector get(ActionObjectSelector key) {
-        return key instanceof ActionObjectEntity ? get((ActionObjectEntity) key) : (context) -> get(key.getAction(context)); // first check is basically optimization
+        return key instanceof ActionObjectEntity ? get((ActionObjectEntity) key) : (context) -> {
+            ActionObjectEntity<?> action = key.getAction(context);
+            return action != null ? get(action) : null;
+        }; // first check is basically optimization
     }
 
 }
