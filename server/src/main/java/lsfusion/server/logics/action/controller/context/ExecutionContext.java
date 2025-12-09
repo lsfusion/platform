@@ -768,7 +768,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
                                                      FormOptions options) throws SQLException, SQLHandledException {
         FormInstance newFormInstance = createFormInstance(form, mapObjects, getSession(), true, options);
         requestFormUserInteraction(newFormInstance, options);
-        return newFormInstance;
+
+        FormInstance recreatedForm = newFormInstance.recreatedForm;
+        return recreatedForm != null ? recreatedForm : newFormInstance;
     }
 
     public SQLSyntax getDbSyntax() {

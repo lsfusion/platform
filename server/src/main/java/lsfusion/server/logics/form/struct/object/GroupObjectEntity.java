@@ -461,7 +461,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
 
         // todo: should be refactored somehow
-        ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> srcProps = (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) src.props;
-        this.props = srcProps.mapValues(p -> new PropertyRevImplement<>(p.property, p.mapping.mapRevValues((Function<ObjectEntity, ObjectEntity>) mapping::get)));
+        this.props = src.getProperties().mapValues(p -> new PropertyRevImplement<>(p.property, p.mapping.mapRevValues((Function<ObjectEntity, ObjectEntity>) mapping::get)));
+        this.finalizedProps = src.finalizedProps;
     }
 }

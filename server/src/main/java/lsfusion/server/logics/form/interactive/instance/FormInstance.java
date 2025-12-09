@@ -191,6 +191,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public FormOptions options;
 
+    public FormInstance recreatedForm;
+
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
     protected Set<PropertyDrawInstance> isStaticShown = new HashSet<>();
