@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -38,8 +39,6 @@ public abstract class FormContainer {
     public boolean isAsyncHidden() {
         return asyncHidden;
     }
-
-    public String formId;
 
     public FormContainer(FormsController formsController, GFormController contextForm, boolean async, Event editEvent) {
         this.formsController = formsController;
@@ -132,15 +131,8 @@ public abstract class FormContainer {
 
     public abstract Element getContentElement();
 
-    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, int dispatchPriority, String formId) {
-        form = new GFormController(formsController, this, gForm, isDialog, dispatchPriority, editEvent) {
-            @Override
-            public void onFormHidden(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
-                super.onFormHidden(asyncFormController, editFormCloseReason);
-
-                hiddenHandler.accept(asyncFormController, editFormCloseReason);
-            }
-        };
+    public void initForm(FormsController formsController, WindowHiddenHandler hiddenHandler, GForm gForm, boolean isDialog, int dispatchPriority, String formId) {
+        form = new GFormController(formsController, hiddenHandler, this, gForm, isDialog, formId, dispatchPriority, editEvent);
 
         if(isAsyncHidden())
             form.closePressed(asyncHiddenReason);
@@ -148,8 +140,6 @@ public abstract class FormContainer {
             setContent(form.getWidget());
 
         async = false;
-
-        this.formId = formId;
     }
 
     public abstract Widget getCaptionWidget();

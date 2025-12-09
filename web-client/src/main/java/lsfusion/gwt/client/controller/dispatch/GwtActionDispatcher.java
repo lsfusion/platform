@@ -30,6 +30,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandling
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
@@ -37,6 +38,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -135,8 +137,28 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             try {
                 dispatchingIndex = response.requestIndex;
                 try {
+                    GAction[] actions = response.actions;
+                    int fI = i;
+                    GActionDispatcherLookAhead lookAhead = new GActionDispatcherLookAhead() {
+                        int index = fI;
+
+                        @Override
+                        public GAction next() {
+                            index++; while(index < actions.length && actions[index] == null) index++;
+                            if(index >= actions.length)
+                                return null;
+
+                            return actions[index];
+                        }
+
+                        @Override
+                        public void drop() {
+                            actions[index] = null;
+                        }
+                    };
+
                     //for unsupported actions null is send to preserve number of actions and thus the order of responses
-                    actionResult = action == null ? null : action.dispatch(this);
+                    actionResult = action == null ? null : action.dispatch(this, lookAhead);
                 } finally {
                     dispatchingIndex = -1;
                 }
@@ -247,8 +269,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         return true;
     }
 
+    protected abstract FormsController.OpenContext getOpenContext(GFormAction action);
+    protected abstract FormsController getFormsController();
+
     @Override
     public void execute(GFormAction action) {
+        executeAsyncNoResult(action.showFormType.isModal() && action.syncType, onResult -> {
+            getFormsController().openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, action.formId, getOpenContext(action), canShowDockedModal(), onResult);
+        });
     }
 
     @Override
@@ -318,7 +346,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GHideFormAction action) {
+    public void execute(GHideFormAction action, GActionDispatcherLookAhead lookAhead) {
     }
 
     @Override
