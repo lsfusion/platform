@@ -118,6 +118,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected boolean startText(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         if(!isNative()) {
             pattern = renderContext.getPattern();
+            if (pattern != null)
+                inputElement.setPropertyBoolean("hasPattern", true);
+
             mask = getMaskFromPattern();
             if(mask != null) {
                 GwtClientUtils.setMask(inputElement, mask);

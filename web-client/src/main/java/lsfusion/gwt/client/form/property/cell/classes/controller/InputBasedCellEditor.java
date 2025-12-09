@@ -111,7 +111,8 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
 
     // input type number does not support commas, only periods are allowed.
     private static String getInputNumberValue(Element element, String value) {
-        return element.getAttribute("inputmode").equals("decimal") ?
+        return !element.getPropertyBoolean("hasPattern")//to avoid replacements when using PATTERN
+                && element.getAttribute("inputmode").equals("decimal") ?
                 value.replace(",", ".") :  value;
     }
 
