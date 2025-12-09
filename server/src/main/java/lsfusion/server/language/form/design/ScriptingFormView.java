@@ -72,7 +72,7 @@ public class ScriptingFormView {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, sid, debugPoint, view.containerFactory);
+        ContainerView container = view.createContainer(null, sid, debugPoint, view.containerFactory, version);
         view.setComponentSID(container, sid, version);;
 
         addOrMoveComponent(container, parentComponent, location, version);
@@ -91,7 +91,7 @@ public class ScriptingFormView {
             location = ComplexLocation.DEFAULT();
 
         if(parentComponent instanceof GridView) {
-            parentComponent = ((GridView) parentComponent).getNFRecord(view);
+            parentComponent = ((GridView) parentComponent).getNFRecord(view, version);
         }
 
         if (!(parentComponent instanceof ContainerView))

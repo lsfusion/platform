@@ -512,7 +512,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (component instanceof ContainerView) {
             ContainerView container = (ContainerView) component;
             
-            if (container.collapsed) {
+            if (container.isCollapsed()) {
                 collapseContainer(container);
             }
             

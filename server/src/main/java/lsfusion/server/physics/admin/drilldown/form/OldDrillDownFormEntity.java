@@ -29,7 +29,7 @@ public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInt
         super.setupDrillDownDesign(design, version);
 
         valueContainer.add(design.get(propertyDraw), version);
-        ContainerView oldValueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.old.value}"));
+        ContainerView oldValueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.old.value}"), version);
         oldValueContainer.add(design.get(oldPropertyDraw), version);
 
         design.mainContainer.addAfter(oldValueContainer, valueContainer, version);

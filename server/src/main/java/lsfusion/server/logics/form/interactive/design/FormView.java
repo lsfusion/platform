@@ -66,7 +66,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public Integer overridePageWidth;
 
     public LocalizedString getCaption() {
-        return mainContainer.caption;
+        return mainContainer.getCaption();
     }
 
     // список деревеьев
@@ -168,9 +168,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             setComponentSID(mainContainer, getBoxContainerSID(), version);
         }
 
-        mainContainer.setCaption(caption);
+        mainContainer.setCaption(caption, version);
         if (imagePath != null)
-            mainContainer.setImage(imagePath, this);
+            mainContainer.setImage(imagePath, this, version);
     }
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
@@ -233,7 +233,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
-        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
+        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject, version);
         groupObjects.add(groupObjectView, location.map(this::get), version);
         setComponentSIDs(groupObjectView, version);
         return groupObjectView;
@@ -270,20 +270,20 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
 
-    public ContainerView createContainer() {
-        return createContainer(null);
+    public ContainerView createContainer(Version version) {
+        return createContainer(null, version);
     }
 
-    public ContainerView createContainer(LocalizedString caption) {
-        return createContainer(caption, null, null, containerFactory);
+    public ContainerView createContainer(LocalizedString caption, Version version) {
+        return createContainer(caption, null, null, containerFactory, version);
     }
 
-    public static ContainerView createContainer(LocalizedString caption, String name, DebugInfo.DebugPoint debugPoint, ContainerFactory<ContainerView> containerFactory) {
+    public static ContainerView createContainer(LocalizedString caption, String name, DebugInfo.DebugPoint debugPoint, ContainerFactory<ContainerView> containerFactory, Version version) {
         ContainerView container = containerFactory.createContainer();
-        container.setDebugPoint(debugPoint);
+        container.setDebugPoint(debugPoint, version);
 
-        container.caption = caption;
-        container.name = name;
+        container.setCaption(caption, version);
+        container.setName(name, version);
 
         return container;
     }

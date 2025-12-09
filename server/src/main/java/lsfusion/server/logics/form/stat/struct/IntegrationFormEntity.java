@@ -135,7 +135,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 //            class = '';
 //        }
             ContainerView objectsContainer = formView.getBoxContainer((PropertyGroupContainerView) null);
-            objectsContainer.setBorder(false);
+            objectsContainer.setBorder(false, version);
             objectsContainer.setElementClass(null);
 
 //        BOX(i) {
@@ -145,7 +145,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
             if (groupObject != null) {
                 ContainerView boxContainer = formView.getBoxContainer(groupObject);
-                boxContainer.setCaption(null);
+                boxContainer.setCaption(null, version);
 
                 ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
                 formView.removeComponent(toolbarBoxContainer, version);

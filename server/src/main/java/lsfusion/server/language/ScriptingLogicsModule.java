@@ -880,7 +880,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormView scriptingView = getFormDesign(form);
 
         if (caption != null) { // later should be removed
-            scriptingView.getView().mainContainer.setCaption(caption);
+            scriptingView.getView().mainContainer.setCaption(caption, getVersion());
         }
 
         return scriptingView;
@@ -5487,7 +5487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.image;
+            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.getImage();
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;

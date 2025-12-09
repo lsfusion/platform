@@ -22,29 +22,47 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import static lsfusion.base.BaseUtils.nvl;
 
 public class ContainerView extends ComponentView {
 
+    private NFProperty<LocalizedString> caption = NFFact.property();
+    private NFProperty<String> name = NFFact.property(); // actually used only for icons
+    private NFProperty<AppServerImage.Reader> image = NFFact.property();
+    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
+    private NFProperty<String> valueClass = NFFact.property();
+    private NFProperty<String> captionClass = NFFact.property();
+    private NFProperty<Boolean> collapsible = NFFact.property();
+    private NFProperty<Boolean> popup = NFFact.property();
+    private NFProperty<Boolean> border = NFFact.property();
+    private NFProperty<Boolean> collapsed = NFFact.property();
+    private NFProperty<Boolean> horizontal = NFFact.property();
+    private NFProperty<Boolean> tabbed = NFFact.property();
+    private NFProperty<FlexAlignment> childrenAlignment = NFFact.property();
+    private NFProperty<Boolean> grid = NFFact.property();
+    private NFProperty<Boolean> wrap = NFFact.property();
+    private NFProperty<Boolean> alignCaptions = NFFact.property();
+    private NFProperty<Boolean> resizeOverflow = NFFact.property();
+    private NFProperty<Integer> lines = NFFact.property();
+    private NFProperty<Boolean> reversed = NFFact.property();
+    private NFProperty<Integer> lineSize = NFFact.property();
+    private NFProperty<Integer> captionLineSize = NFFact.property();
+    private NFProperty<Boolean> lineShrink = NFFact.property();
+    private NFProperty<String> customDesign = NFFact.property();
+
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
-    public LocalizedString caption;
-    public String name; // actually used only for icons
-    public AppServerImage.Reader image;
-
-    public String valueClass;
-
-    public void setImage(String imagePath, FormView formView) {
-        image = AppServerImage.createContainerImage(imagePath, this, formView);
+    public void setImage(String imagePath, FormView formView, Version version) {
+        setName(AppServerImage.createContainerImage(imagePath, this, formView), version);
     }
 
     public AppServerImage getImage(FormView formView, ConnectionContext context) {
-        if(this.image != null)
-            return this.image.get(context);
+        AppServerImage.Reader image = getImage();
+        if(image != null)
+            return image.get(context);
 
         return getDefaultImage(main ? formView : null, context);
     }
@@ -56,7 +74,7 @@ public class ContainerView extends ComponentView {
     }
 
     private AppServerImage.AutoName getAutoName(FormView formView) {
-        return AppServerImage.getAutoName(main ? () -> formView.getCaption() : () -> caption, main ? () -> formView.entity.getName() : () -> name); // can't be converted to lambda because formView can be null
+        return AppServerImage.getAutoName(main ? () -> formView.getCaption() : () -> getCaption(), main ? () -> formView.entity.getName() : this::getName); // can't be converted to lambda because formView can be null
     }
 
     private AppServerImage getDefaultImage(FormView formView, ConnectionContext context) {
@@ -64,37 +82,8 @@ public class ContainerView extends ComponentView {
                  main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView, context);
     }
 
-    private Boolean collapsible;
-
-    private boolean popup;
-
-    public boolean border;
-
-    public boolean collapsed;
-
-    private DebugInfo.DebugPoint debugPoint;
-    private boolean horizontal;
-    private boolean tabbed;
-
-    public FlexAlignment childrenAlignment;
-
-    private Boolean grid;
-    private Boolean wrap;
-    private Boolean alignCaptions;
-
-    public Boolean resizeOverflow;
-
-    public int lines = 1;
-    public Boolean reversed = null;
-    public Integer lineSize = null;
-    public Integer captionLineSize = null;
-    public Boolean lineShrink = null;
-    private String customDesign = null;
-
     // temp hack ???
     public GridView recordContainer;
-
-    public Map<String, NFProperty> options = new LinkedHashMap<>();
 
     public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
         if(addOrMoveChecked(component, location, version) != null)
@@ -172,19 +161,8 @@ public class ContainerView extends ComponentView {
         this.main = main;
     }
 
-    public void setCaption(LocalizedString caption) {
-        this.caption = caption;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setCollapsible(boolean collapsible) {
-        this.collapsible = collapsible;
-    }
-    
     public boolean isCollapsible() {
+        Boolean collapsible = getCollapsible();
         if(collapsible != null)
             return collapsible;
 
@@ -194,83 +172,21 @@ public class ContainerView extends ComponentView {
         return isDefaultCollapsible();
     }
 
-    public void setPopup(boolean popup) {
-        this.popup = popup;
-        this.collapsed = popup;
-    }
-
-    public boolean getBorder() {
-        return border; // || hasCaption();
-    }
-
     protected boolean isDefaultCollapsible() {
         return hasCaption();
     }
 
     private boolean hasCaption() {
-        return !PropertyDrawView.hasNoCaption(caption, propertyCaption, null);
-    }
-
-    public void setBorder(boolean border) {
-        this.border = border;
-    }
-
-    public void setCollapsed(boolean collapsed) {
-        this.collapsed = isCollapsible() && collapsed;
-    }
-
-    public boolean isTabbed() {
-        return tabbed;
-    }
-    
-    public boolean isHorizontal() {
-        if(isReversed())
-            return !horizontal;
-
-        return horizontal;
-    }
-
-    public boolean isGrid() {
-        if(grid != null)
-            return grid;
-
-        return false;
-    }
-
-    public Boolean isWrap() {
-        if(wrap != null)
-            return wrap;
-
-        return hasLines() || isHorizontal();
-    }
-
-    public Boolean getAlignCaptions() {
-        if(alignCaptions != null)
-            return alignCaptions;
-
-        return isTabbed() ? true : null;
-    }
-
-    public FlexAlignment getChildrenAlignment() {
-        if(childrenAlignment != null)
-            return childrenAlignment;
-
-        return FlexAlignment.START;
+        return !PropertyDrawView.hasNoCaption(getCaption(), propertyCaption, null);
     }
 
     public boolean hasLines() {
-        return getLines() > 1;
-    }
-
-    public int getLines() {
-        if(isReversed())
-            return 1;
-
-        return lines;
+        return getLines(true) > 1;
     }
 
     private boolean isReversed() {
-        return reversed != null ? reversed : (lines > 1 && getChildrenList().size() <= lines && !isGrid());
+        Boolean reversed = getReversed();
+        return reversed != null ? reversed : (getLines(false) > 1 && getChildrenList().size() <= getLines(false) && !isGrid());
     }
 
     @Override
@@ -300,6 +216,7 @@ public class ContainerView extends ComponentView {
     }
 
     public boolean isLineShrink(FormInstanceContext context) {
+        Boolean lineShrink = getLineShrink();
         if(lineShrink != null)
             return lineShrink;
 
@@ -356,69 +273,20 @@ public class ContainerView extends ComponentView {
         return false;
     }
 
-    // we use Boolean since in desktop and in web there is a different default behaviour
-    public Boolean isAlignCaptions() {
-        return alignCaptions;
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
-    }
-
-    public void setHorizontal(boolean horizontal) {
-        this.horizontal = horizontal;
-    }
-
-    public void setTabbed(boolean tabbed) {
-        this.tabbed = tabbed;
-    }
-
-    public void setChildrenAlignment(FlexAlignment childrenAlignment) {
-        this.childrenAlignment = childrenAlignment;
-    }
-
-    public void setGrid(Boolean grid) {
-        this.grid = grid;
-    }
-
-    public void setWrap(Boolean wrap) {
-        this.wrap = wrap;
-    }
-
-    public void setAlignCaptions(boolean alignCaptions) {
-        this.alignCaptions = alignCaptions;
-    }
-
-    public void setLines(int lines) {
-        this.lines = lines;
-    }
-
-    public void setLineSize(Integer lineSize) {
-        this.lineSize = lineSize;
-    }
-
-    public void setLineShrink(boolean lineShrink) {
-        this.lineShrink = lineShrink;
-    }
-
-    public void setPropertyCustomDesign(PropertyObjectEntity<?> propertyCustomDesign) {
+    public void setPropertyCustomDesign(PropertyObjectEntity<?> propertyCustomDesign, Version version) {
         this.propertyCustomDesign = propertyCustomDesign;
-        this.customDesign = "<div/>"; // now empty means "simple"
-    }
-
-    public void setCustomDesign(String customDesign) {
-        this.customDesign = customDesign;
+        this.setCustomDesign("<div/>", version); // now empty means "simple"
     }
 
     public boolean isCustomDesign() {
-        return customDesign != null;
+        return getCustomDesign() != null;
     }
 
     @Override
     public ComponentView findById(int id) {
         ComponentView result = super.findById(id);
         if(result!=null) return result;
-        
+
         for(ComponentView child : getChildrenIt()) {
             result = child.findById(id);
             if(result!=null) return result;
@@ -494,21 +362,22 @@ public class ContainerView extends ComponentView {
 
         pool.serializeCollection(outStream, getChildrenList());
 
-        pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
-        pool.writeString(outStream, name); // optimization
+        pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(getCaption()) : null); // optimization
+        pool.writeString(outStream, getName()); // optimization
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         pool.writeString(outStream, getCaptionClass());
-        pool.writeString(outStream, valueClass);
+        pool.writeString(outStream, getValueClass());
 
         outStream.writeBoolean(isCollapsible());
-        outStream.writeBoolean(popup);
+        outStream.writeBoolean(isPopup());
 
-        pool.writeBoolean(outStream, getBorder());
+        pool.writeBoolean(outStream, isBorder());
 
         pool.writeBoolean(outStream, isHorizontal());
         pool.writeBoolean(outStream, isTabbed());
 
+        DebugInfo.DebugPoint debugPoint = getDebugPoint();
         pool.writeBoolean(outStream, debugPoint != null);
         if (debugPoint != null) {
             pool.writeString(outStream, debugPoint.path);
@@ -516,42 +385,201 @@ public class ContainerView extends ComponentView {
         }
 
         pool.writeObject(outStream, getChildrenAlignment());
-        
+
         outStream.writeBoolean(isGrid());
         outStream.writeBoolean(isWrap());
         pool.writeObject(outStream, getAlignCaptions());
 
+        Boolean resizeOverflow = getResizeOverflow();
         outStream.writeBoolean(resizeOverflow != null);
         if(resizeOverflow != null)
             outStream.writeBoolean(resizeOverflow);
 
-        outStream.writeInt(getLines());
-        pool.writeInt(outStream, lineSize);
-        pool.writeInt(outStream, captionLineSize);
+        outStream.writeInt(getLines(true));
+        pool.writeInt(outStream, getLineSize());
+        pool.writeInt(outStream, getCaptionLineSize());
         outStream.writeBoolean(isLineShrink(pool.context));
 
         outStream.writeBoolean(isCustomDesign());
         if (isCustomDesign())
-            pool.writeString(outStream, customDesign);
+            pool.writeString(outStream, getCustomDesign());
+    }
+
+    public LocalizedString getCaption() {
+        return caption.get();
+    }
+    public void setCaption(LocalizedString value, Version version) {
+        caption.set(value, version);
+    }
+
+    public String getName() {
+        return name.get();
+    }
+    public void setName(String value, Version version) {
+        name.set(value, version);
+    }
+
+    public AppServerImage.Reader getImage() {
+        return image.get();
+    }
+    public void setName(AppServerImage.Reader value, Version version) {
+        image.set(value, version);
+    }
+
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint.get();
+    }
+    public void setDebugPoint(DebugInfo.DebugPoint value, Version version) {
+        debugPoint.set(value, version);
+    }
+
+    public String getValueClass() {
+        return valueClass.get();
+    }
+    public void setValueClass(String value, Version version) {
+        valueClass.set(value, version);
     }
 
     public String getCaptionClass() {
-        NFProperty<String> property = options.get("captionClass");
-        return property != null ? property.get() : null;
+        return captionClass.get();
     }
-    public void setCaptionClass(String captionClass) {
-        NFProperty<String> property = options.get("captionClass");
-        if(property == null) {
-            property = NFFact.property();
-            options.put("captionClass", property);
-        }
-        property.set(captionClass, Version.current());
+    public void setCaptionClass(String value, Version version) {
+        captionClass.set(value, version);
+    }
+
+    public Boolean getCollapsible() {
+        return collapsible.get();
+    }
+    public void setCollapsible(Boolean value, Version version) {
+        collapsible.set(value, version);
+    }
+
+    public boolean isPopup() {
+        return nvl(popup.get(), false);
+    }
+    public void setPopup(boolean value, Version version) {
+        popup.set(value, version);
+        setCollapsed(value, version);
+    }
+
+    public boolean isBorder() {
+        return nvl(border.get(), false);
+    }
+    public void setBorder(boolean value, Version version) {
+        border.set(value, version);
+    }
+
+    public boolean isCollapsed() {
+        return nvl(collapsed.get(), false);
+    }
+    public void setCollapsed(boolean value, Version version) {
+        collapsed.set(value, version);
+    }
+
+    public boolean isHorizontal() {
+        Boolean isHorizontal = nvl(horizontal.get(), false);
+        return isReversed() != isHorizontal;
+    }
+    public void setHorizontal(boolean value, Version version) {
+        horizontal.set(value, version);
+    }
+
+    public boolean isTabbed() {
+        return nvl(tabbed.get(), false);
+    }
+    public void setTabbed(boolean value, Version version) {
+        tabbed.set(value, version);
+    }
+
+    public FlexAlignment getChildrenAlignment() {
+        return nvl(childrenAlignment.get(), FlexAlignment.START);
+    }
+    public void setChildrenAlignment(FlexAlignment value, Version version) {
+        childrenAlignment.set(value, version);
+    }
+
+    public boolean isGrid() {
+        return nvl(grid.get(), false);
+    }
+    public void setGrid(Boolean value, Version version) {
+        grid.set(value, version);
+    }
+
+    public boolean isWrap() {
+        Boolean isWrap = wrap.get();
+        if (isWrap != null)
+            return isWrap;
+        return hasLines() || isHorizontal();
+    }
+    public void setWrap(Boolean value, Version version) {
+        wrap.set(value, version);
+    }
+
+    public Boolean getAlignCaptions() {
+        Boolean isAlignCaptions = alignCaptions.get();
+        if (isAlignCaptions != null)
+            return isAlignCaptions;
+        return isTabbed() ? true : null;
+    }
+    public void setAlignCaptions(Boolean value, Version version) {
+        alignCaptions.set(value, version);
+    }
+
+    public Boolean getResizeOverflow() {
+        return resizeOverflow.get();
+    }
+    public void setResizeOverflow(Boolean value, Version version) {
+        resizeOverflow.set(value, version);
+    }
+
+    public int getLines(boolean rec) {
+        if (rec && isReversed())
+            return 1;
+        return nvl(lines.get(), 1);
+    }
+    public void setLines(Integer value, Version version) {
+        lines.set(value, version);
+    }
+
+    public Boolean getReversed() {
+        return reversed.get();
+    }
+    public void setReversed(Boolean value, Version version) {
+        reversed.set(value, version);
+    }
+
+    public Integer getLineSize() {
+        return lineSize.get();
+    }
+    public void setLineSize(Integer value, Version version) {
+        lineSize.set(value, version);
+    }
+
+    public Integer getCaptionLineSize() {
+        return captionLineSize.get();
+    }
+    public void setCaptionLineSize(Integer value, Version version) {
+        captionLineSize.set(value, version);
+    }
+
+    public Boolean getLineShrink() {
+        return lineShrink.get();
+    }
+    public void setLineShrink(Boolean value, Version version) {
+        lineShrink.set(value, version);
+    }
+
+    public String getCustomDesign() {
+        return customDesign.get();
+    }
+    public void setCustomDesign(String value, Version version) {
+        customDesign.set(value, version);
     }
 
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
-        
+
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
     }
@@ -565,7 +593,7 @@ public class ContainerView extends ComponentView {
 
     @Override
     public String toString() {
-        return (caption != null ? ThreadLocalContext.localize(caption) + " " : "") + super.toString();
+        return (caption != null ? ThreadLocalContext.localize(getCaption()) + " " : "") + super.toString();
     }
 
     // copy-constructor
@@ -576,35 +604,35 @@ public class ContainerView extends ComponentView {
 
         ID = BaseLogicsModule.generateStaticNewID();
 
-        caption = src.caption;
-        name = src.name;
-        image = src.image;
-        valueClass = src.valueClass;
-        collapsible = src.collapsible;
-        popup = src.popup;
-        border = src.border;
-        collapsed = src.collapsed;
-        debugPoint = src.debugPoint;
-        horizontal = src.horizontal;
-        tabbed = src.tabbed;
-        childrenAlignment = src.childrenAlignment;
-        grid = src.grid;
-        wrap = src.wrap;
-        alignCaptions = src.alignCaptions;
-        resizeOverflow = src.resizeOverflow;
-        lines = src.lines;
-        reversed = src.reversed;
-        lineSize = src.lineSize;
-        captionLineSize = src.captionLineSize;
-        lineShrink = src.lineShrink;
-        customDesign = src.customDesign;
         main = src.main;
+
+        caption.set(src.caption.get(), mapping.version);
+        name.set(src.name.get(), mapping.version);
+        image.set(src.image.get(), mapping.version);
+        debugPoint.set(src.debugPoint.get(), mapping.version);
+        valueClass.set(src.valueClass.get(), mapping.version);
+        captionClass.set(src.captionClass.get(), mapping.version);
+        collapsible.set(src.collapsible.get(), mapping.version);
+        popup.set(src.popup.get(), mapping.version);
+        border.set(src.border.get(), mapping.version);
+        collapsed.set(src.collapsed.get(), mapping.version);
+        horizontal.set(src.horizontal.get(), mapping.version);
+        tabbed.set(src.tabbed.get(), mapping.version);
+        childrenAlignment.set(src.childrenAlignment.get(), mapping.version);
+        grid.set(src.grid.get(), mapping.version);
+        wrap.set(src.wrap.get(), mapping.version);
+        alignCaptions.set(src.alignCaptions.get(), mapping.version);
+        resizeOverflow.set(src.resizeOverflow.get(), mapping.version);
+        lines.set(src.lines.get(), mapping.version);
+        reversed.set(src.reversed.get(), mapping.version);
+        lineSize.set(src.lineSize.get(), mapping.version);
+        captionLineSize.set(src.captionLineSize.get(), mapping.version);
+        lineShrink.set(src.lineShrink.get(), mapping.version);
+        customDesign.set(src.customDesign.get(), mapping.version);
 
         children.add(src.children, mapping::get, mapping.version);
 
         recordContainer = mapping.get(src.recordContainer);
-
-        this.options.putAll(src.options);
 
         propertyCaption = mapping.get(src.propertyCaption);
         propertyCaptionClass = mapping.get(src.propertyCaptionClass);

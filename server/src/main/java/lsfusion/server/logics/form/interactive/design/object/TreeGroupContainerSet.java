@@ -70,10 +70,10 @@ public class TreeGroupContainerSet {
         String sid = treeGroup.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer();
-        set.boxContainer.setDebugPoint(treeGroup.entity.getDebugPoint()); //set debugPoint to containers that have a caption
+        set.boxContainer.setDebugPoint(treeGroup.entity.getDebugPoint(), version); //set debugPoint to containers that have a caption
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
-        set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
-        set.boxContainer.setName(treeGroup.getPropertyGroupContainerName());
+        set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"), version);
+        set.boxContainer.setName(treeGroup.getPropertyGroupContainerName(), version);
 
         set.filterBoxContainer = factory.createContainer();
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
@@ -92,8 +92,8 @@ public class TreeGroupContainerSet {
 
         set.popupContainer = factory.createContainer();
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
-        set.popupContainer.setPopup(true);
-        set.popupContainer.setImage("bi bi-three-dots-vertical", null);
+        set.popupContainer.setPopup(true, version);
+        set.popupContainer.setImage("bi bi-three-dots-vertical", null, version);
 
         set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
         set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
@@ -120,40 +120,40 @@ public class TreeGroupContainerSet {
         set.boxContainer.add(set.panelContainer, version);
 
         // we're stretching the intermediate containers, and centering the leaf components
-        set.filterBoxContainer.setHorizontal(true);
+        set.filterBoxContainer.setHorizontal(true, version);
         set.filterBoxContainer.add(treeGroup.filtersContainer, version);
         treeGroup.filtersContainer.setAlignment(FlexAlignment.STRETCH);
         set.filterBoxContainer.add(treeGroup.filterControls, version);
         treeGroup.filterControls.setAlignment(FlexAlignment.END);
 
-        set.toolbarBoxContainer.setHorizontal(true);
+        set.toolbarBoxContainer.setHorizontal(true, version);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.setFlex(1);
 
-        set.toolbarLeftContainer.setHorizontal(true);
+        set.toolbarLeftContainer.setHorizontal(true, version);
         set.toolbarLeftContainer.add(treeGroup.toolbarSystem, version);
         treeGroup.toolbarSystem.setAlignment(FlexAlignment.CENTER);
 
-        set.toolbarRightContainer.setHorizontal(true);
-        set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
+        set.toolbarRightContainer.setHorizontal(true, version);
+        set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END, version);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
         set.toolbarLeftContainer.add(set.popupContainer, version);
 
-        set.filterGroupsContainer.setHorizontal(true);
+        set.filterGroupsContainer.setHorizontal(true, version);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
-        set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
+        set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END, version);
 
-        set.toolbarContainer.setHorizontal(true);
+        set.toolbarContainer.setHorizontal(true, version);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.add(set.groupContainer, version);
 
-        set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
         treeGroup.getToolbarSystem().setMargin(2);
 

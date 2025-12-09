@@ -70,18 +70,18 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     protected ContainerView detailsContainer;
 
     protected void setupDrillDownDesign(DefaultFormView design, Version version) {
-        paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"));
+        paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"), version);
         paramsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addFirst(paramsContainer, version);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getBoxContainer(obj.groupTo), version);
         }
 
-        valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"));
+        valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"), version);
         valueContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
-        detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"));
+        detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"), version);
         detailsContainer.setFlex(1.0);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);

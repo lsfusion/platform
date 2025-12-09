@@ -41,9 +41,9 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"));
+        ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"), version);
         whereParamsContainer.add(design.get(wherePropertyDraw), version);
-        ContainerView expressionParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.expr.params}"));
+        ContainerView expressionParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.expr.params}"), version);
         expressionParamsContainer.add(design.get(writeFromPropertyDraw), version);
 
         design.mainContainer.addAfter(whereParamsContainer, valueContainer, version);

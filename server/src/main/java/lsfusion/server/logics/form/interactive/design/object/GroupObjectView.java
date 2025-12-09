@@ -59,7 +59,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return null;
     }
 
-    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
+    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, Version version) {
         this.entity = entity;
         this.entity.view = this;
 
@@ -73,15 +73,15 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         filtersContainer = new ContainerView(idGen.idShift());
         if (Settings.get().isVerticalColumnsFiltersContainer()) {
-            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
         } else {
-            filtersContainer.setHorizontal(true);
+            filtersContainer.setHorizontal(true, version);
         }
         //disable isReversed optimisation for FILTERS container because children are added after isReversed check
-        filtersContainer.reversed = false;
+        filtersContainer.setReversed(false, version);
 
         // behaves weirdly if unset as alignCaptions property sometimes depends on children count, which changes in runtime for filters container
-        filtersContainer.setAlignCaptions(false); 
+        filtersContainer.setAlignCaptions(false, version);
         
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));

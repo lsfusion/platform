@@ -399,9 +399,9 @@ public class DefaultFormView extends FormView {
             synchronized (map) {
                 ContainerView propGroupContainer = map.get(group);
                 if (propGroupContainer == null) {
-                    propGroupContainer = createContainer(group.caption, group.getName(), group.getDebugPoint(), containerFactory);
+                    propGroupContainer = createContainer(group.caption, group.getName(), group.getDebugPoint(), containerFactory, Version.global());
                     setComponentSID(propGroupContainer, getPropGroupContainerSID(group, propertyContainer), Version.global());
-                    propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+                    propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, Version.global());
                     panel.add(propGroupContainer, Version.global());
                 }
 

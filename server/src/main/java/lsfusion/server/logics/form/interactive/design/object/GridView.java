@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -21,9 +22,9 @@ public class GridView extends GridPropertyView {
         return record;
     }
     @NFLazy
-    public ContainerView getNFRecord(FormView formView) {
+    public ContainerView getNFRecord(FormView formView, Version version) {
         if(record == null) {
-            record = formView.createContainer();
+            record = formView.createContainer(version);
             record.recordContainer = this;
         }
         return record;
