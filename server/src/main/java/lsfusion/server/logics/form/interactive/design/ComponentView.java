@@ -455,12 +455,18 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Integer getWidth() {
         return width.get();
     }
+    public Integer getWidthNF(Version version) {
+        return width.getNF(version);
+    }
     public void setWidth(Integer value, Version version) {
         width.set(value, version);
     }
 
     public Integer getHeight() {
         return height.get();
+    }
+    public Integer getHeightNF(Version version) {
+        return height.getNF(version);
     }
     public void setHeight(Integer value, Version version) {
         height.set(value, version);

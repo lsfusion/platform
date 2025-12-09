@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 
 public class GridViewProxy extends GridPropertyViewProxy<GridView> {
@@ -9,12 +10,13 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
 
     @SuppressWarnings("unused")
     public void setAutoSize(boolean autoSize) {
-        Integer width = target.getWidth();
-        Integer height = target.getHeight();
+        Version version = getVersion();
+        Integer width = target.getWidthNF(version);
+        Integer height = target.getHeightNF(version);
         if(width == null || width < 0)
-            target.setWidth(autoSize ? -1 : -2, getVersion());
+            target.setWidth(autoSize ? -1 : -2, version);
         if(height == null || height < 0)
-            target.setHeight(autoSize ? -1 : -2, getVersion());
+            target.setHeight(autoSize ? -1 : -2, version);
     }
 
     @SuppressWarnings("unused")

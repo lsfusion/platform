@@ -408,6 +408,9 @@ public class ContainerView extends ComponentView {
     public LocalizedString getCaption() {
         return caption.get();
     }
+    public LocalizedString getCaptionNF(Version version) {
+        return caption.getNF(version);
+    }
     public void setCaption(LocalizedString value, Version version) {
         caption.set(value, version);
     }
