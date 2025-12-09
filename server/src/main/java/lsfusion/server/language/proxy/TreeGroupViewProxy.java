@@ -11,10 +11,12 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
 
     @SuppressWarnings("unused")
     public void setAutoSize(boolean autoSize) {
-        if(target.width == null || target.width < 0)
-            target.width = autoSize ? -1 : -2;
-        if(target.height == null || target.height < 0)
-            target.height = autoSize ? -1 : -2;
+        Integer width = target.getWidth();
+        Integer height = target.getHeight();
+        if(width == null || width < 0)
+            target.setWidth(autoSize ? -1 : -2, getVersion());
+        if(height == null || height < 0)
+            target.setHeight(autoSize ? -1 : -2, getVersion());
     }
 
     @SuppressWarnings("unused")

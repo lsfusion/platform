@@ -22,14 +22,36 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 
 import java.awt.*;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 
 import static java.lang.Math.max;
+import static lsfusion.base.BaseUtils.nvl;
 
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
+
+    private NFProperty<String> elementClass = NFFact.property();
+    private NFProperty<Integer> width = NFFact.property();
+    private NFProperty<Integer> height = NFFact.property();
+    private NFProperty<Integer> span = NFFact.property();
+    private NFProperty<Boolean> defaultComponent = NFFact.property();
+    private NFProperty<Boolean> activated = NFFact.property();
+    private NFProperty<Double> flex = NFFact.property();
+    private NFProperty<FlexAlignment> alignment = NFFact.property();
+    private NFProperty<Boolean> shrink = NFFact.property();
+    private NFProperty<Boolean> alignShrink = NFFact.property();
+    private NFProperty<Boolean> alignCaption = NFFact.property();
+    private NFProperty<String> overflowHorz = NFFact.property();
+    private NFProperty<String> overflowVert = NFFact.property();
+    private NFProperty<Boolean> captionVertical = NFFact.property();
+    private NFProperty<Boolean> captionLast = NFFact.property();
+    private NFProperty<FlexAlignment> captionAlignmentHorz = NFFact.property();
+    private NFProperty<FlexAlignment> captionAlignmentVert = NFFact.property();
+    private NFProperty<Integer> marginTop = NFFact.property();
+    private NFProperty<Integer> marginBottom = NFFact.property();
+    private NFProperty<Integer> marginLeft = NFFact.property();
+    private NFProperty<Integer> marginRight = NFFact.property();
 
     @Override
     public String toString() {
@@ -39,29 +61,11 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public ComponentDesign design = new ComponentDesign();
 
     public PropertyObjectEntity propertyElementClass;
-    public String elementClass;
-
-    public Integer width;
-    public Integer height;
-
-    public int span = 1;
-
-    protected Double flex = null;
-    private FlexAlignment alignment = null;
-    protected Boolean shrink = null;
-    protected Boolean alignShrink = null;
-    public Boolean alignCaption = null;
-    protected String overflowHorz;
-    protected String overflowVert;
-
-    public Boolean captionVertical;
-    public Boolean captionLast;
-    public FlexAlignment captionAlignmentHorz;
-    public FlexAlignment captionAlignmentVert;
 
     public PropertyObjectEntity<?> showIf;
 
     public int getWidth(FormInstanceContext context) {
+        Integer width = getWidth();
         if(width != null)
             return width;
 
@@ -69,6 +73,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public int getHeight(FormInstanceContext context) {
+        Integer height = getHeight();
         if(height != null)
             return height;
 
@@ -100,6 +105,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected boolean isCaptionVertical(FormInstanceContext context) {
+        Boolean captionVertical = getCaptionVertical();
         if(captionVertical != null)
             return captionVertical;
 
@@ -107,6 +113,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected boolean isCaptionLast(FormInstanceContext context) {
+        Boolean captionLast = getCaptionLast();
         if(captionLast != null)
             return captionLast;
 
@@ -114,6 +121,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected FlexAlignment getCaptionAlignmentHorz(FormInstanceContext context) {
+        FlexAlignment captionAlignmentHorz = getCaptionAlignmentHorz();
         if(captionAlignmentHorz != null)
             return captionAlignmentHorz;
 
@@ -121,6 +129,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected FlexAlignment getCaptionAlignmentVert(FormInstanceContext context) {
+        FlexAlignment captionAlignmentVert = getCaptionAlignmentVert();
         if(captionAlignmentVert != null)
             return captionAlignmentVert;
 
@@ -128,6 +137,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public String getElementClass(FormInstanceContext context) {
+        String elementClass = getElementClass();
         if(elementClass != null)
             return elementClass;
 
@@ -149,6 +159,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public double getFlex(FormInstanceContext context) {
+        Double flex = getFlex();
         if (flex != null)
             return flex;
 
@@ -164,6 +175,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public FlexAlignment getAlignment(FormInstanceContext context) {
+        FlexAlignment alignment = getAlignment();
         if (alignment != null)
             return alignment;
 
@@ -183,6 +195,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     // second parameter is needed to break the recursion in container default heuristics
     public boolean isShrink(FormInstanceContext context, boolean explicit) {
+        Boolean shrink = getShrink();
         if(shrink != null)
             return shrink;
         return isDefaultShrink(context, explicit);
@@ -197,6 +210,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     // second parameter is needed to break the recursion in container default heuristics
     public boolean isAlignShrink(FormInstanceContext context, boolean explicit) {
+        Boolean alignShrink = getAlignShrink();
         if(alignShrink != null)
             return alignShrink;
 
@@ -212,6 +226,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public String getOverflowHorz(FormInstanceContext context) {
+        String overflowHorz = getOverflowHorz();
         if(overflowHorz != null) {
             return overflowHorz;
         }
@@ -223,6 +238,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public String getOverflowVert(FormInstanceContext context) {
+        String overflowVert = getOverflowVert();
         if(overflowVert != null) {
             return overflowVert;
         }
@@ -233,22 +249,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return "auto";
     }
 
-    public Boolean getAlignCaption() {
-        return alignCaption;
-    }
-
     public PropertyObjectEntity<?> getShowIf() {
         return showIf;
     }
-
-    public int marginTop;
-    public int marginBottom;
-    public int marginLeft;
-    public int marginRight;
-
-    public boolean defaultComponent = false;
-
-    public boolean activated; // as tab
 
     private Property<?> activeTab;
 
@@ -271,72 +274,20 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.ID = ID;
     }
 
-    public void setFlex(double flex) {
-        this.flex = flex;
-    }
-
-    public void setShrink(boolean shrink) {
-        this.shrink = shrink;
-    }
-
-    public void setAlignShrink(boolean alignShrink) {
-        this.alignShrink = alignShrink;
-    }
-
-    public void setAlignment(FlexAlignment alignment) {
-        this.alignment = alignment;
-    }
-
-    public void setElementClass(String elementClass) {
-        this.elementClass = elementClass;
-    }
-
     public void setPropertyElementClass(PropertyObjectEntity<?> propertyElementClass) {
         this.propertyElementClass = propertyElementClass;
     }
 
-    public void setOverflowHorz(String overflowHorz) {
-        this.overflowHorz = overflowHorz;
+    public void setSize(Dimension size, Version version) {
+        this.setWidth(size.width, version);
+        this.setHeight(size.height, version);
     }
 
-    public void setOverflowVert(String overflowVert) {
-        this.overflowVert = overflowVert;
-    }
-
-    public void setSize(Dimension size) {
-        this.width = size.width;
-        this.height = size.height;
-    }
-
-    public void setHeight(int prefHeight) {
-        this.height = prefHeight;
-    }
-
-    public void setWidth(int prefWidth) {
-        this.width = prefWidth;
-    }
-
-    public void setMarginTop(int marginTop) {
-        this.marginTop = max(0, marginTop);
-    }
-
-    public void setMarginBottom(int marginBottom) {
-        this.marginBottom = max(0, marginBottom);
-    }
-
-    public void setMarginLeft(int marginLeft) {
-        this.marginLeft = max(0, marginLeft);
-    }
-
-    public void setMarginRight(int marginRight) {
-        this.marginRight = max(0, marginRight);
-    }
-
-    public void setMargin(int margin) {
-        setMarginTop(margin);
-        setMarginBottom(margin);
-        setMarginLeft(margin);
-        setMarginRight(margin);
+    public void setMargin(int margin, Version version) {
+        setMarginTop(margin, version);
+        setMarginBottom(margin, version);
+        setMarginLeft(margin, version);
+        setMarginRight(margin, version);
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {
@@ -469,7 +420,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         outStream.writeInt(getWidth(pool.context));
         outStream.writeInt(getHeight(pool.context));
 
-        outStream.writeInt(span);
+        outStream.writeInt(getSpan());
 
         outStream.writeDouble(getFlex(pool.context));
         pool.writeObject(outStream, getAlignment(pool.context));
@@ -479,19 +430,169 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeString(outStream, getOverflowHorz(pool.context));
         pool.writeString(outStream, getOverflowVert(pool.context));
 
-        outStream.writeInt(marginTop);
-        outStream.writeInt(marginBottom);
-        outStream.writeInt(marginLeft);
-        outStream.writeInt(marginRight);
+        outStream.writeInt(getMarginTop());
+        outStream.writeInt(getMarginBottom());
+        outStream.writeInt(getMarginLeft());
+        outStream.writeInt(getMarginRight());
 
         outStream.writeBoolean(isCaptionVertical(pool.context));
         outStream.writeBoolean(isCaptionLast(pool.context));
         pool.writeObject(outStream, getCaptionAlignmentHorz(pool.context));
         pool.writeObject(outStream, getCaptionAlignmentVert(pool.context));
 
-        outStream.writeBoolean(defaultComponent);
+        outStream.writeBoolean(isDefaultComponent());
 
         pool.writeString(outStream, sID);
+    }
+
+    public String getElementClass() {
+        return elementClass.get();
+    }
+    public void setElementClass(String value, Version version) {
+        elementClass.set(value, version);
+    }
+
+    public Integer getWidth() {
+        return width.get();
+    }
+    public void setWidth(Integer value, Version version) {
+        width.set(value, version);
+    }
+
+    public Integer getHeight() {
+        return height.get();
+    }
+    public void setHeight(Integer value, Version version) {
+        height.set(value, version);
+    }
+
+    public Integer getSpan() {
+        return nvl(span.get(), 1);
+    }
+    public void setSpan(Integer value, Version version) {
+        span.set(value, version);
+    }
+
+    public boolean isDefaultComponent() {
+        return nvl(defaultComponent.get(), false);
+    }
+    public void setDefaultComponent(Boolean value, Version version) {
+        defaultComponent.set(value, version);
+    }
+
+    public boolean isActivated() {
+        return nvl(activated.get(), false);
+    }
+    public void setActivated(Boolean value, Version version) {
+        activated.set(value, version);
+    }
+
+    public Double getFlex() {
+        return flex.get();
+    }
+    public void setFlex(Double value, Version version) {
+        flex.set(value, version);
+    }
+
+    public FlexAlignment getAlignment() {
+        return alignment.get();
+    }
+    public void setAlignment(FlexAlignment value, Version version) {
+        alignment.set(value, version);
+    }
+
+    public Boolean getShrink() {
+        return shrink.get();
+    }
+    public void setShrink(Boolean value, Version version) {
+        shrink.set(value, version);
+    }
+
+    public Boolean getAlignShrink() {
+        return alignShrink.get();
+    }
+    public void setAlignShrink(Boolean value, Version version) {
+        alignShrink.set(value, version);
+    }
+
+    public Boolean getAlignCaption() {
+        return alignCaption.get();
+    }
+    public void setAlignCaption(Boolean value, Version version) {
+        alignCaption.set(value, version);
+    }
+
+    public String getOverflowHorz() {
+        return overflowHorz.get();
+    }
+    public void setOverflowHorz(String value, Version version) {
+        overflowHorz.set(value, version);
+    }
+
+    public String getOverflowVert() {
+        return overflowVert.get();
+    }
+    public void setOverflowVert(String value, Version version) {
+        overflowVert.set(value, version);
+    }
+
+    public Boolean getCaptionVertical() {
+        return captionVertical.get();
+    }
+    public void setCaptionVertical(Boolean value, Version version) {
+        captionVertical.set(value, version);
+    }
+
+    public Boolean getCaptionLast() {
+        return captionLast.get();
+    }
+    public void setCaptionLast(Boolean value, Version version) {
+        captionLast.set(value, version);
+    }
+
+    public FlexAlignment getCaptionAlignmentHorz() {
+        return captionAlignmentHorz.get();
+    }
+    public void setCaptionAlignmentHorz(FlexAlignment value, Version version) {
+        captionAlignmentHorz.set(value, version);
+    }
+
+    public FlexAlignment getCaptionAlignmentVert() {
+        return captionAlignmentVert.get();
+    }
+    public void setCaptionAlignmentVert(FlexAlignment value, Version version) {
+        captionAlignmentVert.set(value, version);
+    }
+
+    public int getMarginTop() {
+        return nvl(marginTop.get(), 0);
+    }
+    public void setMarginTop(int value, Version version) {
+        marginTop.set(max(0, value), version);
+    }
+
+    public int getMarginBottom() {
+        return nvl(marginBottom.get(), 0);
+    }
+
+    public void setMarginBottom(int value, Version version) {
+        marginBottom.set(max(0, value), version);
+    }
+
+    public int getMarginLeft() {
+        return nvl(marginLeft.get(), 0);
+    }
+
+    public void setMarginLeft(int value, Version version) {
+        marginLeft.set(max(0, value), version);
+    }
+
+    public int getMarginRight() {
+        return nvl(marginRight.get(), 0);
+    }
+
+    public void setMarginRight(int value, Version version) {
+        marginRight.set(max(0, value), version);
     }
 
     public void finalizeAroundInit() {
@@ -507,28 +608,29 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         mapping.put(src, this);
 
+        elementClass.set(src.elementClass.get(), mapping.version);
+        width.set(src.width.get(), mapping.version);
+        height.set(src.height.get(), mapping.version);
+        span.set(src.span.get(), mapping.version);
+        defaultComponent.set(src.defaultComponent.get(), mapping.version);
+        activated.set(src.activated.get(), mapping.version);
+        flex.set(src.flex.get(), mapping.version);
+        alignment.set(src.alignment.get(), mapping.version);
+        shrink.set(src.shrink.get(), mapping.version);
+        alignShrink.set(src.alignShrink.get(), mapping.version);
+        alignCaption.set(src.alignCaption.get(), mapping.version);
+        overflowHorz.set(src.overflowHorz.get(), mapping.version);
+        overflowVert.set(src.overflowVert.get(), mapping.version);
+        captionVertical.set(src.captionVertical.get(), mapping.version);
+        captionLast.set(src.captionLast.get(), mapping.version);
+        captionAlignmentHorz.set(src.captionAlignmentHorz.get(), mapping.version);
+        captionAlignmentVert.set(src.captionAlignmentVert.get(), mapping.version);
+        marginTop.set(src.marginTop.get(), mapping.version);
+        marginBottom.set(src.marginBottom.get(), mapping.version);
+        marginLeft.set(src.marginLeft.get(), mapping.version);
+        marginRight.set(src.marginRight.get(), mapping.version);
+
         design = src.design;
-        elementClass = src.elementClass;
-        width = src.width;
-        height = src.height;
-        span = src.span;
-        flex = src.flex;
-        alignment = src.alignment;
-        shrink = src.shrink;
-        alignShrink = src.alignShrink;
-        alignCaption = src.alignCaption;
-        overflowHorz = src.overflowHorz;
-        overflowVert = src.overflowVert;
-        captionVertical = src.captionVertical;
-        captionLast = src.captionLast;
-        captionAlignmentHorz = src.captionAlignmentHorz;
-        captionAlignmentVert = src.captionAlignmentVert;
-        marginTop = src.marginTop;
-        marginBottom = src.marginBottom;
-        marginLeft = src.marginLeft;
-        marginRight = src.marginRight;
-        defaultComponent = src.defaultComponent;
-        activated = src.activated;
         activeTab = src.activeTab;
 
         propertyElementClass = mapping.get(src.propertyElementClass);

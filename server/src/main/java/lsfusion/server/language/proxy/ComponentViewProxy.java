@@ -16,93 +16,115 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         super(target);
     }
 
+    @SuppressWarnings("unused")
     public void setSpan(int span) {
-        target.span = span;
+        target.setSpan(span, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setDefaultComponent(boolean defaultComponent) {
-        target.defaultComponent = defaultComponent;
+        target.setDefaultComponent(defaultComponent, getVersion());
     }
-    
+
+    @SuppressWarnings("unused")
     public void setActivated(boolean activated) {
-        target.activated = activated;
+        target.setActivated(activated, getVersion());
     }
 
     /* ========= constraints properties ========= */
 
+    @SuppressWarnings("unused")
     public void setFill(double fill) {
         setFlex(fill);
         setAlignment(fill == 0 ? FlexAlignment.START : FlexAlignment.STRETCH);
     }
 
+    @SuppressWarnings("unused")
     public void setSize(Dimension size) {
-        target.setSize(size);
+        target.setSize(size, getVersion());
     }
+    @SuppressWarnings("unused")
     public void setHeight(int prefHeight) {
-        target.setHeight(prefHeight);
+        target.setHeight(prefHeight, getVersion());
     }
+    @SuppressWarnings("unused")
     public void setWidth(int prefWidth) {
-        target.setWidth(prefWidth);
+        target.setWidth(prefWidth, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setFlex(double flex) {
-        target.setFlex(flex);
+        target.setFlex(flex, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setShrink(boolean shrink) {
-        target.setShrink(shrink);
+        target.setShrink(shrink, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setAlignShrink(boolean alignShrink) {
-        target.setAlignShrink(alignShrink);
+        target.setAlignShrink(alignShrink, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setAlign(FlexAlignment alignment) {
         setAlignment(alignment);
     }
 
+    @SuppressWarnings("unused")
     public void setAlignment(FlexAlignment alignment) {
-        target.setAlignment(alignment);
+        target.setAlignment(alignment, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setAlignCaption(boolean alignCaption) {
-        target.alignCaption = alignCaption;
+        target.setAlignCaption(alignCaption, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setOverflowHorz(String overflowHorz) {
-        target.setOverflowHorz(overflowHorz);
+        target.setOverflowHorz(overflowHorz, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setOverflowVert(String overflowVert) {
-        target.setOverflowVert(overflowVert);
+        target.setOverflowVert(overflowVert, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setMarginTop(int marginTop) {
-        target.setMarginTop(marginTop);
+        target.setMarginTop(marginTop, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setMarginBottom(int marginBottom) {
-        target.setMarginBottom(marginBottom);
+        target.setMarginBottom(marginBottom, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setMarginLeft(int marginLeft) {
-        target.setMarginLeft(marginLeft);
+        target.setMarginLeft(marginLeft, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setMarginRight(int marginRight) {
-        target.setMarginRight(marginRight);
+        target.setMarginRight(marginRight, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setMargin(int margin) {
-        target.setMargin(margin);
+        target.setMargin(margin, getVersion());
     }
 
     /* ========= design properties ========= */
 
+    @SuppressWarnings("unused")
     public void setCaptionFont(FontInfo captionFont) {
         target.design.setCaptionFont(captionFont);
     }
 
+    @SuppressWarnings("unused")
     public void setFont(Object font) {
         if (font instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic font is supported only for propertyDraw");
@@ -111,13 +133,15 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
+    @SuppressWarnings("unused")
     public void setClass(Object elementClass) {
         if(elementClass instanceof LocalizedString)
-            target.setElementClass(elementClass.toString());
+            target.setElementClass(elementClass.toString(), getVersion());
         else
             target.setPropertyElementClass((PropertyObjectEntity<?>) elementClass);
     }
 
+    @SuppressWarnings("unused")
     public void setFontSize(int fontSize) {
         ComponentDesign design = target.design;
 
@@ -126,6 +150,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         design.setFont(font);
     }
 
+    @SuppressWarnings("unused")
     public void setFontStyle(LocalizedString lFontStyle) {
         boolean bold;
         boolean italic;
@@ -154,6 +179,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         design.setFont(font);
     }
 
+    @SuppressWarnings("unused")
     public void setBackground(Object background) {
         if (background instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic background is supported only for propertyDraw");
@@ -162,6 +188,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
+    @SuppressWarnings("unused")
     public void setForeground(Object foreground) {
         if (foreground instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic foreground is supported only for propertyDraw");
@@ -171,37 +198,44 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
     }
 
     // deprecated
+    @SuppressWarnings("unused")
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
-        target.captionVertical = panelCaptionVertical;
+        target.setCaptionVertical(panelCaptionVertical, getVersion());
     }
 
     // deprecated
+    @SuppressWarnings("unused")
     public void setPanelCaptionLast(boolean panelCaptionLast) {
-        target.captionLast = panelCaptionLast;
+        target.setCaptionLast(panelCaptionLast, getVersion());
     }
 
     // deprecated
+    @SuppressWarnings("unused")
     public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
-        target.captionAlignmentHorz = panelCaptionAlignment;
+        target.setCaptionAlignmentHorz(panelCaptionAlignment, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setCaptionVertical(boolean captionVertical) {
-        target.captionVertical = captionVertical;
+        target.setCaptionVertical(captionVertical, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setCaptionLast(boolean captionLast) {
-        target.captionLast = captionLast;
+        target.setCaptionLast(captionLast, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setCaptionAlignmentHorz(FlexAlignment captionAlignment) {
-        target.captionAlignmentHorz = captionAlignment;
+        target.setCaptionAlignmentHorz(captionAlignment, getVersion());
     }
 
+    @SuppressWarnings("unused")
     public void setCaptionAlignmentVert(FlexAlignment captionAlignment) {
-        target.captionAlignmentVert = captionAlignment;
+        target.setCaptionAlignmentVert(captionAlignment, getVersion());
     }
 
-
+    @SuppressWarnings("unused")
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);
     }

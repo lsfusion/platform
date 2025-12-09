@@ -163,8 +163,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             mainContainer = mapping.get(src.mainContainer);
         } else {
             mainContainer = new ContainerView(idGenerator.idShift(), true);
-            mainContainer.width = -3;
-            mainContainer.height = -3;
+            mainContainer.setWidth(-3, version);
+            mainContainer.setHeight(-3, version);
             setComponentSID(mainContainer, getBoxContainerSID(), version);
         }
 
@@ -209,7 +209,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
-        PropertyDrawView propertyView = new PropertyDrawView(property);
+        PropertyDrawView propertyView = new PropertyDrawView(property, version);
         properties.add(propertyView, location, version);
         addPropertyDrawView(propertyView);
 

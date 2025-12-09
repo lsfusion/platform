@@ -206,37 +206,37 @@ public class DefaultFormView extends FormView {
 
     public void setupFormButtons(Version version) {
         PropertyDrawView editFunction = get(entity.editActionPropertyDraw);
-        setupFormButton(editFunction);
+        setupFormButton(editFunction, version);
 
         PropertyDrawView dropFunction = get(entity.dropActionPropertyDraw);
-        setupFormButton(dropFunction);
+        setupFormButton(dropFunction, version);
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
-        setupFormButton(refreshFunction);
+        setupFormButton(refreshFunction, version);
         refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
-        setupFormButton(applyFunction);
+        setupFormButton(applyFunction, version);
 
         PropertyDrawView cancelFunction = get(entity.cancelActionPropertyDraw);
-        setupFormButton(cancelFunction);
+        setupFormButton(cancelFunction, version);
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        setupFormButton(okFunction);
+        setupFormButton(okFunction, version);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
-        setupFormButton(closeFunction);
+        setupFormButton(closeFunction, version);
 
         PropertyDrawView shareFunction = null;
         if(entity.shareActionPropertyDraw != null) {
             shareFunction = get(entity.shareActionPropertyDraw);
-            setupFormButton(shareFunction);
+            setupFormButton(shareFunction, version);
         }
 
         PropertyDrawView customizeFunction = null;
         if(entity.customizeActionPropertyDraw != null) {
             customizeFunction = get(entity.customizeActionPropertyDraw);
-            setupFormButton(customizeFunction);
+            setupFormButton(customizeFunction, version);
         }
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
@@ -271,12 +271,12 @@ public class DefaultFormView extends FormView {
             popupContainer.add(customizeFunction, version);
     }
 
-    private void setupFormButton(PropertyDrawView action) {
+    private void setupFormButton(PropertyDrawView action, Version version) {
         action.showChangeKey = false;
         action.showChangeMouse = false;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
-        action.setAlignment(FlexAlignment.STRETCH);
+        action.setAlignment(FlexAlignment.STRETCH, version);
     }
 
     private void addToObjectsContainer(ContainerView boxContainer, ComplexLocation<GroupObjectEntity> location, Version version) {
@@ -303,7 +303,7 @@ public class DefaultFormView extends FormView {
 
             addToObjectsContainer(groupSet.getBoxContainer(), location, version);
             if (view.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
-                groupSet.getBoxContainer().setFlex(0);
+                groupSet.getBoxContainer().setFlex(0d, version);
             }
         }
 

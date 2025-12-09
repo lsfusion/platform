@@ -136,7 +136,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 //        }
             ContainerView objectsContainer = formView.getBoxContainer((PropertyGroupContainerView) null);
             objectsContainer.setBorder(false, version);
-            objectsContainer.setElementClass(null);
+            objectsContainer.setElementClass(null, version);
 
 //        BOX(i) {
 //            caption = NULL;

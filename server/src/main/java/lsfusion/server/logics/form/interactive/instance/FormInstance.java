@@ -521,7 +521,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
         
-        if (component.activated) {
+        if (component.isActivated()) {
             activateTab(component);
         }
     } 

@@ -93,6 +93,7 @@ public class TreeGroupContainerSet {
         set.popupContainer = factory.createContainer();
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
         set.popupContainer.setPopup(true, version);
+        set.popupContainer.setCollapsed(true, version);
         set.popupContainer.setImage("bi bi-three-dots-vertical", null, version);
 
         set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
@@ -104,8 +105,8 @@ public class TreeGroupContainerSet {
         set.toolbarLeftContainer = factory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
-        set.boxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.boxContainer.setFlex(1);
+        set.boxContainer.setAlignment(FlexAlignment.STRETCH, version);
+        set.boxContainer.setFlex(1d, version);
 
         boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
         if (toolbarTopLeft) {
@@ -116,26 +117,26 @@ public class TreeGroupContainerSet {
         if (!toolbarTopLeft) {
             set.boxContainer.add(set.toolbarBoxContainer, version);
         }
-        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH,version);
         set.boxContainer.add(set.panelContainer, version);
 
         // we're stretching the intermediate containers, and centering the leaf components
         set.filterBoxContainer.setHorizontal(true, version);
         set.filterBoxContainer.add(treeGroup.filtersContainer, version);
-        treeGroup.filtersContainer.setAlignment(FlexAlignment.STRETCH);
+        treeGroup.filtersContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.filterBoxContainer.add(treeGroup.filterControls, version);
-        treeGroup.filterControls.setAlignment(FlexAlignment.END);
+        treeGroup.filterControls.setAlignment(FlexAlignment.END, version);
 
         set.toolbarBoxContainer.setHorizontal(true, version);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
-        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
-        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarRightContainer.setFlex(1);
+        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH, version);
+        set.toolbarRightContainer.setFlex(1d, version);
 
         set.toolbarLeftContainer.setHorizontal(true, version);
         set.toolbarLeftContainer.add(treeGroup.toolbarSystem, version);
-        treeGroup.toolbarSystem.setAlignment(FlexAlignment.CENTER);
+        treeGroup.toolbarSystem.setAlignment(FlexAlignment.CENTER, version);
 
         set.toolbarRightContainer.setHorizontal(true, version);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END, version);
@@ -144,18 +145,18 @@ public class TreeGroupContainerSet {
         set.toolbarLeftContainer.add(set.popupContainer, version);
 
         set.filterGroupsContainer.setHorizontal(true, version);
-        set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
+        set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END, version);
 
         set.toolbarContainer.setHorizontal(true, version);
-        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH, version);
 
-        set.panelContainer.setAlignment(FlexAlignment.STRETCH);
+        set.panelContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
-        treeGroup.getToolbarSystem().setMargin(2);
+        treeGroup.getToolbarSystem().setMargin(2, version);
 
         return set;
     }

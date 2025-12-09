@@ -127,7 +127,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements C
         return shrink;
     }
 
-    @Override
     public void setShrink(boolean shrink) {
         this.shrink = shrink;
         updateDependency(this, "shrink");
@@ -137,7 +136,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements C
         return alignShrink;
     }
 
-    @Override
     public void setAlignShrink(boolean alignShrink) {
         this.alignShrink = alignShrink;
     }

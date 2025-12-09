@@ -110,6 +110,7 @@ public class GroupObjectContainerSet {
         set.popupContainer = factory.createContainer();
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
         set.popupContainer.setPopup(true, version);
+        set.popupContainer.setCollapsed(true, version);
         set.popupContainer.setImage("bi bi-three-dots-vertical", null, version);
 
         set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
@@ -121,8 +122,8 @@ public class GroupObjectContainerSet {
         set.toolbarLeftContainer = factory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
-        set.boxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.boxContainer.setFlex(1);
+        set.boxContainer.setAlignment(FlexAlignment.STRETCH, version);
+        set.boxContainer.setFlex(1d, version);
 
         boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
         if (toolbarTopLeft) {
@@ -137,44 +138,44 @@ public class GroupObjectContainerSet {
         
         set.filterBoxContainer.setHorizontal(true, version);
         set.filterBoxContainer.add(group.filtersContainer, version);
-        group.filtersContainer.setAlignment(FlexAlignment.STRETCH);
+        group.filtersContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.filterBoxContainer.add(group.filterControls, version);
-        group.filterControls.setAlignment(FlexAlignment.CENTER);
+        group.filterControls.setAlignment(FlexAlignment.CENTER, version);
 
         // we're stretching the intermediate containers, and centering the leaf components
         set.toolbarBoxContainer.setHorizontal(true, version);
-        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarRightContainer : set.toolbarLeftContainer, version);
-        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarLeftContainer : set.toolbarRightContainer, version);
-        set.toolbarRightContainer.setFlex(1);
-        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarRightContainer.setFlex(1d, version);
+        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH, version);
 
         set.toolbarLeftContainer.setHorizontal(true, version);
         set.toolbarLeftContainer.add(group.toolbarSystem, version);
-        group.toolbarSystem.setAlignment(FlexAlignment.CENTER);
+        group.toolbarSystem.setAlignment(FlexAlignment.CENTER, version);
 
         set.toolbarRightContainer.setHorizontal(true, version);
         set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END, version);
         set.toolbarRightContainer.add(group.getCalculations(), version);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
-        set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
+        set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH,version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
         set.toolbarLeftContainer.add(set.popupContainer, version);
-        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarContainer.setAlignment(FlexAlignment.STRETCH, version);
 
         set.filterGroupsContainer.setHorizontal(true, version);
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END, version);
 
         set.toolbarContainer.setHorizontal(true, version);
 
-        set.panelContainer.setAlignment(FlexAlignment.STRETCH);
+        set.panelContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.panelContainer.add(set.groupContainer, version);
 
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
-        group.getToolbarSystem().setMargin(2);
-        group.getCalculations().setFlex(1);
+        group.getToolbarSystem().setMargin(2, version);
+        group.getCalculations().setFlex(1d, version);
 
         return set;
     }

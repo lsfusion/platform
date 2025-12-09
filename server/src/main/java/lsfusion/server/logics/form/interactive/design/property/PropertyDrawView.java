@@ -12,6 +12,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -160,13 +161,13 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     }
 
-    public PropertyDrawView(PropertyDrawEntity entity) {
+    public PropertyDrawView(PropertyDrawEntity entity, Version version) {
         super(entity.ID);
 
         this.entity = entity;
         this.entity.view = this;
 
-        setMargin(2);
+        setMargin(2, version);
         setSID("PROPERTY(" + entity.getSID() + ")");
     }
     
@@ -510,7 +511,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
     public String getDrawCaption() {
         LocalizedString caption = getCaption();
-        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION), elementClass))
+        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION), getElementClass()))
             return null;
 
         return ThreadLocalContext.localize(caption);
