@@ -29,23 +29,32 @@ import static lsfusion.base.BaseUtils.nvl;
 
 public class ContainerView extends ComponentView {
 
+    public boolean main;
+
     private NFProperty<LocalizedString> caption = NFFact.property();
     private NFProperty<String> name = NFFact.property(); // actually used only for icons
     private NFProperty<AppServerImage.Reader> image = NFFact.property();
-    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
+
     private NFProperty<String> valueClass = NFFact.property();
     private NFProperty<String> captionClass = NFFact.property();
+
     private NFProperty<Boolean> collapsible = NFFact.property();
     private NFProperty<Boolean> popup = NFFact.property();
     private NFProperty<Boolean> border = NFFact.property();
     private NFProperty<Boolean> collapsed = NFFact.property();
+
+    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
     private NFProperty<Boolean> horizontal = NFFact.property();
     private NFProperty<Boolean> tabbed = NFFact.property();
+
     private NFProperty<FlexAlignment> childrenAlignment = NFFact.property();
+
     private NFProperty<Boolean> grid = NFFact.property();
     private NFProperty<Boolean> wrap = NFFact.property();
     private NFProperty<Boolean> alignCaptions = NFFact.property();
+
     private NFProperty<Boolean> resizeOverflow = NFFact.property();
+
     private NFProperty<Integer> lines = NFFact.property();
     private NFProperty<Boolean> reversed = NFFact.property();
     private NFProperty<Integer> lineSize = NFFact.property();
@@ -53,7 +62,16 @@ public class ContainerView extends ComponentView {
     private NFProperty<Boolean> lineShrink = NFFact.property();
     private NFProperty<String> customDesign = NFFact.property();
 
+    private NFProperty<PropertyObjectEntity> propertyCaption = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyCaptionClass = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyValueClass = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyImage = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyCustomDesign = NFFact.property();
+
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
+
+    // temp hack ???
+    public GridView recordContainer;
 
     public void setImage(String imagePath, FormView formView, Version version) {
         setName(AppServerImage.createContainerImage(imagePath, this, formView), version);
@@ -81,9 +99,6 @@ public class ContainerView extends ComponentView {
         return getDefaultImage(AppServerImage.AUTO, main ? Settings.get().getDefaultNavigatorImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
                  main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView, context);
     }
-
-    // temp hack ???
-    public GridView recordContainer;
 
     public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
         if(addOrMoveChecked(component, location, version) != null)
@@ -126,43 +141,27 @@ public class ContainerView extends ComponentView {
         return container;
     }
 
-    // extras
-    public PropertyObjectEntity<?> propertyCaption;
-    public PropertyObjectEntity<?> propertyCaptionClass;
-    public PropertyObjectEntity<?> propertyValueClass;
-    public PropertyObjectEntity<?> propertyImage;
-    public PropertyObjectEntity<?> propertyCustomDesign;
     public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
         switch (type) {
             case CAPTION:
-                return propertyCaption;
+                return getPropertyCaption();
             case CAPTIONCLASS:
-                return propertyCaptionClass;
+                return getPropertyCaptionClass();
             case VALUECLASS:
-                return propertyValueClass;
+                return getPropertyValueClass();
             case IMAGE:
-                return propertyImage;
+                return getPropertyImage();
             case CUSTOM:
-                return propertyCustomDesign;
+                return getPropertyCustomDesign();
         }
         throw new UnsupportedOperationException();
     }
 
-    public ContainerView() {
-    }
-
-    public ContainerView(int ID) {
-        this(ID, false);
-    }
-
-    public boolean main;
-    public ContainerView(int ID, boolean main) {
-        super(ID);
-        this.main = main;
-    }
-
     private boolean hasCaption() {
-        return !PropertyDrawView.hasNoCaption(getCaption(), propertyCaption, null);
+        return !PropertyDrawView.hasNoCaption(getCaption(), getPropertyCaption(), null);
+    }
+    private boolean hasCaptionNF(Version version) {
+        return !PropertyDrawView.hasNoCaption(getCaptionNF(version), getPropertyCaptionNF(version), null);
     }
 
     public boolean hasLines() {
@@ -258,11 +257,6 @@ public class ContainerView extends ComponentView {
         return false;
     }
 
-    public void setPropertyCustomDesign(PropertyObjectEntity<?> propertyCustomDesign, Version version) {
-        this.propertyCustomDesign = propertyCustomDesign;
-        this.setCustomDesign("<div/>", version); // now empty means "simple"
-    }
-
     public boolean isCustomDesign() {
         return getCustomDesign() != null;
     }
@@ -299,7 +293,7 @@ public class ContainerView extends ComponentView {
     }
 
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || propertyCaption != null || propertyCaptionClass != null || propertyValueClass != null || propertyImage != null || propertyCustomDesign != null;
+        return super.hasPropertyComponent() || getPropertyCaption() != null || getPropertyCaptionClass() != null || getPropertyValueClass() != null || getPropertyImage() != null || getPropertyCustomDesign() != null;
     }
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         super.fillPropertyComponents(mComponents);
@@ -456,10 +450,13 @@ public class ContainerView extends ComponentView {
         if(Settings.get().isDisableCollapsibleContainers())
             return false;
 
-        return isDefaultCollapsible();
+        return isDefaultCollapsibleNF(version);
     }
     protected boolean isDefaultCollapsible() {
         return hasCaption();
+    }
+    protected boolean isDefaultCollapsibleNF(Version version) {
+        return hasCaptionNF(version);
     }
     public void setCollapsible(Boolean value, Version version) {
         collapsible.set(value, version);
@@ -588,6 +585,45 @@ public class ContainerView extends ComponentView {
         customDesign.set(value, version);
     }
 
+    public PropertyObjectEntity getPropertyCaption() {
+        return propertyCaption.get();
+    }
+    public PropertyObjectEntity getPropertyCaptionNF(Version version) {
+        return propertyCaption.getNF(version);
+    }
+    public void setPropertyCaption(PropertyObjectEntity value, Version version) {
+        propertyCaption.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyCaptionClass() {
+        return propertyCaptionClass.get();
+    }
+    public void setPropertyCaptionClass(PropertyObjectEntity value, Version version) {
+        propertyCaptionClass.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyValueClass() {
+        return propertyValueClass.get();
+    }
+    public void setPropertyValueClass(PropertyObjectEntity value, Version version) {
+        propertyValueClass.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyImage() {
+        return propertyImage.get();
+    }
+    public void setPropertyImage(PropertyObjectEntity value, Version version) {
+        propertyImage.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyCustomDesign() {
+        return propertyCustomDesign.get();
+    }
+    public void setPropertyCustomDesign(PropertyObjectEntity value, Version version) {
+        propertyCustomDesign.set(value, version);
+        setCustomDesign("<div/>", version); // now empty means "simple"
+    }
+
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
@@ -608,6 +644,18 @@ public class ContainerView extends ComponentView {
         return (caption != null ? ThreadLocalContext.localize(getCaption()) + " " : "") + super.toString();
     }
 
+    public ContainerView() {
+    }
+
+    public ContainerView(int ID) {
+        this(ID, false);
+    }
+
+    public ContainerView(int ID, boolean main) {
+        super(ID);
+        this.main = main;
+    }
+
     // copy-constructor
     public ContainerView(ContainerView src, ObjectMapping mapping) {
         super(src, mapping);
@@ -621,20 +669,27 @@ public class ContainerView extends ComponentView {
         caption.set(src.caption.get(), mapping.version);
         name.set(src.name.get(), mapping.version);
         image.set(src.image.get(), mapping.version);
-        debugPoint.set(src.debugPoint.get(), mapping.version);
+
         valueClass.set(src.valueClass.get(), mapping.version);
         captionClass.set(src.captionClass.get(), mapping.version);
+
         collapsible.set(src.collapsible.get(), mapping.version);
         popup.set(src.popup.get(), mapping.version);
         border.set(src.border.get(), mapping.version);
         collapsed.set(src.collapsed.get(), mapping.version);
+
+        debugPoint.set(src.debugPoint.get(), mapping.version);
         horizontal.set(src.horizontal.get(), mapping.version);
         tabbed.set(src.tabbed.get(), mapping.version);
+
         childrenAlignment.set(src.childrenAlignment.get(), mapping.version);
+
         grid.set(src.grid.get(), mapping.version);
         wrap.set(src.wrap.get(), mapping.version);
         alignCaptions.set(src.alignCaptions.get(), mapping.version);
+
         resizeOverflow.set(src.resizeOverflow.get(), mapping.version);
+
         lines.set(src.lines.get(), mapping.version);
         reversed.set(src.reversed.get(), mapping.version);
         lineSize.set(src.lineSize.get(), mapping.version);
@@ -642,14 +697,14 @@ public class ContainerView extends ComponentView {
         lineShrink.set(src.lineShrink.get(), mapping.version);
         customDesign.set(src.customDesign.get(), mapping.version);
 
+        propertyCaption.set(mapping.get(src.propertyCaption.get()), mapping.version);
+        propertyCaptionClass.set(mapping.get(src.propertyCaptionClass.get()), mapping.version);
+        propertyValueClass.set(mapping.get(src.propertyValueClass.get()), mapping.version);
+        propertyImage.set(mapping.get(src.propertyImage.get()), mapping.version);
+        propertyCustomDesign.set(mapping.get(src.propertyCustomDesign.get()), mapping.version);
+
         children.add(src.children, mapping::get, mapping.version);
 
         recordContainer = mapping.get(src.recordContainer);
-
-        propertyCaption = mapping.get(src.propertyCaption);
-        propertyCaptionClass = mapping.get(src.propertyCaptionClass);
-        propertyValueClass = mapping.get(src.propertyValueClass);
-        propertyImage = mapping.get(src.propertyImage);
-        propertyCustomDesign = mapping.get(src.propertyCustomDesign);
     }
 }

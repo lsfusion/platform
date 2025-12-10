@@ -25,7 +25,7 @@ public class StaticFormReportManager extends FormReportManager {
         FormEntity form = reportInterface.getFormEntity();
 
         FormView richDesign = form.getRichDesign();
-        PropertyObjectEntity<?> propertyCaption = richDesign.mainContainer.propertyCaption;
+        PropertyObjectEntity<?> propertyCaption = richDesign.mainContainer.getPropertyCaption();
         if(propertyCaption != null)
             return BaseUtils.nullToString(reportInterface.read(propertyCaption));
 

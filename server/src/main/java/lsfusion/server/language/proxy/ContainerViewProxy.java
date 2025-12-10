@@ -22,7 +22,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
                 // it's important for web-client to know that caption may appear as container caption is implemented as wrapper panel
                 target.setCaption(LocalizedString.NONAME, getVersion());
             }
-            target.propertyCaption = (PropertyObjectEntity<?>) caption;
+            target.setPropertyCaption((PropertyObjectEntity<?>) caption, getVersion());
         }
     }
 
@@ -31,7 +31,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         if(caption instanceof LocalizedString)
             target.setCaptionClass(((LocalizedString) caption).getSourceString(), getVersion());
         else
-            target.propertyCaptionClass = (PropertyObjectEntity<?>) caption;
+            target.setPropertyCaptionClass((PropertyObjectEntity<?>) caption, getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -39,7 +39,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         if(caption instanceof LocalizedString)
             target.setValueClass(((LocalizedString) caption).getSourceString(), getVersion());
         else
-            target.propertyValueClass = (PropertyObjectEntity<?>) caption;
+            target.setPropertyValueClass((PropertyObjectEntity<?>) caption, getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -52,7 +52,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
                 // it's important for web-client to know that caption may appear as container caption is implemented as wrapper panel
 //                target.caption = LocalizedString.NONAME;
 //            }
-            target.propertyImage = (PropertyObjectEntity<?>) image;
+            target.setPropertyImage((PropertyObjectEntity<?>) image, getVersion());
         }
     }
 
