@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.view;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -24,7 +25,7 @@ public abstract class PropertyRenderer {
     public PropertyRenderer(ClientPropertyDraw property) {
         this.property = property;
         if (property != null) {
-            property.design.installFont(getComponent());
+            ClientColorUtils.installFont(property.font, getComponent());
         }
     }
     public abstract JComponent getComponent();
@@ -85,7 +86,7 @@ public abstract class PropertyRenderer {
         
         Color logicsBackground = conditionalBackground;
         if (logicsBackground == null && property != null) {
-            logicsBackground = property.design.background;
+            logicsBackground = property.background;
         }
         
         if (hasFocus) {
@@ -113,8 +114,8 @@ public abstract class PropertyRenderer {
         } else {
             if (conditionalForeground != null) {
                 getComponent().setForeground(getThemedColor(conditionalForeground));
-            } else if (property != null && property.design.foreground != null) {
-                getComponent().setForeground(getThemedColor(property.design.foreground));
+            } else if (property != null && property.foreground != null) {
+                getComponent().setForeground(getThemedColor(property.foreground));
             } else {
                 getComponent().setForeground(SwingDefaults.getTableCellForeground());
             }

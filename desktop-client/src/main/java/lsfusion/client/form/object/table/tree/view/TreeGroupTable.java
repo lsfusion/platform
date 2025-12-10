@@ -8,6 +8,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientRichTextClass;
@@ -142,8 +143,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
         rootNode = model.getRoot();
         
-        if (treeGroup.design.font != null) {
-            setFont(treeGroup.design.getFont(this));
+        if (treeGroup.font != null) {
+            setFont(ClientColorUtils.getOrDeriveComponentFont(treeGroup.font, this));
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
@@ -552,7 +553,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                         public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                             Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
                             if (column > 0) {
-                                model.getColumnProperty(column).design.designHeader(comp);
+                                ClientPropertyDraw columnProperty = model.getColumnProperty(column);
+                                ClientColorUtils.designHeader(columnProperty.captionFont, comp);
                             }
                             return comp;
                         }

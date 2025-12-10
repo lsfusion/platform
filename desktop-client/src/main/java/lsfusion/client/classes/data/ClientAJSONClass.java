@@ -28,7 +28,7 @@ public abstract class ClientAJSONClass extends ClientDataClass implements Client
 
     @Override
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return new TextPropertyEditor(value, property.design);
+        return new TextPropertyEditor(value, property);
     }
 
     @Override

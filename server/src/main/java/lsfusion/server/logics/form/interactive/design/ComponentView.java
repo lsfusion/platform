@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.AbstractComponent;
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -32,11 +32,15 @@ import static lsfusion.base.BaseUtils.nvl;
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
 
     private NFProperty<String> elementClass = NFFact.property();
+
     private NFProperty<Integer> width = NFFact.property();
     private NFProperty<Integer> height = NFFact.property();
+
     private NFProperty<Integer> span = NFFact.property();
+
     private NFProperty<Boolean> defaultComponent = NFFact.property();
     private NFProperty<Boolean> activated = NFFact.property();
+
     private NFProperty<Double> flex = NFFact.property();
     private NFProperty<FlexAlignment> alignment = NFFact.property();
     private NFProperty<Boolean> shrink = NFFact.property();
@@ -44,21 +48,26 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private NFProperty<Boolean> alignCaption = NFFact.property();
     private NFProperty<String> overflowHorz = NFFact.property();
     private NFProperty<String> overflowVert = NFFact.property();
+
     private NFProperty<Boolean> captionVertical = NFFact.property();
     private NFProperty<Boolean> captionLast = NFFact.property();
     private NFProperty<FlexAlignment> captionAlignmentHorz = NFFact.property();
     private NFProperty<FlexAlignment> captionAlignmentVert = NFFact.property();
+
     private NFProperty<Integer> marginTop = NFFact.property();
     private NFProperty<Integer> marginBottom = NFFact.property();
     private NFProperty<Integer> marginLeft = NFFact.property();
     private NFProperty<Integer> marginRight = NFFact.property();
 
+    private NFProperty<FontInfo> font = NFFact.property();
+    private NFProperty<FontInfo> captionFont = NFFact.property();
+    private NFProperty<Color> background = NFFact.property();
+    private NFProperty<Color> foreground = NFFact.property();
+
     @Override
     public String toString() {
         return getSID();
     }
-
-    public ComponentDesign design = new ComponentDesign();
 
     public PropertyObjectEntity propertyElementClass;
 
@@ -412,7 +421,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeObject(outStream, design);
+        pool.writeObject(outStream, getFont());
+        pool.writeObject(outStream, getCaptionFont());
+        pool.writeObject(outStream, getBackground());
+        pool.writeObject(outStream, getForeground());
         pool.serializeObject(outStream, getContainer());
 
         pool.writeString(outStream, getElementClass(pool.context));
@@ -580,7 +592,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public int getMarginBottom() {
         return nvl(marginBottom.get(), 0);
     }
-
     public void setMarginBottom(int value, Version version) {
         marginBottom.set(max(0, value), version);
     }
@@ -588,7 +599,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public int getMarginLeft() {
         return nvl(marginLeft.get(), 0);
     }
-
     public void setMarginLeft(int value, Version version) {
         marginLeft.set(max(0, value), version);
     }
@@ -596,9 +606,39 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public int getMarginRight() {
         return nvl(marginRight.get(), 0);
     }
-
     public void setMarginRight(int value, Version version) {
         marginRight.set(max(0, value), version);
+    }
+
+    public FontInfo getFont() {
+        return font.get();
+    }
+    public FontInfo getFontNF(Version version) {
+        return font.getNF(version);
+    }
+    public void setFont(FontInfo value, Version version) {
+        font.set(value, version);
+    }
+
+    public FontInfo getCaptionFont() {
+        return captionFont.get();
+    }
+    public void setCaptionFont(FontInfo value, Version version) {
+        captionFont.set(value, version);
+    }
+
+    public Color getBackground() {
+        return background.get();
+    }
+    public void setBackground(Color value, Version version) {
+        background.set(value, version);
+    }
+
+    public Color getForeground() {
+        return foreground.get();
+    }
+    public void setForeground(Color value, Version version) {
+        foreground.set(value, version);
     }
 
     public void finalizeAroundInit() {
@@ -615,11 +655,15 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         mapping.put(src, this);
 
         elementClass.set(src.elementClass.get(), mapping.version);
+
         width.set(src.width.get(), mapping.version);
         height.set(src.height.get(), mapping.version);
+
         span.set(src.span.get(), mapping.version);
+
         defaultComponent.set(src.defaultComponent.get(), mapping.version);
         activated.set(src.activated.get(), mapping.version);
+
         flex.set(src.flex.get(), mapping.version);
         alignment.set(src.alignment.get(), mapping.version);
         shrink.set(src.shrink.get(), mapping.version);
@@ -627,16 +671,22 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         alignCaption.set(src.alignCaption.get(), mapping.version);
         overflowHorz.set(src.overflowHorz.get(), mapping.version);
         overflowVert.set(src.overflowVert.get(), mapping.version);
+
         captionVertical.set(src.captionVertical.get(), mapping.version);
         captionLast.set(src.captionLast.get(), mapping.version);
         captionAlignmentHorz.set(src.captionAlignmentHorz.get(), mapping.version);
         captionAlignmentVert.set(src.captionAlignmentVert.get(), mapping.version);
+
         marginTop.set(src.marginTop.get(), mapping.version);
         marginBottom.set(src.marginBottom.get(), mapping.version);
         marginLeft.set(src.marginLeft.get(), mapping.version);
         marginRight.set(src.marginRight.get(), mapping.version);
 
-        design = src.design;
+        font.set(src.font.get(), mapping.version);
+        captionFont.set(src.captionFont.get(), mapping.version);
+        background.set(src.background.get(), mapping.version);
+        foreground.set(src.foreground.get(), mapping.version);
+
         activeTab = src.activeTab;
 
         propertyElementClass = mapping.get(src.propertyElementClass);

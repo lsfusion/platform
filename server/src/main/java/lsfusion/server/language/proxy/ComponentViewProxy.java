@@ -1,7 +1,6 @@
 package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.language.ElementClassProxy;
 import lsfusion.server.language.converters.FontInfoConverter;
@@ -121,7 +120,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
 
     @SuppressWarnings("unused")
     public void setCaptionFont(FontInfo captionFont) {
-        target.design.setCaptionFont(captionFont);
+        target.setCaptionFont(captionFont, getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -129,7 +128,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         if (font instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic font is supported only for propertyDraw");
         } else {
-            target.design.setFont(FontInfoConverter.convertToFontInfo(font.toString()));
+            target.setFont(FontInfoConverter.convertToFontInfo(font.toString()), getVersion());
         }
     }
 
@@ -143,11 +142,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
 
     @SuppressWarnings("unused")
     public void setFontSize(int fontSize) {
-        ComponentDesign design = target.design;
-
-        FontInfo font = design.font != null ? design.font.derive(fontSize) : new FontInfo(fontSize);
-
-        design.setFont(font);
+        FontInfo font = target.getFontNF(getVersion());
+        target.setFont(font != null ? font.derive(fontSize) : new FontInfo(fontSize), getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -172,11 +168,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
             throw new IllegalArgumentException("fontStyle value must be a combination of strings bold and italic");
         }
 
-        ComponentDesign design = target.design;
-
-        FontInfo font = design.font != null ? design.font.derive(bold, italic) : new FontInfo(bold, italic);
-
-        design.setFont(font);
+        FontInfo font = target.getFontNF(getVersion());
+        target.setFont(font != null ? font.derive(bold, italic) : new FontInfo(bold, italic), getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -184,7 +177,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         if (background instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic background is supported only for propertyDraw");
         } else {
-            target.design.background = (Color) background;
+            target.setBackground((Color) background, getVersion());
         }
     }
 
@@ -193,7 +186,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         if (foreground instanceof PropertyObjectEntity) {
             throw new UnsupportedOperationException("Dynamic foreground is supported only for propertyDraw");
         } else {
-            target.design.foreground = (Color) foreground;
+            target.setForeground((Color) foreground, getVersion());
         }
     }
 

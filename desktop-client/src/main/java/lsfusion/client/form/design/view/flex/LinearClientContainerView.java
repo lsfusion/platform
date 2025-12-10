@@ -62,7 +62,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
             }
         }
 
-        ClientColorUtils.designComponent(panel, container.design);
+        ClientColorUtils.designComponent(panel, container);
     }
 
     public boolean isSimple() {

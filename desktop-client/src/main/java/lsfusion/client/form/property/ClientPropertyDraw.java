@@ -3,6 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
@@ -304,7 +305,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueWidth > -1) {
             return valueWidth;
         }
-        FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
+        FontMetrics fontMetrics = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp));
 
         String widthString = null;
         if(charWidth != -1)
@@ -326,9 +327,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int insetsHeight = insets.top + insets.bottom;
         int lines = charHeight == -1 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
-        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (design.font != null ? design.font.fontSize : -1);
+        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (font != null ? font.fontSize : -1);
         if (fontSize > 0 || lines > 1) {
-            int lineHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
+            int lineHeight = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp)).getHeight();
             height = lineHeight * lines + insetsHeight;
         } else {
             height = SwingDefaults.getValueHeight();

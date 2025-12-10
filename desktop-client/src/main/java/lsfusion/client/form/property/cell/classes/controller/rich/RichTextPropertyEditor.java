@@ -4,7 +4,6 @@ import lsfusion.base.EscapeUtils;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -19,11 +18,11 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
 
     private PropertyTableCellEditor tableEditor;
 
-    public RichTextPropertyEditor(Object value, ComponentDesign design) {
-        this(null, value, design);
+    public RichTextPropertyEditor(Object value) {
+        this(null, value);
     }
 
-    public RichTextPropertyEditor(Component owner, Object value, ComponentDesign design) {
+    public RichTextPropertyEditor(Component owner, Object value) {
         super(new BorderLayout());
         richArea = new RichEditorPane();
         richArea.setText(value == null ? "" : EscapeUtils.escapeLineBreakHTML(value.toString()));

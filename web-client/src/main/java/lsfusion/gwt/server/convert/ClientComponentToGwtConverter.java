@@ -92,19 +92,16 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         component.overflowHorz = clientComponent.overflowHorz;
         component.overflowVert = clientComponent.overflowVert;
 
-        if (clientComponent.design.getBackground() != null) {
-            component.background = convertColor(clientComponent.design.getBackground());
+        if (clientComponent.background != null) {
+            component.background = convertColor(clientComponent.background);
         }
 
-        if (clientComponent.design.getForeground() != null) {
-            component.foreground = convertColor(clientComponent.design.getForeground());
+        if (clientComponent.foreground != null) {
+            component.foreground = convertColor(clientComponent.foreground);
         }
 
-        FontInfo clientFont = clientComponent.design.getFont();
-        component.font = convertFont(clientFont);
-
-        FontInfo captionFont = clientComponent.design.getCaptionFont();
-        component.captionFont = convertFont(captionFont);
+        component.font = convertFont(clientComponent.font);
+        component.captionFont = convertFont(clientComponent.captionFont);
 
         component.captionVertical = clientComponent.captionVertical;
         component.captionLast = clientComponent.captionLast;

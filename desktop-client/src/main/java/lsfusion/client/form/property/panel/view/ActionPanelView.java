@@ -67,7 +67,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
             setEnabled(false);
         }
 
-        ClientColorUtils.designComponent(this, property.design);
+        ClientColorUtils.designComponent(this, property);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {

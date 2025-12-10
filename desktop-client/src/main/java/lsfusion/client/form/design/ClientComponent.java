@@ -9,14 +9,13 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.AbstractComponent;
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.interop.form.remote.serialization.IdentitySerializable;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import java.awt.*;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -24,8 +23,10 @@ import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public abstract class ClientComponent extends ContextIdentityObject implements ClientIdentitySerializable, AbstractComponent {
-
-    public ComponentDesign design;
+    public FontInfo font;
+    public FontInfo captionFont;
+    public Color background;
+    public Color foreground;
 
     public ClientContainer container;
 
@@ -81,7 +82,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements C
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        design = pool.readObject(inStream);
+        font = pool.readObject(inStream);
+        captionFont = pool.readObject(inStream);
+        background = pool.readObject(inStream);
+        foreground = pool.readObject(inStream);
 
         container = pool.deserializeObject(inStream);
 

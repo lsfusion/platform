@@ -11,7 +11,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.ContainerFactory;
-import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.*;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
@@ -396,40 +395,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return result;
     }
 
-    public void setFont(FontInfo font) {
-
-        for (PropertyDrawView property : getPropertiesIt()) {
-            setFont(property, font);
-        }
-    }
-
-    public void setFont(FontInfo font, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView property : getProperties(groupObject)) {
-            setFont(property, font);
-        }
-    }
-
-    public void setFont(PropertyDrawView property, FontInfo font) {
-        property.design.setFont(font);
-    }
-
-    public void setCaptionFont(FontInfo captionFont) {
-        for (PropertyDrawView property : getPropertiesIt()) {
-            setCaptionFont(property, captionFont);
-        }
-    }
-
-    public void setCaptionFont(FontInfo captionFont, GroupObjectEntity groupObject) {
-        for (PropertyDrawView property : getProperties(groupObject)) {
-            setCaptionFont(property, captionFont);
-        }
-    }
-
-    public void setCaptionFont(PropertyDrawView property, FontInfo captionFont) {
-        property.design.setCaptionFont(captionFont);
-    }
-
     @IdentityLazy
     public boolean hasHeaders(GroupObjectEntity entity) {
         for (PropertyDrawView property : getProperties(entity))
@@ -438,30 +403,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return false;
     }
 
-    public void setBackground(PropertyDrawView property, Color background) {
-        property.design.background = background;
-    }
-
-    public void setFocusable(boolean focusable, GroupObjectEntity groupObject, Version version) {
-
-        for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            setFocusable(propertyView, focusable, version);
-        }
-    }
-
-    public void setFocusable(ObjectEntity objectEntity, boolean focusable, Version version) {
-        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
-            setFocusable(property, focusable, version);
-        }
-    }
-
-    public void setFocusable(PropertyDrawView property, boolean focusable, Version version) {
-        property.setFocusable(focusable, version);
-    }
-
-    //todo: remove unused?
-    public void setChangeOnSingleClick(PropertyDrawView property, Boolean changeOnSingleClick, Version version) {
-        property.setChangeOnSingleClick(changeOnSingleClick, version);
+    public void setBackground(PropertyDrawView property, Color background, Version version) {
+        property.setBackground(background, version);
     }
 
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke, Version version) {

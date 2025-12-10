@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.FlexPanel;
@@ -70,7 +71,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
 
         setLabelText(property.getChangeCaption());
 
-        property.design.designHeader(label);
+        ClientColorUtils.designHeader(property.captionFont, label);
         if (property.focusable != null) {
             setFocusable(property.focusable);
         } else if (property.changeKey != null) {

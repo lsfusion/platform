@@ -543,7 +543,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     private boolean hasBackground() {
-        return design.background != null || entity.getPropertyExtra(BACKGROUND) != null;
+        return getBackground() != null || entity.getPropertyExtra(BACKGROUND) != null;
     }
 
     private boolean isLink(FormInstanceContext context) {

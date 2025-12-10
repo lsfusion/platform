@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.view;
 
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.table.view.CellTableInterface;
@@ -51,7 +52,7 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         }
         
         if (property != null) {
-            comp.setFont(property.design.getFont(table));
+            comp.setFont(ClientColorUtils.getOrDeriveComponentFont(property.font, table));
         }
 
         renderers.add(comp);
