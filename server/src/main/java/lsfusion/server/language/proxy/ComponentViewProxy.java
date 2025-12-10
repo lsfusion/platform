@@ -137,7 +137,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         if(elementClass instanceof LocalizedString)
             target.setElementClass(elementClass.toString(), getVersion());
         else
-            target.setPropertyElementClass((PropertyObjectEntity<?>) elementClass);
+            target.setPropertyElementClass((PropertyObjectEntity<?>) elementClass, getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -230,6 +230,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
 
     @SuppressWarnings("unused")
     public void setShowIf(PropertyObjectEntity<?> showIf) {
-        target.setShowIf(showIf);
+        target.setShowIf(showIf, getVersion());
     }
 }

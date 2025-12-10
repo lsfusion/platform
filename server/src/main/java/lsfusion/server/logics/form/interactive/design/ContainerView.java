@@ -311,8 +311,8 @@ public class ContainerView extends ComponentView {
     public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf) {
         for (ComponentView child : getChildrenIt()) {
             if (child instanceof ContainerView) {
-                ((ContainerView) child).fillBaseComponents(mComponents, parentShowIf || child.showIf != null);
-            } else if (child.showIf != null || (parentShowIf && !(child instanceof PropertyDrawView))) {
+                ((ContainerView) child).fillBaseComponents(mComponents, parentShowIf || child.getShowIf() != null);
+            } else if (child.getShowIf() != null || (parentShowIf && !(child instanceof PropertyDrawView))) {
                 mComponents.exclAdd(child);
             }
         }

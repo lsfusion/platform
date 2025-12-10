@@ -170,7 +170,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             new Function<ComponentView, PropertyObjectInstance<?>>() {
                 @Override
                 public PropertyObjectInstance<?> apply(ComponentView key) {
-                    return instanceFactory.getInstance(key.showIf);
+                    return instanceFactory.getInstance(key.getShowIf());
                 }
             };
 
@@ -2454,7 +2454,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
         ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
-                key -> key.showIf != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.showIf), SetFact.EMPTY(), changedProps, false)));
+                key -> key.getShowIf() != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false)));
 
         if(changed.isEmpty()) // optimization
             return;

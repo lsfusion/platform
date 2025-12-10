@@ -32,6 +32,7 @@ import static lsfusion.base.BaseUtils.nvl;
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
 
     private NFProperty<String> elementClass = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyElementClass = NFFact.property();
 
     private NFProperty<Integer> width = NFFact.property();
     private NFProperty<Integer> height = NFFact.property();
@@ -64,14 +65,16 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private NFProperty<Color> background = NFFact.property();
     private NFProperty<Color> foreground = NFFact.property();
 
+    private NFProperty<Property> activeTab = NFFact.property();
+
+    private NFProperty<PropertyObjectEntity> showIf = NFFact.property();
+
+    private NFProperty<ContainerView> container = NFFact.property();
+
     @Override
     public String toString() {
         return getSID();
     }
-
-    public PropertyObjectEntity propertyElementClass;
-
-    public PropertyObjectEntity<?> showIf;
 
     public int getWidth(FormInstanceContext context) {
         Integer width = getWidth();
@@ -258,35 +261,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return "auto";
     }
 
-    public PropertyObjectEntity<?> getShowIf() {
-        return showIf;
-    }
-
-    private Property<?> activeTab;
-
-    public Property<?> getActiveTab() {
-        if (activeTab == null) {
-            activeTab = PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance);
-        }
-        return activeTab;
-    }
-
-    public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
-        if(activeTab != null)
-            activeTab.change(session, value);
-    }
-
-    public ComponentView() {
-    }
-
-    public ComponentView(int ID) {
-        this.ID = ID;
-    }
-
-    public void setPropertyElementClass(PropertyObjectEntity<?> propertyElementClass) {
-        this.propertyElementClass = propertyElementClass;
-    }
-
     public void setSize(Dimension size, Version version) {
         this.setWidth(size.width, version);
         this.setHeight(size.height, version);
@@ -299,22 +273,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         setMarginRight(margin, version);
     }
 
-    public void setShowIf(PropertyObjectEntity<?> showIf) {
-        this.showIf = showIf;
-    }
-
     public ComponentView findById(int id) {
         if(ID==id)
             return this;
         return null;
-    }
-
-    protected NFProperty<ContainerView> container = NFFact.property();
-    public ContainerView getContainer() {
-        return container.get();
-    }
-    public ContainerView getNFContainer(Version version) {
-        return container.getNF(version);
     }
 
     public ComponentView getHiddenContainer() { // when used for hidden optimization
@@ -376,7 +338,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public boolean isShowIfHidable() {
-        return this.showIf != null;
+        return this.getShowIf() != null;
     }
 
     public boolean isUserHidable() {
@@ -392,7 +354,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected boolean hasPropertyComponent() {
-        return showIf != null || propertyElementClass != null;
+        return getShowIf() != null || getPropertyElementClass() != null;
     }
 
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
@@ -462,6 +424,13 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     public void setElementClass(String value, Version version) {
         elementClass.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyElementClass() {
+        return propertyElementClass.get();
+    }
+    public void setPropertyElementClass(PropertyObjectEntity value, Version version) {
+        propertyElementClass.set(value, version);
     }
 
     public Integer getWidth() {
@@ -641,11 +610,55 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         foreground.set(value, version);
     }
 
+    public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        Property activeTab = getActiveTab();
+        if(activeTab != null)
+            activeTab.change(session, value);
+    }
+    public Property getActiveTab(Version version) {
+        Property activeTab = getActiveTabNF(version);
+        if (activeTab == null) {
+            activeTab = PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance);
+            setActiveTab(activeTab, version);
+        }
+        return activeTab;
+    }
+    public Property getActiveTab() {
+        return activeTab.get();
+    }
+    public Property getActiveTabNF(Version version) {
+        return activeTab.getNF(version);
+    }
+    public void setActiveTab(Property value, Version version) {
+        activeTab.set(value, version);
+    }
+
+    public PropertyObjectEntity getShowIf() {
+        return showIf.get();
+    }
+    public void setShowIf(PropertyObjectEntity value, Version version) {
+        showIf.set(value, version);
+    }
+
+    public ContainerView getContainer() {
+        return container.get();
+    }
+    public ContainerView getNFContainer(Version version) {
+        return container.getNF(version);
+    }
+
     public void finalizeAroundInit() {
         container.finalizeChanges();
     }
 
     public void prereadAutoIcons(FormView formView, ConnectionContext context) {
+    }
+
+    public ComponentView() {
+    }
+
+    public ComponentView(int ID) {
+        super(ID);
     }
 
     // copy-constructor
@@ -655,6 +668,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         mapping.put(src, this);
 
         elementClass.set(src.elementClass.get(), mapping.version);
+        propertyElementClass.set(mapping.get(src.propertyElementClass.get()), mapping.version);
 
         width.set(src.width.get(), mapping.version);
         height.set(src.height.get(), mapping.version);
@@ -687,10 +701,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         background.set(src.background.get(), mapping.version);
         foreground.set(src.foreground.get(), mapping.version);
 
-        activeTab = src.activeTab;
+        showIf.set(mapping.get(src.showIf.get()), mapping.version);
 
-        propertyElementClass = mapping.get(src.propertyElementClass);
-        showIf = mapping.get(src.showIf);
+        activeTab.set(src.activeTab.get(), mapping.version);
+
         container.set(src.container, mapping::get, mapping.version);
     }
 }

@@ -2450,7 +2450,7 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 activePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedActiveProp($fc.component, $fp.propertyDraw);
+		$property = self.addScriptedActiveProp($fc.component, $fp.propertyDraw, self.getVersion());
 	}
 }
 	: 	'ACTIVE' ('TAB' fc = formComponentID | 'PROPERTY' fp = formPropertyID)

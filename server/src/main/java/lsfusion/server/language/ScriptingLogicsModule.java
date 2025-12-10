@@ -5147,8 +5147,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, from);
     }
 
-    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property) {
-        Property<?> activeProp = tab != null ? tab.getActiveTab() : property.getActiveProperty();
+    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property, Version version) {
+        Property<?> activeProp = tab != null ? tab.getActiveTab(version) : property.getActiveProperty();
         return new LPWithParams(new LP<>(activeProp));
     }
 
