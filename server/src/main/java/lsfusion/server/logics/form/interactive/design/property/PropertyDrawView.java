@@ -159,11 +159,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     private final NFProperty<Boolean> highlightDuplicate = NFFact.property();
 
-    @SuppressWarnings({"UnusedDeclaration"})
-    public PropertyDrawView() {
-
-    }
-
     public PropertyDrawView(PropertyDrawEntity entity, Version version) {
         super(entity.ID);
 
@@ -790,7 +785,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context));
-        outStream.writeBoolean(entity.hasActiveProperty());
+        outStream.writeBoolean(entity.getActiveProperty() != null);
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

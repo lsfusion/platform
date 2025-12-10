@@ -269,10 +269,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
 
-    public ContainerView createContainer(Version version) {
-        return createContainer(null, version);
-    }
-
     public ContainerView createContainer(LocalizedString caption, Version version) {
         return createContainer(caption, null, null, containerFactory, version);
     }

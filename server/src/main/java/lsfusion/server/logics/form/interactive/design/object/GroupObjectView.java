@@ -68,7 +68,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         for (ObjectEntity object : this.entity.getObjects())
             add(new ObjectView(idGen, object, this));
 
-        grid = new GridView(idGen.idShift(), this);
+        grid = new GridView(idGen.idShift(), idGen.idShift(), this);
         toolbarSystem = new ToolbarView(idGen.idShift());
 
         filtersContainer = new ContainerView(idGen.idShift());

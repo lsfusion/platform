@@ -22,7 +22,6 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -52,7 +51,6 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -166,20 +164,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyDrawEntity quickFilterProperty;
 
-    private Property<?> activeProperty;
-
-    public Property<?> getActiveProperty() {
-        if (activeProperty == null) {
-            activeProperty = PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance);
-        }
-        return activeProperty;
+    private final FormEntity.ExProperty activeProperty;
+    public Property<?> getNFActiveProperty(Version version) {
+        return activeProperty.getNF(version);
     }
-
-    public boolean hasActiveProperty() {
-        return activeProperty != null;
+    public Property<?> getActiveProperty() {
+        return activeProperty.get();
     }
 
     public void updateActiveProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        Property<?> activeProperty = getActiveProperty();
         if(activeProperty != null)
             activeProperty.change(session, value);
     }
@@ -263,6 +257,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         setIntegrationSID(integrationSID);
         this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
+
+        this.activeProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance));
     }
 
     public boolean isStaticProperty() {
@@ -1101,7 +1097,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         formula = src.formula;
         aggrFunc = src.aggrFunc;
         lastAggrDesc =  src.lastAggrDesc;
-        activeProperty =  src.activeProperty;
         inheritedProperty = src.inheritedProperty;
         defaultChangeEventScope = src.defaultChangeEventScope;
         integrationSID = src.integrationSID;
@@ -1116,6 +1111,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         lastAggrColumns = src.lastAggrColumns.mapListValues(mapping::get);
         quickFilterProperty = src.quickFilterProperty != null ? mapping.get(src.quickFilterProperty) : null;
         cellProperty = mapping.get(src.cellProperty);
+
+        activeProperty = mapping.get(src.activeProperty);
     }
 
     public boolean remapped = false;

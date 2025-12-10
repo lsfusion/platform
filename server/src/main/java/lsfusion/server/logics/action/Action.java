@@ -37,7 +37,6 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
@@ -75,7 +74,6 @@ import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -769,8 +767,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
-        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
-                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping),
+        return getGroupChange(entity.getGroupChange(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
+                              entity.getGroupChange(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
     private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {

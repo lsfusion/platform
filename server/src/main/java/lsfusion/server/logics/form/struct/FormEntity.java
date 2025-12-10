@@ -95,6 +95,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
@@ -423,7 +424,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             setFinalPropertyDrawSID(propertyDraw, "COUNT(" + group.getSID() + ")");
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
-            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType)))), PropertyDrawExtraType.SHOWIF, version);
+            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getNFListViewType(version)))), PropertyDrawExtraType.SHOWIF, version);
             propertyDraw.ignoreHasHeaders = true;
         }
     }
@@ -1692,24 +1693,26 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     Map<String, Integer> formsCount = new HashMap<>();
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
-        String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getSID())) : null;
-        if(extendCode != null) {
-            try {
-                String originalFormName = getName();
-                String copyFormName = originalFormName; // + "_copy";
+        if(isNamed()) {
+            String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getCanonicalName())) : null;
+            if (extendCode != null) {
+                try {
+                    String originalFormName = getName();
+                    String copyFormName = originalFormName; // + "_copy";
 
-                //create new eval module with extend form
+                    //create new eval module with extend form
 //                extendCode = extendCode.replace(originalFormName, copyFormName); //hack
-                //String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
-                String script = "FORM " + copyFormName + " : " + originalFormName + ";\n" + extendCode + ";\nrun{}";
-                Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
+                    //String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
+                    String script = "FORM " + copyFormName + " : " + originalFormName + ";\n" + extendCode + ";\nrun{}";
+                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
 
-                FormEntity copyForm = evalResult.second.findForm(copyFormName);
-                copyForm.customizeForm = this;
+                    FormEntity copyForm = evalResult.second.findForm(copyFormName);
+                    copyForm.customizeForm = this;
 
-                return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
-                throw Throwables.propagate(e);
+                    return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
+                } catch (ScriptingErrorLog.SemanticErrorException e) {
+                    throw Throwables.propagate(e);
+                }
             }
         }
         return new Pair<>(this, getObjects().toRevMap());
@@ -1826,7 +1829,93 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         forms.add(new Pair<>(src, mapping));
     }
 
-    List<Pair<FormEntity, ObjectMapping>> forms = Collections.synchronizedList(new ArrayList<>());
+    public static class ExProp<T> {
+        public final NFProperty<Boolean> used = NFFact.property();
+        public final ExSupplier<T> supplier;
+
+        interface ExSupplier<T> {
+            T getNF();
+
+            T get();
+        }
+
+        static class LazySupplier<T> implements ExSupplier<T> {
+
+            private final Supplier<T> delegate;
+            private volatile T value;
+
+            public LazySupplier(Supplier<T> delegate) {
+                this.delegate = delegate;
+            }
+
+            public T getNF() {
+                T result = value;
+                if (result == null) {
+                    synchronized (this) {
+                        result = value;
+                        if (result == null) {
+                            result = delegate.get();
+                            value = result;
+                        }
+                    }
+                }
+                return result;
+            }
+
+            public T get() {
+                return value;
+            }
+        }
+        static class MapSupplier<T> implements ExSupplier<T> {
+            private final ExSupplier<T> supplier;
+            private final Function<T, T> mapping;
+
+            public MapSupplier(ExSupplier supplier, Function<T, T> mapping) {
+                this.supplier = supplier;
+                this.mapping = mapping;
+            }
+
+            @Override
+            public T getNF() {
+                return mapping.apply(supplier.getNF());
+            }
+
+            @Override
+            public T get() {
+                return mapping.apply(supplier.get());
+            }
+        }
+
+        public ExProp(Supplier<T> supplier) {
+            this.supplier = new LazySupplier<>(supplier);
+        }
+
+        public ExProp(ExProp<T> exProp, Function<T, T> mapping, Version version) {
+            used.set(exProp.used, p -> p, version);
+            this.supplier = new MapSupplier<>(exProp.supplier, mapping);
+        }
+
+        public T getNF(Version version) {
+            used.set(true, version);
+            return supplier.getNF();
+        }
+
+        public T get() {
+            return used.get() != null ? supplier.get() : null;
+        }
+    }
+    public static class ExProperty extends ExProp<Property<?>> {
+
+        public ExProperty(Supplier<Property<?>> supplier) {
+            super(supplier);
+        }
+
+        public ExProperty(ExProperty exProp, ObjectMapping mapping) {
+            super(exProp, p -> p, mapping.version);
+        }
+    }
+
+    private final List<Pair<FormEntity, ObjectMapping>> forms = Collections.synchronizedList(new ArrayList<>());
 
     public GroupObjectEntity getExEntity(GroupObjectEntity entity) {
         if(getGroups().contains(entity))

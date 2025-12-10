@@ -117,7 +117,7 @@ public class ScriptingFormEntity {
     }
 
     private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup, LM.baseLM);
         groupObj.setDebugPoint(debugPoint); //also sets and scriptIndex inside
 
         for (int j = 0; j < groupObject.objects.size(); j++) {
@@ -196,6 +196,8 @@ public class ScriptingFormEntity {
             groupObj.setPropertyBackground(addPropertyObject(groupObject.background));
         if(groupObject.foreground != null)
             groupObj.setPropertyForeground(addPropertyObject(groupObject.foreground));
+
+        groupObj.fillGroupChanges(version);
 
         return groupObj;
     }

@@ -9,6 +9,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.type.Type;
@@ -59,30 +60,16 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
 
     public boolean isValue;
 
-    private boolean finalizedValueProperty;
-    private Property<?> valueProperty;
+    private final FormEntity.ExProperty valueProperty;
     @NFLazy
-    public Property<?> getNFValueProperty() {
-        if(finalizedValueProperty)
-            return valueProperty;
-
-        Property<?> prop = valueProperty;
-        if(prop==null) {
-            prop = PropertyFact.createDataPropRev("VALUE", this, baseClass);
-            valueProperty = prop;
-        }
-        return prop;
+    public Property<?> getNFValueProperty(Version version) {
+        return valueProperty.getNF(version);
     }
 
     public Property<?> getValueProperty() {
-        finalizedValueProperty = true;
-        return valueProperty;
+        return valueProperty.get();
     }
 
-    public ObjectEntity() {
-
-    }
-    
     public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption) {
         this(ID, null, baseClass, caption);
     }
@@ -98,6 +85,8 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         this.caption = caption;
         this.baseClass = baseClass;
         this.noClasses = noClasses;
+
+        valueProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("VALUE", this, baseClass));
     }
 
     public ObjectInstance getInstance(InstanceFactory instanceFactory) {
@@ -194,9 +183,8 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         noClasses = src.noClasses;
         integrationSID = src.integrationSID;
         isValue = src.isValue;
-        finalizedValueProperty = src.finalizedValueProperty;
-        valueProperty = src.valueProperty;
 
+        valueProperty = mapping.get(src.valueProperty);
         groupTo = mapping.get(src.groupTo);
     }
 }

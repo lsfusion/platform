@@ -12,9 +12,6 @@ import java.io.IOException;
 public class FilterView extends BaseComponentView {
     public PropertyDrawView property;
 
-    public FilterView() {
-    }
-
     public FilterView(int ID, PropertyDrawView property) {
         super(ID);
 

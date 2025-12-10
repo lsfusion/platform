@@ -415,7 +415,9 @@ public class GFormController implements EditManager {
     }
 
     public Pair<Widget, Boolean> getCaptionWidget() {
-        return new Pair<>(formContainer.getCaptionWidget(), formContainer.async);
+        boolean captionInitialized = formContainer.captionInitialized;
+        formContainer.captionInitialized = true; // need this for the recreate form
+        return new Pair<>(formContainer.getCaptionWidget(), captionInitialized);
     }
     private void initializeParams() {
         hasColumnGroupObjects = false;

@@ -29,10 +29,12 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class AutoFinalFormEntity extends AutoFormEntity {
 
     protected Version baseVersion;
+    protected BaseLogicsModule LM;
 
     public AutoFinalFormEntity(LocalizedString caption, BaseLogicsModule LM) {
         super(caption, true, LM.getVersion());
 
+        this.LM = LM;
         baseVersion = LM.getVersion();
     }
 
@@ -80,7 +82,7 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     }
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null, LM);
         ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
         groupObject.add(object);
         addGroupObject(groupObject);

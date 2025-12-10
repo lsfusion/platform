@@ -33,6 +33,7 @@ public abstract class FormContainer {
     protected GFormController form;
 
     public boolean async;
+    public boolean captionInitialized;
 
     private boolean asyncHidden;
     private EndReason asyncHiddenReason;
@@ -44,6 +45,7 @@ public abstract class FormContainer {
         this.formsController = formsController;
         this.contextForm = contextForm;
         this.async = async;
+        this.captionInitialized = async;
         this.editEvent = editEvent;
     }
 

@@ -4605,7 +4605,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ObjectEntity object = findForm(formName).getNFObject(objectName, getVersion());
         if (object != null) {
-            resultProp = new LPWithParams(addValueObjectProp(object));
+            resultProp = new LPWithParams(addValueObjectProp(object, getVersion()));
         } else  {
             errLog.emitNotFoundError(parser, "оbject", objectName);
         }
@@ -5147,8 +5147,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, from);
     }
 
-    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property, Version version) {
-        Property<?> activeProp = tab != null ? tab.getActiveTab(version) : property.getActiveProperty();
+    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property) {
+        Version version = getVersion();
+        Property<?> activeProp = tab != null ? tab.getNFActiveTab(version) : property.getNFActiveProperty(version);
         return new LPWithParams(new LP<>(activeProp));
     }
 

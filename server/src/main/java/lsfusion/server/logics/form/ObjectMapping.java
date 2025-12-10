@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form;
 
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -26,6 +27,8 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -298,4 +301,16 @@ public class ObjectMapping {
         }; // first check is basically optimization
     }
 
+    public <T extends PropertyInterface> PropertyRevImplement<T, ObjectEntity> get(PropertyRevImplement<T, ObjectEntity> prop) {
+        return new PropertyRevImplement<>(prop.property, prop.mapping.mapRevValues((ObjectEntity obj) -> get(obj)));
+    }
+    public FormEntity.ExProperty get(FormEntity.ExProperty key) {
+        return new FormEntity.ExProperty(key, this);
+    }
+    public GroupObjectEntity.ExGroupProperty get(GroupObjectEntity.ExGroupProperty key) {
+        return new GroupObjectEntity.ExGroupProperty(key, this);
+    }
+    public GridView.ExContainerView get(GridView.ExContainerView key) {
+        return new GridView.ExContainerView(key, this);
+    }
 }

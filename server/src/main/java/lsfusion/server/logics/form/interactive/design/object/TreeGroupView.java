@@ -6,7 +6,6 @@ import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -68,10 +67,6 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     @Override
     public String getPropertyGroupContainerName() {
         return entity.getSID();
-    }
-
-    public TreeGroupView() {
-        
     }
 
     public TreeGroupView(FormView form, TreeGroupEntity entity, Version version) {

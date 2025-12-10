@@ -11,7 +11,9 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -33,6 +35,7 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
@@ -51,6 +54,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import java.sql.SQLException;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 
@@ -162,21 +166,26 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     }
 
-    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup) {
-        this(ID, (String)null);
+    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup, BaseLogicsModule LM) {
+        this(ID, (String)null, LM);
         this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
-    private Property<?> listViewTypeProp;
-    public Property<?> getListViewType(ConcreteCustomClass listViewType) {
-        if (listViewTypeProp == null) {
-            listViewTypeProp = PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType);
-        }
-        return listViewTypeProp;
+    private final FormEntity.ExProperty listViewTypeProp;
+    public Property<?> getNFListViewType(Version version) {
+        return listViewTypeProp.getNF(version);
+    }
+    public Property<?> getListViewType() {
+        return listViewTypeProp.get();
     }
 
-    public GroupObjectEntity(int ID, String sID) {
+    public GroupObjectEntity(int ID, String sID, BaseLogicsModule LM) {
         super(ID, sID != null ? sID : "groupObj" + ID);
+
+        ConcreteCustomClass listViewType = LM.listViewType;
+        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
+        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
+                () -> PropertyFact.createDataPropRev(type.toString(), this, getObjects().mapValues((ObjectEntity value) -> value.baseClass), type.getValueClass(), null)));
     }
 
     public ClassViewType viewType = ClassViewType.DEFAULT;
@@ -194,36 +203,45 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public PropertyObjectEntity<?> propertyBackground;
     public PropertyObjectEntity<?> propertyForeground;
 
-    public boolean isFilterExplicitlyUsed; // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
-    public boolean isOrderExplicitlyUsed; // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
 
-    private boolean finalizedProps = false;
-    private Object props = MapFact.mExclMap();
-    @NFLazy
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
-        if(finalizedProps)
-            return getProperties().get(type);
-
-        assert finalizedObjects;
-        MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
-        if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = PropertyFact.createDataPropRev(type.toString(), objects, getObjects().mapValues(new Function<ObjectEntity, ValueClass>() {
-                public ValueClass apply(ObjectEntity value) {
-                    return value.baseClass;
-                }}), type.getValueClass(), null);
-            mProps.exclAdd(type, prop);
-        }
-        return prop;
+    public boolean isFilterExplicitlyUsed() {
+        return isFilterExplicitlyUsed.get() != null;
+    }
+    public boolean isOrderExplicitlyUsed() {
+        return isOrderExplicitlyUsed.get() != null;
     }
 
-    @NFLazy
-    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
-        if(!finalizedProps) {
-            props = ((MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();
-            finalizedProps = true;
+    public static class ExGroupProperty extends FormEntity.ExProp<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> {
+
+        public ExGroupProperty(Supplier<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> supplier) {
+            super(supplier);
         }
-        return (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
+
+        public ExGroupProperty(FormEntity.ExProp<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> exProp, ObjectMapping mapping) {
+            super(exProp, mapping::get, mapping.version);
+        }
+    }
+    private final ImMap<GroupObjectProp, ExGroupProperty> props;
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getNFProperty(GroupObjectProp type, Version version) {
+        if(type.equals(GroupObjectProp.FILTER))
+            isFilterExplicitlyUsed.set(true, version);
+        if(type.equals(GroupObjectProp.ORDER))
+            isOrderExplicitlyUsed.set(true, version);
+        return props.get(type).getNF(version);
+    }
+
+    public void fillGroupChanges(Version version) {
+        props.get(GroupObjectProp.FILTER).getNF(version);
+        props.get(GroupObjectProp.ORDER).getNF(version);
+    }
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getGroupChange(GroupObjectProp type) {
+        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER);
+        return props.get(type).get();
+    }
+    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
+        return props.mapValues(FormEntity.ExProp::get).removeNulls();
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
@@ -334,8 +352,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             object.groupTo = this;
     }
 
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects) {
-        this(ID, (String)null);
+    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM) {
+        this(ID, (String)null, LM);
 
         setObjects(objects);
     }
@@ -414,6 +432,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
+        listViewTypeProp = null;
+        props = null;
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
@@ -439,7 +459,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         enableManualUpdate = src.enableManualUpdate;
         integrationSID = src.integrationSID;
         integrationKey = src.integrationKey;
-        listViewTypeProp = src.listViewTypeProp;
         viewType = src.viewType;
         listViewType = src.listViewType;
         pivotOptions = src.pivotOptions;
@@ -447,8 +466,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         mapTileProvider = src.mapTileProvider;
         asyncInit =  src.asyncInit;
         pageSize = src.pageSize;
-        isFilterExplicitlyUsed =  src.isFilterExplicitlyUsed;
-        isOrderExplicitlyUsed =  src.isOrderExplicitlyUsed;
 
         for(ObjectEntity e : src.getOrderObjects())
             add(mapping.get(e));
@@ -460,8 +477,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         propertyForeground = mapping.get(src.propertyForeground);
         isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
 
-        // todo: should be refactored somehow
-        this.props = src.getProperties().mapValues(p -> new PropertyRevImplement<>(p.property, p.mapping.mapRevValues((Function<ObjectEntity, ObjectEntity>) mapping::get)));
-        this.finalizedProps = src.finalizedProps;
+        props = src.props.mapItValues(mapping::get);
+        listViewTypeProp = mapping.get(src.listViewTypeProp);
+        isFilterExplicitlyUsed.set(src.isFilterExplicitlyUsed, p -> p, mapping.version);
+        isOrderExplicitlyUsed.set(src.isOrderExplicitlyUsed, p -> p, mapping.version);
     }
 }

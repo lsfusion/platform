@@ -17,6 +17,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -64,8 +65,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private NFProperty<FontInfo> captionFont = NFFact.property();
     private NFProperty<Color> background = NFFact.property();
     private NFProperty<Color> foreground = NFFact.property();
-
-    private NFProperty<Property> activeTab = NFFact.property();
 
     private NFProperty<PropertyObjectEntity> showIf = NFFact.property();
 
@@ -259,6 +258,26 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             return "visible";
 
         return "auto";
+    }
+
+    private final FormEntity.ExProperty activeTab;
+    public Property<?> getNFActiveTab(Version version) {
+        return activeTab.getNF(version);
+    }
+    public Property<?> getActiveTab() {
+        return activeTab.get();
+    }
+
+    public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        Property<?> activeTab = getActiveTab();
+        if(activeTab != null)
+            activeTab.change(session, value);
+    }
+
+    public ComponentView(int ID) {
+        super(ID);
+
+        activeTab = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance));
     }
 
     public void setSize(Dimension size, Version version) {
@@ -610,29 +629,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         foreground.set(value, version);
     }
 
-    public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
-        Property activeTab = getActiveTab();
-        if(activeTab != null)
-            activeTab.change(session, value);
-    }
-    public Property getActiveTab(Version version) {
-        Property activeTab = getActiveTabNF(version);
-        if (activeTab == null) {
-            activeTab = PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance);
-            setActiveTab(activeTab, version);
-        }
-        return activeTab;
-    }
-    public Property getActiveTab() {
-        return activeTab.get();
-    }
-    public Property getActiveTabNF(Version version) {
-        return activeTab.getNF(version);
-    }
-    public void setActiveTab(Property value, Version version) {
-        activeTab.set(value, version);
-    }
-
     public PropertyObjectEntity getShowIf() {
         return showIf.get();
     }
@@ -652,13 +648,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public void prereadAutoIcons(FormView formView, ConnectionContext context) {
-    }
-
-    public ComponentView() {
-    }
-
-    public ComponentView(int ID) {
-        super(ID);
     }
 
     // copy-constructor
@@ -703,8 +692,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         showIf.set(mapping.get(src.showIf.get()), mapping.version);
 
-        activeTab.set(src.activeTab.get(), mapping.version);
-
         container.set(src.container, mapping::get, mapping.version);
+
+        activeTab = mapping.get(src.activeTab);
     }
 }

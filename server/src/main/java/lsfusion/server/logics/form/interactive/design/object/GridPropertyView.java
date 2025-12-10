@@ -27,9 +27,6 @@ public abstract class GridPropertyView extends BaseComponentView {
         return super.hasPropertyComponent() || propertyValueClass != null;
     }
 
-    public GridPropertyView() {
-    }
-
     public GridPropertyView(int ID) {
         super(ID);
     }

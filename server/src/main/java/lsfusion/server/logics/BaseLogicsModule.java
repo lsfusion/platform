@@ -1135,22 +1135,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
-        if(prop.equals(GroupObjectProp.FILTER))
-            groupObject.isFilterExplicitlyUsed = true;
-        if(prop.equals(GroupObjectProp.ORDER))
-            groupObject.isOrderExplicitlyUsed = true;
-        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
-    }
-
-    @IdentityStrongLazy
-    public LP addValueObjectProp(ObjectEntity object) {
-        Property<?> valueProperty = object.getNFValueProperty();
-        return addProperty(null, new LP<>(valueProperty));
-    }
-
-    @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
         LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, ModalityWindowFormType.DOCKED, true);
 

@@ -126,6 +126,7 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -2151,11 +2152,13 @@ public abstract class LogicsModule {
     }
 
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        return baseLM.addGroupObjectProp(groupObject, prop);
+        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getNFProperty(prop, getVersion());
+        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 
-    public LP addValueObjectProp(ObjectEntity object) {
-        return baseLM.addValueObjectProp(object);
+    public LP addValueObjectProp(ObjectEntity object, Version version) {
+        Property<?> valueProperty = object.getNFValueProperty(version);
+        return addProperty(null, new LP<>(valueProperty));
     }
 
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {

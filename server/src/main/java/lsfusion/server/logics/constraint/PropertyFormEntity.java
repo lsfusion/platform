@@ -36,7 +36,7 @@ public class PropertyFormEntity extends AutoFinalFormEntity {
         if(mapObjects.isEmpty()) // not to create GroupObjectEntity with no objects
             objects = SetFact.EMPTYORDER();
         else {
-            GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet());
+            GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), LM);
             addGroupObject(groupObject);
 
             objects = groupObject.getOrderObjects();

@@ -644,9 +644,6 @@ public class ContainerView extends ComponentView {
         return (caption != null ? ThreadLocalContext.localize(getCaption()) + " " : "") + super.toString();
     }
 
-    public ContainerView() {
-    }
-
     public ContainerView(int ID) {
         this(ID, false);
     }

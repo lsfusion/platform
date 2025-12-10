@@ -6,7 +6,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 
 public class CalculationsView extends BaseComponentView {
-    public CalculationsView() {}
 
     public CalculationsView(int ID) {
         super(ID);

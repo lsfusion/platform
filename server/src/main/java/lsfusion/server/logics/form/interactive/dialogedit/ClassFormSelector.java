@@ -77,8 +77,9 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
         ClassFormEntity formEntity = getForm(BL, concreteCustomClass);
         if(formEntity == null)
             return null;
-        
-        return new Pair<>(formEntity.form, MapFact.singletonRev(formEntity.object, virtualObject));
+
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm = formEntity.form.getForm(BL, session, MapFact.singleton(formEntity.object, concreteObject));
+        return new Pair<>(getForm.first, MapFact.singletonRev(getForm.second.reverse().get(formEntity.object), virtualObject));
     }
 
     @Override

@@ -6,9 +6,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 
 public class BaseComponentView extends ComponentView {
 
-    public BaseComponentView() {
-    }
-
     public BaseComponentView(int ID) {
         super(ID);
     }

@@ -13,7 +13,6 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -43,7 +42,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(element -> element instanceof PropertyInterface).reverse()
         );
 
-        detailsGroup = new GroupObjectEntity(genID(), "");
+        detailsGroup = new GroupObjectEntity(genID(), "", LM);
 
         ImMap<I, ValueClass> innerClasses = property.getInnerInterfaceClasses();
         MRevMap<I, ObjectEntity> mInnerObjects = MapFact.mRevMap();

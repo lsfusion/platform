@@ -420,11 +420,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         this.options = options;
 
-        MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
+        // here it's tricky here, because of the forms aggregation (when the same form is aggregated twice), one data property can be used for several object instances
+        // so we use the first just like in the getExEntity
+        MMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mMap(MapFact.keep());
         for (GroupObjectInstance groupObject : groupObjects) {
             ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
             for(int i = 0, size = props.size(); i<size; i++)
-                mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
+                mEnvironmentIncrementSources.add((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
         

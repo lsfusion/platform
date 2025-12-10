@@ -44,7 +44,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
         for (ValueClass valueClass : classes) {
             String sID = "param" + index;
 
-            GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group");
+            GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group", LM);
             paramGroup.setViewTypePanel();
 
             ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
@@ -57,7 +57,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
 
         params = mParams.immutableOrder();
 
-        GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup");
+        GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup", LM);
         ObjectEntity objSession = new ObjectEntity(genID(), "session", sessionClass, LocalizedString.create("{form.entity.session}"));
         ImOrderSet<ObjectEntity> entities = params.addOrderExcl(objSession);
         logGroup.add(objSession);

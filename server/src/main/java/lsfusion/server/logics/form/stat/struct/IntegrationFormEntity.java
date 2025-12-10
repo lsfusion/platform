@@ -12,7 +12,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
@@ -54,13 +53,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         });
 
         if(!valueInterfaces.isEmpty()) {
-            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
+            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), LM); // we don't know parameter classes
             valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
             addGroupObject(valueGroupObject, version);
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
-            groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
+            groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), LM); // we don't know parameter classes
             groupObject.setSID("value"); // for JSON and XML
             groupObject.setListViewType(ListViewType.CUSTOM);
             groupObject.setCustomRenderFunction("selectMultiInput");

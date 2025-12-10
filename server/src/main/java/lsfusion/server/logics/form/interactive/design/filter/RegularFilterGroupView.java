@@ -3,14 +3,12 @@ package lsfusion.server.logics.form.interactive.design.filter;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -20,10 +18,6 @@ public class RegularFilterGroupView extends BaseComponentView {
 
     public NFOrderSet<RegularFilterView> filters = NFFact.orderSet();
 
-    public RegularFilterGroupView() {
-        
-    }
-    
     public RegularFilterGroupView(RegularFilterGroupEntity entity, Version version) {
         super(entity.ID);
 

@@ -91,7 +91,7 @@ public class ScriptingFormView {
             location = ComplexLocation.DEFAULT();
 
         if(parentComponent instanceof GridView) {
-            parentComponent = ((GridView) parentComponent).getNFRecord(view, version);
+            parentComponent = ((GridView) parentComponent).getNFRecord(version);
         }
 
         if (!(parentComponent instanceof ContainerView))

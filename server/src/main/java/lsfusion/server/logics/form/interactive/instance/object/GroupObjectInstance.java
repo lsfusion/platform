@@ -973,10 +973,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(isPending != wasPending)
             changes.updateStateObjects.add(this, isPending);
     }
-    private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
-        return props.get(propType) != null;
-    }
-    
+
     private MAddMap<GroupObjectProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
     public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
@@ -999,13 +996,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 mUsedProps = SetFact.mSet();
             else {
                 if(propType.equals(GroupObjectProp.FILTER) &&
-                    !entity.isFilterExplicitlyUsed &&
+                    !entity.isFilterExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_FILTERPROP;
                     return;
                 }
                 if(propType.equals(GroupObjectProp.ORDER) &&
-                    !entity.isOrderExplicitlyUsed &&
+                    !entity.isOrderExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_ORDERPROP;
                     return;
@@ -1414,7 +1411,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(this.listViewType != null && this.listViewType.isValue() != value.isValue())
             updated |= UPDATED_VIEWTYPEVALUE;
         this.listViewType = value;
-        execEnv.change(entity.getListViewType(listViewType), new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
+
+        Property<?> listViewTypeProp = entity.getListViewType();
+        if(listViewTypeProp != null)
+            execEnv.change(listViewTypeProp, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
@@ -1439,12 +1439,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void updateOrderProperty(boolean isOrderExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        if (entity.isOrderExplicitlyUsed == isOrderExplicitlyUsed)
+        if (entity.isOrderExplicitlyUsed() == isOrderExplicitlyUsed)
             modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        if (entity.isFilterExplicitlyUsed == isFilterExplicitlyUsed)
+        if (entity.isFilterExplicitlyUsed() == isFilterExplicitlyUsed)
             modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 

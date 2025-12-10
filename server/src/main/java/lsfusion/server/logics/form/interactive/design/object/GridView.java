@@ -5,10 +5,11 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 public class GridView extends GridPropertyView {
 
@@ -17,26 +18,35 @@ public class GridView extends GridPropertyView {
 
     public GroupObjectView groupObject;
 
-    protected ContainerView record; // lazy creation, since its usage is pretty rear
+    // lazy creation, since its usage is pretty rear
+    public static class ExContainerView extends FormEntity.ExProp<ContainerView> {
+
+        public ExContainerView(Supplier<ContainerView> supplier) {
+            super(supplier);
+        }
+
+        public ExContainerView(FormEntity.ExProp<ContainerView> exProp, ObjectMapping mapping) {
+            super(exProp, mapping::get, mapping.version);
+        }
+    }
+    private final ExContainerView record;
     public ContainerView getRecord() { // assert that grid view is "finalized"
-        return record;
+        return record.get();
     }
     @NFLazy
-    public ContainerView getNFRecord(FormView formView, Version version) {
-        if(record == null) {
-            record = formView.createContainer(version);
-            record.recordContainer = this;
-        }
-        return record;
+    public ContainerView getNFRecord(Version version) {
+        return record.getNF(version);
     }
 
-    public GridView() {
-        
-    }
-
-    public GridView(int ID, GroupObjectView groupObject) {
+    public GridView(int ID, int recordID, GroupObjectView groupObject) {
         super(ID);
         this.groupObject = groupObject;
+
+        record = new ExContainerView(() -> {
+            ContainerView record = new ContainerView(recordID);
+            record.recordContainer = this;
+            return record;
+        });
     }
 
     //todo: формально временное решение:
@@ -62,6 +72,7 @@ public class GridView extends GridPropertyView {
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
+        ContainerView record = getRecord();
         if(record != null)
             record.finalizeAroundInit();
     }
