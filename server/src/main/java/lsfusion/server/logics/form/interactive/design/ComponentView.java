@@ -455,7 +455,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Integer getWidth() {
         return width.get();
     }
-    public Integer getWidthNF(Version version) {
+    public Integer getNFWidth(Version version) {
         return width.getNF(version);
     }
     public void setWidth(Integer value, Version version) {
@@ -465,7 +465,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Integer getHeight() {
         return height.get();
     }
-    public Integer getHeightNF(Version version) {
+    public Integer getNFHeight(Version version) {
         return height.getNF(version);
     }
     public void setHeight(Integer value, Version version) {
@@ -601,7 +601,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public FontInfo getFont() {
         return font.get();
     }
-    public FontInfo getFontNF(Version version) {
+    public FontInfo getNFFont(Version version) {
         return font.getNF(version);
     }
     public void setFont(FontInfo value, Version version) {
@@ -656,41 +656,41 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         mapping.put(src, this);
 
-        elementClass.set(src.elementClass.get(), mapping.version);
-        propertyElementClass.set(mapping.get(src.propertyElementClass.get()), mapping.version);
+        elementClass.set(src.elementClass, p -> p, mapping.version);
+        propertyElementClass.set(src.propertyElementClass, mapping::get, mapping.version);
 
-        width.set(src.width.get(), mapping.version);
-        height.set(src.height.get(), mapping.version);
+        width.set(src.width, p -> p, mapping.version);
+        height.set(src.height, p -> p, mapping.version);
 
-        span.set(src.span.get(), mapping.version);
+        span.set(src.span, p -> p, mapping.version);
 
-        defaultComponent.set(src.defaultComponent.get(), mapping.version);
-        activated.set(src.activated.get(), mapping.version);
+        defaultComponent.set(src.defaultComponent, p -> p, mapping.version);
+        activated.set(src.activated, p -> p, mapping.version);
 
-        flex.set(src.flex.get(), mapping.version);
-        alignment.set(src.alignment.get(), mapping.version);
-        shrink.set(src.shrink.get(), mapping.version);
-        alignShrink.set(src.alignShrink.get(), mapping.version);
-        alignCaption.set(src.alignCaption.get(), mapping.version);
-        overflowHorz.set(src.overflowHorz.get(), mapping.version);
-        overflowVert.set(src.overflowVert.get(), mapping.version);
+        flex.set(src.flex, p -> p, mapping.version);
+        alignment.set(src.alignment, p -> p, mapping.version);
+        shrink.set(src.shrink, p -> p, mapping.version);
+        alignShrink.set(src.alignShrink, p -> p, mapping.version);
+        alignCaption.set(src.alignCaption, p -> p, mapping.version);
+        overflowHorz.set(src.overflowHorz, p -> p, mapping.version);
+        overflowVert.set(src.overflowVert, p -> p, mapping.version);
 
-        captionVertical.set(src.captionVertical.get(), mapping.version);
-        captionLast.set(src.captionLast.get(), mapping.version);
-        captionAlignmentHorz.set(src.captionAlignmentHorz.get(), mapping.version);
-        captionAlignmentVert.set(src.captionAlignmentVert.get(), mapping.version);
+        captionVertical.set(src.captionVertical, p -> p, mapping.version);
+        captionLast.set(src.captionLast, p -> p, mapping.version);
+        captionAlignmentHorz.set(src.captionAlignmentHorz, p -> p, mapping.version);
+        captionAlignmentVert.set(src.captionAlignmentVert, p -> p, mapping.version);
 
-        marginTop.set(src.marginTop.get(), mapping.version);
-        marginBottom.set(src.marginBottom.get(), mapping.version);
-        marginLeft.set(src.marginLeft.get(), mapping.version);
-        marginRight.set(src.marginRight.get(), mapping.version);
+        marginTop.set(src.marginTop, p -> p, mapping.version);
+        marginBottom.set(src.marginBottom, p -> p, mapping.version);
+        marginLeft.set(src.marginLeft, p -> p, mapping.version);
+        marginRight.set(src.marginRight, p -> p, mapping.version);
 
-        font.set(src.font.get(), mapping.version);
-        captionFont.set(src.captionFont.get(), mapping.version);
-        background.set(src.background.get(), mapping.version);
-        foreground.set(src.foreground.get(), mapping.version);
+        font.set(src.font, p -> p, mapping.version);
+        captionFont.set(src.captionFont, p -> p, mapping.version);
+        background.set(src.background, p -> p, mapping.version);
+        foreground.set(src.foreground, p -> p, mapping.version);
 
-        showIf.set(mapping.get(src.showIf.get()), mapping.version);
+        showIf.set(src.showIf, mapping::get, mapping.version);
 
         container.set(src.container, mapping::get, mapping.version);
 

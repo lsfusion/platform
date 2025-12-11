@@ -1,7 +1,9 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -11,10 +13,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class GridView extends GridPropertyView {
 
-    public boolean tabVertical = false;
-    private boolean quickSearch = false;
+    private NFProperty<Boolean> tabVertical = NFFact.property();
+    private NFProperty<Boolean> quickSearch = NFFact.property();
 
     public GroupObjectView groupObject;
 
@@ -49,23 +53,33 @@ public class GridView extends GridPropertyView {
         });
     }
 
-    //todo: формально временное решение:
-    //todo: метод дизайна, который изменяет энтити => должно быть перенсено на уровень энтити
-    public void setQuickSearch(boolean quickSearch) {
-        this.quickSearch = quickSearch;
-        groupObject.entity.pageSize = 0;
-    }
-
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(tabVertical);
-        outStream.writeBoolean(quickSearch);
+        outStream.writeBoolean(isTabVertical());
+        outStream.writeBoolean(isQuickSearch());
 
         pool.serializeObject(outStream, getRecord());
 
         pool.serializeObject(outStream, groupObject);
+    }
+
+    public boolean isTabVertical() {
+        return nvl(tabVertical.get(), false);
+    }
+    public void setTabVertical(Boolean value, Version version) {
+        tabVertical.set(value, version);
+    }
+
+    public boolean isQuickSearch() {
+        return nvl(quickSearch.get(), false);
+    }
+    //todo: формально временное решение:
+    //todo: метод дизайна, который изменяет энтити => должно быть перенсено на уровень энтити
+    public void setQuickSearch(Boolean value, Version version) {
+        quickSearch.set(value, version);
+        groupObject.entity.pageSize = 0;
     }
 
     @Override
@@ -85,8 +99,8 @@ public class GridView extends GridPropertyView {
     public GridView(GridView src, ObjectMapping mapping) {
         super(src, mapping);
 
-        tabVertical = src.tabVertical;
-        quickSearch = src.quickSearch;
+        tabVertical.set(src.tabVertical, p -> p, mapping.version);
+        quickSearch.set(src.quickSearch, p -> p, mapping.version);
 
         groupObject = mapping.get(src.groupObject);
         record = mapping.get(src.record);

@@ -750,43 +750,43 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-            if(propertyView.getCharWidthNF(version) == null)
+            if(propertyView.getNFCharWidth(version) == null)
                 propertyView.setCharWidth(charWidth, version);
-            if(propertyView.getValueFlexNF(version) == null)
+            if(propertyView.getNFValueFlex(version) == null)
                 propertyView.setValueFlex(valueFlex, version);
-            if(propertyView.getValueWidthNF(version) == null)
+            if(propertyView.getNFValueWidth(version) == null)
                 propertyView.setValueWidth(valueWidth, version);
-            if(propertyView.getValueHeightNF(version) == null)
+            if(propertyView.getNFValueHeight(version) == null)
                 propertyView.setValueHeight(valueHeight, version);
-            if(propertyView.getCaptionWidthNF(version) == null)
+            if(propertyView.getNFCaptionWidth(version) == null)
                 propertyView.setCaptionWidth(captionWidth, version);
-            if(propertyView.getCaptionHeightNF(version) == null)
+            if(propertyView.getNFCaptionHeight(version) == null)
                 propertyView.setCaptionHeight(captionHeight, version);
-            if (propertyView.getChangeKeyNF(version) == null)
+            if (propertyView.getNFChangeKey(version) == null)
                 propertyView.setChangeKey(changeKey, version);
-            if (propertyView.getShowChangeKeyNF(version) == null)
+            if (propertyView.getNFShowChangeKey(version) == null)
                 propertyView.setShowChangeKey(BaseUtils.nvl(showChangeKey, true), version);
-            if (propertyView.getChangeMouseNF(version) == null)
+            if (propertyView.getNFChangeMouse(version) == null)
                 propertyView.setChangeMouse(changeMouse, version);
-            if (propertyView.getShowChangeMouseNF(version) == null)
+            if (propertyView.getNFShowChangeMouse(version) == null)
                 propertyView.setShowChangeMouse(BaseUtils.nvl(showChangeMouse, true), version);
 
-            if(propertyView.getPatternNF(version) == null)
+            if(propertyView.getNFPattern(version) == null)
                 propertyView.setPattern(pattern, version);
-            if(propertyView.getRegexpNF(version) == null)
+            if(propertyView.getNFRegexp(version) == null)
                 propertyView.setRegexp(regexp, version);
-            if(propertyView.getRegexpMessageNF(version) == null)
+            if(propertyView.getNFRegexpMessage(version) == null)
                 propertyView.setRegexpMessage(regexpMessage, version);
 
-            if (propertyView.getEchoSymbolsNF(version) == null)
+            if (propertyView.getNFEchoSymbols(version) == null)
                 propertyView.setEchoSymbols(BaseUtils.nvl(echoSymbols, false), version);
             
-            if(propertyView.getDefaultCompareNF(version) == null)
+            if(propertyView.getNFDefaultCompare(version) == null)
                 propertyView.setDefaultCompare(defaultCompare, version);
 
-            if(propertyView.getStickyNF(version) == null)
+            if(propertyView.getNFSticky(version) == null)
                 propertyView.setSticky(sticky, version);
-            if(propertyView.getSyncNF(version) == null)
+            if(propertyView.getNFSync(version) == null)
                 propertyView.setSync(sync, version);
 
             for(DefaultProcessor processor : processors)

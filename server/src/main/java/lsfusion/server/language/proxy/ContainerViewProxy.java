@@ -18,7 +18,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
             target.setCaption((LocalizedString) caption, getVersion());
         else {
             // we want to keep base name for example for form name prediction in async form opening
-            if (target.getCaptionNF(getVersion()) == null) {
+            if (target.getNFCaption(getVersion()) == null) {
                 // it's important for web-client to know that caption may appear as container caption is implemented as wrapper panel
                 target.setCaption(LocalizedString.NONAME, getVersion());
             }

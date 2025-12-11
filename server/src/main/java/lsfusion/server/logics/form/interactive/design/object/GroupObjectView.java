@@ -46,7 +46,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public FilterControlsView filterControls; 
     public CalculationsView calculations;
 
-    public Boolean needVerticalScroll = true;
+    public Boolean needVerticalScroll = true; //todo: no setter in Proxy
 
     private int ID;
 

@@ -19,6 +19,7 @@ import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -83,11 +84,15 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
         ExecutionStack stack = context.stack;
 
-        FormEntity formEntity = context.getFormInstance(false, false).entity;
+        FormInstance formInstance = context.getFormInstance(false, false);
+        FormEntity formEntity = formInstance != null ? formInstance.entity : null;
         Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
-        EvalScriptingLogicsModule customizeEvalLM = formEntity.getEvalLM();
-        if (customizeEvalLM != null)
-            parentLMs.add(customizeEvalLM);
+        if(formEntity != null) {
+            EvalScriptingLogicsModule customizeEvalLM = formEntity.getEvalLM();
+            if (customizeEvalLM != null) {
+                parentLMs.add(customizeEvalLM);
+            }
+        }
         EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
         if (stackEvalLM != null)
             parentLMs.add(stackEvalLM);

@@ -207,10 +207,10 @@ public class InstanceFactory {
             PropertyObjectEntity propertyElementClass = entity.getPropertyElementClass();
             PropertyObjectInstance propertyElementClassInstance = propertyElementClass != null ? getInstance(propertyElementClass) : null;
             if(entity instanceof GridPropertyView) {
-                PropertyObjectEntity propertyValueClass = ((GridPropertyView) entity).propertyValueClass;
+                PropertyObjectEntity propertyValueClass = ((GridPropertyView) entity).getPropertyValueClass();
                 PropertyObjectInstance propertyValueClassInstance = propertyValueClass != null ? getInstance(propertyValueClass) : null;
                 if(entity instanceof TreeGroupView) {
-                    PropertyObjectEntity propertyHierarchicalCaption = ((TreeGroupView) entity).propertyHierarchicalCaption;
+                    PropertyObjectEntity propertyHierarchicalCaption = ((TreeGroupView) entity).getPropertyHierarchicalCaption();
                     baseComponentViewInstance = new TreeGroupViewInstance(entity, propertyElementClassInstance,
                             propertyValueClassInstance,
                             propertyHierarchicalCaption != null ? getInstance(propertyHierarchicalCaption) : null);

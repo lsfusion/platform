@@ -22,8 +22,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     @SuppressWarnings("unused")
     public void setAutoSize(boolean autoSize) {
         Version version = getVersion();
-        Integer valueWidth = target.getValueWidthNF(version);
-        Integer valueHeight = target.getValueHeightNF(version);
+        Integer valueWidth = target.getNFValueWidth(version);
+        Integer valueHeight = target.getNFValueHeight(version);
         if(valueWidth == null || valueWidth < 0)
             target.setValueWidth(autoSize ? -1 : -2, version);
         if(valueHeight == null || valueHeight < 0)
@@ -122,7 +122,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(changeKey instanceof LocalizedString) {
             target.setChangeKey(KeyStrokeConverter.parseInputBindingEvent(changeKey.toString(), false), version);
         } else {
-            if (target.getChangeKeyNF(version) == null) {
+            if (target.getNFChangeKey(version) == null) {
                 //dumb value will be replaced with a dynamic one
                 target.setChangeKey(InputBindingEvent.dumb, version);
             }
@@ -133,7 +133,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     //deprecated
     @SuppressWarnings("unused")
     public void setChangeKeyPriority(int priority) {
-        InputBindingEvent changeKey = target.getChangeKeyNF(getVersion());
+        InputBindingEvent changeKey = target.getNFChangeKey(getVersion());
         if(changeKey != null)
             changeKey.priority = priority;
     }
@@ -149,7 +149,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(changeMouse instanceof LocalizedString) {
             target.setChangeMouse(KeyStrokeConverter.parseInputBindingEvent(changeMouse.toString(), true), version);
         } else {
-            if (target.getChangeMouseNF(version) == null) {
+            if (target.getNFChangeMouse(version) == null) {
                 //dumb value will be replaced with a dynamic one.
                 target.setChangeMouse(InputBindingEvent.dumb,  version);
             }
@@ -160,7 +160,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     //deprecated
     @SuppressWarnings("unused")
     public void setChangeMousePriority(int priority) {
-        InputBindingEvent changeMouse = target.getChangeMouseNF(getVersion());
+        InputBindingEvent changeMouse = target.getNFChangeMouse(getVersion());
         if (changeMouse != null)
             changeMouse.priority = priority;
     }
@@ -227,7 +227,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if (comment instanceof LocalizedString)
             target.setComment((LocalizedString) comment, version);
         else {
-            if (target.getCommentNF(version) == null)
+            if (target.getNFComment(version) == null)
                 target.setComment(LocalizedString.NONAME, version);
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) comment, PropertyDrawExtraType.COMMENT, version);
         }
@@ -379,7 +379,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(tooltip instanceof LocalizedString)
             target.setTooltip((LocalizedString) tooltip, version);
         else {
-            if (target.getTooltipNF(version) == null)
+            if (target.getNFTooltip(version) == null)
                 target.setTooltip(LocalizedString.NONAME, version);
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) tooltip, PropertyDrawExtraType.TOOLTIP, version);
         }
@@ -391,7 +391,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(valueTooltip instanceof LocalizedString)
             target.setValueTooltip((LocalizedString) valueTooltip, version);
         else {
-            if (target.getValueTooltipNF(getVersion()) == null)
+            if (target.getNFValueTooltip(getVersion()) == null)
                 target.setValueTooltip(LocalizedString.NONAME, version);
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueTooltip, PropertyDrawExtraType.VALUETOOLTIP, version);
         }

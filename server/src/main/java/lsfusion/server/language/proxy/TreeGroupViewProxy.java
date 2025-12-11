@@ -13,8 +13,8 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
     @SuppressWarnings("unused")
     public void setAutoSize(boolean autoSize) {
         Version version = getVersion();
-        Integer width = target.getWidthNF(version);
-        Integer height = target.getHeightNF(version);
+        Integer width = target.getNFWidth(version);
+        Integer height = target.getNFHeight(version);
         if(width == null || width < 0)
             target.setWidth(autoSize ? -1 : -2, version);
         if(height == null || height < 0)
@@ -23,51 +23,51 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
 
     @SuppressWarnings("unused")
     public void setBoxed(boolean boxed) {
-        target.boxed = boxed;
+        target.setBoxed(boxed, getVersion());
     }
 
     @Deprecated //deprecated since 6.2; removed in 7.0
     @SuppressWarnings("unused")
     public void setExpandOnClick(boolean expandOnClick) {
-        target.expandOnClick = expandOnClick;
+        target.setExpandOnClick(expandOnClick, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setHierarchicalWidth(int hierarchicalWidth) {
-        target.hierarchicalWidth = hierarchicalWidth;
+        target.setHierarchicalWidth(hierarchicalWidth, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setHierarchicalCaption(Object caption) {
         if(caption instanceof LocalizedString)
-            target.hierarchicalCaption = ((LocalizedString) caption).getSourceString();
+            target.setHierarchicalCaption(((LocalizedString) caption).getSourceString(), getVersion());
         else
-            target.propertyHierarchicalCaption = (PropertyObjectEntity<?>) caption;
+            target.setPropertyHierarchicalCaption((PropertyObjectEntity<?>) caption, getVersion());
     }
 
     @Deprecated
     @SuppressWarnings("unused")
     public void setHeaderHeight(int headerHeight) {
-        target.captionHeight = headerHeight;
+        target.setCaptionHeight(headerHeight, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setCaptionHeight(int height) {
-        target.captionHeight = height;
+        target.setCaptionHeight(height, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setResizeOverflow(boolean resizeOverflow) {
-        target.resizeOverflow = resizeOverflow;
+        target.setResizeOverflow(resizeOverflow, getVersion());
     }
 
     @SuppressWarnings("unused")
-    public void setLineHeight(int lines) {
-        target.lineHeight = lines;
+    public void setLineWidth(int lineWidth) {
+        target.setLineWidth(lineWidth, getVersion());
     }
 
     @SuppressWarnings("unused")
-    public void setLineWidth(int lines) {
-        target.lineWidth = lines;
+    public void setLineHeight(int lineHeight) {
+        target.setLineHeight(lineHeight, getVersion());
     }
 }

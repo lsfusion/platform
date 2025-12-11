@@ -160,8 +160,8 @@ public class ContainerView extends ComponentView {
     private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(getCaption(), getPropertyCaption(), null);
     }
-    private boolean hasCaptionNF(Version version) {
-        return !PropertyDrawView.hasNoCaption(getCaptionNF(version), getPropertyCaptionNF(version), null);
+    private boolean hasNFCaption(Version version) {
+        return !PropertyDrawView.hasNoCaption(getNFCaption(version), getNFPropertyCaption(version), null);
     }
 
     public boolean hasLines() {
@@ -387,7 +387,7 @@ public class ContainerView extends ComponentView {
     public LocalizedString getCaption() {
         return caption.get();
     }
-    public LocalizedString getCaptionNF(Version version) {
+    public LocalizedString getNFCaption(Version version) {
         return caption.getNF(version);
     }
     public void setCaption(LocalizedString value, Version version) {
@@ -404,7 +404,7 @@ public class ContainerView extends ComponentView {
     public AppServerImage.Reader getImage() {
         return image.get();
     }
-    public AppServerImage.Reader getImageNF(Version version) {
+    public AppServerImage.Reader getNFImage(Version version) {
         return image.getNF(version);
     }
     public void setName(AppServerImage.Reader value, Version version) {
@@ -442,7 +442,7 @@ public class ContainerView extends ComponentView {
 
         return isDefaultCollapsible();
     }
-    public boolean isCollapsibleNF(Version version) {
+    public boolean isNFCollapsible(Version version) {
         Boolean collapsibleValue = collapsible.getNF(version);
         if(collapsibleValue != null)
             return collapsibleValue;
@@ -450,13 +450,13 @@ public class ContainerView extends ComponentView {
         if(Settings.get().isDisableCollapsibleContainers())
             return false;
 
-        return isDefaultCollapsibleNF(version);
+        return isNFDefaultCollapsible(version);
     }
     protected boolean isDefaultCollapsible() {
         return hasCaption();
     }
-    protected boolean isDefaultCollapsibleNF(Version version) {
-        return hasCaptionNF(version);
+    protected boolean isNFDefaultCollapsible(Version version) {
+        return hasNFCaption(version);
     }
     public void setCollapsible(Boolean value, Version version) {
         collapsible.set(value, version);
@@ -481,7 +481,7 @@ public class ContainerView extends ComponentView {
         return nvl(collapsed.get(), false);
     }
     public void setCollapsed(boolean value, Version version) {
-        if(isCollapsibleNF(version))
+        if(isNFCollapsible(version))
             collapsed.set(value, version);
     }
 
@@ -588,7 +588,7 @@ public class ContainerView extends ComponentView {
     public PropertyObjectEntity getPropertyCaption() {
         return propertyCaption.get();
     }
-    public PropertyObjectEntity getPropertyCaptionNF(Version version) {
+    public PropertyObjectEntity getNFPropertyCaption(Version version) {
         return propertyCaption.getNF(version);
     }
     public void setPropertyCaption(PropertyObjectEntity value, Version version) {
@@ -663,42 +663,42 @@ public class ContainerView extends ComponentView {
 
         main = src.main;
 
-        caption.set(src.caption.get(), mapping.version);
-        name.set(src.name.get(), mapping.version);
-        image.set(src.image.get(), mapping.version);
+        caption.set(src.caption, p -> p, mapping.version);
+        name.set(src.name, p -> p, mapping.version);
+        image.set(src.image, p -> p, mapping.version);
 
-        valueClass.set(src.valueClass.get(), mapping.version);
-        captionClass.set(src.captionClass.get(), mapping.version);
+        valueClass.set(src.valueClass, p -> p, mapping.version);
+        captionClass.set(src.captionClass, p -> p, mapping.version);
 
-        collapsible.set(src.collapsible.get(), mapping.version);
-        popup.set(src.popup.get(), mapping.version);
-        border.set(src.border.get(), mapping.version);
-        collapsed.set(src.collapsed.get(), mapping.version);
+        collapsible.set(src.collapsible, p -> p, mapping.version);
+        popup.set(src.popup, p -> p, mapping.version);
+        border.set(src.border, p -> p, mapping.version);
+        collapsed.set(src.collapsed, p -> p, mapping.version);
 
-        debugPoint.set(src.debugPoint.get(), mapping.version);
-        horizontal.set(src.horizontal.get(), mapping.version);
-        tabbed.set(src.tabbed.get(), mapping.version);
+        debugPoint.set(src.debugPoint, p -> p, mapping.version);
+        horizontal.set(src.horizontal, p -> p, mapping.version);
+        tabbed.set(src.tabbed, p -> p, mapping.version);
 
-        childrenAlignment.set(src.childrenAlignment.get(), mapping.version);
+        childrenAlignment.set(src.childrenAlignment, p -> p, mapping.version);
 
-        grid.set(src.grid.get(), mapping.version);
-        wrap.set(src.wrap.get(), mapping.version);
-        alignCaptions.set(src.alignCaptions.get(), mapping.version);
+        grid.set(src.grid, p -> p, mapping.version);
+        wrap.set(src.wrap, p -> p, mapping.version);
+        alignCaptions.set(src.alignCaptions, p -> p, mapping.version);
 
-        resizeOverflow.set(src.resizeOverflow.get(), mapping.version);
+        resizeOverflow.set(src.resizeOverflow, p -> p, mapping.version);
 
-        lines.set(src.lines.get(), mapping.version);
-        reversed.set(src.reversed.get(), mapping.version);
-        lineSize.set(src.lineSize.get(), mapping.version);
-        captionLineSize.set(src.captionLineSize.get(), mapping.version);
-        lineShrink.set(src.lineShrink.get(), mapping.version);
-        customDesign.set(src.customDesign.get(), mapping.version);
+        lines.set(src.lines, p -> p, mapping.version);
+        reversed.set(src.reversed, p -> p, mapping.version);
+        lineSize.set(src.lineSize, p -> p, mapping.version);
+        captionLineSize.set(src.captionLineSize, p -> p, mapping.version);
+        lineShrink.set(src.lineShrink, p -> p, mapping.version);
+        customDesign.set(src.customDesign, p -> p, mapping.version);
 
-        propertyCaption.set(mapping.get(src.propertyCaption.get()), mapping.version);
-        propertyCaptionClass.set(mapping.get(src.propertyCaptionClass.get()), mapping.version);
-        propertyValueClass.set(mapping.get(src.propertyValueClass.get()), mapping.version);
-        propertyImage.set(mapping.get(src.propertyImage.get()), mapping.version);
-        propertyCustomDesign.set(mapping.get(src.propertyCustomDesign.get()), mapping.version);
+        propertyCaption.set(src.propertyCaption, mapping::get, mapping.version);
+        propertyCaptionClass.set(src.propertyCaptionClass, mapping::get, mapping.version);
+        propertyValueClass.set(src.propertyValueClass, mapping::get, mapping.version);
+        propertyImage.set(src.propertyImage, mapping::get, mapping.version);
+        propertyCustomDesign.set(src.propertyCustomDesign, mapping::get, mapping.version);
 
         children.add(src.children, mapping::get, mapping.version);
 

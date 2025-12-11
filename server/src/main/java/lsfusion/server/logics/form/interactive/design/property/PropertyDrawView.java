@@ -38,7 +38,6 @@ import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -55,7 +54,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -71,6 +69,7 @@ import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.
 public class PropertyDrawView extends BaseComponentView implements PropertyDrawViewOrPivotColumn {
 
     public PropertyDrawEntity<?> entity;
+    public FilterView filter;
 
     private NFProperty<Boolean> changeOnSingleClick = NFFact.property();
     private NFProperty<Long> maxValue = NFFact.property();
@@ -168,7 +167,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         setMargin(2, version);
         setSID("PROPERTY(" + entity.getSID() + ")");
     }
-    
+
     public String getPropertyFormName() {
         return entity.getSID();
     }
@@ -469,14 +468,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         return (int) round((count <= 3.0 ? Math.max(count, 1.0) : 3.0 + pow(count - 3.0, 0.5)) * charWidth);
     }
 
-    public boolean isHorizontalValueFlex(FormInstanceContext context) {
-        Boolean valueFlex = getValueFlex();
-        if(valueFlex != null)
-            return valueFlex;
-        Type type;
-        return isProperty(context) && (type = getAssertCellType(context)) != null && type.isFlex();
-    }
-
     public boolean isHorizontalValueShrink(FormInstanceContext context) {
 //        if(valueFlex != null)
 //            return valueFlex;
@@ -567,7 +558,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         outStream.writeInt(getValueWidth(pool.context));
         outStream.writeInt(getValueHeight(pool.context));
 
-        outStream.writeInt(getCaptionWidth(pool.context.entity));
+        outStream.writeInt(getCaptionWidth());
         outStream.writeInt(getCaptionHeight(pool.context));
         outStream.writeInt(getCaptionCharHeight(pool.context));
 
@@ -599,10 +590,10 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         pool.writeBoolean(outStream, getValueShrinkVert(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(getComment()));
-        pool.writeString(outStream, getCommentElementClass(pool.context));
+        pool.writeString(outStream, getCommentElementClass());
         outStream.writeBoolean(isPanelCommentVertical());
-        outStream.writeBoolean(isPanelCommentFirst(pool.context));
-        pool.writeObject(outStream, getPanelCommentAlignment(pool.context));
+        outStream.writeBoolean(isPanelCommentFirst());
+        pool.writeObject(outStream, getPanelCommentAlignment());
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
         pool.writeString(outStream, ThreadLocalContext.localize(getPattern(pool.context)));
@@ -693,8 +684,8 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         outStream.writeBoolean(isEllipsis(pool.context));
 
         outStream.writeBoolean(isCaptionWrap(pool.context));
-        outStream.writeBoolean(isCaptionWrapWordBreak(pool.context));
-        outStream.writeBoolean(isCaptionCollapse(pool.context));
+        outStream.writeBoolean(isCaptionWrapWordBreak());
+        outStream.writeBoolean(isCaptionCollapse());
         outStream.writeBoolean(isCaptionEllipsis());
 
         outStream.writeBoolean(isClearText());
@@ -790,9 +781,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public Boolean getChangeOnSingleClick(FormInstanceContext context) {
-        Boolean changeOnSingleClick = getChangeOnSingleClick();
-        if(changeOnSingleClick != null)
-            return changeOnSingleClick;
+        Boolean changeOnSingleClickValue = changeOnSingleClick.get();
+        if(changeOnSingleClickValue != null)
+            return changeOnSingleClickValue;
 
         if(isProperty(context)) {
             if (getAssertCellType(context) instanceof LogicalClass)
@@ -801,9 +792,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
             return Settings.get().getChangeActionOnSingleClick();
 
         return null;
-    }
-    public Boolean getChangeOnSingleClick() {
-        return changeOnSingleClick.get();
     }
     public void setChangeOnSingleClick(Boolean value, Version version) {
         changeOnSingleClick.set(value, version);
@@ -819,7 +807,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public Boolean getEchoSymbols() {
         return echoSymbols.get();
     }
-    public Boolean getEchoSymbolsNF(Version version) {
+    public Boolean getNFEchoSymbols(Version version) {
         return echoSymbols.getNF(version);
     }
     public void setEchoSymbols(Boolean value, Version version) {
@@ -834,9 +822,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public Compare getDefaultCompare(FormInstanceContext context) {
-        Compare defaultCompare = getDefaultCompare();
-        if(defaultCompare != null)
-            return defaultCompare;
+        Compare defaultCompareValue = defaultCompare.get();
+        if(defaultCompareValue != null)
+            return defaultCompareValue;
 
         if(isProperty(context)) {
             Type type = getFilterType(context);
@@ -847,10 +835,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return null;
     }
-    public Compare getDefaultCompare() {
-        return defaultCompare.get();
-    }
-    public Compare getDefaultCompareNF(Version version) {
+    public Compare getNFDefaultCompare(Version version) {
         return defaultCompare.getNF(version);
     }
     public void setDefaultCompare(Compare value, Version version) {
@@ -858,10 +843,8 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public int getCharWidth(FormInstanceContext context) {
-        Integer charWidth = getAdjustedCharWidth(context);
-        return charWidth != null ? charWidth : -1;
+        return nvl(getAdjustedCharWidth(context), -1);
     }
-
     private Integer getAdjustedCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
@@ -890,7 +873,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public Integer getCharWidth() {
         return charWidth.get();
     }
-    public Integer getCharWidthNF(Version version) {
+    public Integer getNFCharWidth(Version version) {
         return charWidth.getNF(version);
     }
     public void setCharWidth(Integer value, Version version) {
@@ -908,9 +891,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public int getValueWidth(FormInstanceContext context) {
-        Integer valueWidth = getValueWidth();
-        if(valueWidth != null)
-            return valueWidth;
+        Integer valueWidthValue = valueWidth.get();
+        if(valueWidthValue != null)
+            return valueWidthValue;
 
         Type valueType;
         if (getAdjustedCharWidth(context) != null || (!isCustom(context) && isProperty(context) && !((valueType = getAssertValueType(context)) instanceof LogicalClass || valueType instanceof FileClass)))
@@ -918,10 +901,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return -1;
     }
-    public Integer getValueWidth() {
-        return valueWidth.get();
-    }
-    public Integer getValueWidthNF(Version version) {
+    public Integer getNFValueWidth(Version version) {
         return valueWidth.getNF(version);
     }
     public void setValueWidth(Integer value, Version version) {
@@ -929,9 +909,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public int getValueHeight(FormInstanceContext context) {
-        Integer valueHeight = getValueHeight();
-        if(valueHeight != null)
-            return valueHeight;
+        Integer valueHeightValue = valueHeight.get();
+        if(valueHeightValue != null)
+            return valueHeightValue;
 
         if (getCharHeight() != null)
             return -2;
@@ -945,27 +925,21 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return -1;
     }
-    public Integer getValueHeight() {
-        return valueHeight.get();
-    }
-    public Integer getValueHeightNF(Version version) {
+    public Integer getNFValueHeight(Version version) {
         return valueHeight.getNF(version);
     }
     public void setValueHeight(Integer value, Version version) {
         valueHeight.set(value, version);
     }
 
-    public int getCaptionWidth(FormEntity entity) {
-        Integer captionWidth = getCaptionWidth();
-        if(captionWidth != null)
-            return captionWidth;
+    public int getCaptionWidth() {
+        Integer captionWidthValue = captionWidth.get();
+        if(captionWidthValue != null)
+            return captionWidthValue;
 
         return -1;
     }
-    public Integer getCaptionWidth() {
-        return captionWidth.get();
-    }
-    public Integer getCaptionWidthNF(Version version) {
+    public Integer getNFCaptionWidth(Version version) {
         return captionWidth.getNF(version);
     }
     public void setCaptionWidth(Integer value, Version version) {
@@ -973,9 +947,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public int getCaptionHeight(FormInstanceContext context) {
-        Integer captionHeight = getCaptionHeight();
-        if(captionHeight != null)
-            return captionHeight;
+        Integer captionHeightValue = captionHeight.get();
+        if(captionHeightValue != null)
+            return captionHeightValue;
 
         Integer captionCharHeight = getCaptionCharHeight();
         if(captionCharHeight != null || (moreInfo && entity.isList(context)))
@@ -983,10 +957,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return -1;
     }
-    public Integer getCaptionHeight() {
-        return captionHeight.get();
-    }
-    public Integer getCaptionHeightNF(Version version) {
+    public Integer getNFCaptionHeight(Version version) {
         return captionHeight.getNF(version);
     }
     public void setCaptionHeight(Integer value, Version version) {
@@ -1007,10 +978,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         captionCharHeight.set(value, version);
     }
 
-    public Boolean getValueFlex() {
-        return valueFlex.get();
+    public boolean isHorizontalValueFlex(FormInstanceContext context) {
+        Boolean valueFlexValue = valueFlex.get();
+        if(valueFlexValue != null)
+            return valueFlexValue;
+        Type type;
+        return isProperty(context) && (type = getAssertCellType(context)) != null && type.isFlex();
     }
-    public Boolean getValueFlexNF(Version version) {
+    public Boolean getNFValueFlex(Version version) {
         return valueFlex.getNF(version);
     }
     public void setValueFlex(Boolean value, Version version) {
@@ -1018,9 +993,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public String getTag(FormInstanceContext context) {
-        String tag = getTag();
-        if(tag != null)
-            return tag.isEmpty() ? null : tag;
+        String tagValue = tag.get();
+        if(tagValue != null)
+            return tagValue.isEmpty() ? null : tagValue;
 
         if(isCustom(context)) {
             PropertyDrawEntity.Select select = entity.getSelectProperty(context);
@@ -1046,17 +1021,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return null;
     }
-    public String getTag() {
-        return tag.get();
-    }
     public void setTag(String value, Version version) {
         tag.set(value, version);
     }
 
     public String getInputType(FormInstanceContext context) {
-        String inputType = getInputType();
-        if(inputType != null)
-            return inputType;
+        String inputTypeValue = inputType.get();
+        if(inputTypeValue != null)
+            return inputTypeValue;
 
         Boolean echoSymbols = getEchoSymbols();
         if(echoSymbols != null && echoSymbols)
@@ -1070,17 +1042,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return null;
     }
-    public String getInputType() {
-        return inputType.get();
-    }
     public void setInputType(String value, Version version) {
         inputType.set(value, version);
     }
 
     public String getValueElementClass(FormInstanceContext context) {
-        String valueElementClass = getValueElementClass();
-        if(valueElementClass != null)
-            return valueElementClass;
+        String valueElementClassValue = valueElementClass.get();
+        if(valueElementClassValue != null)
+            return valueElementClassValue;
 
         if (isProperty(context)) {
             if(isTagInput(context)) {
@@ -1122,17 +1091,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return null;
     }
-    public String getValueElementClass() {
-        return valueElementClass.get();
-    }
     public void setValueElementClass(String value, Version version) {
         valueElementClass.set(value, version);
     }
 
     public String getCaptionElementClass(FormInstanceContext context) {
-        String captionElementClass = getCaptionElementClass();
-        if (captionElementClass != null)
-            return captionElementClass;
+        String captionElementClassValue = captionElementClass.get();
+        if (captionElementClassValue != null)
+            return captionElementClassValue;
 
         if(isProperty(context)) {
             String valueElementClass = getValueElementClass(context);
@@ -1146,24 +1112,17 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return null;
     }
-    public String getCaptionElementClass() {
-        return captionElementClass.get();
-    }
-
     public void setCaptionElementClass(String value, Version version) {
         captionElementClass.set(value, version);
     }
 
     public boolean isPanelCustom(FormInstanceContext context) {
-        Boolean panelCustom = getPanelCustom();
-        if(panelCustom != null)
-            return panelCustom;
+        Boolean panelCustomValue = panelCustom.get();
+        if(panelCustomValue != null)
+            return panelCustomValue;
 
         // form-check needs its own layouting
         return containsClass(getElementClass(context), "form-check");
-    }
-    public Boolean getPanelCustom() {
-        return panelCustom.get();
     }
     public void setPanelCustom(Boolean value, Version version) {
         panelCustom.set(value, version);
@@ -1172,7 +1131,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public InputBindingEvent getChangeKey() {
         return changeKey.get();
     }
-    public InputBindingEvent getChangeKeyNF(Version version) {
+    public InputBindingEvent getNFChangeKey(Version version) {
         return changeKey.getNF(version);
     }
     public void setChangeKey(InputBindingEvent value, Version version) {
@@ -1182,7 +1141,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public Boolean getShowChangeKey() {
         return showChangeKey.get();
     }
-    public Boolean getShowChangeKeyNF(Version version) {
+    public Boolean getNFShowChangeKey(Version version) {
         return showChangeKey.getNF(version);
     }
     public void setShowChangeKey(Boolean value, Version version) {
@@ -1192,7 +1151,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public InputBindingEvent getChangeMouse() {
         return changeMouse.get();
     }
-    public InputBindingEvent getChangeMouseNF(Version version) {
+    public InputBindingEvent getNFChangeMouse(Version version) {
         return changeMouse.getNF(version);
     }
     public void setChangeMouse(InputBindingEvent value, Version version) {
@@ -1202,7 +1161,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public Boolean getShowChangeMouse() {
         return showChangeMouse.get();
     }
-    public Boolean getShowChangeMouseNF(Version version) {
+    public Boolean getNFShowChangeMouse(Version version) {
         return showChangeMouse.getNF(version);
     }
     public void setShowChangeMouse(Boolean value, Version version) {
@@ -1238,9 +1197,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     public FlexAlignment getValueAlignmentHorz(FormInstanceContext context) {
-        FlexAlignment valueAlignmentHorz = getValueAlignmentHorz();
-        if(valueAlignmentHorz != null)
-            return valueAlignmentHorz;
+        FlexAlignment valueAlignmentHorzValue = valueAlignmentHorz.get();
+        if(valueAlignmentHorzValue != null)
+            return valueAlignmentHorzValue;
 
         if (isProperty(context)) {
             Type type = getAssertValueType(context);
@@ -1251,17 +1210,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return FlexAlignment.CENTER;
     }
-    public FlexAlignment getValueAlignmentHorz() {
-        return valueAlignmentHorz.get();
-    }
     public void setValueAlignmentHorz(FlexAlignment value, Version version) {
         valueAlignmentHorz.set(value, version);
     }
 
     public FlexAlignment getValueAlignmentVert(FormInstanceContext context) {
-        FlexAlignment valueAlignmentVert = getValueAlignmentVert();
-        if (valueAlignmentVert != null)
-            return valueAlignmentVert;
+        FlexAlignment valueAlignmentVertValue = valueAlignmentVert.get();
+        if (valueAlignmentVertValue != null)
+            return valueAlignmentVertValue;
 
         if(isProperty(context)) {
             Type type = getAssertValueType(context);
@@ -1271,17 +1227,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return FlexAlignment.CENTER;
     }
-    public FlexAlignment getValueAlignmentVert() {
-        return valueAlignmentVert.get();
-    }
     public void setValueAlignmentVert(FlexAlignment value, Version version) {
         valueAlignmentVert.set(value, version);
     }
 
     public String getValueOverflowHorz(FormInstanceContext context) {
-        String valueOverflowHorz = getValueOverflowHorz();
-        if(valueOverflowHorz != null)
-            return valueOverflowHorz;
+        String valueOverflowHorzValue = valueOverflowHorz.get();
+        if(valueOverflowHorzValue != null)
+            return valueOverflowHorzValue;
 
         if(isShrinkOverflowVisible(context))
             return "visible";
@@ -1294,34 +1247,28 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return "clip";
     }
-    public String getValueOverflowHorz() {
-        return valueOverflowHorz.get();
-    }
     public void setValueOverflowHorz(String value, Version version) {
         valueOverflowHorz.set(value, version);
     }
 
     public String getValueOverflowVert(FormInstanceContext context) {
-        String valueOverflowVert = getValueOverflowVert();
-        if(valueOverflowVert != null)
-            return valueOverflowVert;
+        String valueOverflowVertValue = valueOverflowVert.get();
+        if(valueOverflowVertValue != null)
+            return valueOverflowVertValue;
 
         if(isShrinkOverflowVisible(context))
             return "visible";
 
         return "clip";
     }
-    public String getValueOverflowVert() {
-        return valueOverflowVert.get();
-    }
     public void setValueOverflowVert(String value, Version version) {
         valueOverflowVert.set(value, version);
     }
 
     public boolean getValueShrinkHorz(FormInstanceContext context) {
-        Boolean valueShrinkHorz = getValueShrinkHorz();
-        if(valueShrinkHorz != null)
-            return valueShrinkHorz;
+        Boolean valueShrinkHorzValue = valueShrinkHorz.get();
+        if(valueShrinkHorzValue != null)
+            return valueShrinkHorzValue;
 
         if (isProperty(context)) {
             Type type = getAssertValueType(context);
@@ -1331,17 +1278,14 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return false;
     }
-    public Boolean getValueShrinkHorz() {
-        return valueShrinkHorz.get();
-    }
     public void setValueShrinkHorz(Boolean value, Version version) {
         valueShrinkHorz.set(value, version);
     }
 
     public boolean getValueShrinkVert(FormInstanceContext context) {
-        Boolean valueShrinkVert = getValueShrinkVert();
-        if(valueShrinkVert != null)
-            return valueShrinkVert;
+        Boolean valueShrinkVertValue = valueShrinkVert.get();
+        if(valueShrinkVertValue != null)
+            return valueShrinkVertValue;
 
         if (isProperty(context)) {
             Type type = getAssertValueType(context);
@@ -1351,9 +1295,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return false;
     }
-    public Boolean getValueShrinkVert() {
-        return valueShrinkVert.get();
-    }
     public void setValueShrinkVert(Boolean value, Version version) {
         valueShrinkVert.set(value, version);
     }
@@ -1361,22 +1302,19 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getComment() {
         return comment.get();
     }
-    public LocalizedString getCommentNF(Version version) {
+    public LocalizedString getNFComment(Version version) {
         return comment.getNF(version);
     }
     public void setComment(LocalizedString value, Version version) {
         comment.set(value, version);
     }
 
-    public String getCommentElementClass(FormInstanceContext context) {
-        String commentElementClass = getCommentElementClass();
-        if(commentElementClass != null)
-            return commentElementClass;
+    public String getCommentElementClass() {
+        String commentElementClassValue = commentElementClass.get();
+        if(commentElementClassValue != null)
+            return commentElementClassValue;
 
         return "form-text";
-    }
-    public String getCommentElementClass() {
-        return commentElementClass.get();
     }
     public void setCommentElementClass(String value, Version version) {
         commentElementClass.set(value, version);
@@ -1389,38 +1327,32 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         panelCommentVertical.set(value,version);
     }
 
-    protected boolean isPanelCommentFirst(FormInstanceContext context) {
-        Boolean panelCommentFirst = getPanelCommentFirst();
-        if(panelCommentFirst != null)
-            return panelCommentFirst;
+    protected boolean isPanelCommentFirst() {
+        Boolean panelCommentFirstValue = panelCommentFirst.get();
+        if (panelCommentFirstValue != null)
+            return panelCommentFirstValue;
 
         return false;
-    }
-    public Boolean getPanelCommentFirst() {
-        return panelCommentFirst.get();
     }
     public void setPanelCommentFirst(Boolean value, Version version) {
         panelCommentFirst.set(value,version);
     }
 
-    protected FlexAlignment getPanelCommentAlignment(FormInstanceContext context) {
-        FlexAlignment panelCommentAlignment = getPanelCommentAlignment();
-        if(panelCommentAlignment != null)
-            return panelCommentAlignment;
+    protected FlexAlignment getPanelCommentAlignment() {
+        FlexAlignment panelCommentAlignmentValue = panelCommentAlignment.get();
+        if(panelCommentAlignmentValue != null)
+            return panelCommentAlignmentValue;
 
         return FlexAlignment.CENTER;
-    }
-    public FlexAlignment getPanelCommentAlignment() {
-        return panelCommentAlignment.get();
     }
     public void setPanelCommentAlignment(FlexAlignment value,Version version) {
         panelCommentAlignment.set(value,version);
     }
 
     private LocalizedString getPlaceholder(FormInstanceContext context) {
-        LocalizedString placeholder = getPlaceholder();
-        if(placeholder != null)
-            return placeholder;
+        LocalizedString placeholderValue = placeholder.get();
+        if(placeholderValue != null)
+            return placeholderValue;
 
         if (isProperty(context)) {
             String tag = getTag(context);
@@ -1429,9 +1361,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         }
 
         return null;
-    }
-    public LocalizedString getPlaceholder() {
-        return placeholder.get();
     }
     public void setPlaceholder(LocalizedString value, Version version) {
         placeholder.set(value,version);
@@ -1457,7 +1386,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getPattern() {
         return pattern.get();
     }
-    public LocalizedString getPatternNF(Version version) {
+    public LocalizedString getNFPattern(Version version) {
         return pattern.getNF(version);
     }
     public void setPattern(LocalizedString value, Version version) {
@@ -1467,10 +1396,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getRegexp() {
         return regexp.get();
     }
-    public LocalizedString getRegexpNF(Version version) {
+    public LocalizedString getNFRegexp(Version version) {
         return regexp.getNF(version);
     }
-
     public void setRegexp(LocalizedString value, Version version) {
         regexp.set(value,version);
     }
@@ -1478,11 +1406,9 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getRegexpMessage() {
         return regexpMessage.get();
     }
-
-    public LocalizedString getRegexpMessageNF(Version version) {
+    public LocalizedString getNFRegexpMessage(Version version) {
         return regexpMessage.getNF(version);
     }
-
     public void setRegexpMessage(LocalizedString value, Version version) {
         regexpMessage.set(value,version);
     }
@@ -1491,7 +1417,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getTooltip() {
         return tooltip.get();
     }
-    public LocalizedString getTooltipNF(Version version) {
+    public LocalizedString getNFTooltip(Version version) {
         return tooltip.getNF(version);
     }
     public void setTooltip(LocalizedString value, Version version) {
@@ -1501,7 +1427,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public LocalizedString getValueTooltip() {
         return valueTooltip.get();
     }
-    public LocalizedString getValueTooltipNF(Version version) {
+    public LocalizedString getNFValueTooltip(Version version) {
         return valueTooltip.getNF(version);
     }
     public void setValueTooltip(LocalizedString value, Version version) {
@@ -1610,7 +1536,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         captionWrap.set(value,version);
     }
 
-    public boolean isCaptionWrapWordBreak(FormInstanceContext context) {
+    public boolean isCaptionWrapWordBreak() {
         Boolean captionWrapWordBreakValue = captionWrapWordBreak.get();
         if (captionWrapWordBreakValue != null)
             return captionWrapWordBreakValue;
@@ -1621,7 +1547,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         captionWrapWordBreak.set(value,version);
     }
 
-    public boolean isCaptionCollapse(FormInstanceContext context) {
+    public boolean isCaptionCollapse() {
         Boolean captionCollapseValue = captionCollapse.get();
         if (captionCollapseValue != null)
             return captionCollapseValue;
@@ -1642,7 +1568,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public void setCaptionEllipsis(Boolean value, Version version) {
         captionEllipsis.set(value,version);
     }
-
 
     public boolean isClearText() {
         return nvl(clearText.get(), false);
@@ -1719,7 +1644,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         return false;
     }
-    public Boolean getStickyNF(Version version) {
+    public Boolean getNFSticky(Version version) {
         return sticky.getNF(version);
     }
     public void setSticky(Boolean value, Version version) {
@@ -1729,7 +1654,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     public Boolean getSync() {
         return nvl(entity.sync, sync.get());
     }
-    public Boolean getSyncNF(Version version) {
+    public Boolean getNFSync(Version version) {
         return sync.getNF(version);
     }
     public void setSync(Boolean value, Version version) {
@@ -1779,8 +1704,6 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         return getCustomRenderFunction(context) != null;
     }
 
-    public FilterView filter;
-
     // copy-constructor
     public PropertyDrawView(PropertyDrawView src, ObjectMapping mapping) {
         super(src, mapping);
@@ -1790,91 +1713,91 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
         ID = entity.ID;
 
-        changeOnSingleClick.set(src.changeOnSingleClick.get(), mapping.version);
-        maxValue.set(src.maxValue.get(), mapping.version);
-        echoSymbols.set(src.echoSymbols.get(), mapping.version);
-        noSort.set(src.noSort.get(), mapping.version);
-        defaultCompare.set(src.defaultCompare.get(), mapping.version);
+        changeOnSingleClick.set(src.changeOnSingleClick, p -> p, mapping.version);
+        maxValue.set(src.maxValue, p -> p, mapping.version);
+        echoSymbols.set(src.echoSymbols, p -> p, mapping.version);
+        noSort.set(src.noSort, p -> p, mapping.version);
+        defaultCompare.set(src.defaultCompare, p -> p, mapping.version);
 
-        charWidth.set(src.charWidth.get(), mapping.version);
-        charHeight.set(src.charHeight.get(), mapping.version);
+        charWidth.set(src.charWidth, p -> p, mapping.version);
+        charHeight.set(src.charHeight, p -> p, mapping.version);
 
-        valueWidth.set(src.valueWidth.get(), mapping.version);
-        valueHeight.set(src.valueHeight.get(), mapping.version);
+        valueWidth.set(src.valueWidth, p -> p, mapping.version);
+        valueHeight.set(src.valueHeight, p -> p, mapping.version);
 
-        captionWidth.set(src.captionWidth.get(), mapping.version);
-        captionHeight.set(src.captionHeight.get(), mapping.version);
-        captionCharHeight.set(src.captionCharHeight.get(), mapping.version);
+        captionWidth.set(src.captionWidth, p -> p, mapping.version);
+        captionHeight.set(src.captionHeight, p -> p, mapping.version);
+        captionCharHeight.set(src.captionCharHeight, p -> p, mapping.version);
 
-        valueFlex.set(src.valueFlex.get(), mapping.version);
+        valueFlex.set(src.valueFlex, p -> p, mapping.version);
 
-        tag.set(src.tag.get(), mapping.version);
-        inputType.set(src.inputType.get(), mapping.version);
-        valueElementClass.set(src.valueElementClass.get(), mapping.version);
-        captionElementClass.set(src.captionElementClass.get(), mapping.version);
+        tag.set(src.tag, p -> p, mapping.version);
+        inputType.set(src.inputType, p -> p, mapping.version);
+        valueElementClass.set(src.valueElementClass, p -> p, mapping.version);
+        captionElementClass.set(src.captionElementClass, p -> p, mapping.version);
 
-        panelCustom.set(src.panelCustom.get(), mapping.version);
+        panelCustom.set(src.panelCustom, p -> p, mapping.version);
 
-        changeKey.set(src.changeKey.get(), mapping.version);
-        showChangeKey.set(src.showChangeKey.get(), mapping.version);
-        changeMouse.set(src.changeMouse.get(), mapping.version);
-        showChangeMouse.set(src.showChangeMouse.get(), mapping.version);
+        changeKey.set(src.changeKey, p -> p, mapping.version);
+        showChangeKey.set(src.showChangeKey, p -> p, mapping.version);
+        changeMouse.set(src.changeMouse, p -> p, mapping.version);
+        showChangeMouse.set(src.showChangeMouse, p -> p, mapping.version);
 
-        drawAsync.set(src.drawAsync.get(), mapping.version);
+        drawAsync.set(src.drawAsync, p -> p, mapping.version);
 
-        inline.set(src.inline.get(), mapping.version);
+        inline.set(src.inline, p -> p, mapping.version);
 
-        focusable.set(src.focusable.get(), mapping.version);
+        focusable.set(src.focusable, p -> p, mapping.version);
 
-        panelColumnVertical.set(src.panelColumnVertical.get(), mapping.version);
+        panelColumnVertical.set(src.panelColumnVertical, p -> p, mapping.version);
 
-        valueAlignmentHorz.set(src.valueAlignmentHorz.get(), mapping.version);
-        valueAlignmentVert.set(src.valueAlignmentVert.get(), mapping.version);
+        valueAlignmentHorz.set(src.valueAlignmentHorz, p -> p, mapping.version);
+        valueAlignmentVert.set(src.valueAlignmentVert, p -> p, mapping.version);
 
-        valueOverflowHorz.set(src.valueOverflowHorz.get(), mapping.version);
-        valueOverflowVert.set(src.valueOverflowVert.get(), mapping.version);
+        valueOverflowHorz.set(src.valueOverflowHorz, p -> p, mapping.version);
+        valueOverflowVert.set(src.valueOverflowVert, p -> p, mapping.version);
 
-        valueShrinkHorz.set(src.valueShrinkHorz.get(), mapping.version);
-        valueShrinkVert.set(src.valueShrinkVert.get(), mapping.version);
+        valueShrinkHorz.set(src.valueShrinkHorz, p -> p, mapping.version);
+        valueShrinkVert.set(src.valueShrinkVert, p -> p, mapping.version);
 
-        comment.set(src.comment.get(), mapping.version);
-        commentElementClass.set(src.commentElementClass.get(), mapping.version);
-        panelCommentVertical.set(src.panelCommentVertical.get(), mapping.version);
-        panelCommentFirst.set(src.panelCommentFirst.get(), mapping.version);
-        panelCommentAlignment.set(src.panelCommentAlignment.get(), mapping.version);
+        comment.set(src.comment, p -> p, mapping.version);
+        commentElementClass.set(src.commentElementClass, p -> p, mapping.version);
+        panelCommentVertical.set(src.panelCommentVertical, p -> p, mapping.version);
+        panelCommentFirst.set(src.panelCommentFirst, p -> p, mapping.version);
+        panelCommentAlignment.set(src.panelCommentAlignment, p -> p, mapping.version);
 
-        placeholder.set(src.placeholder.get(), mapping.version);
-        pattern.set(src.pattern.get(), mapping.version);
-        regexp.set(src.regexp.get(), mapping.version);
-        regexpMessage.set(src.regexpMessage.get(), mapping.version);
+        placeholder.set(src.placeholder, p -> p, mapping.version);
+        pattern.set(src.pattern, p -> p, mapping.version);
+        regexp.set(src.regexp, p -> p, mapping.version);
+        regexpMessage.set(src.regexpMessage, p -> p, mapping.version);
 
-        tooltip.set(src.tooltip.get(), mapping.version);
-        valueTooltip.set(src.valueTooltip.get(), mapping.version);
+        tooltip.set(src.tooltip, p -> p, mapping.version);
+        valueTooltip.set(src.valueTooltip, p -> p, mapping.version);
 
-        caption.set(src.caption.get(), mapping.version);
-        image.set(src.image.get(), mapping.version);
+        caption.set(src.caption, p -> p, mapping.version);
+        image.set(src.image, p -> p, mapping.version);
 
-        wrap.set(src.wrap.get(), mapping.version);
-        wrapWordBreak.set(src.wrapWordBreak.get(), mapping.version);
-        collapse.set(src.collapse.get(), mapping.version);
-        ellipsis.set(src.ellipsis.get(), mapping.version);
+        wrap.set(src.wrap, p -> p, mapping.version);
+        wrapWordBreak.set(src.wrapWordBreak, p -> p, mapping.version);
+        collapse.set(src.collapse, p -> p, mapping.version);
+        ellipsis.set(src.ellipsis, p -> p, mapping.version);
 
-        captionWrap.set(src.captionWrap.get(), mapping.version);
-        captionWrapWordBreak.set(src.captionWrapWordBreak.get(), mapping.version);
-        captionCollapse.set(src.captionCollapse.get(), mapping.version);
-        captionEllipsis.set(src.captionEllipsis.get(), mapping.version);
+        captionWrap.set(src.captionWrap, p -> p, mapping.version);
+        captionWrapWordBreak.set(src.captionWrapWordBreak, p -> p, mapping.version);
+        captionCollapse.set(src.captionCollapse, p -> p, mapping.version);
+        captionEllipsis.set(src.captionEllipsis, p -> p, mapping.version);
 
-        clearText.set(src.clearText.get(), mapping.version);
-        notSelectAll.set(src.notSelectAll.get(), mapping.version);
+        clearText.set(src.clearText, p -> p, mapping.version);
+        notSelectAll.set(src.notSelectAll, p -> p, mapping.version);
 
-        toolbar.set(src.toolbar.get(), mapping.version);
-        toolbarActions.set(src.toolbarActions.get(), mapping.version);
+        toolbar.set(src.toolbar, p -> p, mapping.version);
+        toolbarActions.set(src.toolbarActions, p -> p, mapping.version);
 
-        notNull.set(src.notNull.get(), mapping.version);
+        notNull.set(src.notNull, p -> p, mapping.version);
 
-        sticky.set(src.sticky.get(), mapping.version);
-        sync.set(src.sync.get(), mapping.version);
+        sticky.set(src.sticky, p -> p, mapping.version);
+        sync.set(src.sync, p -> p, mapping.version);
 
-        highlightDuplicate.set(src.highlightDuplicate.get(), mapping.version);
+        highlightDuplicate.set(src.highlightDuplicate, p -> p, mapping.version);
     }
 }

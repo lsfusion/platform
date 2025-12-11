@@ -142,7 +142,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
 
     @SuppressWarnings("unused")
     public void setFontSize(int fontSize) {
-        FontInfo font = target.getFontNF(getVersion());
+        FontInfo font = target.getNFFont(getVersion());
         target.setFont(font != null ? font.derive(fontSize) : new FontInfo(fontSize), getVersion());
     }
 
@@ -168,7 +168,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
             throw new IllegalArgumentException("fontStyle value must be a combination of strings bold and italic");
         }
 
-        FontInfo font = target.getFontNF(getVersion());
+        FontInfo font = target.getNFFont(getVersion());
         target.setFont(font != null ? font.derive(bold, italic) : new FontInfo(bold, italic), getVersion());
     }
 

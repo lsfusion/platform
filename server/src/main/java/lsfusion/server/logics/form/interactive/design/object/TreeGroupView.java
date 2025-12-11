@@ -6,6 +6,7 @@ import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -28,9 +29,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class TreeGroupView extends GridPropertyView implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractTreeGroup<ComponentView> {
     public static final String TREE_PREFIX = "TREE";
-    
+
+    private NFProperty<Boolean> expandOnClick = NFFact.property();
+    private NFProperty<Integer> hierarchicalWidth = NFFact.property();
+
+    private NFProperty<String> hierarchicalCaption = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyHierarchicalCaption = NFFact.property();
+
     public List<GroupObjectView> groups = new ArrayList<>();
 
     public TreeGroupEntity entity;
@@ -46,15 +55,10 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
     public ContainerView filtersContainer;
     public FilterControlsView filterControls;
-    
-    public boolean expandOnClick = true;
-    public int hierarchicalWidth;
-    public String hierarchicalCaption;
-    public PropertyObjectEntity propertyHierarchicalCaption;
 
     @Override
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || propertyHierarchicalCaption != null;
+        return super.hasPropertyComponent() || getPropertyHierarchicalCaption() != null;
     }
 
     IDGenerator idGenerator;
@@ -132,9 +136,37 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
         outStream.writeBoolean(entity.plainTreeMode);
         
-        outStream.writeBoolean(expandOnClick);
-        outStream.writeInt(hierarchicalWidth);
-        pool.writeString(outStream, hierarchicalCaption);
+        outStream.writeBoolean(isExpandOnClick());
+        outStream.writeInt(getHierarchicalWidth());
+        pool.writeString(outStream, getHierarchicalCaption());
+    }
+
+    public boolean isExpandOnClick() {
+        return nvl(expandOnClick.get(), true);
+    }
+    public void setExpandOnClick(Boolean value, Version version) {
+        expandOnClick.set(value, version);
+    }
+
+    public int getHierarchicalWidth() {
+        return nvl(hierarchicalWidth.get(), 0);
+    }
+    public void setHierarchicalWidth(Integer value, Version version) {
+        hierarchicalWidth.set(value, version);
+    }
+
+    public String getHierarchicalCaption() {
+        return hierarchicalCaption.get();
+    }
+    public void setHierarchicalCaption(String value, Version version) {
+        hierarchicalCaption.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyHierarchicalCaption() {
+        return propertyHierarchicalCaption.get();
+    }
+    public void setPropertyHierarchicalCaption(PropertyObjectEntity value, Version version) {
+        propertyHierarchicalCaption.set(value, version);
     }
 
     @Override
@@ -168,9 +200,11 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
         idGenerator = src.idGenerator; // todo: ??
 
-        expandOnClick = src.expandOnClick;
-        hierarchicalWidth = src.hierarchicalWidth;
-        hierarchicalCaption = src.hierarchicalCaption;
+        expandOnClick.set(src.expandOnClick, p -> p, mapping.version);
+        hierarchicalWidth.set(src.hierarchicalWidth, p -> p, mapping.version);
+
+        hierarchicalCaption.set(src.hierarchicalCaption, p -> p, mapping.version);
+        propertyHierarchicalCaption.set(src.propertyHierarchicalCaption, mapping::get, mapping.version);
 
         for(GroupObjectView g : src.groups)
             groups.add(mapping.get(g));
@@ -180,7 +214,6 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
         filtersContainer = mapping.get(src.filtersContainer);
         filterControls = mapping.get(src.filterControls);
-        propertyHierarchicalCaption = mapping.get(src.propertyHierarchicalCaption);
 
         containers = new DefaultFormView.ContainerSet(src.containers, mapping);
     }
