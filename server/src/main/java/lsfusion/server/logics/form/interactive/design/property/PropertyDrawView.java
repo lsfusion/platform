@@ -561,7 +561,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         else
             outStream.writeByte(-1);
 
-        outStream.writeInt(getCharHeight());
+        outStream.writeInt(getCharHeightValue());
         outStream.writeInt(getCharWidth(pool.context));
 
         outStream.writeInt(getValueWidth(pool.context));
@@ -897,8 +897,11 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         charWidth.set(value, version);
     }
 
+    public Integer getCharHeightValue() {
+        return nvl(getCharHeight(), -1);
+    }
     public Integer getCharHeight() {
-        return nvl(charHeight.get(), -1);
+        return charHeight.get();
     }
     public void setCharHeight(Integer value, Version version) {
         charHeight.set(value, version);
