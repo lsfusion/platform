@@ -143,8 +143,8 @@ To access design components, you can use their names or address property compone
 |`foreground`|The color to be used for the component text|Expression (COLOR value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
 |`panelCaptionVertical`|**deprecated since version 6, use `captionVertical`**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`captionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`captionLast`|**deprecated since version 6, use `captionLast`**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCaptionLast`|**deprecated since version 6, use `captionLast`**|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`captionLast`|Indicates that the value should be drawn on the panel prior to the property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAlignment`|**deprecated since version 6, use `captionAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
 |`captionAlignmentHorz`|Component caption horizontal alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`captionAlignmentVert`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
