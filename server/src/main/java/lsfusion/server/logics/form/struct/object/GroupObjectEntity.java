@@ -56,9 +56,9 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
+import static lsfusion.base.BaseUtils.nvl;
 
-    public static int PAGE_SIZE_DEFAULT_VALUE = 50;
+public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 
     public TreeGroupEntity treeGroup;
 
@@ -66,38 +66,20 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return treeGroup != null;
     }
 
-    public boolean isSubReport;
-    public PropertyObjectEntity<?> reportPathProp;
+    private NFProperty<Boolean> isSubReport = NFFact.property();
+    private NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
-    private DebugInfo.DebugPoint debugPoint;
-    
-    public UpdateType updateType;
-    
-    public Group propertyGroup; // used for integration (export / import)
+    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
+    private NFProperty<Pair<Integer, Integer>> scriptIndex = NFFact.property();
 
-    private Pair<Integer, Integer> scriptIndex;
+    public UpdateType updateType; //todo?
 
-    public boolean enableManualUpdate;
+    private NFProperty<Group> propertyGroup = NFFact.property(); // used for integration (export / import)
 
-    private String integrationSID;
-    private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
+    private NFProperty<Boolean> enableManualUpdate = NFFact.property();
 
-    public boolean isIndex() {
-        return !integrationKey;
-    }
-
-    public void setIntegrationKey(boolean integrationKey) {
-        this.integrationKey = integrationKey;
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
-        this.scriptIndex = Pair.create(debugPoint.getScriptLine(), debugPoint.offset);
-    }
-
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
-    }
+    private NFProperty<String> integrationSID = NFFact.property();
+    private NFProperty<Boolean> integrationKey = NFFact.property(); // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
 
     private static class UpStaticParamsProcessor extends GroupObjectInstance.FilterProcessor {
         public UpStaticParamsProcessor(GroupObjectInstance groupObject) {
@@ -302,10 +284,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return !isPanel() && (listViewType == ListViewType.CUSTOM || listViewType == ListViewType.MAP || listViewType == ListViewType.CALENDAR);
     }
 
-    public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex;
-    }
-
     public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
         this.propertyBackground = propertyBackground;
     }
@@ -313,14 +291,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground) {
         this.propertyForeground = propertyForeground;
     }
-
-    public void setIntegrationSID(String integrationSID) {
-        this.integrationSID = integrationSID;
-    }
-
-    public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : getSID();
-    }   
 
     private boolean finalizedObjects;
     private Object objects = SetFact.mOrderExclSet();
@@ -443,6 +413,70 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public GroupObjectView view;
 
+    public boolean isSubReport() {
+        return nvl(isSubReport.get(), false);
+    }
+    public void setIsSubReport(Boolean value, Version version) {
+        isSubReport.set(value, version);
+    }
+
+    public PropertyObjectEntity getReportPathProp() {
+        return reportPathProp.get();
+    }
+    public void setReportPathProp(PropertyObjectEntity<?> value, Version version) {
+        reportPathProp.set(value, version);
+    }
+
+    public DebugInfo.DebugPoint getNFDebugPoint(Version version) {
+        return debugPoint.getNF(version);
+    }
+    public void setDebugPoint(DebugInfo.DebugPoint value, Version version) {
+        debugPoint.set(value, version);
+    }
+
+    public Pair<Integer, Integer> getScriptIndex() {
+        return scriptIndex.get();
+    }
+    public void setScriptIndex(Pair<Integer, Integer> value, Version version) {
+        scriptIndex.set(value, version);
+    }
+
+    public Group getPropertyGroup() {
+        return propertyGroup.get();
+    }
+    public void setPropertyGroup(Group value, Version version) {
+        propertyGroup.set(value, version);
+    }
+
+    public boolean isEnableManualUpdate() {
+        return nvl(enableManualUpdate.get(), false);
+    }
+    public void setEnableManualUpdate(Boolean value, Version version) {
+        enableManualUpdate.set(value, version);
+    }
+
+    public String getIntegrationSIDValue() {
+        String integrationSID = getIntegrationSID();
+        return integrationSID != null ? integrationSID : getSID();
+    }
+    public String getIntegrationSID() {
+        return integrationSID.get();
+    }
+    public void setIntegrationSID(String value, Version version) {
+        integrationSID.set(value, version);
+    }
+
+    public boolean isIndex() {
+        boolean integrationKey = nvl(getIntegrationKey(), false);
+        return !integrationKey;
+    }
+    public Boolean getIntegrationKey() {
+        return integrationKey.get();
+    }
+    public void setIntegrationKey(Boolean value, Version version) {
+        integrationKey.set(value, version);
+    }
+
     // copy-constructor
     public GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
         super(src);
@@ -451,14 +485,23 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
         ID = BaseLogicsModule.generateStaticNewID();
 
-        isSubReport = src.isSubReport;
-        debugPoint = src.debugPoint;
+        treeGroup = src.treeGroup != null ? mapping.get(src.treeGroup) : null;
+
+        isSubReport.set(src.isSubReport, p -> p, mapping.version);
+        reportPathProp.set(src.reportPathProp, mapping::get, mapping.version);
+
+        debugPoint.set(src.debugPoint, p -> p, mapping.version);
+        scriptIndex.set(src.scriptIndex, p -> p, mapping.version);
+
         updateType = src.updateType;
-        propertyGroup = src.propertyGroup;
-        scriptIndex = src.scriptIndex;
-        enableManualUpdate = src.enableManualUpdate;
-        integrationSID = src.integrationSID;
-        integrationKey = src.integrationKey;
+
+        propertyGroup.set(src.propertyGroup, p -> p, mapping.version);
+
+        enableManualUpdate.set(src.enableManualUpdate, p -> p, mapping.version);
+
+        integrationSID.set(src.integrationSID, p -> p, mapping.version);
+        integrationKey.set(src.integrationKey, p -> p, mapping.version);
+
         viewType = src.viewType;
         listViewType = src.listViewType;
         pivotOptions = src.pivotOptions;
@@ -470,8 +513,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         for(ObjectEntity e : src.getOrderObjects())
             add(mapping.get(e));
 
-        treeGroup = src.treeGroup != null ? mapping.get(src.treeGroup) : null;
-        reportPathProp = mapping.get(src.reportPathProp);
         propertyCustomOptions = mapping.get(src.propertyCustomOptions);
         propertyBackground = mapping.get(src.propertyBackground);
         propertyForeground = mapping.get(src.propertyForeground);

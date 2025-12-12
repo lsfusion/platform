@@ -479,7 +479,7 @@ reportPath
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(groupObject, property);	
+		$formStatement::form.setReportPath(groupObject, property, self.getVersion());
 	}
 }
 	:	(	'TOP' 

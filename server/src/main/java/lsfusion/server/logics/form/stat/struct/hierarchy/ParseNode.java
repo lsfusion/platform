@@ -137,7 +137,7 @@ public interface ParseNode {
         }
 
         public Group getParent() {
-            return groupObject.propertyGroup;
+            return groupObject.getPropertyGroup();
         }
 
         public ChildParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {

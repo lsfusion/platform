@@ -118,7 +118,8 @@ public class ScriptingFormEntity {
 
     private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup, LM.baseLM);
-        groupObj.setDebugPoint(debugPoint); //also sets and scriptIndex inside
+        groupObj.setDebugPoint(debugPoint, version);
+        groupObj.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset), version);
 
         for (int j = 0; j < groupObject.objects.size(); j++) {
             String className = groupObject.classes.get(j);
@@ -174,7 +175,7 @@ public class ScriptingFormEntity {
         String propertyGroupName = groupObject.propertyGroupName;
         Group propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
         if(propertyGroup != null)
-            groupObj.propertyGroup = propertyGroup;
+            groupObj.setPropertyGroup(propertyGroup, version);
 
         String integrationSID = groupObject.integrationSID;
         if(integrationSID == null && groupObject.groupName == null) {
@@ -184,13 +185,13 @@ public class ScriptingFormEntity {
             }
         }
         if(integrationSID != null)
-            groupObj.setIntegrationSID(integrationSID);
+            groupObj.setIntegrationSID(integrationSID, version);
 
-        groupObj.setIntegrationKey(groupObject.integrationKey);
+        groupObj.setIntegrationKey(groupObject.integrationKey, version);
         addGroupObjectEntity(groupName, groupObj, location, version);
 
         if(groupObject.isSubReport)
-            setSubReport(groupObj, groupObject.subReportPath);
+            setSubReport(groupObj, groupObject.subReportPath, version);
 
         if(groupObject.background != null)
             groupObj.setPropertyBackground(addPropertyObject(groupObject.background));
@@ -340,9 +341,9 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, PropertyObjectEntity property) {
+    public void setReportPath(GroupObjectEntity groupObject, PropertyObjectEntity property, Version version) {
         if (groupObject != null)
-            setSubReport(groupObject, property);
+            setSubReport(groupObject, property, version);
         else
             setReportPath(property);
     }
@@ -355,9 +356,9 @@ public class ScriptingFormEntity {
         form.reportPathProp = property;
     }
 
-    public void setSubReport(GroupObjectEntity groupObject, PropertyObjectEntity property) {
-        groupObject.isSubReport = true;
-        groupObject.reportPathProp = property;
+    public void setSubReport(GroupObjectEntity groupObject, PropertyObjectEntity property, Version version) {
+        groupObject.setIsSubReport(true, version);
+        groupObject.setReportPathProp(property, version);
     }
     
     private CustomClass getSingleAddClass(ScriptingLogicsModule.NamedPropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {

@@ -67,6 +67,6 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
 
     @SuppressWarnings("unused")
     public void setEnableManualUpdate(boolean enableManualUpdate) {
-        target.groupObject.entity.enableManualUpdate = enableManualUpdate;
+        target.groupObject.entity.setEnableManualUpdate(enableManualUpdate, getVersion());
     }
 }

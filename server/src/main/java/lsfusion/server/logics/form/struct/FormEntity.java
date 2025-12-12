@@ -480,15 +480,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public GroupObjectEntity getGroupObjectIntegration(String sID) {
-        for (GroupObjectEntity group : getGroupsIt()) {
-            if (group.getIntegrationSID().equals(sID)) {
-                return group;
-            }
-        }
-        return null;
-    }
-
     public GroupObjectEntity getNFGroupObject(String sID, Version version) {
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
             if (group.getSID().equals(sID)) {
@@ -790,7 +781,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         public JSONObject serialize() {
             JSONObject result = new JSONObject();
             for(int i=0,size=groups.size();i<size;i++)
-                result.put(groups.getKey(i).getIntegrationSID(), groups.getValue(i).serialize());
+                result.put(groups.getKey(i).getIntegrationSIDValue(), groups.getValue(i).serialize());
             return result;
         }
     }
