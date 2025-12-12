@@ -516,6 +516,10 @@ function setGlobalClassName(set, className) {
         root.classList.remove(className);
 }
 
+function hasGlobalClassName(className) {
+    return document.documentElement.classList.contains(className);
+}
+
 // input with drop down
 function handleInputKeyEvent(isOpen, controller, e, keyDown) {
     if(isOpen) { // is editing

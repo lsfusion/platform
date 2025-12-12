@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
@@ -10,7 +9,6 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -91,9 +89,15 @@ public abstract class CellRenderer {
             GwtClientUtils.addClassName(element, "is-editing");
         else
             GwtClientUtils.removeClassName(element, "is-editing");
+
+        GwtClientUtils.setGlobalClassName(set, "is-editing");
     }
     public static boolean isEditing(Element parent, Element element) {
         return element.hasClassName("is-editing");
+    }
+
+    public static boolean isEditing() {
+        return GwtClientUtils.hasGlobalClassName("is-editing");
     }
 
     protected boolean isTagInput() {

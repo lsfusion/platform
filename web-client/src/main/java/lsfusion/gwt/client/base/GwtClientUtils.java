@@ -108,7 +108,7 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setIsEditing(*)(element, controlElement, set);
             },
             isEditing: function (element, controlElement) {
-                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing(*)(element, controlElement);
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing(Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/dom/client/Element;)(element, controlElement);
             },
             useBootstrap: function() {
                 return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
@@ -957,6 +957,9 @@ public class GwtClientUtils {
             },
 
             onShow: function(instance) {
+                if (@lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing()())
+                    return false;
+
                 onShowAction.@java.util.function.Consumer::accept(*)(instance);
             },
             onHide: function(instance) { // we need on hide to have focus on tooltip and thus be able to move it before it goes to the body
@@ -2026,6 +2029,10 @@ public class GwtClientUtils {
 
     public static native void setGlobalClassName (boolean set, String elementClass) /*-{
         $wnd.setGlobalClassName(set, elementClass);
+    }-*/;
+
+    public static native boolean hasGlobalClassName (String elementClass) /*-{
+        return $wnd.hasGlobalClassName(elementClass);
     }-*/;
 
     public static native void addShowCollapsedContainerEvent(Element parent, String toggleElementSelector, String containerElementSelector, String collapsibleClass) /*-{
