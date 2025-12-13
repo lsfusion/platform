@@ -6,13 +6,13 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.interfaces.NFCol;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
@@ -24,6 +24,11 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     }
 
     public Iterable<T> getNFIt(Version version) {
+        return getIt();
+    }
+
+    @Override
+    public Iterable<T> getNFIt(Version version, boolean allowRead) {
         return getIt();
     }
 
@@ -53,22 +58,22 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     }
 
     @Override
-    public void add(NFCol<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFCol<T> element, NFCopy.Map<T> mapper, Version version) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(NFOrderSet<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFOrderSet<T> element, NFCopy.Map<T> mapper, Version version) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFList<T> element, NFCopy.Map<T> mapper, Version version) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(NFSet<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFSet<T> element, NFCopy.Map<T> mapper, Version version) {
         throw new UnsupportedOperationException();
     }
 

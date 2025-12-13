@@ -83,15 +83,13 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         String script = getScript(context);
 
         ExecutionStack stack = context.stack;
+        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
 
         FormInstance formInstance = context.getFormInstance(false, false);
-        FormEntity formEntity = formInstance != null ? formInstance.entity : null;
-        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
-        if(formEntity != null) {
-            EvalScriptingLogicsModule customizeEvalLM = formEntity.getEvalLM();
-            if (customizeEvalLM != null) {
+        if(formInstance != null) {
+            EvalScriptingLogicsModule customizeEvalLM = formInstance.entity.getCustomizeLM();
+            if (customizeEvalLM != null)
                 parentLMs.add(customizeEvalLM);
-            }
         }
         EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
         if (stackEvalLM != null)

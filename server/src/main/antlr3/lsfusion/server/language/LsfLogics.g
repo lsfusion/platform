@@ -445,6 +445,7 @@ scope {
 		|	reportFilesDeclaration
 		|	reportDeclaration
 		|   formExtIDDeclaration
+		|   localAsyncDeclaration
 		)*
 		';'
 		{ formStatementTokens = self.getParser().leaveFormOrDesignStatementState(); }
@@ -494,10 +495,19 @@ reportDeclaration
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(property);
+		$formStatement::form.setReportPath(property, self.getVersion());
 	}
 }
 	:	'REPORT' prop = formPropertyObject { property = $prop.property; }
+	;
+
+localAsyncDeclaration
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.setLocalAsync(true, self.getVersion());
+	}
+}
+	:	'LOCALASYNC'
 	;
 
 formExtIDDeclaration
@@ -514,23 +524,16 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	String image = null;
-	String title = null;
-	boolean localAsync = false;
-	String extendForm = null;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync, extendForm);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	img=imageOption
-		|	('LOCALASYNC' { localAsync = true; })
-		|   ':' formName=compoundID { extendForm = $formName.sid; }
-		)*
+		(img=imageOption)?
 	;
 
 
@@ -545,14 +548,15 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 
 formFormsList
 @init {
+    boolean extend = false;
 	List<String> forms = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingForms(forms);
+		$formStatement::form.addScriptingForms(forms, extend, self.getVersion());
 	}
 }
-	:	'FORMS'
+	:	('EXTEND' { extend = true; } )? 'FORMS'
 		formName=compoundID { forms.add($formName.sid); }
 		(',' formName=compoundID { forms.add($formName.sid); })*
 	;

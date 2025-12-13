@@ -1,46 +1,113 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.ServerIdentityObject;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainersView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-public abstract class GridPropertyView extends BaseComponentView {
+public abstract class GridPropertyView<This extends GridPropertyView<This, AddParent>, AddParent extends ServerIdentityObject<AddParent, ?>> extends BaseGroupComponentView<This, AddParent> implements PropertyGroupContainersView<This> {
 
-    private NFProperty<Integer> captionHeight = NFFact.property();
-    private NFProperty<Integer> captionCharHeight = NFFact.property();
+    public IDGenerator idGen;
 
-    private NFProperty<Boolean> resizeOverflow = NFFact.property(); // actually it is the max height
+    public ToolbarView<This> toolbarSystem;
+    public ContainerView filtersContainer;
+    public FilterControlsView<This> filterControls;
+    public NFOrderSet<FilterView> filters = NFFact.orderSet();
+    public ImSet<FilterView> getFilters() {
+        return filters.getSet();
+    }
+    public Iterable<FilterView> getFiltersIt() {
+        return filters.getIt();
+    }
 
-    private NFProperty<String> valueClass = NFFact.property();
-    private NFProperty<PropertyObjectEntity> propertyValueClass = NFFact.property();
+    public FilterView addFilter(PropertyDrawView property, Version version) {
+        FilterView filter = new FilterView(idGen, property);
+        filters.add(filter, version);
+        filtersContainer.add(filter, version);
+        return filter;
+    }
 
-    private NFProperty<Integer> lineWidth = NFFact.property();
-    private NFProperty<Integer> lineHeight = NFFact.property();
+    public DefaultFormView.ContainerSet containers;
 
-    private NFProperty<Boolean> boxed = NFFact.property();
+    @Override
+    public DefaultFormView.ContainerSet getContainers() {
+        return containers;
+    }
+
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+
+        toolbarSystem.finalizeAroundInit();
+        filtersContainer.finalizeAroundInit();
+        filterControls.finalizeAroundInit();
+        for (FilterView filter : getFiltersIt()) {
+            filter.finalizeAroundInit();
+        }
+    }
+
+    protected NFProperty<Integer> captionHeight = NFFact.property();
+    protected NFProperty<Integer> captionCharHeight = NFFact.property();
+
+    protected NFProperty<Boolean> resizeOverflow = NFFact.property(); // actually it is the max height
+
+    protected NFProperty<String> valueClass = NFFact.property();
+    protected NFProperty<PropertyObjectEntity> propertyValueClass = NFFact.property();
+
+    protected NFProperty<Integer> lineWidth = NFFact.property();
+    protected NFProperty<Integer> lineHeight = NFFact.property();
+
+    protected NFProperty<Boolean> boxed = NFFact.property();
 
     @Override
     protected boolean hasPropertyComponent() {
         return super.hasPropertyComponent() || getPropertyValueClass() != null;
     }
 
-    public GridPropertyView(int ID) {
-        super(ID);
-    }
+    public GridPropertyView(IDGenerator idGen, Version version) {
+        super(idGen);
 
+        toolbarSystem = new ToolbarView<>(idGen, (This) this);
+
+        filtersContainer = new ContainerView(idGen);
+        filtersContainer.setAddParent(this, (Function<This, ContainerView>) aThis -> aThis.filtersContainer);
+        if (Settings.get().isVerticalColumnsFiltersContainer()) {
+            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
+        } else {
+            filtersContainer.setHorizontal(true, version);
+        }
+        //disable isReversed optimisation for FILTERS container because children are added after isReversed check
+        filtersContainer.setReversed(false, version);
+
+        // behaves weirdly if unset as alignCaptions property sometimes depends on children count, which changes in runtime for filters container
+        filtersContainer.setAlignCaptions(false, version);
+
+//        filtersContainer.setLineSize(0);
+//        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
+
+        filterControls = new FilterControlsView<>(idGen, (This) this);
+    }
 
     @Override
     public double getDefaultFlex(FormInstanceContext context) {
@@ -186,21 +253,37 @@ public abstract class GridPropertyView extends BaseComponentView {
     }
 
     // copy-constructor
-    public GridPropertyView(GridPropertyView src, ObjectMapping mapping) {
+    protected GridPropertyView(This src, ObjectMapping mapping) {
         super(src, mapping);
-        this.ID = BaseLogicsModule.generateStaticNewID();
 
-        captionHeight.set(src.captionHeight, p -> p, mapping.version);
-        captionCharHeight.set(src.captionCharHeight, p -> p, mapping.version);
+        idGen = src.idGen;
 
-        resizeOverflow.set(src.resizeOverflow, p -> p, mapping.version);
+        toolbarSystem = mapping.get(src.toolbarSystem);
+        filtersContainer = mapping.get(src.filtersContainer);
+        filterControls = mapping.get(src.filterControls);
 
-        valueClass.set(src.valueClass, p -> p, mapping.version);
-        propertyValueClass.set(src.propertyValueClass, mapping::get, mapping.version);
+        containers = mapping.get(src.containers);
+    }
 
-        lineWidth.set(src.lineWidth, p -> p, mapping.version);
-        lineHeight.set(src.lineHeight, p -> p, mapping.version);
+    @Override
+    public void extend(This src, ObjectMapping mapping) {
+        super.extend(src, mapping);
 
-        boxed.set(src.boxed, p -> p, mapping.version);
+        mapping.sets(captionHeight, src.captionHeight);
+        mapping.sets(captionCharHeight, src.captionCharHeight);
+        mapping.sets(resizeOverflow, src.resizeOverflow);
+        mapping.sets(valueClass, src.valueClass);
+        mapping.sets(lineWidth, src.lineWidth);
+        mapping.sets(lineHeight, src.lineHeight);
+        mapping.sets(boxed, src.boxed);
+
+        mapping.set(propertyValueClass, src.propertyValueClass);
+    }
+
+    @Override
+    public void add(This src, ObjectMapping mapping) {
+        super.add(src, mapping);
+
+        mapping.add(filters, src.filters);
     }
 }

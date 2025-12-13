@@ -4,7 +4,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.physics.admin.Settings;
 
 public class FormContainerSet {
@@ -28,8 +27,8 @@ public class FormContainerSet {
     private ContainerView toolbarContainer;
     private ContainerView popupContainer;
 
-    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, PropertyGroupContainerView groupContainerView, Version version) {
-        return new DefaultFormView.ContainerSet(formView, groupContainerView, objectsContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, null, null, null, version);
+    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, Version version) {
+        return new DefaultFormView.ContainerSet(formView, formView, objectsContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, null, null, null, version);
     }
 
     public static FormContainerSet fillContainers(ContainerView mainContainer, ContainerFactory<ContainerView> contFactory, Version version) {

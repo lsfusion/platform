@@ -1,21 +1,20 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-public class ToolbarView extends BaseComponentView {
+public class ToolbarView<AddGridParent extends GridPropertyView<AddGridParent, ?>> extends BaseGridComponentView<ToolbarView<AddGridParent>, AddGridParent> {
     private NFProperty<Boolean> visible = NFFact.property();
 
     private NFProperty<Boolean> showViews = NFFact.property();
@@ -103,23 +102,35 @@ public class ToolbarView extends BaseComponentView {
         showManualUpdate.set(value, version);
     }
 
-    public ToolbarView(int ID) {
-        super(ID);
+    public ToolbarView(IDGenerator idGen, AddGridParent groupView) {
+        super(idGen, groupView);
     }
 
     // copy-constructor
-    public ToolbarView(ToolbarView src, ObjectMapping mapping) {
+    protected ToolbarView(ToolbarView<AddGridParent> src, ObjectMapping mapping) {
         super(src, mapping);
+    }
+    @Override
+    public void extend(ToolbarView<AddGridParent> src, ObjectMapping mapping) {
+        super.extend(src, mapping);
 
-        ID = BaseLogicsModule.generateStaticNewID();
+        mapping.sets(visible, src.visible);
+        mapping.sets(showViews, src.showViews);
+        mapping.sets(showFilters, src.showFilters);
+        mapping.sets(showSettings, src.showSettings);
+        mapping.sets(showCountQuantity, src.showCountQuantity);
+        mapping.sets(showCalculateSum, src.showCalculateSum);
+        mapping.sets(showPrintGroupXls, src.showPrintGroupXls);
+        mapping.sets(showManualUpdate, src.showManualUpdate);
+    }
 
-        visible.set(src.visible, p -> p, mapping.version);
-        showViews.set(src.showViews, p -> p, mapping.version);
-        showFilters.set(src.showFilters, p -> p, mapping.version);
-        showSettings.set(src.showSettings, p -> p, mapping.version);
-        showCountQuantity.set(src.showCountQuantity, p -> p, mapping.version);
-        showCalculateSum.set(src.showCalculateSum, p -> p, mapping.version);
-        showPrintGroupXls.set(src.showPrintGroupXls, p -> p, mapping.version);
-        showManualUpdate.set(src.showManualUpdate, p -> p, mapping.version);
+    @Override
+    public ToolbarView<AddGridParent> getAddChild(AddGridParent addGridParent, ObjectMapping mapping) {
+        return addGridParent.toolbarSystem;
+    }
+
+    @Override
+    public ToolbarView<AddGridParent> copy(ObjectMapping mapping) {
+        return new ToolbarView<>(this, mapping);
     }
 }

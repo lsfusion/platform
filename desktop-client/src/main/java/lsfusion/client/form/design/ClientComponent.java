@@ -1,14 +1,12 @@
 package lsfusion.client.form.design;
 
-import lsfusion.base.context.ContextIdentityObject;
-import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientIdentityObject;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.AbstractComponent;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.property.PropertyReadType;
 
@@ -22,7 +20,7 @@ import java.util.Map;
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
-public abstract class ClientComponent extends ContextIdentityObject implements ClientIdentitySerializable, AbstractComponent {
+public abstract class ClientComponent extends ClientIdentityObject {
     public FontInfo font;
     public FontInfo captionFont;
     public Color background;
@@ -122,18 +120,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements C
         return flex;
     }
 
-    public void setFlex(double flex) {
-        this.flex = flex;
-        updateDependency(this, "flex");
-    }
-
     public boolean isShrink() {
         return shrink;
-    }
-
-    public void setShrink(boolean shrink) {
-        this.shrink = shrink;
-        updateDependency(this, "shrink");
     }
 
     public boolean isAlignShrink() {
@@ -150,54 +138,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements C
 
     public FlexAlignment getAlignment() {
         return alignment;
-    }
-
-    public void setAlignment(FlexAlignment alignment) {
-        this.alignment = alignment;
-        updateDependency(this, "alignment");
-    }
-
-    public int getMarginTop() {
-        return marginTop;
-    }
-
-    public void setMarginTop(int marginTop) {
-        this.marginTop = marginTop;
-        updateDependency(this, "marginTop");
-    }
-
-    public int getMarginBottom() {
-        return marginBottom;
-    }
-
-    public void setMarginBottom(int marginBottom) {
-        this.marginBottom = marginBottom;
-        updateDependency(this, "marginBottom");
-    }
-
-    public int getMarginLeft() {
-        return marginLeft;
-    }
-
-    public void setMarginLeft(int marginLeft) {
-        this.marginLeft = marginLeft;
-        updateDependency(this, "marginLeft");
-    }
-
-    public int getMarginRight() {
-        return marginRight;
-    }
-
-    public void setMarginRight(int marginRight) {
-        this.marginRight = marginRight;
-        updateDependency(this, "marginRight");
-    }
-
-    public void setMargin(int margin) {
-        setMarginTop(margin);
-        setMarginBottom(margin);
-        setMarginLeft(margin);
-        setMarginRight(margin);
     }
 
     public void installMargins(JComponent view) {

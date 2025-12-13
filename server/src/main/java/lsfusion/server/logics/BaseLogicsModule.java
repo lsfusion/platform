@@ -63,7 +63,6 @@ import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.action.userevent.*;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -288,9 +287,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public Group privateGroup;
 
     public TableFactory tableFactory;
-
-    // счетчик идентификаторов
-    private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
@@ -781,8 +777,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return form;
     }
 
+    private static final IDGenerator idGenerator = new DefaultIDGenerator();
     public static int generateStaticNewID() {
-        return idGenerator.idShift();
+        return idGenerator.id();
     }
 
     public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean interactive) {
@@ -1065,7 +1062,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public Pair<LP, ActionObjectSelector<?>> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         LP value;
         if(!obj.noClasses()) {
             value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
@@ -1077,7 +1074,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         } else
             value = object;
 
-        ActionObjectSelector onChange = null;
+        ActionObjectSelector<?> onChange = null;
         if (!obj.noClasses() && obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel()) {
             DataClass dataClass = (DataClass) obj.baseClass;
 
@@ -1096,7 +1093,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public Pair<LP, ActionObjectSelector<?>> getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         LP value = intervalProperty;
 
         if (formEntity.getCanonicalName() != null) {
@@ -1105,7 +1102,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             makePropertyPublic(value, name, objectFrom.baseClass.getResolveSet(), objectTo.baseClass.getResolveSet());
         }
 
-        ActionObjectSelector onChange = null;
+        ActionObjectSelector<?> onChange = null;
         if(objectFrom.groupTo.viewType.isPanel() && objectTo.groupTo.viewType.isPanel()) {
             DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 

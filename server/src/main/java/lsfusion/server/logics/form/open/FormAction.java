@@ -147,13 +147,13 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself
         // so we'll just add extra checks ChangeFlowType.HASINTERACTIVEFORM
         if(this instanceof FormStaticAction) {
-            for (PropertyDrawEntity<?> propertyDraw : getForm().getStaticPropertyDrawsList()) {
+            for (PropertyDrawEntity<?, ?> propertyDraw : getForm().getStaticPropertyDrawsList()) {
                 for (PropertyReaderEntity reader : this instanceof ExportAction ? SetFact.singleton(propertyDraw) : propertyDraw.getQueryProps())
                     mProps.add((Property) reader.getReaderProperty().property, false); // assert propertyDraw.isProperty
             }
             for (FilterEntity<?> filterEntity : getForm().getFixedFilters())
                 mProps.add(filterEntity.getProperty().property, false);
-            for (OrderEntity<?> orderEntity : getForm().getFixedOrdersList().keyIt())
+            for (OrderEntity<?, ?> orderEntity : getForm().getFixedOrdersList().keyIt())
                 if(orderEntity instanceof PropertyObjectEntity)
                     mProps.add(((PropertyObjectEntity<?>) orderEntity).property, false);
         }

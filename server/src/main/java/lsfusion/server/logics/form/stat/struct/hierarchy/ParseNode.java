@@ -34,7 +34,7 @@ public interface ParseNode {
 
         if(Settings.get().isGroupIntegrationHierarchyOldOrder()) {
 
-            for(PropertyDrawEntity<?> property : hierarchy.getProperties(currentGroup))
+            for(PropertyDrawEntity<?, ?> property : hierarchy.getProperties(currentGroup))
                 fillPropertyGroupIntegrationHierarchy(new PropertyPGNode(property), childGroupNodes);
             for(GroupObjectEntity group : hierarchy.getDependencies(currentGroup))
                 fillPropertyGroupIntegrationHierarchy(new GroupObjectPGNode(group), childGroupNodes);
@@ -114,9 +114,9 @@ public interface ParseNode {
     }
 
     class PropertyPGNode implements PGNode {
-        public final PropertyDrawEntity<?> property;
+        public final PropertyDrawEntity<?, ?> property;
 
-        public PropertyPGNode(PropertyDrawEntity<?> property) {
+        public PropertyPGNode(PropertyDrawEntity<?, ?> property) {
             this.property = property;
         }
 

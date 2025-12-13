@@ -19,7 +19,6 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -31,7 +30,7 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
-public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
+public abstract class ObjectInstance implements PropertyObjectInterfaceInstance {
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
     public final static int UPDATED_OBJECT = (1);
@@ -41,6 +40,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public int updated = UPDATED_CLASS | UPDATED_GRIDCLASS;
 
     public GroupObjectInstance groupTo;
+    public ObjectEntity entity;
 
     public LocalizedString getCaption() {
         return entity.getCaption();
@@ -51,7 +51,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     private Property<?> valueProperty; // just to be symmetric with other form operator properts
 
     public ObjectInstance(ObjectEntity entity) {
-        super(entity);
+        this.entity = entity;
         this.entity = entity;
         this.noClasses = entity.noClasses();
 
@@ -136,5 +136,13 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public ImSet<ObjectInstance> getObjectInstances() {
         return SetFact.singleton(this);
+    }
+
+    public int getID() {
+        return entity.getID();
+    }
+
+    public String getSID() {
+        return entity.getSID();
     }
 }

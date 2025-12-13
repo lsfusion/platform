@@ -129,16 +129,16 @@ public class InstanceFactory {
         return propertyInstance;
     }
 
-    private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(PropertyRevImplement<P, ObjectEntity> entity) {
+    private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(PropertyObjectEntity<P> entity) {
         return entity.mapping.mapRevValues((Function<ObjectEntity, ObjectInstance>) InstanceFactory.this::getInstance);
     }
 
-    public <T, P extends PropertyInterface> ImMap<T, PropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, PropertyRevImplement<P, ObjectEntity>> entities) {
+    public <T, P extends PropertyInterface> ImMap<T, PropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, PropertyObjectEntity<P>> entities) {
         return entities.mapValues(entity -> new PropertyRevImplement<>(entity.property, getInstanceMap(entity)));
     }
 
         // временно
-    public <P extends PropertyInterface> ActionOrPropertyObjectInstance<P, ?> getInstance(ActionOrPropertyObjectEntity<P, ?> entity) {
+    public <P extends PropertyInterface> ActionOrPropertyObjectInstance<P, ?> getInstance(ActionOrPropertyObjectEntity<P, ?, ?> entity) {
         if(entity instanceof PropertyObjectEntity)
             return getInstance((PropertyObjectEntity<P>)entity);
         else
@@ -155,11 +155,11 @@ public class InstanceFactory {
         return actionInstance;
     }
 
-    public PropertyDrawInstance getExInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
+    public PropertyDrawInstance getExInstance(PropertyDrawEntity<? extends PropertyInterface, ?> entity) {
         return getInstance(context.entity.getExEntity(entity));
     }
 
-    public PropertyDrawInstance getInstance(PropertyDrawEntity<? extends PropertyInterface> entity) {
+    public PropertyDrawInstance getInstance(PropertyDrawEntity<? extends PropertyInterface, ?> entity) {
 
         PropertyDrawInstance propertyDrawInstance = propertyDrawInstances.get(entity);
         if (propertyDrawInstance == null) {

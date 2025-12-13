@@ -15,10 +15,10 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyParseNode implements ChildParseNode {
-    private final PropertyDrawEntity<?> property;
+    private final PropertyDrawEntity<?, ?> property;
     private final boolean isExclusive;
 
-    public PropertyParseNode(PropertyDrawEntity<?> property, boolean isExclusive) {
+    public PropertyParseNode(PropertyDrawEntity<?, ?> property, boolean isExclusive) {
         this.property = property;
         this.isExclusive = isExclusive;
     }

@@ -5,8 +5,6 @@ import lsfusion.server.base.version.impl.changes.NFAdd;
 import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.interfaces.NFCol;
 
-import java.util.function.Function;
-
 public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFChangeImpl<CH, F> implements NFCol<T> {
 
     public NFColChangeImpl() {
@@ -37,7 +35,7 @@ public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFCh
     }
 
     @Override
-    public void add(NFCol<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFCol<T> element, NFCopy.Map<T> mapper, Version version) {
         addChange((CH) new NFCopy<>(element, mapper), version);
     }
 }

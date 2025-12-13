@@ -2,9 +2,6 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.form.event.InputBindingEvent;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
@@ -50,7 +47,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.swing.*;
 import java.io.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -412,7 +408,7 @@ public class FormChanges {
         Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
         if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
-            PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
+            PropertyDrawEntity<?, ?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
             if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
                 return getNeedImage(readerType, propertyDraw, context);
@@ -431,7 +427,7 @@ public class FormChanges {
         return null;
     }
 
-    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw, FormInstanceContext context) {
+    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?, ?> propertyDraw, FormInstanceContext context) {
         return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, context.view.get(propertyDraw)));
     }
 

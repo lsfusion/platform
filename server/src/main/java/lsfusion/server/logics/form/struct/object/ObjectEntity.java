@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.identity.IdentityObject;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -39,7 +40,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 
-public class ObjectEntity extends IdentityObject implements OrderEntity<PropertyObjectInterfaceInstance>, ObjectSelector {
+public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity> implements OrderEntity<PropertyObjectInterfaceInstance, ObjectEntity>, ObjectSelector {
 
     public GroupObjectEntity groupTo;
 
@@ -70,18 +71,14 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         return valueProperty.get();
     }
 
-    public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption) {
-        this(ID, null, baseClass, caption);
-    }
-    public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
+    public ObjectEntity(IDGenerator ID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
         this(ID, null, baseClass, caption, noClasses);
     }
-    public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption) {
+    public ObjectEntity(IDGenerator ID, String sID, ValueClass baseClass, LocalizedString caption) {
         this(ID, sID, baseClass, caption, false);
     }
-    public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
-        super(ID);
-        this.sID = sID != null ? sID : "obj" + ID;
+    public ObjectEntity(IDGenerator ID, String sID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
+        super(ID, sID, "obj");
         this.caption = caption;
         this.baseClass = baseClass;
         this.noClasses = noClasses;
@@ -172,12 +169,9 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     public ObjectView view;
 
     // copy-constructor
-    public ObjectEntity(ObjectEntity src, ObjectMapping mapping) {
-        super(src);
+    protected ObjectEntity(ObjectEntity src, ObjectMapping mapping) {
+        super(src, mapping);
 
-        mapping.put(src, this);
-
-        ID = BaseLogicsModule.generateStaticNewID();
         caption = src.caption;
         baseClass = src.baseClass;
         noClasses = src.noClasses;
@@ -186,5 +180,23 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
 
         valueProperty = mapping.get(src.valueProperty);
         groupTo = mapping.get(src.groupTo);
+        view = mapping.get(src.view);
+    }
+
+//    @Override
+//    public GroupObjectEntity getAddParent(ObjectMapping mapping) {
+//        return groupTo;
+//    }
+//    @Override
+//    public ObjectEntity getAddChild(GroupObjectEntity groupObjectEntity, ObjectMapping mapping) {
+//        ObjectEntity explicitChild = (ObjectEntity) mapping.addObjects.get(this);
+//        if(explicitChild != null)
+//            return explicitChild;
+//
+//        return groupObjectEntity.getObject(getSID());
+//    }
+    @Override
+    public ObjectEntity copy(ObjectMapping mapping) {
+        return new ObjectEntity(this, mapping);
     }
 }

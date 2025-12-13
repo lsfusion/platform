@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.AppServerImage;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -53,6 +53,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewO
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -78,11 +79,11 @@ import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements PropertyDrawEntityOrPivotColumn, Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
+public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends IdentityEntity<AddParent, ?>> extends IdentityEntity<PropertyDrawEntity<P, AddParent>, AddParent> implements PropertyDrawEntityOrPivotColumn<PropertyDrawEntity<P, AddParent>>, Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    public ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
+    public ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty;
     
     public GroupObjectEntity toDraw;
     public boolean hide;
@@ -113,7 +114,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Boolean sync;
 
     private String formPath;
-
     private Pair<Integer, Integer> scriptIndex;
     
     public boolean ignoreHasHeaders = false; // hack for property count property
@@ -122,9 +122,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String columnsName;
     public ImOrderSet<GroupObjectEntity> columnGroupObjects = SetFact.EMPTYORDER();
 
-    private NFMap<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = NFFact.map();
+    private NFMap<PropertyDrawExtraType, PropertyObjectEntity> propertyExtras = NFFact.map();
 
-    public ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> getPropertyExtras() {
+    public ImMap<PropertyDrawExtraType, PropertyObjectEntity> getPropertyExtras() {
         return propertyExtras.getMap();
     }
     public PropertyObjectEntity<?> getNFPropertyExtra(PropertyDrawExtraType type, Version version) {
@@ -251,9 +251,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
-        super(ID);
-        setSID(sID);
+    public PropertyDrawEntity(IDGenerator ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
+        super(ID, sID, "prop");
         setIntegrationSID(integrationSID);
         this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
@@ -331,7 +330,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private ActionObjectEntity<?> getExplicitEventActionEntity(String actionId, FormInstanceContext context) {
-        ActionObjectSelector explicitEventSelector = getExplicitEventAction(actionId);
+        ActionObjectSelector<?> explicitEventSelector = getExplicitEventAction(actionId);
         ActionObjectEntity<?> explicitEventAction;
         if (explicitEventSelector != null && (explicitEventAction = explicitEventSelector.getAction(context)) != null)
             return explicitEventAction;
@@ -339,7 +338,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private <X extends PropertyInterface> ActionObjectEntity<? extends PropertyInterface> getDefaultEventAction(String actionId, FormInstanceContext context) {
-        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getEventActionOrProperty(context, isChange(actionId, context));
+        ActionOrPropertyObjectEntity<X, ?, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?, ?>) getEventActionOrProperty(context, isChange(actionId, context));
         ActionOrProperty<X> eventProperty = eventPropertyObject.property;
         ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
 
@@ -362,8 +361,27 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public ActionObjectSelector getExplicitEventAction(String actionId) {
+    public ActionObjectSelector<?> getExplicitEventAction(String actionId) {
         return eventActions.getMap().get(actionId);
+    }
+
+    public static class SelectorAction implements ActionObjectSelector<SelectorAction> {
+
+        private final Function<FormInstanceContext, ActionObjectEntity<?>> getAction;
+
+        public SelectorAction(Function<FormInstanceContext, ActionObjectEntity<?>> getAction) {
+            this.getAction = getAction;
+        }
+
+        @Override
+        public ActionObjectEntity<?> getAction(FormInstanceContext context) {
+            return getAction.apply(context);
+        }
+
+        @Override
+        public SelectorAction get(ObjectMapping mapping) {
+            return new SelectorAction(formInstanceContext -> mapping.get((ActionObjectEntity) getAction.apply(formInstanceContext)));
+        }
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormInstanceContext context) {
@@ -445,11 +463,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // VALUE, INTERVAL or SELECTOR
     // assert that it is single panel object, VALUE, INTERVAL - Data with classes, SELECT - Object
-    public void setSelectorAction(ActionObjectSelector eventAction, Version version) {
+    public void setSelectorAction(ActionObjectSelector<?> eventAction, Version version) {
         setEventAction(CHANGE, eventAction, version);
         this.isSelector = true;
     }
-    public void setEventAction(String actionSID, ActionObjectSelector eventAction, Version version) {
+    public void setEventAction(String actionSID, ActionObjectSelector<?> eventAction, Version version) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
@@ -472,7 +490,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getEventActionOrProperty(context, false).property;
     }
 
-    public ActionOrPropertyObjectEntity<?, ?> getEventActionOrProperty(FormInstanceContext context, boolean isChange) {
+    public ActionOrPropertyObjectEntity<?, ?, ?> getEventActionOrProperty(FormInstanceContext context, boolean isChange) {
         return isChange ? getCellActionOrProperty(context) : actionOrProperty;
     }
 
@@ -587,7 +605,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
-        MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
+        MAddSet<ActionOrPropertyObjectEntity<?, ?, ?>> propertyObjects = SetFact.mAddSet();
 
         PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, GRIDELEMENTCLASS, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS,
                 FONT, BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER, PATTERN,
@@ -665,7 +683,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sidBuilder.toString();        
     }
 
-    public static <P extends PropertyInterface> List<String> getMapping(ActionOrPropertyObjectEntity<P, ?> property, ImOrderSet<P> interfaces) {
+    public static <P extends PropertyInterface> List<String> getMapping(ActionOrPropertyObjectEntity<P, ?, ?> property, ImOrderSet<P> interfaces) {
         List<String> mapping = new ArrayList<>();
         for (P pi : interfaces)
             mapping.add(property.mapping.getObject(pi).getSID());
@@ -778,10 +796,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return readOnly != null && isList(form) && readOnly.hasNoGridReadOnly(getToDraw(form).getObjects());
     }
 
-    public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {
+    public ActionOrPropertyObjectEntity<?, ?, ?> getStaticActionOrProperty() {
         return actionOrProperty;
     }
-    public ActionOrPropertyObjectEntity<?, ?> getReflectionActionOrProperty() {
+    public ActionOrPropertyObjectEntity<?, ?, ?> getReflectionActionOrProperty() {
         return actionOrProperty;
     }
 
@@ -823,7 +841,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(context.isNative)
             return null;
 
-        ActionOrPropertyObjectEntity<?, ?> actionOrProperty = getRawCellActionOrProperty();
+        ActionOrPropertyObjectEntity<?, ?, ?> actionOrProperty = getRawCellActionOrProperty();
         if(actionOrProperty instanceof PropertyObjectEntity) {
             if(customChangeFunction != null)
                 return null;
@@ -963,7 +981,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
 
     public PropertyObjectEntity<?> cellProperty; // maybe later should be implemented as PropertyExtra
-    private ActionOrPropertyObjectEntity<?, ?> getRawCellActionOrProperty() {
+    private ActionOrPropertyObjectEntity<?, ?, ?> getRawCellActionOrProperty() {
         if(cellProperty != null)
             return cellProperty;
 
@@ -971,7 +989,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // INTERACTIVE (NON-STATIC) USAGES
-    public ActionOrPropertyObjectEntity<?, ?> getCellActionOrProperty(FormInstanceContext context) {
+    public ActionOrPropertyObjectEntity<?, ?, ?> getCellActionOrProperty(FormInstanceContext context) {
         Select select = getSelectProperty(context);
         if(select != null)
             return select.property;
@@ -1061,15 +1079,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sid != null && sid.equals("image");
     }
 
-    public PropertyDrawView view;
+    public PropertyDrawView<P, AddParent> view;
 
     // copy-constructor
-    public PropertyDrawEntity(PropertyDrawEntity<P> src, ObjectMapping mapping) {
-        super(src);
+    protected PropertyDrawEntity(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
+        super(src, mapping);
 
-        mapping.put(src, this);
-
-        ID = BaseLogicsModule.generateStaticNewID();
+        formPath =  src.formPath;
+        scriptIndex = src.scriptIndex;
 
         editType = src.editType;
         hide = src.hide;
@@ -1087,8 +1104,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         eventID = src.eventID;
         sticky = src.sticky;
         sync = src.sync;
-        formPath =  src.formPath;
-        scriptIndex = src.scriptIndex;
         ignoreHasHeaders = src.ignoreHasHeaders;
         columnsName =  src.columnsName;
         group = src.group;
@@ -1101,19 +1116,51 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         defaultChangeEventScope = src.defaultChangeEventScope;
         integrationSID = src.integrationSID;
 
-        remapped = true;
-        actionOrProperty = mapping.get(src.actionOrProperty);
-        toDraw = src.toDraw != null ? mapping.get(src.toDraw) : null;
-        columnGroupObjects = src.columnGroupObjects.mapOrderSetValues(mapping::get);
-        propertyExtras.add(src.propertyExtras, mapping::get, mapping.version);
-        eventActions.add(src.eventActions, mapping::get, mapping.version);
-        formulaOperands = src.formulaOperands != null ? src.formulaOperands.mapListValues(mapping::get) : null;
-        lastAggrColumns = src.lastAggrColumns.mapListValues(mapping::get);
-        quickFilterProperty = src.quickFilterProperty != null ? mapping.get(src.quickFilterProperty) : null;
-        cellProperty = mapping.get(src.cellProperty);
-
+        view = mapping.get(src.view);
+        actionOrProperty = mapping.get((ActionOrPropertyObjectEntity)src.actionOrProperty);
+        toDraw = mapping.get(src.toDraw); // nullable
+        columnGroupObjects = mapping.get(src.columnGroupObjects);
+        formulaOperands = mapping.get(src.formulaOperands); // nullable
+        lastAggrColumns = mapping.get(src.lastAggrColumns);
+        quickFilterProperty = mapping.get(src.quickFilterProperty); // nullable
+        cellProperty = mapping.get((PropertyObjectEntity) src.cellProperty);
         activeProperty = mapping.get(src.activeProperty);
+
+        addParent = mapping.get(src.addParent);
+        addChild = src.addChild;
     }
 
-    public boolean remapped = false;
+    @Override
+    public void extend(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+    }
+
+    @Override
+    public void add(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
+        super.add(src, mapping);
+
+        mapping.add(propertyExtras, src.propertyExtras);
+        mapping.add(eventActions, src.eventActions);
+    }
+
+    public IdentityEntity addParent;
+    public Function<IdentityEntity, PropertyDrawEntity<P, ?>> addChild;
+    public <PC extends IdentityEntity> void setAddParent(PC addParent, Function<PC, PropertyDrawEntity<P, ?>> addChild) {
+        this.addParent = addParent;
+        this.addChild = (Function<IdentityEntity, PropertyDrawEntity<P, ?>>) addChild;
+    }
+    @Override
+    public AddParent getAddParent(ObjectMapping mapping) {
+        // if(!mapping.extend)
+        // merge default elements - form:manage, group: count it is not clear when has to be false
+        return (AddParent) addParent;
+    }
+    @Override
+    public PropertyDrawEntity<P, AddParent> getAddChild(AddParent addParent, ObjectMapping mapping) {
+        return (PropertyDrawEntity<P, AddParent>) addChild.apply(addParent);
+    }
+    @Override
+    public PropertyDrawEntity<P, AddParent> copy(ObjectMapping mapping) {
+        return new PropertyDrawEntity<>(this, mapping);
+    }
 }

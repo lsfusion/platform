@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.impl.changes.NFOrderSetChange;
 import lsfusion.server.base.version.impl.changes.NFOrderSetCopy;
 import lsfusion.server.base.version.impl.changes.NFRemoveAll;
@@ -12,7 +13,6 @@ import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrderSet<T>> implements NFOrderSet<T> {
@@ -69,7 +69,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     }
 
     @Override
-    public void add(NFOrderSet<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFOrderSet<T> element, NFCopy.Map<T> mapper, Version version) {
         addChange(new NFOrderSetCopy<>(element, mapper), version);
     }
 
@@ -77,7 +77,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     // множественное наследование
 
     @Override
-    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFList<T> element, NFCopy.Map<T> mapper, Version version) {
         throw new UnsupportedOperationException();
     }
 

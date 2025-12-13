@@ -7,9 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.event.*;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -25,17 +23,14 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
-import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
-import lsfusion.server.logics.form.interactive.design.object.ObjectView;
-import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.interactive.design.object.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainersView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -52,13 +47,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
 
-public class FormView extends IdentityObject implements ServerCustomSerializable {
+public class FormView<This extends FormView<This>> extends IdentityView<This, FormEntity> {
 
-    // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
-    public final IDGenerator idGenerator = new DefaultIDGenerator();
+    public final IDGenerator genID() {
+        return entity.genID;
+    }
 
     public FormEntity entity;
 
@@ -69,7 +66,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     // список деревеьев
-    private NFSet<TreeGroupView> treeGroups = NFFact.set();
+    protected NFSet<TreeGroupView> treeGroups = NFFact.set();
     public ImSet<TreeGroupView> getTreeGroups() {
         return treeGroups.getSet();
     }
@@ -149,27 +146,29 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return mainContainer.findById(id);
     }
 
-    public FormView(FormEntity entity, LocalizedString caption, String imagePath, FormView src, ObjectMapping mapping, Version version) {
-        super(0);
+    @Override
+    public int getID() {
+        return entity.getID();
+    }
 
-        idGenerator.idRegister(0);
-        
+    public String getSID() {
+        return entity.getSID();
+    }
+
+    @Override
+    public String toString() {
+        return entity.toString();
+    }
+
+    public FormView(FormEntity entity, Version version) {
         this.entity = entity;
 
-        if(src != null) {
-            copy(src, mapping);
-
-            mainContainer = mapping.get(src.mainContainer);
-        } else {
-            mainContainer = new ContainerView(idGenerator.idShift(), true);
-            mainContainer.setWidth(-3, version);
-            mainContainer.setHeight(-3, version);
-            setComponentSID(mainContainer, getBoxContainerSID(), version);
-        }
-
-        mainContainer.setCaption(caption, version);
-        if (imagePath != null)
-            mainContainer.setImage(imagePath, this, version);
+        mainContainer = containerFactory.createContainer();
+        mainContainer.main = true;
+        setComponentSID(mainContainer, getBoxContainerSID(), version);
+        mainContainer.setAddParent(this, (Function<FormView, ContainerView<?>>) fv -> fv.mainContainer);
+        mainContainer.setWidth(-3, version);
+        mainContainer.setHeight(-3, version);
     }
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
@@ -179,7 +178,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             if (groupObjectEntity.isInTree()) {
                 get(groupObjectEntity.treeGroup).addFilter(propertyDrawView, version);
             } else {
-                get(groupObjectEntity).addFilter(propertyDrawView, version);
+                get(groupObjectEntity).grid.addFilter(propertyDrawView, version);
             }
         }
     }
@@ -210,7 +209,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
         PropertyDrawView propertyView = new PropertyDrawView(property, version);
         properties.add(propertyView, location, version);
+        setComponentSIDs(propertyView, version);
         addPropertyDrawView(propertyView);
+
 
         //походу инициализируем порядки по умолчанию
         Boolean descending = entity.getNFDefaultOrder(property, version);
@@ -221,20 +222,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return propertyView;
     }
 
-    private void setComponentSIDs(GroupObjectView groupObjectView, Version version) {
-        if(!groupObjectView.entity.isInTree()) { // правильнее вообще не создавать компоненты, но для этого потребуется более сложный рефакторинг, поэтому пока просто сделаем так чтобы к ним нельзя было обратиться
-            setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getToolbarSystem(), getToolbarSystemSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getFiltersContainer(), getFiltersContainerSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getFilterControls(), getFilterControlsComponentSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
-        }
+    private void setComponentSIDs(GridView groupObjectView, Version version) {
+        setComponentSIDs((GridPropertyView) groupObjectView, version);
+        setComponentSID(groupObjectView.calculations, getCalculationsSID(groupObjectView), version);
     }
 
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
-        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject, version);
+        GroupObjectView groupObjectView = new GroupObjectView(genID(), groupObject, version);
         groupObjects.add(groupObjectView, location.map(this::get), version);
-        setComponentSIDs(groupObjectView, version);
+        if(!groupObjectView.entity.isInTree())
+            setComponentSIDs(groupObjectView.grid, version);
         return groupObjectView;
     }
 
@@ -245,15 +242,19 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return treeGroupView;
     }
 
-    private void setComponentSIDs(TreeGroupView treeGroupView, Version version) {
+    private void setComponentSIDs(GridPropertyView treeGroupView, Version version) {
         setComponentSID(treeGroupView, getGridSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getToolbarSystem(), getToolbarSystemSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getFiltersContainer(), getFiltersContainerSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getFilterControls(), getFilterControlsComponentSID(treeGroupView), version);
+        setComponentSID(treeGroupView.toolbarSystem, getToolbarSystemSID(treeGroupView), version);
+        setComponentSID(treeGroupView.filtersContainer, getFiltersContainerSID(treeGroupView), version);
+        setComponentSID(treeGroupView.filterControls, getFilterControlsComponentSID(treeGroupView), version);
     }
 
     private void setComponentSIDs(RegularFilterGroupView filterGroupView, Version version) {
         setComponentSID(filterGroupView, getFilterGroupSID(filterGroupView.entity), version);
+    }
+
+    private void setComponentSIDs(PropertyDrawView propertyDrawView, Version version) {
+        setComponentSID(propertyDrawView, getPropertySID(propertyDrawView.entity), version);
     }
 
     public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroupEntity, Version version) {
@@ -291,6 +292,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public ImOrderSet<ComponentView> getComponents() {
         return components.getOrderSet();
+    }
+
+    public Iterable<ComponentView> getNFComponentsIt(Version version) {
+        return components.getNFIt(version);
+    }
+    public Iterable<ComponentView> getNFComponentsIt(Version version, boolean allowRead) {
+        return components.getNFIt(version, allowRead);
     }
 
     public ComponentView getComponentBySID(String sid, Version version) {
@@ -338,7 +346,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             return null;
         }
         for (GroupObjectView groupObject : getGroupObjectsIt())
-            for(ObjectView object : groupObject)
+            for(ObjectView object : groupObject.objects)
                 if (entity.equals(object.entity))
                     return object;
         return null;
@@ -410,7 +418,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.setChangeMouse(new InputBindingEvent(new MouseInputEvent(mouseStroke), null), version);
     }
 
-    protected void setComponentSID(ContainerView container, String sid, Version version) {
+    public void setComponentSID(ContainerView container, String sid, Version version) {
         setComponentSID((ComponentView) container, sid, version);
     }
     protected void setComponentSID(BaseComponentView component, String sid, Version version) {
@@ -445,23 +453,27 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return FILTERGROUP_COMPONENT + "(" + entity.getSID() + ")";
     }
 
-    private static String getGridSID(PropertyGroupContainerView entity) {
+    private static String getPropertySID(PropertyDrawEntity entity) {
+        return PROPERTY_COMPONENT + "(" + entity.getSID() + ")";
+    }
+
+    private static String getGridSID(PropertyGroupContainersView entity) {
         return GRID_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
-    private static String getToolbarSystemSID(PropertyGroupContainerView entity) {
+    private static String getToolbarSystemSID(PropertyGroupContainersView entity) {
         return TOOLBAR_SYSTEM_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
-    private static String getFiltersContainerSID(PropertyGroupContainerView entity) {
+    private static String getFiltersContainerSID(PropertyGroupContainersView entity) {
         return FILTERS_CONTAINER + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
     
-    private static String getFilterControlsComponentSID(PropertyGroupContainerView entity) {
+    private static String getFilterControlsComponentSID(PropertyGroupContainersView entity) {
         return FILTER_CONTROLS_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
     
-    private static String getCalculationsSID(PropertyGroupContainerView entity) {
+    private static String getCalculationsSID(PropertyGroupContainersView entity) {
         return entity.getPropertyGroupContainerSID() + ".calculations";
     }
 
@@ -548,9 +560,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         for(RegularFilterGroupView regularFilter : getRegularFiltersIt())
             regularFilter.finalizeAroundInit();
-                
-        mainContainer.finalizeAroundInit();
-        components.finalizeChanges();
+
+        for(ComponentView component : getComponents())
+            component.finalizeAroundInit();
 
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
@@ -561,7 +573,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
                 removedComponent.finalizeAroundInit();
     }
 
-    public final ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
+    public final ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(genID());
 
     public void prereadAutoIcons(ConnectionContext context) {
         for(PropertyDrawView property : getPropertiesIt())
@@ -581,31 +593,46 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         component.removeFromParent(version);
     }
 
-    public void addForm(FormView src, ObjectMapping mapping) {
-        copy(src, mapping);
+    public FormView(This src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        entity = mapping.get(src.entity);
+        mainContainer = mapping.get(src.mainContainer);
     }
-    public void copy(FormView src, ObjectMapping mapping) {
-        treeGroups.add(src.treeGroups, mapping::get, mapping.version);
+    // no extend
 
-        groupObjects.add(src.groupObjects, mapping::get, mapping.version);
+    public void add(This src, ObjectMapping mapping) {
+        mapping.add(treeGroups, src.treeGroups);
+        mapping.add(groupObjects, src.groupObjects);
+        mapping.add(properties, src.properties);
+        mapping.add(regularFilters, src.regularFilters);
 
-        properties.add(src.properties, mapping::get, mapping.version);
+        mapping.add(defaultOrders, src.defaultOrders);
 
-        regularFilters.add(src.regularFilters, mapping::get, mapping.version);
+        mapping.addl(pivotColumns, src.pivotColumns);
 
-        defaultOrders.add(src.defaultOrders, mapping::get, mapping.version);
+        mapping.addl(pivotRows, src.pivotRows);
 
-        pivotColumns.add(src.pivotColumns, prop -> prop.mapItListValues(mapping::get), mapping.version);
+        mapping.add(pivotMeasures, src.pivotMeasures);
 
-        pivotRows.add(src.pivotRows, prop -> prop.mapItListValues(mapping::get), mapping.version);
-
-        pivotMeasures.add(src.pivotMeasures, mapping::get, mapping.version);
-
-        components.add(src.components, mapping::get, mapping.version);
+        mapping.add(components, src.components);
 
         // should be versioned too
         for(ComponentView v : src.removedComponents) {
             removedComponents.add(mapping.get(v));
         }
+    }
+
+    @Override
+    public FormEntity getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public This getAddChild(FormEntity formEntity, ObjectMapping mapping) {
+        return (This) formEntity.view;
+    }
+    @Override
+    public This copy(ObjectMapping mapping) {
+        return (This)new FormView<>((This)this, mapping);
     }
 }

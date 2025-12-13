@@ -11,6 +11,8 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
+import lsfusion.base.identity.DefaultIDGenerator;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -44,6 +46,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -100,7 +103,7 @@ import java.util.function.Supplier;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
-public class FormEntity implements FormSelector<ObjectEntity> {
+public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     
     public static Boolean DEFAULT_NOCANCEL = null;
@@ -116,24 +119,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public PropertyDrawEntity editActionPropertyDraw;
     public PropertyDrawEntity dropActionPropertyDraw;
-    public PropertyDrawEntity shareActionPropertyDraw;
-    public PropertyDrawEntity customizeActionPropertyDraw;
     public PropertyDrawEntity refreshActionPropertyDraw;
     public PropertyDrawEntity applyActionPropertyDraw;
     public PropertyDrawEntity cancelActionPropertyDraw;
     public PropertyDrawEntity okActionPropertyDraw;
     public PropertyDrawEntity closeActionPropertyDraw;
 
+    public PropertyDrawEntity shareActionPropertyDraw;
+    public PropertyDrawEntity customizeActionPropertyDraw;
+
     public PropertyDrawEntity logMessagePropertyDraw;
 
-    private final int ID;
-    
-    private final String canonicalName;
-    private final DebugInfo.DebugPoint debugPoint;
+    public String canonicalName;
+    public DebugInfo.DebugPoint debugPoint;
 
-    private EvalScriptingLogicsModule evalLM;
-    public EvalScriptingLogicsModule getEvalLM() {
-        return evalLM;
+    private EvalScriptingLogicsModule customizeLM;
+    public EvalScriptingLogicsModule getCustomizeLM() {
+        return customizeLM;
     }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
@@ -147,18 +149,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return StringUtils.join(formOrDesignStatementList, "\n");
     }
 
-    public static class EventAction {
+    public static class EventAction implements MappingInterface<EventAction> {
         public final FormServerEvent event;
-        public final ActionObjectEntity<?> action;
+        public final ActionObjectEntity action;
 
         public EventAction(FormServerEvent event, ActionObjectEntity<?> action) {
             this.event = event;
             this.action = action;
         }
 
-        public EventAction(EventAction src, ObjectMapping mapping) {
-            this.event = src.event.get(mapping);
+        private EventAction(EventAction src, ObjectMapping mapping) {
+            this.event = mapping.get(src.event);
             this.action = mapping.get(src.action);
+        }
+
+        @Override
+        public EventAction get(ObjectMapping mapping) {
+            return new EventAction(this, mapping);
         }
     }
     public NFList<EventAction> eventActions = NFFact.list();
@@ -179,6 +186,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public ImMap<FormServerEvent, ImList<ActionObjectEntity<?>>> getGroupEventActionsList() {
         return eventActions.getList().groupList(key -> key.event).mapValues(key -> key.mapListValues(event -> event.action));
+    }
+
+    private NFOrderSet<ObjectEntity> objects = NFFact.orderSet(); // для script'ов, findObjectEntity в FORM / EMAIL objects
+    public Iterable<ObjectEntity> getNFObjectsIt(Version version) { // не finalized
+        return objects.getNFIt(version);
+    }
+    public Iterable<ObjectEntity> getNFObjectsIt(Version version, boolean allowRead) { // не finalized
+        return objects.getNFIt(version, allowRead);
     }
 
     private NFComplexOrderSet<GroupObjectEntity> groups = NFFact.complexOrderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
@@ -216,6 +231,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<PropertyDrawEntity> getNFPropertyDrawsIt(Version version) {
         return propertyDraws.getNFIt(version);
     }
+    public Iterable<PropertyDrawEntity> getNFPropertyDrawsIt(Version version, boolean allowRead) {
+        return propertyDraws.getNFIt(version, allowRead);
+    }
     public ImOrderSet<PropertyDrawEntity> getPropertyDrawsList() {
         return propertyDraws.getOrderSet();        
     }
@@ -238,6 +256,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsIt(Version version) {
         return regularFilterGroups.getNFIt(version);        
     }
+    public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsIt(Version version, boolean allowRead) {
+        return regularFilterGroups.getNFIt(version, true);
+    }
     public Iterable<RegularFilterGroupEntity> getNFRegularFilterGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return regularFilterGroups.getNFListIt(version);
     }
@@ -247,16 +268,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
     }
 
-    private NFOrderMap<PropertyDrawEntity<?>,Boolean> defaultOrders = NFFact.orderMap();
-    public ImOrderMap<PropertyDrawEntity<?>,Boolean> getDefaultOrdersList() {
+    private NFOrderMap<PropertyDrawEntity,Boolean> defaultOrders = NFFact.orderMap();
+    public ImOrderMap<PropertyDrawEntity,Boolean> getDefaultOrdersList() {
         return defaultOrders.getListMap();
     }
-    public Boolean getNFDefaultOrder(PropertyDrawEntity<?> entity, Version version) {
+    public Boolean getNFDefaultOrder(PropertyDrawEntity<?, ?> entity, Version version) {
         return defaultOrders.getNFValue(entity, version);
     }
     
-    private NFOrderMap<OrderEntity<?>,Boolean> fixedOrders = NFFact.orderMap();
-    public ImOrderMap<OrderEntity<?>,Boolean> getFixedOrdersList() {
+    private NFOrderMap<OrderEntity,Boolean> fixedOrders = NFFact.orderMap();
+    public ImOrderMap<OrderEntity,Boolean> getFixedOrdersList() {
         return fixedOrders.getListMap();
     }
 
@@ -316,82 +337,80 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getPropertyDrawsList().getSet().filterFn(property -> property.hide || property.remove);
     }
 
-    public boolean localAsync = false;
+    public NFProperty<Boolean> localAsync = NFFact.property();
 
-    public PropertyObjectEntity<?> reportPathProp;
+    public void setLocalAsync(boolean localAsync, Version version) {
+        this.localAsync.set(localAsync, version);
+    }
+    public boolean getLocalAsync() {
+        return localAsync.get() != null;
+    }
 
-    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, boolean needDesign, FormEntity src, ObjectMapping mapping, Version version) {
-        this.ID = BaseLogicsModule.generateStaticNewID();
+    public NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
-        this.canonicalName = canonicalName;
-        this.debugPoint = debugPoint;
+    public PropertyObjectEntity<?> getReportPathProp() {
+        return reportPathProp.get();
+    }
 
-        logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
+    public FormEntity(boolean interactive, String canonicalName, Version version) {
+        this(new DefaultIDGenerator(), interactive, canonicalName, version);
+    }
+    public FormEntity(IDGenerator idGenerator, boolean interactive, String canonicalName, Version version) {
+        super(idGenerator, canonicalName, "form");
 
-        if(src != null) {
-            evalLM = src.evalLM;
-            localAsync = src.localAsync;
-            hintsIncrementTable = src.hintsIncrementTable;
-            hintsNoUpdate = src.hintsNoUpdate;
-            integrationSID = src.integrationSID;
-            context = src.context;
+        genID = idGenerator;
 
-            copy(src, mapping);
-        }
+        this.canonicalName = canonicalName; // needed for isNamed in initDefaultProps
 
-        if(needDesign)
-            richDesign = new DefaultFormView(this, caption, imagePath, src != null ? (DefaultFormView) src.richDesign : null, mapping, version);
+        if (interactive) {
+            view = new DefaultFormView(this, version);
 
-        if(src != null) {
-            editActionPropertyDraw = mapping.get(src.editActionPropertyDraw);
-            refreshActionPropertyDraw = mapping.get(src.refreshActionPropertyDraw);
-            applyActionPropertyDraw =  mapping.get(src.applyActionPropertyDraw);
-            cancelActionPropertyDraw = mapping.get(src.cancelActionPropertyDraw);
-            okActionPropertyDraw = mapping.get(src.okActionPropertyDraw);
-            closeActionPropertyDraw = mapping.get(src.closeActionPropertyDraw);
-            dropActionPropertyDraw = mapping.get(src.dropActionPropertyDraw);
+            initDefaultProps(version);
 
-            shareActionPropertyDraw = mapping.get(src.shareActionPropertyDraw);
-            customizeActionPropertyDraw = mapping.get(src.customizeActionPropertyDraw);
+            ((DefaultFormView) view).initDefaultProps(version);
 
-            logMessagePropertyDraw = mapping.get(src.logMessagePropertyDraw);
-
-            reportPathProp = mapping.get(src.reportPathProp);
-        } else {
-            if (needDesign)
-                initDefaultElements(version);
+            initDefaultEvents(version);
         }
     }
 
-    public void initDefaultElements(Version version) {
+    public void initDefaultProps(Version version) {
         BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
-        LA<PropertyInterface> formOk = baseLM.getFormOk();
-        LA<PropertyInterface> formClose = baseLM.getFormClose();
-        LA<PropertyInterface> formApplied = baseLM.getFormApplied();
-
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
+        editActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.editActionPropertyDraw);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
+        refreshActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.refreshActionPropertyDraw);
         applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
+        applyActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.applyActionPropertyDraw);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
-        okActionPropertyDraw = addPropertyDraw(formOk, version);
-        closeActionPropertyDraw = addPropertyDraw(formClose, version);
+        cancelActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.cancelActionPropertyDraw);
+        okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk(), version);
+        okActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.okActionPropertyDraw);
+        closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose(), version);
+        closeActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.closeActionPropertyDraw);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
+        dropActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.dropActionPropertyDraw);
 
         if(isNamed()) {
             shareActionPropertyDraw = addPropertyDraw(baseLM.getFormShare(), version);
+            shareActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.shareActionPropertyDraw);
             customizeActionPropertyDraw = addPropertyDraw(baseLM.getFormCustomize(), version);
+            customizeActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.customizeActionPropertyDraw);
             customizeActionPropertyDraw.setPropertyExtra((PropertyObjectEntity<?>) baseLM.getFormCustomizeBackground().createObjectEntity(SetFact.EMPTYORDER()), PropertyDrawExtraType.BACKGROUND, version);
         }
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
+        logMessagePropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.logMessagePropertyDraw);
+    }
 
-        ((DefaultFormView)richDesign).setupFormButtons(version);
+    private void initDefaultEvents(Version version) {
+        //        ??? here we can also ActionObjectEntity in eventActions eliminate ???
+        BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
-        addActionsOnEvent(FormEventType.AFTERAPPLY, version, new ActionObjectEntity<>(formApplied));
-        addActionsOnEvent(FormEventType.QUERYOK, version, new ActionObjectEntity<>(formOk));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, version, new ActionObjectEntity<>(formClose));
+        addActionsOnEvent(FormEventType.AFTERAPPLY, version, new ActionObjectEntity<>(baseLM.getFormApplied()));
+        addActionsOnEvent(FormEventType.QUERYOK, version, new ActionObjectEntity<>(baseLM.getFormOk()));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, version, new ActionObjectEntity<>(baseLM.getFormClose()));
     }
 
     public Map<FormEvent, AsyncEventExec> getAsyncExecMap(FormInstanceContext context) {
@@ -425,6 +444,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
+            group.count = propertyDraw;
+            propertyDraw.setAddParent(group, (Function<GroupObjectEntity, PropertyDrawEntity>) g -> g.count);
             setFinalPropertyDrawSID(propertyDraw, "COUNT(" + group.getSID() + ")");
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
@@ -448,22 +469,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group, Version version) {
         regularFilterGroups.add(group, version);
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if (richDesign != null)
             richDesign.addRegularFilterGroup(group, version);
     }
     
     public void addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, boolean isDefault, Version version) {
         filterGroup.addFilter(filter, isDefault, version);
-        
-        FormView richDesign = getNFRichDesign(version);
+
+        FormView richDesign = view;
         if (richDesign != null)
             richDesign.addRegularFilter(filterGroup, filter, version);
     }
 
-    public int genID() {
-        return BaseLogicsModule.generateStaticNewID();
-    }
+    public IDGenerator genID;
 
     public GroupObjectEntity getGroupObject(int id) {
         for (GroupObjectEntity group : getGroupsIt()) {
@@ -516,46 +535,28 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ObjectEntity getObject(String sid) {
         for (GroupObjectEntity group : getGroupsIt()) {
-            for (ObjectEntity object : group.getObjects()) {
-                if (object.getSID().equals(sid)) {
-                    return object;
-                }
-            }
+            ObjectEntity object = group.getObject(sid);
+            if(object != null)
+                return object;
         }
         return null;
     }
 
     public ObjectEntity getNFObject(String sid, Version version) {
-        for (GroupObjectEntity group : getNFGroupsIt(version)) {
-            for (ObjectEntity object : group.getObjects()) {
-                if (object.getSID().equals(sid)) {
-                    return object;
-                }
+        for (ObjectEntity object : getNFObjectsIt(version))
+            if (object.getSID().equals(sid)) {
+                return object;
             }
-        }
-        return null;
-    }
-
-    public ObjectEntity getNFObject(ValueClass cls, Version version) {
-        for (GroupObjectEntity group : getNFGroupsListIt(version)) { // для детерменированности
-            for (ObjectEntity object : group.getObjects()) {
-                if (cls.equals(object.baseClass)) {
-                    return object;
-                }
-            }
-        }
         return null;
     }
 
     public List<String> getNFObjectsNamesAndClasses(List<ValueClass> classes, Version version) {
         List<String> names = new ArrayList<>();
         classes.clear();
-        
-        for (GroupObjectEntity group : getNFGroupsIt(version)) {
-            for (ObjectEntity object : group.getObjects()) {
-                names.add(object.getSID());
-                classes.add(object.baseClass);
-            }
+
+        for (ObjectEntity object : getNFObjectsIt(version)) {
+            names.add(object.getSID());
+            classes.add(object.baseClass);
         }
         return names;
     }
@@ -650,7 +651,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         MOrderExclMap<InputOrderEntity<?, P>, Boolean> mInputOrders = MapFact.mOrderExclMapMax(orders.size());
         for(int i = 0, size = orders.size(); i < size ; i++) {
-            OrderEntity<?> key = orders.getKey(i);
+            OrderEntity<?, ?> key = orders.getKey(i);
             InputOrderEntity<?, P> inputOrder = key.getInputOrderEntity(object, mapObjects);
             if(inputOrder != null)
                 mInputOrders.exclAdd(inputOrder, orders.getValue(i));
@@ -716,7 +717,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     // assumes that there is an equals check for a PropertyObjectEntity
     // here may be some context scoped cache should
     @IdentityLazy
-    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(OrderEntity<?> changeProp, boolean toNull) {
+    public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(OrderEntity<?, ?> changeProp, boolean toNull) {
         MList<PropertyDrawEntity> mProps = null;
         FormInstanceContext context = FormInstanceContext.CACHE(this);
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
@@ -799,7 +800,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 properties = SetFact.EMPTYORDER();
 
             return new GroupMetaExternal(properties.getSet().mapValues((PropertyDrawEntity property) ->  {
-                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(context, CHANGE, true);
+                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?, ?>) property).getAsyncEventExec(context, CHANGE, true);
                     Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
                     return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty(context) ? property.getExternalType(context).getJSONType() : "action", newDelete);
                 }));
@@ -808,7 +809,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity<?>, OrderEntity<?>>) PropertyDrawEntity::getOrder, value -> value).mergeOrder(getFixedOrdersList()).groupOrder(key -> {
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity, OrderEntity>) PropertyDrawEntity::getOrder, value -> value).mergeOrder(getFixedOrdersList()).groupOrder(key -> {
             GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
             if(groupObject == null)
                 return GroupObjectEntity.NULL;
@@ -840,15 +841,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return true;
     }
 
-    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, String sID, Version version, GroupObjectEntity... tGroups) {
-        if (sID != null)
-            treeGroup.setSID(sID);
-        for (GroupObjectEntity group : tGroups)
-            treeGroup.add(group);
-
+    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
         treeGroups.add(treeGroup, version);
 
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if (richDesign != null)
             richDesign.addTreeGroup(treeGroup, location, version);
 
@@ -865,10 +861,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }
         }
         groups.add(group, location, version);
+        for(ObjectEntity object : group.getObjects())
+            objects.add(object, version);
 
         initDefaultGroupElements(group, version);
 
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if (richDesign != null) {
             richDesign.addGroupObject(group, location, version);
         }
@@ -901,7 +899,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ComplexLocation<PropertyDrawEntity> location, Version version, ImOrderSet<ObjectEntity> objects) {
-        return addPropertyDraw(property.createObjectEntity(objects), null, property.listInterfaces, location, version);
+        return addPropertyDraw(property.createObjectEntity(objects), property.listInterfaces, location, version);
     }
 
     public GroupObjectEntity getNFApplyObject(ImSet<ObjectEntity> objects, Version version) {
@@ -938,21 +936,21 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
-                                                                               ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        return addPropertyDraw(propertyImplement, null, formPath, interfaces, location, version);
+    public <P extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement,
+                                                                                  ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
+        return addPropertyDraw(propertyImplement, null, interfaces, location, version);
     }
     // auto form constructors + initDefault elements
-    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement,Pair<ActionOrProperty, List<String>> inherited, String formPath,
-                                                                                                            ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        PropertyDrawEntity<P> propertyDraw = addPropertyDraw(propertyImplement, formPath, inherited, interfaces, location, version);
+    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement, Pair<ActionOrProperty, List<String>> inherited,
+                                                                                                               ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
+        PropertyDrawEntity<P, ?> propertyDraw = addPropertyDraw(propertyImplement, interfaces, inherited, location, version);
 
         addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version);
 
         return propertyDraw;
     }
-    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
-                                                                               Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
+    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement,
+                                                                                                               ImOrderSet<P> interfaces, Pair<ActionOrProperty, List<String>> inherited, ComplexLocation<PropertyDrawEntity> location, Version version) {
 
         ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
@@ -969,16 +967,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             integrationSID = propertySID;
         }
 
-        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertySID, integrationSID, propertyImplement, inheritedProperty);
+        final PropertyDrawEntity<P, ?> newPropertyDraw = new PropertyDrawEntity<>(genID, propertySID, integrationSID, propertyImplement, inheritedProperty);
         newPropertyDraw.proceedDefaultDraw(this, version);
 
         propertyDraws.add(newPropertyDraw, location, version);
-        newPropertyDraw.setFormPath(formPath);
         return newPropertyDraw;
     }
 
     public PropertyDrawView addPropertyDrawView(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if (richDesign != null) {
             return richDesign.addPropertyDraw(propertyDraw, location.map(richDesign::get), version);
         }
@@ -1009,7 +1006,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new PropertyObjectEntity<>(property, objects);
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(int iID) {
+    public PropertyDrawEntity<?, ?> getPropertyDraw(int iID) {
         for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
             if (propertyDraw.getID() == iID) {
                 return propertyDraw;
@@ -1019,7 +1016,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(String sid) {
+    public PropertyDrawEntity<?, ?> getPropertyDraw(String sid) {
         for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
             if (propertyDraw.getSID().equals(sid)) {
                 return propertyDraw;
@@ -1029,7 +1026,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sID) {
+    public PropertyDrawEntity<?, ?> getPropertyDrawIntegration(String sID) {
         for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
             if (BaseUtils.nullEquals(propertyDraw.getIntegrationSID(), sID)) {
                 return propertyDraw;
@@ -1039,28 +1036,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(String sid, Version version) {
-        return getPropertyDraw(sid, version, null);
+    public PropertyDrawEntity<?, ?> getNFPropertyDraw(String sid, Version version) {
+        return getNFPropertyDraw(sid, version, null);
     }
-    public PropertyDrawEntity<?> getPropertyDraw(String sid, Version version, PropertyDrawEntity except) {
+    public PropertyDrawEntity<?, ?> getNFPropertyDraw(String sid, Version version, PropertyDrawEntity except) {
         if (sid == null) {
             return null;
         }
         for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
             if (sid.equals(propertyDraw.getSID()) && propertyDraw != except) {
-                return propertyDraw;
-            }
-        }
-
-        return null;
-    }
-
-    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sid, PropertyDrawEntity checkProperty, Version version) {
-        if (sid == null) {
-            return null;
-        }
-        for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
-            if (sid.equals(propertyDraw.getIntegrationSID()) && BaseUtils.nullEquals(propertyDraw.getNFToDraw(this, version), checkProperty.getNFToDraw(this, version))) {
                 return propertyDraw;
             }
         }
@@ -1094,14 +1078,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void checkAlreadyDefined(PropertyDrawEntity property, String alias) throws AlreadyDefined {
         String newSID = (alias == null ? property.getSID() : alias);
         PropertyDrawEntity drawEntity;
-        if ((drawEntity = getPropertyDraw(newSID, Version.current(), property)) != null) {
+        if ((drawEntity = getNFPropertyDraw(newSID, Version.current(), property)) != null) {
             throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
         }
     }
 
 
-    public PropertyDrawEntity<?> getPropertyDraw(String name, List<String> mapping, Version version) {
-        return getPropertyDraw(PropertyDrawEntity.createSID(name, mapping), version);
+    public PropertyDrawEntity<?, ?> getNFPropertyDraw(String name, List<String> mapping, Version version) {
+        return getNFPropertyDraw(PropertyDrawEntity.createSID(name, mapping), version);
     }
 
     private NFSet<Property> hintsIncrementTable = NFFact.set();
@@ -1142,15 +1126,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         hintsNoUpdate.add(prop, version);
     }
 
-    private FormView richDesign = null;
-
-    public FormView getRichDesign() {
-        return richDesign;
-    }
-
-    public FormView getNFRichDesign(Version version) {
-        return richDesign;
-    }
+    public FormView view;
 
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
@@ -1214,8 +1190,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         eventActions.removeAll(eventAction -> eventAction.event.equals(eventObject), version);
     }
 
-    public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {
-        FormView formView = getRichDesign();
+    public ComponentView getDrawComponent(PropertyDrawEntity<?, ?> property) {
+        FormView formView = view;
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
         if(property.isList(this) && (toDraw = property.getToDraw(this)) != null) {
@@ -1316,6 +1292,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         checkInternalClientAction();
 
         groups.finalizeChanges();
+        objects.finalizeChanges();
         treeGroups.finalizeChanges();
         propertyDraws.finalizeChanges();
         fixedFilters.finalizeChanges();
@@ -1333,11 +1310,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     protected void finalizeDesignAroundInit() {
-        getRichDesign().finalizeAroundInit();
+        view.finalizeAroundInit();
     }
 
     public void prereadAutoIcons(ConnectionContext context) {
-        getRichDesign().prereadAutoIcons(context);
+        view.prereadAutoIcons(context);
     }
 
     private void checkInternalClientAction() {
@@ -1384,10 +1361,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getPath() {
         return debugPoint != null ? debugPoint.path : null;
-    }
-
-    public int getID() {
-        return ID;
     }
 
     public String getSID() {
@@ -1490,7 +1463,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public ComponentUpSet getDrawDynamicHideableContainers(GroupObjectEntity group) {
         ComponentUpSet result = new ComponentUpSet();
-        for(PropertyDrawEntity<?> property : getPropertyDrawsIt())
+        for(PropertyDrawEntity<?, ?> property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.getObjectInstances())) {  // для свойств "зависящих" от группы
                 ComponentView drawComponent = getDrawComponent(property);
                 if(!isDesignHidden(drawComponent)) {
@@ -1522,23 +1495,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public ImSet<ComponentView> getPropertyComponents() {
         MExclSet<ComponentView> mComponents = SetFact.mExclSet();
-        getRichDesign().mainContainer.fillPropertyComponents(mComponents);
+        view.mainContainer.fillPropertyComponents(mComponents);
         return mComponents.immutable();
     }
 
     @IdentityLazy
     public ImSet<ComponentView> getBaseComponents() {
         MExclSet<ComponentView> mContainers = SetFact.mExclSet();
-        getRichDesign().mainContainer.fillBaseComponents(mContainers, false);
+        view.mainContainer.fillBaseComponents(mContainers, false);
         return mContainers.immutable();
     }
 
     public LocalizedString getCaption() {
-        return getRichDesign().getCaption();
+        return view.getCaption();
     }
 
     public AppServerImage getImage(ConnectionContext context) {
-        FormView formView = getRichDesign();
+        FormView formView = view;
         return formView.mainContainer.getImage(formView, context);
     }
 
@@ -1552,18 +1525,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void setNFEditType(PropertyEditType editType, Version version) {
-        for (PropertyDrawEntity propertyView : getNFPropertyDrawsIt(version)) {
-            setEditType(propertyView, editType);
-        }
-    }
-
     public void setEditType(PropertyDrawEntity property, PropertyEditType editType) {
         property.setEditType(editType);
     }
     
     public void addUserFilter(PropertyDrawEntity property, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if(richDesign !=null)
             richDesign.addFilter(property, version);
     }
@@ -1577,7 +1544,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addDefaultOrderView(PropertyDrawEntity property, boolean descending, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if(richDesign !=null)
             richDesign.addDefaultOrder(property, descending, version);
     }
@@ -1624,24 +1591,24 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void addPivotColumnView(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if(richDesign !=null)
             richDesign.addPivotColumn(column, version);
     }
     private void addPivotRowView(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if(richDesign !=null)
             richDesign.addPivotRow(column, version);
     }
     private void addPivotMeasureView(PropertyDrawEntity column, Version version) {
-        FormView richDesign = getNFRichDesign(version);
+        FormView richDesign = view;
         if(richDesign !=null)
             richDesign.addPivotMeasure(column, version);
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
         for (GroupObjectEntity entity : getGroupsIt()) {
-            getRichDesign().get(entity).needVerticalScroll = scroll;
+            view.get(entity).needVerticalScroll = scroll;
         }
     }
 
@@ -1665,10 +1632,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @Override
     public String toString() {
         String result = getSID();
-        String caption = getLocalizedCaption();
-        if (caption != null) {
-            result += " '" + caption + "'";
-        }
+//        String caption = getLocalizedCaption();
+//        if (caption != null) {
+//            result += " '" + caption + "'";
+//        }
         if (debugPoint != null) {
             result += " [" + debugPoint + "]";
         }
@@ -1689,20 +1656,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         if(isNamed()) {
-            String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(getCanonicalName())) : null;
+            String name = getName();
+            String canonicalName = getCanonicalName();
+            String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(canonicalName)) : null;
             if (extendCode != null) {
                 try {
-                    String originalFormName = getName();
-                    String copyFormName = originalFormName; // + "_copy";
-
-                    //create new eval module with extend form
-//                extendCode = extendCode.replace(originalFormName, copyFormName); //hack
-                    //String script = "FORM " + copyFormName + "\n : tables;\n" + extendCode + ";\nrun{}";
-                    String script = "FORM " + copyFormName + " : " + originalFormName + ";\n" + extendCode + ";\nrun{}";
+                    String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";\nrun{}";
                     Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
 
-                    FormEntity copyForm = evalResult.second.findForm(copyFormName);
+                    FormEntity copyForm = evalResult.second.findForm(name);
                     copyForm.customizeForm = this;
+                    copyForm.customizeLM = evalResult.second;
 
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
                 } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -1729,9 +1693,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
     }
 
-    private void prereadEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
+    private void prereadEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?, ?>> consumer) {
         FormInstanceContext context = getGlobalContext();
-        for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
+        for(PropertyDrawEntity<?, ?> propertyDraw : getPropertyDrawsIt()) {
             for(String changeEvent : propertyDraw.getAllPropertyEventActions(context)) {
                 ActionObjectEntity<?> editAction = propertyDraw.getCheckedEventAction(changeEvent, context);
                 if (editAction != null)
@@ -1775,7 +1739,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @ManualLazy
     public FormInstanceContext getGlobalContext() {
         if(context == null)
-            context = new FormInstanceContext(this, getRichDesign(), null, false, false, false, false, false, null, null);
+            context = new FormInstanceContext(this, view, null, false, false, false, false, false, null, null);
         return context;
     }
 
@@ -1790,41 +1754,66 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public void addForm(FormEntity src, ObjectMapping mapping) {
-        copy(src, mapping);
+    public FormEntity(FormEntity src, ObjectMapping mapping) {
+        super(src, mapping);
 
-        FormView richDesign = getNFRichDesign(mapping.version);
-        if (richDesign != null) {
-            richDesign.addForm(src.richDesign, mapping);
-        }
+        customizeLM = src.customizeLM; // strictly for form customizing, not sure that needed at all, because customized form is customized once
+
+        integrationSID = src.integrationSID;
+
+        view = mapping.get(src.view);
+
+        editActionPropertyDraw = mapping.get(src.editActionPropertyDraw);
+        refreshActionPropertyDraw = mapping.get(src.refreshActionPropertyDraw);
+        applyActionPropertyDraw = mapping.get(src.applyActionPropertyDraw);
+        cancelActionPropertyDraw = mapping.get(src.cancelActionPropertyDraw);
+        okActionPropertyDraw = mapping.get(src.okActionPropertyDraw);
+        closeActionPropertyDraw = mapping.get(src.closeActionPropertyDraw);
+        dropActionPropertyDraw = mapping.get(src.dropActionPropertyDraw);
+
+        shareActionPropertyDraw = mapping.get(src.shareActionPropertyDraw);
+        customizeActionPropertyDraw = mapping.get(src.customizeActionPropertyDraw);
+
+        logMessagePropertyDraw = mapping.get(src.logMessagePropertyDraw);
     }
-    public void copy(FormEntity src, ObjectMapping mapping) {
-        eventActions.add(src.eventActions, mapping::get, mapping.version);
 
-        groups.add(src.groups, mapping::get, mapping.version);
+    @Override
+    public void extend(FormEntity src, ObjectMapping mapping) {
+        super.extend(src, mapping);
 
-        treeGroups.add(src.treeGroups, mapping::get, mapping.version);
+        mapping.sets(localAsync, src.localAsync);
 
-        propertyDraws.add(src.propertyDraws, mapping::get, mapping.version);
+        mapping.set(reportPathProp, src.reportPathProp);
+    }
 
-        fixedFilters.add(src.fixedFilters, mapping::get, mapping.version);
+    public void add(FormEntity src, ObjectMapping mapping) {
+        super.add(src, mapping);
 
-        regularFilterGroups.add(src.regularFilterGroups, mapping::get, mapping.version);
+        mapping.adds(hintsIncrementTable, src.hintsIncrementTable);
+        mapping.adds(hintsNoUpdate, src.hintsNoUpdate);
 
-        defaultOrders.add(src.defaultOrders, mapping::get, mapping.version);
-
-        fixedOrders.add(src.fixedOrders, mapping::get, mapping.version);
-
-        pivotColumns.add(src.pivotColumns, prop -> prop.mapItListValues(mapping::get), mapping.version);
-
-        pivotRows.add(src.pivotColumns, prop -> prop.mapItListValues(mapping::get), mapping.version);
-
-        pivotMeasures.add(src.pivotMeasures, mapping::get, mapping.version);
+        mapping.add(eventActions, src.eventActions);
+        mapping.add(objects, src.objects);
+        mapping.add(groups, src.groups);
+        mapping.add(treeGroups, src.treeGroups);
+        mapping.add(propertyDraws, src.propertyDraws);
+        mapping.add(fixedFilters, src.fixedFilters);
+        mapping.add(regularFilterGroups, src.regularFilterGroups);
+        mapping.add(defaultOrders, src.defaultOrders);
+        mapping.add(fixedOrders, src.fixedOrders);
+        mapping.addl(pivotColumns, src.pivotColumns);
+        mapping.addl(pivotRows, src.pivotColumns);
+        mapping.add(pivotMeasures, src.pivotMeasures);
 
         forms.add(new Pair<>(src, mapping));
     }
 
-    public static class ExProp<T> {
+    @Override
+    public FormEntity copy(ObjectMapping mapping) {
+        return new FormEntity(this, mapping);
+    }
+
+    public abstract static class ExProp<T, This extends ExProp<T, This>> implements MappingInterface<This> {
         public final NFProperty<Boolean> used = NFFact.property();
         public final ExSupplier<T> supplier;
 
@@ -1885,8 +1874,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             this.supplier = new LazySupplier<>(supplier);
         }
 
-        public ExProp(ExProp<T> exProp, Function<T, T> mapping, Version version) {
-            used.set(exProp.used, p -> p, version);
+        public ExProp(This exProp, Function<T, T> mapping, ObjectMapping objectMapping) {
+            objectMapping.sets(used, exProp.used);
             this.supplier = new MapSupplier<>(exProp.supplier, mapping);
         }
 
@@ -1899,14 +1888,29 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return used.get() != null ? supplier.get() : null;
         }
     }
-    public static class ExProperty extends ExProp<Property<?>> {
+    public abstract static class ExMapProp<T extends MappingInterface<T>, This extends ExMapProp<T, This>> extends ExProp<T, This> {
+
+        public ExMapProp(Supplier<T> supplier) {
+            super(supplier);
+        }
+
+        public ExMapProp(This exProp, ObjectMapping mapping) {
+            super(exProp, mapping::get, mapping);
+        }
+    }
+    public static class ExProperty extends ExProp<Property<?>, ExProperty> {
 
         public ExProperty(Supplier<Property<?>> supplier) {
             super(supplier);
         }
 
-        public ExProperty(ExProperty exProp, ObjectMapping mapping) {
-            super(exProp, p -> p, mapping.version);
+        public ExProperty(ExProperty src, ObjectMapping mapping) {
+            super(src, p -> p, mapping);
+        }
+
+        @Override
+        public ExProperty get(ObjectMapping mapping) {
+            return new ExProperty(this, mapping);
         }
     }
 
@@ -1937,7 +1941,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ComponentView getExEntity(ComponentView entity) {
-        if(getRichDesign().getComponents().contains(entity))
+        if(view.getComponents().contains(entity))
             return entity;
 
         for(Pair<FormEntity, ObjectMapping> form : forms) {

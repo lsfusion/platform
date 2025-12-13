@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
@@ -18,7 +16,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLFunction;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.property.AggrReaderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -46,7 +43,7 @@ public class GroupMode {
         MOrderSet<GroupColumn> mAggrGroupProps = SetFact.mOrderSet(aggrProps.toOrderSet());
         for(int i=0;i<mAggrGroupProps.size();i++) {
             GroupColumn groupColumn = mAggrGroupProps.get(i);
-            PropertyDrawEntity<?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
+            PropertyDrawEntity<?, ?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
 
             if(entity.formula != null)
                 for(PropertyDrawEntity formulaOperand : entity.formulaOperands) {

@@ -8,8 +8,6 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
-import lsfusion.base.identity.DefaultIDGenerator;
-import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.client.base.SwingUtils;
@@ -101,8 +99,6 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientFormController implements AsyncListener {
 
-    private static IDGenerator idGenerator = new DefaultIDGenerator();
-
     private final TableManager tableManager = new TableManager();
 
     private final EProvider<String> serverMessageProvider = new EProvider<String>() {
@@ -177,8 +173,6 @@ public class ClientFormController implements AsyncListener {
     private final String formSID;
     private final String canonicalName;
 
-    private final int ID;
-
     private final ClientFormLayout formLayout;
 
     private final Map<ClientGroupObject, GridController> controllers = new LinkedHashMap<>();
@@ -221,8 +215,6 @@ public class ClientFormController implements AsyncListener {
 
         isDialog = iisDialog;
         isWindow = iisModal;
-
-        ID = idGenerator.idShift();
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
@@ -285,10 +277,6 @@ public class ClientFormController implements AsyncListener {
 
     public boolean isDialog() {
         return isDialog;
-    }
-
-    public int getID() {
-        return ID;
     }
 
     public ClientFormLayout getLayout() {

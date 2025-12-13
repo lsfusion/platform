@@ -1,12 +1,8 @@
 package lsfusion.server.logics.form.interactive.controller.remote.serialization;
 
-import lsfusion.interop.form.remote.serialization.IdentitySerializable;
-
 import java.io.DataInputStream;
 
-public interface ServerIdentitySerializable extends ServerCustomSerializable, IdentitySerializable<ServerSerializationPool> {
+public interface ServerIdentitySerializable extends ServerCustomSerializable {
 
-    default void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) {
-        throw new UnsupportedOperationException();
-    }
+    int getID();
 }

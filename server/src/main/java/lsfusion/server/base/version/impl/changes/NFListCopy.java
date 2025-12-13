@@ -9,13 +9,16 @@ import java.util.function.Function;
 
 public class NFListCopy<K> extends NFCopy<NFList<K>, K> implements NFListChange<K> {
 
-    public NFListCopy(NFList<K> col, Function<K, K> mapping) {
+    public NFListCopy(NFList<K> col, Map<K> mapping) {
         super(col, mapping);
     }
 
     @Override
     public void proceedList(MList<K> list, Version version) {
-        for(K element : col.getNFCopyList(version))
-            list.add(this.mapping.apply(element));
+        for(K element : col.getNFCopyList(version)) {
+            K mappedElement = this.mapping.apply(element);
+            if(mappedElement != null)
+                list.add(mappedElement);
+        }
     }
 }

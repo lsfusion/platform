@@ -284,7 +284,7 @@ public class ReportDesignGenerator {
     private FontInfo getFont(GroupObjectEntity group) {
         FontInfo font = formInterface.getUserFont(group);
         if (font == null && group != null) {
-            font = formView.get(group).getGrid().getFont();
+            font = formView.get(group).grid.getFont();
         }
         return font;
     }

@@ -9,14 +9,17 @@ import java.util.function.Function;
 
 public class NFOrderSetCopy<K> extends NFASetCopy<NFOrderSet<K>, K> implements NFOrderSetChange<K> {
 
-    public NFOrderSetCopy(NFOrderSet<K> col, Function<K, K> mapping) {
+    public NFOrderSetCopy(NFOrderSet<K> col, Map<K> mapping) {
         super(col, mapping);
     }
 
     @Override
     public void proceedOrderSet(List<K> list, Version version) {
-        for(K element : col.getNFCopyOrderSet(version))
-            list.add(this.mapping.apply(element));
+        for(K element : col.getNFCopyOrderSet(version)) {
+            K mappedElement = this.mapping.apply(element);
+            if(mappedElement != null && !list.contains(mappedElement))
+                list.add(mappedElement);
+        }
     }
 
 }

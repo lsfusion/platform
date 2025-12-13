@@ -253,7 +253,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
+        FormInstanceContext context = new FormInstanceContext(entity, entity.view, securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -316,7 +316,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance<?>> mProperties = ListFact.mListMax(propertyDraws.size());
-        for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
+        for (PropertyDrawEntity<?, ?> propertyDrawEntity : propertyDraws)
             if (securityPolicy.checkPropertyViewPermission(propertyDrawEntity.getSecurityProperty())) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null)
@@ -341,11 +341,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //        for(Property property : entity.asyncInitPropertyChanges)
 //            asyncPropertyChanges.put(property, HasChanges.NULL);
 
-        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
-            public GroupObjectInstance group(OrderInstance key) {
-                return key.getApplyObject();
-            }
-        });
+        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity, OrderInstance>) value -> ((OrderEntity<?, ?>)value).getInstance(instanceFactory)).groupOrder(key -> key.getApplyObject());
         for (int i = 0, size = fixedOrders.size(); i < size; i++)
             fixedOrders.getKey(i).fixedOrders = fixedOrders.getValue(i);
 
@@ -378,7 +374,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         Set<GroupObjectInstance> wasOrder = new HashSet<>();
-        ImOrderMap<PropertyDrawEntity<?>, Boolean> defaultOrders = entity.getDefaultOrdersList();
+        ImOrderMap<PropertyDrawEntity, Boolean> defaultOrders = entity.getDefaultOrdersList();
         for (int i=0,size=defaultOrders.size();i<size;i++) {
             PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
             GroupObjectInstance toDraw = property.toDraw;
@@ -433,8 +429,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         
         if (!interactive) // deprecated ветка, в будущем должна уйти
             getChanges(stack, context);
-        
-        processComponent(entity.getRichDesign().getMainContainer());
+
+        processComponent(entity.view.getMainContainer());
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -513,7 +509,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     
     private void processComponent(ComponentView component) throws SQLException, SQLHandledException {
         if (component instanceof ContainerView) {
-            ContainerView container = (ContainerView) component;
+            ContainerView<?> container = (ContainerView) component;
             
             if (container.isCollapsed()) {
                 collapseContainer(container);
@@ -2210,7 +2206,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            if(forceLocalEvents || !entity.localAsync) {
+            if(forceLocalEvents || !entity.getLocalAsync()) {
                 session.executeSessionEvents(BL, this, stack);
             } else {
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
@@ -2221,7 +2217,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
             mChangedProps.set(mChangedProps.result.merge(update));
-            if(forceLocalEvents || !entity.localAsync) {
+            if(forceLocalEvents || !entity.getLocalAsync()) {
                 dataChanged = false;
             }
         }

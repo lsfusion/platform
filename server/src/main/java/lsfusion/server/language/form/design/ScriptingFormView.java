@@ -22,6 +22,8 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static lsfusion.server.logics.form.interactive.design.FormView.createContainer;
+
 public class ScriptingFormView {
     private final FormView view;
     private final ScriptingLogicsModule LM;
@@ -72,8 +74,8 @@ public class ScriptingFormView {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, sid, debugPoint, view.containerFactory, version);
-        view.setComponentSID(container, sid, version);;
+        ContainerView container = createContainer(null, sid, debugPoint, view.containerFactory, version);
+        view.setComponentSID(container, sid, version);
 
         addOrMoveComponent(container, parentComponent, location, version);
 
@@ -108,7 +110,7 @@ public class ScriptingFormView {
             }
         }
 
-        ComponentView incorrectNeighbour = ((ContainerView) parentComponent).addOrMoveChecked(component, location, version);
+        ComponentView incorrectNeighbour = ((ContainerView<?>) parentComponent).addOrMoveChecked(component, location, version);
         if(incorrectNeighbour != null)
             errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parentComponent.getSID(), incorrectNeighbour.getSID());
     }

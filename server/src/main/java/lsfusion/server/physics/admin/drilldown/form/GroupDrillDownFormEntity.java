@@ -7,6 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.form.property.Compare;
@@ -42,11 +44,10 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(element -> element instanceof PropertyInterface).reverse()
         );
 
-        detailsGroup = new GroupObjectEntity(genID(), "", LM);
-
         ImMap<I, ValueClass> innerClasses = property.getInnerInterfaceClasses();
         MRevMap<I, ObjectEntity> mInnerObjects = MapFact.mRevMap();
         MAddSet<ObjectEntity> usedObjects = SetFact.mAddSet();
+        MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet();
 
         for (int i = 0; i < innerClasses.size(); ++i) {
             ValueClass innerIntClass = innerClasses.getValue(i);
@@ -58,8 +59,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = interfaceObjects.get(byInterface);
             } 
             if(innerObject == null || usedObjects.add(innerObject)) {
-                innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME, innerIntClass == null);
-                detailsGroup.add(innerObject);
+                innerObject = new ObjectEntity(genID, innerIntClass, LocalizedString.NONAME, innerIntClass == null);
+                mObjects.exclAdd(innerObject);
 
                 addValuePropertyDraw(LM, innerObject);
                 addPropertyDraw(innerObject, LM.getIdGroup());
@@ -67,6 +68,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
 
             mInnerObjects.revAdd(innerInterface, innerObject);
         }
+
+        detailsGroup = new GroupObjectEntity(genID, "", mObjects.immutableOrder(), LM);
         addGroupObject(detailsGroup);
 
         ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();

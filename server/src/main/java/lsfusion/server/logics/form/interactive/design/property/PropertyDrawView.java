@@ -38,6 +38,7 @@ import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -66,9 +67,9 @@ import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
-public class PropertyDrawView extends BaseComponentView implements PropertyDrawViewOrPivotColumn {
+public class PropertyDrawView<P extends PropertyInterface, AddParent extends IdentityEntity<AddParent, ?>> extends BaseComponentView<PropertyDrawView<P, AddParent>, PropertyDrawEntity<P, AddParent>> implements PropertyDrawViewOrPivotColumn<PropertyDrawView<P, AddParent>> {
 
-    public PropertyDrawEntity<?> entity;
+    public PropertyDrawEntity<P, AddParent> entity;
     public FilterView filter;
 
     private NFProperty<Boolean> changeOnSingleClick = NFFact.property();
@@ -158,14 +159,16 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     private final NFProperty<Boolean> highlightDuplicate = NFFact.property();
 
-    public PropertyDrawView(PropertyDrawEntity entity, Version version) {
-        super(entity.ID);
+    @Override
+    public int getID() {
+        return entity.getID();
+    }
 
+    public PropertyDrawView(PropertyDrawEntity entity, Version version) {
         this.entity = entity;
         this.entity.view = this;
 
         setMargin(2, version);
-        setSID("PROPERTY(" + entity.getSID() + ")");
     }
 
     public String getPropertyFormName() {
@@ -460,7 +463,8 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
+//        return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
+        return super.toString();
     }
 
     // the same is on the client
@@ -659,7 +663,7 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
         outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
 
-        ActionOrPropertyObjectEntity<?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
+        ActionOrPropertyObjectEntity<?, ?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip
 
         pool.writeString(outStream, debugBinding.getNamespace());
@@ -1705,99 +1709,115 @@ public class PropertyDrawView extends BaseComponentView implements PropertyDrawV
     }
 
     // copy-constructor
-    public PropertyDrawView(PropertyDrawView src, ObjectMapping mapping) {
+    protected PropertyDrawView(PropertyDrawView<P, AddParent> src, ObjectMapping mapping) {
         super(src, mapping);
 
         entity = mapping.get(src.entity);
-        entity.view = this;
+        filter = mapping.get(src.filter);
+    }
 
-        ID = entity.ID;
+    @Override
+    public void extend(PropertyDrawView<P, AddParent> src, ObjectMapping mapping) {
+        super.extend(src, mapping);
 
-        changeOnSingleClick.set(src.changeOnSingleClick, p -> p, mapping.version);
-        maxValue.set(src.maxValue, p -> p, mapping.version);
-        echoSymbols.set(src.echoSymbols, p -> p, mapping.version);
-        noSort.set(src.noSort, p -> p, mapping.version);
-        defaultCompare.set(src.defaultCompare, p -> p, mapping.version);
+        mapping.sets(changeOnSingleClick, src.changeOnSingleClick);
+        mapping.sets(maxValue, src.maxValue);
+        mapping.sets(echoSymbols, src.echoSymbols);
+        mapping.sets(noSort, src.noSort);
+        mapping.sets(defaultCompare, src.defaultCompare);
 
-        charWidth.set(src.charWidth, p -> p, mapping.version);
-        charHeight.set(src.charHeight, p -> p, mapping.version);
+        mapping.sets(charWidth, src.charWidth);
+        mapping.sets(charHeight, src.charHeight);
 
-        valueWidth.set(src.valueWidth, p -> p, mapping.version);
-        valueHeight.set(src.valueHeight, p -> p, mapping.version);
+        mapping.sets(valueWidth, src.valueWidth);
+        mapping.sets(valueHeight, src.valueHeight);
 
-        captionWidth.set(src.captionWidth, p -> p, mapping.version);
-        captionHeight.set(src.captionHeight, p -> p, mapping.version);
-        captionCharHeight.set(src.captionCharHeight, p -> p, mapping.version);
+        mapping.sets(captionWidth, src.captionWidth);
+        mapping.sets(captionHeight, src.captionHeight);
+        mapping.sets(captionCharHeight, src.captionCharHeight);
 
-        valueFlex.set(src.valueFlex, p -> p, mapping.version);
+        mapping.sets(valueFlex, src.valueFlex);
 
-        tag.set(src.tag, p -> p, mapping.version);
-        inputType.set(src.inputType, p -> p, mapping.version);
-        valueElementClass.set(src.valueElementClass, p -> p, mapping.version);
-        captionElementClass.set(src.captionElementClass, p -> p, mapping.version);
+        mapping.sets(tag, src.tag);
+        mapping.sets(inputType, src.inputType);
+        mapping.sets(valueElementClass, src.valueElementClass);
+        mapping.sets(captionElementClass, src.captionElementClass);
 
-        panelCustom.set(src.panelCustom, p -> p, mapping.version);
+        mapping.sets(panelCustom, src.panelCustom);
 
-        changeKey.set(src.changeKey, p -> p, mapping.version);
-        showChangeKey.set(src.showChangeKey, p -> p, mapping.version);
-        changeMouse.set(src.changeMouse, p -> p, mapping.version);
-        showChangeMouse.set(src.showChangeMouse, p -> p, mapping.version);
+        mapping.sets(changeKey, src.changeKey);
+        mapping.sets(showChangeKey, src.showChangeKey);
+        mapping.sets(changeMouse, src.changeMouse);
+        mapping.sets(showChangeMouse, src.showChangeMouse);
 
-        drawAsync.set(src.drawAsync, p -> p, mapping.version);
+        mapping.sets(drawAsync, src.drawAsync);
 
-        inline.set(src.inline, p -> p, mapping.version);
+        mapping.sets(inline, src.inline);
 
-        focusable.set(src.focusable, p -> p, mapping.version);
+        mapping.sets(focusable, src.focusable);
 
-        panelColumnVertical.set(src.panelColumnVertical, p -> p, mapping.version);
+        mapping.sets(panelColumnVertical, src.panelColumnVertical);
 
-        valueAlignmentHorz.set(src.valueAlignmentHorz, p -> p, mapping.version);
-        valueAlignmentVert.set(src.valueAlignmentVert, p -> p, mapping.version);
+        mapping.sets(valueAlignmentHorz, src.valueAlignmentHorz);
+        mapping.sets(valueAlignmentVert, src.valueAlignmentVert);
 
-        valueOverflowHorz.set(src.valueOverflowHorz, p -> p, mapping.version);
-        valueOverflowVert.set(src.valueOverflowVert, p -> p, mapping.version);
+        mapping.sets(valueOverflowHorz, src.valueOverflowHorz);
+        mapping.sets(valueOverflowVert, src.valueOverflowVert);
 
-        valueShrinkHorz.set(src.valueShrinkHorz, p -> p, mapping.version);
-        valueShrinkVert.set(src.valueShrinkVert, p -> p, mapping.version);
+        mapping.sets(valueShrinkHorz, src.valueShrinkHorz);
+        mapping.sets(valueShrinkVert, src.valueShrinkVert);
 
-        comment.set(src.comment, p -> p, mapping.version);
-        commentElementClass.set(src.commentElementClass, p -> p, mapping.version);
-        panelCommentVertical.set(src.panelCommentVertical, p -> p, mapping.version);
-        panelCommentFirst.set(src.panelCommentFirst, p -> p, mapping.version);
-        panelCommentAlignment.set(src.panelCommentAlignment, p -> p, mapping.version);
+        mapping.sets(comment, src.comment);
+        mapping.sets(commentElementClass, src.commentElementClass);
+        mapping.sets(panelCommentVertical, src.panelCommentVertical);
+        mapping.sets(panelCommentFirst, src.panelCommentFirst);
+        mapping.sets(panelCommentAlignment, src.panelCommentAlignment);
 
-        placeholder.set(src.placeholder, p -> p, mapping.version);
-        pattern.set(src.pattern, p -> p, mapping.version);
-        regexp.set(src.regexp, p -> p, mapping.version);
-        regexpMessage.set(src.regexpMessage, p -> p, mapping.version);
+        mapping.sets(placeholder, src.placeholder);
+        mapping.sets(pattern, src.pattern);
+        mapping.sets(regexp, src.regexp);
+        mapping.sets(regexpMessage, src.regexpMessage);
 
-        tooltip.set(src.tooltip, p -> p, mapping.version);
-        valueTooltip.set(src.valueTooltip, p -> p, mapping.version);
+        mapping.sets(tooltip, src.tooltip);
+        mapping.sets(valueTooltip, src.valueTooltip);
 
-        caption.set(src.caption, p -> p, mapping.version);
-        image.set(src.image, p -> p, mapping.version);
+        mapping.sets(caption, src.caption);
+        mapping.sets(image, src.image);
 
-        wrap.set(src.wrap, p -> p, mapping.version);
-        wrapWordBreak.set(src.wrapWordBreak, p -> p, mapping.version);
-        collapse.set(src.collapse, p -> p, mapping.version);
-        ellipsis.set(src.ellipsis, p -> p, mapping.version);
+        mapping.sets(wrap, src.wrap);
+        mapping.sets(wrapWordBreak, src.wrapWordBreak);
+        mapping.sets(collapse, src.collapse);
+        mapping.sets(ellipsis, src.ellipsis);
 
-        captionWrap.set(src.captionWrap, p -> p, mapping.version);
-        captionWrapWordBreak.set(src.captionWrapWordBreak, p -> p, mapping.version);
-        captionCollapse.set(src.captionCollapse, p -> p, mapping.version);
-        captionEllipsis.set(src.captionEllipsis, p -> p, mapping.version);
+        mapping.sets(captionWrap, src.captionWrap);
+        mapping.sets(captionWrapWordBreak, src.captionWrapWordBreak);
+        mapping.sets(captionCollapse, src.captionCollapse);
+        mapping.sets(captionEllipsis, src.captionEllipsis);
 
-        clearText.set(src.clearText, p -> p, mapping.version);
-        notSelectAll.set(src.notSelectAll, p -> p, mapping.version);
+        mapping.sets(clearText, src.clearText);
+        mapping.sets(notSelectAll, src.notSelectAll);
 
-        toolbar.set(src.toolbar, p -> p, mapping.version);
-        toolbarActions.set(src.toolbarActions, p -> p, mapping.version);
+        mapping.sets(toolbar, src.toolbar);
+        mapping.sets(toolbarActions, src.toolbarActions);
 
-        notNull.set(src.notNull, p -> p, mapping.version);
+        mapping.sets(notNull, src.notNull);
 
-        sticky.set(src.sticky, p -> p, mapping.version);
-        sync.set(src.sync, p -> p, mapping.version);
+        mapping.sets(sticky, src.sticky);
+        mapping.sets(sync, src.sync);
 
-        highlightDuplicate.set(src.highlightDuplicate, p -> p, mapping.version);
+        mapping.sets(highlightDuplicate, src.highlightDuplicate);
+    }
+
+    @Override
+    public PropertyDrawEntity<P, AddParent> getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public PropertyDrawView<P, AddParent> getAddChild(PropertyDrawEntity<P, AddParent> entity, ObjectMapping mapping) {
+        return entity.view;
+    }
+    @Override
+    public PropertyDrawView<P, AddParent> copy(ObjectMapping mapping) {
+        return new PropertyDrawView<>(this, mapping);
     }
 }

@@ -1,316 +1,204 @@
 package lsfusion.server.logics.form;
 
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
-import lsfusion.server.logics.form.interactive.design.filter.FilterView;
-import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
-import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
-import lsfusion.server.logics.form.interactive.design.object.*;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.base.version.interfaces.*;
+import lsfusion.server.logics.form.interactive.MappingInterface;
+import lsfusion.server.logics.form.interactive.ServerIdentityObject;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.FilterEntity;
-import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
-import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.PivotColumn;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ObjectMapping {
-    public Version version;
+    private Version version; // form map version
 
-    public ObjectMapping(Version version) {
+    public final boolean extend;
+    public final FormEntity addForm; // old
+    public final ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects; // new -> old, entities (groups (and maybe objects), property, regular filters) + containers without parent
+    public final boolean implicitAdd;
+    private final MAddMap<ServerIdentityObject, ServerIdentityObject> addImplicitObjects = MapFact.mAddMap(MapFact.nullOrSame());
+
+    private final Set<ServerIdentityObject> copied = new HashSet<>();
+
+    private <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> T getAdd(T object) {
+        assert !copied.contains(object);
+
+        AP addParent = object.getAddParent(this);
+        if(addParent != null) {
+            AP recAddParent = (AP) getAdd((T) addParent); // actually T is AP but there is a recursive generics
+            if(recAddParent != null)
+                return object.getAddChild(recAddParent, this); // assert not null
+            return null;
+        }
+
+        T addObject = (T) addObjects.get(object);
+        if(addObject != null)
+            return addObject;
+
+        if(object instanceof FormEntity)
+            return (T) addForm;
+
+        return null;
+    }
+
+    public ObjectMapping(FormEntity addForm, ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects, boolean extend, Version version) {
+        this.extend = extend;
+        this.implicitAdd = true;
+        this.addForm = addForm;
+        this.addObjects = addObjects;
+
         this.version = version;
     }
 
-    //private Map<FormEntity, FormEntity> formEntityMap = new HashMap<>();
-    private Map<ActionObjectEntity, ActionObjectEntity> actionObjectEntityMap = new HashMap<>();
-    private Map<ObjectEntity, ObjectEntity> objectEntityMap = new HashMap<>();
-    private Map<GroupObjectEntity, GroupObjectEntity> groupObjectEntityMap = new HashMap<>();
-    private Map<PropertyDrawEntity, PropertyDrawEntity> propertyDrawEntityMap = new HashMap<>();
-    private Map<PropertyObjectEntity, PropertyObjectEntity> propertyObjectEntityMap = new HashMap<>();
-    private Map<FilterEntity, FilterEntity> filterEntityMap = new HashMap<>();
-    private Map<RegularFilterEntity, RegularFilterEntity> regularFilterEntityMap = new HashMap<>();
-    private Map<RegularFilterGroupEntity, RegularFilterGroupEntity> regularFilterGroupEntityMap = new HashMap<>();
-    private Map<TreeGroupEntity, TreeGroupEntity> treeGroupEntityMap = new HashMap<>();
+    public int id() {
+        return addForm.genID.id();
+    }
 
-    //private Map<FormView, FormView> formViewMap = new HashMap<>();
-    private Map<ObjectView, ObjectView> objectViewMap = new HashMap<>();
-    private Map<GroupObjectView, GroupObjectView> groupObjectViewMap = new HashMap<>();
-    private Map<RegularFilterView, RegularFilterView> regularFilterViewMap = new HashMap<>();
-    private Map<ComponentView, ComponentView> componentViewMap = new HashMap<>();
+    // identity get
 
-/*    public FormEntity get(FormEntity key) {
-        FormEntity result = formEntityMap.get(key);
-        if (result == null && key != null) {
-            result = new FormEntity(null, null, null, null, false, version);
-            key.copy(result, this);
-            formEntityMap.put(key, result);
+    private final MAddExclMap<ServerIdentityObject, ServerIdentityObject> objectsMap = MapFact.mAddExclMap();
+    private final Set<ServerIdentityObject> recursionGuard = SetFact.mAddRemoveSet();
+
+    private ServerIdentityObject add;
+    public <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> void put(T object, T mapped) {
+        if(add != null) {
+            mapped = (T) add;
+            add = null;
+        } else
+            copied.add(mapped);
+        objectsMap.exclAdd(object, mapped);
+    }
+    public <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> T getFinal(T object) {
+        return (T) objectsMap.get(object);
+    }
+    public <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> T getIdentity(T object) {
+
+//        synchronized by object mapping (form for getAdd)
+        T result = (T) objectsMap.get(object);
+        if(result != null)
+            return result;
+
+        synchronized (extend ? addForm : this) { // if extend we need to synchronize form for getAdd (and finding objects) / add, otherwise only inside this mapping
+            result = (T) objectsMap.get(object);
+            if(result != null)
+                return result;
+
+            result = getAdd(object);
+
+            if(extend && implicitAdd) {
+                // getAdd -> getNF* -> get -> eventually get here once again and initialize this object, so we need to triple check that
+                T recResult = (T) objectsMap.get(object);
+                if (recResult != null) {
+                    assert result == null || recResult == result;
+                    return recResult;
+                }
+            }
+
+            if(result != null) {
+                // it's tricky here, we need to call copy anyway to force cascade "get" calls (to register NF collections in related add objects before they get finalized)
+                // the logics that any object can be obtained with NF* (and it will flush gets), or with direct links (and for that we need call get with that trick / hack)
+                add = result;
+                object.copy(this); // it addes to objectsMap in the constructor for the recursive links
+            }
+
+            if (result == null)
+                result = object.copy(this);
+
+            // have to be here not in constructor to have all NF fields initialized
+            result.extend(object, this);
+
+            result.add(object, this);
+            return result;
         }
-        return result;
-    }*/
-
-    public void put(ActionObjectEntity key, ActionObjectEntity value) {
-        actionObjectEntityMap.put(key, value);
-    }
-    public synchronized ActionObjectEntity get(ActionObjectEntity actionObjectEntity) {
-        ActionObjectEntity result = actionObjectEntityMap.get(actionObjectEntity);
-        if (result == null) {
-            result = new ActionObjectEntity(actionObjectEntity, this);
-        }
-        return result;
     }
 
-    public void put(ObjectEntity key, ObjectEntity value) {
-        objectEntityMap.put(key, value);
-    }
-    public ObjectEntity getFinal(ObjectEntity objectEntity) {
-        return objectEntityMap.get(objectEntity);
-    }
-    public synchronized ObjectEntity get(ObjectEntity objectEntity) {
-        ObjectEntity result = objectEntityMap.get(objectEntity);
-        if (result == null) {
-            result = new ObjectEntity(objectEntity, this);
-        }
-        return result;
-    }
+    // non identity get
 
-    public void put(GroupObjectEntity key, GroupObjectEntity value) {
-        groupObjectEntityMap.put(key, value);
-    }
-    public GroupObjectEntity getFinal(GroupObjectEntity groupObjectEntity) {
-        return groupObjectEntityMap.get(groupObjectEntity);
-    }
-    public synchronized GroupObjectEntity get(GroupObjectEntity groupObjectEntity) {
-        GroupObjectEntity result = groupObjectEntityMap.get(groupObjectEntity);
-        if (result == null) {
-            result = new GroupObjectEntity(groupObjectEntity,  this);
-        }
-        return result;
-    }
-
-    public void put(PropertyDrawEntity key, PropertyDrawEntity value) {
-        propertyDrawEntityMap.put(key, value);
-    }
-    public PropertyDrawEntity getFinal(PropertyDrawEntity propertyDrawEntity) {
-        return propertyDrawEntityMap.get(propertyDrawEntity);
-    }
-    public synchronized PropertyDrawEntity get(PropertyDrawEntity propertyDrawEntity) {
-        PropertyDrawEntity result = propertyDrawEntityMap.get(propertyDrawEntity);
-        if (result == null) {
-            result = new PropertyDrawEntity(propertyDrawEntity,  this);
-        }
-        return result;
-    }
-
-    public void put(PropertyObjectEntity key, PropertyObjectEntity value) {
-        propertyObjectEntityMap.put(key, value);
-    }
-    public synchronized PropertyObjectEntity get(PropertyObjectEntity propertyObjectEntity) {
-        if(propertyObjectEntity == null)
-            return null;
-
-        PropertyObjectEntity result = propertyObjectEntityMap.get(propertyObjectEntity);
-        if (result == null) {
-            result = new PropertyObjectEntity(propertyObjectEntity, this);
-        }
-        return result;
-    }
-
-    public void put(FilterEntity key, FilterEntity value) {
-        filterEntityMap.put(key, value);
-    }
-    public synchronized FilterEntity get(FilterEntity filterEntity) {
-        FilterEntity result = filterEntityMap.get(filterEntity);
-        if (result == null) {
-            result = new FilterEntity(filterEntity, this);
-        }
-        return result;
-    }
-
-    public void put(RegularFilterEntity key, RegularFilterEntity value) {
-        regularFilterEntityMap.put(key, value);
-    }
-    public synchronized RegularFilterEntity get(RegularFilterEntity regularFilterEntity) {
-        RegularFilterEntity result = regularFilterEntityMap.get(regularFilterEntity);
-        if (result == null) {
-            result = new RegularFilterEntity(regularFilterEntity, this);
-        }
-        return result;
-    }
-
-    public void put(RegularFilterGroupEntity key, RegularFilterGroupEntity value) {
-        regularFilterGroupEntityMap.put(key, value);
-    }
-    public RegularFilterGroupEntity getFinal(RegularFilterGroupEntity regularFilterGroupEntity) {
-        return regularFilterGroupEntityMap.get(regularFilterGroupEntity);
-    }
-    public synchronized RegularFilterGroupEntity get(RegularFilterGroupEntity regularFilterGroupEntity) {
-        RegularFilterGroupEntity result = regularFilterGroupEntityMap.get(regularFilterGroupEntity);
-        if (result == null) {
-            result = new RegularFilterGroupEntity(regularFilterGroupEntity, this);
-        }
-        return result;
-    }
-
-    public void put(TreeGroupEntity key, TreeGroupEntity value) {
-        treeGroupEntityMap.put(key, value);
-    }
-    public synchronized TreeGroupEntity get(TreeGroupEntity treeGroupEntity) {
-        TreeGroupEntity result = treeGroupEntityMap.get(treeGroupEntity);
-        if (result == null) {
-            result = new TreeGroupEntity(treeGroupEntity, this);
-        }
-        return result;
-    }
-
-    public OrderEntity get(OrderEntity key) {
-        return key instanceof ObjectEntity ? get((ObjectEntity) key) : get((PropertyObjectEntity) key);
-    }
-
-    public ActionOrPropertyObjectEntity get(ActionOrPropertyObjectEntity key) {
-        return key instanceof ActionObjectEntity ?  get((ActionObjectEntity) key) : get((PropertyObjectEntity) key);
-    }
-
-    public PropertyDrawEntityOrPivotColumn get(PropertyDrawEntityOrPivotColumn key) {
-        return key instanceof PropertyDrawEntity ? get((PropertyDrawEntity) key) : get((PivotColumn) key);
-    }
-
-    public PivotColumn get(PivotColumn pivotColumn) {
-        return new PivotColumn(get(pivotColumn.groupObject));
-    }
-    public FormEntity.EventAction get(FormEntity.EventAction eventAction) {
-        return new FormEntity.EventAction(eventAction, this);
-    }
-
-/*    public void put(FormView key, FormView value) {
-        formViewMap.put(key, value);
-    }
-    public FormView get(FormView formView) {
-        FormView result = formViewMap.get(formView);
-        if (result == null &&  formView != null) {
-            result = new FormView(formView, this);
-        }
-        return result;
-    }*/
-
-    public void put(ObjectView key, ObjectView value) {
-        objectViewMap.put(key, value);
-    }
-    public synchronized ObjectView get(ObjectView objectView) {
-        ObjectView result = objectViewMap.get(objectView);
-        if (result == null) {
-            result = new ObjectView(objectView, this);
-        }
-        return result;
-    }
-
-    public void put(GroupObjectView key, GroupObjectView value) {
-        groupObjectViewMap.put(key, value);
-    }
-    public synchronized GroupObjectView get(GroupObjectView groupObjectView) {
-        GroupObjectView result = groupObjectViewMap.get(groupObjectView);
-        if (result == null) {
-            result = new GroupObjectView(groupObjectView, this);
-        }
-        return result;
-    }
-
-    public void put(RegularFilterView key, RegularFilterView value) {
-        regularFilterViewMap.put(key, value);
-    }
-    public synchronized RegularFilterView get(RegularFilterView regularFilterView) {
-        RegularFilterView result = regularFilterViewMap.get(regularFilterView);
-        if (result == null) {
-            result = new RegularFilterView(regularFilterView, this);
-        }
-        return result;
-    }
-
-    public void put(ComponentView key, ComponentView value) {
-        componentViewMap.put(key, value);
-    }
-    public <T extends ComponentView> T getFinal(T componentView) {
-        return (T) componentViewMap.get(componentView);
-    }
-    public synchronized <T extends ComponentView> T get(T componentView) {
-        if(componentView == null)
-            return null;
-
-        ComponentView result = componentViewMap.get(componentView);
-        if (result == null) {
-            if(componentView instanceof CalculationsView)
-                result = new CalculationsView((CalculationsView) componentView, this);
-            else if (componentView instanceof FilterControlsView)
-                result = new FilterControlsView((FilterControlsView) componentView, this);
-            else if (componentView instanceof FilterView)
-                result = new FilterView((FilterView) componentView, this);
-            else if (componentView instanceof GridView)
-                result = new GridView((GridView) componentView, this);
-            else if (componentView instanceof PropertyDrawView)
-                result = new PropertyDrawView((PropertyDrawView) componentView, this);
-            else if (componentView instanceof RegularFilterGroupView)
-                result = new RegularFilterGroupView((RegularFilterGroupView) componentView, this);
-            else if (componentView instanceof ToolbarView)
-                result = new ToolbarView((ToolbarView) componentView, this);
-            else if (componentView instanceof TreeGroupView)
-                result = new TreeGroupView((TreeGroupView) componentView, this);
-            else if (componentView instanceof ContainerView)
-                result = new ContainerView((ContainerView) componentView, this);
-            else
-                result = new ComponentView(componentView, this);
-            componentViewMap.put(componentView, result);
-        }
-        return (T) result;
-    }
-
-    public PropertyGroupContainerView get(PropertyGroupContainerView key) {
-        return key instanceof GroupObjectView ? get((GroupObjectView) key) : get((TreeGroupView) key);
-    }
-    public PropertyDrawViewOrPivotColumn get(PropertyDrawViewOrPivotColumn key) {
-        return key instanceof PropertyDrawView ? get((PropertyDrawView) key) : get((PivotColumn) key);
-    }
-    public TreeGroupView get(TreeGroupView key) {
-        return (TreeGroupView) get((ComponentView) key);
-    }
-    public PropertyDrawView get(PropertyDrawView key) {
-        return (PropertyDrawView) get((ComponentView) key);
-    }
-
-    public ActionObjectSelector get(ActionObjectSelector key) {
-        return key instanceof ActionObjectEntity ? get((ActionObjectEntity) key) : (context) -> {
-            ActionObjectEntity<?> action = key.getAction(context);
-            return action != null ? get(action) : null;
-        }; // first check is basically optimization
-    }
-
-    public <T extends PropertyInterface> PropertyRevImplement<T, ObjectEntity> get(PropertyRevImplement<T, ObjectEntity> prop) {
-        return new PropertyRevImplement<>(prop.property, prop.mapping.mapRevValues((ObjectEntity obj) -> get(obj)));
-    }
     public FormEntity.ExProperty get(FormEntity.ExProperty key) {
         return new FormEntity.ExProperty(key, this);
     }
-    public GroupObjectEntity.ExGroupProperty get(GroupObjectEntity.ExGroupProperty key) {
-        return new GroupObjectEntity.ExGroupProperty(key, this);
+
+    // change methods
+
+    // static setter
+    public <M extends MappingInterface<M>> M get(M from) {
+        if(from == null)
+            return null;
+
+        return from.get(this);
     }
-    public GridView.ExContainerView get(GridView.ExContainerView key) {
-        return new GridView.ExContainerView(key, this);
+    public <M1 extends MappingInterface<M1>, M2 extends MappingInterface<M2>> ImMap<M1, M2> get(ImMap<M1, M2> from) {
+        if(from == null)
+            return null;
+
+        return from.mapKeyValues(this::get, this::get);
+    }
+    public <M1, M2 extends MappingInterface<M2>> ImMap<M1, M2> gets(ImMap<M1, M2> from) {
+        return from.mapValues(this::get);
+    }
+    public <M1, M2 extends MappingInterface<M2>> ImRevMap<M1, M2> gets(ImRevMap<M1, M2> from) {
+        return from.mapRevValues((M2 value) -> get(value));
+    }
+    public <M extends MappingInterface<M>> ImOrderSet<M> get(ImOrderSet<M> from) {
+        return from.mapOrderSetValues(this::get);
+    }
+    public <M extends MappingInterface<M>> ImList<M> get(ImList<M> from) {
+        if(from == null)
+            return null;
+
+        return from.mapListValues(this::get);
+    }
+
+    public <X> void sets(NFProperty<X> to, NFProperty<X> from) {
+        assert to != from;
+        to.set(from, p -> p, version);
+    }
+
+    public <M extends MappingInterface<M>> void set(NFProperty<M> to, NFProperty<M> from) {
+        assert to != from;
+        to.set(from, this::get, version);
+    }
+
+    // collections
+
+    public <M> void adds(NFSet<M> to, NFSet<M> from) {
+        assert to != from;
+        to.add(from, p -> p, version);
+    }
+    public <M extends MappingInterface<M>> void add(NFSet<M> to, NFSet<M> from) {
+        assert to != from;
+        to.add(from, this::get, version);
+    }
+    public <M extends MappingInterface<M>> void add(NFList<M> to, NFList<M> from) {
+        assert to != from;
+        to.add(from, this::get, version);
+    }
+    public <M extends MappingInterface<M>> void add(NFOrderSet<M> to, NFOrderSet<M> from) {
+        assert to != from;
+        to.add(from, this::get, version);
+    }
+    public <M extends MappingInterface<M>> void addl(NFOrderSet<ImList<M>> to, NFOrderSet<ImList<M>> from) {
+        assert to != from;
+        to.add(from, prop -> prop.mapItListValues(this::get), version);
+    }
+    public <M extends MappingInterface<M>> void add(NFComplexOrderSet<M> to, NFComplexOrderSet<M> from) {
+        assert to != from;
+        to.add(from, this::get, version);
+    }
+    public <M, V extends MappingInterface<V>> void add(NFMap<M, V> to, NFMap<M, V> from) {
+        assert to != from;
+        to.add(from, this::get, version);
+    }
+    public <M extends MappingInterface<M>, V> void add(NFOrderMap<M, V> to, NFOrderMap<M, V> from) {
+        assert to != from;
+        to.add(from, this::get, version);
     }
 }

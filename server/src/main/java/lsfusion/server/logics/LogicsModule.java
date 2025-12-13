@@ -109,6 +109,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -126,7 +127,6 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -1922,11 +1922,11 @@ public abstract class LogicsModule {
 
     // ---------------------- VALUE ---------------------- //
 
-    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public Pair<LP, ActionObjectSelector<?>> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public Pair<LP, ActionObjectSelector<?>> getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         return baseLM.getObjIntervalProp(form, objectFrom, objectTo, intervalProperty, fromIntervalProperty, toIntervalProperty);
     }
 
@@ -2152,7 +2152,7 @@ public abstract class LogicsModule {
     }
 
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getNFProperty(prop, getVersion());
+        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, getVersion());
         return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 
@@ -2476,10 +2476,10 @@ public abstract class LogicsModule {
         return namedForms.get(name);
     }
     
-    public void addFormEntity(FormEntity form, boolean assertFormsFinalized) {
+    public void addFormEntity(FormEntity form) {
         assert form.isNamed();
         assert !(form instanceof AutoFormEntity);
-        assert !assertFormsFinalized || !formsFinalized;
+        assert !formsFinalized;
 
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);

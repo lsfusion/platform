@@ -77,7 +77,6 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
@@ -92,6 +91,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -856,22 +856,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         group.setDebugPoint(debugPoint);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  boolean localAsync, String extendForm) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         
+        Version version = getVersion();
+        FormEntity formEntity = new FormEntity(true, elementCanonicalName(formName), version);
+
+        formEntity.debugPoint = point;
+
+        FormView formView = formEntity.view;
+        ContainerView mainContainer = formView.mainContainer;
         if(caption == null)
             caption = LocalizedString.create(BaseUtils.humanize(formName));
+        mainContainer.setCaption(caption, version);
+        if (icon != null)
+            mainContainer.setImage(icon, formView, version);
 
-        String canonicalName = elementCanonicalName(formName);
-
-        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, true, extendForm != null ? findForm(extendForm) : null, extendForm != null ? new ObjectMapping(getVersion()) : null, getVersion());
-        addFormEntity(formEntity, true);
-                
-        ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setLocalAsync(localAsync);
-
-        return form;
+        addFormEntity(formEntity);
+        return new ScriptingFormEntity(this, formEntity);
     }
 
     public ScriptingFormView getFormDesign(String formName, LocalizedString caption, boolean custom) throws ScriptingErrorLog.SemanticErrorException {
@@ -894,7 +896,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            view = new FormView(form, version);
 //            form.setRichDesign(view, version);
 //        } else {
-        view = form.getNFRichDesign(version);
+        view = form.view;
 //        }
 
         return new ScriptingFormView(view, this);
@@ -5488,7 +5490,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.getNFImage(getVersion());
+            defaultImage = form.view.mainContainer.getNFImage(getVersion());
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;

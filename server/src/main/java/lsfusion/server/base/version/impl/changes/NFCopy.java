@@ -1,23 +1,19 @@
 package lsfusion.server.base.version.impl.changes;
 
 import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFCol;
-import lsfusion.server.base.version.interfaces.NFList;
-import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.base.version.interfaces.NFSet;
-
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 public class NFCopy<This extends NFCol<T>, T> implements NFColChange<T> {
 
-    public final This col;
-    public final Function<T, T> mapping;
+    public interface Map<T> {
+        T apply(T element);
+    }
 
-    public NFCopy(This col, Function<T, T> mapping) {
+    public final This col;
+    public final Map<T> mapping;
+
+    public NFCopy(This col, Map<T> mapping) {
         this.col = col;
         this.mapping = mapping;
     }
@@ -25,7 +21,10 @@ public class NFCopy<This extends NFCol<T>, T> implements NFColChange<T> {
 
     @Override
     public void proceedCol(MCol<T> mCol, Version version) {
-        for(T element : col.getNFCopyIt(version))
-            mCol.add(this.mapping.apply(element));
+        for(T element : col.getNFCopyIt(version)) {
+            T mappedElement = this.mapping.apply(element);
+            if(mappedElement != null)
+                mCol.add(mappedElement);
+        }
     }
 }

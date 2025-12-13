@@ -5,7 +5,7 @@ import lsfusion.server.logics.form.ObjectMapping;
 
 import java.util.Objects;
 
-public class FormServerScheduler extends FormServerEvent {
+public class FormServerScheduler extends FormServerEvent<FormServerScheduler> {
 
     public int period;
     public boolean fixed;
@@ -16,7 +16,7 @@ public class FormServerScheduler extends FormServerEvent {
     }
 
     @Override
-    public FormServerEvent get(ObjectMapping mapping) {
+    public FormServerScheduler get(ObjectMapping mapping) {
         return this;
     }
 

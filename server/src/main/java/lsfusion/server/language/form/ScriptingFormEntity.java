@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,7 +12,15 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.server.logics.form.interactive.ServerIdentityObject;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -38,11 +47,11 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
-import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -64,6 +73,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
@@ -89,9 +100,42 @@ public class ScriptingFormEntity {
         declaredTypedParameters.add(typedParameter);
     }
 
-    public void addScriptingForms(List<String> forms) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingForms(List<String> forms, boolean extend, Version version) throws ScriptingErrorLog.SemanticErrorException {
         for (String f : forms) {
-            form.addForm(LM.findForm(f), new ObjectMapping(LM.getVersion()));
+            FormEntity addForm = LM.findForm(f);
+            FormView addFormView = addForm.view;
+
+            ObjectMapping mapping = new ObjectMapping(form, getImplicitAdd(version, addForm), extend, version);
+
+            if(addFormView != null) {
+                FormView formView = mapping.get(addFormView);
+                if (formView instanceof DefaultFormView && !extend) {
+                    ((DefaultFormView) formView).addForm(addFormView, mapping, version);
+                }
+            } else
+                mapping.get(addForm);
+        }
+    }
+
+    private ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(Version version, FormEntity addForm) {
+        MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
+
+        fillImplicitObjects(addForm, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>)fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+
+        return mImplicitAdd.immutableRev();
+    }
+
+    private <T extends ServerIdentityObject> void fillImplicitObjects(FormEntity addForm, BiFunction<FormEntity, Boolean, Iterable<T>> iterable, Function<T, String> getSID, MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd) {
+        Map<String, T> addObjects = new HashMap<>();
+        for(T object : iterable.apply(addForm, true))
+            addObjects.put(getSID.apply(object), object);
+        for(T object : iterable.apply(form, false)) {
+            T addObject = addObjects.get(getSID.apply(object));
+            if(addObject != null)
+                mImplicitAdd.revAdd(addObject, object);
         }
     }
 
@@ -102,33 +146,32 @@ public class ScriptingFormEntity {
                 location = ComplexLocation.DEFAULT();
             checkNeighbour(location);
 
-            addScriptingGroupObject(groupObject, null, location, version, debugPoint);
+            addScriptingGroupObject(groupObject, location, version, debugPoint);
         }
     }
-    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groups = new ArrayList<>();
-
+    public ImOrderSet<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        MOrderExclSet<GroupObjectEntity> mGroups = SetFact.mOrderExclSet();
         boolean reverseList = location.isReverseList();
         for (ScriptingGroupObject groupObject : (reverseList ? BaseUtils.reverse(groupObjects) : groupObjects)) {
-            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, location, version, debugPoint);
-            groups.add(groupObj);
+            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, location, version, debugPoint);
+            mGroups.exclAdd(groupObj);
         }
-        return (reverseList ? BaseUtils.reverse(groups) : groups);
+        ImOrderSet<GroupObjectEntity> groups = mGroups.immutableOrder();
+        return (reverseList ? groups.reverseOrder() : groups);
     }
 
-    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup, LM.baseLM);
-        groupObj.setDebugPoint(debugPoint, version);
-        groupObj.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset), version);
-
-        for (int j = 0; j < groupObject.objects.size(); j++) {
+    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        int size = groupObject.objects.size();
+        MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet(size);
+        for (int j = 0; j < size; j++) {
             String className = groupObject.classes.get(j);
             ValueClass cls = LM.findClass(groupObject.classes.get(j));
             String objectName = nvl(groupObject.objects.get(j), className);
             LocalizedString objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
-            ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
-            addObjectEntity(objectName, obj, groupObj, version);
+            ObjectEntity obj = new ObjectEntity(form.genID, objectName, cls, objectCaption);
+            addObjectEntity(objectName, obj, version);
+            mObjects.exclAdd(obj);
 
             if (groupObject.events.get(j) != null) {
                 form.addActionsOnEvent(new ObjectEventObject(obj.getSID()), version, groupObject.events.get(j));
@@ -141,13 +184,18 @@ public class ScriptingFormEntity {
             declaredTypedParameters.removeIf(t -> t.cls.equals(cls) && t.paramName.equals(objectName));
         }
 
+        ImOrderSet<ObjectEntity> objects = mObjects.immutableOrder();
         String groupName = groupObject.groupName;
         if (groupName == null) {
             groupName = "";
-            for (ObjectEntity obj : groupObj.getOrderObjects()) {
+            for (ObjectEntity obj : objects) {
                 groupName = (groupName.isEmpty() ? "" : groupName + ".") + obj.getSID();
             }
         }
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM);
+
+        groupObj.setDebugPoint(debugPoint);
+        groupObj.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
         if (groupObject.viewType != null)
             groupObj.setViewType(groupObject.viewType);
@@ -215,9 +263,7 @@ public class ScriptingFormEntity {
             location = ComplexLocation.DEFAULT();
         checkNeighbour(location);
 
-        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
-        treeGroup.setDebugPoint(debugPoint);
-        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, location, version, debugPoint);
+        ImOrderSet<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, location, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
             int groupIndex = groupObjects.indexOf(groupObject);
             List<LP> properties = parentProperties.get(groupIndex);
@@ -244,7 +290,9 @@ public class ScriptingFormEntity {
             }
         }
 
-        form.addTreeGroupObject(treeGroup, location, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
+        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID, treeSID, groups);
+        treeGroup.setDebugPoint(debugPoint);
+        form.addTreeGroupObject(treeGroup, location, version);
     }
 
     private LP findLPByPropertyUsage(ScriptingLogicsModule.NamedPropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
@@ -279,16 +327,13 @@ public class ScriptingFormEntity {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
-        group.setSID(groupName);
         form.addGroupObject(group, location, version);
     }
 
-    private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void addObjectEntity(String name, ObjectEntity object, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFObject(name, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "object", name);
         }
-        object.setSID(name);
-        group.add(object);
     }
 
     private ImOrderSet<ObjectEntity> getMappingObjects(ImOrderSet<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -345,15 +390,15 @@ public class ScriptingFormEntity {
         if (groupObject != null)
             setSubReport(groupObject, property, version);
         else
-            setReportPath(property);
+            setReportPath(property, version);
     }
 
     public void setIntegrationSID(String sID) {
         form.setIntegrationSID(sID);
     }
 
-    public void setReportPath(PropertyObjectEntity property) {
-        form.reportPathProp = property;
+    public void setReportPath(PropertyObjectEntity property, Version version) {
+        form.reportPathProp.set(property, version);
     }
 
     public void setSubReport(GroupObjectEntity groupObject, PropertyObjectEntity property, Version version) {
@@ -381,14 +426,13 @@ public class ScriptingFormEntity {
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
-            FormSessionScope scope = propertyOptions.getFormSessionScope();
             boolean isFormObjectAction = false;
 
             Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
             LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
             String forceIntegrationSID = null;
-            ActionObjectSelector selectorAction = null;
+            ActionObjectSelector<?> selectorAction = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
                 ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
@@ -396,11 +440,11 @@ public class ScriptingFormEntity {
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
                     ObjectEntity obj = getSingleMappingObject(mapping);
-                    Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(form, obj);
+                    Pair<LP, ActionObjectSelector<?>> valueProp = LM.getObjValueProp(form, obj);
                     property = valueProp.first;
                     selectorAction = valueProp.second;
                     objects = SetFact.singletonOrder(obj);
-                } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
+                } else if (propertyName.equals("NEW") && nvl(propertyOptions.getFormSessionScope(), PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
@@ -432,7 +476,7 @@ public class ScriptingFormEntity {
                     ObjectEntity objectTo = iterator.next();
                     TimeSeriesClass timeClass = (TimeSeriesClass) objectFrom.baseClass;
                     LP<?>[] intProps = LM.findProperties(timeClass.getIntervalProperty(), timeClass.getFromIntervalProperty(), timeClass.getToIntervalProperty());
-                    Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
+                    Pair<LP, ActionObjectSelector<?>> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
                     property = intervalProp.first;
                     selectorAction = intervalProp.second;
                 } else
@@ -452,15 +496,15 @@ public class ScriptingFormEntity {
             if(location == null)
                 location = isFormObjectAction ? ComplexLocation.LAST() : ComplexLocation.DEFAULT();
 
+
+            PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), property.listInterfaces, inherited.result, location, version);
+
             DebugInfo.DebugPoint debugPoint = points.get(i);
-            PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), debugPoint.getFullPath(), inherited.result, property.listInterfaces, location, version);
+            propertyDraw.setFormPath(debugPoint.getFullPath());
             propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
             if(selectorAction != null)
                 propertyDraw.setSelectorAction(selectorAction, version);
-
-            propertyDraw.defaultChangeEventScope = scope;
-
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
                 propertyDraw.setIntegrationSID(forceIntegrationSID);
 
@@ -489,11 +533,11 @@ public class ScriptingFormEntity {
             }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
-            checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
+            checkNeighbour((PropertyDrawEntity<?, ?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
         }
     }
 
-    private void checkNeighbour(PropertyDrawEntity<?> propertyDraw, ComplexLocation<PropertyDrawEntity> location, String neighbourText, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void checkNeighbour(PropertyDrawEntity<?, ?> propertyDraw, ComplexLocation<PropertyDrawEntity> location, String neighbourText, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if(location instanceof NeighbourComplexLocation) {
             NeighbourComplexLocation<PropertyDrawEntity> neighbourLocation = (NeighbourComplexLocation<PropertyDrawEntity>) location;
 
@@ -547,7 +591,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyPropertyOptions(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
         FormPropertyOptions.Columns columns = options.getColumns();
         if (columns != null) {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
@@ -563,6 +607,8 @@ public class ScriptingFormEntity {
         property.aggrFunc = options.aggrFunc;
         property.lastAggrColumns = nvl(options.lastAggrColumns, ListFact.EMPTY());
         property.lastAggrDesc = nvl(options.lastAggrDesc, false);
+
+        property.defaultChangeEventScope = options.getFormSessionScope();
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
@@ -629,7 +675,7 @@ public class ScriptingFormEntity {
         Boolean isSelector = options.getSelector();
         boolean hasSelector = isSelector != null && isSelector;
         if (hasSelector)
-            property.setSelectorAction(property::getSelectorAction, version);
+            property.setSelectorAction(new PropertyDrawEntity.SelectorAction(property::getSelectorAction), version);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null)
@@ -743,7 +789,7 @@ public class ScriptingFormEntity {
     }
 
     public static PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        return checkPropertyDraw(LM, form.getPropertyDraw(sid, version), sid);
+        return checkPropertyDraw(LM, form.getNFPropertyDraw(sid, version), sid);
     }
 
     public PropertyDrawEntity getPropertyDraw(String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -751,7 +797,7 @@ public class ScriptingFormEntity {
     }
 
     public static PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        return checkPropertyDraw(LM, form.getPropertyDraw(name, mapping, version), name);    
+        return checkPropertyDraw(LM, form.getNFPropertyDraw(name, mapping, version), name);
     }
 
     private static PropertyDrawEntity checkPropertyDraw(ScriptingLogicsModule LM, PropertyDrawEntity property, String sid) throws ScriptingErrorLog.SemanticErrorException {
@@ -790,8 +836,7 @@ public class ScriptingFormEntity {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "filter group", sid);
         }
 
-        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID(), noNull, version);
-        regularFilterGroup.setSID(sid);
+        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID, sid, noNull, version);
 
         addRegularFilters(regularFilterGroup, filters, version, false);
 
@@ -819,7 +864,7 @@ public class ScriptingFormEntity {
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
             checkPropertyParameters(info.property, mappingObjects);
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID, null,
                     new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
                     info.caption, keyInputEvent, info.showKey, mouseInputEvent, info.showMouse);
             if (extend) {
@@ -904,8 +949,8 @@ public class ScriptingFormEntity {
         findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID), version);
     }
 
-    public void setLocalAsync(boolean localAsync) {
-        form.localAsync = localAsync;
+    public void setLocalAsync(boolean localAsync, Version version) {
+        form.setLocalAsync(localAsync, version);
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {

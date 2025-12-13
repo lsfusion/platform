@@ -1,13 +1,10 @@
 package lsfusion.client.form.controller.remote.serialization;
 
-import lsfusion.interop.form.remote.serialization.CustomSerializable;
-
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public interface ClientCustomSerializable extends CustomSerializable<ClientSerializationPool> {
+public interface ClientCustomSerializable {
 
-    default void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        throw new UnsupportedOperationException();
-    }
+    void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException;
 }

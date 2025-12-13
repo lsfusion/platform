@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -19,7 +20,7 @@ import lsfusion.server.physics.admin.Settings;
 
 import java.util.function.Function;
 
-public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
+public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>, This extends ActionOrPropertyObjectEntity<P, T, This>> extends TwinImmutableObject implements MappingInterface<This> {
 
     public T property;
     public ImRevMap<P, ObjectEntity> mapping;
@@ -73,7 +74,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         return path;
     }
 
-    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> ActionOrPropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath, String path) {
+    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> ActionOrPropertyObjectEntity<I, ?, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath, String path) {
         if(property instanceof Property)
             return new PropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath, path);
         else
@@ -110,12 +111,12 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
     }
 
     // copy-constructor
-    public ActionOrPropertyObjectEntity(ActionOrPropertyObjectEntity src, ObjectMapping mapping) {
-        this.property = (T) src.property;
+    public ActionOrPropertyObjectEntity(ActionOrPropertyObjectEntity<P, T, This> src, ObjectMapping mapping) {
+        this.property = src.property;
         this.creationScript = src.creationScript;
         this.creationPath = src.creationPath;
         this.path = src.path;
 
-        this.mapping = (ImRevMap<P, ObjectEntity>) src.mapping.mapValues((Function<ObjectEntity, ObjectEntity>) mapping::get);
+        this.mapping = mapping.gets(src.mapping);
     }
 }

@@ -12,15 +12,18 @@ import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class RegularFilterGroupView extends BaseComponentView {
+public class RegularFilterGroupView extends BaseComponentView<RegularFilterGroupView, RegularFilterGroupEntity> {
     
-    public RegularFilterGroupEntity entity;
+    public final RegularFilterGroupEntity entity;
 
     public NFOrderSet<RegularFilterView> filters = NFFact.orderSet();
 
-    public RegularFilterGroupView(RegularFilterGroupEntity entity, Version version) {
-        super(entity.ID);
+    @Override
+    public int getID() {
+        return entity.getID();
+    }
 
+    public RegularFilterGroupView(RegularFilterGroupEntity entity, Version version) {
         this.entity = entity;
         this.entity.view = this;
 
@@ -55,14 +58,29 @@ public class RegularFilterGroupView extends BaseComponentView {
     }
 
     // copy-constructor
-    public RegularFilterGroupView(RegularFilterGroupView src, ObjectMapping mapping) {
+    protected RegularFilterGroupView(RegularFilterGroupView src, ObjectMapping mapping) {
         super(src, mapping);
 
         entity = mapping.get(src.entity);
-        entity.view = this;
+    }
 
-        ID = entity.ID;
+    @Override
+    public void add(RegularFilterGroupView src, ObjectMapping mapping) {
+        super.add(src, mapping);
 
-        filters.add(src.filters, mapping::get, mapping.version);
+        mapping.add(filters, src.filters);
+    }
+
+    @Override
+    public RegularFilterGroupEntity getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public RegularFilterGroupView getAddChild(RegularFilterGroupEntity entity, ObjectMapping mapping) {
+        return entity.view;
+    }
+    @Override
+    public RegularFilterGroupView copy(ObjectMapping mapping) {
+        return new RegularFilterGroupView(this, mapping);
     }
 }

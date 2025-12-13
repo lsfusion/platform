@@ -738,7 +738,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
-        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
+        public void proceedDefaultDraw(PropertyDrawEntity<?, ?> entity, FormEntity form, Version version) {
             entity.viewType = viewType;
             entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);

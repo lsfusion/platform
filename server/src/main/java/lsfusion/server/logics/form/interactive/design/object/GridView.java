@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -7,6 +8,7 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataOutputStream;
@@ -15,25 +17,32 @@ import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-public class GridView extends GridPropertyView {
+public class GridView extends GridPropertyView<GridView, GroupObjectView>{
 
     private NFProperty<Boolean> tabVertical = NFFact.property();
     private NFProperty<Boolean> quickSearch = NFFact.property();
 
     public GroupObjectView groupObject;
 
-    // lazy creation, since its usage is pretty rear
-    public static class ExContainerView extends FormEntity.ExProp<ContainerView> {
+    public CalculationsView calculations;
 
-        public ExContainerView(Supplier<ContainerView> supplier) {
+    // lazy creation, since its usage is pretty rear
+    public static class ExContainerView<AddParent extends IdentityView<AddParent, ?>> extends FormEntity.ExMapProp<ContainerView<AddParent>, ExContainerView<AddParent>> {
+
+        public ExContainerView(Supplier<ContainerView<AddParent>> supplier) {
             super(supplier);
         }
 
-        public ExContainerView(FormEntity.ExProp<ContainerView> exProp, ObjectMapping mapping) {
-            super(exProp, mapping::get, mapping.version);
+        public ExContainerView(ExContainerView<AddParent> exProp, ObjectMapping mapping) {
+            super(exProp, mapping);
+        }
+
+        @Override
+        public ExContainerView<AddParent> get(ObjectMapping mapping) {
+            return new ExContainerView<>(this, mapping);
         }
     }
-    private final ExContainerView record;
+    private final ExContainerView<?> record;
     public ContainerView getRecord() { // assert that grid view is "finalized"
         return record.get();
     }
@@ -42,15 +51,28 @@ public class GridView extends GridPropertyView {
         return record.getNF(version);
     }
 
-    public GridView(int ID, int recordID, GroupObjectView groupObject) {
-        super(ID);
+    public GridView(IDGenerator idGenerator, GroupObjectView groupObject, Version version) {
+        super(idGenerator, version);
         this.groupObject = groupObject;
 
+        calculations = new CalculationsView(idGenerator, this);
+
         record = new ExContainerView(() -> {
-            ContainerView record = new ContainerView(recordID);
+            ContainerView<?> record = new ContainerView(idGenerator);
             record.recordContainer = this;
+            record.setAddParent(this, pc -> pc.record.get());
             return record;
         });
+    }
+
+    @Override
+    public String getPropertyGroupContainerSID() {
+        return groupObject.getSID();
+    }
+
+    @Override
+    public String getPropertyGroupContainerName() {
+        return groupObject.getSID();
     }
 
     @Override
@@ -86,6 +108,8 @@ public class GridView extends GridPropertyView {
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
+        calculations.finalizeAroundInit();
+
         ContainerView record = getRecord();
         if(record != null)
             record.finalizeAroundInit();
@@ -96,13 +120,32 @@ public class GridView extends GridPropertyView {
     }
 
     // copy-constructor
-    public GridView(GridView src, ObjectMapping mapping) {
+    protected GridView(GridView src, ObjectMapping mapping) {
         super(src, mapping);
 
-        tabVertical.set(src.tabVertical, p -> p, mapping.version);
-        quickSearch.set(src.quickSearch, p -> p, mapping.version);
-
+        calculations = mapping.get(src.calculations);
         groupObject = mapping.get(src.groupObject);
-        record = mapping.get(src.record);
+        record = mapping.get((ExContainerView)src.record);
+    }
+
+    @Override
+    public void extend(GridView src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        mapping.sets(tabVertical, src.tabVertical);
+        mapping.sets(quickSearch, src.quickSearch);
+    }
+
+    @Override
+    public GroupObjectView getAddParent(ObjectMapping mapping) {
+        return groupObject;
+    }
+    @Override
+    public GridView getAddChild(GroupObjectView groupObjectView, ObjectMapping mapping) {
+        return groupObjectView.grid;
+    }
+    @Override
+    public GridView copy(ObjectMapping mapping) {
+        return new GridView(this, mapping);
     }
 }

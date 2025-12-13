@@ -1,7 +1,9 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -11,11 +13,11 @@ import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyContainersView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -24,10 +26,12 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-public class ContainerView extends ComponentView {
+// in fact AddParent is PropertyContainersView, but it requires multiple inheritance
+public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends ComponentView<ContainerView<AddParent>, AddParent> {
 
     public boolean main;
 
@@ -212,7 +216,7 @@ public class ContainerView extends ComponentView {
         return sameDirection ? isShrink(context) : isAlignShrink(context);
     }
 
-    private boolean isShrinkDominant(FormInstanceContext context, ContainerView container, boolean horizontal, boolean align) {
+    private boolean isShrinkDominant(FormInstanceContext context, ContainerView<?> container, boolean horizontal, boolean align) {
         ContainerView upperContainer = container.getLayoutParamContainer();
         boolean upperHorizontal = upperContainer != null && upperContainer.isHorizontal();
         if((horizontal == upperHorizontal ? container.isShrink(context) : container.isAlignShrink(context))) {
@@ -641,67 +645,106 @@ public class ContainerView extends ComponentView {
 
     @Override
     public String toString() {
-        return (caption != null ? ThreadLocalContext.localize(getCaption()) + " " : "") + super.toString();
+//        return ThreadLocalContext.localize(getNFCaption(Version.current())) + " " +
+        return super.toString();
     }
 
-    public ContainerView(int ID) {
-        this(ID, false);
+    public int ID;
+
+    @Override
+    public int getID() {
+        return ID;
     }
 
-    public ContainerView(int ID, boolean main) {
-        super(ID);
-        this.main = main;
+    public ContainerView(IDGenerator idGen) {
+        this.ID = idGen.id();
     }
 
     // copy-constructor
-    public ContainerView(ContainerView src, ObjectMapping mapping) {
+    protected ContainerView(ContainerView<AddParent> src, ObjectMapping mapping) {
         super(src, mapping);
 
-        mapping.put(src, this);
-
-        ID = BaseLogicsModule.generateStaticNewID();
+        ID = mapping.id();
 
         main = src.main;
 
-        caption.set(src.caption, p -> p, mapping.version);
-        name.set(src.name, p -> p, mapping.version);
-        image.set(src.image, p -> p, mapping.version);
-
-        valueClass.set(src.valueClass, p -> p, mapping.version);
-        captionClass.set(src.captionClass, p -> p, mapping.version);
-
-        collapsible.set(src.collapsible, p -> p, mapping.version);
-        popup.set(src.popup, p -> p, mapping.version);
-        border.set(src.border, p -> p, mapping.version);
-        collapsed.set(src.collapsed, p -> p, mapping.version);
-
-        debugPoint.set(src.debugPoint, p -> p, mapping.version);
-        horizontal.set(src.horizontal, p -> p, mapping.version);
-        tabbed.set(src.tabbed, p -> p, mapping.version);
-
-        childrenAlignment.set(src.childrenAlignment, p -> p, mapping.version);
-
-        grid.set(src.grid, p -> p, mapping.version);
-        wrap.set(src.wrap, p -> p, mapping.version);
-        alignCaptions.set(src.alignCaptions, p -> p, mapping.version);
-
-        resizeOverflow.set(src.resizeOverflow, p -> p, mapping.version);
-
-        lines.set(src.lines, p -> p, mapping.version);
-        reversed.set(src.reversed, p -> p, mapping.version);
-        lineSize.set(src.lineSize, p -> p, mapping.version);
-        captionLineSize.set(src.captionLineSize, p -> p, mapping.version);
-        lineShrink.set(src.lineShrink, p -> p, mapping.version);
-        customDesign.set(src.customDesign, p -> p, mapping.version);
-
-        propertyCaption.set(src.propertyCaption, mapping::get, mapping.version);
-        propertyCaptionClass.set(src.propertyCaptionClass, mapping::get, mapping.version);
-        propertyValueClass.set(src.propertyValueClass, mapping::get, mapping.version);
-        propertyImage.set(src.propertyImage, mapping::get, mapping.version);
-        propertyCustomDesign.set(src.propertyCustomDesign, mapping::get, mapping.version);
-
-        children.add(src.children, mapping::get, mapping.version);
-
         recordContainer = mapping.get(src.recordContainer);
+        addParent = mapping.get(src.addParent);
+        addChild = src.addChild;
+    }
+
+    @Override
+    public void extend(ContainerView<AddParent> src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        mapping.sets(caption, src.caption);
+        mapping.sets(name, src.name);
+        mapping.sets(image, src.image);
+
+        mapping.sets(valueClass, src.valueClass);
+        mapping.sets(captionClass, src.captionClass);
+
+        mapping.sets(collapsible, src.collapsible);
+        mapping.sets(popup, src.popup);
+        mapping.sets(border, src.border);
+        mapping.sets(collapsed, src.collapsed);
+
+        mapping.sets(debugPoint, src.debugPoint);
+        mapping.sets(horizontal, src.horizontal);
+        mapping.sets(tabbed, src.tabbed);
+
+        mapping.sets(childrenAlignment, src.childrenAlignment);
+
+        mapping.sets(grid, src.grid);
+        mapping.sets(wrap, src.wrap);
+        mapping.sets(alignCaptions, src.alignCaptions);
+
+        mapping.sets(resizeOverflow, src.resizeOverflow);
+
+        mapping.sets(lines, src.lines);
+        mapping.sets(reversed, src.reversed);
+        mapping.sets(lineSize, src.lineSize);
+        mapping.sets(captionLineSize, src.captionLineSize);
+        mapping.sets(lineShrink, src.lineShrink);
+        mapping.sets(customDesign, src.customDesign);
+
+        mapping.set(propertyCaption, src.propertyCaption);
+        mapping.set(propertyCaptionClass, src.propertyCaptionClass);
+        mapping.set(propertyValueClass, src.propertyValueClass);
+        mapping.set(propertyImage, src.propertyImage);
+        mapping.set(propertyCustomDesign, src.propertyCustomDesign);
+    }
+
+    @Override
+    public void add(ContainerView<AddParent> src, ObjectMapping mapping) {
+        super.add(src, mapping);
+
+        mapping.add(children, src.children);
+    }
+
+    public IdentityView addParent;
+    public Function<IdentityView, ContainerView<?>> addChild;
+    public <PC extends IdentityView> void setAddParent(PC addParent, Function<PC, ContainerView<?>> addChild) {
+        this.addParent = addParent;
+        this.addChild = (Function<IdentityView, ContainerView<?>>) addChild;
+    }
+    public <PC extends PropertyContainersView<PC>> void setAddParentPC(PC addParent, Function<PC, ContainerView<?>> addChild) {
+        this.addParent = (IdentityView) addParent;
+        this.addChild = BaseUtils.immutableCast(addChild);
+    }
+    @Override
+    public AddParent getAddParent(ObjectMapping mapping) {
+        if(mapping.extend) // merge default containers - form:main, group: record, filters, property groups
+            return (AddParent) addParent;
+        return null;
+    }
+    @Override
+    public ContainerView<AddParent> getAddChild(AddParent serverIdentityObject, ObjectMapping mapping) {
+        return (ContainerView<AddParent>) addChild.apply(serverIdentityObject);
+    }
+
+    @Override
+    public ContainerView<AddParent> copy(ObjectMapping mapping) {
+        return new ContainerView<>(this, mapping);
     }
 }

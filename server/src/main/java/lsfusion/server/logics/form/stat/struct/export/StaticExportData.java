@@ -58,7 +58,7 @@ public class StaticExportData implements ExportData {
     }
 
     @Override
-    public Type getType(PropertyDrawEntity<?> entity) {
+    public Type getType(PropertyDrawEntity<?, ?> entity) {
         return propData.types.get(entity);
     }
 

@@ -11,7 +11,6 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.Set;
-import java.util.function.Function;
 
 public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterable<T>> extends NFColChangeImpl<T, CH, R> implements NFSet<T> {
 
@@ -56,12 +55,17 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     }
 
     @Override
+    public Iterable<T> getNFIt(Version version, boolean allowRead) {
+        return getNFSet(version, allowRead);
+    }
+
+    @Override
     public Iterable<T> getNFCopyIt(Version version) {
         return getNFCopySet(version);
     }
 
     @Override
-    public void add(NFSet<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFSet<T> element, NFCopy.Map<T> mapper, Version version) {
         assert !(this instanceof NFOrderSet);
         addChange((CH) new NFSetCopy<>(element, mapper), version);
     }

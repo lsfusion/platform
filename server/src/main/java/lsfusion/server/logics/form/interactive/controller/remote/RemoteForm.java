@@ -116,7 +116,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         super(port, upStack, form.entity.getSID(), form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
 
         this.form = form;
-        this.richDesign = form.entity.getRichDesign();
+        this.richDesign = form.entity.view;
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
         createPausablesExecutor();

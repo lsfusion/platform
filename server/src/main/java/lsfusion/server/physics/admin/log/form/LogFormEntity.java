@@ -44,23 +44,22 @@ public class LogFormEntity extends AutoFinalFormEntity {
         for (ValueClass valueClass : classes) {
             String sID = "param" + index;
 
-            GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group", LM);
-            paramGroup.setViewTypePanel();
-
-            ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
+            ObjectEntity obj = new ObjectEntity(genID, sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
             mParams.exclAdd(obj);
-            paramGroup.add(obj);
-            index++;
 
+            GroupObjectEntity paramGroup = new GroupObjectEntity(genID, sID + "Group", SetFact.singletonOrder(obj), LM);
             addGroupObject(paramGroup);
+
+            paramGroup.setViewTypePanel();
+            index++;
         }
 
         params = mParams.immutableOrder();
 
-        GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup", LM);
-        ObjectEntity objSession = new ObjectEntity(genID(), "session", sessionClass, LocalizedString.create("{form.entity.session}"));
+        ObjectEntity objSession = new ObjectEntity(genID, "session", sessionClass, LocalizedString.create("{form.entity.session}"));
         ImOrderSet<ObjectEntity> entities = params.addOrderExcl(objSession);
-        logGroup.add(objSession);
+
+        GroupObjectEntity logGroup = new GroupObjectEntity(genID, "logGroup", SetFact.singletonOrder(objSession), LM);
 
         addGroupObject(logGroup);
 

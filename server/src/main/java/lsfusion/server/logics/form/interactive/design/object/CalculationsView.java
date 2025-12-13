@@ -1,14 +1,13 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
-import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 
-public class CalculationsView extends BaseComponentView {
+public class CalculationsView extends BaseGridComponentView<CalculationsView, GridView> {
 
-    public CalculationsView(int ID) {
-        super(ID);
+    public CalculationsView(IDGenerator idGenerator, GridView gridView) {
+        super(idGenerator, gridView);
     }
 
     @Override
@@ -17,9 +16,17 @@ public class CalculationsView extends BaseComponentView {
     }
 
     // copy-constructor
-    public CalculationsView(CalculationsView src, ObjectMapping mapping) {
+    protected CalculationsView(CalculationsView src, ObjectMapping mapping) {
         super(src, mapping);
+    }
 
-        ID = BaseLogicsModule.generateStaticNewID();
+    @Override
+    public CalculationsView getAddChild(GridView gridView, ObjectMapping mapping) {
+        return gridView.calculations;
+    }
+
+    @Override
+    public CalculationsView copy(ObjectMapping mapping) {
+        return new CalculationsView(this, mapping);
     }
 }

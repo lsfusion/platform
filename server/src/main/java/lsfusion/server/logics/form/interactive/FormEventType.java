@@ -4,7 +4,7 @@ import lsfusion.interop.form.event.FormEvent;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 
-public class FormEventType extends FormServerEvent {
+public class FormEventType extends FormServerEvent<FormEventType> {
 
     public static final FormEventType INIT = new FormEventType();
     public static final FormEventType APPLY = new FormEventType();
@@ -20,7 +20,7 @@ public class FormEventType extends FormServerEvent {
     public static final FormEventType QUERYOK = new FormEventType();
 
     @Override
-    public FormServerEvent get(ObjectMapping mapping) {
+    public FormEventType get(ObjectMapping mapping) {
         return this;
     }
 }

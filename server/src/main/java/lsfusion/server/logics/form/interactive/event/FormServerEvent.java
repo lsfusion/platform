@@ -5,8 +5,9 @@ import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 
-public abstract class FormServerEvent {
+public abstract class FormServerEvent<This extends FormServerEvent<This>> implements MappingInterface<This> {
 
     public static FormServerEvent getEventObject(FormEvent formEvent) {
         if (formEvent instanceof FormEventClose) {
@@ -28,6 +29,4 @@ public abstract class FormServerEvent {
             return new FormScheduler(((FormServerScheduler) serverEvent).period, ((FormServerScheduler) serverEvent).fixed);
         return null;
     }
-
-    public abstract FormServerEvent get(ObjectMapping mapping);
 }

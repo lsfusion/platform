@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.event;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.server.logics.form.ObjectMapping;
 
-public class ObjectEventObject extends FormServerEvent {
+public class ObjectEventObject extends FormServerEvent<ObjectEventObject> {
     public final String object;
 
     public ObjectEventObject(String object) {
@@ -11,7 +11,7 @@ public class ObjectEventObject extends FormServerEvent {
     }
 
     @Override
-    public FormServerEvent get(ObjectMapping mapping) {
+    public ObjectEventObject get(ObjectMapping mapping) {
         return this;
     }
 

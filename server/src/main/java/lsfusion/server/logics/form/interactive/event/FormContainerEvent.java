@@ -9,7 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
-public class FormContainerEvent extends FormServerEvent {
+public class FormContainerEvent extends FormServerEvent<FormContainerEvent> {
     public ComponentView container;
     public boolean collapse;
 
@@ -18,9 +18,14 @@ public class FormContainerEvent extends FormServerEvent {
         this.collapse = collapse;
     }
 
+    public FormContainerEvent(FormContainerEvent src, ObjectMapping mapping) {
+        this.container = mapping.get(src.container);
+        this.collapse = src.collapse;
+    }
+
     @Override
-    public FormServerEvent get(ObjectMapping mapping) {
-        return new FormContainerEvent(mapping.get(container), collapse);
+    public FormContainerEvent get(ObjectMapping mapping) {
+        return new FormContainerEvent(this, mapping);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

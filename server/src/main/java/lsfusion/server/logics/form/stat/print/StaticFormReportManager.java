@@ -24,7 +24,7 @@ public class StaticFormReportManager extends FormReportManager {
     public String readFormCaption() throws SQLException, SQLHandledException {
         FormEntity form = reportInterface.getFormEntity();
 
-        FormView richDesign = form.getRichDesign();
+        FormView richDesign = form.view;
         PropertyObjectEntity<?> propertyCaption = richDesign.mainContainer.getPropertyCaption();
         if(propertyCaption != null)
             return BaseUtils.nullToString(reportInterface.read(propertyCaption));

@@ -642,7 +642,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
             name = property.getSID();
             
-            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((P value) -> new KeyField(value.getSID(), property.getInterfaceType(value)));
+            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((P value) -> new KeyField("p" + value.getID(), property.getInterfaceType(value)));
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
             

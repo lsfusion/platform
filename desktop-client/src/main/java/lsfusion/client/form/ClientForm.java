@@ -2,16 +2,15 @@ package lsfusion.client.form;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.context.ApplicationContextHolder;
-import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.controller.MainController;
-import lsfusion.client.form.controller.remote.serialization.ClientCustomSerializable;
+import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientIdentityObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -21,14 +20,12 @@ import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.interop.form.event.FormEvent;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
-public class ClientForm extends ContextIdentityObject implements ClientCustomSerializable,
-                                                                 ApplicationContextHolder {
+public class ClientForm extends ClientIdentityObject {
 
     public String canonicalName = "";
     public String creationPath = "";
@@ -242,19 +239,11 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         regularFilterGroups.remove(client);
     }
 
-    public ClientContainer findContainerBySID(String sID) {
-        return mainContainer.findContainerBySID(sID);
-    }
-
     public ClientContainer findContainerByID(int id) {
         return mainContainer.findContainerByID(id);
     }
 
     public ClientComponent findComponentByID(int id) {
         return mainContainer.findComponentByID(id);
-    }
-
-    public ClientContainer findParentContainerBySID(String sID) {
-        return mainContainer.findParentContainerBySID(null, sID);
     }
 }

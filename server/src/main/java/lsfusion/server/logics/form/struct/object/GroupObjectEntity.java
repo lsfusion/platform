@@ -6,7 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.identity.IdentityObject;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
@@ -36,31 +36,33 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 import java.sql.SQLException;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
+public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectEntity> implements Instantiable<GroupObjectInstance> {
 
     public TreeGroupEntity treeGroup;
+
+    public PropertyDrawEntity count;
 
     public boolean isInTree() {
         return treeGroup != null;
@@ -69,8 +71,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     private NFProperty<Boolean> isSubReport = NFFact.property();
     private NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
-    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
-    private NFProperty<Pair<Integer, Integer>> scriptIndex = NFFact.property();
+    public DebugInfo.DebugPoint debugPoint;
+    public Pair<Integer, Integer> scriptIndex;
 
     public UpdateType updateType; //todo?
 
@@ -104,7 +106,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-            if(!groupObject.getOrderObjects().getSet().containsAll(filt.getObjects())) // если есть "внешние" объекты исключаем
+            if(!groupObject.objects.containsAll(filt.getObjects())) // если есть "внешние" объекты исключаем
                 return null;
             return super.process(filt, mapKeys, modifier, reallyChanged);
         }
@@ -148,11 +150,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     }
 
-    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup, BaseLogicsModule LM) {
-        this(ID, (String)null, LM);
-        this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
-    }
-
     private final FormEntity.ExProperty listViewTypeProp;
     public Property<?> getNFListViewType(Version version) {
         return listViewTypeProp.getNF(version);
@@ -161,20 +158,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return listViewTypeProp.get();
     }
 
-    public GroupObjectEntity(int ID, String sID, BaseLogicsModule LM) {
-        super(ID, sID != null ? sID : "groupObj" + ID);
-
-        ConcreteCustomClass listViewType = LM.listViewType;
-        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
-        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
-                () -> PropertyFact.createDataPropRev(type.toString(), this, getObjects().mapValues((ObjectEntity value) -> value.baseClass), type.getValueClass(), null)));
-    }
-
     public ClassViewType viewType = ClassViewType.DEFAULT;
     public ListViewType listViewType = ListViewType.DEFAULT;
     public PivotOptions pivotOptions;
     public String customRenderFunction;
-    public PropertyObjectEntity<?> propertyCustomOptions;
+    public PropertyObjectEntity propertyCustomOptions;
     public String mapTileProvider;
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
@@ -182,8 +170,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public Integer pageSize;
 
-    public PropertyObjectEntity<?> propertyBackground;
-    public PropertyObjectEntity<?> propertyForeground;
+    public PropertyObjectEntity propertyBackground;
+    public PropertyObjectEntity propertyForeground;
 
     private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
     private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
@@ -195,18 +183,23 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return isOrderExplicitlyUsed.get() != null;
     }
 
-    public static class ExGroupProperty extends FormEntity.ExProp<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> {
+    public static class ExGroupProperty extends FormEntity.ExMapProp<PropertyObjectEntity<ClassPropertyInterface>, ExGroupProperty> {
 
-        public ExGroupProperty(Supplier<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> supplier) {
+        public ExGroupProperty(Supplier<PropertyObjectEntity<ClassPropertyInterface>> supplier) {
             super(supplier);
         }
 
-        public ExGroupProperty(FormEntity.ExProp<PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> exProp, ObjectMapping mapping) {
-            super(exProp, mapping::get, mapping.version);
+        public ExGroupProperty(ExGroupProperty exProp, ObjectMapping mapping) {
+            super(exProp, mapping);
+        }
+
+        @Override
+        public ExGroupProperty get(ObjectMapping mapping) {
+            return new ExGroupProperty(this, mapping);
         }
     }
     private final ImMap<GroupObjectProp, ExGroupProperty> props;
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getNFProperty(GroupObjectProp type, Version version) {
+    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectProp type, Version version) {
         if(type.equals(GroupObjectProp.FILTER))
             isFilterExplicitlyUsed.set(true, version);
         if(type.equals(GroupObjectProp.ORDER))
@@ -218,22 +211,22 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         props.get(GroupObjectProp.FILTER).getNF(version);
         props.get(GroupObjectProp.ORDER).getNF(version);
     }
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getGroupChange(GroupObjectProp type) {
+    public PropertyObjectEntity<ClassPropertyInterface> getGroupChange(GroupObjectProp type) {
         assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER);
         return props.get(type).get();
     }
-    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
-        return props.mapValues(FormEntity.ExProp::get).removeNulls();
+    public ImMap<GroupObjectProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
+        return props.mapValues(p -> p.get()).removeNulls();
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
 
-    public ImMap<ObjectEntity, PropertyObjectEntity<?>> isParent = null;
+    public ImMap<ObjectEntity, PropertyObjectEntity> isParent = null;
 
     public void setIsParents(final PropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
+        isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity>) i -> properties[i]);
     }
 
     public void setViewType(ClassViewType viewType) {
@@ -292,40 +285,39 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.propertyForeground = propertyForeground;
     }
 
-    private boolean finalizedObjects;
-    private Object objects = SetFact.mOrderExclSet();
+    public ObjectEntity getObject(String sid) {
+        for (ObjectEntity object : getObjects()) {
+            if (object.getSID().equals(sid)) {
+                return object;
+            }
+        }
+        return null;
+    }
 
+    private final ImOrderSet<ObjectEntity> objects;
     public ImSet<ObjectEntity> getObjects() {
-        return getOrderObjects().getSet();
+        return objects.getSet();
     }
     @LongMutable
     public ImOrderSet<ObjectEntity> getOrderObjects() {
-        if(!finalizedObjects) {
-            finalizedObjects = true;
-            objects = ((MOrderExclSet<ObjectEntity>)objects).immutableOrder();
-        }
-
-        return (ImOrderSet<ObjectEntity>)objects;
+        return objects;
     }
 
-    public void add(ObjectEntity objectEntity) {
-        assert !finalizedObjects;
-        objectEntity.groupTo = this;
-        ((MOrderExclSet<ObjectEntity>)objects).exclAdd(objectEntity);
+    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM) {
+        this(ID, sID, objects, null, LM);
     }
-    
-    public void setObjects(ImOrderSet<ObjectEntity> objects) {
-        assert !finalizedObjects;
-        finalizedObjects = true;
+    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, TreeGroupEntity treeGroup, BaseLogicsModule LM) {
+        super(ID, sID, "groupObj");
+
+        ConcreteCustomClass listViewType = LM.listViewType;
+        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
+        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
+                () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
+
         this.objects = objects;
         for(ObjectEntity object : objects)
             object.groupTo = this;
-    }
-
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM) {
-        this(ID, (String)null, LM);
-
-        setObjects(objects);
+        this.treeGroup = treeGroup;
     }
 
 
@@ -402,8 +394,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
+        super(() -> -1, null, null);
         listViewTypeProp = null;
         props = null;
+        objects = null;
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
@@ -427,18 +421,15 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         reportPathProp.set(value, version);
     }
 
-    public DebugInfo.DebugPoint getNFDebugPoint(Version version) {
-        return debugPoint.getNF(version);
-    }
-    public void setDebugPoint(DebugInfo.DebugPoint value, Version version) {
-        debugPoint.set(value, version);
+    public void setDebugPoint(DebugInfo.DebugPoint value) {
+        debugPoint = value;
     }
 
     public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex.get();
+        return scriptIndex;
     }
-    public void setScriptIndex(Pair<Integer, Integer> value, Version version) {
-        scriptIndex.set(value, version);
+    public void setScriptIndex(Pair<Integer, Integer> value) {
+        scriptIndex = value;
     }
 
     public Group getPropertyGroup() {
@@ -478,30 +469,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     // copy-constructor
-    public GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
-        super(src);
+    protected GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
+        super(src, mapping);
 
-        mapping.put(src, this);
-
-        ID = BaseLogicsModule.generateStaticNewID();
-
-        treeGroup = src.treeGroup != null ? mapping.get(src.treeGroup) : null;
-
-        isSubReport.set(src.isSubReport, p -> p, mapping.version);
-        reportPathProp.set(src.reportPathProp, mapping::get, mapping.version);
-
-        debugPoint.set(src.debugPoint, p -> p, mapping.version);
-        scriptIndex.set(src.scriptIndex, p -> p, mapping.version);
+        objects = mapping.get(src.objects);
 
         updateType = src.updateType;
-
-        propertyGroup.set(src.propertyGroup, p -> p, mapping.version);
-
-        enableManualUpdate.set(src.enableManualUpdate, p -> p, mapping.version);
-
-        integrationSID.set(src.integrationSID, p -> p, mapping.version);
-        integrationKey.set(src.integrationKey, p -> p, mapping.version);
-
         viewType = src.viewType;
         listViewType = src.listViewType;
         pivotOptions = src.pivotOptions;
@@ -510,17 +483,52 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         asyncInit =  src.asyncInit;
         pageSize = src.pageSize;
 
-        for(ObjectEntity e : src.getOrderObjects())
-            add(mapping.get(e));
-
+        treeGroup = mapping.get(src.treeGroup); // nullable
+        view = mapping.get(src.view);
+        count = mapping.get(src.count); // nullable
         propertyCustomOptions = mapping.get(src.propertyCustomOptions);
         propertyBackground = mapping.get(src.propertyBackground);
         propertyForeground = mapping.get(src.propertyForeground);
-        isParent = src.isParent != null ? src.isParent.mapKeyValues(mapping::get, (Function<PropertyObjectEntity<?>, PropertyObjectEntity<?>>) mapping::get) : null;
-
-        props = src.props.mapItValues(mapping::get);
+        isParent = mapping.get(src.isParent); // nullable
+        props = mapping.gets(src.props);
         listViewTypeProp = mapping.get(src.listViewTypeProp);
-        isFilterExplicitlyUsed.set(src.isFilterExplicitlyUsed, p -> p, mapping.version);
-        isOrderExplicitlyUsed.set(src.isOrderExplicitlyUsed, p -> p, mapping.version);
+    }
+
+    @Override
+    public void extend(GroupObjectEntity src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        debugPoint = src.debugPoint;
+        scriptIndex = src.scriptIndex;
+
+        mapping.sets(isSubReport, src.isSubReport);
+        mapping.sets(propertyGroup, src.propertyGroup);
+        mapping.sets(enableManualUpdate, src.enableManualUpdate);
+        mapping.sets(integrationSID, src.integrationSID);
+        mapping.sets(integrationKey, src.integrationKey);
+        mapping.sets(isFilterExplicitlyUsed, src.isFilterExplicitlyUsed);
+        mapping.sets(isOrderExplicitlyUsed, src.isOrderExplicitlyUsed);
+
+        mapping.set(reportPathProp, src.reportPathProp);
+    }
+
+    @Override
+    public ObjectEntity getAddParent(ObjectMapping mapping) {
+        return getOrderObjects().get(0);
+    }
+
+    @Override
+    public GroupObjectEntity getAddChild(ObjectEntity parent, ObjectMapping mapping) {
+        return parent.groupTo;
+    }
+//    @Override
+//    public GroupObjectEntity getAdd(ObjectMapping mapping) {
+//        if(mapping.extend) // in theory it makes sense to check neighbours and tree that they perfectly match
+//            return mapping.addForm.getNFGroupObject(getSID(), mapping.getFindVersion());
+//        return null;
+//    }
+    @Override
+    public GroupObjectEntity copy(ObjectMapping mapping) {
+        return new GroupObjectEntity(this, mapping);
     }
 }

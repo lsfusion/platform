@@ -1856,7 +1856,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
                     MRevMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mRevMapMax(newProperty.property.interfaces.size());
                     for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
-                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
+                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.getID());
                         if (mapKeyField != null)
                             mFoundInterfaces.revAdd(mapKeyField, propertyInterface);
                     }
@@ -3083,7 +3083,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             this.dbName = property.getDBName();
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
-            this.mapKeys = property.mapTable.mapKeys.mapKeys(value -> value.ID);
+            this.mapKeys = property.mapTable.mapKeys.mapKeys(PropertyInterface::getID);
             this.property = property;
         }
 

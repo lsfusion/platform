@@ -7,8 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.NF;
-
-import java.util.function.Function;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 
 
 // order set with insert types and group
@@ -18,7 +17,7 @@ public interface NFComplexOrderSet<T> extends NF {
     default void add(T element, Version version) {
         add(element, ComplexLocation.DEFAULT(), version);
     }
-    void add(NFComplexOrderSet<T> elements, Function<T, T> mapping, Version version);
+    void add(NFComplexOrderSet<T> elements, NFCopy.Map<T> mapping, Version version);
 
     void remove(T element, Version version);
 
@@ -27,6 +26,7 @@ public interface NFComplexOrderSet<T> extends NF {
     ImOrderSet<T> getOrderSet();
 
     Iterable<T> getNFIt(Version version);
+    Iterable<T> getNFIt(Version version, boolean allowRead);
     Iterable<T> getIt();
 
     Pair<ImOrderSet<T>, ImList<Integer>> getNFCopy(Version version);

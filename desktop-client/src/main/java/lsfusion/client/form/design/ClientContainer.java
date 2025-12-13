@@ -12,7 +12,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,8 +111,6 @@ public class ClientContainer extends ClientComponent {
     public void removeFromChildren(ClientComponent component) {
         component.container = null;
         children.remove(component);
-
-        updateDependency(this, "children");
     }
 
     public void add(ClientComponent component) {
@@ -172,17 +169,6 @@ public class ClientContainer extends ClientComponent {
         return customDesign != null;
     }
 
-    public ClientContainer findContainerBySID(String sID) {
-        if (sID.equals(this.sID)) return this;
-        for (ClientComponent comp : children) {
-            if (comp instanceof ClientContainer) {
-                ClientContainer result = ((ClientContainer) comp).findContainerBySID(sID);
-                if (result != null) return result;
-            }
-        }
-        return null;
-    }
-
     public ClientContainer findContainerByID(int id) {
         if (id == this.ID) return this;
         for (ClientComponent comp : children) {
@@ -205,17 +191,6 @@ public class ClientContainer extends ClientComponent {
         }
         return null;
 
-    }
-
-    public ClientContainer findParentContainerBySID(ClientContainer parent, String sID) {
-        if (sID.equals(this.sID)) return parent;
-        for (ClientComponent comp : children) {
-            if (comp instanceof ClientContainer) {
-                ClientContainer result = ((ClientContainer) comp).findParentContainerBySID(this, sID);
-                if (result != null) return result;
-            }
-        }
-        return null;
     }
 
     public List<ClientComponent> getChildren() {

@@ -32,14 +32,16 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     protected BaseLogicsModule LM;
 
     public AutoFinalFormEntity(LocalizedString caption, BaseLogicsModule LM) {
-        super(caption, true, LM.getVersion());
+        super(true, LM.getVersion());
 
         this.LM = LM;
         baseVersion = LM.getVersion();
+
+        getInitDesign().mainContainer.setCaption(caption, baseVersion);
     }
 
     protected DefaultFormView getInitDesign() {
-        return (DefaultFormView) getNFRichDesign(baseVersion);
+        return (DefaultFormView) view;
     }
 
     protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(Group group, ValueClass cls) {
@@ -82,9 +84,9 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     }
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null, LM);
-        ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
-        groupObject.add(object);
+        ObjectEntity object = new ObjectEntity(genID, baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
+
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID, null, SetFact.singletonOrder(object), LM);
         addGroupObject(groupObject);
 
         return object;
@@ -98,11 +100,11 @@ public class AutoFinalFormEntity extends AutoFormEntity {
         return addPropertyDraw(property, location, baseVersion, objects);
     }
 
-    public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object) {
+    public PropertyDrawEntity<?, ?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object) {
         return addValuePropertyDraw(LM, object, baseVersion);
     }
 
-    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping) {
+    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping) {
         return addPropertyDraw(property, mapping, baseVersion);
     }
 
@@ -116,6 +118,12 @@ public class AutoFinalFormEntity extends AutoFormEntity {
 
     protected void setNFEditType(PropertyEditType editType) {
         setNFEditType(editType, baseVersion);
+    }
+
+    public void setNFEditType(PropertyEditType editType, Version version) {
+        for (PropertyDrawEntity propertyView : getNFPropertyDrawsIt(version)) {
+            setEditType(propertyView, editType);
+        }
     }
 
     public void addFixedFilter(FilterEntity filter) {

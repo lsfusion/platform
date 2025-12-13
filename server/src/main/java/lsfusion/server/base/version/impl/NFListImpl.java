@@ -8,7 +8,6 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.*;
 import lsfusion.server.base.version.interfaces.NFList;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> implements NFList<T> {
@@ -74,7 +73,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     @Override
-    public void add(NFList<T> element, Function<T, T> mapper, Version version) {
+    public void add(NFList<T> element, NFCopy.Map<T> mapper, Version version) {
         addChange(new NFListCopy<>(element, mapper), version);
     }
 

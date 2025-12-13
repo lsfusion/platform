@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
+public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>, ActionObjectEntity<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector<ActionObjectEntity<P>> {
 
     public ActionObjectEntity() {
         //нужен для десериализации
@@ -87,8 +87,12 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     // copy-constructor
-    public ActionObjectEntity(ActionObjectEntity src, ObjectMapping mapping) {
+    public ActionObjectEntity(ActionObjectEntity<P> src, ObjectMapping mapping) {
         super(src, mapping);
-        mapping.put(src, this);
+    }
+
+    @Override
+    public ActionObjectEntity<P> get(ObjectMapping mapping) {
+        return new ActionObjectEntity<>(this, mapping);
     }
 }

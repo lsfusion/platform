@@ -2,11 +2,11 @@ package lsfusion.server.base.version.impl;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFProperty;
 
 import java.lang.ref.WeakReference;
-import java.util.function.Function;
 
 public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
 
@@ -55,7 +55,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
         getChanges().add(value, version);
     }
 
-    public void set(NFProperty<K> value, Function<K, K> mapping, Version version) {
+    public void set(NFProperty<K> value, NFCopy.Map<K> mapping, Version version) {
         Object setChanges = ((NFPropertyImpl<K>) value).getChangesAsIs();
         NFList<K> changes = getChanges();
         if(setChanges instanceof NFList) {

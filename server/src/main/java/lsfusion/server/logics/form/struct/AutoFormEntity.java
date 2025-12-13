@@ -24,17 +24,17 @@ import java.util.List;
 // should be added with addAutoFormEntity to be finalized
 public abstract class AutoFormEntity extends FormEntity {
 
-    public AutoFormEntity(LocalizedString caption, boolean needDesign, Version version) {
-        super(null, null, caption, null, needDesign, null, null, version);
+    public AutoFormEntity(boolean needDesign, Version version) {
+        super(needDesign, null, version);
     }
 
-    public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
-        Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(this, object);
+    public PropertyDrawEntity<?, ?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
+        Pair<LP, ActionObjectSelector<?>> valueProp = LM.getObjValueProp(this, object);
         PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, SetFact.singletonOrder(object));
         if(valueProp.second != null)
             propertyDraw.setSelectorAction(valueProp.second, version);
 
-        FormView view = getNFRichDesign(version);
+        FormView view = this.view;
         if(view != null) { // if !needDesign there is no view
             PropertyDrawView propertyDrawView = view.get(propertyDraw);
             propertyDrawView.setCaption(LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")"), version);
@@ -42,13 +42,13 @@ public abstract class AutoFormEntity extends FormEntity {
         return propertyDraw;
     }
 
-    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
+    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
         return addPropertyDraw(property, null, property.getReflectionOrderInterfaces(), mapping, version);
     }
 
-    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<I> orderInterfaces, ImRevMap<I, ObjectEntity> mapping, Version version) {
-        ActionOrPropertyObjectEntity<I, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
-        return addPropertyDraw(entity, inherited, null, orderInterfaces, ComplexLocation.DEFAULT(), version);
+    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<I> orderInterfaces, ImRevMap<I, ObjectEntity> mapping, Version version) {
+        ActionOrPropertyObjectEntity<I, ?, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
+        return addPropertyDraw(entity, inherited, orderInterfaces, ComplexLocation.DEFAULT(), version);
     }
 
     @Override

@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 
 public interface ExportData {
 
-    Type getType(PropertyDrawEntity<?> entity);
+    Type getType(PropertyDrawEntity<?, ?> entity);
 
     // different interfaces for optimization
     

@@ -1,25 +1,21 @@
 package lsfusion.server.logics.form.interactive.design.auto;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormContainerSet;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
-import lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet;
-import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
-import lsfusion.server.logics.form.interactive.design.object.TreeGroupContainerSet;
-import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.interactive.design.object.*;
+import lsfusion.server.logics.form.interactive.design.property.PropertyContainersView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainersView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -28,28 +24,27 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class DefaultFormView extends FormView {
-    private PropertyGroupContainerView getPropertyContainer(PropertyDrawEntity property, Version version) {
+public class DefaultFormView extends FormView<DefaultFormView> implements PropertyContainersView<DefaultFormView> {
+    public PropertyContainersView getPropertyContainer(PropertyDrawEntity property, Version version) {
         return getPropertyGroupContainer(property.getNFToDraw(entity, version));
     }
 
     public static int GROUP_CONTAINER_LINES_COUNT = 3;
 
-    private PropertyGroupContainerView getPropertyGroupContainer(GroupObjectEntity groupObject) {
+    private PropertyContainersView getPropertyGroupContainer(GroupObjectEntity groupObject) {
         if(groupObject == null)
-            return null;
+            return this;
         if (groupObject.isInTree())
             return get(groupObject.treeGroup);
-        return get(groupObject);
+        return get(groupObject).grid;
     }
 
-    public static class ContainerSet {
+    public static class ContainerSet implements MappingInterface<ContainerSet> {
         public final ContainerView box;
         public final ContainerView panel;
         public final ContainerView group;
@@ -66,12 +61,24 @@ public class DefaultFormView extends FormView {
         // the main idea that it should be global so all the modules would see it to use the same container for the same property groups
         public final Function<Group, ContainerView> groupProps;
 
-        public ContainerSet(ContainerSet containers, ObjectMapping mapping) {
-            this(mapping.get(containers.box), mapping.get(containers.panel), mapping.get(containers.group), mapping.get(containers.toolbarBox), mapping.get(containers.toolbar), mapping.get(containers.popup), mapping.get(containers.toolbarLeft), mapping.get(containers.toolbarRight), mapping.get(containers.filterBox), mapping.get(containers.filterGroups), mapping.get(containers.filters),
-                    group -> mapping.get(containers.groupProps.apply(group)));
-        }
-        public ContainerSet(DefaultFormView form, PropertyGroupContainerView groupView, ContainerView box, ContainerView panel, ContainerView group, ContainerView toolbarBox, ContainerView toolbar, ContainerView popup, ContainerView toolbarLeft, ContainerView toolbarRight, ContainerView filterBox, ContainerView filterGroups, ContainerView filters, Version version) {
+        public ContainerSet(DefaultFormView form, PropertyContainersView groupView, ContainerView<?> box, ContainerView<?> panel, ContainerView<?> group, ContainerView<?> toolbarBox, ContainerView<?> toolbar, ContainerView<?> popup, ContainerView<?> toolbarLeft, ContainerView<?> toolbarRight, ContainerView<?> filterBox, ContainerView<?> filterGroups, ContainerView<?> filters, Version version) {
             this(box, panel, group, toolbarBox, toolbar, popup, toolbarLeft, toolbarRight, filterBox, filterGroups, filters, form.getGroupProps(panel, groupView));
+
+            Function<PropertyContainersView, ContainerSet> containerGetter = PropertyContainersView::getContainers;
+            box.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).box);
+            panel.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).panel);
+            group.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).group);
+            toolbarBox.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).toolbarBox);
+            toolbar.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).toolbar);
+            popup.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).popup);
+            toolbarLeft.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).toolbarLeft);
+            toolbarRight.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).toolbarRight);
+
+            if(filterBox != null) {
+                filterBox.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).filterBox);
+                filterGroups.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).filterGroups);
+                filters.setAddParentPC(groupView, pcv -> containerGetter.apply(pcv).filters);
+            }
 
             form.addComponentsToMapping(this, version);
         }
@@ -95,41 +102,45 @@ public class DefaultFormView extends FormView {
         public ContainerView[] getContainers() { // filters are nullable
             return new ContainerView[] {box, panel, group, toolbarBox, toolbar, popup, toolbarLeft, toolbarRight, filterBox, filters, filterGroups};
         }
+
+        public ContainerSet(ContainerSet containers, ObjectMapping mapping) {
+            this(mapping.get(containers.box), mapping.get(containers.panel), mapping.get(containers.group), mapping.get(containers.toolbarBox), mapping.get(containers.toolbar), mapping.get(containers.popup), mapping.get(containers.toolbarLeft), mapping.get(containers.toolbarRight), mapping.get(containers.filterBox), mapping.get(containers.filterGroups), mapping.get(containers.filters),
+                    group -> mapping.get(containers.groupProps.apply(group)));
+        }
+
+        @Override
+        public ContainerSet get(ObjectMapping mapping) {
+            return new ContainerSet(this, mapping);
+        }
     }
 
-    public ContainerSet getContainers(PropertyGroupContainerView view) {
-        if (view == null)
-            return containers;
-        return view.getContainers();
+    @Override
+    public ContainerSet getContainers() {
+        return containers;
     }
-    public ContainerView getBoxContainer(PropertyGroupContainerView groupObject) { return getContainers(groupObject).box; }
-    public ContainerView getBoxContainer(GroupObjectEntity groupObject) { return getBoxContainer(get(groupObject)); }
 
-    public ContainerView getPanelPropsContainer(PropertyDrawEntity property, Version version) { return getContainers(getPropertyContainer(property, version)).group; }
-    public ContainerView getToolbarBoxContainer(PropertyGroupContainerView groupObject) { return getContainers(groupObject).toolbarBox; }
-    public ContainerView getToolbarPropsContainer(PropertyDrawEntity property, Version version) { return getContainers(getPropertyContainer(property, version)).toolbar; }
-    public Function<Group, ContainerView> getGroupPropsContainer(PropertyDrawEntity property, Version version) { return getContainers(getPropertyContainer(property, version)).groupProps; }
-    public ContainerView getToolbarBoxContainer(GroupObjectEntity groupObject) { return getToolbarBoxContainer(get(groupObject)); }
-    public ContainerView getToolbarLeftContainer(PropertyGroupContainerView groupObject) { return getContainers(groupObject).toolbarLeft; }
-    public ContainerView getToolbarRightContainer(PropertyGroupContainerView groupObject) { return getContainers(groupObject).toolbarRight; }
-    public ContainerView getPopupContainer(PropertyGroupContainerView groupObject) { return getContainers(groupObject).popup; }
+    public ContainerView getBoxContainer(PropertyContainersView groupObject) { return groupObject.getContainers().box; }
+    public ContainerView getBoxContainer(GroupObjectEntity groupObject) { return getBoxContainer(get(groupObject).grid); }
+
+    public ContainerView getPanelPropsContainer(PropertyDrawEntity property, Version version) { return getPropertyContainer(property, version).getContainers().group; }
+    public ContainerView getToolbarBoxContainer(PropertyContainersView groupObject) { return groupObject.getContainers().toolbarBox; }
+    public ContainerView getToolbarPropsContainer(PropertyDrawEntity property, Version version) { return getPropertyContainer(property, version).getContainers().toolbar; }
+    public Function<Group, ContainerView> getGroupPropsContainer(PropertyDrawEntity property, Version version) { return getPropertyContainer(property, version).getContainers().groupProps; }
+    public ContainerView getToolbarBoxContainer(GroupObjectEntity groupObject) { return getToolbarBoxContainer(get(groupObject).grid); }
+    public ContainerView getToolbarLeftContainer(PropertyContainersView groupObject) { return groupObject.getContainers().toolbarLeft; }
+    public ContainerView getToolbarRightContainer(PropertyContainersView groupObject) { return groupObject.getContainers().toolbarRight; }
+    public ContainerView getPopupContainer(PropertyContainersView groupObject) { return groupObject.getContainers().popup; }
     public ContainerView getPopupPropsContainer(PropertyDrawEntity property, Version version) { return getPopupContainer(getPropertyContainer(property, version)); }
-    public ContainerView getFilterGroupsContainer(GroupObjectEntity groupObject) { return getContainers(getPropertyGroupContainer(groupObject)).filterGroups; }
-
-    // the main idea that it should be global so all the modules would see it to use the same container for the same property groups
-    protected transient final Table<Optional<PropertyGroupContainerView>, Group, ContainerView> groupPropertyContainers = HashBasedTable.create();
+    public ContainerView getFilterGroupsContainer(GroupObjectEntity groupObject) {
+        return getPropertyGroupContainer(groupObject).getContainers().filterGroups; }
 
     public ContainerSet containers;
 
-    public DefaultFormView(FormEntity formEntity, LocalizedString caption, String imagePath, DefaultFormView src, ObjectMapping mapping, Version version) {
-        super(formEntity, caption, imagePath, src, mapping, version);
+    public DefaultFormView(FormEntity formEntity, Version version) {
+        super(formEntity, version);
 
-        if (src != null) {
-            containers = new ContainerSet(src.containers, mapping);
-        } else {
-            FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
-            containers = formSet.getContainerSet(this, null, version);
-        }
+        FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
+        containers = formSet.getContainerSet(this, version);
     }
 
     public static String getToolbarBoxContainerSID(String goName) {
@@ -204,7 +215,7 @@ public class DefaultFormView extends FormView {
         return FormContainerSet.POPUP_CONTAINER;
     }
 
-    public void setupFormButtons(Version version) {
+    public void initDefaultProps(Version version) {
         PropertyDrawView editFunction = get(entity.editActionPropertyDraw);
         setupFormButton(editFunction, version);
 
@@ -241,9 +252,9 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        ContainerView toolbarLeftContainer = getToolbarLeftContainer(null);
-        ContainerView toolbarRightContainer = getToolbarRightContainer(null);
-        ContainerView popupContainer = getPopupContainer(null);
+        ContainerView toolbarLeftContainer = getToolbarLeftContainer(this);
+        ContainerView toolbarRightContainer = getToolbarRightContainer(this);
+        ContainerView popupContainer = getPopupContainer(this);
 
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
@@ -280,9 +291,9 @@ public class DefaultFormView extends FormView {
     }
 
     private void addToObjectsContainer(ContainerView boxContainer, ComplexLocation<GroupObjectEntity> location, Version version) {
-        ComplexLocation<ComponentView> mappedLocation = location.map(neighbour -> getBoxContainer(neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour)));
+        ComplexLocation<ComponentView> mappedLocation = location.map(neighbour -> getBoxContainer(neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour).grid));
 
-        getBoxContainer((PropertyGroupContainerView) null).addOrMove(boxContainer, mappedLocation, version);
+        getBoxContainer(this).addOrMove(boxContainer, mappedLocation, version);
     }
 
     private void addComponentsToMapping(ContainerSet containers, Version version) {
@@ -298,10 +309,13 @@ public class DefaultFormView extends FormView {
         GroupObjectView view = super.addGroupObject(groupObject, location, version);
 
         if(!view.entity.isInTree()) {
-            GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(view, containerFactory, version);
-            view.containers = groupSet.getContainerSet(this, view, version);
+            GridView grid = view.grid;
+
+            GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(grid, containerFactory, version);
+            grid.containers = groupSet.getContainerSet(this, grid, version);
 
             addToObjectsContainer(groupSet.getBoxContainer(), location, version);
+
             if (view.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
                 groupSet.getBoxContainer().setFlex(0d, version);
             }
@@ -393,16 +407,18 @@ public class DefaultFormView extends FormView {
         return getGroupPropsContainer(propertyDraw, version).apply(currentGroup);
     }
 
-    public Function<Group, ContainerView> getGroupProps(ContainerView panel, PropertyGroupContainerView propertyContainer)  {
+    public Function<Group, ContainerView> getGroupProps(ContainerView panel, PropertyContainersView propertyContainer)  {
         final Map<Group, ContainerView> map = new HashMap<>();
         return (Group group) -> {
             synchronized (map) {
-                ContainerView propGroupContainer = map.get(group);
+                ContainerView<?> propGroupContainer = map.get(group);
                 if (propGroupContainer == null) {
                     propGroupContainer = createContainer(group.caption, group.getName(), group.getDebugPoint(), containerFactory, Version.global());
                     setComponentSID(propGroupContainer, getPropGroupContainerSID(group, propertyContainer), Version.global());
                     propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, Version.global());
                     panel.add(propGroupContainer, Version.global());
+
+                    propGroupContainer.setAddParentPC(propertyContainer, pcv -> pcv.getContainers().groupProps.apply(group));
                 }
 
                 map.put(group, propGroupContainer);
@@ -411,35 +427,31 @@ public class DefaultFormView extends FormView {
         };
     }
 
-    private static String getPropGroupContainerSID(Group currentGroup, PropertyGroupContainerView propertyContainer) {
+    private static String getPropGroupContainerSID(Group currentGroup, PropertyContainersView propertyContainer) {
         String propertyGroupName = currentGroup.getCanonicalName();
         String currentGroupContainerSID;
-        if (propertyContainer == null)
+        if (propertyContainer instanceof DefaultFormView)
             currentGroupContainerSID = DefaultFormView.getGroupContainerSID(propertyGroupName);
         else
-            currentGroupContainerSID = GroupObjectContainerSet.GROUP_CONTAINER + "(" + propertyGroupName + "," + propertyContainer.getPropertyGroupContainerSID() + ")";
+            currentGroupContainerSID = GroupObjectContainerSet.GROUP_CONTAINER + "(" + propertyGroupName + "," + ((PropertyGroupContainersView)propertyContainer).getPropertyGroupContainerSID() + ")";
         return currentGroupContainerSID;
     }
 
-    @Override
-    public void addForm(FormView src, ObjectMapping mapping) {
-        super.addForm(src, mapping);
-
-        addToObjectsContainer(mapping.get(src.mainContainer), ComplexLocation.DEFAULT(), mapping.version);
-
+    public void addForm(FormView src, ObjectMapping mapping, Version version) {
+        addToObjectsContainer(mapping.get(src.mainContainer), ComplexLocation.DEFAULT(), version);
         // todo: we need to change containers sid's
     }
 
+
+    public DefaultFormView(DefaultFormView src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        containers = mapping.get(src.containers);
+    }
+    // no extends and add
+
     @Override
-    public void copy(FormView src, ObjectMapping mapping) {
-        super.copy(src, mapping);
-
-/*        for(Map.Entry<PropertyGroupContainerView, ContainerView> e : src.groupPropertyContainers.entrySet()) {
-            PropertyGroupContainerView v = e.getKey() instanceof GroupObjectView ?
-                    mapping.get((GroupObjectView) e.getKey()) :
-                    mapping.get((TreeGroupView) e.getKey());
-            this.groupPropertyContainers.put(v, mapping.get(e.getValue()));
-        }*/
-
+    public DefaultFormView copy(ObjectMapping mapping) {
+        return new DefaultFormView(this, mapping);
     }
 }

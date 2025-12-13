@@ -11,7 +11,7 @@ import java.util.Objects;
 
 import static lsfusion.base.BaseUtils.nullEquals;
 
-public class FormChangeEvent extends FormServerEvent {
+public class FormChangeEvent extends FormServerEvent<FormChangeEvent> {
     public PropertyDrawEntity propertyDrawEntity;
     public Boolean before;
 
@@ -20,9 +20,14 @@ public class FormChangeEvent extends FormServerEvent {
         this.before = before;
     }
 
+    public FormChangeEvent(FormChangeEvent src, ObjectMapping mapping) {
+        this.propertyDrawEntity = mapping.get(src.propertyDrawEntity);
+        this.before = src.before;
+    }
+
     @Override
-    public FormServerEvent get(ObjectMapping mapping) {
-        return new FormChangeEvent(mapping.get(propertyDrawEntity), before);
+    public FormChangeEvent get(ObjectMapping mapping) {
+        return new FormChangeEvent(this, mapping);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

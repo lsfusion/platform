@@ -23,7 +23,7 @@ public class TreeGroupContainerSet {
     private ContainerView popupContainer;
 
     public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, TreeGroupView treeView, Version version) {
-        return new DefaultFormView.ContainerSet(formView, treeView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, treeView.getFiltersContainer(), version);
+        return new DefaultFormView.ContainerSet(formView, treeView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, treeView.filtersContainer, version);
     }
 
     public ContainerView getBoxContainer() {
@@ -156,7 +156,7 @@ public class TreeGroupContainerSet {
 
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
-        treeGroup.getToolbarSystem().setMargin(2, version);
+        treeGroup.toolbarSystem.setMargin(2, version);
 
         return set;
     }

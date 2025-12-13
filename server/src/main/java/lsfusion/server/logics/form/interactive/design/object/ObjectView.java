@@ -1,35 +1,41 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.base.identity.IDGenerator;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.form.ObjectMapping;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectView extends IdentityObject implements ServerIdentitySerializable {
+public class ObjectView extends IdentityView<ObjectView, ObjectEntity> {
 
     public ObjectEntity entity;
     
     private GroupObjectView groupObject;
 
-    public ObjectView() {
+    @Override
+    public int getID() {
+        return entity.getID();
     }
 
-    public ObjectView(IDGenerator idGen, ObjectEntity entity, GroupObjectView groupTo) {
-        super(entity.getID(), entity.getSID());
+    public String getSID() {
+        return entity.getSID();
+    }
 
+    @Override
+    public String toString() {
+        return entity.toString();
+    }
+
+    public ObjectView(ObjectEntity entity, GroupObjectView groupTo) {
         this.entity = entity;
-        this.entity.view = this;
 
         this.groupObject = groupTo;
     }
+    // no extend and add
 
     public LocalizedString getCaption() {
         return entity.getCaption();
@@ -46,15 +52,24 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
     }
 
     // copy-constructor
-    public ObjectView(ObjectView src, ObjectMapping mapping) {
-        super(src);
-
-        mapping.put(src, this);
+    protected ObjectView(ObjectView src, ObjectMapping mapping) {
+        super(src, mapping);
 
         entity = mapping.get(src.entity);
-        entity.view = this;
-
         groupObject = mapping.get(src.groupObject);
-        ID = entity.getID();
+    }
+    // no extend and add
+
+    @Override
+    public ObjectEntity getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public ObjectView getAddChild(ObjectEntity groupObjectView, ObjectMapping mapping) {
+        return groupObjectView.view;
+    }
+    @Override
+    public ObjectView copy(ObjectMapping mapping) {
+        return new ObjectView(this, mapping);
     }
 }

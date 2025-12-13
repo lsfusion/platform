@@ -12,9 +12,9 @@ import java.util.function.Function;
 public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
 
     public final NFComplexOrderSet<K> col;
-    public final Function<K, K> mapping;
+    public final NFCopy.Map<K> mapping;
 
-    public NFComplexOrderSetCopy(NFComplexOrderSet<K> col, Function<K, K> mapping) {
+    public NFComplexOrderSetCopy(NFComplexOrderSet<K> col, NFCopy.Map<K> mapping) {
         this.col = col;
         this.mapping = mapping;
     }
@@ -23,9 +23,12 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
     public void proceedComplexOrderSet(List<K> list, List<Integer> groupList, Version version) {
         Pair<ImOrderSet<K>, ImList<Integer>> nf = col.getNFCopy(version);
         for(int i=0,size=nf.first.size(); i<size; i++) {
-            list.add(mapping.apply(nf.first.get(i)));
+            K mappedElement = mapping.apply(nf.first.get(i));
+            if(mappedElement != null && !list.contains(mappedElement)) {
+                list.add(mappedElement);
 
-            groupList.add(nf.second.get(i));
+                groupList.add(nf.second.get(i));
+            }
         }
     }
 }

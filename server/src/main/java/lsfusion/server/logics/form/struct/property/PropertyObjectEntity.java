@@ -27,7 +27,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Property<P>> implements OrderEntity<PropertyObjectInstance<P>> {
+public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Property<P>, PropertyObjectEntity<P>> implements OrderEntity<PropertyObjectInstance<P>, PropertyObjectEntity<P>> {
 
     public PropertyObjectEntity() {
         //нужен для десериализации
@@ -135,7 +135,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     // copy-constructor
     public PropertyObjectEntity(PropertyObjectEntity src, ObjectMapping mapping) {
         super(src, mapping);
+    }
 
-        mapping.put(src, this);
+    @Override
+    public PropertyObjectEntity<P> get(ObjectMapping mapping) {
+        return new PropertyObjectEntity<>(this, mapping);
     }
 }

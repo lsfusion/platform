@@ -49,7 +49,7 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable, ClientPropertyDrawOrPivotColumn {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
@@ -247,11 +247,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean getShowChangeKey() {
         return showChangeKey;
-    }
-
-    public void setShowChangeKey(boolean showKey) {
-        showChangeKey = showKey;
-        updateDependency(this, "showChangeKey");
     }
 
     public boolean isEditableNotNull() {

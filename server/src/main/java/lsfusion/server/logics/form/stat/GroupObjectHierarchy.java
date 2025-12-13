@@ -73,7 +73,7 @@ public class GroupObjectHierarchy {
 
         public PropertyObjectEntity getReportPathProp(FormEntity formEntity) {
             GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup == null ? formEntity.reportPathProp : firstGroup.getReportPathProp();
+            return firstGroup == null ? formEntity.getReportPathProp() : firstGroup.getReportPathProp();
         }
 
         public GroupObjectEntity getLastGroup() {

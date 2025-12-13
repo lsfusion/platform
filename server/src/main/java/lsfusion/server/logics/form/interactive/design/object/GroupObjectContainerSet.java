@@ -25,7 +25,9 @@ public class GroupObjectContainerSet {
                 public static final String POPUP_CONTAINER = "POPUP";
         public static final String PANEL_CONTAINER = "PANEL";
             public static final String GROUP_CONTAINER = "GROUP";
-    
+                public static final String PROPERTY_COMPONENT = "FILTERGROUP";
+
+
     private ContainerView boxContainer;
     private ContainerView filterBoxContainer;
     private ContainerView panelContainer;
@@ -37,8 +39,8 @@ public class GroupObjectContainerSet {
     private ContainerView toolbarContainer;
     private ContainerView popupContainer;
 
-    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, GroupObjectView groupObjectView, Version version) {
-        return new DefaultFormView.ContainerSet(formView, groupObjectView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, groupObjectView.getFiltersContainer(), version);
+    public DefaultFormView.ContainerSet getContainerSet(DefaultFormView formView, GridView gridView, Version version) {
+        return new DefaultFormView.ContainerSet(formView, gridView, boxContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, filterBoxContainer, filterGroupsContainer, gridView.filtersContainer, version);
     }
 
     public ContainerView getBoxContainer() {
@@ -81,16 +83,16 @@ public class GroupObjectContainerSet {
         return popupContainer;
     }
 
-    public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory, Version version) {
+    public static GroupObjectContainerSet create(GridView grid, ContainerFactory<ContainerView> factory, Version version) {
 
         GroupObjectContainerSet set = new GroupObjectContainerSet();
-        String sid = group.getPropertyGroupContainerSID();
+        String sid = grid.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer(); // контейнер всей группы
-        set.boxContainer.setDebugPoint(group.entity.getNFDebugPoint(version), version); //set debugPoint to containers that have a caption
+        set.boxContainer.setDebugPoint(grid.groupObject.entity.debugPoint, version); //set debugPoint to containers that have a caption
+        set.boxContainer.setCaption(grid.groupObject.getCaption(), version);
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
-        set.boxContainer.setCaption(group.getCaption(), version);
-        set.boxContainer.setName(group.getPropertyGroupContainerName(), version);
+        set.boxContainer.setName(grid.getPropertyGroupContainerName(), version);
 
         set.filterBoxContainer = factory.createContainer();
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
@@ -130,17 +132,17 @@ public class GroupObjectContainerSet {
             set.boxContainer.add(set.toolbarBoxContainer, version);
         }
         set.boxContainer.add(set.filterBoxContainer, version);
-        set.boxContainer.add(group.getGrid(), version);
+        set.boxContainer.add(grid, version);
         if (!toolbarTopLeft) {
             set.boxContainer.add(set.toolbarBoxContainer, version);
         }
         set.boxContainer.add(set.panelContainer, version);
         
         set.filterBoxContainer.setHorizontal(true, version);
-        set.filterBoxContainer.add(group.filtersContainer, version);
-        group.filtersContainer.setAlignment(FlexAlignment.STRETCH, version);
-        set.filterBoxContainer.add(group.filterControls, version);
-        group.filterControls.setAlignment(FlexAlignment.CENTER, version);
+        set.filterBoxContainer.add(grid.filtersContainer, version);
+        grid.filtersContainer.setAlignment(FlexAlignment.STRETCH, version);
+        set.filterBoxContainer.add(grid.filterControls, version);
+        grid.filterControls.setAlignment(FlexAlignment.CENTER, version);
 
         // we're stretching the intermediate containers, and centering the leaf components
         set.toolbarBoxContainer.setHorizontal(true, version);
@@ -152,12 +154,12 @@ public class GroupObjectContainerSet {
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH, version);
 
         set.toolbarLeftContainer.setHorizontal(true, version);
-        set.toolbarLeftContainer.add(group.toolbarSystem, version);
-        group.toolbarSystem.setAlignment(FlexAlignment.CENTER, version);
+        set.toolbarLeftContainer.add(grid.toolbarSystem, version);
+        grid.toolbarSystem.setAlignment(FlexAlignment.CENTER, version);
 
         set.toolbarRightContainer.setHorizontal(true, version);
         set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END, version);
-        set.toolbarRightContainer.add(group.getCalculations(), version);
+        set.toolbarRightContainer.add(grid.calculations, version);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH,version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
@@ -174,8 +176,8 @@ public class GroupObjectContainerSet {
 
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
-        group.getToolbarSystem().setMargin(2, version);
-        group.getCalculations().setFlex(1d, version);
+        grid.toolbarSystem.setMargin(2, version);
+        grid.calculations.setFlex(1d, version);
 
         return set;
     }

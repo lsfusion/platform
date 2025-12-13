@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class NFSetCopy<K> extends NFASetCopy<NFSet<K>, K> {
 
-    public NFSetCopy(NFSet<K> col, Function<K, K> mapping) {
+    public NFSetCopy(NFSet<K> col, Map<K> mapping) {
         super(col, mapping);
     }
 }

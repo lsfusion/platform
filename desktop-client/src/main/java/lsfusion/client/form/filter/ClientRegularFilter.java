@@ -1,17 +1,16 @@
 package lsfusion.client.form.filter;
 
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.object.ClientIdentityObject;
 import lsfusion.interop.form.event.InputBindingEvent;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import static lsfusion.client.base.SwingUtils.getEventCaption;
 
-public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
+public class ClientRegularFilter extends ClientIdentityObject {
 
     public String caption = "";
     public InputBindingEvent keyInputEvent;
@@ -20,10 +19,6 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     public boolean showMouse;
 
     public ClientRegularFilter() {
-    }
-
-    public ClientRegularFilter(int ID) {
-        super(ID);
     }
 
     public String getFullCaption() {
