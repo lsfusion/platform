@@ -1770,6 +1770,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
     }
 
+    public void setInGrid(ClientPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
+    }
+
     public Comparator<ClientPropertyDraw> getUserSortComparator() {
         return getCurrentPreferences().getUserSortComparator();
     }
