@@ -266,9 +266,9 @@ public class DefaultFormView extends FormView {
 
         popupContainer.add(editFunction, version);
         if(shareFunction != null)
-            popupContainer.add(shareFunction, version);
+            toolbarLeftContainer.add(shareFunction, version);
         if(customizeFunction != null)
-            popupContainer.add(customizeFunction, version);
+            toolbarLeftContainer.add(customizeFunction, version);
     }
 
     private void setupFormButton(PropertyDrawView action, Version version) {

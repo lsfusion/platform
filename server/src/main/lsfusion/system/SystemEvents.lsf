@@ -1048,58 +1048,59 @@ shareAction(STRING relativeUrl) {
 
 dataExtendCode = DATA TEXT (Form);
 dataExtendCode = DATA TEXT (Form, User);
-extendCode(Form f) = OVERRIDE dataExtendCode(f), dataExtendCode(f,currentUser()); 
+extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
-CLASS CustomizeUser {
-    currentUser '{action.form.customize.current.user}',
-    allUsers '{action.form.customize.all.users}'
-}
-customizeUser = DATA LOCAL CustomizeUser() SELECT 'button';
-captionCustomizeUser '' = caption(customizeUser());
-
-recreate = DATA LOCAL NESTED BOOLEAN();
-saveCustomize '{action.form.customize.save}' (STRING formSID, TEXT extendCode) {
-    NEWSESSION {
-        IF customizeUser() THEN {
-            dataExtendCode(form(formSID), currentUser()) <- extendCode;            
-        } ELSE {
-            dataExtendCode(form(formSID)) <- extendCode;
-        }
-        recreate() <- TRUE;
-        APPLY;
-    }
-    formClose();
-}
-
-resetCustomize '{action.form.customize.reset}' (STRING formSID) {
-    saveCustomize(formSID, NULL);
-}
+showCustomizeAll = DATA LOCAL BOOLEAN(); 
+showCustomizeCurrentUser = DATA LOCAL BOOLEAN();
+recreate = DATA LOCAL BOOLEAN();
 
 FORM customizeForm
-    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCode = TEXT PANEL
-    PROPERTIES sid = VALUE(sid), code = VALUE(code), extendCode = VALUE(extendCode)
-    PROPERTIES saveCustomize(sid, extendCode), resetCustomize(sid), captionCustomizeUser()
-    ON INIT { customizeUser() <- CustomizeUser.currentUser; }
+    PROPERTIES() showCustomizeAll, showCustomizeCurrentUser
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL, extendCodeCurrentUser = TEXT PANEL
+    PROPERTIES sid = VALUE(sid), code = VALUE(code) READONLY, 
+        extendCodeAll = VALUE(extendCodeAll) SHOWIF showCustomizeAll(),
+        extendCodeCurrentUser = VALUE(extendCodeCurrentUser) SHOWIF showCustomizeCurrentUser()
+    ON INIT { 
+        showCustomizeAll() <- TRUE IF extendCodeAll; 
+        showCustomizeCurrentUser() <- TRUE IF extendCodeCurrentUser; 
+    }
+    ON OK {
+        IF showCustomizeAll() THEN
+            dataExtendCode(form(sid)) <- extendCodeAll;
+        IF showCustomizeCurrentUser() THEN
+            dataExtendCode(form(sid), currentUser()) <- extendCodeCurrentUser;
+        recreate() <- TRUE;
+    }
 ;
 
 DESIGN customizeForm {
     NEW main BEFORE TOOLBARBOX {
         fill = 1;
-        MOVE PROPERTY(code) {
-            charHeight = 20;
-            caption = '';
-        }
-        MOVE PROPERTY(extendCode) {
-            charHeight = 20;
-            caption = '';
-        }
-        NEW actions {
-            caption = 'Actions';
+        NEW showPanel {
             horizontal = TRUE;
-            MOVE PROPERTY(saveCustomize(sid, extendCode));
-            MOVE PROPERTY(resetCustomize(sid));
-            MOVE PROPERTY(captionCustomizeUser());
+            caption = '';
+            MOVE PROPERTY(showCustomizeAll());
+            MOVE PROPERTY(showCustomizeCurrentUser());
+        }
+        NEW codePanel {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE PROPERTY(code) {
+                caption = 'Original code';
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+            }
+            MOVE PROPERTY(extendCodeAll) {
+                caption = 'Extend for all';
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+            }
+            MOVE PROPERTY(extendCodeCurrentUser) {
+                caption = 'Extend for current user';
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+            }
         }
     }
     REMOVE PROPERTY(sid);
@@ -1107,7 +1108,7 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCode = extendCode(form(sid)) NULL;
+    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCodeAll = dataExtendCode(form(sid)) NULL, extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL NOMANAGESESSION;
     IF recreate() THEN {
         formRecreate();
     }

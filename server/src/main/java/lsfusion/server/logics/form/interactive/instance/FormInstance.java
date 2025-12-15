@@ -133,6 +133,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
