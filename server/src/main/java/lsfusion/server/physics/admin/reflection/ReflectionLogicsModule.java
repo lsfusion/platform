@@ -124,6 +124,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP columnSortPropertyDraw;
     public LP columnAscendingSortPropertyDrawCustomUser;
     public LP columnAscendingSortPropertyDraw;
+    public LP inGridPropertyDrawCustomUser;
+    public LP inGridPropertyDraw;
     public LP hasUserPreferencesGroupObject;
     public LP hasUserPreferencesGroupObjectCustomUser;
     public LP hasUserPreferencesOverrideGroupObjectCustomUser;
@@ -347,6 +349,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         columnAscendingSortPropertyDrawCustomUser = findProperty("columnAscendingSort[PropertyDraw,CustomUser]");
         columnAscendingSortPropertyDraw = findProperty("columnAscendingSort[PropertyDraw]");
+
+        inGridPropertyDraw = findProperty("inGrid[PropertyDraw]");
+        inGridPropertyDrawCustomUser = findProperty("inGrid[PropertyDraw,CustomUser]");
 
         hasUserPreferencesGroupObjectCustomUser = findProperty("hasUserPreferences[GroupObject,CustomUser]");
         hasUserPreferencesGroupObject = findProperty("hasUserPreferences[GroupObject]");

@@ -600,7 +600,7 @@ EXTEND FORM forms
 
     OBJECTS ur = CustomUser
     PROPERTIES(ur) READONLY firstName, lastName, login, userRoles, lastActivity
-    PROPERTIES(pr, ur) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(pr, ur) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     FILTERS has(ur, r)
     FILTERGROUP roleShow
         FILTER '{reflection.show.property.draw.custom.user}' show(pr, ur) = PropertyDrawShowStatus.Show DEFAULT

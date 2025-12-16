@@ -1285,6 +1285,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
     }
 
+    public void setInGrid(GPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
+    }
+
     public Comparator<GPropertyDraw> getUserSortComparator() {
         return getCurrentPreferences().getUserSortComparator();
     }

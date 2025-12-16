@@ -659,7 +659,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             Integer order = (Integer) values.get(prefix + "Order");
             Integer sort = (Integer) values.get(prefix + "Sort");
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
-            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null), null);
 
             Integer pageSize = (Integer) values.get(prefix + "PageSize");
             Integer headerHeight = (Integer) values.get(prefix + "HeaderHeight");
@@ -735,6 +735,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
+                        BL.reflectionLM.inGridPropertyDraw.change(columnPreferences.inGrid, dataSession, propertyDrawObject);
                     } else if (!completeOverride) {
                         changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
@@ -774,6 +775,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    
+        BL.reflectionLM.inGridPropertyDrawCustomUser.change(columnPreferences.inGrid, dataSession, propertyDrawObject, user);
     }
     
     private void changeUserGOPreferences(GroupObjectUserPreferences preferences, DataSession dataSession, DataObject groupObject, DataObject user) throws SQLException, SQLHandledException {
