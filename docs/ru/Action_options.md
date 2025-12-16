@@ -187,7 +187,7 @@ EXTID extID
   			- `no` -> !isEditing
   			
   		- `showing = showingValue`
-  			Проверка, показывается ли в данный момент свойство на форме. Поддерживаемые значения `showingValue`:
+  			Проверка, показывается ли в данный момент свойство на форме (для действий, скрытых через `hide` в дизайне). Поддерживаемые значения `showingValue`:
   			- `auto`, `only` -> isShowing
   			- `all` -> true
   			- `no` -> !isShowing

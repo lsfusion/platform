@@ -216,57 +216,57 @@ Property annotation. Begins with `@@`. The following annotations are supported:
     
               - `preview = previewValue`
                   All events are checked for execution twice: first with isPreview = true, then with isPreview = false. Supported `previewValue` values:
-                  - `AUTO`, `ONLY` -> isPreview
-                  - `NO` -> !isPreview
-                  - `ALL` -> true
+                  - `auto`, `only` -> isPreview
+                  - `no` -> !isPreview
+                  - `all` -> true
     
               - `dialog = dialogValue`
                   Checks whether CHANGEKEY should be executed in a dialog window. Supported `dialogValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> isDialog
-                  - `NO` -> !isDialog
+                  - `auto`, `all` -> true
+                  - `only` -> isDialog
+                  - `no` -> !isDialog
     
               - `window = windowValue`
                   Checks whether CHANGEKEY should be executed in a modal window. Supported `windowValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> isWindow
-                  - `NO` -> !isWindow
+                  - `auto`, `all` -> true
+                  - `only` -> isWindow
+                  - `no` -> !isWindow
     
               - `group = groupValue`
                   Checks whether the object group matches. Supported `groupValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> equalGroup
-                  - `NO` -> !equalGroup
+                  - `auto`, `all` -> true
+                  - `only` -> equalGroup
+                  - `no` -> !equalGroup
     
               - `editing = editingValue`
                   Checks whether CHANGEKEY should be executed in property editing mode. Supported `editingValue` values:
-                  - `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
-                  - `ALL` -> true
-                  - `ONLY` -> isEditing
-                  - `NO` -> !isEditing
+                  - `auto` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+                  - `all` -> true
+                  - `only` -> isEditing
+                  - `no` -> !isEditing
     
               - `showing = showingValue`
-                  Checks whether the property is currently visible on the form. Supported `showingValue` values:
-                  - `AUTO`, `ONLY` -> isShowing
-                  - `ALL` -> true
-                  - `NO` -> !isShowing
+                  Checks whether the property is currently visible on the form (for properties with `hide` in design). Supported `showingValue` values:
+                  - `auto`, `only` -> isShowing
+                  - `all` -> true
+                  - `no` -> !isShowing
     
               - `panel = panelValue`
                   Checks whether the property is located in a panel. Supported `panelValue` values:
-                  - `AUTO` -> !isMouse || !isPanel
-                  - `ALL` -> true
-                  - `ONLY` -> isPanel
-                  - `NO` -> !isPanel
+                  - `auto` -> !isMouse || !isPanel
+                  - `all` -> true
+                  - `only` -> isPanel
+                  - `no` -> !isPanel
     
               - `cell = cellValue`
                   Checks whether the property is located in a table cell. Supported `cellValue` values:
-                   - `AUTO` -> !isMouse || isCell
-                   - `ALL` -> true
-                   - `ONLY` -> isCell
-                   - `NO` -> !isCell
+                   - `auto` -> !isMouse || isCell
+                   - `all` -> true
+                   - `only` -> isCell
+                   - `no` -> !isCell
     
     
-              For all options except `priority`, the default value is `AUTO`.
+              For all options except `priority`, the default value is `auto`.
 
     - `SHOW`
 
