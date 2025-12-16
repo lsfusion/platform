@@ -186,7 +186,7 @@ Action annotation. Begins with `@@`. The following annotations are supported:
                   - `no` -> !isEditing
     
               - `showing = showingValue`
-                  Checks whether the action is currently visible on the form. Supported `showingValue` values:
+                  Checks whether the action is currently visible on the form (for actions with `hide` in design). Supported `showingValue` values:
                   - `auto`, `only` -> isShowing
                   - `all` -> true
                   - `no` -> !isShowing
