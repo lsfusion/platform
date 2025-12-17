@@ -5,7 +5,6 @@ import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,10 +35,6 @@ public class ObjectView extends IdentityView<ObjectView, ObjectEntity> {
         this.groupObject = groupTo;
     }
     // no extend and add
-
-    public LocalizedString getCaption() {
-        return entity.getCaption();
-    }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, groupObject);

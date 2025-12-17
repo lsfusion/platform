@@ -30,7 +30,7 @@ public class Group extends AbstractNode {
 
     public final LocalizedString caption;
 
-    private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
+    private NFOrderSet<AbstractNode> children = NFFact.orderSet();
 
     private DebugInfo.DebugPoint debugPoint;
 
@@ -65,14 +65,6 @@ public class Group extends AbstractNode {
         return children.getListIt();
     }
 
-    public Iterable<AbstractNode> getNFChildrenIt(Version version) {
-        return children.getNFIt(version);
-    }
-
-    public Iterable<AbstractNode> getNFChildrenListIt(Version version) {
-        return children.getNFListIt(version);
-    }
-
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
@@ -94,7 +86,7 @@ public class Group extends AbstractNode {
         children.add(prop, version);
         prop.setParent(this, version);
         if(isSimple)
-            cleanParentActionOrPropertiesCaches();
+            cleanParentActionOrPropertiesCaches(version);
     }
 
     @IdentityStartLazy
@@ -119,15 +111,6 @@ public class Group extends AbstractNode {
         return getActionOrProperties().contains(prop);
     }
 
-    public boolean hasNFChild(ActionOrProperty prop, Version version) {
-        for (AbstractNode child : getNFChildrenIt(version)) {
-            if (child.hasNFChild(prop, version)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void cleanAllActionOrPropertiesCaches() {
         actionOrProperties = null;
 
@@ -135,12 +118,12 @@ public class Group extends AbstractNode {
             if(child instanceof Group)
                 ((Group) child).cleanAllActionOrPropertiesCaches();
     }
-    public void cleanParentActionOrPropertiesCaches() {
+    public void cleanParentActionOrPropertiesCaches(Version version) {
         actionOrProperties = null;
 
-        Group parent = getParent();
+        Group parent = getNFParent(version, true);
         if(parent != null)
-            parent.cleanParentActionOrPropertiesCaches();
+            parent.cleanParentActionOrPropertiesCaches(version);
     }
 
     private ImOrderSet<ActionOrProperty> actionOrProperties;

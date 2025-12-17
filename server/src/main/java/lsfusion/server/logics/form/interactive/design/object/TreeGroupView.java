@@ -31,6 +31,11 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     public TreeGroupEntity entity;
 
     @Override
+    public String toString() {
+        return entity.toString();
+    }
+
+    @Override
     protected boolean hasPropertyComponent() {
         return super.hasPropertyComponent() || getPropertyHierarchicalCaption() != null;
     }

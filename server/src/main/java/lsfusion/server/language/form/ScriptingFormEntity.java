@@ -4,21 +4,11 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.server.logics.form.interactive.ServerIdentityObject;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
@@ -51,7 +41,6 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -73,8 +62,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
@@ -105,7 +92,7 @@ public class ScriptingFormEntity {
             FormEntity addForm = LM.findForm(f);
             FormView addFormView = addForm.view;
 
-            ObjectMapping mapping = new ObjectMapping(form, getImplicitAdd(version, addForm), extend, version);
+            ObjectMapping mapping = new ObjectMapping(form, ObjectMapping.getImplicitAdd(version, addForm, form), extend, version);
 
             if(addFormView != null) {
                 FormView formView = mapping.get(addFormView);
@@ -114,28 +101,6 @@ public class ScriptingFormEntity {
                 }
             } else
                 mapping.get(addForm);
-        }
-    }
-
-    private ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(Version version, FormEntity addForm) {
-        MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
-
-        fillImplicitObjects(addForm, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>)fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
-
-        return mImplicitAdd.immutableRev();
-    }
-
-    private <T extends ServerIdentityObject> void fillImplicitObjects(FormEntity addForm, BiFunction<FormEntity, Boolean, Iterable<T>> iterable, Function<T, String> getSID, MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd) {
-        Map<String, T> addObjects = new HashMap<>();
-        for(T object : iterable.apply(addForm, true))
-            addObjects.put(getSID.apply(object), object);
-        for(T object : iterable.apply(form, false)) {
-            T addObject = addObjects.get(getSID.apply(object));
-            if(addObject != null)
-                mImplicitAdd.revAdd(addObject, object);
         }
     }
 
@@ -516,7 +481,7 @@ public class ScriptingFormEntity {
                 LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
             }
 
-            applyPropertyOptions(propertyDraw, propertyOptions, version);
+            applyPropertyOptions(propertyDraw, propertyOptions, captions.get(i), version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
             PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
@@ -525,11 +490,6 @@ public class ScriptingFormEntity {
                 Boolean filter = propertyOptions.getFilter();
                 if(filter != null && filter) // have to do it after adding property draw view (because it uses it)
                     form.addUserFilter(propertyDraw, version);
-
-                view.setCaption(captions.get(i), version);
-                String appImage = propertyOptions.getAppImage();
-                if(appImage != null)
-                    view.setImage(appImage, version);
             }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
@@ -591,7 +551,12 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, FormPropertyOptions options, LocalizedString caption, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        property.setCaption(caption, version);
+        String appImage = options.getAppImage();
+        if(appImage != null)
+            property.setImage(appImage, version);
+
         FormPropertyOptions.Columns columns = options.getColumns();
         if (columns != null) {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));

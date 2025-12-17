@@ -12,9 +12,7 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
-import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -123,15 +121,6 @@ public class ScriptingFormView {
         }
 
         view.removeComponent(component, version);
-    }
-
-    public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObjectEntity = view.entity.getNFGroupObject(sid, version);
-        if (groupObjectEntity == null) {
-            errLog.emitComponentNotFoundError(parser, sid);
-        }
-
-        return view.getNFGroupObject(groupObjectEntity, version);
     }
 
     public PropertyDrawView getPropertyView(String name, Version version) throws ScriptingErrorLog.SemanticErrorException {

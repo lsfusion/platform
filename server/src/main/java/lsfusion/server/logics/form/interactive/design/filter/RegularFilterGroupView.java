@@ -23,6 +23,11 @@ public class RegularFilterGroupView extends BaseComponentView<RegularFilterGroup
         return entity.getID();
     }
 
+    @Override
+    public String toString() {
+        return entity.toString();
+    }
+
     public RegularFilterGroupView(RegularFilterGroupEntity entity, Version version) {
         this.entity = entity;
         this.entity.view = this;

@@ -19,10 +19,6 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
     public NFComplexOrderSetImpl() {
     }
 
-    public NFComplexOrderSetImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     @Override
     public void add(T element, ComplexLocation<T> location, Version version) {
         addChange(new NFComplexAdd<>(element, location), version);

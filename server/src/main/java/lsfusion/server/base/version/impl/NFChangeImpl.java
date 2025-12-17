@@ -13,10 +13,6 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
         super();
     }
 
-    protected NFChangeImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     protected NFChangeImpl(F changes) {
         super(changes);
     }

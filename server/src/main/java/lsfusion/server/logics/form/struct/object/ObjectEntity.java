@@ -47,11 +47,13 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
     public LocalizedString caption;
 
     public LocalizedString getCaption() {
-        return (caption != null && !BaseUtils.isRedundantString(caption.getSourceString()))
-               ? caption
-               : baseClass != null && !BaseUtils.isRedundantString(baseClass.toString())
-                 ? create(baseClass.toString())
-                 : create("{logics.undefined.object}");
+        if (caption != null && !BaseUtils.isRedundantString(caption.getSourceString()))
+            return caption;
+
+        if (baseClass != null && !BaseUtils.isRedundantString(baseClass.toString()))
+            return create(baseClass.toString());
+
+        return create("{logics.undefined.object}");
     }
 
     public ValueClass baseClass;

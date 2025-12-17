@@ -29,15 +29,6 @@ public abstract class ComplexLocation<T> {
         return FIRST;
     }
 
-    public static <K> ComplexLocation<K> LAST(int group) {
-        if(group == DEFAULTGROUP)
-            return DEFAULT();
-        if(group == LASTGROUP)
-            return LAST();
-
-        return new SideComplexLocation<>(false, group); // not used now
-    }
-
     public static <K> ComplexLocation<K> BEFORE(K element) {
         return new NeighbourComplexLocation<>(element, false);
     }

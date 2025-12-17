@@ -31,7 +31,6 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -133,9 +132,6 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     private NFProperty<LocalizedString> tooltip = NFFact.property();
     private NFProperty<LocalizedString> valueTooltip = NFFact.property();
 
-    private NFProperty<LocalizedString> caption = NFFact.property();
-    private NFProperty<AppServerImage.Reader> image = NFFact.property();
-
     private NFProperty<Boolean> wrap = NFFact.property();
     private NFProperty<Boolean> wrapWordBreak = NFFact.property();
     private NFProperty<Boolean> collapse = NFFact.property();
@@ -162,6 +158,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     @Override
     public int getID() {
         return entity.getID();
+    }
+
+    @Override
+    public String toString() {
+        return entity.toString();
     }
 
     public PropertyDrawView(PropertyDrawEntity entity, Version version) {
@@ -321,34 +322,13 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return asyncExecMap;
     }
 
-    public AppServerImage.AutoName getAutoName() {
-        return AppServerImage.getAutoName(this::getCaption, entity.getInheritedProperty()::getName);
-    }
-
-    public void setImage(String image, Version version) {
-        this.setImage(AppServerImage.createPropertyImage(image, this), version);
-    }
-
-    private AppServerImage getDefaultImage(ConnectionContext context) {
-        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
-    }
-
-    // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
-    public String getDrawCaption() {
-        LocalizedString caption = getCaption();
-        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION), getElementClass()))
-            return null;
-
-        return ThreadLocalContext.localize(caption);
-    }
-
     public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption, String elementClass) {
         return ((caption == null || (caption.isEmpty() && elementClass == null)) && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     //Для Jasper'а экранируем кавычки
     public String getReportCaption() {
-        LocalizedString caption = getCaption();
+        LocalizedString caption = entity.getCaption();
         return caption == null ? null : ThreadLocalContext.localize(caption).replace("\"", "\\\"");
     }
 
@@ -461,12 +441,6 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         }
     }
 
-    @Override
-    public String toString() {
-//        return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
-        return super.toString();
-    }
-
     // the same is on the client
     private static int getScaledCharWidth(long count, long charWidth) {
         return (int) round((count <= 3.0 ? Math.max(count, 1.0) : 3.0 + pow(count - 3.0, 0.5)) * charWidth);
@@ -494,7 +468,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         } else {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
         }
-        LocalizedString caption = getCaption();
+        LocalizedString caption = entity.getCaption();
         if (!caption.isEmpty()) {
             msg = LocalizedString.concatList(msg, " \"", caption, "\"?");
         }
@@ -544,8 +518,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        pool.writeString(outStream, getDrawCaption());
-        AppServerImage.serialize(getImage(pool.context), outStream, pool);
+        pool.writeString(outStream, entity.getDrawCaption());
+        AppServerImage.serialize(entity.getImage(pool.context), outStream, pool);
         pool.writeLong(outStream, getMaxValue());
         outStream.writeBoolean(getEchoSymbols());
         outStream.writeBoolean(isNoSort());
@@ -1438,32 +1412,6 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         valueTooltip.set(value,version);
     }
 
-    public LocalizedString getCaption() {
-        LocalizedString captionValue = caption.get();
-        if (captionValue != null)
-            return captionValue;
-
-        return entity.getCaption();
-    }
-    public void setCaption(LocalizedString value, Version version) {
-        caption.set(value,version);
-    }
-
-    public AppServerImage getImage(ConnectionContext context) {
-        AppServerImage.Reader img = image.get();
-        if(img != null)
-            return img.get(context);
-
-        AppServerImage.Reader entityImage = entity.getImage();
-        if(entityImage != null)
-            return entityImage.get(context);
-
-        return getDefaultImage(context);
-    }
-    public void setImage(AppServerImage.Reader value,Version version) {
-        image.set(value,version);
-    }
-
     public boolean isWrap(FormInstanceContext context) {
         Boolean wrapValue = wrap.get();
         if (wrapValue != null)
@@ -1780,9 +1728,6 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         mapping.sets(tooltip, src.tooltip);
         mapping.sets(valueTooltip, src.valueTooltip);
-
-        mapping.sets(caption, src.caption);
-        mapping.sets(image, src.image);
 
         mapping.sets(wrap, src.wrap);
         mapping.sets(wrapWordBreak, src.wrapWordBreak);

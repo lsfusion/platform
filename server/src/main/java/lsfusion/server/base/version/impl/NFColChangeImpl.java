@@ -10,10 +10,6 @@ public abstract class NFColChangeImpl<T, CH, F extends Iterable<T>> extends NFCh
     public NFColChangeImpl() {
     }
 
-    protected NFColChangeImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     public NFColChangeImpl(F changes) {
         super(changes);
     }

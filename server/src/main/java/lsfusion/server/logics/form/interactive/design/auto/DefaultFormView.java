@@ -399,7 +399,7 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
             return getPanelPropsContainer(propertyDraw, version);
 
         // first we'll create containers for upper groups to get right component order
-        ContainerView parentGroupContainer = getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
+        ContainerView parentGroupContainer = getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version, true), version);
 
         if (!currentGroup.createContainer())
             return parentGroupContainer;

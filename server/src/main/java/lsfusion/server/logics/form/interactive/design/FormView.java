@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.event.*;
-import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -60,10 +59,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     public FormEntity entity;
 
     public Integer overridePageWidth;
-
-    public LocalizedString getCaption() {
-        return mainContainer.getCaption();
-    }
 
     // список деревеьев
     protected NFSet<TreeGroupView> treeGroups = NFFact.set();
@@ -399,14 +394,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return result;
     }
 
-    @IdentityLazy
-    public boolean hasHeaders(GroupObjectEntity entity) {
-        for (PropertyDrawView property : getProperties(entity))
-            if (property.entity.isList(FormView.this.entity) && !property.entity.ignoreHasHeaders && property.getDrawCaption() != null)
-                return true;
-        return false;
-    }
-
     public void setBackground(PropertyDrawView property, Color background, Version version) {
         property.setBackground(background, version);
     }
@@ -576,9 +563,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     public final ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(genID());
 
     public void prereadAutoIcons(ConnectionContext context) {
-        for(PropertyDrawView property : getPropertiesIt())
-            property.getImage(context);
-
         mainContainer.prereadAutoIcons(this, context);
     }
 

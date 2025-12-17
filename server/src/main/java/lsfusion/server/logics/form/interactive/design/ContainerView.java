@@ -96,7 +96,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     private AppServerImage.AutoName getAutoName(FormView formView) {
-        return AppServerImage.getAutoName(main ? () -> formView.getCaption() : () -> getCaption(), main ? () -> formView.entity.getName() : this::getName); // can't be converted to lambda because formView can be null
+        return AppServerImage.getAutoName(this::getCaption, main ? () -> formView.entity.getName() : this::getName); // can't be converted to lambda because formView can be null
     }
 
     private AppServerImage getDefaultImage(FormView formView, ConnectionContext context) {
@@ -645,8 +645,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
     @Override
     public String toString() {
-//        return ThreadLocalContext.localize(getNFCaption(Version.current())) + " " +
-        return super.toString();
+        return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
     }
 
     public int ID;

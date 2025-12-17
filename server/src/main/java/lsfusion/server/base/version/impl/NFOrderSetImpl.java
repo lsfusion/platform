@@ -20,10 +20,6 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     public NFOrderSetImpl() {
     }
 
-    public NFOrderSetImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     public ImOrderSet<T> getNF(Version version) {
         return getNF(version, false);
     }

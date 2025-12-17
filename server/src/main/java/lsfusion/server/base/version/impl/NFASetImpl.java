@@ -17,10 +17,6 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     protected NFASetImpl() {
     }
 
-    protected NFASetImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     public void remove(T element, Version version) {
         addChange((CH) new NFRemove<>(element), version);
     }

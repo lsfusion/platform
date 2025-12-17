@@ -10,5 +10,6 @@ public interface NFProperty<V> extends NF {
     void set(NFProperty<V> value, NFCopy.Map<V> mapping, Version version);
 
     V getNF(Version version);
+    V getNF(Version version, boolean allowRead);
     V get();
 }

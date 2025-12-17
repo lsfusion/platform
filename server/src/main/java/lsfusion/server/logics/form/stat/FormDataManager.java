@@ -93,7 +93,7 @@ public abstract class FormDataManager {
         List<String> titles = new ArrayList<>();
         FormView formView = getFormEntity().view;
         for(PropertyDrawEntity<?, ?> property : tableProperties)
-            titles.add(ThreadLocalContext.localize(formView.get(property).getCaption()));
+            titles.add(ThreadLocalContext.localize(property.getCaption()));
 
         // filling data
         List<List<String>> rows = new ArrayList<>();

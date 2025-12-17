@@ -411,11 +411,11 @@ public class FormChanges {
             PropertyDrawEntity<?, ?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
             if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
-                return getNeedImage(readerType, propertyDraw, context);
+                return getNeedImage(readerType, propertyDraw);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // if there is a custom function, we want file to be send to web-server as a link
                 return new NeedFile(readerType);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-            return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, context);
+            return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
             return new NeedImage(readType.get(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, context.view));
@@ -427,8 +427,8 @@ public class FormChanges {
         return null;
     }
 
-    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?, ?> propertyDraw, FormInstanceContext context) {
-        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, context.view.get(propertyDraw)));
+    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?, ?> propertyDraw) {
+        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, propertyDraw));
     }
 
     private static NeedInputEvent getNeedInputEvent(Type type, boolean mouse) {

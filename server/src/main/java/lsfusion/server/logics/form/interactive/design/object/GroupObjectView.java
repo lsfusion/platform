@@ -46,9 +46,9 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         grid = new GridView(idGen, this, version);
     }
 
-    public LocalizedString getCaption() {
+    public LocalizedString getContainerCaption() {
         if (!objects.isEmpty())
-            return objects.get(0).getCaption();
+            return objects.get(0).entity.getCaption();
         else
             return null;
     }
@@ -76,7 +76,7 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         outStream.writeBoolean(pool.context.entity.isCalendarDateTime(entity));
         outStream.writeBoolean(pool.context.entity.isCalendarPeriod(entity));
 
-        outStream.writeBoolean(pool.context.view.hasHeaders(entity));
+        outStream.writeBoolean(pool.context.entity.hasHeaders(entity));
         outStream.writeBoolean(pool.context.entity.hasFooters(entity));
 
         boolean needVScroll;

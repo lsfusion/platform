@@ -2563,7 +2563,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private GroupObjectEntity getSeekGroupObject(FormEntity form, String formObjectName) {
-        return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion());
+        return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion(), true);
     }
 
     private RegularFilterGroupEntity getSeekFilterGroup(FormEntity form, String formFilterGroupName) {
@@ -4491,7 +4491,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public GroupObjectEntity findGroupObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity result = form.getNFGroupObject(objectName, getVersion());
+        GroupObjectEntity result = form.getNFGroupObject(objectName, getVersion(), true); // external usages
         if (result == null) {
             errLog.emitGroupObjectNotFoundError(parser, objectName);
         }
@@ -4585,7 +4585,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         FormEntity form = findForm(formName);
 
-        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
+        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion(), true);
         if (groupObject != null) {
             for (ObjectEntity obj : groupObject.getOrderObjects()) {
                 outClasses.add(obj.getResolveClassSet());

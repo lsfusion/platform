@@ -16,16 +16,12 @@ public class NFFact {
     public static <K> NFComplexOrderSet<K> complexOrderSet() {
         return new NFComplexOrderSetImpl<>();
     }
-    public static <K> NFComplexOrderSet<K> complexOrderSet(boolean allowVersionFinalRead) {
-        return new NFComplexOrderSetImpl<>(allowVersionFinalRead);
+
+    public NFFact() {
     }
 
     public static <K> NFOrderSet<K> orderSet() {
         return new NFOrderSetImpl<>();
-    }
-
-    public static <K> NFOrderSet<K> orderSet(boolean allowVersionFinalRead) {
-        return new NFOrderSetImpl<>(allowVersionFinalRead);
     }
 
     public static <K> NFOrderSet<K> simpleOrderSet(ImOrderSet<K> orderSet) {
@@ -74,13 +70,6 @@ public class NFFact {
 
     public static <K> NFProperty<K> property() {
         return new NFPropertyImpl<>();
-    }
-
-    public static <K> NFProperty<K> property(boolean allowVersionFinalRead) {
-        return property(allowVersionFinalRead, null);
-    }
-    public static <K> NFProperty<K> property(boolean allowVersionFinalRead, Object debugInfo) {
-        return new NFPropertyImpl<>(allowVersionFinalRead, debugInfo);
     }
 
     public static <K> NFProperty<K> finalProperty(K key) {

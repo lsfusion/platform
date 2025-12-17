@@ -23,6 +23,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFMap;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
@@ -45,6 +46,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -76,6 +78,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.server.logics.form.interactive.design.property.PropertyDrawView.hasNoCaption;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
@@ -117,7 +120,59 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private Pair<Integer, Integer> scriptIndex;
     
     public boolean ignoreHasHeaders = false; // hack for property count property
-    
+
+    private final NFProperty<LocalizedString> caption = NFFact.property();
+    private final NFProperty<AppServerImage.Reader> image = NFFact.property();
+
+    public LocalizedString getCaption() {
+        LocalizedString captionValue = caption.get();
+        if (captionValue != null)
+            return captionValue;
+
+        return getInheritedProperty().caption;
+    }
+
+    public void setCaption(LocalizedString value, Version version) {
+        caption.set(value,version);
+    }
+
+    // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
+    public String getDrawCaption() {
+        LocalizedString caption = getCaption();
+        if(hasNoCaption(caption, getPropertyExtra(CAPTION), view.getElementClass()))
+            return null;
+
+        return ThreadLocalContext.localize(caption);
+    }
+
+    public void setImage(String image, Version version) {
+        setImage(AppServerImage.createPropertyImage(image, this), version);
+    }
+
+    public void setImage(AppServerImage.Reader value,Version version) {
+        image.set(value,version);
+    }
+
+    public AppServerImage getImage(ConnectionContext context) {
+        AppServerImage.Reader img = image.get();
+        if(img != null)
+            return img.get(context);
+
+        AppServerImage.Reader entityImage = getInheritedProperty().image;
+        if(entityImage != null)
+            return entityImage.get(context);
+
+        return getDefaultImage(context);
+    }
+
+    private AppServerImage getDefaultImage(ConnectionContext context) {
+        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
+    }
+
+    public AppServerImage.AutoName getAutoName() {
+        return AppServerImage.getAutoName(this::getCaption, getInheritedProperty()::getName);
+    }
+
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
     public ImOrderSet<GroupObjectEntity> columnGroupObjects = SetFact.EMPTYORDER();
@@ -148,7 +203,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getParent());
     }
     public Group getNFGroup(Version version) {
-        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getNFParent(version));
+        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getNFParent(version, true));
     }
 
     public boolean attr;
@@ -578,7 +633,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     @Override
     public String toString() {
-        return (formPath == null ? "" : formPath) + " property:" + getReflectionActionOrProperty().toString();
+        return ThreadLocalContext.localize(getCaption()) + " " + (formPath == null ? "" : formPath) + " property:" + getReflectionActionOrProperty();
     }
 
     // interactive
@@ -742,13 +797,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public boolean isPredefinedSwitch() {
         return ((Property<?>)getInheritedProperty()).isPredefinedSwitch();
-    }
-
-    public LocalizedString getCaption() {
-        return getInheritedProperty().caption;
-    }
-    public AppServerImage.Reader getImage() {
-        return getInheritedProperty().image;
     }
 
     public boolean isNotNull() {
@@ -1133,6 +1181,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     @Override
     public void extend(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
         super.extend(src, mapping);
+
+        mapping.sets(caption, src.caption);
+        mapping.sets(image, src.image);
     }
 
     @Override

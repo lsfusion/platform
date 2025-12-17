@@ -29,6 +29,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -361,7 +362,7 @@ public class AppServerImage {
         return createImage(imagePath, Style.PROPERTY, (name, context) -> ActionOrProperty.getDefaultImage(name, autoName, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, context));
     }
 
-    public static Reader createPropertyImage(String imagePath, PropertyDrawView property) {
+    public static Reader createPropertyImage(String imagePath, PropertyDrawEntity property) {
         return createPropertyImage(imagePath, property.getAutoName());
     }
 

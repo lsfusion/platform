@@ -22,7 +22,6 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
         return changes;
     }
 
-    private boolean allowVersionFinalRead;
     protected F proceedVersionFinal(Version version, boolean allowRead) {
         if(checkVersionFinal(version, allowRead))
             return getFinalChanges();
@@ -30,16 +29,11 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
     }
 
     protected boolean checkVersionFinal(Version version, boolean allowRead) {
-        return (allowRead || (allowVersionFinalRead && version != Version.last())) && checkFinal(changes);
+        return allowRead && checkFinal(changes);
     }
 
     protected NFImpl() {
-        this(false);
-    }
-
-    protected NFImpl(boolean allowVersionFinalRead) {
         changes = initMutable();
-        this.allowVersionFinalRead = allowVersionFinalRead;
     }
 
     protected NFImpl(F changes) {

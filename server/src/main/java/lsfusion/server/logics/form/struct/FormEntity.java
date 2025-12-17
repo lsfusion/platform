@@ -196,12 +196,15 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return objects.getNFIt(version, allowRead);
     }
 
-    private NFComplexOrderSet<GroupObjectEntity> groups = NFFact.complexOrderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
+    private NFComplexOrderSet<GroupObjectEntity> groups = NFFact.complexOrderSet(); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
         return groups.getIt();
     }
     public Iterable<GroupObjectEntity> getNFGroupsIt(Version version) { // не finalized
         return groups.getNFIt(version);
+    }
+    public Iterable<GroupObjectEntity> getNFGroupsIt(Version version, boolean allowRead) { // не finalized
+        return groups.getNFIt(version, allowRead);
     }
     public ImSet<GroupObjectEntity> getGroups() {
         return groups.getSet();
@@ -505,6 +508,15 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public GroupObjectEntity getNFGroupObject(String sID, Version version) {
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
+            if (group.getSID().equals(sID)) {
+                return group;
+            }
+        }
+        return null;
+    }
+
+    public GroupObjectEntity getNFGroupObject(String sID, Version version, boolean allowRead) {
+        for (GroupObjectEntity group : getNFGroupsIt(version, allowRead)) {
             if (group.getSID().equals(sID)) {
                 return group;
             }
@@ -1314,7 +1326,18 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void prereadAutoIcons(ConnectionContext context) {
+        for(PropertyDrawEntity property : getPropertyDrawsIt())
+            property.getImage(context);
+
         view.prereadAutoIcons(context);
+    }
+
+    @IdentityLazy
+    public boolean hasHeaders(GroupObjectEntity entity) {
+        for (PropertyDrawEntity property : getProperties(entity))
+            if (property.isList(this) && !property.ignoreHasHeaders && property.getDrawCaption() != null)
+                return true;
+        return false;
     }
 
     private void checkInternalClientAction() {
@@ -1507,12 +1530,11 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public LocalizedString getCaption() {
-        return view.getCaption();
+        return view.mainContainer.getCaption();
     }
 
     public AppServerImage getImage(ConnectionContext context) {
-        FormView formView = view;
-        return formView.mainContainer.getImage(formView, context);
+        return view.mainContainer.getImage(view, context);
     }
 
     public String getLocalizedCaption() {
@@ -1632,10 +1654,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     @Override
     public String toString() {
         String result = getSID();
-//        String caption = getLocalizedCaption();
-//        if (caption != null) {
-//            result += " '" + caption + "'";
-//        }
+        String caption = getLocalizedCaption();
+        if (caption != null) {
+            result += " '" + caption + "'";
+        }
         if (debugPoint != null) {
             result += " [" + debugPoint + "]";
         }

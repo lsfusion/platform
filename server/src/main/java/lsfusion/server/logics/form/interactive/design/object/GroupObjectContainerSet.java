@@ -90,7 +90,7 @@ public class GroupObjectContainerSet {
 
         set.boxContainer = factory.createContainer(); // контейнер всей группы
         set.boxContainer.setDebugPoint(grid.groupObject.entity.debugPoint, version); //set debugPoint to containers that have a caption
-        set.boxContainer.setCaption(grid.groupObject.getCaption(), version);
+        set.boxContainer.setCaption(grid.groupObject.getContainerCaption(), version);
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setName(grid.getPropertyGroupContainerName(), version);
 

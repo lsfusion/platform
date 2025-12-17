@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive;
 
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class ServerIdentityObject<This extends ServerIdentityObject<This, AddParent>, AddParent extends ServerIdentityObject<AddParent, ?>> implements MappingInterface<This> {
 
@@ -9,11 +10,6 @@ public abstract class ServerIdentityObject<This extends ServerIdentityObject<Thi
 
     protected ServerIdentityObject(This src, ObjectMapping mapping) {
         mapping.put(src, (This)this);
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
     }
 
     @Override

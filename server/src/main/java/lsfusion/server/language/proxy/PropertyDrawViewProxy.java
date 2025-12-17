@@ -288,7 +288,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     @SuppressWarnings("unused")
     public void setCaption(Object caption) {
         if(caption instanceof LocalizedString)
-            target.setCaption((LocalizedString) caption, getVersion());
+            target.entity.setCaption((LocalizedString) caption, getVersion());
         else
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION, getVersion());
     }
@@ -301,7 +301,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     @SuppressWarnings("unused")
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
-            target.setImage(((LocalizedString) image).getSourceString(), getVersion());
+            target.entity.setImage(((LocalizedString) image).getSourceString(), getVersion());
         else
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE, getVersion());
     }

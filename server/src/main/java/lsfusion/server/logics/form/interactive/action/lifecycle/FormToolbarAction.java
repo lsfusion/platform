@@ -39,12 +39,12 @@ public abstract class FormToolbarAction extends InternalAction {
                 if(readOnlyIf != null) {
                     entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
                 }
+
+                if (!isShowCaption()) {
+                    entity.setCaption(LocalizedString.NONAME, version);
+                }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-                if (!isShowCaption()) {
-                    propertyView.setCaption(LocalizedString.NONAME, version);
-                }
-
                 String valueElementClass = getValueElementClass();
                 if(valueElementClass != null)
                     propertyView.setValueElementClass(valueElementClass, version);

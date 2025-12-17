@@ -1,21 +1,32 @@
 package lsfusion.server.logics.form;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.ServerIdentityObject;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ObjectMapping {
     private Version version; // form map version
@@ -23,10 +34,37 @@ public class ObjectMapping {
     public final boolean extend;
     public final FormEntity addForm; // old
     public final ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects; // new -> old, entities (groups (and maybe objects), property, regular filters) + containers without parent
-    public final boolean implicitAdd;
-    private final MAddMap<ServerIdentityObject, ServerIdentityObject> addImplicitObjects = MapFact.mAddMap(MapFact.nullOrSame());
 
     private final Set<ServerIdentityObject> copied = new HashSet<>();
+
+    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(Version version, FormEntity addForm, FormEntity form) {
+        MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
+
+        fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>)fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+
+        return mImplicitAdd.immutableRev();
+    }
+
+    private static <T extends ServerIdentityObject> void fillImplicitObjects(FormEntity addForm, FormEntity form, BiFunction<FormEntity, Boolean, Iterable<T>> iterable, Function<T, String> getSID, MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd) {
+        MMap<String, ImList<T>> mAddObjects = MapFact.mMap(ListFact.addMergeList());
+        for(T object : iterable.apply(addForm, true))
+            mAddObjects.add(getSID.apply(object), ListFact.singleton(object));
+        ImMap<String, ImList<T>> addObjects = mAddObjects.immutable();
+        MMap<String, ImList<T>> mObjects = MapFact.mMap(ListFact.addMergeList());
+        for(T object : iterable.apply(form, false))
+            mObjects.add(getSID.apply(object), ListFact.singleton(object));
+        ImMap<String, ImList<T>> objects = mObjects.immutable();
+        for(int i = 0, size = objects.size(); i < size; i++) {
+            String sID = objects.getKey(i);
+            ImList<T> list = objects.getValue(i);
+            ImList<T> addedList = addObjects.get(sID);
+            for(int j = 0, sizeL = BaseUtils.min(list.size(), addedList.size()); j < sizeL ; j++)
+                mImplicitAdd.revAdd(addedList.get(j), list.get(j));
+        }
+    }
 
     private <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> T getAdd(T object) {
         assert !copied.contains(object);
@@ -51,7 +89,6 @@ public class ObjectMapping {
 
     public ObjectMapping(FormEntity addForm, ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects, boolean extend, Version version) {
         this.extend = extend;
-        this.implicitAdd = true;
         this.addForm = addForm;
         this.addObjects = addObjects;
 
@@ -92,15 +129,6 @@ public class ObjectMapping {
                 return result;
 
             result = getAdd(object);
-
-            if(extend && implicitAdd) {
-                // getAdd -> getNF* -> get -> eventually get here once again and initialize this object, so we need to triple check that
-                T recResult = (T) objectsMap.get(object);
-                if (recResult != null) {
-                    assert result == null || recResult == result;
-                    return recResult;
-                }
-            }
 
             if(result != null) {
                 // it's tricky here, we need to call copy anyway to force cascade "get" calls (to register NF collections in related add objects before they get finalized)
