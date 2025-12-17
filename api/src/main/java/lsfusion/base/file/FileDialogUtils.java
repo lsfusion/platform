@@ -12,6 +12,7 @@ import java.util.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
+@Deprecated //deprecated since 6.2, removed in 7.0
 public class FileDialogUtils {
 
     public static String showSaveFileDialog(String path, RawFileData file) {
@@ -19,7 +20,7 @@ public class FileDialogUtils {
         return chosenFiles.isEmpty() ? null : FilenameUtils.removeExtension(BaseUtils.singleKey(chosenFiles));
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 6.2, removed in 7.0
     public static Map<String, RawFileData> showSaveFileDialog(Map<String, RawFileData> files) {
         Map<String, RawFileData> resultMap = new HashMap<>();
         JFileChooser fileChooser = new JFileChooser();
