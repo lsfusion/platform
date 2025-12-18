@@ -37,7 +37,6 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -60,7 +59,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import javax.swing.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -157,10 +155,7 @@ public class ScriptingFormEntity {
                 groupName = (groupName.isEmpty() ? "" : groupName + ".") + obj.getSID();
             }
         }
-        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM);
-
-        groupObj.setDebugPoint(debugPoint);
-        groupObj.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM, debugPoint);
 
         if (groupObject.viewType != null)
             groupObj.setViewType(groupObject.viewType);
@@ -255,8 +250,7 @@ public class ScriptingFormEntity {
             }
         }
 
-        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID, treeSID, groups);
-        treeGroup.setDebugPoint(debugPoint);
+        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID, treeSID, groups, debugPoint);
         form.addTreeGroupObject(treeGroup, location, version);
     }
 
@@ -461,36 +455,24 @@ public class ScriptingFormEntity {
             if(location == null)
                 location = isFormObjectAction ? ComplexLocation.LAST() : ComplexLocation.DEFAULT();
 
-
-            PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), property.listInterfaces, inherited.result, location, version);
-
+            ActionOrPropertyObjectEntity actionOrPropertyEntity = property.createObjectEntity(objects);
             DebugInfo.DebugPoint debugPoint = points.get(i);
-            propertyDraw.setFormPath(debugPoint.getFullPath(), version);
-            propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset), version);
+
+            PropertyDrawEntity propertyDraw = form.addPropertyDraw(actionOrPropertyEntity, property.listInterfaces, inherited.result, location, version, debugPoint, alias);
+            try {
+                form.checkAlreadyDefined(propertyDraw, alias);
+            } catch (FormEntity.AlreadyDefined alreadyDefined) {
+                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
+            }
 
             if(selectorAction != null)
                 propertyDraw.setSelectorAction(selectorAction, version);
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
                 propertyDraw.setIntegrationSID(forceIntegrationSID);
-
-            try {
-                form.checkAlreadyDefined(propertyDraw, alias);
-
-                form.setFinalPropertyDrawSID(propertyDraw, alias);
-            } catch (FormEntity.AlreadyDefined alreadyDefined) {
-                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
-            }
+            if(alias != null)
+                propertyDraw.setIntegrationSID(alias);
 
             applyPropertyOptions(propertyDraw, propertyOptions, captions.get(i), version);
-
-            // Добавляем PropertyDrawView в FormView, если он уже был создан
-            PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
-
-            if(view != null) {
-                Boolean filter = propertyOptions.getFilter();
-                if(filter != null && filter) // have to do it after adding property draw view (because it uses it)
-                    form.addUserFilter(propertyDraw, version);
-            }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
             checkNeighbour((PropertyDrawEntity<?, ?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
@@ -711,6 +693,9 @@ public class ScriptingFormEntity {
         if(propertyCustomOptions != null && ((PropertyObjectEntity<?>)propertyCustomOptions).property.getType().equals(JSONClass.instance))
             property.setPropertyExtra(propertyCustomOptions, PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, version);
 
+        Boolean filter = options.getFilter();
+        if(filter != null && filter)
+            form.addUserFilter(property, version);
     }
 
     private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf) {
@@ -876,12 +861,10 @@ public class ScriptingFormEntity {
         if(first) {
             for (int i = properties.size() - 1; i >= 0; --i) {
                 form.addDefaultOrderFirst(properties.get(i), orders.get(i), version);
-                form.addDefaultOrderView(properties.get(i), orders.get(i), version);
             }
         } else {
             for (int i = 0; i < properties.size(); ++i) {
                 form.addDefaultOrder(properties.get(i), orders.get(i), version);
-                form.addDefaultOrderView(properties.get(i), orders.get(i), version);
             }
         }
     }

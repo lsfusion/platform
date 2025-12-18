@@ -5,9 +5,10 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -37,13 +38,13 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         return entity.toString();
     }
 
-    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, Version version) {
+    public GroupObjectView(IDGenerator idGen, ContainerFactory<ContainerView> containerFactory, GroupObjectEntity entity, Version version) {
         this.entity = entity;
         this.entity.view = this;
 
-        objects = entity.getOrderObjects().mapOrderSetValues((ObjectEntity object) -> new ObjectView(object, this));
+        objects = entity.getOrderObjects().mapOrderSetValues(object -> new ObjectView(object, this));
 
-        grid = new GridView(idGen, this, version);
+        grid = new GridView(idGen, containerFactory, this, version);
     }
 
     public LocalizedString getContainerCaption() {

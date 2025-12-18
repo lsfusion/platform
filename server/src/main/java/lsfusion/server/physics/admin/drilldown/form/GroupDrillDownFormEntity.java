@@ -69,8 +69,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             mInnerObjects.revAdd(innerInterface, innerObject);
         }
 
-        detailsGroup = new GroupObjectEntity(genID, "", mObjects.immutableOrder(), LM);
-        addGroupObject(detailsGroup);
+        detailsGroup = addGroupObjectEntity("", mObjects.immutableOrder());
 
         ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();
         

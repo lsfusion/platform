@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.event.*;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -158,7 +157,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     public FormView(FormEntity entity, Version version) {
         this.entity = entity;
 
-        mainContainer = containerFactory.createContainer();
+        mainContainer = containerFactory.createContainer(entity.getDebugPoint());
         mainContainer.main = true;
         setComponentSID(mainContainer, getBoxContainerSID(), version);
         mainContainer.setAddParent(this, (Function<FormView, ContainerView<?>>) fv -> fv.mainContainer);
@@ -171,15 +170,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (propertyDrawView.filter == null) {
             GroupObjectEntity groupObjectEntity = filterProperty.getNFToDraw(entity, version);
             if (groupObjectEntity.isInTree()) {
-                get(groupObjectEntity.treeGroup).addFilter(propertyDrawView, version);
+                get(groupObjectEntity.treeGroup).addFilter(genID(), propertyDrawView, version);
             } else {
-                get(groupObjectEntity).grid.addFilter(propertyDrawView, version);
+                get(groupObjectEntity).grid.addFilter(genID(), propertyDrawView, version);
             }
         }
     }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.add(get(property), descending, version);
+    }
+
+    public void addDefaultOrderFirst(PropertyDrawEntity property, boolean descending, Version version) {
+        defaultOrders.addFirst(get(property), descending, version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
@@ -198,22 +201,10 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return propertyDrawEntityList.mapListValues(value -> value.getPropertyDrawViewOrPivotColumn(this));
     }
 
-    private void addPropertyDrawView(PropertyDrawView property) {
-    }
-
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
         PropertyDrawView propertyView = new PropertyDrawView(property, version);
         properties.add(propertyView, location, version);
         setComponentSIDs(propertyView, version);
-        addPropertyDrawView(propertyView);
-
-
-        //походу инициализируем порядки по умолчанию
-        Boolean descending = entity.getNFDefaultOrder(property, version);
-        if (descending != null) {
-            defaultOrders.add(propertyView, descending, version);
-        }
-
         return propertyView;
     }
 
@@ -223,7 +214,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
-        GroupObjectView groupObjectView = new GroupObjectView(genID(), groupObject, version);
+        GroupObjectView groupObjectView = new GroupObjectView(genID(), containerFactory, groupObject, version);
         groupObjects.add(groupObjectView, location.map(this::get), version);
         if(!groupObjectView.entity.isInTree())
             setComponentSIDs(groupObjectView.grid, version);
@@ -231,7 +222,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
-        TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup, version);
+        TreeGroupView treeGroupView = new TreeGroupView(genID(), containerFactory, treeGroup, version);
         treeGroups.add(treeGroupView, version);
         setComponentSIDs(treeGroupView, version);
         return treeGroupView;
@@ -270,8 +261,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     public static ContainerView createContainer(LocalizedString caption, String name, DebugInfo.DebugPoint debugPoint, ContainerFactory<ContainerView> containerFactory, Version version) {
-        ContainerView container = containerFactory.createContainer();
-        container.setDebugPoint(debugPoint, version);
+        ContainerView container = containerFactory.createContainer(debugPoint);
 
         container.setCaption(caption, version);
         container.setName(name, version);
@@ -321,16 +311,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             return null;
         }
         for (GroupObjectView groupObject : getGroupObjectsIt())
-            if (entity.equals(groupObject.entity))
-                return groupObject;
-        return null;
-    }
-
-    public GroupObjectView getNFGroupObject(GroupObjectEntity entity, Version version) {
-        if (entity == null) {
-            return null;
-        }
-        for (GroupObjectView groupObject : getNFGroupObjectsIt(version))
             if (entity.equals(groupObject.entity))
                 return groupObject;
         return null;
@@ -560,7 +540,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 removedComponent.finalizeAroundInit();
     }
 
-    public final ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(genID());
+    public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);
 
     public void prereadAutoIcons(ConnectionContext context) {
         mainContainer.prereadAutoIcons(this, context);

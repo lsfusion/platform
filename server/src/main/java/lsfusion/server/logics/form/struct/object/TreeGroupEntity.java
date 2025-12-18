@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
@@ -11,20 +10,12 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObjectEntity> {
     public boolean plainTreeMode = false;
 
-    public TreeGroupEntity(IDGenerator ID, String sID, ImOrderSet<GroupObjectEntity> groups) {
-        super(ID, sID, "tree");
+    public TreeGroupEntity(IDGenerator ID, String sID, ImOrderSet<GroupObjectEntity> groups, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, "tree", debugPoint);
 
         this.groups = groups;
-    }
-
-    private DebugInfo.DebugPoint debugPoint;
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
-    }
-
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
+        for(GroupObjectEntity object : groups)
+            object.treeGroup = this;
     }
 
     private final ImOrderSet<GroupObjectEntity> groups;
@@ -40,7 +31,6 @@ public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObject
         super(src, mapping);
 
         plainTreeMode = src.plainTreeMode;
-        debugPoint = src.debugPoint;
 
         groups = mapping.get(src.groups);
         view = mapping.get(src.view);

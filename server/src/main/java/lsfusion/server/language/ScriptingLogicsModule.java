@@ -859,9 +859,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateForm(formName);
         
         Version version = getVersion();
-        FormEntity formEntity = new FormEntity(true, elementCanonicalName(formName), version);
-
-        formEntity.debugPoint = point;
+        FormEntity formEntity = new FormEntity(true, elementCanonicalName(formName), version, point);
 
         FormView formView = formEntity.view;
         ContainerView mainContainer = formView.mainContainer;
@@ -4454,13 +4452,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         // we need explicit inner classes, because json property is lazy, and for it integration form classes are important (will be null otherwise)
         ImList<ValueClass> explicitInnerClasses = getValueClassesFromTypedParams(oldContext.size(), resultInterfaces, newContext);
 
-        LP result = null;
-        try {
-            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders,
+        LP result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders,
                     whereProperty != null, selectTop.mapValues(this, newContext), returnString, resultParams.toArray());
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
@@ -4730,13 +4723,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ImList<ValueClass> explicitInnerClasses = getValueClassesFromTypedParams(oldContext.size(), resultInterfaces, newContext);
 
-        LA result = null;
-        try {
-            result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders, targetProp,
+        LA result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders, targetProp,
                     whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop.mapValues(this, oldContext), charset, attr, resultParams.toArray());
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
 
         mapping.addAll(selectTop.getParams());
         if(sheetNameProperty != null)
@@ -4985,13 +4973,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(sheet != null)
             params.add(sheet);
 
-        LA importAction = null;
-        try {
-            importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
+        LA importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
                     noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
         return proceedImportDoClause(noParams, doAction, elseAction, context, newContext, whereLCP, props, nulls != null ? ListFact.fromJavaList(nulls) : null, addScriptedJoinAProp(importAction, params));
     }
 

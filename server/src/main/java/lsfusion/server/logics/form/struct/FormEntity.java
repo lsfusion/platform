@@ -131,7 +131,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public PropertyDrawEntity logMessagePropertyDraw;
 
     public String canonicalName;
-    public DebugInfo.DebugPoint debugPoint;
 
     private EvalScriptingLogicsModule customizeLM;
     public EvalScriptingLogicsModule getCustomizeLM() {
@@ -355,11 +354,12 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return reportPathProp.get();
     }
 
-    public FormEntity(boolean interactive, String canonicalName, Version version) {
-        this(new DefaultIDGenerator(), interactive, canonicalName, version);
+    public FormEntity(boolean interactive, String canonicalName, Version version, DebugInfo.DebugPoint debugPoint) {
+        this(new DefaultIDGenerator(), interactive, canonicalName, version, debugPoint);
     }
-    public FormEntity(IDGenerator idGenerator, boolean interactive, String canonicalName, Version version) {
-        super(idGenerator, canonicalName, "form");
+
+    public FormEntity(IDGenerator idGenerator, boolean interactive, String canonicalName, Version version, DebugInfo.DebugPoint debugPoint) {
+        super(idGenerator, canonicalName, "form", debugPoint);
 
         genID = idGenerator;
 
@@ -449,7 +449,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
             group.count = propertyDraw;
             propertyDraw.setAddParent(group, (Function<GroupObjectEntity, PropertyDrawEntity>) g -> g.count);
-            setFinalPropertyDrawSID(propertyDraw, "COUNT(" + group.getSID() + ")");
+            String alias = "COUNT(" + group.getSID() + ")";
+            propertyDraw.setSID(alias);
+            propertyDraw.setIntegrationSID(alias);
             propertyDraw.setToDraw(group, version);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getNFListViewType(version)))), PropertyDrawExtraType.SHOWIF, version);
@@ -955,14 +957,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     // auto form constructors + initDefault elements
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement, Pair<ActionOrProperty, List<String>> inherited,
                                                                                                                ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        PropertyDrawEntity<P, ?> propertyDraw = addPropertyDraw(propertyImplement, interfaces, inherited, location, version);
-
-        addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version);
-
-        return propertyDraw;
+        return addPropertyDraw(propertyImplement, interfaces, inherited, location, version, null, null);
     }
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement,
-                                                                                                               ImOrderSet<P> interfaces, Pair<ActionOrProperty, List<String>> inherited, ComplexLocation<PropertyDrawEntity> location, Version version) {
+                                                                                                               ImOrderSet<P> interfaces, Pair<ActionOrProperty, List<String>> inherited, ComplexLocation<PropertyDrawEntity> location, Version version, DebugInfo.DebugPoint debugPoint, String alias) {
 
         ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
@@ -979,18 +977,21 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             integrationSID = propertySID;
         }
 
-        final PropertyDrawEntity<P, ?> newPropertyDraw = new PropertyDrawEntity<>(genID, propertySID, integrationSID, propertyImplement, inheritedProperty);
+        final PropertyDrawEntity<P, ?> newPropertyDraw = new PropertyDrawEntity<>(genID, propertySID, integrationSID, propertyImplement, inheritedProperty, debugPoint);
         newPropertyDraw.proceedDefaultDraw(this, version);
 
         propertyDraws.add(newPropertyDraw, location, version);
+        addPropertyDrawView(newPropertyDraw, location, version);
+
+        if(alias != null)
+            newPropertyDraw.setSID(alias);
+
         return newPropertyDraw;
     }
 
     public PropertyDrawView addPropertyDrawView(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        FormView richDesign = view;
-        if (richDesign != null) {
-            return richDesign.addPropertyDraw(propertyDraw, location.map(richDesign::get), version);
-        }
+        if (view != null)
+            return view.addPropertyDraw(propertyDraw, location.map(view::get), version);
         return null;
     }
     
@@ -1077,13 +1078,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             this.formCanonicalName = formCanonicalName;
             this.newSID = newSID;
             this.formPath = formPath;
-        }
-    }
-
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) {
-        if(alias != null) {
-            property.setSID(alias);
-            property.setIntegrationSID(alias);
         }
     }
 
@@ -1553,16 +1547,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.add(property, descending, version);
+
+        if(view != null)
+            view.addDefaultOrder(property, descending, version);
     }
 
     public void addDefaultOrderFirst(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.addFirst(property, descending, version);
-    }
 
-    public void addDefaultOrderView(PropertyDrawEntity property, boolean descending, Version version) {
-        FormView richDesign = view;
-        if(richDesign !=null)
-            richDesign.addDefaultOrder(property, descending, version);
+        if(view != null)
+            view.addDefaultOrderFirst(property, descending, version);
     }
 
     public void setPageSize(int pageSize) {

@@ -11,6 +11,7 @@ import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.ServerIdentityObject;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
@@ -28,8 +29,6 @@ import static lsfusion.base.BaseUtils.nvl;
 
 public abstract class GridPropertyView<This extends GridPropertyView<This, AddParent>, AddParent extends ServerIdentityObject<AddParent, ?>> extends BaseGroupComponentView<This, AddParent> implements PropertyGroupContainersView<This> {
 
-    public IDGenerator idGen;
-
     public ToolbarView<This> toolbarSystem;
     public ContainerView filtersContainer;
     public FilterControlsView<This> filterControls;
@@ -41,8 +40,8 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         return filters.getIt();
     }
 
-    public FilterView addFilter(PropertyDrawView property, Version version) {
-        FilterView filter = new FilterView(idGen, property);
+    public FilterView addFilter(IDGenerator idGenerator, PropertyDrawView property, Version version) {
+        FilterView filter = new FilterView(idGenerator, property);
         filters.add(filter, version);
         filtersContainer.add(filter, version);
         return filter;
@@ -85,14 +84,12 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         return super.hasPropertyComponent() || getPropertyValueClass() != null;
     }
 
-    public GridPropertyView(IDGenerator idGen, Version version) {
+    public GridPropertyView(IDGenerator idGen, ContainerFactory<ContainerView> containerFactory, Version version) {
         super(idGen);
-
-        this.idGen = idGen;
 
         toolbarSystem = new ToolbarView<>(idGen, (This) this);
 
-        filtersContainer = new ContainerView(idGen);
+        filtersContainer = containerFactory.createContainer(null);
         filtersContainer.setAddParent(this, (Function<This, ContainerView>) aThis -> aThis.filtersContainer);
         if (Settings.get().isVerticalColumnsFiltersContainer()) {
             filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
@@ -257,8 +254,6 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
     // copy-constructor
     protected GridPropertyView(This src, ObjectMapping mapping) {
         super(src, mapping);
-
-        idGen = src.idGen;
 
         toolbarSystem = mapping.get(src.toolbarSystem);
         filtersContainer = mapping.get(src.filtersContainer);

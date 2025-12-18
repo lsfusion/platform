@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.physics.admin.Settings;
@@ -31,6 +30,10 @@ public class FormContainerSet {
         return new DefaultFormView.ContainerSet(formView, formView, objectsContainer, panelContainer, groupContainer, toolbarBoxContainer, toolbarContainer, popupContainer, toolbarLeftContainer, toolbarRightContainer, null, null, null, version);
     }
 
+    private static ContainerView createContainer(ContainerFactory<ContainerView> factory) {
+        return factory.createContainer(null);
+    }
+
     public static FormContainerSet fillContainers(ContainerView mainContainer, ContainerFactory<ContainerView> contFactory, Version version) {
         FormContainerSet set = new FormContainerSet();
 
@@ -40,44 +43,44 @@ public class FormContainerSet {
         set.mainContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.mainContainer.setAlignShrink(true, version);
 
-        set.objectsContainer = contFactory.createContainer();
+        set.objectsContainer = createContainer(contFactory);
         set.objectsContainer.setSID(DefaultFormView.getObjectsContainerSID());
         set.objectsContainer.setFlex(1d, version);
         set.objectsContainer.setAlignment(FlexAlignment.STRETCH, version);
         set.objectsContainer.setBorder(true, version);
 //        set.objectsContainer.setElementClass("shadow");
 
-        set.panelContainer = contFactory.createContainer();
+        set.panelContainer = createContainer(contFactory);
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID());
         set.panelContainer.setHorizontal(true, version);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH, version);
 
-        set.toolbarBoxContainer = contFactory.createContainer();
+        set.toolbarBoxContainer = createContainer(contFactory);
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID());
         set.toolbarBoxContainer.setHorizontal(true, version);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH, version);
 
-        set.groupContainer = contFactory.createContainer();
+        set.groupContainer = createContainer(contFactory);
         set.groupContainer.setSID(DefaultFormView.getGroupContainerSID(""));
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT, version);
 
         boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
 
-        set.toolbarLeftContainer = contFactory.createContainer();
+        set.toolbarLeftContainer = createContainer(contFactory);
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());
         set.toolbarLeftContainer.setHorizontal(true, version);
         set.toolbarLeftContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.END : FlexAlignment.START, version);
         set.toolbarLeftContainer.setFlex(toolbarTopLeft ? 1d : 0d, version);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH, version);
 
-        set.toolbarRightContainer = contFactory.createContainer();
+        set.toolbarRightContainer = createContainer(contFactory);
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID());
         set.toolbarRightContainer.setHorizontal(true, version);
         set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END, version);
         set.toolbarRightContainer.setFlex(toolbarTopLeft ? 0d : 1d, version);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH, version);
 
-        set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
+        set.toolbarContainer = createContainer(contFactory); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID());
         set.toolbarContainer.setHorizontal(true, version);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH, version);
@@ -87,7 +90,7 @@ public class FormContainerSet {
         set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarRightContainer : set.toolbarLeftContainer, version);
         set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarLeftContainer : set.toolbarRightContainer, version);
 
-        set.popupContainer = contFactory.createContainer();
+        set.popupContainer = createContainer(contFactory);
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID());
         set.popupContainer.setPopup(true, version);
         set.popupContainer.setCollapsed(true, version);

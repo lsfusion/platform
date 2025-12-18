@@ -68,6 +68,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang.StringUtils;
 
@@ -112,9 +113,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> sticky = NFFact.property();
     private final NFProperty<Boolean> sync = NFFact.property();
 
-    private final NFProperty<String> formPath = NFFact.property();
-
-    private final NFProperty<Pair<Integer, Integer>> scriptIndex = NFFact.property();
+    // derived from debugPoint (see getFormPath() / getScriptIndex())
     
     private final NFProperty<Boolean> ignoreHasHeaders = NFFact.property(); // hack for property count property
 
@@ -364,8 +363,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(IDGenerator ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
-        super(ID, sID, "prop");
+    public PropertyDrawEntity(IDGenerator ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty, ActionOrProperty inheritedProperty, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, "prop", debugPoint);
         setIntegrationSID(integrationSID);
         this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
@@ -916,19 +915,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public String getFormPath() {
-        return formPath.get();
-    }
-
-    public void setFormPath(String formPath, Version version) {
-        this.formPath.set(formPath, version);
+        return debugPoint != null ? debugPoint.getFullPath() : null;
     }
 
     public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex.get();
-    }
-
-    public void setScriptIndex(Pair<Integer, Integer> scriptIndex, Version version) {
-        this.scriptIndex.set(scriptIndex, version);
+        return debugPoint != null ? Pair.create(debugPoint.getScriptLine(), debugPoint.offset) : null;
     }
 
     @Override
@@ -1347,9 +1338,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(sticky, src.sticky);
         mapping.sets(sync, src.sync);
-
-        mapping.sets(formPath, src.formPath);
-        mapping.sets(scriptIndex, src.scriptIndex);
 
         mapping.sets(ignoreHasHeaders, src.ignoreHasHeaders);
 

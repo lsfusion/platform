@@ -10,7 +10,6 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -25,7 +24,7 @@ import java.util.List;
 public abstract class AutoFormEntity extends FormEntity {
 
     public AutoFormEntity(boolean needDesign, Version version) {
-        super(needDesign, null, version);
+        super(needDesign, null, version, null);
     }
 
     public PropertyDrawEntity<?, ?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
@@ -55,5 +54,11 @@ public abstract class AutoFormEntity extends FormEntity {
         super.addGroupObject(group, location, version);
 
         group.fillGroupChanges(version);
+    }
+
+    protected GroupObjectEntity addGroupObjectEntity(BaseLogicsModule LM, String sID, ImOrderSet<ObjectEntity> objects, Version version) {
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID, sID, objects, LM);
+        addGroupObject(groupObject, version);
+        return groupObject;
     }
 }

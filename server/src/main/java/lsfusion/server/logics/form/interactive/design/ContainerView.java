@@ -47,7 +47,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     private NFProperty<Boolean> border = NFFact.property();
     private NFProperty<Boolean> collapsed = NFFact.property();
 
-    private NFProperty<DebugInfo.DebugPoint> debugPoint = NFFact.property();
+    private DebugInfo.DebugPoint debugPoint;
     private NFProperty<Boolean> horizontal = NFFact.property();
     private NFProperty<Boolean> tabbed = NFFact.property();
 
@@ -416,10 +416,10 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint.get();
+        return debugPoint;
     }
-    public void setDebugPoint(DebugInfo.DebugPoint value, Version version) {
-        debugPoint.set(value, version);
+    public void setDebugPoint(DebugInfo.DebugPoint value) {
+        debugPoint = value;
     }
 
     public String getValueClass() {
@@ -655,8 +655,9 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return ID;
     }
 
-    public ContainerView(IDGenerator idGen) {
+    public ContainerView(IDGenerator idGen, DebugInfo.DebugPoint debugPoint) {
         this.ID = idGen.id();
+        this.debugPoint = debugPoint;
     }
 
     // copy-constructor
@@ -664,6 +665,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         super(src, mapping);
 
         ID = mapping.id();
+        debugPoint = src.debugPoint;
 
         main = src.main;
 
@@ -688,7 +690,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         mapping.sets(border, src.border);
         mapping.sets(collapsed, src.collapsed);
 
-        mapping.sets(debugPoint, src.debugPoint);
         mapping.sets(horizontal, src.horizontal);
         mapping.sets(tabbed, src.tabbed);
 

@@ -783,13 +783,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean interactive) {
-        try {
-            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
-            addAutoFormEntityFinalized(integrationForm.form);
-            return integrationForm;
-        } catch (FormEntity.AlreadyDefined e) {
-            throw Throwables.propagate(e);
-        }
+        IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
+        addAutoFormEntityFinalized(integrationForm.form);
+        return integrationForm;
     }
 
     public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {

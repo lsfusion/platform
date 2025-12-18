@@ -86,10 +86,13 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     public ObjectEntity addSingleGroupObject(ValueClass baseClass) {
         ObjectEntity object = new ObjectEntity(genID, baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID, null, SetFact.singletonOrder(object), LM);
-        addGroupObject(groupObject);
+        addGroupObjectEntity(null, SetFact.singletonOrder(object));
 
         return object;
+    }
+
+    protected GroupObjectEntity addGroupObjectEntity(String sID, ImOrderSet<ObjectEntity> objects) {
+        return addGroupObjectEntity(LM, sID, objects, baseVersion);
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ImOrderSet<ObjectEntity> objects) {

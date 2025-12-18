@@ -71,8 +71,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private NFProperty<Boolean> isSubReport = NFFact.property();
     private NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
-    public DebugInfo.DebugPoint debugPoint;
-    public Pair<Integer, Integer> scriptIndex;
 
     public UpdateType updateType; //todo?
 
@@ -304,10 +302,10 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     }
 
     public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM) {
-        this(ID, sID, objects, null, LM);
+        this(ID, sID, objects, LM, null);
     }
-    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, TreeGroupEntity treeGroup, BaseLogicsModule LM) {
-        super(ID, sID, "groupObj");
+    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, "groupObj", debugPoint);
 
         ConcreteCustomClass listViewType = LM.listViewType;
         listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
@@ -317,7 +315,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         this.objects = objects;
         for(ObjectEntity object : objects)
             object.groupTo = this;
-        this.treeGroup = treeGroup;
     }
 
 
@@ -421,15 +418,8 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         reportPathProp.set(value, version);
     }
 
-    public void setDebugPoint(DebugInfo.DebugPoint value) {
-        debugPoint = value;
-    }
-
     public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex;
-    }
-    public void setScriptIndex(Pair<Integer, Integer> value) {
-        scriptIndex = value;
+        return debugPoint != null ? Pair.create(debugPoint.getScriptLine(), debugPoint.offset) : null;
     }
 
     public Group getPropertyGroup() {
@@ -497,9 +487,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     @Override
     public void extend(GroupObjectEntity src, ObjectMapping mapping) {
         super.extend(src, mapping);
-
-        debugPoint = src.debugPoint;
-        scriptIndex = src.scriptIndex;
 
         mapping.sets(isSubReport, src.isSubReport);
         mapping.sets(propertyGroup, src.propertyGroup);

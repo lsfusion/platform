@@ -52,18 +52,16 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         });
 
         if(!valueInterfaces.isEmpty()) {
-            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID, null, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), LM); // we don't know parameter classes
-            addGroupObject(valueGroupObject, version);
+            GroupObjectEntity valueGroupObject = addGroupObjectEntity(LM, null, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
 
             valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
             // sID - for JSON and XML
-            groupObject = new GroupObjectEntity(genID, "value", innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), LM); // we don't know parameter classes
+            groupObject = addGroupObjectEntity(LM, "value", innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
             groupObject.setListViewType(ListViewType.CUSTOM);
             groupObject.setCustomRenderFunction("selectMultiInput");
-            addGroupObject(groupObject, version);
         } else
             groupObject = null;
         
@@ -100,7 +98,10 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
-            setFinalPropertyDrawSID(propertyDraw, alias);
+            if(alias != null) {
+                propertyDraw.setSID(alias);
+                propertyDraw.setIntegrationSID(alias);
+            }
 
             propertyDraw.setGroup(propUsage.group, version);
 

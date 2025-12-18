@@ -7,6 +7,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -51,14 +52,14 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
         return record.getNF(version);
     }
 
-    public GridView(IDGenerator idGenerator, GroupObjectView groupObject, Version version) {
-        super(idGenerator, version);
+    public GridView(IDGenerator idGenerator, ContainerFactory<ContainerView> containerFactory, GroupObjectView groupObject, Version version) {
+        super(idGenerator, containerFactory, version);
         this.groupObject = groupObject;
 
         calculations = new CalculationsView(idGenerator, this);
 
         record = new ExContainerView(() -> {
-            ContainerView<?> record = new ContainerView(idGenerator);
+            ContainerView<?> record = containerFactory.createContainer(null);
             record.recordContainer = this;
             record.setAddParent(this, pc -> pc.record.get());
             return record;

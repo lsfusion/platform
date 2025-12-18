@@ -47,8 +47,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
             ObjectEntity obj = new ObjectEntity(genID, sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
             mParams.exclAdd(obj);
 
-            GroupObjectEntity paramGroup = new GroupObjectEntity(genID, sID + "Group", SetFact.singletonOrder(obj), LM);
-            addGroupObject(paramGroup);
+            GroupObjectEntity paramGroup = addGroupObjectEntity(sID + "Group", SetFact.singletonOrder(obj));
 
             paramGroup.setViewTypePanel();
             index++;
@@ -59,9 +58,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
         ObjectEntity objSession = new ObjectEntity(genID, "session", sessionClass, LocalizedString.create("{form.entity.session}"));
         ImOrderSet<ObjectEntity> entities = params.addOrderExcl(objSession);
 
-        GroupObjectEntity logGroup = new GroupObjectEntity(genID, "logGroup", SetFact.singletonOrder(objSession), LM);
-
-        addGroupObject(logGroup);
+        GroupObjectEntity logGroup = addGroupObjectEntity("logGroup", SetFact.singletonOrder(objSession));
 
         for (ObjectEntity obj : entities) {
             addPropertyDraw(obj, LM.getIdGroup());
@@ -92,7 +89,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
 
         addFixedFilter(new FilterEntity(addPropertyObject(logWhereProperty, entities)));
 
-        setNFEditType(PropertyEditType.READONLY);
+        setEditType(PropertyEditType.READONLY);
 
         finalizeInit();
 

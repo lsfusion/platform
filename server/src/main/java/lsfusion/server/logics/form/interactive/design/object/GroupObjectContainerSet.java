@@ -1,11 +1,12 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
@@ -83,45 +84,52 @@ public class GroupObjectContainerSet {
         return popupContainer;
     }
 
+    private static ContainerView createContainer(ContainerFactory<ContainerView> factory) {
+        return createContainer(factory, null);
+    }
+
+    private static ContainerView createContainer(ContainerFactory<ContainerView> factory, DebugInfo.DebugPoint debugPoint) {
+        return factory.createContainer(debugPoint);
+    }
+
     public static GroupObjectContainerSet create(GridView grid, ContainerFactory<ContainerView> factory, Version version) {
 
         GroupObjectContainerSet set = new GroupObjectContainerSet();
         String sid = grid.getPropertyGroupContainerSID();
 
-        set.boxContainer = factory.createContainer(); // контейнер всей группы
-        set.boxContainer.setDebugPoint(grid.groupObject.entity.debugPoint, version); //set debugPoint to containers that have a caption
+        set.boxContainer = createContainer(factory, grid.groupObject.entity.getDebugPoint()); // контейнер всей группы
         set.boxContainer.setCaption(grid.groupObject.getContainerCaption(), version);
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setName(grid.getPropertyGroupContainerName(), version);
 
-        set.filterBoxContainer = factory.createContainer();
+        set.filterBoxContainer = createContainer(factory);
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
 
-        set.panelContainer = factory.createContainer(); // контейнер панели
+        set.panelContainer = createContainer(factory); // контейнер панели
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
 
-        set.groupContainer = factory.createContainer();
+        set.groupContainer = createContainer(factory);
         set.groupContainer.setSID(DefaultFormView.getGOGroupContainerSID("," + sid));
 
-        set.toolbarBoxContainer = factory.createContainer(); // контейнер всех управляющих объектов
+        set.toolbarBoxContainer = createContainer(factory); // контейнер всех управляющих объектов
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID(sid));
 
-        set.toolbarContainer = factory.createContainer(); // контейнер тулбара
+        set.toolbarContainer = createContainer(factory); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
 
-        set.popupContainer = factory.createContainer();
+        set.popupContainer = createContainer(factory);
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
         set.popupContainer.setPopup(true, version);
         set.popupContainer.setCollapsed(true, version);
         set.popupContainer.setImage("bi bi-three-dots-vertical", null, version);
 
-        set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
+        set.filterGroupsContainer = createContainer(factory); // контейнер фильтров
         set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
 
-        set.toolbarRightContainer = factory.createContainer();
+        set.toolbarRightContainer = createContainer(factory);
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID(sid));
 
-        set.toolbarLeftContainer = factory.createContainer();
+        set.toolbarLeftContainer = createContainer(factory);
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
         set.boxContainer.setAlignment(FlexAlignment.STRETCH, version);

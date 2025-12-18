@@ -1,19 +1,19 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -26,7 +26,7 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     private NFProperty<String> hierarchicalCaption = NFFact.property();
     private NFProperty<PropertyObjectEntity> propertyHierarchicalCaption = NFFact.property();
 
-    public List<GroupObjectView> groups = new ArrayList<>();
+    public final ImOrderSet<GroupObjectView> groups;
 
     public TreeGroupEntity entity;
 
@@ -50,19 +50,13 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
         return entity.getSID();
     }
 
-    public TreeGroupView(FormView form, TreeGroupEntity entity, Version version) {
-        super(form.genID(), version);
+    public TreeGroupView(IDGenerator idGenerator, ContainerFactory<ContainerView> containerFactory, TreeGroupEntity entity, Version version) {
+        super(idGenerator, containerFactory, version);
 
         this.entity = entity;
         this.entity.view = this;
 
-        for (GroupObjectEntity group : entity.getGroups()) {
-            groups.add(form.getNFGroupObject(group, version));
-        }
-    }
-
-    public void add(GroupObjectView group) {
-        groups.add(group);
+        groups = entity.getGroups().mapOrderSetValues(group -> group.view);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -118,10 +112,9 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     protected TreeGroupView(TreeGroupView src, ObjectMapping mapping) {
         super(src, mapping);
 
-        for(GroupObjectView g : src.groups)
-            groups.add(mapping.get(g));
-
         entity = mapping.get(src.entity);
+
+        groups = mapping.get(src.groups);
     }
 
     @Override
