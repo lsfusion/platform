@@ -98,13 +98,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
             list = getInputValueList(valuesGetter, rMapObjects, useFilters);
             if(list == null)
                 return null;
-            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, needObjects ? PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
+            newSession = BaseUtils.nvl(this.entity.getDefaultChangeEventScope(), needObjects ? PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
             converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
             valuesMode = strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES;
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getCheckedEventAction(actionSID, context);
 
-            AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
+            AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.isOptimisticAsync());
             ImRevMap<P, PropertyObjectInterfaceInstance> outerMapping = BaseUtils.immutableCast(formInstance.instanceFactory.getInstanceMap(eventAction.mapping));
 
             Pair<InputContextListEntity<Z, P>, AsyncDataConverter<Z>> asyncValueList = asyncExec.getAsyncValueList(value);
@@ -333,7 +333,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     }
 
     public boolean isList() {
-        return (toDraw != null ? toDraw.viewType : ClassViewType.PANEL).isList() && entity.viewType.isList();
+        ClassViewType entityViewType = entity.getViewType();
+        if(entityViewType == null)
+            entityViewType = ClassViewType.PANEL;
+        return (toDraw != null ? toDraw.viewType : ClassViewType.PANEL).isList() && entityViewType.isList();
     }
 
     public String toString() {
@@ -456,7 +459,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
 
         @Override
         public Object getProfiledObject() {
-            return entity.lastAggrColumns.get(index);
+            return entity.getLastAggrColumns().get(index);
         }
     }
 }

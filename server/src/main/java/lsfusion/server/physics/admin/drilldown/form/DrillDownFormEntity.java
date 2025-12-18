@@ -55,7 +55,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
 
         setupDrillDownForm();
 
-        setNFEditType(PropertyEditType.READONLY);
+        setEditType(PropertyEditType.READONLY);
 
         finalizeInit(); // не красиво конечно, но иначе по хорошему надо во все setEditType version'ы вставлять
 

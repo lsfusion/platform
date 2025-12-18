@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.ServerIdentityObject;
@@ -58,11 +59,12 @@ public class ObjectMapping {
             mObjects.add(getSID.apply(object), ListFact.singleton(object));
         ImMap<String, ImList<T>> objects = mObjects.immutable();
         for(int i = 0, size = objects.size(); i < size; i++) {
-            String sID = objects.getKey(i);
-            ImList<T> list = objects.getValue(i);
-            ImList<T> addedList = addObjects.get(sID);
-            for(int j = 0, sizeL = BaseUtils.min(list.size(), addedList.size()); j < sizeL ; j++)
-                mImplicitAdd.revAdd(addedList.get(j), list.get(j));
+            ImList<T> addedList = addObjects.get(objects.getKey(i));
+            if(addedList != null) {
+                ImList<T> list = objects.getValue(i);
+                for (int j = 0, sizeL = BaseUtils.min(list.size(), addedList.size()); j < sizeL; j++)
+                    mImplicitAdd.revAdd(addedList.get(j), list.get(j));
+            }
         }
     }
 
@@ -190,9 +192,29 @@ public class ObjectMapping {
         to.set(from, p -> p, version);
     }
 
+    public <X> void set(NFProperty<X> to, NFProperty<X> from, NFCopy.Map<X> mapper) {
+        assert to != from;
+        to.set(from, mapper, version);
+    }
+
+    public <K, V> void adds(NFOrderMap<K, V> to, NFOrderMap<K, V> from) {
+        assert to != from;
+        to.add(from, p -> p, version);
+    }
+
     public <M extends MappingInterface<M>> void set(NFProperty<M> to, NFProperty<M> from) {
         assert to != from;
         to.set(from, this::get, version);
+    }
+
+    public <X extends MappingInterface<X>> void seto(NFProperty<ImOrderSet<X>> to, NFProperty<ImOrderSet<X>> from) {
+        assert to != from;
+        to.set(from, p -> p != null ? p.mapOrderSetValues(this::get) : null, version);
+    }
+
+    public <X extends MappingInterface<X>> void setl(NFProperty<ImList<X>> to, NFProperty<ImList<X>> from) {
+        assert to != from;
+        to.set(from, p -> p != null ? p.mapItListValues(this::get) : null, version);
     }
 
     // collections

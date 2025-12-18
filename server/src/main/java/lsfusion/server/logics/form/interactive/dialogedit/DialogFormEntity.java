@@ -21,7 +21,7 @@ public class DialogFormEntity extends BaseClassFormEntity {
 
 //        LM.addObjectActions(this, object);
 
-        setNFEditType(PropertyEditType.READONLY);
+        setEditType(PropertyEditType.READONLY);
 
         if (!cls.dialogReadOnly) {
             FormSessionScope scope = FormSessionScope.NEWSESSION;
@@ -38,7 +38,7 @@ public class DialogFormEntity extends BaseClassFormEntity {
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
         PropertyDrawEntity propertyDraw = addPropertyDraw(property, ComplexLocation.LAST(), objects);
-        propertyDraw.defaultChangeEventScope = scope;
+        setDefaultChangeEventScope(propertyDraw, scope);
         return propertyDraw;
     }
 }

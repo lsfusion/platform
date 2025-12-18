@@ -12,12 +12,12 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -65,7 +65,7 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     protected void addPropertyDraw(Group group, boolean prev, ImOrderSet<ObjectEntity> objects) {
         ImSet<ObjectEntity> objectsSet = objects.getSet();
         ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
-        for(int i=0,size=objectsSet.size();i<size;i++) {
+        for (int i = 0, size = objectsSet.size(); i < size; i++) {
             ObjectEntity object = objectsSet.get(i);
             if (object.baseClass != null)
                 mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
@@ -104,6 +104,14 @@ public class AutoFinalFormEntity extends AutoFormEntity {
         return addValuePropertyDraw(LM, object, baseVersion);
     }
 
+    public void setEditType(PropertyDrawEntity<?, ?> property, PropertyEditType editType) {
+        property.setEditType(editType, baseVersion);
+    }
+
+    public void setDefaultChangeEventScope(PropertyDrawEntity<?, ?> property, FormSessionScope scope) {
+        property.setDefaultChangeEventScope(scope, baseVersion);
+    }
+
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping) {
         return addPropertyDraw(property, mapping, baseVersion);
     }
@@ -116,13 +124,13 @@ public class AutoFinalFormEntity extends AutoFormEntity {
         finalizeInit(baseVersion);
     }
 
-    protected void setNFEditType(PropertyEditType editType) {
-        setNFEditType(editType, baseVersion);
+    protected void setEditType(PropertyEditType editType) {
+        setEditType(editType, baseVersion);
     }
 
-    public void setNFEditType(PropertyEditType editType, Version version) {
+    public void setEditType(PropertyEditType editType, Version version) {
         for (PropertyDrawEntity propertyView : getNFPropertyDrawsIt(version)) {
-            setEditType(propertyView, editType);
+            setEditType(propertyView, editType, version);
         }
     }
 
@@ -133,4 +141,10 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     public void addFixedOrder(OrderEntity order, boolean descending) {
         addFixedOrder(order, descending, baseVersion);
     }
+
+    public void removeComponent(PropertyDrawEntity<?, ?> property) {
+        DefaultFormView design = getInitDesign();
+        design.removeComponent(design.get(property), baseVersion);
+    }
+
 }

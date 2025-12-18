@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -23,6 +22,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFMap;
+import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -71,7 +71,6 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
@@ -84,42 +83,40 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends IdentityEntity<AddParent, ?>> extends IdentityEntity<PropertyDrawEntity<P, AddParent>, AddParent> implements PropertyDrawEntityOrPivotColumn<PropertyDrawEntity<P, AddParent>>, Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
-    private PropertyEditType editType = PropertyEditType.EDITABLE;
+    private final NFProperty<PropertyEditType> editType = NFFact.property();
     
     public ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty;
     
-    public GroupObjectEntity toDraw;
-    public boolean hide;
-    public boolean remove;
+    private final NFProperty<GroupObjectEntity> toDraw = NFFact.property();
+    private final NFProperty<Boolean> hide = NFFact.property();
+    private final NFProperty<Boolean> remove = NFFact.property();
 
-    private String mouseBinding;
-    private Map<KeyStroke, String> keyBindings;
-    private OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings;
+    private final NFOrderMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings = NFFact.orderMap();
+    private final NFMap<String, ActionObjectSelector> eventActions = NFFact.map();
 
-    private NFMap<String, ActionObjectSelector> eventActions = NFFact.map();
+    private final NFProperty<Boolean> isSelector = NFFact.property();
 
-    public boolean isSelector;
+    private final NFProperty<Boolean> optimisticAsync = NFFact.property();
 
-    public boolean optimisticAsync;
+    private final NFProperty<Boolean> askConfirm = NFFact.property();
+    private final NFProperty<String> askConfirmMessage = NFFact.property();
 
-    public Boolean askConfirm;
-    public String askConfirmMessage;
-
-    public ClassViewType viewType; // assert not null, after initialization
-    public String customRenderFunction;
+    private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
+    private final NFProperty<String> customRenderFunction = NFFact.property();
     public static final String SELECT = "<<select>>";
     public static final String NOSELECT = "<<no>>";
     public static final String AUTOSELECT = "<<auto>>";
-    public String customChangeFunction;
-    public String eventID;
+    private final NFProperty<String> customChangeFunction = NFFact.property();
+    private final NFProperty<String> eventID = NFFact.property();
 
-    public Boolean sticky;
-    public Boolean sync;
+    private final NFProperty<Boolean> sticky = NFFact.property();
+    private final NFProperty<Boolean> sync = NFFact.property();
 
-    private String formPath;
-    private Pair<Integer, Integer> scriptIndex;
+    private final NFProperty<String> formPath = NFFact.property();
+
+    private final NFProperty<Pair<Integer, Integer>> scriptIndex = NFFact.property();
     
-    public boolean ignoreHasHeaders = false; // hack for property count property
+    private final NFProperty<Boolean> ignoreHasHeaders = NFFact.property(); // hack for property count property
 
     private final NFProperty<LocalizedString> caption = NFFact.property();
     private final NFProperty<AppServerImage.Reader> image = NFFact.property();
@@ -174,10 +171,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
-    public String columnsName;
-    public ImOrderSet<GroupObjectEntity> columnGroupObjects = SetFact.EMPTYORDER();
+    private final NFProperty<String> columnsName = NFFact.property();
+    private final NFProperty<ImOrderSet<GroupObjectEntity>> columnGroupObjects = NFFact.property();
 
-    private NFMap<PropertyDrawExtraType, PropertyObjectEntity> propertyExtras = NFFact.map();
+    private final NFMap<PropertyDrawExtraType, PropertyObjectEntity> propertyExtras = NFFact.map();
 
     public ImMap<PropertyDrawExtraType, PropertyObjectEntity> getPropertyExtras() {
         return propertyExtras.getMap();
@@ -197,27 +194,88 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return getPropertyExtra(CAPTION) != null;
     }
 
-    public Group group;
-    
-    public Group getGroup() {
-        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getParent());
-    }
-    public Group getNFGroup(Version version) {
-        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getNFParent(version, true));
-    }
-
-    public boolean attr;
-    public boolean extNull;
+    private final NFProperty<Group> group = NFFact.property();
+    private final NFProperty<Boolean> attr = NFFact.property();
+    private final NFProperty<Boolean> extNull = NFFact.property();
 
     // for pivoting
-    public String formula;
-    public ImList<PropertyDrawEntity> formulaOperands;
+    private final NFProperty<String> formula = NFFact.property();
+    private final NFProperty<ImList<PropertyDrawEntity>> formulaOperands = NFFact.property();
 
-    public PropertyGroupType aggrFunc;
-    public ImList<PropertyObjectEntity> lastAggrColumns = ListFact.EMPTY();
-    public boolean lastAggrDesc;
+    private final NFProperty<PropertyGroupType> aggrFunc = NFFact.property();
+    private final NFProperty<ImList<PropertyObjectEntity>> lastAggrColumns = NFFact.property();
+    private final NFProperty<Boolean> lastAggrDesc = NFFact.property();
 
-    public PropertyDrawEntity quickFilterProperty;
+    private final NFProperty<PropertyDrawEntity> quickFilterProperty = NFFact.property();
+
+    public Group getGroup() {
+        Group explicit = group.get();
+        return (explicit != null ? (explicit == Group.NOGROUP ? null : explicit) : getInheritedProperty().getParent());
+    }
+    public Group getNFGroup(Version version) {
+        Group explicit = group.getNF(version);
+        return (explicit != null ? (explicit == Group.NOGROUP ? null : explicit) : getInheritedProperty().getNFParent(version, true));
+    }
+    public void setGroup(Group group, Version version) {
+        this.group.set(group, version);
+    }
+
+    public boolean isAttr() {
+        Boolean value = attr.get();
+        return value != null && value;
+    }
+    public void setAttr(boolean attr, Version version) {
+        this.attr.set(attr, version);
+    }
+
+    public boolean isExtNull() {
+        Boolean value = extNull.get();
+        return value != null && value;
+    }
+    public void setExtNull(boolean extNull, Version version) {
+        this.extNull.set(extNull, version);
+    }
+
+    public String getFormula() {
+        return formula.get();
+    }
+    public void setFormula(String formula, Version version) {
+        this.formula.set(formula, version);
+    }
+    public ImList<PropertyDrawEntity> getFormulaOperands() {
+        return formulaOperands.get();
+    }
+    public void setFormulaOperands(ImList<PropertyDrawEntity> formulaOperands, Version version) {
+        this.formulaOperands.set(formulaOperands, version);
+    }
+
+    public PropertyGroupType getAggrFunc() {
+        return aggrFunc.get();
+    }
+    public void setAggrFunc(PropertyGroupType aggrFunc, Version version) {
+        this.aggrFunc.set(aggrFunc, version);
+    }
+    public ImList<PropertyObjectEntity> getLastAggrColumns() {
+        ImList<PropertyObjectEntity> value = lastAggrColumns.get();
+        return value != null ? value : ListFact.EMPTY();
+    }
+    public void setLastAggrColumns(ImList<PropertyObjectEntity> lastAggrColumns, Version version) {
+        this.lastAggrColumns.set(lastAggrColumns, version);
+    }
+    public boolean isLastAggrDesc() {
+        Boolean value = lastAggrDesc.get();
+        return value != null && value;
+    }
+    public void setLastAggrDesc(boolean lastAggrDesc, Version version) {
+        this.lastAggrDesc.set(lastAggrDesc, version);
+    }
+
+    public PropertyDrawEntity getQuickFilterProperty() {
+        return quickFilterProperty.get();
+    }
+    public void setQuickFilterProperty(PropertyDrawEntity quickFilterProperty, Version version) {
+        this.quickFilterProperty.set(quickFilterProperty, version);
+    }
 
     private final FormEntity.ExProperty activeProperty;
     public Property<?> getNFActiveProperty(Version version) {
@@ -331,7 +389,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     public AsyncEventExec getAsyncEventExec(FormInstanceContext context, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getCheckedEventAction(actionSID, context);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(context, getSecurityProperty(), this, getToDraw(context.entity), optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(context, getSecurityProperty(), this, getToDraw(context.entity), isOptimisticAsync() || externalChange);
         }
         return null;
     }
@@ -339,7 +397,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private boolean isChange(String eventActionSID, FormInstanceContext context) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
         boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
-        assert isEdit || hasContextMenuBinding(eventActionSID, context) || hasKeyBinding(eventActionSID, context);
+        assert isEdit || hasContextMenuBinding(eventActionSID, context);
         return isEdit;
     }
     
@@ -409,7 +467,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(context.entity), getReadOnly());
         } else { // default handler
-            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? getDefaultChangeEventScope() : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? getCustomChangeFunction() : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
@@ -475,7 +533,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().filterIncl(usedInterfaces).mapRevValues(ObjectEntity::getParamExpr);
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, groupObject.updateType != UpdateType.NULL, listMapParamExprs);
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(getDefaultChangeEventScope(), DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, groupObject.updateType != UpdateType.NULL, listMapParamExprs);
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             ActionMapImplement<?, PropertyInterface> request = PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
@@ -494,33 +552,136 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return instanceFactory.getInstance(this);
     }
 
-    public void setToDraw(GroupObjectEntity toDraw) {
-        this.toDraw = toDraw;
+    public void setToDraw(GroupObjectEntity toDraw, Version version) {
+        this.toDraw.set(toDraw, version);
     }
 
-    public void setMouseAction(String actionSID) {
-        mouseBinding = actionSID;
+    public void setViewType(ClassViewType viewType, Version version) {
+        this.viewType.set(viewType, version);
     }
 
-    public void setKeyAction(KeyStroke ks, String actionSID) {
-        if (keyBindings == null) {
-            keyBindings = new HashMap<>();
-        }
-        keyBindings.put(ks, actionSID);
+    public ClassViewType getNFViewType(Version version) {
+        return viewType.getNF(version);
     }
 
-    public void setContextMenuAction(String actionSID, LocalizedString caption) {
-        if (contextMenuBindings == null) {
-            contextMenuBindings = new OrderedMap<>();
-        }
-        contextMenuBindings.put(actionSID, new ActionOrProperty.ContextMenuBinding(caption, null));
+    public ClassViewType getViewType() {
+        return viewType.get();
+    }
+
+    public GroupObjectEntity getToDraw() {
+        return toDraw.get();
+    }
+
+    public GroupObjectEntity getNFToDraw(Version version) {
+        return toDraw.getNF(version);
+    }
+
+    public void setHide(boolean hide, Version version) {
+        this.hide.set(hide, version);
+    }
+
+    public boolean isHide() {
+        Boolean value = hide.get();
+        return value != null && value;
+    }
+
+    public void setRemove(boolean remove, Version version) {
+        this.remove.set(remove, version);
+    }
+
+    public boolean isRemove() {
+        Boolean value = remove.get();
+        return value != null && value;
+    }
+
+    public boolean isIgnoreHasHeaders() {
+        Boolean value = ignoreHasHeaders.get();
+        return value != null && value;
+    }
+
+    public void setIgnoreHasHeaders(boolean ignoreHasHeaders, Version version) {
+        this.ignoreHasHeaders.set(ignoreHasHeaders, version);
+    }
+
+    public void setAskConfirm(Boolean askConfirm, Version version) {
+        this.askConfirm.set(askConfirm, version);
+    }
+
+    public Boolean getAskConfirm() {
+        return askConfirm.get();
+    }
+
+    public void setAskConfirmMessage(String askConfirmMessage, Version version) {
+        this.askConfirmMessage.set(askConfirmMessage, version);
+    }
+
+    public String getAskConfirmMessage() {
+        return askConfirmMessage.get();
+    }
+
+    public String getColumnsName() {
+        return columnsName.get();
+    }
+
+    public void setColumnsName(String columnsName, Version version) {
+        this.columnsName.set(columnsName, version);
+    }
+
+    public boolean isSelector() {
+        Boolean value = isSelector.get();
+        return value != null && value;
+    }
+
+    public boolean isOptimisticAsync() {
+        Boolean value = optimisticAsync.get();
+        return value != null && value;
+    }
+
+    public String getEventID() {
+        return eventID.get();
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction, Version version) {
+        this.customRenderFunction.set(customRenderFunction, version);
+    }
+
+    public void setCustomChangeFunction(String customChangeFunction, Version version) {
+        this.customChangeFunction.set(customChangeFunction, version);
+    }
+
+    public void setOptimisticAsync(boolean optimisticAsync, Version version) {
+        this.optimisticAsync.set(optimisticAsync, version);
+    }
+
+    public void setEventID(String eventID, Version version) {
+        this.eventID.set(eventID, version);
+    }
+
+    public void setSticky(Boolean sticky, Version version) {
+        this.sticky.set(sticky, version);
+    }
+
+    public Boolean getSticky() {
+        return sticky.get();
+    }
+
+    public void setSync(Boolean sync, Version version) {
+        this.sync.set(sync, version);
+    }
+
+    public Boolean getSync() {
+        return sync.get();
+    }
+
+    public void setContextMenuAction(String actionSID, LocalizedString caption, Version version) {
+        contextMenuBindings.add(actionSID, new ActionOrProperty.ContextMenuBinding(caption, null), version);
     }
 
     // VALUE, INTERVAL or SELECTOR
     // assert that it is single panel object, VALUE, INTERVAL - Data with classes, SELECT - Object
     public void setSelectorAction(ActionObjectSelector<?> eventAction, Version version) {
         setEventAction(CHANGE, eventAction, version);
-        this.isSelector = true;
+        this.isSelector.set(true, version);
     }
     public void setEventAction(String actionSID, ActionObjectSelector<?> eventAction, Version version) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
@@ -531,13 +692,21 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         eventActions.add(actionSID, eventAction, version);
     }
 
-    public FormSessionScope defaultChangeEventScope = null;
+    private final NFProperty<FormSessionScope> defaultChangeEventScope = NFFact.property();
     public static FormSessionScope DEFAULT_ACTION_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_SELECTOR_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_CUSTOMCHANGE_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_VALUES_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_OBJECTS_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
+
+    public FormSessionScope getDefaultChangeEventScope() {
+        return defaultChangeEventScope.get();
+    }
+
+    public void setDefaultChangeEventScope(FormSessionScope defaultChangeEventScope, Version version) {
+        this.defaultChangeEventScope.set(defaultChangeEventScope, version);
+    }
 
     // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
     public ActionOrProperty<?> getBindingProperty(FormInstanceContext context) {
@@ -550,53 +719,40 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {
-        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keySet()), getKeyBindings(context).valueIt());
+        return BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keyIt());
     }
-    public OrderedMap<String, ActionOrProperty.ContextMenuBinding> getContextMenuBindings(FormInstanceContext context) {
-        ImOrderMap<String, ActionOrProperty.ContextMenuBinding> propertyContextMenuBindings = getBindingProperty(context).getContextMenuBindings();
-        if (propertyContextMenuBindings.isEmpty()) {
-            return contextMenuBindings;
-        }
+    public ImOrderMap<String, ActionOrProperty.ContextMenuBinding> getContextMenuBindings(FormInstanceContext context) {
+       return getContextMenuBindings().mergeOrder(getBindingProperty(context).getContextMenuBindings());
+    }
 
+    private ImOrderMap<String, ActionOrProperty.ContextMenuBinding> getContextMenuBindings() {
+        return contextMenuBindings.getListMap();
+    }
+
+    private static OrderedMap<String, ActionOrProperty.ContextMenuBinding> toOrderedMap(ImOrderMap<String, ActionOrProperty.ContextMenuBinding> map) {
         OrderedMap<String, ActionOrProperty.ContextMenuBinding> result = new OrderedMap<>();
-        for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
-            result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
-        }
-
-        if (contextMenuBindings != null) {
-            result.putAll(contextMenuBindings);
-        }
-
+        for (int i = 0; i < map.size(); ++i)
+            result.put(map.getKey(i), map.getValue(i));
         return result;
     }
 
     public boolean hasContextMenuBinding(String actionSid, FormInstanceContext context) {
-        OrderedMap contextMenuBindings = getContextMenuBindings(context);
-        return contextMenuBindings != null && contextMenuBindings.containsKey(actionSid);
-    }
-    
-    public boolean hasKeyBinding(String actionId, FormInstanceContext context) {
-        ImMap<KeyStroke, String> keyBindings = getKeyBindings(context);
-        return keyBindings != null && keyBindings.containsValue(actionId);
-    }
-
-    public ImMap<KeyStroke, String> getKeyBindings(FormInstanceContext context) {
-        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty(context).getKeyBindings();
-        if(keyBindings != null)
-            propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
-        return propertyKeyBindings;
-    }
-
-    public String getMouseBinding(FormInstanceContext context) {
-        return mouseBinding != null ? mouseBinding : getBindingProperty(context).getMouseBinding();
+        return getContextMenuBindings(context).containsKey(actionSid);
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
-        return columnGroupObjects;
+        ImOrderSet<GroupObjectEntity> value = columnGroupObjects.get();
+        return value != null ? value : SetFact.EMPTYORDER();
     }
-    public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects) {
-        this.columnsName = columnsName;
-        this.columnGroupObjects = columnGroupObjects;
+
+    public ImOrderSet<GroupObjectEntity> getNFColumnGroupObjects(Version version) {
+        ImOrderSet<GroupObjectEntity> value = columnGroupObjects.getNF(version);
+        return value != null ? value : SetFact.EMPTYORDER();
+    }
+
+    public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects, Version version) {
+        this.columnsName.set(columnsName, version);
+        this.columnGroupObjects.set(columnGroupObjects, version);
     }
 
     public PropertyObjectEntity<?> getPropertyExtra(PropertyDrawExtraType type) {
@@ -608,19 +764,25 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
     
     public PropertyEditType getEditType() {
-        return editType;
+        PropertyEditType value = editType.get();
+        return value != null ? value : PropertyEditType.EDITABLE;
     }
 
-    public void setEditType(PropertyEditType editType) {
-        this.editType = editType;
+    public PropertyEditType getNFEditType(Version version) {
+        PropertyEditType value = editType.getNF(version);
+        return value != null ? value : PropertyEditType.EDITABLE;
+    }
+
+    public void setEditType(PropertyEditType editType, Version version) {
+        this.editType.set(editType, version);
     }
 
     public boolean isReadOnly() {
-        return editType == PropertyEditType.READONLY;
+        return getEditType() == PropertyEditType.READONLY;
     }
 
     public boolean isEditable() {
-        return editType == PropertyEditType.EDITABLE;
+        return getEditType() == PropertyEditType.EDITABLE;
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView, Version version) {
@@ -633,13 +795,15 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(getCaption()) + " " + (formPath == null ? "" : formPath) + " property:" + getReflectionActionOrProperty();
+        String path = getFormPath();
+        return ThreadLocalContext.localize(getCaption()) + " " + (path == null ? "" : path) + " property:" + getReflectionActionOrProperty();
     }
 
     // interactive
     @Override
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null? getApplyObject(form, SetFact.EMPTY(), true) :toDraw;
+        GroupObjectEntity explicit = getToDraw();
+        return explicit == null ? getApplyObject(form, SetFact.EMPTY(), true) : explicit;
     }
 
     @Override
@@ -655,11 +819,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public GroupObjectEntity getNFApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns, Version version) {
         if(supportGroupColumns)
-            excludeGroupObjects = excludeGroupObjects.merge(getColumnGroupObjects().getSet());
+            excludeGroupObjects = excludeGroupObjects.merge(getNFColumnGroupObjects(version).getSet());
         return form.getNFApplyObject(getNFObjectInstances(version), excludeGroupObjects, version);
     }
 
-    public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
+    public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty, Supplier<GroupObjectEntity> getToDraw) {
         MAddSet<ActionOrPropertyObjectEntity<?, ?, ?>> propertyObjects = SetFact.mAddSet();
 
         PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, GRIDELEMENTCLASS, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS,
@@ -678,6 +842,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());
         mObjects.addAll(actionOrProperty.getObjectInstances());
+        GroupObjectEntity toDraw = getToDraw.get();
         if(toDraw != null)
             mObjects.addAll(toDraw.getObjects());
         return mObjects.immutable();
@@ -685,29 +850,32 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     @IdentityStartLazy
     public ImSet<ObjectEntity> getObjectInstances() {
-        return getObjectInstances(this::getPropertyExtra);
+        return getObjectInstances(this::getPropertyExtra, this::getToDraw);
     }
     public ImSet<ObjectEntity> getNFObjectInstances(Version version) {
-        return getObjectInstances(type -> getNFPropertyExtra(type, version));
+        return getObjectInstances(type -> getNFPropertyExtra(type, version), () -> getNFToDraw(version));
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
-        return toDraw == null ? getNFApplyObject(form, SetFact.EMPTY(), true, version) : toDraw;
+        GroupObjectEntity explicit = getNFToDraw(version);
+        return explicit == null ? getNFApplyObject(form, SetFact.EMPTY(), true, version) : explicit;
     }
 
-    public boolean isToolbar(FormEntity formEntity) {
-        if (viewType != null)
-            return viewType.isToolbar();
+    public boolean isNFToolbar(FormEntity formEntity, Version version) {
+        ClassViewType explicitViewType = getNFViewType(version);
+        if (explicitViewType != null)
+            return explicitViewType.isToolbar();
 
-        GroupObjectEntity toDraw = getToDraw(formEntity);
+        GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
         return toDraw != null && toDraw.viewType.isToolbar();
     }
 
-    public boolean isPopup(FormEntity formEntity) {
-        if (viewType != null)
-            return viewType.isPopup();
+    public boolean isNFPopup(FormEntity formEntity, Version version) {
+        ClassViewType explicitViewType = getNFViewType(version);
+        if (explicitViewType != null)
+            return explicitViewType.isPopup();
 
-        GroupObjectEntity toDraw = getToDraw(formEntity);
+        GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
         return toDraw != null && toDraw.viewType.isPopup();
     }
 
@@ -716,12 +884,14 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
     public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
-        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
+        ClassViewType explicitViewType = getViewType();
+        return toDraw != null && toDraw.viewType.isList() && (explicitViewType == null || explicitViewType.isList());
     }
 
     public boolean isNFList(FormEntity formEntity, Version version) {
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
-        return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
+        ClassViewType explicitViewType = getNFViewType(version);
+        return toDraw != null && toDraw.viewType.isList() && (explicitViewType == null || explicitViewType.isList());
     }
 
     static public String createSID(String name, List<String> mapping) {
@@ -746,19 +916,19 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public String getFormPath() {
-        return formPath;
+        return formPath.get();
     }
 
-    public void setFormPath(String formPath) {
-        this.formPath = formPath;
+    public void setFormPath(String formPath, Version version) {
+        this.formPath.set(formPath, version);
     }
 
     public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex;
+        return scriptIndex.get();
     }
 
-    public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
-        this.scriptIndex = scriptIndex;
+    public void setScriptIndex(Pair<Integer, Integer> scriptIndex, Version version) {
+        this.scriptIndex.set(scriptIndex, version);
     }
 
     @Override
@@ -891,7 +1061,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         ActionOrPropertyObjectEntity<?, ?, ?> actionOrProperty = getRawCellActionOrProperty();
         if(actionOrProperty instanceof PropertyObjectEntity) {
-            if(customChangeFunction != null)
+            if(getCustomChangeFunction() != null)
                 return null;
 
             String elementType = null;
@@ -925,7 +1095,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             if(explicitChange != null) {
                 // when we have selector, then it's normal for the object to be null, which however can lead to the "closure problem" - current value (it's params / objects) is "pushed" inside the JSON (GROUP) operator, which doesn't support NULL values (so all the options will be "erased")
                 GroupObjectEntity toDraw;
-                if(!forceSelect && isSelector && (toDraw = getToDraw(context.entity)) != null && toDraw.updateType == UpdateType.NULL) // assert that group object is single panel object
+                if(!forceSelect && isSelector() && (toDraw = getToDraw(context.entity)) != null && toDraw.updateType == UpdateType.NULL) // assert that group object is single panel object
                     return null;
 
                 changeValue = true;
@@ -979,6 +1149,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return null;
     }
 
+    private String getCustomChangeFunction() {
+        return customChangeFunction.get();
+    }
+
     public boolean isReadOnly(FormInstanceContext context) {
         return isReadOnly() || hasNoGridReadOnly(context.entity);
     }
@@ -1022,8 +1196,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     private String getCustomRenderFunction() {
-        if(customRenderFunction != null)
-            return customRenderFunction;
+        String custom = customRenderFunction.get();
+        if(custom != null)
+            return custom;
         return getInheritedProperty().getCustomRenderFunction();
     }
 
@@ -1133,44 +1308,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     protected PropertyDrawEntity(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
         super(src, mapping);
 
-        formPath =  src.formPath;
-        scriptIndex = src.scriptIndex;
-
-        editType = src.editType;
-        hide = src.hide;
-        remove = src.remove;
-        mouseBinding = src.mouseBinding;
-        keyBindings = src.keyBindings;
-        contextMenuBindings = src.contextMenuBindings;
-        isSelector = src.isSelector;
-        optimisticAsync = src.optimisticAsync;
-        askConfirm = src.askConfirm;
-        askConfirmMessage = src.askConfirmMessage;
-        viewType = src.viewType;
-        customRenderFunction = src.customRenderFunction;
-        customChangeFunction = src.customChangeFunction;
-        eventID = src.eventID;
-        sticky = src.sticky;
-        sync = src.sync;
-        ignoreHasHeaders = src.ignoreHasHeaders;
-        columnsName =  src.columnsName;
-        group = src.group;
-        attr = src.attr;
-        extNull = src.extNull;
-        formula = src.formula;
-        aggrFunc = src.aggrFunc;
-        lastAggrDesc =  src.lastAggrDesc;
-        inheritedProperty = src.inheritedProperty;
-        defaultChangeEventScope = src.defaultChangeEventScope;
         integrationSID = src.integrationSID;
 
         view = mapping.get(src.view);
+        inheritedProperty = src.inheritedProperty;
         actionOrProperty = mapping.get((ActionOrPropertyObjectEntity)src.actionOrProperty);
-        toDraw = mapping.get(src.toDraw); // nullable
-        columnGroupObjects = mapping.get(src.columnGroupObjects);
-        formulaOperands = mapping.get(src.formulaOperands); // nullable
-        lastAggrColumns = mapping.get(src.lastAggrColumns);
-        quickFilterProperty = mapping.get(src.quickFilterProperty); // nullable
         cellProperty = mapping.get((PropertyObjectEntity) src.cellProperty);
         activeProperty = mapping.get(src.activeProperty);
 
@@ -1184,6 +1326,50 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(caption, src.caption);
         mapping.sets(image, src.image);
+
+        mapping.sets(editType, src.editType);
+        mapping.sets(hide, src.hide);
+        mapping.sets(remove, src.remove);
+
+        mapping.set(toDraw, src.toDraw);
+
+        mapping.adds(contextMenuBindings, src.contextMenuBindings);
+
+        mapping.sets(isSelector, src.isSelector);
+        mapping.sets(optimisticAsync, src.optimisticAsync);
+        mapping.sets(askConfirm, src.askConfirm);
+        mapping.sets(askConfirmMessage, src.askConfirmMessage);
+
+        mapping.sets(viewType, src.viewType);
+        mapping.sets(customRenderFunction, src.customRenderFunction);
+        mapping.sets(customChangeFunction, src.customChangeFunction);
+        mapping.sets(eventID, src.eventID);
+
+        mapping.sets(sticky, src.sticky);
+        mapping.sets(sync, src.sync);
+
+        mapping.sets(formPath, src.formPath);
+        mapping.sets(scriptIndex, src.scriptIndex);
+
+        mapping.sets(ignoreHasHeaders, src.ignoreHasHeaders);
+
+        mapping.sets(columnsName, src.columnsName);
+        mapping.seto(columnGroupObjects, src.columnGroupObjects);
+
+        mapping.sets(group, src.group);
+        mapping.sets(attr, src.attr);
+        mapping.sets(extNull, src.extNull);
+
+        mapping.sets(formula, src.formula);
+        mapping.setl(formulaOperands, src.formulaOperands);
+
+        mapping.sets(aggrFunc, src.aggrFunc);
+        mapping.setl(lastAggrColumns, src.lastAggrColumns);
+        mapping.sets(lastAggrDesc, src.lastAggrDesc);
+
+        mapping.sets(defaultChangeEventScope, src.defaultChangeEventScope);
+
+        mapping.set(quickFilterProperty, src.quickFilterProperty);
     }
 
     @Override

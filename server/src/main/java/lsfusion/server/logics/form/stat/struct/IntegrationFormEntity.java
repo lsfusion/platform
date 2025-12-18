@@ -102,13 +102,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
-            propertyDraw.group = propUsage.group;
+            propertyDraw.setGroup(propUsage.group, version);
 
             if(groupObject != null && !addObjects.intersect(groupObject.getObjects()))
-                propertyDraw.toDraw = groupObject;
+                propertyDraw.setToDraw(groupObject, version);
 
             if(attr)
-                propertyDraw.attr = true;
+                propertyDraw.setAttr(true, version);
         }
 
         if(where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where

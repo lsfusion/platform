@@ -1,9 +1,12 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.InputBindingEvent;
@@ -372,7 +375,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     private void setupColumnGroupObjects(ReportDrawField reportField) {
         if (!entity.getColumnGroupObjects().isEmpty()) {
             reportField.hasColumnGroupObjects = true;
-            reportField.columnGroupName = entity.columnsName;
+            reportField.columnGroupName = entity.getColumnsName();
         }
     }
 
@@ -406,25 +409,26 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return aClass != null && aClass.contains(check);
     }
 
-    private OrderedMap<String, ContextMenuInfo> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
+    private ImOrderMap<String, ContextMenuInfo> filterContextMenuItems(ImOrderMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
         if (contextMenuBindings == null || contextMenuBindings.isEmpty()) {
             return null;
         }
 
-        OrderedMap<String, ContextMenuInfo> contextMenuItems = new OrderedMap<>();
-        for (int i = 0; i < contextMenuBindings.size(); ++i) {
+        int size = contextMenuBindings.size();
+        MOrderExclMap<String, ContextMenuInfo> mContextMenuItems = MapFact.mOrderExclMapMax(size);
+        for (int i = 0; i < size; ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             ActionOrProperty.ContextMenuBinding binding = contextMenuBindings.getValue(i);
             if(binding.show(this, context)) {
                 ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
                 if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
-                    contextMenuItems.put(actionSID, binding.action != null ?
+                    mContextMenuItems.exclAdd(actionSID, binding.action != null ?
                             new ContextMenuInfo(binding.caption, binding.action.getActionOrProperty().getSID(), binding.action.getCreationPath(), binding.action.getPath())
                             : new ContextMenuInfo(binding.caption, actionSID, eventAction.getCreationPath(), eventAction.getPath()));
                 }
             }
         }
-        return contextMenuItems;
+        return mContextMenuItems.immutableOrder();
     }
 
     private static class ContextMenuInfo {
@@ -458,9 +462,10 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     public String getAskConfirmMessage(FormInstanceContext context) {
-        assert entity.askConfirm;
-        if (entity.askConfirmMessage != null)
-            return entity.askConfirmMessage;
+        assert nvl(entity.getAskConfirm(), false);
+        String message = entity.getAskConfirmMessage();
+        if (message != null)
+            return message;
         
         LocalizedString msg;
         if (isProperty(context)) {
@@ -582,8 +587,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeString(outStream, ThreadLocalContext.localize(getValueTooltip()));
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
-        outStream.writeBoolean(entity.hide);
-        outStream.writeBoolean(entity.remove);
+        outStream.writeBoolean(entity.isHide());
+        outStream.writeBoolean(entity.isRemove());
 
         //entity часть
         if(isProperty(pool.context)) {
@@ -623,10 +628,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
             AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
         }
 
-        outStream.writeBoolean(entity.ignoreHasHeaders);
+        outStream.writeBoolean(entity.isIgnoreHasHeaders());
 
-        outStream.writeBoolean(entity.askConfirm);
-        if(entity.askConfirm)
+        boolean askConfirm = nvl(entity.getAskConfirm(), false);
+        outStream.writeBoolean(askConfirm);
+        if(askConfirm)
             pool.writeString(outStream, getAskConfirmMessage(pool.context));
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
@@ -647,7 +653,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeString(outStream, getIntegrationSID());
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
 
-        pool.writeString(outStream, entity.columnsName);
+        pool.writeString(outStream, entity.getColumnsName());
         ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
         outStream.writeInt(columnGroupObjects.size());
         for (GroupObjectEntity groupEntity : columnGroupObjects) {
@@ -670,19 +676,22 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         outStream.writeBoolean(getNotSelectAll());
 
         // for pivoting
-        pool.writeString(outStream, entity.formula);
-        if(entity.formula != null) {
-            ImList<PropertyDrawEntity> formulaOperands = entity.formulaOperands;
+        String formula = entity.getFormula();
+        pool.writeString(outStream, formula);
+        if(formula != null) {
+            ImList<PropertyDrawEntity> formulaOperands = entity.getFormulaOperands();
             outStream.writeInt(formulaOperands.size());
             for (PropertyDrawEntity formulaOperand : formulaOperands)
                 pool.serializeObject(outStream, pool.context.view.get(formulaOperand));
         }
 
-        pool.writeString(outStream, entity.aggrFunc != null ? entity.aggrFunc.toString() : null);
-        outStream.writeInt(entity.lastAggrColumns.size());
-        outStream.writeBoolean(entity.lastAggrDesc);
+        Object aggrFunc = entity.getAggrFunc();
+        pool.writeString(outStream, aggrFunc != null ? aggrFunc.toString() : null);
+        outStream.writeInt(entity.getLastAggrColumns().size());
+        outStream.writeBoolean(entity.isLastAggrDesc());
 
-        pool.serializeObject(outStream, entity.quickFilterProperty != null ? pool.context.view.get(entity.quickFilterProperty) : null);
+        PropertyDrawEntity quickFilterProperty = entity.getQuickFilterProperty();
+        pool.serializeObject(outStream, quickFilterProperty != null ? pool.context.view.get(quickFilterProperty) : null);
 
         MapKeysTable<? extends PropertyInterface> mapTable = isProperty(pool.context) ?
                         ((Property<?>)debugBinding).mapTable : null;
@@ -716,25 +725,17 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
         pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
 
-        pool.writeString(outStream, entity.eventID);
+        pool.writeString(outStream, entity.getEventID());
 
         pool.writeString(outStream, debug.getCreationScript());
         pool.writeString(outStream, debug.getCreationPath());
         pool.writeString(outStream, debug.getPath());
         pool.writeString(outStream, entity.getFormPath());
 
-        pool.writeString(outStream, entity.getMouseBinding(pool.context));
+        pool.writeString(outStream, null);
+        outStream.writeInt(0);
 
-        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
-        outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
-        if (keyBindings != null) {
-            for (int i=0,size=keyBindings.size();i<size;i++) {
-                pool.writeObject(outStream, keyBindings.getKey(i));
-                pool.writeString(outStream, keyBindings.getValue(i));
-            }
-        }
-
-        OrderedMap<String, ContextMenuInfo> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
+        ImOrderMap<String, ContextMenuInfo> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
@@ -1578,8 +1579,9 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     public boolean isSticky(FormInstanceContext context) {
-        if (entity.sticky != null)
-            return entity.sticky;
+        Boolean entitySticky = entity.getSticky();
+        if (entitySticky != null)
+            return entitySticky;
 
         Boolean stickyValue = sticky.get();
         if (stickyValue != null)
@@ -1604,7 +1606,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     public Boolean getSync() {
-        return nvl(entity.sync, sync.get());
+        return nvl(entity.getSync(), sync.get());
     }
     public Boolean getNFSync(Version version) {
         return sync.getNF(version);

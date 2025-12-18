@@ -159,7 +159,6 @@ import org.codehaus.janino.SimpleCompiler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.mail.Message;
-import javax.swing.*;
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -1267,8 +1266,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (ps.extId != null)
             actionOrProperty.setExtId(ps.extId);
 
-        if (ps.keyPressKey != null)
-            setScriptedKeyPressAction(property, ps.keyPressKey, ps.keyPressAction);
         if (ps.contextMenuEventAction != null)
             setScriptedContextMenuAction(property, ps.contextMenuEventCaption, ps.contextMenuEventAction);
         if(ps.editEventActionType != null)
@@ -1535,16 +1532,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String actionSID = actionImplement.action.getSID();
         property.getActionOrProperty().setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.action));
-        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
-    }
-
-    public void setScriptedKeyPressAction(LAP property, String key, LAWithParams action) {
-        List<Object> params = getParamsPlainList(Collections.singletonList(action));
-        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
-        ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
-
-        String actionSID = actionImplement.action.getSID();
-        property.getActionOrProperty().setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
         property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 

@@ -23,7 +23,7 @@ public abstract class BaseClassFormEntity extends AutoFinalFormEntity {
         if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
             PropertyDrawEntity objectValue = addValuePropertyDraw(LM, object);
-            objectValue.setEditType(PropertyEditType.READONLY);
+            setEditType(objectValue, PropertyEditType.READONLY);
         }
 
         addPropertyDraw(object, LM.getBaseGroup());

@@ -417,8 +417,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                if(entity.viewType == null)
-                    entity.viewType = ClassViewType.LIST;
+                if(entity.getNFViewType(version) == null)
+                    entity.setViewType(ClassViewType.LIST, version);
             }
 
             @Override

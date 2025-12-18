@@ -571,7 +571,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // the problem is that if removed components are not put somewhere they are not finalized
     public void removeComponent(ComponentView component, Version version) {
         if(component instanceof PropertyDrawView) {
-            ((PropertyDrawView) component).entity.remove = true;
+            ((PropertyDrawView) component).entity.setRemove(true, version);
         }
         removedComponents.add(component);
         component.removeFromParent(version);

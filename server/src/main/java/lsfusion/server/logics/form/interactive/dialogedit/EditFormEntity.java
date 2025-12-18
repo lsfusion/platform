@@ -15,7 +15,6 @@ public class EditFormEntity extends BaseClassFormEntity {
 
         finalizeInit();
 
-        DefaultFormView design = getInitDesign();
-        design.removeComponent(design.get(dropActionPropertyDraw), baseVersion);
+        removeComponent(dropActionPropertyDraw);
     }
 }

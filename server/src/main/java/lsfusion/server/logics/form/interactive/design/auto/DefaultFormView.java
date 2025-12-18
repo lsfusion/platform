@@ -286,7 +286,7 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
         action.setShowChangeKey(false, version);
         action.setShowChangeMouse(false, version);
         action.setFocusable(false, version);
-        action.entity.setEditType(PropertyEditType.EDITABLE);
+        action.entity.setEditType(PropertyEditType.EDITABLE, version);
         action.setAlignment(FlexAlignment.STRETCH, version);
     }
 
@@ -343,9 +343,9 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
         drawEntity.proceedDefaultDesign(view, this, version);
 
         ContainerView propertyContainer;
-        if (view.entity.isToolbar(entity)) {
+        if (view.entity.isNFToolbar(entity, version)) {
             propertyContainer = getToolbarPropsContainer(drawEntity, version);
-        } else if (view.entity.isPopup(entity)) {
+        } else if (view.entity.isNFPopup(entity, version)) {
             propertyContainer = getPopupPropsContainer(drawEntity, version);
         } else {
             propertyContainer = getPropGroupContainer(drawEntity, view.entity.getNFGroup(version), version);

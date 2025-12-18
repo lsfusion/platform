@@ -30,7 +30,7 @@ public class PropertyParseNode implements ChildParseNode {
     @Override
     public JSONField getField() {
         PropertyReaderEntity showIfProp = property.getShowIfProp();
-        FieldShowIf fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : property.extNull ? FieldShowIf.EXTNULL : null;
+        FieldShowIf fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : property.isExtNull() ? FieldShowIf.EXTNULL : null;
         return new JSONField(getKey(), fieldShowIf);
     }
 
@@ -41,13 +41,13 @@ public class PropertyParseNode implements ChildParseNode {
     }
 
     public boolean isAttr() {
-        return property.attr;
+        return property.isAttr();
     }
 
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
         Object propertyValue;
         try {
-            propertyValue = node.getValue(getKey(), property.attr, property.getImportType());
+            propertyValue = node.getValue(getKey(), property.isAttr(), property.getImportType());
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
@@ -57,8 +57,8 @@ public class PropertyParseNode implements ChildParseNode {
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(property, upValues);
         PropertyReaderEntity showIfProp = property.getShowIfProp();
-        if (showIfProp != null ? exportData.getProperty(showIfProp, upValues) != null : (value != null || property.extNull)) {
-            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
+        if (showIfProp != null ? exportData.getProperty(showIfProp, upValues) != null : (value != null || property.isExtNull())) {
+            node.addValue(node, getKey(), property.isAttr(), value, exportData.getType(property));
             return true;
         }
         return false;

@@ -893,7 +893,6 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $et.before, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
-		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
@@ -2992,7 +2991,6 @@ semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
 nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
     :	onEditEventSetting [ps, context]
     |	onContextMenuEventSetting [ps, context]
-    |	onKeyPressEventSetting [ps, context]
     ;
 
 nonSemiPropertyOption[PropertySettings ps, List<TypedParameter> context]
@@ -3214,10 +3212,6 @@ formEventType returns [String type, Boolean before]
 onContextMenuEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
 	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID { ps.contextMenuEventCaption = $c.val; })?
 		action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.contextMenuEventAction = $action.action; }
-	;
-
-onKeyPressEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
-	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false] { ps.keyPressKey = $key.val; ps.keyPressAction = $action.action; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

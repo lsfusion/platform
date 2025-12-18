@@ -465,8 +465,8 @@ public class ScriptingFormEntity {
             PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), property.listInterfaces, inherited.result, location, version);
 
             DebugInfo.DebugPoint debugPoint = points.get(i);
-            propertyDraw.setFormPath(debugPoint.getFullPath());
-            propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
+            propertyDraw.setFormPath(debugPoint.getFullPath(), version);
+            propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset), version);
 
             if(selectorAction != null)
                 propertyDraw.setSelectorAction(selectorAction, version);
@@ -559,7 +559,7 @@ public class ScriptingFormEntity {
 
         FormPropertyOptions.Columns columns = options.getColumns();
         if (columns != null) {
-            property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
+            property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns), version);
         }
 
         property.setPropertyExtra(options.getHeader(), PropertyDrawExtraType.CAPTION, version);
@@ -567,15 +567,15 @@ public class ScriptingFormEntity {
 
         property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF, version);
 
-        property.formula = options.formula;
-        property.formulaOperands = options.formulaOperands;
-        property.aggrFunc = options.aggrFunc;
-        property.lastAggrColumns = nvl(options.lastAggrColumns, ListFact.EMPTY());
-        property.lastAggrDesc = nvl(options.lastAggrDesc, false);
+        property.setFormula(options.formula, version);
+        property.setFormulaOperands(options.formulaOperands, version);
+        property.setAggrFunc(options.aggrFunc, version);
+        property.setLastAggrColumns(nvl(options.lastAggrColumns, ListFact.EMPTY()), version);
+        property.setLastAggrDesc(nvl(options.lastAggrDesc, false), version);
 
-        property.defaultChangeEventScope = options.getFormSessionScope();
+        property.setDefaultChangeEventScope(options.getFormSessionScope(), version);
 
-        property.quickFilterProperty = options.getQuickFilterPropertyDraw();
+        property.setQuickFilterProperty(options.getQuickFilterPropertyDraw(), version);
 
         PropertyObjectEntity valueElementClassProperty = options.getValueElementClass();
         if(valueElementClassProperty != null) {
@@ -607,19 +607,19 @@ public class ScriptingFormEntity {
             property.setPropertyExtra(addReadonlyIfPropertyObject(disableIf, readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
         }
         if (options.getViewType() != null) {
-            property.viewType = options.getViewType();
+            property.setViewType(options.getViewType(), version);
         }
         String customRenderFunction = options.getCustomRenderFunction();
         if (customRenderFunction != null) {
-            property.customRenderFunction = customRenderFunction;
+            property.setCustomRenderFunction(customRenderFunction, version);
         }
         String customEditorFunction = options.getCustomEditorFunction();
         if (customEditorFunction != null) {
-            property.customChangeFunction = customEditorFunction;
+            property.setCustomChangeFunction(customEditorFunction, version);
         }
 
         if (options.getToDraw() != null) {
-            property.toDraw = options.getToDraw();
+            property.setToDraw(options.getToDraw(), version);
         }
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
@@ -634,7 +634,7 @@ public class ScriptingFormEntity {
 
         Boolean optimisticAsync = options.getOptimisticAsync();
         if (optimisticAsync != null && optimisticAsync) {
-            property.optimisticAsync = true;
+            property.setOptimisticAsync(true, version);
         }
 
         Boolean isSelector = options.getSelector();
@@ -657,24 +657,17 @@ public class ScriptingFormEntity {
         OrderedMap<String, LocalizedString> contextMenuBindings = options.getContextMenuBindings();
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
-                property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i));
+                property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i), version);
             }
         }
         
-        Map<KeyStroke, String> keyBindings = options.getKeyBindings();
-        if (keyBindings != null) {
-            for (KeyStroke key : keyBindings.keySet()) {
-                property.setKeyAction(key, keyBindings.get(key));
-            }
-        }
-
         PropertyEditType editType = options.getEditType();
         if (editType != null)
-            property.setEditType(editType);
+            property.setEditType(editType, version);
 
         String eventID = options.getEventId();
         if (eventID != null)
-            property.eventID = eventID;
+            property.setEventID(eventID, version);
 
         String integrationSID = options.getIntegrationSID();
         if (integrationSID != null)
@@ -683,15 +676,15 @@ public class ScriptingFormEntity {
         String groupName = options.getGroupName();
         Group group = (groupName == null ? null : LM.findGroup(groupName));
         if(group != null)
-            property.group = group;
+            property.setGroup(group, version);
 
         Boolean attr = options.getAttr();
         if(attr != null)
-            property.attr = attr;
+            property.setAttr(attr, version);
 
         Boolean extNull = options.getExtNull();
         if(extNull != null)
-            property.extNull = extNull;
+            property.setExtNull(extNull, version);
 
         Boolean descending = options.getDescending();
         if(descending != null)
@@ -709,10 +702,10 @@ public class ScriptingFormEntity {
 
         Boolean sticky = options.getSticky();
         if(sticky != null)
-            property.sticky = sticky;
+            property.setSticky(sticky, version);
         Boolean sync = options.getSync();
         if(sync != null)
-            property.sync = sync;
+            property.setSync(sync, version);
 
         PropertyObjectEntity propertyCustomOptions = options.getPropertyCustomOptions();
         if(propertyCustomOptions != null && ((PropertyObjectEntity<?>)propertyCustomOptions).property.getType().equals(JSONClass.instance))

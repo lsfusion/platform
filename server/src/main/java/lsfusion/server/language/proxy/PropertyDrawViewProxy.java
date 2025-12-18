@@ -259,7 +259,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     @SuppressWarnings("unused")
     public void setHide(boolean hide) {
-        target.entity.hide = hide;
+        target.entity.setHide(hide, getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -454,12 +454,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     @SuppressWarnings("unused")
     public void setAskConfirm(boolean askConfirm) {
-        target.entity.askConfirm = askConfirm;
+        target.entity.setAskConfirm(askConfirm, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setAskConfirmMessage(LocalizedString askConfirmMessage) {
-        target.entity.askConfirmMessage = askConfirmMessage.getSourceString();
+        target.entity.setAskConfirmMessage(askConfirmMessage.getSourceString(), getVersion());
     }
 
     @SuppressWarnings("unused")
@@ -479,10 +479,11 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     @SuppressWarnings("unused")
     public void setSelect(Object select) {
+        Version version = getVersion();
         if(select instanceof LocalizedString) {
-            target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
+            target.entity.setCustomRenderFunction(PropertyDrawEntity.SELECT + select, version);
         } else if(select instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) select).property.isExplicitNull()) {
-            target.entity.customRenderFunction = PropertyDrawEntity.NOSELECT;
+            target.entity.setCustomRenderFunction(PropertyDrawEntity.NOSELECT, version);
         } else {
             throw new UnsupportedOperationException("Unsupported value: " + select);
         }

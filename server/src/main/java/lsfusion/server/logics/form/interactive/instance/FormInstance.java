@@ -612,7 +612,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Set<PropertyDrawInstance<?>> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
-            if (property.toDraw == go && !property.getEntity().remove) {
+            if (property.toDraw == go && !property.getEntity().isRemove()) {
                 if (!hiddenSidsList.contains(property.getSID())) {
                     hiddenProps.remove(property);        
                 } else {
@@ -2436,7 +2436,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector) { // don't show property if it is always null
+        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector()) { // don't show property if it is always null
             return false;
         }
 

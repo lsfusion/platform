@@ -337,7 +337,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
     @IdentityLazy
     public ImSet<PropertyDrawEntity> getUserPrefsHiddenProperties() {
-        return getPropertyDrawsList().getSet().filterFn(property -> property.hide || property.remove);
+        return getPropertyDrawsList().getSet().filterFn(property -> property.isHide() || property.isRemove());
     }
 
     public NFProperty<Boolean> localAsync = NFFact.property();
@@ -450,10 +450,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             group.count = propertyDraw;
             propertyDraw.setAddParent(group, (Function<GroupObjectEntity, PropertyDrawEntity>) g -> g.count);
             setFinalPropertyDrawSID(propertyDraw, "COUNT(" + group.getSID() + ")");
-            propertyDraw.setToDraw(group);
+            propertyDraw.setToDraw(group, version);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getNFListViewType(version)))), PropertyDrawExtraType.SHOWIF, version);
-            propertyDraw.ignoreHasHeaders = true;
+            propertyDraw.setIgnoreHasHeaders(true, version);
         }
     }
 
@@ -1335,7 +1335,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     @IdentityLazy
     public boolean hasHeaders(GroupObjectEntity entity) {
         for (PropertyDrawEntity property : getProperties(entity))
-            if (property.isList(this) && !property.ignoreHasHeaders && property.getDrawCaption() != null)
+            if (property.isList(this) && !property.isIgnoreHasHeaders() && property.getDrawCaption() != null)
                 return true;
         return false;
     }
@@ -1541,14 +1541,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public void setEditType(PropertyEditType editType) {
-        for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
-            setEditType(propertyView, editType);
-        }
-    }
-
-    public void setEditType(PropertyDrawEntity property, PropertyEditType editType) {
-        property.setEditType(editType);
+    public void setEditType(PropertyDrawEntity property, PropertyEditType editType, Version version) {
+        property.setEditType(editType, version);
     }
     
     public void addUserFilter(PropertyDrawEntity property, Version version) {

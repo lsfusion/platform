@@ -169,10 +169,10 @@ public class InstanceFactory {
                     entity,
                     getInstance(entity.actionOrProperty),
                     getInstance(entity.getCellProperty(context)),
-                    getInstance(entity.toDraw),
+                    getInstance(entity.getToDraw()),
                     columnGroupObjects,
                     PropertyDrawExtraType.extras.mapValues((PropertyDrawExtraType type) -> entity.hasPropertyExtra(type) ? getInstance(entity.getPropertyExtra(type)) : null),
-                    entity.lastAggrColumns.mapListValues(this::getInstance)
+                    entity.getLastAggrColumns().mapListValues(this::getInstance)
             );
             propertyDrawInstances.exclAdd(entity, propertyDrawInstance);
         }

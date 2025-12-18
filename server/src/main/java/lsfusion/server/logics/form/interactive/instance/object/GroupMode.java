@@ -45,8 +45,8 @@ public class GroupMode {
             GroupColumn groupColumn = mAggrGroupProps.get(i);
             PropertyDrawEntity<?, ?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
 
-            if(entity.formula != null)
-                for(PropertyDrawEntity formulaOperand : entity.formulaOperands) {
+            if(entity.getFormula() != null)
+                for(PropertyDrawEntity formulaOperand : entity.getFormulaOperands()) {
                     GroupColumn formulaColumn = new GroupColumn(instanceFactory.getInstance(formulaOperand), groupColumn.columnKeys);
                     if(!groupProps.contains(formulaColumn))
                         mAggrGroupProps.add(formulaColumn);
@@ -56,8 +56,9 @@ public class GroupMode {
 
         return new GroupMode(groupProps, group(aggrGroupProps.getSet(), groupColumn -> {
             PropertyDrawEntity entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
-            if(entity.aggrFunc != null)
-                return entity.aggrFunc;
+            PropertyGroupType aggrFunc = entity.getAggrFunc();
+            if(aggrFunc != null)
+                return aggrFunc;
             return aggrType;
         }));
     }
@@ -99,7 +100,7 @@ public class GroupMode {
 
                     // first find last values
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getGroupProperty()));
-                    ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.lastAggrDesc);
+                    ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.isLastAggrDesc());
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastValues = property.aggrLastReaders.getSet().mapValues((PropertyDrawInstance<K>.LastReaderInstance aggrLastReader) ->
                             GroupExpr.create(groupModeExprs, ListFact.toList(ValueExpr.get(groupModeWhere), lastAggrExprs.get(aggrLastReader)), orders, false, GroupType.LAST, groupModeExprs, false));
 
