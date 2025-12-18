@@ -88,6 +88,8 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
     public GridPropertyView(IDGenerator idGen, Version version) {
         super(idGen);
 
+        this.idGen = idGen;
+
         toolbarSystem = new ToolbarView<>(idGen, (This) this);
 
         filtersContainer = new ContainerView(idGen);
