@@ -1051,6 +1051,10 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
+jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'form';
+
+//defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1);
+
 formCustomizeBackground() += RGB(211, 229, 232);// IF extendCode(currentOriginalForm());
 
 enableOriginalCode = DATA LOCAL BOOLEAN(); 
@@ -1060,11 +1064,27 @@ recreate = DATA LOCAL BOOLEAN();
 
 FORM customizeForm
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
-    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL, extendCodeCurrentUser = TEXT PANEL
-    PROPERTIES sid = VALUE(sid), 
-        code = VALUE(code) READONLY SHOWIF enableOriginalCode(), 
-        extendCodeAll = VALUE(extendCodeAll) SHOWIF enableExtendCodeAll(),
-        extendCodeCurrentUser = VALUE(extendCodeCurrentUser) SHOWIF enableExtendCodeCurrentUser()
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
+    PROPERTIES sid = VALUE(sid),
+        code = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode(),
+        extendCodeAll = jsonCode(extendCodeAll) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+            INPUT s = TEXT DO {
+                stringToFile(s);
+                LOCAL text = STRING();
+                IMPORT JSON FROM resultFile() TO() text;
+                SEEK customizeForm.extendCodeAll = text();
+                dataExtendCode(form(sid)) <- text();
+            }
+        },
+        extendCodeCurrentUser = jsonCode(extendCodeCurrentUser) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+            INPUT s = TEXT DO {
+                stringToFile(s);
+                LOCAL text = STRING();
+                IMPORT JSON FROM resultFile() TO() text;
+                SEEK customizeForm.extendCodeCurrentUser = text();
+                dataExtendCode(form(sid), currentUser()) <- text();
+            }
+        }
     ON INIT {
         enableOriginalCode() <- TRUE;
         enableExtendCodeAll() <- TRUE IF extendCodeAll;
@@ -1097,19 +1117,19 @@ DESIGN customizeForm {
                 caption = 'Original code';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
-                charWidth = 30;
+                charWidth = 50;
             }
             MOVE PROPERTY(extendCodeAll) {
                 caption = 'Extend code for all';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
-                charWidth = 30;
+                charWidth = 50;
             }
             MOVE PROPERTY(extendCodeCurrentUser) {
                 caption = 'Extend code for current user';
                 panelCaptionVertical = TRUE;
                 charHeight = 30;
-                charWidth = 30;
+                charWidth = 50;
             }
         }
     }
@@ -1118,7 +1138,11 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    DIALOG customizeForm OBJECTS sid = sid, code = code, extendCodeAll = dataExtendCode(form(sid)) NULL, extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL NOMANAGESESSION;
+    DIALOG customizeForm OBJECTS sid = sid, 
+        code = code, 
+        extendCodeAll = dataExtendCode(form(sid)) NULL, 
+        extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL
+        NOMANAGESESSION;
     IF recreate() THEN {
         formRecreate();
     }

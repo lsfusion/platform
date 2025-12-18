@@ -27,6 +27,9 @@ public class FormRecreateAction extends InternalAction {
         FormInstance form = context.getFormInstance(true, true);
         form.formClose(context, true);
 
+        //need to reset sessionOwners for correct heuristicManageSession
+        getBaseLM().sessionOwners.change(0, context);
+
         Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
         form.recreatedForm = context.createAndRequestFormInstance(resolvedForm.first, resolvedForm.second.mapValues(object -> form.instanceFactory.getInstance(object).getObjectValue()), form.options);
     }
