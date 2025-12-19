@@ -47,7 +47,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
         objectClass.addStaticObjects(names, captions, images, version);
         for (ObjectInfo info : objectClass.getNFStaticObjectsInfoIt(version))
-            info.sid = info.name;
+            info.fullName = info.name;
     }
 
     public static boolean inSet(ConcreteClass cClass, AndClassSet set) {
@@ -129,16 +129,24 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, LocalizedString caption, String image) {
-            this.sid = sid;
+        public ObjectInfo(String fullName, String name, LocalizedString caption, String image) {
+            this.fullName = fullName;
             this.name = name;
             if(caption == null)
                 caption = LocalizedString.create(BaseUtils.humanize(name));
             this.caption = caption;
             this.image = (image != null ? image : name);
         }
+        
+        public String getSID() {
+            // replace only the first dot inside class canonical name
+            int dotPosition = fullName.indexOf('.');
+            assert dotPosition > 0;
+            return fullName.substring(0, dotPosition) + "_" + fullName.substring(dotPosition + 1);
+        }
 
         public String sid;
+        public String fullName;
         public String name;
         public LocalizedString caption;
         public String image;
@@ -192,7 +200,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public final void addStaticObjects(List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i)), version);
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectFullName(names.get(i)), names.get(i), captions.get(i), images.get(i)), version);
         }
     }
 
@@ -263,7 +271,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         ImList<ObjectInfo> staticObjectsInfoList = getStaticObjectsInfoList();
         for (int i = 0; i < staticObjectsInfoList.size(); i++) {
             ObjectInfo info = staticObjectsInfoList.get(i);
-            String newSID = info.sid; // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя, наверное, можно уже переходить на канонические имена 
+            final String newSID = info.getSID(); // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя нужно уже переходить на канонические имена
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
                 throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{classes.objects.have.the.same.id}", newSID, this.caption, usedClass.caption)));
@@ -292,7 +300,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, i));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, info.fullName, staticObjectCaption, staticObjectImage, i));
                 info.id = id;
             }
 
@@ -303,8 +311,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 dbChanges.removed.add(new DBManager.IDRemove(new DataObject(oldClass.getValue().ID, this), oldClass.getKey()));
     }
 
-    private String createStaticObjectSID(String objectName) {
-        return getSID() + "." + objectName;
+    private String createStaticObjectFullName(String objectName) {
+        return getCanonicalName() + "." + objectName;
     }
 
     @Override

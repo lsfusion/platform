@@ -1475,14 +1475,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public final ConcreteCustomClass customClass;
         public final String sID;
+        public final String fullName;
         public final String caption;
         public final String image;
         public final int order;
 
-        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption, String image, int order) {
+        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String fullName, String caption, String image, int order) {
             this.object = object;
             this.customClass = customClass;
             this.sID = sID;
+            this.fullName = fullName;
             this.caption = caption;
             this.image = image;
             this.order = order;
@@ -1515,10 +1517,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             for (IDAdd addedObject : added) {
                 if(!isFirstStart)
-                    startLog("Adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", name " + addedObject.caption + ", image " + addedObject.image);
+                    startLog("Adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", caption " + addedObject.caption + ", image " + addedObject.image);
                 DataObject classObject = new DataObject(addedObject.object, LM.baseClass.unknown);
                 session.changeClass(classObject, addedObject.customClass);
                 LM.staticName.change(addedObject.sID, session, classObject);
+                LM.fullName.change(addedObject.fullName, session, classObject);
+                LM.name.change(addedObject.fullName.substring(addedObject.fullName.lastIndexOf('.') + 1), session, classObject);
                 LM.staticCaption.change(addedObject.caption, session, classObject);
                 LM.staticImage.change(addedObject.image, session, classObject);
                 LM.staticOrder.change(addedObject.order, session, classObject);

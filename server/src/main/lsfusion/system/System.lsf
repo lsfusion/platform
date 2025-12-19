@@ -140,10 +140,19 @@ dropNoEventsInTransaction()  INTERNAL  <{ context.getSession().setNoEventsInTran
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsAction' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
-staticName '{system.static.name.object}' = DATA BPSTRING[250] (StaticObject) TABLE staticObject @@deprecated('6.1','use name instead');
-name '{system.static.name.object}' (StaticObject o) = staticName(o) MATERIALIZED TABLE staticObject;
+// returns 'namespace_name' for CustomObjectClass objects or 'namespace_className.name' for static objects of other classes
+staticName '{system.static.name.object}' = DATA BPSTRING[250] (StaticObject) TABLE staticObject @@deprecated('6.1','use fullName or name instead');
+
+// returns 'namespace.name' for CustomObjectClass objects or 'namespace.className.name' for static objects of other classes
+fullName '{system.static.name.object}' = DATA STRING (StaticObject) TABLE staticObject;
+
+// returns only name
+name '{system.static.name.object}' (StaticObject o) = DATA STRING (StaticObject) TABLE staticObject;
+
 nameStatic (name) = GROUP NAGGR StaticObject object BY staticName(object) @@deprecated('6.1','use staticObject instead');
 staticObject (STRING name) = nameStatic(name);
+
+isStaticObject(StaticObject so) = BOOLEAN(name(so));
 
 fillingIDs = DATA LOCAL BOOLEAN ();
 CONSTRAINT CHANGED(staticName(StaticObject object)) AND NOT fillingIDs() MESSAGE '{system.constraint.change.staticname.forbidden}';
@@ -154,9 +163,9 @@ order = DATA INTEGER (StaticObject) TABLE staticObject IN id;
 image '{classes.image}' = DATA HTML (StaticObject) TABLE staticObject IN id;
 
 objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o)) @@deprecated('6.1','use className instead');
-className '{system.object.class.name.object}' (Object o) = caption(class(o));
+classCaption '{system.object.class.name.object}' (Object o) = caption(class(o));
 prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o))) @@deprecated('6.1','use prevClassName instead');
-prevClassName '{system.object.class.name.object}' (Object o) = caption(PREV(class(o)));
+prevClassCaption '{system.object.class.name.object}' (Object o) = caption(PREV(class(o)));
 
 defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();
 defaultOverrideBackgroundColor '{system.default.background.color}' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
