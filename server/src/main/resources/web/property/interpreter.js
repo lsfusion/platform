@@ -80,6 +80,11 @@ function interpreter() {
 
                     element.currentValue = editorValue;
                 }
+
+                //reset default text set by aceEditor.on("focus"...
+                if (aceEditor.getValue() === aceEditor.defaultValue) {
+                    aceEditor.setValue('');
+                }
             }
 
             element.currentValue = aceEditor.getValue();
@@ -115,6 +120,17 @@ function interpreter() {
                     aceEditor.setValue(editorValue);
 
                     element.currentValue = editorValue;
+                }
+
+                if(aceEditor.defaultValue == null) {
+                    aceEditor.defaultValue = value.defaultText;
+                    if(aceEditor.defaultValue != null) {
+                        aceEditor.on("focus", function () {
+                            if (aceEditor.getValue() === '') {
+                                aceEditor.setValue(aceEditor.defaultValue);
+                            }
+                        });
+                    }
                 }
             }
         }

@@ -1051,9 +1051,8 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
-jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'form';
-
-//defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1);
+defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + ';';
+jsonCode (STRING code, STRING sid) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), type = 'form';
 
 formCustomizeBackground() += RGB(211, 229, 232);// IF extendCode(currentOriginalForm());
 
@@ -1066,8 +1065,8 @@ FORM customizeForm
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
     OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
     PROPERTIES sid = VALUE(sid),
-        code = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode(),
-        extendCodeAll = jsonCode(extendCodeAll) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+        code = jsonCode(code, sid) CUSTOM 'interpreter' SHOWIF enableOriginalCode(),
+        extendCodeAll = jsonCode(extendCodeAll, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
                 stringToFile(s);
                 LOCAL text = STRING();
@@ -1076,7 +1075,7 @@ FORM customizeForm
                 dataExtendCode(form(sid)) <- text();
             }
         },
-        extendCodeCurrentUser = jsonCode(extendCodeCurrentUser) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+        extendCodeCurrentUser = jsonCode(extendCodeCurrentUser, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
             INPUT s = TEXT DO {
                 stringToFile(s);
                 LOCAL text = STRING();
