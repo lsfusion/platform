@@ -8,7 +8,6 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.ObjectMapping;
@@ -68,6 +67,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     protected NFProperty<PropertyObjectEntity> showIf = NFFact.property();
 
     protected NFProperty<ContainerView> container = NFFact.property();
+    public final NFProperty<Boolean> defaultContainer = NFFact.property();
 
     @Override
     public String toString() {
@@ -675,6 +675,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         super.extend(src, mapping);
 
         mapping.set(container, src.container);
+        mapping.sets(defaultContainer, src.defaultContainer);
 
         mapping.sets(elementClass, src.elementClass);
         mapping.set(propertyElementClass, src.propertyElementClass);

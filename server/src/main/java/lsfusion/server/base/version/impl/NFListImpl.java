@@ -38,7 +38,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
             return result;
             
         final MList<T> mList = ListFact.mList();
-        proceedChanges(change -> change.proceedList(mList, version), version);
+        proceedChanges((change, nextChange) -> change.proceedList(mList, version), version);
         return mList.immutableList();
     }
 

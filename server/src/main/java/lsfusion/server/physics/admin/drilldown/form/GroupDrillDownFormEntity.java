@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
@@ -59,7 +58,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = interfaceObjects.get(byInterface);
             } 
             if(innerObject == null || usedObjects.add(innerObject)) {
-                innerObject = new ObjectEntity(genID, innerIntClass, LocalizedString.NONAME, innerIntClass == null);
+                innerObject = new ObjectEntity(genID, innerIntClass);
                 mObjects.exclAdd(innerObject);
 
                 addValuePropertyDraw(LM, innerObject);
@@ -69,7 +68,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             mInnerObjects.revAdd(innerInterface, innerObject);
         }
 
-        detailsGroup = addGroupObjectEntity("", mObjects.immutableOrder());
+        detailsGroup = addGroupObjectEntity(mObjects.immutableOrder());
 
         ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();
         

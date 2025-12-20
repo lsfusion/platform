@@ -31,7 +31,7 @@ public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>
             return result;
 
         final MMap<K, V> mMap = MapFact.mMap(MapFact.override());
-        proceedChanges(change -> change.proceedMap(mMap, version), version);
+        proceedChanges((change, nextChange) -> change.proceedMap(mMap, version), version);
 
         return mMap.immutable();
     }

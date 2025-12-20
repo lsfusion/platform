@@ -21,7 +21,12 @@ public class NFRemove<T> implements NFOrderSetChange<T>, NFComplexOrderSetChange
     }
 
     @Override
-    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList, Version version) {
+    public T getRemoveElement() {
+        return element;
+    }
+
+    @Override
+    public void proceedComplexOrderSet(List<T> list, List<Integer> groupList, NFComplexOrderSetChange<T> nextChange, Version version) {
         int index = list.indexOf(element);
         if(index >= 0) { // can be already removed (moved) in "parallel" module
             list.remove(index);

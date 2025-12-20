@@ -48,18 +48,19 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> {
             ValueClass interfaceClass = interfaceClasses.get(value);
-            return new ObjectEntity(genID, interfaceClass, LocalizedString.NONAME, interfaceClass == null);
+            return new ObjectEntity(genID, interfaceClass);
         });
 
         if(!valueInterfaces.isEmpty()) {
-            GroupObjectEntity valueGroupObject = addGroupObjectEntity(LM, null, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
+            GroupObjectEntity valueGroupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
 
             valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
             // sID - for JSON and XML
-            groupObject = addGroupObjectEntity(LM, "value", innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
+            groupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
+            groupObject.setSID("value");
             groupObject.setListViewType(ListViewType.CUSTOM);
             groupObject.setCustomRenderFunction("selectMultiInput");
         } else
@@ -84,13 +85,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 ObjectEntity object = mapObjects.get((P)property);
                 propertyDraw = addValuePropertyDraw(LM, object, version);
                 addObjects = SetFact.singleton(object);
-                propertyDraw.setIntegrationSID(object.getIntegrationSID()); // also sID can be set, but now it's not clear what for
+                propertyDraw.setSID(object.getSID()); // important for SELECT change json somewhy
             }
 
             String alias = propUsage.alias;
             if(alias != null) {
                 if(propUsage.literal) {
-                    propertyDraw.setIntegrationSID(alias);
+                    propertyDraw.setIntegrationSID(alias, version);
                     alias = null;
                 } else
                     mapAliases.exclAdd(alias, propertyDraw);
@@ -98,15 +99,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
-            if(alias != null) {
+            if(alias != null)
                 propertyDraw.setSID(alias);
-                propertyDraw.setIntegrationSID(alias);
-            }
 
-            propertyDraw.setGroup(propUsage.group, version);
+            propertyDraw.setGroup(propUsage.group, this, version);
 
             if(groupObject != null && !addObjects.intersect(groupObject.getObjects()))
-                propertyDraw.setToDraw(groupObject, version);
+                propertyDraw.setToDraw(groupObject, this, version);
 
             if(attr)
                 propertyDraw.setAttr(true, version);
@@ -119,7 +118,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         
         for(int i=0,size=orders.size();i<size;i++) {
             PropertyDrawEntity property = mapAliases.get(orders.getKey(i));
-            property.setIntegrationSID(null);
+            property.setIntegrationSID(PropertyDrawEntity.NOEXTID, version);
             property.setPropertyExtra(addPropertyObject(LM.vnull), PropertyDrawExtraType.SHOWIF, version); // for interactive view
             addDefaultOrder(property, orders.getValue(i), version);
         }

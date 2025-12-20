@@ -104,23 +104,53 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
                  main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView, context);
     }
 
-    public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
-        if(addOrMoveChecked(component, location, version) != null)
-            throw new RuntimeException("Incorrect neighbour");
-    }
-
     public <E extends Exception> ComponentView addOrMoveChecked(ComponentView component, ComplexLocation<ComponentView> location, Version version) throws E {
         ComponentView incorrectNeighbour = checkNeighbour(component, location, version);
         if(incorrectNeighbour != null)
             return incorrectNeighbour;
 
-        addOrMove(component, location, version);
+        add(component, location, version);
         return null;
     }
-    public void addOrMove(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
-        component.removeFromParent(version);
-        children.add(component, location, version);
 
+    // explicit add / move
+    public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
+        addInner(component, location, version);
+
+        if(component.defaultContainer.getNF(version) != null)
+            component.defaultContainer.set(null, version);
+    }
+
+    // default add (always new component)
+    public void addDefault(ComponentView component, Version version) {
+        addInner(component, ComplexLocation.DEFAULT(), version);
+
+        component.defaultContainer.set(true, version);
+    }
+
+    // default move
+    public void addOrMoveDefault(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
+        if(component.defaultContainer.getNF(version) == null)
+            return;
+
+        addInner(component, location, version);
+    }
+
+    private void addInner(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
+        ContainerView nf = component.getNFContainer(version);
+        if(nf != null) {
+            // optimization for the updatePropertyDraw
+            if(location == null && equals(nf))
+                return;
+
+            nf.children.remove(component, version);
+            component.setContainer(null, version);
+        }
+
+        if(location == null)
+            location = ComplexLocation.DEFAULT();
+
+        children.add(component, location, version);
         component.setContainer(this, version);
     }
 

@@ -16,7 +16,6 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadUtils;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -44,10 +43,8 @@ import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.action.ActionClassImplement;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -97,16 +94,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public Action(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
 
-        drawOptions.addProcessor(new DefaultProcessor() {
-            @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                if(entity.getNFViewType(version) == null)
-                    entity.setViewType(ClassViewType.PANEL, version);
-            }
-
-            @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-            }
+        drawOptions.addProcessor((entity, form, version) -> {
+            if(entity.getNFViewType(version) == null)
+                entity.setViewType(ClassViewType.PANEL, form, version);
         });
     }
 

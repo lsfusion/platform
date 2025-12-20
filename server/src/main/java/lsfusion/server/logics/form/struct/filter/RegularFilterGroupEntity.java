@@ -23,8 +23,13 @@ public class RegularFilterGroupEntity extends IdentityEntity<RegularFilterGroupE
 
     public boolean noNull;
 
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "regularFilter";
+    }
+
     public RegularFilterGroupEntity(IDGenerator ID, String sID, boolean noNull, Version version) {
-        super(ID, sID, "regularFilter");
+        super(ID, sID, null);
         this.defaultFilterIndex.set(noNull ? 0 : -1, version);
         this.noNull = noNull;
     }

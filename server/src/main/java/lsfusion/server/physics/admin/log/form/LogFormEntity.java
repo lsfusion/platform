@@ -42,12 +42,10 @@ public class LogFormEntity extends AutoFinalFormEntity {
         // не в одном group Object так как при поиске значений может давать "декартово произведение" (не все субд умеют нормально разбирать такие случаи), вообще должно решаться в общем случае, но пока так
         int index = 1;
         for (ValueClass valueClass : classes) {
-            String sID = "param" + index;
-
-            ObjectEntity obj = new ObjectEntity(genID, sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
+            ObjectEntity obj = new ObjectEntity(genID, valueClass);
             mParams.exclAdd(obj);
 
-            GroupObjectEntity paramGroup = addGroupObjectEntity(sID + "Group", SetFact.singletonOrder(obj));
+            GroupObjectEntity paramGroup = addGroupObjectEntity(SetFact.singletonOrder(obj));
 
             paramGroup.setViewTypePanel();
             index++;
@@ -55,10 +53,10 @@ public class LogFormEntity extends AutoFinalFormEntity {
 
         params = mParams.immutableOrder();
 
-        ObjectEntity objSession = new ObjectEntity(genID, "session", sessionClass, LocalizedString.create("{form.entity.session}"));
+        ObjectEntity objSession = new ObjectEntity(genID, sessionClass);
         ImOrderSet<ObjectEntity> entities = params.addOrderExcl(objSession);
 
-        GroupObjectEntity logGroup = addGroupObjectEntity("logGroup", SetFact.singletonOrder(objSession));
+        addGroupObjectEntity(SetFact.singletonOrder(objSession));
 
         for (ObjectEntity obj : entities) {
             addPropertyDraw(obj, LM.getIdGroup());

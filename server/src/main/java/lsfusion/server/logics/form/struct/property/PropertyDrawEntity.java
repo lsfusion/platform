@@ -50,7 +50,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -215,8 +214,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         Group explicit = group.getNF(version);
         return (explicit != null ? (explicit == Group.NOGROUP ? null : explicit) : getInheritedProperty().getNFParent(version, true));
     }
-    public void setGroup(Group group, Version version) {
+    public void setGroup(Group group, FormEntity form, Version version) {
         this.group.set(group, version);
+
+        form.updatePropertyDraw(this, version);
     }
 
     public boolean isAttr() {
@@ -363,9 +364,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(IDGenerator ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty, ActionOrProperty inheritedProperty, DebugInfo.DebugPoint debugPoint) {
-        super(ID, sID, "prop", debugPoint);
-        setIntegrationSID(integrationSID);
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "prop";
+    }
+
+    public PropertyDrawEntity(IDGenerator ID, String sID, ActionOrPropertyObjectEntity<P, ?, ?> actionOrProperty, ActionOrProperty inheritedProperty, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, debugPoint);
         this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
 
@@ -551,12 +556,16 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return instanceFactory.getInstance(this);
     }
 
-    public void setToDraw(GroupObjectEntity toDraw, Version version) {
+    public void setToDraw(GroupObjectEntity toDraw, FormEntity form, Version version) {
         this.toDraw.set(toDraw, version);
+
+        form.updatePropertyDraw(this, version);
     }
 
-    public void setViewType(ClassViewType viewType, Version version) {
+    public void setViewType(ClassViewType viewType, FormEntity form, Version version) {
         this.viewType.set(viewType, version);
+
+        form.updatePropertyDraw(this, version);
     }
 
     public ClassViewType getNFViewType(Version version) {
@@ -749,9 +758,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return value != null ? value : SetFact.EMPTYORDER();
     }
 
-    public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects, Version version) {
+    public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects, FormEntity form, Version version) {
         this.columnsName.set(columnsName, version);
         this.columnGroupObjects.set(columnGroupObjects, version);
+
+        form.updatePropertyDraw(this, version);
     }
 
     public PropertyObjectEntity<?> getPropertyExtra(PropertyDrawExtraType type) {
@@ -782,10 +793,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public boolean isEditable() {
         return getEditType() == PropertyEditType.EDITABLE;
-    }
-
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView, Version version) {
-        getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView, version);
     }
 
     public void proceedDefaultDraw(FormEntity form, Version version) {
@@ -906,16 +913,19 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         sidBuilder.append(")");
         return sidBuilder.toString();        
     }
+    static public String getDefaultIntegrationSID(String sID) {
+        int nameEnd = sID.indexOf("(");
+        if(nameEnd >= 0)
+            return sID.substring(0, nameEnd);
+
+        return sID;
+    }
 
     public static <P extends PropertyInterface> List<String> getMapping(ActionOrPropertyObjectEntity<P, ?, ?> property, ImOrderSet<P> interfaces) {
         List<String> mapping = new ArrayList<>();
         for (P pi : interfaces)
             mapping.add(property.mapping.getObject(pi).getSID());
         return mapping;
-    }
-
-    public String getFormPath() {
-        return debugPoint != null ? debugPoint.getFullPath() : null;
     }
 
     public Pair<Integer, Integer> getScriptIndex() {
@@ -964,14 +974,20 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return getInheritedProperty().isDrawNotNull();
     }
 
-    public String integrationSID; // hack - can be null for EXPORT FROM orders
+    public static String NOEXTID = "NOEXTID";
+    public NFProperty<String> integrationSID = NFFact.property(); // hack - can be null for EXPORT FROM orders
 
-    public void setIntegrationSID(String integrationSID) {
-        this.integrationSID = integrationSID;
+    public void setIntegrationSID(String integrationSID, Version version) {
+        assert integrationSID != null;
+        this.integrationSID.set(integrationSID, version);
     }
 
     public String getIntegrationSID() {
-        return integrationSID;
+        String integrationSID = this.integrationSID.get();
+        if(integrationSID != null)
+            return integrationSID.equals(NOEXTID) ? null : integrationSID;
+
+        return getDefaultIntegrationSID(getSID());
     }
 
     // IMPORT
@@ -1299,8 +1315,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     protected PropertyDrawEntity(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
         super(src, mapping);
 
-        integrationSID = src.integrationSID;
-
         view = mapping.get(src.view);
         inheritedProperty = src.inheritedProperty;
         actionOrProperty = mapping.get((ActionOrPropertyObjectEntity)src.actionOrProperty);
@@ -1314,6 +1328,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     @Override
     public void extend(PropertyDrawEntity<P, AddParent> src, ObjectMapping mapping) {
         super.extend(src, mapping);
+
+        mapping.sets(integrationSID, src.integrationSID);
 
         mapping.sets(caption, src.caption);
         mapping.sets(image, src.image);

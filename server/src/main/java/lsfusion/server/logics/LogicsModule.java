@@ -22,6 +22,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
@@ -66,7 +67,6 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
@@ -74,7 +74,6 @@ import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -1922,11 +1921,11 @@ public abstract class LogicsModule {
 
     // ---------------------- VALUE ---------------------- //
 
-    public Pair<LP, ActionObjectSelector<?>> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public Pair<LP, ActionObjectSelector<?>> getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public LP getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         return baseLM.getObjIntervalProp(form, objectFrom, objectTo, intervalProperty, fromIntervalProperty, toIntervalProperty);
     }
 
@@ -1978,6 +1977,11 @@ public abstract class LogicsModule {
         action.setImage(AppServerImage.DELETE);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getDeleteActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("DELETE", version); // for NEW, DELETE will set integration SID for js integration
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -2044,17 +2048,16 @@ public abstract class LogicsModule {
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getAddActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
 
-        if(objectEntity != null) {
-            action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                        if(entity.getNFToDraw(version) == null)
-                            entity.setToDraw(objectEntity.groupTo, version);
-                    }
-                    public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-                    }
-                });
-        }
-    }
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("NEW", version);  // for NEW, DELETE will set integration SID for js integration
+            if(objectEntity != null) {
+                if (entity.getNFToDraw(version) == null)
+                    entity.setToDraw(objectEntity.groupTo, form, version);
+            }
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
+}
 
     // ---------------------- Edit Form ---------------------- //
 
@@ -2084,6 +2087,9 @@ public abstract class LogicsModule {
         action.drawOptions.setShowChangeKey(false);
         action.drawOptions.setChangeMouse(new InputBindingEvent(new MouseInputEvent(MouseInputEvent.DBLCLK, bindingModes), null));
         action.drawOptions.setShowChangeMouse(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     public LA addProp(Action prop) {
@@ -2151,14 +2157,14 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, getVersion());
-        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
+    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
+        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
+        return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
     }
 
     public LP addValueObjectProp(ObjectEntity object, Version version) {
         Property<?> valueProperty = object.getNFValueProperty(version);
-        return addProperty(null, new LP<>(valueProperty));
+        return new LP<>(valueProperty);
     }
 
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {

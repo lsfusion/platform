@@ -1056,7 +1056,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && !hide && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
     }
 
     public boolean isInline() {

@@ -43,6 +43,7 @@ grammar LsfLogics;
     import lsfusion.server.language.form.design.Bounds;
     import lsfusion.server.language.form.design.ScriptingFormView;
     import lsfusion.server.language.form.object.ScriptingGroupObject;
+    import lsfusion.server.language.form.object.ScriptingObject;
     import lsfusion.server.language.navigator.window.BorderPosition;
     import lsfusion.server.language.navigator.window.DockPosition;
     import lsfusion.server.language.navigator.window.NavigatorWindowOptions;
@@ -84,6 +85,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+    import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
     import lsfusion.server.logics.form.struct.object.ObjectEntity;
     import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -563,43 +565,56 @@ formFormsList
 
 formGroupObjectsList
 @init {
-	List<ScriptingGroupObject> groups = new ArrayList<>();
+	boolean extend = false;
 }
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint(true));
-	}
-}
-	:	'OBJECTS'
-		groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); }
-		(',' groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); })*
+	:	('EXTEND' { extend = true; } )?
+	    'OBJECTS'
+		formGroupObjectDeclaration[extend]
+		(',' formGroupObjectDeclaration[extend])*
 	;
 
 formTreeGroupObjectList
 @init {
 	String treeSID = null;
-	List<ScriptingGroupObject> groups = new ArrayList<>();
+	List<GroupObjectEntity> groups = new ArrayList<>();
 	List<List<LP>> properties = new ArrayList<>();
 	List<List<ImOrderSet<String>>> propertyMappings = new ArrayList<>();
+
+	boolean extend = false;
+	TreeGroupEntity treeGroup = null;
 }
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint(true));
-	}
-}
-	:	'TREE'
+	:	('EXTEND' { extend = true; } )?
+	    'TREE'
 		(id = ID { treeSID = $id.text; })?
-		groupElement=formTreeGroupObject { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); }
-		(',' groupElement=formTreeGroupObject { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); })*
+		groupElement=formTreeGroupObject[extend] { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); }
+		(',' groupElement=formTreeGroupObject[extend] { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); })*
+        {
+            if (inMainParseState()) {
+                treeGroup = $formStatement::form.addScriptingTreeGroupObject(extend, treeSID, groups,  self.getVersion(), getCurrentDebugPoint(true));
+            }
+        }
 	    opts = formTreeGroupObjectOptions
+        {
+            if (inMainParseState()) {
+                $formStatement::form.applyTreeGroupObjectOptions(treeGroup, $opts.location, properties, propertyMappings, self.getVersion());
+            }
+        }
 	;
 
-formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formGroupObject { $groupObject = $object.groupObject; }
-	    formGroupObjectOptions[$groupObject]
+formGroupObjectDeclaration[boolean extend] returns [ScriptingGroupObject groupObject]
+	:	object=formGroupObject[extend]
+	    opts=formGroupObjectOptions
+        {
+            if (inMainParseState()) {
+                $formStatement::form.applyGroupObjectOptions($object.groupObject, $opts.groupObject, self.getVersion());
+            }
+        }
 	;
 
-formGroupObjectOptions[ScriptingGroupObject groupObject]
+formGroupObjectOptions returns [ScriptingGroupObject groupObject]
+@init {
+	$groupObject = new ScriptingGroupObject();
+}
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options);
 	                                           $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); $groupObject.setCustomOptions($viewType.customOptions);
 	                                           $groupObject.setMapTileProvider($viewType.mapTileProvider);}
@@ -620,30 +635,15 @@ formTreeGroupObjectOptions returns [ComplexLocation<GroupObjectEntity> location]
 		)*
 	;
 
-formGroupObject returns [ScriptingGroupObject groupObject]
-	:	sdecl=formSingleGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
-		}
-	|	mdecl=formMultiGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
-		}
+formGroupObject[boolean extend] returns [GroupObjectEntity groupObject]
+	:	sdecl=formSingleGroupObjectDeclaration[extend] { $groupObject = $sdecl.groupObject; }
+	|	mdecl=formMultiGroupObjectDeclaration[extend] { $groupObject = $mdecl.groupObject; }
 	;
 
-formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
-	:	( sdecl=formSingleGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
-		}
-
+formTreeGroupObject[boolean extend] returns [GroupObjectEntity groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
+	:	( sdecl=formSingleGroupObjectDeclaration[extend] { $groupObject = $sdecl.groupObject; }
 		('PARENT' decl=formExprDeclaration { $properties = asList($decl.property); $propertyMappings = asList($decl.mapping); })? )
-
-	|	mdecl=formMultiGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
-		}
-
+	|	mdecl=formMultiGroupObjectDeclaration[extend] { $groupObject = $mdecl.groupObject; }
         ( '('
 		'PARENT' {$properties = new ArrayList<>(); $propertyMappings = new ArrayList<>();} first=formExprDeclaration { $properties.add($first.property); $propertyMappings.add($first.mapping); }
         		(',' next=formExprDeclaration { $properties.add($next.property); $propertyMappings.add($next.mapping); })*
@@ -794,38 +794,53 @@ formSubReport returns [PropertyObjectEntity pathProperty]
 	:	'SUBREPORT' (prop=formPropertyObject { pathProperty = $prop.property; })?
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
-	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; $extID = $foDecl.extID; }
+formSingleGroupObjectDeclaration[boolean extend] returns [GroupObjectEntity groupObject]
+	:	foDecl=formObjectDeclaration[extend, true] { $groupObject = $foDecl.groupObject; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> extIDs]
+formMultiGroupObjectDeclaration[boolean extend] returns [GroupObjectEntity groupObject]
 @init {
-	$objectNames = new ArrayList<>();
-	$classNames = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$events = new ArrayList<>();
-	$extIDs = new ArrayList<>();
+    String name = null;
+	List<ObjectEntity> objects = new ArrayList<>();
 }
-	:	(gname=ID { $groupName = $gname.text; } EQ)?
+	:	(gname=ID { name = $gname.text; } EQ)?
 		'('
-			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); }
-			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); })*
+			objDecl=formObjectDeclaration[extend, false] { objects.add($objDecl.object); }
+			(',' objDecl=formObjectDeclaration[extend, false] { objects.add($objDecl.object); })*
 		')'
+        {
+            if (inMainParseState()) {
+                $groupObject = $formStatement::form.addScriptingGroupObject(extend, name, objects, self.getVersion(), getCurrentDebugPoint(true));
+            }
+        }
 	;
 
-
-formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
-	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
+formObjectDeclaration[boolean extend, boolean single] returns [ObjectEntity object, GroupObjectEntity groupObject]
+@init {
+	String name = null;
+	String className = null;
+	LocalizedString caption = null;
+	ActionObjectEntity event = null;
+	String extID = null;
+}
+	:	((objectName=ID { name = $objectName.text; })? (c=localizedStringLiteral { caption = $c.val; })? EQ)?
 		id=classId {
-		    $className = $id.sid;
+            className = $id.sid;
 		    if (inMainParseState()) {
-                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, BaseUtils.nvl($name, $className)));
+                $object = $formStatement::form.addScriptingObject(extend, name, className, self.getVersion());
+                if(single)
+                    $groupObject = $formStatement::form.addScriptingGroupObject(extend, null, asList($object), self.getVersion(), getCurrentDebugPoint(true));
             }
 		}
 		(
-		    'ON' 'CHANGE' faprop=formActionObject { $event = $faprop.action; }
-		|   'EXTID' eid=stringLiteral { $extID = $eid.val; }
+		    'ON' 'CHANGE' faprop=formActionObject { event = $faprop.action; }
+		|   'EXTID' eid=stringLiteral { extID = $eid.val; }
 		)*
+		{
+		    if (inMainParseState()) {
+		        $formStatement::form.applyObjectOptions($object, new ScriptingObject(caption, event, extID), self.getVersion());
+            }
+		}
 	; 
 	
 formPropertiesList
@@ -836,13 +851,16 @@ formPropertiesList
 	List<DebugInfo.DebugPoint> points = new ArrayList<>();
 	FormPropertyOptions commonOptions = null;
 	List<FormPropertyOptions> options = new ArrayList<>();
+
+	boolean extend = false;
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, commonOptions, options, self.getVersion(), points);
+		$formStatement::form.addScriptingPropertyDraws(extend, properties, aliases, captions, commonOptions, options, self.getVersion(), points);
 	}
 }
-	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]
+	:	('EXTEND' { extend = true; } )?
+	    ('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]
 		{
 			commonOptions = $opts.options;
 			properties = $list.properties;
@@ -859,7 +877,7 @@ formPropertiesList
 			captions = $mappedList.captions;
 			options = $mappedList.options;
 			points = $mappedList.points;
-		}
+		})
 	;	
 
 // потенциально две проблемы с убиранием =pE -> (a=)?pe | pe решается простым lookahead, два pe подряд SHOWIF pe pe, факторится с ? так чтобы formPropertyOptionsList заканчивался на pe а дальше formMappedProperty | pe после чего formMappedProperty lookahead'ся 

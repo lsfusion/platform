@@ -40,7 +40,7 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
 
         final List<K> mKeys = SetFact.mAddRemoveOrderSet();
         final List<V> mValues = SetFact.mAddRemoveOrderSet();
-        proceedChanges(change -> change.proceedOrderMap(mKeys, mValues, version), version);
+        proceedChanges((change, nextChange) -> change.proceedOrderMap(mKeys, mValues, version), version);
         OrderedMap<K, V> mMap = MapFact.mAddRemoveOrderMap();
 
         for(int i = 0; i < mKeys.size(); i++) {

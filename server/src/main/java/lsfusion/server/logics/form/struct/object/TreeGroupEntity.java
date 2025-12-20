@@ -10,8 +10,13 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObjectEntity> {
     public boolean plainTreeMode = false;
 
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "tree";
+    }
+
     public TreeGroupEntity(IDGenerator ID, String sID, ImOrderSet<GroupObjectEntity> groups, DebugInfo.DebugPoint debugPoint) {
-        super(ID, sID, "tree", debugPoint);
+        super(ID, sID, debugPoint);
 
         this.groups = groups;
         for(GroupObjectEntity object : groups)

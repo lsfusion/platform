@@ -301,11 +301,13 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return objects;
     }
 
-    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM) {
-        this(ID, sID, objects, LM, null);
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "groupObj";
     }
+
     public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
-        super(ID, sID, "groupObj", debugPoint);
+        super(ID, sID, debugPoint);
 
         ConcreteCustomClass listViewType = LM.listViewType;
         listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
@@ -438,7 +440,18 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
     public String getIntegrationSIDValue() {
         String integrationSID = getIntegrationSID();
-        return integrationSID != null ? integrationSID : getSID();
+        if (integrationSID != null)
+            return integrationSID;
+
+        if(sID != null)
+            return sID;
+
+        integrationSID = "";
+        for (ObjectEntity obj : getOrderObjects()) {
+            integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+        }
+
+        return integrationSID;
     }
     public String getIntegrationSID() {
         return integrationSID.get();

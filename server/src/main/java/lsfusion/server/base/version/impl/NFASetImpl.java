@@ -42,7 +42,7 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
             return getFinalSet(result);
 
         final Set<T> mSet = SetFact.mAddRemoveSet(); 
-        proceedChanges(change -> change.proceedSet(mSet, version), version);
+        proceedChanges((change, nextChange) -> change.proceedSet(mSet, version), version);
         return SetFact.fromJavaSet(mSet);
     }
 

@@ -37,8 +37,9 @@ public class DialogFormEntity extends BaseClassFormEntity {
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
-        PropertyDrawEntity propertyDraw = addPropertyDraw(property, ComplexLocation.LAST(), objects);
+        PropertyDrawEntity propertyDraw = addPropertyDraw(property, objects);
         setDefaultChangeEventScope(propertyDraw, scope);
+        movePropertyDraw(propertyDraw, ComplexLocation.LAST());
         return propertyDraw;
     }
 }

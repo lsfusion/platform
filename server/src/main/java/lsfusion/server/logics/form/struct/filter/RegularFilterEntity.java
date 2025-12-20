@@ -18,10 +18,15 @@ public class RegularFilterEntity extends IdentityEntity<RegularFilterEntity, Gro
 
     public RegularFilterView view;
 
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "filter";
+    }
+
     public RegularFilterEntity(IDGenerator ID, String sID, FilterEntity filter, LocalizedString name,
                                InputBindingEvent keyInputEvent, boolean showKey,
                                InputBindingEvent mouseInputEvent, boolean showMouse) {
-        super(ID, sID, "filter");
+        super(ID, sID, null);
 
         this.filter = filter;
         this.name = name;

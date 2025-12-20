@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.oraction;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -41,8 +40,6 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
-import lsfusion.server.logics.form.ObjectMapping;
-import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -663,7 +660,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
         void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version);
-        void proceedDefaultDesign(PropertyDrawView propertyView, Version version);
+        default void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
+        }
     }
 
     // + caption, который одновременно и draw и не draw
@@ -713,54 +711,62 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?, ?> entity, FormEntity form, Version version) {
-            entity.setViewType(viewType, version);
-            entity.setCustomChangeFunction(customEditorFunction, version);
-            entity.setAskConfirm(BaseUtils.nvl(askConfirm, false), version);
-            entity.setAskConfirmMessage(askConfirmMessage, version);
-            entity.setEventID(eventID, version);
+            if(viewType != null)
+                entity.setViewType(viewType, form, version);
+            if(customEditorFunction != null)
+                entity.setCustomChangeFunction(customEditorFunction, version);
+            if(askConfirm != null)
+                entity.setAskConfirm(askConfirm, version);
+            if(askConfirmMessage != null)
+                entity.setAskConfirmMessage(askConfirmMessage, version);
+            if(eventID != null)
+                entity.setEventID(eventID, version);
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form, version);
+
+            if(form.view != null) // can be non-interactive
+                proceedDefaultDesign(entity.view, version);
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-            if(propertyView.getNFCharWidth(version) == null)
+            if(charWidth != null)
                 propertyView.setCharWidth(charWidth, version);
-            if(propertyView.getNFValueFlex(version) == null)
+            if(valueFlex != null)
                 propertyView.setValueFlex(valueFlex, version);
-            if(propertyView.getNFValueWidth(version) == null)
+            if(valueWidth != null)
                 propertyView.setValueWidth(valueWidth, version);
-            if(propertyView.getNFValueHeight(version) == null)
+            if(valueWidth != null)
                 propertyView.setValueHeight(valueHeight, version);
-            if(propertyView.getNFCaptionWidth(version) == null)
+            if(captionWidth != null)
                 propertyView.setCaptionWidth(captionWidth, version);
-            if(propertyView.getNFCaptionHeight(version) == null)
+            if(captionHeight != null)
                 propertyView.setCaptionHeight(captionHeight, version);
-            if (propertyView.getNFChangeKey(version) == null)
+            if(changeKey != null)
                 propertyView.setChangeKey(changeKey, version);
-            if (propertyView.getNFShowChangeKey(version) == null)
-                propertyView.setShowChangeKey(BaseUtils.nvl(showChangeKey, true), version);
-            if (propertyView.getNFChangeMouse(version) == null)
+            if(showChangeKey != null)
+                propertyView.setShowChangeKey(showChangeKey, version);
+            if(changeMouse != null)
                 propertyView.setChangeMouse(changeMouse, version);
-            if (propertyView.getNFShowChangeMouse(version) == null)
-                propertyView.setShowChangeMouse(BaseUtils.nvl(showChangeMouse, true), version);
+            if(showChangeMouse != null)
+                propertyView.setShowChangeMouse(showChangeMouse, version);
 
-            if(propertyView.getNFPattern(version) == null)
+            if(pattern != null)
                 propertyView.setPattern(pattern, version);
-            if(propertyView.getNFRegexp(version) == null)
+            if(regexp != null)
                 propertyView.setRegexp(regexp, version);
-            if(propertyView.getNFRegexpMessage(version) == null)
+            if(regexpMessage != null)
                 propertyView.setRegexpMessage(regexpMessage, version);
 
-            if (propertyView.getNFEchoSymbols(version) == null)
-                propertyView.setEchoSymbols(BaseUtils.nvl(echoSymbols, false), version);
-            
-            if(propertyView.getNFDefaultCompare(version) == null)
+            if(echoSymbols != null)
+                propertyView.setEchoSymbols(echoSymbols, version);
+
+            if(defaultCompare != null)
                 propertyView.setDefaultCompare(defaultCompare, version);
 
-            if(propertyView.getNFSticky(version) == null)
+            if(sticky != null)
                 propertyView.setSticky(sticky, version);
-            if(propertyView.getNFSync(version) == null)
+            if(sync != null)
                 propertyView.setSync(sync, version);
 
             for(DefaultProcessor processor : processors)

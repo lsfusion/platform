@@ -18,15 +18,6 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
         this.mapping = mapping;
     }
 
-    @SuppressWarnings("unchecked")
-    private K[] mapAll(ImOrderSet<K> source) {
-        int size = source.size();
-        K[] mapped = (K[]) new Object[size];
-        for(int i = 0; i < size; i++)
-            mapped[i] = mapping.apply(source.get(i));
-        return mapped;
-    }
-
     private static Pair<Integer, Integer> findGroupRange(int group, List<Integer> groupList) {
         int start = 0;
         while(start < groupList.size() && groupList.get(start) < group)
@@ -68,7 +59,12 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
     }
 
     @Override
-    public void proceedComplexOrderSet(List<K> list, List<Integer> groupList, Version version) {
+    public K getRemoveElement() {
+        return null;
+    }
+
+    @Override
+    public void proceedComplexOrderSet(List<K> list, List<Integer> groupList, NFComplexOrderSetChange<K> nextChange, Version version) {
         Pair<ImOrderSet<K>, ImList<Integer>> nf = col.getNFCopy(version);
 
         ImOrderSet<K> mapped = nf.first.mapOrderSetValues(mapping::apply);

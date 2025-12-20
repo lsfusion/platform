@@ -201,11 +201,18 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return propertyDrawEntityList.mapListValues(value -> value.getPropertyDrawViewOrPivotColumn(this));
     }
 
-    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, Version version) {
         PropertyDrawView propertyView = new PropertyDrawView(property, version);
-        properties.add(propertyView, location, version);
+        properties.add(propertyView, ComplexLocation.DEFAULT(), version);
         setComponentSIDs(propertyView, version);
         return propertyView;
+    }
+
+    public void movePropertyDraw(PropertyDrawView property, ComplexLocation<PropertyDrawView> location, Version version) {
+        properties.add(property, location, version);
+    }
+
+    public void updatePropertyDrawContainer(PropertyDrawView property, Version version) {
     }
 
     private void setComponentSIDs(GridView groupObjectView, Version version) {
@@ -213,19 +220,29 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         setComponentSID(groupObjectView.calculations, getCalculationsSID(groupObjectView), version);
     }
 
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {
         GroupObjectView groupObjectView = new GroupObjectView(genID(), containerFactory, groupObject, version);
-        groupObjects.add(groupObjectView, location.map(this::get), version);
+        groupObjects.add(groupObjectView, ComplexLocation.DEFAULT(), version);
         if(!groupObjectView.entity.isInTree())
             setComponentSIDs(groupObjectView.grid, version);
         return groupObjectView;
     }
 
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
+    public void moveGroupObject(GroupObjectView groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
+        groupObjects.add(groupObject, location.map(this::get), version);
+    }
+
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, Version version) {
         TreeGroupView treeGroupView = new TreeGroupView(genID(), containerFactory, treeGroup, version);
         treeGroups.add(treeGroupView, version);
         setComponentSIDs(treeGroupView, version);
         return treeGroupView;
+    }
+
+    public void moveTreeGroup(TreeGroupView treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
+        ImOrderSet<GroupObjectView> treeGroups = treeGroup.groups;
+        for(GroupObjectView groupObject : location.isReverseList() ? treeGroups.reverseOrder() : treeGroups)
+            groupObjects.add(groupObject, location.map(this::get), version);
     }
 
     private void setComponentSIDs(GridPropertyView treeGroupView, Version version) {

@@ -29,14 +29,14 @@ public class PropertyFormEntity extends AutoFinalFormEntity {
 
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues((ValueClass value) -> {
             // need to specify baseClass anyway, because we need it when adding recognizeGroup
-            return new ObjectEntity(genID, value, value.getCaption(), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
+            return new ObjectEntity(genID, value, true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
         });
 
         ImOrderSet<ObjectEntity> objects;
         if(mapObjects.isEmpty()) // not to create GroupObjectEntity with no objects
             objects = SetFact.EMPTYORDER();
         else {
-            GroupObjectEntity groupObject = addGroupObjectEntity(null, mapObjects.valuesSet().toOrderSet());
+            GroupObjectEntity groupObject = addGroupObjectEntity(mapObjects.valuesSet().toOrderSet());
 
             objects = groupObject.getOrderObjects();
         }

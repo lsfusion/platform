@@ -21,7 +21,6 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -95,12 +94,10 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.*;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -414,18 +411,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     protected Property(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
 
-        drawOptions.addProcessor(new DefaultProcessor() {
-            @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                if(entity.getNFViewType(version) == null)
-                    entity.setViewType(ClassViewType.LIST, version);
-            }
-
-            @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
-            }
+        drawOptions.addProcessor((entity, form, version) -> {
+            if(entity.getNFViewType(version) == null)
+                entity.setViewType(ClassViewType.LIST, form, version);
         });
-
     }
 
     public enum Lazy {WEAK, STRONG}

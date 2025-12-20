@@ -84,23 +84,23 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     }
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass) {
-        ObjectEntity object = new ObjectEntity(genID, baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
+        ObjectEntity object = new ObjectEntity(genID, baseClass);
 
-        addGroupObjectEntity(null, SetFact.singletonOrder(object));
+        addGroupObjectEntity(SetFact.singletonOrder(object));
 
         return object;
     }
 
-    protected GroupObjectEntity addGroupObjectEntity(String sID, ImOrderSet<ObjectEntity> objects) {
-        return addGroupObjectEntity(LM, sID, objects, baseVersion);
+    protected GroupObjectEntity addGroupObjectEntity(ImOrderSet<ObjectEntity> objects) {
+        return addGroupObjectEntity(LM, objects, baseVersion);
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyDraw(property, baseVersion, objects);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ComplexLocation<PropertyDrawEntity> location, ImOrderSet<ObjectEntity> objects) {
-        return addPropertyDraw(property, location, baseVersion, objects);
+    public void movePropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawEntity> location) {
+        movePropertyDraw(property, location, baseVersion);
     }
 
     public PropertyDrawEntity<?, ?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object) {
@@ -117,10 +117,6 @@ public class AutoFinalFormEntity extends AutoFormEntity {
 
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping) {
         return addPropertyDraw(property, mapping, baseVersion);
-    }
-
-    protected void addGroupObject(GroupObjectEntity groupObject) {
-        addGroupObject(groupObject, baseVersion);
     }
 
     protected void finalizeInit() {

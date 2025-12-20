@@ -119,6 +119,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "group object", name);
     }
 
+    public void emitTreeGroupObjectNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "tree", name);
+    }
+
     public void emitObjectNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "object", name);
     }
@@ -305,8 +309,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, formatStringBuilder.toString());
     }
 
-    public void emitAlreadyDefinedPropertyDrawError(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
+    public void emitAlreadyDefinedError(ScriptParser parser, String type, String formName, String name, String oldPosition) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s '%s' in form '%s' was already defined at %s", type, name, formName, oldPosition));
     }
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {

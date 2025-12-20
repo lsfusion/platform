@@ -52,7 +52,7 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
         final List<Integer> mGroup = SetFact.mAddRemoveOrderSet();
-        proceedChanges(change -> change.proceedComplexOrderSet(mSet, mGroup, version), version);
+        proceedChanges((change, nextChange) -> change.proceedComplexOrderSet(mSet, mGroup, nextChange, version), version);
         return new Pair<>(SetFact.fromJavaOrderSet(mSet), ListFact.fromJavaList(mGroup));
     }
 

@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.struct.group;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -23,6 +24,9 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Group extends AbstractNode {
 
@@ -83,11 +87,17 @@ public class Group extends AbstractNode {
             }
             prevParent.remove(prop, version);
         }
+
+//        if(!childrenAdded.add(prop))
+//            prop = prop;
+
         children.add(prop, version);
         prop.setParent(this, version);
         if(isSimple)
             cleanParentActionOrPropertiesCaches(version);
     }
+
+//    Set<AbstractNode> childrenAdded = new ConcurrentIdentityWeakHashSet<>();
 
     @IdentityStartLazy
     public ImMap<ActionOrProperty, Integer> getIndexedPropChildren() { // оптимизация

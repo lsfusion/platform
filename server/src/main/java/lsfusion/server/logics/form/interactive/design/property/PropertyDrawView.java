@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -56,7 +55,6 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
-import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -783,8 +781,9 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         maxValue.set(value, version);
     }
 
-    public Boolean getEchoSymbols() {
-        return echoSymbols.get();
+    public boolean getEchoSymbols() {
+        Boolean b = echoSymbols.get();
+        return b != null && b;
     }
     public Boolean getNFEchoSymbols(Version version) {
         return echoSymbols.getNF(version);
@@ -1009,8 +1008,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(inputTypeValue != null)
             return inputTypeValue;
 
-        Boolean echoSymbols = getEchoSymbols();
-        if(echoSymbols != null && echoSymbols)
+        if(getEchoSymbols())
             return "password";
 
         if(isProperty(context)) {
@@ -1117,12 +1115,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         changeKey.set(value, version);
     }
 
-    public Boolean getShowChangeKey() {
-        return showChangeKey.get();
+    public boolean getShowChangeKey() {
+        Boolean b = showChangeKey.get();
+        return b != null && b;
     }
-    public Boolean getNFShowChangeKey(Version version) {
-        return showChangeKey.getNF(version);
-    }
+
     public void setShowChangeKey(Boolean value, Version version) {
         showChangeKey.set(value, version);
     }
@@ -1138,11 +1135,10 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     public Boolean getShowChangeMouse() {
-        return showChangeMouse.get();
+        Boolean b = showChangeMouse.get();
+        return b != null && b;
     }
-    public Boolean getNFShowChangeMouse(Version version) {
-        return showChangeMouse.getNF(version);
-    }
+
     public void setShowChangeMouse(Boolean value, Version version) {
         showChangeMouse.set(value, version);
     }
@@ -1753,6 +1749,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         mapping.sets(sync, src.sync);
 
         mapping.sets(highlightDuplicate, src.highlightDuplicate);
+
+        mapping.sets(defaultContainer, src.defaultContainer);
     }
 
     @Override

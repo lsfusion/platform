@@ -4551,10 +4551,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Pair<>(new LPWithParams(paramIndex), isCompoundID ? new LPCompoundID(name, semanticError) : null);
     }
 
-    public void throwAlreadyDefinePropertyDraw(FormEntity.AlreadyDefined alreadyDefined) throws ScriptingErrorLog.SemanticErrorException {
-        getErrLog().emitAlreadyDefinedPropertyDrawError(getParser(), alreadyDefined.formCanonicalName, alreadyDefined.newSID, alreadyDefined.formPath);
-    }
-
     public LP addScriptedGroupObjectProp(String name, GroupObjectProp prop, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
@@ -4565,12 +4561,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         FormEntity form = findForm(formName);
 
-        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion(), true);
+        Version version = getVersion();
+        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, version, true);
         if (groupObject != null) {
             for (ObjectEntity obj : groupObject.getOrderObjects()) {
                 outClasses.add(obj.getResolveClassSet());
             }
-            resultProp = addGroupObjectProp(groupObject, prop);
+            resultProp = addGroupObjectProp(groupObject, prop, version);
         } else {
             errLog.emitNotFoundError(parser, "group оbject", objectName);
         }

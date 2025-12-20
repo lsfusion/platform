@@ -4,11 +4,9 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -28,10 +26,8 @@ public abstract class AutoFormEntity extends FormEntity {
     }
 
     public PropertyDrawEntity<?, ?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object, Version version) {
-        Pair<LP, ActionObjectSelector<?>> valueProp = LM.getObjValueProp(this, object);
-        PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, SetFact.singletonOrder(object));
-        if(valueProp.second != null)
-            propertyDraw.setSelectorAction(valueProp.second, version);
+        LP valueProp = LM.getObjValueProp(this, object);
+        PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp, version, SetFact.singletonOrder(object));
 
         FormView view = this.view;
         if(view != null) { // if !needDesign there is no view
@@ -46,18 +42,14 @@ public abstract class AutoFormEntity extends FormEntity {
 
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I, ?> addPropertyDraw(P property, Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<I> orderInterfaces, ImRevMap<I, ObjectEntity> mapping, Version version) {
         ActionOrPropertyObjectEntity<I, ?, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
-        return addPropertyDraw(entity, inherited, orderInterfaces, ComplexLocation.DEFAULT(), version);
+        return addPropertyDraw(entity, inherited, orderInterfaces, version);
     }
 
-    @Override
-    public void addGroupObject(GroupObjectEntity group, ComplexLocation<GroupObjectEntity> location, Version version) {
-        super.addGroupObject(group, location, version);
+    protected GroupObjectEntity addGroupObjectEntity(BaseLogicsModule LM, ImOrderSet<ObjectEntity> objects, Version version) {
+        for(ObjectEntity object : objects)
+            addObject(object, version);
 
-        group.fillGroupChanges(version);
-    }
-
-    protected GroupObjectEntity addGroupObjectEntity(BaseLogicsModule LM, String sID, ImOrderSet<ObjectEntity> objects, Version version) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID, sID, objects, LM);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID, null, objects, LM, null);
         addGroupObject(groupObject, version);
         return groupObject;
     }

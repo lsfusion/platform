@@ -25,9 +25,18 @@ public abstract class IdentityEntity<This extends IdentityEntity<This, AddParent
         return debugPoint;
     }
 
-    public String getSID() {
-        return sID;
+    public String getFormPath() {
+        return debugPoint != null ? debugPoint.getFullPath() : null;
     }
+
+    public String getSID() {
+        if(sID != null)
+            return sID;
+
+        return getDefaultSIDPrefix() + ID;
+    }
+
+    protected abstract String getDefaultSIDPrefix();
 
     @Override
     public String toString() {
@@ -38,13 +47,9 @@ public abstract class IdentityEntity<This extends IdentityEntity<This, AddParent
         this.sID = sID;
     }
 
-    public IdentityEntity(IDGenerator ID, String sID, String defaultName) {
-        this(ID, sID, defaultName, null);
-    }
-
-    public IdentityEntity(IDGenerator ID, String sID, String defaultName, DebugInfo.DebugPoint debugPoint) {
+    public IdentityEntity(IDGenerator ID, String sID, DebugInfo.DebugPoint debugPoint) {
         this.ID = ID.id();
-        this.sID = sID != null ? sID : defaultName + this.ID;
+        this.sID = sID;
         this.debugPoint = debugPoint;
     }
 

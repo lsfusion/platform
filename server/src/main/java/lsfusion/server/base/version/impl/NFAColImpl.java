@@ -27,7 +27,7 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
             return getFinalCol(result);
         
         final MCol<T> mCol = ListFact.mCol();
-        proceedChanges(change -> change.proceedCol(mCol, version), version);
+        proceedChanges((change, nextChange) -> change.proceedCol(mCol, version), version);
         return mCol.immutableCol();
     }
 

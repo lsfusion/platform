@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct.object;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -46,12 +45,15 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
 
     public LocalizedString caption;
 
+    public void setCaption(LocalizedString caption) {
+        this.caption = caption;
+    }
     public LocalizedString getCaption() {
-        if (caption != null && !BaseUtils.isRedundantString(caption.getSourceString()))
+        if (caption != null)
             return caption;
 
-        if (baseClass != null && !BaseUtils.isRedundantString(baseClass.toString()))
-            return create(baseClass.toString());
+        if (baseClass != null)
+            return baseClass.getCaption();
 
         return create("{logics.undefined.object}");
     }
@@ -73,15 +75,21 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
         return valueProperty.get();
     }
 
-    public ObjectEntity(IDGenerator ID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
-        this(ID, null, baseClass, caption, noClasses);
+    public ObjectEntity(IDGenerator ID, ValueClass baseClass) {
+        this(ID, baseClass, baseClass == null);
     }
-    public ObjectEntity(IDGenerator ID, String sID, ValueClass baseClass, LocalizedString caption) {
-        this(ID, sID, baseClass, caption, false);
+    public ObjectEntity(IDGenerator ID, ValueClass baseClass, boolean noClasses) {
+        this(ID, null, baseClass, noClasses);
     }
-    public ObjectEntity(IDGenerator ID, String sID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
-        super(ID, sID, "obj");
-        this.caption = caption;
+
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "obj";
+    }
+
+    public ObjectEntity(IDGenerator ID, String sID, ValueClass baseClass, boolean noClasses) {
+        super(ID, sID, null);
+
         this.baseClass = baseClass;
         this.noClasses = noClasses;
 

@@ -19,6 +19,11 @@ public interface NFComplexOrderSet<T> extends NF {
     }
     void add(NFComplexOrderSet<T> elements, NFCopy.Map<T> mapping, Version version);
 
+    default void move(T element, ComplexLocation<T> location, Version version) {
+        remove(element, version);
+        add(element, location, version);
+    }
+
     void remove(T element, Version version);
 
     int size(Version version);
