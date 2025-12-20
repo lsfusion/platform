@@ -127,13 +127,13 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.navigator.controller.env.FormContextQueryEnvironment;
 import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -231,6 +231,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // init form instance + some rare / deprecated branches
     public final FormInstanceContext context;
 
+    public final FormContextQueryEnvironment env;
+
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean interactive, boolean isExternal, Locale locale, FormOptions options) throws SQLException, SQLHandledException {
@@ -252,6 +254,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
+
+        this.env = new FormContextQueryEnvironment(entity, session.env);
 
         FormInstanceContext context = new FormInstanceContext(entity, entity.view, securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
@@ -3064,5 +3068,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public static List<String> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null, SetFact.EMPTY());
         return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
+    }
+
+
+    @Override
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 }

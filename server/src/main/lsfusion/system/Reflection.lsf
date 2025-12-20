@@ -55,6 +55,7 @@ WHEN SET(NoForm f IS NoForm) DO { // need this for forms synchronization (for th
 }
 
 currentForm = NATIVE STRING[100] (); // canonical name
+activeForm = NATIVE STRING (); //canonical name
 
 CLASS ABSTRACT ActionOrProperty '{reflection.action.or.property}';
 TABLE actionOrProperty(ActionOrProperty);

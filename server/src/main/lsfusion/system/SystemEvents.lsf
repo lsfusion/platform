@@ -1054,7 +1054,7 @@ extendCode(STRING sid) = extendCode(form(sid));
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + ';';
 jsonCode (STRING code, STRING sid) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), type = 'form';
 
-formCustomizeBackground() += RGB(211, 229, 232);// IF extendCode(currentOriginalForm());
+formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
 
 enableOriginalCode = DATA LOCAL BOOLEAN(); 
 enableExtendCodeAll = DATA LOCAL BOOLEAN(); 

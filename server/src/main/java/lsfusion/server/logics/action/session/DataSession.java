@@ -49,7 +49,6 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -2259,6 +2258,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return empty;
             }
 
+            public ValueParseInterface getActiveForm() {
+                return empty;
+            }
+
             @Override
             public ValueParseInterface getSQLConnection() {
                 return empty;
@@ -2718,5 +2721,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Override
     public void close() throws SQLException {
         unregisterThreadStack();
+    }
+
+    @Override
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 }

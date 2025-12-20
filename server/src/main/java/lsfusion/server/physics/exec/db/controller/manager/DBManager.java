@@ -1104,6 +1104,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public String getCurrentForm() {
                         return null;
                     }
+
+                    @Override
+                    public String getActiveForm() {
+                        return null;
+                    }
                 },
                 () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
         );

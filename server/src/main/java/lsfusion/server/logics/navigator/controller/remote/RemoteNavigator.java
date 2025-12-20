@@ -260,6 +260,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? null : remoteNavigator.currentForm;
         }
+
+        @Override
+        public String getActiveForm() {
+            return null;
+        }
     }
 
     private static class WeakChangesUserProvider extends ChangesController { // чтобы помочь сборщику мусора и устранить цикл

@@ -338,6 +338,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public final static String isServerRestartingParam = getParamName("isServerRestarting");
     public final static String computerParam = getParamName("computer");
     public final static String formParam = getParamName("form");
+    public final static String activeFormParam = getParamName("activeForm");
     public final static String connectionParam = getParamName("connection");
     public final static String isDevParam = getParamName("isDev");
     public final static String isLightStartParam = getParamName("isLightStart");
