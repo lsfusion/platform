@@ -1052,8 +1052,8 @@ extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser(
 extendCode(STRING sid) = extendCode(form(sid));
 
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + ';';
-jsonCode (STRING code, STRING sid) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), type = 'script';
-
+jsonCode (STRING code, STRING sid, BOOLEAN readonly) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), readonly = readonly, type = 'script';
+jsonCode (STRING code, STRING sid) = jsonCode(code, sid, NULL);
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
 
 enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
@@ -1065,7 +1065,7 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
     OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
     PROPERTIES sid = VALUE(sid),
-        code '{action.form.customize.base}' = jsonCode(code, sid) CUSTOM 'interpreter' SHOWIF enableOriginalCode(),
+        code '{action.form.customize.base}' = jsonCode(code, sid, TRUE) CUSTOM 'interpreter' SHOWIF enableOriginalCode(),
         extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
                 stringToFile(s);

@@ -131,6 +131,9 @@ function interpreter() {
                             }
                         });
                     }
+                    if(value.readonly) {
+                        aceEditor.setReadOnly(true);
+                    }
                 }
             }
         }
