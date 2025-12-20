@@ -1099,6 +1099,7 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
 ;
 
 DESIGN customizeForm {
+    width = -1;
     NEW main BEFORE TOOLBARBOX {
         fill = 1;
         NEW showPanel {
