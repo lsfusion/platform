@@ -501,7 +501,6 @@ public class FormPropertyOptions {
         merged.setContextMenuBindings(nullMerge(overrides.getContextMenuBindings(), contextMenuBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
-        merged.setLocation(nvl(overrides.getLocation(), location), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
 
         merged.formula = nvl(overrides.formula, formula);
         merged.formulaOperands = nvl(overrides.formulaOperands, formulaOperands);

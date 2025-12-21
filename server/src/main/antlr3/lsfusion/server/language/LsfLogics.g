@@ -845,38 +845,25 @@ formObjectDeclaration[boolean extend, boolean single] returns [ObjectEntity obje
 	
 formPropertiesList
 @init {
-	List<? extends AbstractFormActionOrPropertyUsage> properties = new ArrayList<>();
-	List<String> aliases = new ArrayList<>();
-	List<LocalizedString> captions = new ArrayList<>();	
-	List<DebugInfo.DebugPoint> points = new ArrayList<>();
-	FormPropertyOptions commonOptions = null;
-	List<FormPropertyOptions> options = new ArrayList<>();
-
 	boolean extend = false;
+	List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
+	List<FormPropertyOptions> options = new ArrayList<>();
 }
 @after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptingPropertyDraws(extend, properties, aliases, captions, commonOptions, options, self.getVersion(), points);
+	if (inMainParseState()) { // only locations
+		$formStatement::form.applyPropertyOptions(propertyDraws, $opts.options, options, self.getVersion());
 	}
 }
 	:	('EXTEND' { extend = true; } )?
-	    ('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]
+	    ('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[extend, $objects.ids, $opts.options]
 		{
-			commonOptions = $opts.options;
-			properties = $list.properties;
-			aliases = $list.aliases;
-			captions = $list.captions;
+			propertyDraws = $list.propertyDraws;
 			options = $list.options;
-			points = $list.points;
 		}
-	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
+	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList[extend, $opts.options]
 		{
-			commonOptions = $opts.options;
-			properties = $mappedList.properties;
-			aliases = $mappedList.aliases;
-			captions = $mappedList.captions;
+			propertyDraws = $mappedList.propertyDraws;
 			options = $mappedList.options;
-			points = $mappedList.points;
 		})
 	;	
 
@@ -932,29 +919,40 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> captions, List<AbstractFormActionOrPropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formMappedPropertiesList[boolean extend, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
-	$aliases = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$properties = new ArrayList<>();
+	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
-	$points = new ArrayList<>(); 
+}
+	:	first=formMappedPropertyListItem[extend, commonOptions]
+		{
+			$propertyDraws.add($first.propertyDraw);
+			$options.add($first.opts);
+		}
+		(',' next=formMappedPropertyListItem[extend, commonOptions]
+		{
+			$propertyDraws.add($next.propertyDraw);
+			$options.add($next.opts);
+		})*
+	;
+
+formMappedPropertyListItem[boolean extend, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+@init {
 	String alias = null;
 	LocalizedString caption = null;
-    AbstractFormActionOrPropertyUsage lpUsage = null;
+	AbstractFormActionOrPropertyUsage lpUsage = null;
 }
-	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-		(		
+	:	(
 			mappedProp=formMappedProperty
 			{
-        		$properties.add($mappedProp.propUsage);
-			} 
-		| 	
+        		lpUsage = $mappedProp.propUsage;
+			}
+		|
 		    (
 		    	(id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
 				EQ
 				(   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
-                    { lpUsage = $mappedProp.propUsage; }                        
+                    { lpUsage = $mappedProp.propUsage; }
 				|   expr=formExprOrTrivialLADeclaration
 				    {
                         if(inMainParseState()) {
@@ -971,56 +969,19 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
                         }
 				    })
 				)
-				{
-					$properties.add(lpUsage);
-				} 
 			)
-		opts=formPropertyOptionsList
 		{
-			$aliases.add(alias);
-			$captions.add(caption);
-			$options.add($opts.options);
-		}
-		(','
-            { alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-            (		
-                mappedProp=formMappedProperty
-                {
-                    $properties.add($mappedProp.propUsage);
-                } 
-            | 	
-                (
-                    (id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
-                    EQ
-                    (   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
-                        { lpUsage = $mappedProp.propUsage; }                        
-                    |   expr=formExprOrTrivialLADeclaration
-                        {
-                            if(inMainParseState()) {
-                                if($expr.fu != null)
-                                    lpUsage = $expr.fu;
-                                else
-                                    lpUsage = new FormLPUsage($expr.property, $expr.mapping, $expr.signature);
-                            }
-                        }
-                    |	action=formActionDeclaration
-                        {
-                            if(inMainParseState()) {
-                                lpUsage = new FormLAUsage($action.action, $action.mapping, $action.signature);
-                            }
-                        })
-                    )
-                    {
-                        $properties.add(lpUsage);
-                    } 
-                )
-            opts=formPropertyOptionsList
-            {
-                $aliases.add(alias);
-                $captions.add(caption);
-                $options.add($opts.options);
+		    if (inMainParseState()) {
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, lpUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
             }
-		)*
+		}
+		options=formPropertyOptionsList
+		{
+			$opts = $options.options;
+		    if (inMainParseState()) {
+		        $formStatement::form.applyPropertyOptions($propertyDraw, commonOptions, $opts, caption, self.getVersion());
+            }
+		}
 	;
 
 formPropertyObject returns [PropertyObjectEntity property = null, Object literal]
@@ -1123,36 +1084,42 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList[List<String> mapping] returns [List<String> aliases, List<LocalizedString> captions, List<BaseFormActionOrPropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formPropertyUList[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
-	$aliases = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$properties = new ArrayList<>();
+	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
-	$points = new ArrayList<>();
+}
+	:	first=formPropertyUListItem[extend, mapping, commonOptions]
+		{
+			$propertyDraws.add($first.propertyDraw);
+			$options.add($first.opts);
+		}
+		(',' next=formPropertyUListItem[extend, mapping, commonOptions]
+		{
+			$propertyDraws.add($next.propertyDraw);
+			$options.add($next.opts);
+		})*
+	;
+
+formPropertyUListItem[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+@init {
 	String alias = null;
 	LocalizedString caption = null;
 }
-	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-		(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
-		pu=formPropertyUsage[mapping] opts=formPropertyOptionsList
+	:	(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
+		pu=formPropertyUsage[mapping]
 		{
-			$aliases.add(alias);
-			$captions.add(caption);
-			$properties.add($pu.propUsage);
-			$options.add($opts.options);
+		    if (inMainParseState()) {
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, $pu.propUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
+            }
 		}
-		(','
-			{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-			(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
-			pu=formPropertyUsage[mapping] opts=formPropertyOptionsList
-			{
-				$aliases.add(alias);
-				$captions.add(caption);
-				$properties.add($pu.propUsage);
-				$options.add($opts.options);
-			}
-		)*
+		options=formPropertyOptionsList
+		{
+			$opts = $options.options;
+		    if (inMainParseState()) {
+		        $formStatement::form.applyPropertyOptions($propertyDraw, commonOptions, $opts, caption, self.getVersion());
+            }
+		}
 	;
 
 formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage propUsage]

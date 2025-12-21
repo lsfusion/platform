@@ -364,23 +364,7 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    public void addScriptingPropertyDraws(boolean extend, List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
-        ComplexLocation<PropertyDrawEntity> commonLocation = commonOptions.getLocation();
-        boolean reverseList = commonLocation != null && commonLocation.isReverseList();
-        
-        for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
-            ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
-            String alias = aliases.get(i);
-            DebugInfo.DebugPoint debugPoint = points.get(i);
-
-            PropertyDrawEntity propertyDraw = addScriptingPropertyDraw(extend, alias, pDrawUsage, commonOptions, version, debugPoint);
-
-            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
-            applyPropertyOptions(propertyDraw, propertyOptions, captions.get(i), version);
-        }
-    }
-
-    private PropertyDrawEntity addScriptingPropertyDraw(boolean extend, String alias, ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage, FormPropertyOptions commonOptions, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawEntity addScriptingPropertyDraw(boolean extend, String alias, ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage, FormPropertyOptions commonOptions, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
         LAP<?, ?> property;
         ImOrderSet<ObjectEntity> objects;
@@ -548,7 +532,21 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, FormPropertyOptions options, LocalizedString caption, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void applyPropertyOptions(List<PropertyDrawEntity> properties, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        ComplexLocation<PropertyDrawEntity> commonLocation = commonOptions.getLocation();
+        boolean reverseList = commonLocation != null && commonLocation.isReverseList();
+
+        for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
+            PropertyDrawEntity propertyDraw = properties.get(i);
+            FormPropertyOptions opt = options.get(i);
+
+            applyPropertyOptions(propertyDraw, nvl(opt.getLocation(), commonLocation), nvl(opt.getNeighbourPropertyText(), commonOptions.getNeighbourPropertyText()), version);
+        }
+    }
+
+    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, FormPropertyOptions commonOptions, FormPropertyOptions options, LocalizedString caption, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        options = commonOptions.overrideWith(options);
+
         property.setCaption(caption, version);
         String appImage = options.getAppImage();
         if(appImage != null)
@@ -713,11 +711,14 @@ public class ScriptingFormEntity {
             form.addUserFilter(property, version);
 
         ComplexLocation<PropertyDrawEntity> location = options.getLocation();
+    }
+
+    public void applyPropertyOptions(PropertyDrawEntity<?, ?> property, ComplexLocation<PropertyDrawEntity> location, String neighbourPropertyText, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if(location != null) {
             form.movePropertyDraw(property, location, version);
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
-            checkNeighbour((PropertyDrawEntity<?, ?>) property, location, options.getNeighbourPropertyText(), version);
+            checkNeighbour((PropertyDrawEntity<?, ?>) property, location, neighbourPropertyText, version);
         }
     }
 
