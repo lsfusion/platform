@@ -2862,7 +2862,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private ImOrderSet<ActionValueImplement> getEvents(FormServerEvent eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
-        MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
+        MOrderSet<ActionValueImplement> mResult = SetFact.mOrderSet();
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
@@ -2872,7 +2872,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
                     }
 
-                    mResult.exclAdd(autoInstance.getValueImplement(this));
+                    mResult.add(autoInstance.getValueImplement(this));
                 }
             }
         }
