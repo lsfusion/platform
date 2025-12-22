@@ -84,13 +84,18 @@ public class InstanceFactory {
             ImOrderSet<ObjectInstance> objects = entity.getOrderObjects().mapOrderSetValues(this::getInstance);
 
             ImMap<ObjectInstance, PropertyObjectInstance> parentInstances = null;
-            if(entity.isParent !=null) {
-                parentInstances = entity.isParent.mapKeyValues(entity1 -> getInstance(entity1), entity2 -> getInstance(entity2));
+            ImMap<ObjectEntity, PropertyObjectEntity> isParent = entity.getIsParent();
+            if(isParent != null) {
+                parentInstances = isParent.mapKeyValues(this::getInstance, this::getInstance);
             }
 
-            groupInstance = new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
-                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null,
-                    entity.propertyCustomOptions != null ? getInstance(entity.propertyCustomOptions) : null,
+            PropertyObjectEntity propertyBackground = entity.getPropertyBackground();
+            PropertyObjectEntity propertyForeground = entity.getPropertyForeground();
+            PropertyObjectEntity propertyCustomOptions = entity.getPropertyCustomOptions();
+
+            groupInstance = new GroupObjectInstance(entity, objects, propertyBackground != null ? getInstance(propertyBackground) : null,
+                    propertyForeground != null ? getInstance(propertyForeground) : null,
+                    propertyCustomOptions != null ? getInstance(propertyCustomOptions) : null,
                     parentInstances, getInstance(entity.getProperties()));
             groupInstances.exclAdd(entity, groupInstance);
         }

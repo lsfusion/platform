@@ -44,7 +44,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, PropertyObjectEntity<?> readOnly) {
-        if(entity == null || !entity.viewType.isList())
+        if(entity == null || !entity.getViewType().isList())
             return null;
         
         return this.property.getGroupChange(entity, mapping, readOnly);

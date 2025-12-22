@@ -38,7 +38,7 @@ public class ObjectView extends IdentityView<ObjectView, ObjectEntity> {
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, groupObject);
-        pool.writeString(outStream, ThreadLocalContext.localize(entity.caption));
+        pool.writeString(outStream, ThreadLocalContext.localize(entity.getCaption()));
 
         entity.baseClass.serialize(outStream);
     }

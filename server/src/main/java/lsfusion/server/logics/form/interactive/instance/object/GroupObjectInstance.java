@@ -169,7 +169,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void setPageSize(Integer pageSize) {
-        if(entity.pageSize == null && !pageSize.equals(this.pageSize)){
+        if(entity.getPageSize() == null && !pageSize.equals(this.pageSize)){
             updated |= UPDATED_PAGESIZE;
             this.pageSize = pageSize;
         }
@@ -224,9 +224,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         for(ObjectInstance object : objects)
             object.groupTo = this;
 
-        this.viewType = entity.viewType;
+        this.viewType = entity.getViewType();
 
-        this.pageSize = entity.pageSize;
+        this.pageSize = entity.getPageSize();
 
         this.parent = parent;
         this.props = props;
@@ -1695,7 +1695,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyBackground;
+            return entity.getPropertyBackground();
         }
     }
 
@@ -1719,7 +1719,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyForeground;
+            return entity.getPropertyForeground();
         }
     }
 
@@ -1738,7 +1738,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyCustomOptions;
+            return entity.getPropertyCustomOptions();
         }
     }
 }

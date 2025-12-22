@@ -68,7 +68,7 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
         pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, getFilters());
 
-        outStream.writeBoolean(entity.plainTreeMode);
+        outStream.writeBoolean(false);
         
         outStream.writeBoolean(isExpandOnClick());
         outStream.writeInt(getHierarchicalWidth());

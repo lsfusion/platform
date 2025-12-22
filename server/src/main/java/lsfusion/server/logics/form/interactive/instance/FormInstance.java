@@ -277,14 +277,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if(groupObject.viewType.isList()) {
                 // should correspond RemoteForm.changeMode in general
-                ListViewType listViewType = groupEntity.listViewType;
+                ListViewType listViewType = groupEntity.getListViewTypeValue();
 
                 if (groupObject.entity.isEnableManualUpdate())
                     groupObject.setUpdateMode(UpdateMode.MANUAL);
 
                 if(listViewType != ListViewType.GRID) {
                     if (listViewType == ListViewType.PIVOT) {
-                        if(groupEntity.asyncInit) // will wait for first changeGroupMode
+                        if(groupEntity.isAsyncInit()) // will wait for first changeGroupMode
                             groupObject.setUpdateMode(UpdateMode.MANUAL);
                         else {
                             // should correspond RemoteForm.changeMode method (block with changeGroupMode)
@@ -304,7 +304,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             if (measureProps != null)
                                 measureColumns = measureProps.mapSetValues(propToColumn);
 
-                            groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.pivotOptions.getAggregation(), instanceFactory));
+                            groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.getPivotOptions().getAggregation(), instanceFactory));
                         }
                     }
                     changePageSize(groupObject, listViewType == ListViewType.CALENDAR ? 10 : 1000); // GStateTableView.getDefaultPageSize

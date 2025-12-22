@@ -511,10 +511,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         ImSet<ObjectEntity> objects;
         ObjectEntity object;
         ValueClass valueClass;
-        if(groupObject != null && (objects = groupObject.getObjects()).size() == 1 &&
-                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass &&
+        if (groupObject != null && (objects = groupObject.getObjects()).size() == 1 && ((GroupObjectEntity) (object = objects.single()).groupTo).isPanel() && (valueClass = object.baseClass) instanceof CustomClass &&
                 listProperty != null) {  //listProperty can be null when SELECTOR is set for an action
-            CustomClass customClass = (CustomClass)valueClass;
+            CustomClass customClass = (CustomClass) valueClass;
 
             ImRevMap<ObjectEntity, PropertyInterface> mapObjects = entity.getObjects().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
             PropertyInterface objectInterface = mapObjects.get(object);
@@ -537,7 +536,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().filterIncl(usedInterfaces).mapRevValues(ObjectEntity::getParamExpr);
 
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(getDefaultChangeEventScope(), DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, groupObject.updateType != UpdateType.NULL, listMapParamExprs);
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(getDefaultChangeEventScope(), DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, groupObject.getUpdateType() != UpdateType.NULL, listMapParamExprs);
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             ActionMapImplement<?, PropertyInterface> request = PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
@@ -873,7 +872,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             return explicitViewType.isToolbar();
 
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
-        return toDraw != null && toDraw.viewType.isToolbar();
+        return toDraw != null && toDraw.getNFViewType(version).isToolbar();
     }
 
     public boolean isNFPopup(FormEntity formEntity, Version version) {
@@ -882,7 +881,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             return explicitViewType.isPopup();
 
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
-        return toDraw != null && toDraw.viewType.isPopup();
+        return toDraw != null && toDraw.getNFViewType(version).isPopup();
     }
 
     public boolean isList(FormInstanceContext context) {
@@ -891,13 +890,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
         ClassViewType explicitViewType = getViewType();
-        return toDraw != null && toDraw.viewType.isList() && (explicitViewType == null || explicitViewType.isList());
+        return toDraw != null && toDraw.getViewType().isList() && (explicitViewType == null || explicitViewType.isList());
     }
 
     public boolean isNFList(FormEntity formEntity, Version version) {
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
         ClassViewType explicitViewType = getNFViewType(version);
-        return toDraw != null && toDraw.viewType.isList() && (explicitViewType == null || explicitViewType.isList());
+        return toDraw != null && toDraw.getNFViewType(version).isList() && (explicitViewType == null || explicitViewType.isList());
     }
 
     static public String createSID(String name, List<String> mapping) {
@@ -1102,7 +1101,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             if(explicitChange != null) {
                 // when we have selector, then it's normal for the object to be null, which however can lead to the "closure problem" - current value (it's params / objects) is "pushed" inside the JSON (GROUP) operator, which doesn't support NULL values (so all the options will be "erased")
                 GroupObjectEntity toDraw;
-                if(!forceSelect && isSelector() && (toDraw = getToDraw(context.entity)) != null && toDraw.updateType == UpdateType.NULL) // assert that group object is single panel object
+                if(!forceSelect && isSelector() && (toDraw = getToDraw(context.entity)) != null && toDraw.getUpdateType() == UpdateType.NULL) // assert that group object is single panel object
                     return null;
 
                 changeValue = true;

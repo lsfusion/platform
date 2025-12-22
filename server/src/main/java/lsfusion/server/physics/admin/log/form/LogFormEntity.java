@@ -47,7 +47,7 @@ public class LogFormEntity extends AutoFinalFormEntity {
 
             GroupObjectEntity paramGroup = addGroupObjectEntity(SetFact.singletonOrder(obj));
 
-            paramGroup.setViewTypePanel();
+            paramGroup.setViewTypePanel(this, baseVersion);
             index++;
         }
 

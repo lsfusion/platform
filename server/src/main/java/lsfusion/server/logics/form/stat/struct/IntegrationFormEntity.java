@@ -54,15 +54,15 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         if(!valueInterfaces.isEmpty()) {
             GroupObjectEntity valueGroupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
 
-            valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
+            valueGroupObject.setViewType(ClassViewType.PANEL, this, version); // for interactive view
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
             // sID - for JSON and XML
             groupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
             groupObject.setSID("value");
-            groupObject.setListViewType(ListViewType.CUSTOM);
-            groupObject.setCustomRenderFunction("selectMultiInput");
+            groupObject.setListViewType(ListViewType.CUSTOM, version);
+            groupObject.setCustomRenderFunction("selectMultiInput", version);
         } else
             groupObject = null;
         

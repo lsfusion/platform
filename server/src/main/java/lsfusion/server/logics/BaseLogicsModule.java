@@ -63,7 +63,6 @@ import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.action.userevent.*;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -90,7 +89,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
@@ -1051,7 +1049,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
-        return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.groupTo.updateType != UpdateType.NULL);
+        return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.groupTo.getUpdateType() != UpdateType.NULL);
     }
 
     protected LP<?> wrapObjProperty(LP<?> property) {
@@ -1063,13 +1061,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         LP value;
         boolean hasClasses = !obj.noClasses();
-        boolean isPanel = obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel();
+        boolean isData = obj.baseClass instanceof DataClass; // && obj.groupTo.isPanel();
 
         if(hasClasses) {
             value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
 
             boolean named = formEntity.isNamed();
-            if(named || isPanel)
+            if(named || isData)
                 value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties or we need selector as a default event
             if (named) {
                 String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
@@ -1078,7 +1076,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         } else
             value = object;
 
-        if (hasClasses && isPanel) {
+        if (hasClasses && isData) {
             DataClass dataClass = (DataClass) obj.baseClass;
 
             LP targetProp = getRequestedValueProperty(dataClass);
@@ -1087,12 +1085,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null);
 
-            setObjProps(obj, value, request);
+            setSelector(obj, value, request);
         }
         return value;
     }
 
-    private static void setObjProps(ObjectEntity obj, LP value, ActionMapImplement<?, ClassPropertyInterface> request) {
+    private static void setSelector(ObjectEntity obj, LP value, ActionMapImplement<?, ClassPropertyInterface> request) {
         PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, obj, null, null));
 
         // there are two options, either putting event actions in proceedDefaultDesign, or adding event action to the property itself
@@ -1108,7 +1106,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         LP value = intervalProperty;
 
         boolean named = formEntity.isNamed();
-        boolean isDataPanel = objectFrom.groupTo.viewType.isPanel() && objectTo.groupTo.viewType.isPanel();
+        boolean isDataPanel = objectFrom.groupTo.isPanel() && ((GroupObjectEntity) objectTo.groupTo).isPanel();
         if(named || isDataPanel)
             value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties or we need a selector action
         if (named) {
@@ -1128,7 +1126,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                             objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
                             objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null);
 
-            setObjProps(objectFrom, value, request);
+            setSelector(objectFrom, value, request);
         }
 
         return value;

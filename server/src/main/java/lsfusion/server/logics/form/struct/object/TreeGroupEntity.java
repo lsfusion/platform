@@ -8,7 +8,6 @@ import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObjectEntity> {
-    public boolean plainTreeMode = false;
 
     @Override
     protected String getDefaultSIDPrefix() {
@@ -34,8 +33,6 @@ public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObject
     // copy-constructor
     protected TreeGroupEntity(TreeGroupEntity src, ObjectMapping mapping) {
         super(src, mapping);
-
-        plainTreeMode = src.plainTreeMode;
 
         groups = mapping.get(src.groups);
         view = mapping.get(src.view);

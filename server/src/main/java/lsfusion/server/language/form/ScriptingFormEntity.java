@@ -150,26 +150,26 @@ public class ScriptingFormEntity {
 
     public void applyGroupObjectOptions(GroupObjectEntity groupObj, ScriptingGroupObject groupObject, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (groupObject.viewType != null)
-            groupObj.setViewType(groupObject.viewType);
+            groupObj.setViewType(groupObject.viewType, form, version);
         if (groupObject.listViewType != null)
-            groupObj.setListViewType(groupObject.listViewType);
+            groupObj.setListViewType(groupObject.listViewType, version);
         if(groupObject.pivotOptions != null)
-            groupObj.setPivotOptions(groupObject.pivotOptions);
+            groupObj.setPivotOptions(groupObject.pivotOptions, version);
         if (groupObject.customRenderFunction != null)
-            groupObj.setCustomRenderFunction(groupObject.customRenderFunction);
+            groupObj.setCustomRenderFunction(groupObject.customRenderFunction, version);
         if(groupObject.customOptions != null)
-            groupObj.setCustomOptions(addPropertyObject(groupObject.customOptions));
+            groupObj.setPropertyCustomOptions(addPropertyObject(groupObject.customOptions), version);
         if (groupObject.mapTileProvider != null) {
             checkMapTileProvider(groupObject.mapTileProvider);
-            groupObj.setMapTileProvider(groupObject.mapTileProvider);
+            groupObj.setMapTileProvider(groupObject.mapTileProvider, version);
         }
 
         if (groupObject.pageSize != null) {
-            groupObj.pageSize = groupObject.pageSize;
+            groupObj.setPageSize(groupObject.pageSize, version);
         }
 
         if (groupObject.updateType != null) {
-            groupObj.updateType = groupObject.updateType;
+            groupObj.setUpdateType(groupObject.updateType, version);
         }
 
         String propertyGroupName = groupObject.propertyGroupName;
@@ -187,9 +187,9 @@ public class ScriptingFormEntity {
             setSubReport(groupObj, groupObject.subReportPath, version);
 
         if(groupObject.background != null)
-            groupObj.setPropertyBackground(addPropertyObject(groupObject.background));
+            groupObj.setPropertyBackground(addPropertyObject(groupObject.background), version);
         if(groupObject.foreground != null)
-            groupObj.setPropertyForeground(addPropertyObject(groupObject.foreground));
+            groupObj.setPropertyForeground(addPropertyObject(groupObject.foreground), version);
 
         if(groupObject.location != null) {
             form.moveGroupObject(groupObj, groupObject.location, version);
@@ -204,10 +204,10 @@ public class ScriptingFormEntity {
         }
 
         if (object.integrationSID != null) {
-            obj.setIntegrationSID(object.integrationSID);
+            obj.setIntegrationSID(object.integrationSID, version);
         }
 
-        obj.setCaption(object.caption);
+        obj.setCaption(object.caption, version);
     }
 
     private static List<String> supportedMapTileProviders = Arrays.asList("openStreetMap", "google", "yandex");
@@ -261,7 +261,7 @@ public class ScriptingFormEntity {
                 }
 
                 if (!propertyObjects.isEmpty())
-                    groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
+                    groupObj.setIsParents(version, propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
             }
         }
 
@@ -898,7 +898,7 @@ public class ScriptingFormEntity {
         for(Pair<String, PivotOptions> entry : pivotOptionsList) {
             GroupObjectEntity groupObject = form.getNFGroupObject(entry.first, version);
             if (groupObject != null) {
-                groupObject.setPivotOptions(entry.second);
+                groupObject.setPivotOptions(entry.second, version);
             }
         }
         form.addPivotColumns(pivotColumns, version);

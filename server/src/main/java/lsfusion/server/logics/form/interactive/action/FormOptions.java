@@ -5,6 +5,7 @@ import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.util.HashSet;
@@ -47,7 +48,7 @@ public class FormOptions {
         Set<Integer> result = new HashSet<>();
         if(inputObjects != null) {
             for (ObjectEntity objectEntity : inputObjects) {
-                result.add(objectEntity.groupTo.ID);
+                result.add(objectEntity.groupTo.getID());
             }
         }
         return result;

@@ -9,6 +9,7 @@ import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -47,22 +48,15 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         grid = new GridView(idGen, containerFactory, this, version);
     }
 
-    public LocalizedString getContainerCaption() {
-        if (!objects.isEmpty())
-            return objects.get(0).entity.getCaption();
-        else
-            return null;
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.writeObject(outStream, entity.viewType);
-        pool.writeObject(outStream, entity.listViewType);
-        pool.writeObject(outStream, entity.pivotOptions);
-        pool.writeString(outStream, entity.customRenderFunction);
-        pool.writeString(outStream, entity.mapTileProvider);
-        pool.writeBoolean(outStream, entity.asyncInit);
+        pool.writeObject(outStream, entity.getViewType());
+        pool.writeObject(outStream, entity.getListViewTypeValue());
+        pool.writeObject(outStream, entity.getPivotOptions());
+        pool.writeString(outStream, entity.getCustomRenderFunction());
+        pool.writeString(outStream, entity.getMapTileProvider());
+        pool.writeBoolean(outStream, entity.isAsyncInit());
         pool.serializeCollection(outStream, objects);
-        pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));
+        pool.serializeObject(outStream, pool.context.view.getTreeGroup((TreeGroupEntity) entity.treeGroup));
 
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, grid.toolbarSystem);
@@ -71,7 +65,7 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         pool.serializeCollection(outStream, grid.getFilters());
         pool.serializeObject(outStream, grid.calculations);
 
-        outStream.writeBoolean(entity.isParent != null);
+        outStream.writeBoolean(entity.getIsParent() != null);
         outStream.writeBoolean(pool.context.entity.isMap(entity));
         outStream.writeBoolean(pool.context.entity.isCalendarDate(entity));
         outStream.writeBoolean(pool.context.entity.isCalendarDateTime(entity));
@@ -82,11 +76,12 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
 
         boolean needVScroll;
         if (needVerticalScroll == null) {
-            needVScroll = (entity.pageSize != null && entity.pageSize == 0);
+            Integer pageSize = entity.getPageSize();
+            needVScroll = (pageSize != null && pageSize == 0);
         } else {
             needVScroll = needVerticalScroll;
         }
-        pool.writeInt(outStream, entity.pageSize);
+        pool.writeInt(outStream, entity.getPageSize());
         outStream.writeBoolean(needVScroll);
         outStream.writeBoolean(entity.isEnableManualUpdate());
         outStream.writeUTF(getSID());

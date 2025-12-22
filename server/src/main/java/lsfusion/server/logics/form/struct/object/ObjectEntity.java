@@ -7,8 +7,10 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.type.Type;
@@ -43,14 +45,27 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
 
     public GroupObjectEntity groupTo;
 
-    public LocalizedString caption;
+    private final NFProperty<LocalizedString> caption = NFFact.property();
 
-    public void setCaption(LocalizedString caption) {
-        this.caption = caption;
+    public void setCaption(LocalizedString caption, Version version) {
+        this.caption.set(caption, version);
     }
+
     public LocalizedString getCaption() {
-        if (caption != null)
-            return caption;
+        LocalizedString explicit = caption.get();
+        if (explicit != null)
+            return explicit;
+
+        if (baseClass != null)
+            return baseClass.getCaption();
+
+        return create("{logics.undefined.object}");
+    }
+
+    public LocalizedString getNFCaption(Version version) {
+        LocalizedString explicit = caption.getNF(version);
+        if (explicit != null)
+            return explicit;
 
         if (baseClass != null)
             return baseClass.getCaption();
@@ -61,9 +76,7 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
     public ValueClass baseClass;
     private boolean noClasses;
 
-    public String integrationSID;
-
-    public boolean isValue;
+    private final NFProperty<String> integrationSID = NFFact.property();
 
     private final FormEntity.ExProperty valueProperty;
     @NFLazy
@@ -138,17 +151,18 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
     }
 
     public <T extends PropertyInterface> ActionMapImplement<?, T> getSeekPanelAction(BaseLogicsModule lm, LP targetProp) {
-        assert groupTo.isPanel();
+//        assert groupTo.isPanel();
         // we want to have null value if targetProp is null
         return lm.addJoinAProp(lm.addOSAProp(this, null), targetProp).getImplement();
     }
 
-    public void setIntegrationSID(String integrationSID) {
-        this.integrationSID = integrationSID;
+    public void setIntegrationSID(String integrationSID, Version version) {
+        this.integrationSID.set(integrationSID, version);
     }
 
     public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : getSID();
+        String explicit = integrationSID.get();
+        return explicit != null ? explicit : getSID();
     }
 
     @Override
@@ -182,15 +196,20 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
     protected ObjectEntity(ObjectEntity src, ObjectMapping mapping) {
         super(src, mapping);
 
-        caption = src.caption;
         baseClass = src.baseClass;
         noClasses = src.noClasses;
-        integrationSID = src.integrationSID;
-        isValue = src.isValue;
 
         valueProperty = mapping.get(src.valueProperty);
         groupTo = mapping.get(src.groupTo);
         view = mapping.get(src.view);
+    }
+
+    @Override
+    public void extend(ObjectEntity src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        mapping.sets(caption, src.caption);
+        mapping.sets(integrationSID, src.integrationSID);
     }
 
 //    @Override

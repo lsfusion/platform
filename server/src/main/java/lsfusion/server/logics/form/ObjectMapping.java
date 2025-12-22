@@ -217,6 +217,11 @@ public class ObjectMapping {
         to.set(from, p -> p != null ? p.mapItListValues(this::get) : null, version);
     }
 
+    public <M1 extends MappingInterface<M1>, M2 extends MappingInterface<M2>> void setm(NFProperty<ImMap<M1, M2>> to, NFProperty<ImMap<M1, M2>> from) {
+        assert to != from;
+        to.set(from, p -> p != null ? get(p) : null, version);
+    }
+
     // collections
 
     public <M> void adds(NFSet<M> to, NFSet<M> from) {

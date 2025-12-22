@@ -768,7 +768,8 @@ public class PropertyFact {
     }
     public static PropertyObjectEntity<ClassPropertyInterface> createDataPropRev(String typeString, Object objects, ImOrderSet<ObjectEntity> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
         ImOrderSet<ValueClass> interfaceClasses = interfaces.mapOrderSetValues((ObjectEntity p) -> p.baseClass);
-        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create(typeString + " (" + objects.toString() + ")", false), interfaceClasses.toArray(new ValueClass[interfaceClasses.size()]), valueClass);
+//        " (" + objects.toString() + ")" we don't want to call toString for now, not to finalize caption
+        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create(typeString, false), interfaceClasses.toArray(new ValueClass[interfaceClasses.size()]), valueClass);
         dataProperty.nestedType = nestedType;
         return new PropertyObjectEntity<>(dataProperty, dataProperty.getFriendlyOrderInterfaces().mapSet(interfaces));
     }

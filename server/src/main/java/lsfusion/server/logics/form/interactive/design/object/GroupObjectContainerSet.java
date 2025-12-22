@@ -98,9 +98,9 @@ public class GroupObjectContainerSet {
         String sid = grid.getPropertyGroupContainerSID();
 
         set.boxContainer = createContainer(factory, grid.groupObject.entity.getDebugPoint()); // контейнер всей группы
-        set.boxContainer.setCaption(grid.groupObject.getContainerCaption(), version);
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setName(grid.getPropertyGroupContainerName(), version);
+        set.boxContainer.groupObjectBox = grid.groupObject.entity;
 
         set.filterBoxContainer = createContainer(factory);
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));

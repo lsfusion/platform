@@ -14,6 +14,7 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.JoinProperty;
@@ -61,7 +62,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                 if(innerObject == null || usedObjects.add(innerObject)) {
                     //добавляем дополнительный объект, если на входе - свойство
                     innerObject  = addSingleGroupObject(implClasses.get(iFace));
-                    innerObject.groupTo.setViewTypePanel();
+                    innerObject.groupTo.setViewTypePanel(this, baseVersion);
     
                     PropertyInterface innerInterface = new PropertyInterface();
                     PropertyRevImplement filterProp = PropertyFact.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));

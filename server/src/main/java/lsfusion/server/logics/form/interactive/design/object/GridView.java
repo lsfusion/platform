@@ -102,7 +102,7 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
     //todo: метод дизайна, который изменяет энтити => должно быть перенсено на уровень энтити
     public void setQuickSearch(Boolean value, Version version) {
         quickSearch.set(value, version);
-        groupObject.entity.pageSize = 0;
+        groupObject.entity.setPageSize(0, version);
     }
 
     @Override

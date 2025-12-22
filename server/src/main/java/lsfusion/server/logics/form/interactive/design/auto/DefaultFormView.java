@@ -325,10 +325,6 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
             grid.containers = groupSet.getContainerSet(this, grid, version);
 
             addToObjectsContainer(groupSet.getBoxContainer(), version);
-
-            if (view.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
-                groupSet.getBoxContainer().setFlex(0d, version);
-            }
         }
 
         return view;

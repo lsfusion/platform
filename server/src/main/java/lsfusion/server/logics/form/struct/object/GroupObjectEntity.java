@@ -10,6 +10,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -51,6 +52,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.function.IntFunction;
@@ -72,7 +74,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
 
-    public UpdateType updateType; //todo?
+    private final NFProperty<UpdateType> updateType = NFFact.property();
 
     private NFProperty<Group> propertyGroup = NFFact.property(); // used for integration (export / import)
 
@@ -110,42 +112,45 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         }
     }
 
-    // конечно не очень красивое решение с groupObject, но в противном случае пришлось бы дублировать логику определения GroupObject'ов для фильтров +
+    private UpdateType lazyUpdateType;
     @ManualLazy
     public UpdateType getUpdateType(GroupObjectInstance groupObject) throws SQLException, SQLHandledException {
-        if(updateType == null) { // default
-            if(!Settings.get().isDisableUpdateTypeHeur()) {
-                // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
-                // в частности в таком случае нет смысла seek делать
-                Modifier modifier = Property.defaultModifier;
+        if(lazyUpdateType == null) {
+            UpdateType updateTypeValue = updateType.get();
+            if (updateTypeValue == null) { // default
+                if (!Settings.get().isDisableUpdateTypeHeur()) {
+                    // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
+                    // в частности в таком случае нет смысла seek делать
+                    Modifier modifier = Property.defaultModifier;
 
-                ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
-                Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
-                Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                    ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
+                    Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                    Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
 
-                boolean narrow = false;
-                if (dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
-                    narrow = true;
-                else {
-                    Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
-
-                    // сравниваем статистику фильтра со статистикой класса
-                    StatType type = StatType.UPDATE;
-                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
-                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
-
-                    if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                    boolean narrow = false;
+                    if (dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
                         narrow = true;
+                    else {
+                        Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
+
+                        // сравниваем статистику фильтра со статистикой класса
+                        StatType type = StatType.UPDATE;
+                        Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
+                        Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
+
+                        if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                            narrow = true;
+                    }
+                    if (narrow)
+                        updateTypeValue = UpdateType.FIRST;
                 }
-                if (narrow)
-                    updateType = UpdateType.FIRST;
+
+                if (updateTypeValue == null)
+                    updateTypeValue = UpdateType.PREV;
             }
-
-            if(updateType == null)
-                updateType = UpdateType.PREV;
+            lazyUpdateType = updateTypeValue;
         }
-        return updateType;
-
+        return lazyUpdateType;
     }
 
     private final FormEntity.ExProperty listViewTypeProp;
@@ -156,20 +161,25 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return listViewTypeProp.get();
     }
 
-    public ClassViewType viewType = ClassViewType.DEFAULT;
-    public ListViewType listViewType = ListViewType.DEFAULT;
-    public PivotOptions pivotOptions;
-    public String customRenderFunction;
-    public PropertyObjectEntity propertyCustomOptions;
-    public String mapTileProvider;
+    private final NFProperty<ClassViewType> viewType = NFFact.property();
+    private final NFProperty<ListViewType> listViewType = NFFact.property();
+
+    private final NFProperty<String> pivotType = NFFact.property();
+    private final NFProperty<PropertyGroupType> pivotAggregation = NFFact.property();
+    private final NFProperty<Boolean> pivotShowSettings = NFFact.property();
+    private final NFProperty<String> pivotConfigFunction = NFFact.property();
+
+    private final NFProperty<String> customRenderFunction = NFFact.property();
+    private final NFProperty<PropertyObjectEntity> propertyCustomOptions = NFFact.property();
+    private final NFProperty<String> mapTileProvider = NFFact.property();
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
-    public boolean asyncInit = true; // so far supported only for pivot
+    private final NFProperty<Boolean> asyncInit = NFFact.property(); // default true
 
-    public Integer pageSize;
+    private final NFProperty<Integer> pageSize = NFFact.property();
 
-    public PropertyObjectEntity propertyBackground;
-    public PropertyObjectEntity propertyForeground;
+    private final NFProperty<PropertyObjectEntity> propertyBackground = NFFact.property();
+    private final NFProperty<PropertyObjectEntity> propertyForeground = NFFact.property();
 
     private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
     private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
@@ -205,6 +215,13 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return props.get(type).getNF(version);
     }
 
+    public LocalizedString getContainerCaption() {
+        if (!objects.isEmpty())
+            return objects.get(0).getCaption();
+        else
+            return null;
+    }
+
     public void fillGroupChanges(Version version) {
         props.get(GroupObjectProp.FILTER).getNF(version);
         props.get(GroupObjectProp.ORDER).getNF(version);
@@ -221,66 +238,136 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return instanceFactory.getInstance(this);
     }
 
-    public ImMap<ObjectEntity, PropertyObjectEntity> isParent = null;
+    private final NFProperty<ImMap<ObjectEntity, PropertyObjectEntity>> isParent = NFFact.property();
 
-    public void setIsParents(final PropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity>) i -> properties[i]);
+    public UpdateType getUpdateType() {
+        return updateType.get();
     }
 
-    public void setViewType(ClassViewType viewType) {
-        this.viewType = viewType;
+    public void setUpdateType(UpdateType value, Version version) {
+        updateType.set(value, version);
     }
 
-    public void setListViewType(ListViewType listViewType) {
-        this.listViewType = listViewType;
+    public ClassViewType getViewType() {
+        ClassViewType value = viewType.get();
+        return value != null ? value : ClassViewType.DEFAULT;
     }
 
-    public void setPivotOptions(PivotOptions pivotOptions) {
-        if(this.pivotOptions != null) {
-            this.pivotOptions.merge(pivotOptions);
-        } else {
-            this.pivotOptions = pivotOptions;
-        }
+    public ClassViewType getNFViewType(Version version) {
+        ClassViewType value = viewType.getNF(version);
+        return value != null ? value : ClassViewType.DEFAULT;
     }
 
-    public void setCustomRenderFunction(String customRenderFunction) {
-        this.customRenderFunction = customRenderFunction;
+    public void setViewType(ClassViewType viewType, FormEntity form, Version version) {
+        this.viewType.set(viewType, version);
+
+        form.updatePropertyDraws(version);
     }
 
-    public void setCustomOptions(PropertyObjectEntity<?> propertyCustomOptions) {
-        this.propertyCustomOptions = propertyCustomOptions;
+    public ListViewType getListViewTypeValue() {
+        ListViewType value = listViewType.get();
+        return value != null ? value : ListViewType.DEFAULT;
     }
 
-    public void setMapTileProvider(String mapTileProvider) {
-        this.mapTileProvider = mapTileProvider;
+    public void setListViewType(ListViewType listViewType, Version version) {
+        this.listViewType.set(listViewType, version);
     }
 
-    public void setViewTypePanel() {
-        setViewType(ClassViewType.PANEL);
+    public PivotOptions getPivotOptions() {
+        return new PivotOptions(pivotType.get(), pivotAggregation.get(), pivotShowSettings.get(), pivotConfigFunction.get());
+    }
+
+    public void setPivotOptions(PivotOptions pivotOptions, Version version) {
+        pivotType.set(pivotOptions.getType(), version);
+        pivotAggregation.set(pivotOptions.getAggregation(), version);
+        pivotShowSettings.set(pivotOptions.getShowSettings(), version);
+        pivotConfigFunction.set(pivotOptions.getConfigFunction(), version);
+    }
+
+    public String getCustomRenderFunction() {
+        return customRenderFunction.get();
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction, Version version) {
+        this.customRenderFunction.set(customRenderFunction, version);
+    }
+
+    public void setPropertyCustomOptions(PropertyObjectEntity<?> propertyCustomOptions, Version version) {
+        this.propertyCustomOptions.set(propertyCustomOptions, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyCustomOptions() {
+        return propertyCustomOptions.get();
+    }
+
+    public String getMapTileProvider() {
+        return mapTileProvider.get();
+    }
+
+    public void setMapTileProvider(String mapTileProvider, Version version) {
+        this.mapTileProvider.set(mapTileProvider, version);
+    }
+
+    public boolean isAsyncInit() {
+        Boolean value = asyncInit.get();
+        return value == null || value;
+    }
+
+    public void setAsyncInit(boolean asyncInit, Version version) {
+        this.asyncInit.set(asyncInit, version);
+    }
+
+    public Integer getPageSize() {
+        return pageSize.get();
+    }
+
+    public void setPageSize(Integer pageSize, Version version) {
+        this.pageSize.set(pageSize, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyBackground() {
+        return propertyBackground.get();
+    }
+
+    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground, Version version) {
+        this.propertyBackground.set(propertyBackground, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyForeground() {
+        return propertyForeground.get();
+    }
+
+    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground, Version version) {
+        this.propertyForeground.set(propertyForeground, version);
+    }
+
+    public ImMap<ObjectEntity, PropertyObjectEntity> getIsParent() {
+        return isParent.get();
+    }
+
+    public void setIsParents(Version version, final PropertyObjectEntity... properties) {
+        isParent.set(getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity>) i -> properties[i]), version);
+    }
+
+    public void setViewTypePanel(FormEntity form, Version version) {
+        setViewType(ClassViewType.PANEL, form, version);
     }
     
-    public void setViewTypeList() {
-        setViewType(ClassViewType.LIST);
+    public void setViewTypeList(FormEntity form, Version version) {
+        setViewType(ClassViewType.LIST, form, version);
     }
 
     public boolean isPanel() {
-        return viewType.isPanel();
+        return getViewType().isPanel();
     }
 
     public boolean isCustom() {
-        return !isPanel() && listViewType == ListViewType.CUSTOM;
+        return !isPanel() && getListViewTypeValue() == ListViewType.CUSTOM;
     }
 
     public boolean isSimpleState() {
+        ListViewType listViewType = getListViewTypeValue();
         return !isPanel() && (listViewType == ListViewType.CUSTOM || listViewType == ListViewType.MAP || listViewType == ListViewType.CALENDAR);
-    }
-
-    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
-        this.propertyBackground = propertyBackground;
-    }
-
-    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground) {
-        this.propertyForeground = propertyForeground;
     }
 
     public ObjectEntity getObject(String sid) {
@@ -401,7 +488,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
     public boolean isSimpleList() {
-        return getObjects().size() == 1 && viewType.isList() && !isInTree();
+        return getObjects().size() == 1 && getViewType().isList() && !isInTree();
     }
 
     public GroupObjectView view;
@@ -477,22 +564,10 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
         objects = mapping.get(src.objects);
 
-        updateType = src.updateType;
-        viewType = src.viewType;
-        listViewType = src.listViewType;
-        pivotOptions = src.pivotOptions;
-        customRenderFunction = src.customRenderFunction;
-        mapTileProvider = src.mapTileProvider;
-        asyncInit =  src.asyncInit;
-        pageSize = src.pageSize;
-
         treeGroup = mapping.get(src.treeGroup); // nullable
         view = mapping.get(src.view);
         count = mapping.get(src.count); // nullable
-        propertyCustomOptions = mapping.get(src.propertyCustomOptions);
-        propertyBackground = mapping.get(src.propertyBackground);
-        propertyForeground = mapping.get(src.propertyForeground);
-        isParent = mapping.get(src.isParent); // nullable
+
         props = mapping.gets(src.props);
         listViewTypeProp = mapping.get(src.listViewTypeProp);
     }
@@ -508,6 +583,25 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         mapping.sets(integrationKey, src.integrationKey);
         mapping.sets(isFilterExplicitlyUsed, src.isFilterExplicitlyUsed);
         mapping.sets(isOrderExplicitlyUsed, src.isOrderExplicitlyUsed);
+
+        mapping.sets(updateType, src.updateType);
+        mapping.sets(viewType, src.viewType);
+        mapping.sets(listViewType, src.listViewType);
+
+        mapping.sets(pivotType, src.pivotType);
+        mapping.sets(pivotAggregation, src.pivotAggregation);
+        mapping.sets(pivotShowSettings, src.pivotShowSettings);
+        mapping.sets(pivotConfigFunction, src.pivotConfigFunction);
+
+        mapping.sets(customRenderFunction, src.customRenderFunction);
+        mapping.sets(mapTileProvider, src.mapTileProvider);
+        mapping.sets(asyncInit, src.asyncInit);
+        mapping.sets(pageSize, src.pageSize);
+
+        mapping.set(propertyCustomOptions, src.propertyCustomOptions);
+        mapping.set(propertyBackground, src.propertyBackground);
+        mapping.set(propertyForeground, src.propertyForeground);
+        mapping.setm(isParent, src.isParent);
 
         mapping.set(reportPathProp, src.reportPathProp);
     }

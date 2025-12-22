@@ -8,6 +8,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -17,7 +18,7 @@ public class DialogFormEntity extends BaseClassFormEntity {
     public DialogFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, cls.caption);
 
-        object.groupTo.setViewTypeList();
+        object.groupTo.setViewTypeList(this, baseVersion);
 
 //        LM.addObjectActions(this, object);
 

@@ -31,7 +31,8 @@ public abstract class AutoFormEntity extends FormEntity {
 
         FormView view = this.view;
         if(view != null) { // if !needDesign there is no view
-            propertyDraw.setCaption(LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")"), version);
+            // it's better to do as getDefaultCaption, but AutoFormEntity is not extensible anyway
+            propertyDraw.setCaption(LocalizedString.concatList(object.getNFCaption(version), " (", LocalizedString.create("{logics.id}"), ")"), version);
         }
         return propertyDraw;
     }

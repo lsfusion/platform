@@ -447,7 +447,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
-        if(group.viewType.isList() && !group.isInTree()) {
+        if(group.getNFViewType(version).isList() && !group.isInTree()) {
             BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
@@ -1295,13 +1295,13 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     private void finalizeChanges() {
 
         for(GroupObjectEntity group : getGroupsIt()) {
-            if(group.listViewType.isMap() && !isMap(group)) {
+            if(group.getListViewTypeValue().isMap() && !isMap(group)) {
                 throw new RuntimeException(getCreationPath() + " none of required MAP propertyDraws found (longitude, latitude or polygon)");
             }
         }
 
         for(GroupObjectEntity group : getGroupsIt()) {
-            if(group.listViewType.isCalendar()) {
+            if(group.getListViewTypeValue().isCalendar()) {
                 if (!isCalendarDate(group) && !isCalendarDateTime(group))
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
                 if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
@@ -1571,12 +1571,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         if(view != null)
             view.addDefaultOrderFirst(property, descending, version);
-    }
-
-    public void setPageSize(int pageSize) {
-        for (GroupObjectEntity group : getGroupsIt()) {
-            group.pageSize = pageSize;
-        }
     }
 
     public void addPivotColumn(PropertyDrawEntityOrPivotColumn column, Version version) {

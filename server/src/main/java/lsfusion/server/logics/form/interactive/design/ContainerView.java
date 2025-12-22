@@ -19,6 +19,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyContainersView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -369,6 +370,16 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return getLazyChildren();
     }
 
+    public GroupObjectEntity groupObjectBox;
+    @Override
+    protected double getDefaultFlex(FormInstanceContext context) {
+        // hack, if groupObject goes into the panel, then there can be no grid, and if box is not set to 0, it will take up the entire size
+        if(groupObjectBox != null && groupObjectBox.isPanel())
+            return 0;
+
+        return super.getDefaultFlex(context);
+    }
+
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
@@ -419,7 +430,14 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public LocalizedString getCaption() {
-        return caption.get();
+        LocalizedString caption = this.caption.get();
+        if(caption != null)
+            return caption;
+
+        if(groupObjectBox != null)
+            return groupObjectBox.getContainerCaption();
+
+        return null;
     }
     public LocalizedString getNFCaption(Version version) {
         return caption.getNF(version);
@@ -702,6 +720,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         recordContainer = mapping.get(src.recordContainer);
         addParent = mapping.get(src.addParent);
         addChild = src.addChild;
+
+        groupObjectBox = mapping.get(src.groupObjectBox); // nullable
     }
 
     @Override

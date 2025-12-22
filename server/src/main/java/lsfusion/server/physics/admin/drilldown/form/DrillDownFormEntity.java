@@ -15,6 +15,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -44,7 +45,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
             ObjectEntity paramObject = addSingleGroupObject(interfaceClasses.get(pi));
             addPropertyDraw(paramObject, LM.getIdGroup());
             addValuePropertyDraw(LM, paramObject);
-            paramObject.groupTo.setViewTypePanel();
+            paramObject.groupTo.setViewTypePanel(this, baseVersion);
 
             mInterfaceObjects.revAdd(pi, paramObject);
             mParamObjects.exclAdd(paramObject);
