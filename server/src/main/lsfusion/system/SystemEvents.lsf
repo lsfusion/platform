@@ -1069,18 +1069,16 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
         code '{action.form.customize.base}' = jsonCode(code, sid) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
         extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
-                stringToFile(s);
                 LOCAL text = STRING();
-                IMPORT JSON FROM resultFile() TO() text;
+                text() <- fieldText(JSON(STRING(s)), 'text');
                 SEEK customizeForm.extendCodeAll = text();
                 dataExtendCode(form(sid)) <- nullEmpty(text());
             }
         },
         extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
             INPUT s = TEXT DO {
-                stringToFile(s);
                 LOCAL text = STRING();
-                IMPORT JSON FROM resultFile() TO() text;
+                text() <- fieldText(JSON(STRING(s)), 'text');
                 SEEK customizeForm.extendCodeCurrentUser = text();
                 dataExtendCode(form(sid), currentUser()) <- nullEmpty(text());
             }
