@@ -2351,4 +2351,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public String getRegexpMessage() {
         return null;
     }
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
 }

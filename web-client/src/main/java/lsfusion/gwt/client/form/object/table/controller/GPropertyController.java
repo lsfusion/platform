@@ -44,6 +44,7 @@ public abstract class GPropertyController {
     public abstract void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateChangeKeyValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateChangeMouseValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);

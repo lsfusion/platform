@@ -72,4 +72,6 @@ public class PropertyReadType {
     public final static byte CHANGEMOUSE = 34;
 
     public final static byte TREE_HIERARCHICALCAPTION = 35;
+
+    public final static byte DEFAULTVALUE = 36;
 }

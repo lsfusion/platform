@@ -211,6 +211,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).changeMouseReader;
             case PropertyReadType.TREE_HIERARCHICALCAPTION:
                 return ((ClientTreeGroup)clientForm.findComponentByID(inStream.readInt())).hierarchicalCaptionClassReader;
+            case PropertyReadType.DEFAULTVALUE:
+                return clientForm.getProperty(inStream.readInt()).defaultValueReader;
             default:
                 throw new IOException();
         }

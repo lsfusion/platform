@@ -20,6 +20,8 @@ public interface UpdateContext {
 
     default Boolean isPropertyReadOnly() { return false; }
 
+    default String getDefaultValue() { return null; }
+
     default boolean isTabFocusable() { return false; }
 
     default boolean isNavigateInput() { return false; }

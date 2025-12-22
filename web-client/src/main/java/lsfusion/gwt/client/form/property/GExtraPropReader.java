@@ -43,6 +43,8 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updateChangeKeyValues(this, values);
         } else if (readerType == CHANGEMOUSE) {
             controller.updateChangeMouseValues(this, values);
+        } else if (readerType == DEFAULTVALUE) {
+            controller.updateDefaultValueValues(this, values);
         }
     }
 

@@ -122,4 +122,8 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     public String getRegexpMessage() {
         return property.regexpMessage;
     }
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
 }

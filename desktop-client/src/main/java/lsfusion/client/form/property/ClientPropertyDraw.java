@@ -76,6 +76,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader propertyCustomOptionsReader = new ExtraPropReader(PROPERTY_CUSTOM_OPTIONS);
     public ExtraPropReader changeKeyReader = new ExtraPropReader(CHANGEKEY);
     public ExtraPropReader changeMouseReader = new ExtraPropReader(CHANGEMOUSE);
+    public ExtraPropReader defaultValueReader = new ExtraPropReader(DEFAULTVALUE);
 
     public boolean boxed;
 
@@ -140,6 +141,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
+    public String defaultValue;
 
     public boolean panelColumnVertical;
     public boolean panelCustom;
@@ -218,6 +220,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+    public boolean customNeedDefaultValue;
 
     public String creationScript;
     public String creationPath;
@@ -572,6 +575,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
+        defaultValue = pool.readString(inStream);
 
         panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
@@ -702,6 +706,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customCanBeRenderedInTD = pool.readBoolean(inStream);
         customNeedPlaceholder = pool.readBoolean(inStream);
         customNeedReadonly = pool.readBoolean(inStream);
+        customNeedDefaultValue = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 

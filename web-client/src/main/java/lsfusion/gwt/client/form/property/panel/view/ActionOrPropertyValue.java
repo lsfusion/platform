@@ -45,6 +45,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     private PValue propertyCustomOption;
     private GInputBindingEvent changeKey;
     private GInputBindingEvent changeMouse;
+    private String defaultValue;
 
     public PValue getValue() {
         return value;
@@ -117,6 +118,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public String getRegexpMessage() {
         return regexpMessage;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
     @Override
@@ -332,7 +338,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
-                       String regexp, String regexpMessage, String valueTooltip, PValue propertyCustomOption) {
+                       String regexp, String regexpMessage, String valueTooltip, String defaultValue, PValue propertyCustomOption) {
         this.value = value;
         this.loading = loading;
         this.image = image;
@@ -346,6 +352,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         this.regexp = regexp;
         this.regexpMessage = regexpMessage;
         this.valueTooltip = valueTooltip;
+        this.defaultValue = defaultValue;
         this.propertyCustomOption = propertyCustomOption;
 
         update();

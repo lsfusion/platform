@@ -176,6 +176,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).changeMouseReader;
             case GPropertyReadType.TREE_HIERARCHICALCAPTION:
                 return ((GTreeGroup)form.findComponentByID(readerId)).hierarchicalCaptionReader;
+            case GPropertyReadType.DEFAULTVALUE:
+                return form.getProperty(readerId).defaultValueReader;
             default:
                 return null;
         }
@@ -226,5 +228,6 @@ public class GFormChanges {
         public final static byte CHANGEKEY = 33;
         public final static byte CHANGEMOUSE = 34;
         public final static byte TREE_HIERARCHICALCAPTION = 35;
+        public final static byte DEFAULTVALUE = 36;
     }
 }
