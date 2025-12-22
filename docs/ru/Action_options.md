@@ -59,11 +59,12 @@ EXTID extID
 
         Тип [события формы](Form_events.md), задается одним из следующих ключевых слов:
 
-        - `CHANGE` - попытка изменения значения указанного свойства
-        - `CHANGEWYS` - попытка изменения значения указанного свойства с помощью специального механизма ввода. Подробнее можно прочитать в описании [событий формы](Form_events.md) 
-        - `GROUPCHANGE` - попытка изменения значения свойства для всех объектов в таблице (групповое редактирование)
-        - `EDIT` - попытка редактирования объекта, который является значением указанного свойства
+        - `CHANGE` - попытка изменения значения указанного свойства.
+        - `CHANGEWYS` - попытка изменения значения указанного свойства с помощью специального механизма ввода. Подробнее можно прочитать в описании [событий формы](Form_events.md). 
+        - `GROUPCHANGE` - попытка изменения значения свойства для всех объектов в таблице (групповое редактирование).
+        - `EDIT` - попытка редактирования объекта, который является значением указанного свойства.
         - `CONTEXTMENU [caption]` - пользователь выбрал в контекстном меню свойства на форме заданный пункт. Также при необходимости можно задать заголовок этого пункта меню ([строковый литерал](Literals.md#strliteral)). Если этого не сделать, то, по умолчанию, он будет равен заголовку действия.
+        - `KEYPRESS key` - пользователь нажал кнопку `key` на клавиатуре, задаваемую ([строковым литералом](Literals.md#strliteral)).
 
     - `actionOperator`
 
@@ -156,57 +157,57 @@ EXTID extID
   		
   		- `preview = previewValue`
   			Все события проверяются на выполнение дважды: сначала с isPreview=true, потом - с isPreview=false. Поддерживаемые значения `previewValue`:
-  			- `AUTO`, `ONLY` -> isPreview
-  			- `NO` -> !isPreview
-  			- `ALL` -> true
+  			- `auto`, `only` -> isPreview
+  			- `no` -> !isPreview
+  			- `all` -> true
   			
   		- `dialog = dialogValue`
   			Проверка, выполнять ли `CHANGEKEY` в диалоговом окне. Поддерживаемые значения `dialogValue`:
-  			- `AUTO`, `ALL` -> true
-  			- `ONLY` -> isDialog
-  			- `NO` -> !isDialog
+  			- `auto`, `all` -> true
+  			- `only` -> isDialog
+  			- `no` -> !isDialog
   			
   		- `window = windowValue`
   			Проверка, выполнять ли `CHANGEKEY` в модальном окне. Поддерживаемые значения `windowValue`:
-  			- `AUTO`, `ALL` -> true
-  			- `ONLY` -> isWindow
-  			- `NO` -> !isWindow	
+  			- `auto`, `all` -> true
+  			- `only` -> isWindow
+  			- `no` -> !isWindow	
   		
   		- `group = groupValue`
   			Проверка, совпадает ли группа объектов. Поддерживаемые значения `groupValue`:
-  			- `AUTO`, `ALL` -> true
-  			- `ONLY` -> equalGroup
-  			- `NO` -> !equalGroup
+  			- `auto`, `all` -> true
+  			- `only` -> equalGroup
+  			- `no` -> !equalGroup
   		
   		- `editing = editingValue`
   			Проверка, выполнять ли `CHANGEKEY` в режиме редактирования свойства. Поддерживаемые значения `editingValue`:
-  			- `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
-  			- `ALL` -> true
-  			- `ONLY` -> isEditing
-  			- `NO` -> !isEditing
+  			- `auto` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+  			- `all` -> true
+  			- `only` -> isEditing
+  			- `no` -> !isEditing
   			
   		- `showing = showingValue`
-  			Проверка, показывается ли в данный момент свойство на форме. Поддерживаемые значения `showingValue`:
-  			- `AUTO`, `ONLY` -> isShowing
-  			- `ALL` -> true
-  			- `NO` -> !isShowing
+  			Проверка, показывается ли в данный момент свойство на форме (для действий, скрытых через `hide` в дизайне). Поддерживаемые значения `showingValue`:
+  			- `auto`, `only` -> isShowing
+  			- `all` -> true
+  			- `no` -> !isShowing
   			
   		- `panel = panelValue`
   			Проверка, находится ли действие в панели. Поддерживаемые значения `panelValue`:
-  			- `AUTO` -> !isMouse || !isPanel
-  			- `ALL` -> true
-  			- `ONLY` -> isPanel
-  			- `NO` -> !isPanel	
+  			- `auto` -> !isMouse || !isPanel
+  			- `all` -> true
+  			- `only` -> isPanel
+  			- `no` -> !isPanel	
   	
   		- `cell = cellValue`
   			Проверка, находится ли действие в таблице. Поддерживаемые значения `cellValue`:
-  			- `AUTO` -> !isMouse || isCell
-  			- `ALL` -> true
-  			- `ONLY` -> isCell
-  			- `NO` -> !isCell
+  			- `auto` -> !isMouse || isCell
+  			- `all` -> true
+  			- `only` -> isCell
+  			- `no` -> !isCell
 
   	
-  		Для всех опций кроме `priority` значением по умолчанию является `AUTO`.	
+  		Для всех опций кроме `priority` значением по умолчанию является `auto`.	
 
 
     - `SHOW`

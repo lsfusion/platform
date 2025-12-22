@@ -208,7 +208,7 @@ public class ScriptingFormEntity {
         obj.setCaption(object.caption, version);
     }
 
-    private static List<String> supportedMapTileProviders = Arrays.asList("openStreetMap", "google", "yandex");
+    private static final List<String> supportedMapTileProviders = Arrays.asList("openStreetMap", "google", "yandex", "twoGis");
     private void checkMapTileProvider(String mapTileProvider) throws ScriptingErrorLog.SemanticErrorException {
         if(!supportedMapTileProviders.contains(mapTileProvider)) {
             LM.getErrLog().emitMapTileProviderNotSupportedError(LM.getParser(), mapTileProvider, supportedMapTileProviders);

@@ -66,8 +66,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.nvl;
-
 @SuppressWarnings("UnusedDeclaration")
 public class GwtToClientConverter extends ObjectConverter {
     private static final class InstanceHolder {
@@ -109,7 +107,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GNumericDTO.class)
     public BigDecimal convertBigDecimal(GNumericDTO dto) {
-        return new BigDecimal(dto.value);
+        return BigDecimal.valueOf(dto.value);
     }
 
     @Converter(from = GIntervalValue.class)
@@ -240,7 +238,7 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GColumnUserPreferences.class)
     public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
-        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userFlex, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
+        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userFlex, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort, gprefs.inGrid);
     }
 
     @Converter(from = GFormScheduler.class)

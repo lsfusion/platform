@@ -14,6 +14,9 @@ public class ServerResponse implements Serializable {
 
     public static final String CHANGE_WYS = "change_wys";
 
+    public static final String CONTEXTMENU = "contextMenu";
+    public static final String KEYPRESS = "keyPress";
+
     public static final ImList<String> changeEvents = ListFact.toList(CHANGE, GROUP_CHANGE);
     public static final ImList<String> events = ListFact.add(EDIT_OBJECT, changeEvents);
 

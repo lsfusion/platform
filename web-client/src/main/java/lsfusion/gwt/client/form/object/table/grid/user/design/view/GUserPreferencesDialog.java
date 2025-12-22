@@ -319,6 +319,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(), propertyOrder, hide);
         grid.setUserSort(property.property, sortDirection != null ? sortIndex : null);
         grid.setUserAscendingSort(property.property, sortDirection);
+        grid.setInGrid(property.property, property.inGrid);
     }
 
     private Boolean getPropertyState(GPropertyDraw property) {

@@ -22,6 +22,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
@@ -1151,7 +1152,17 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
                                                              T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
-                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull) {
+        return addInputAProp(valueClass, targetProp, hasDrawOldValue, objectOldValue, orderInterfaces, contextList, contextScope,
+                contextSelector,  contextActions, customEditorFunction, notNull, null);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
+                                                             T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
+                                                             FormSessionScope contextScope, InputContextSelector<T> contextSelector,
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull, FormSelector form) {
         // adding reset action
         if (!notNull && targetProp != null) {
             contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
@@ -1165,7 +1176,8 @@ public abstract class LogicsModule {
 
             if (valueClass instanceof ConcreteCustomClass) {
                 // adding newedit action
-                contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+                contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass,
+                        targetProp, contextScope, policy -> form.getStaticForm(ThreadLocalContext.getBusinessLogics()).showNewEdit(policy)), contextActions);
             }
         }
 
@@ -1227,7 +1239,7 @@ public abstract class LogicsModule {
             return addInputAProp((CustomClass)objectClass, inputProp, false, formAction.mapObjects.get(inputObject), listInterfaces,
                     mappedList.result, scope, inputSelector,
                     mappedContextActions.result.addList(new InputContextAction<>(AppServerImage.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)),
-                    customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    customChangeFunction, notNull, form); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -2044,6 +2056,7 @@ public abstract class LogicsModule {
 
         setFormActions(action);
 
+        action.isNewEdit = true;
         action.setImage(AppServerImage.ADD);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getAddActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);

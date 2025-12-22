@@ -11,7 +11,7 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
         target.setVisible(visible, getVersion());
     }
 
-    //deprecated, will be removed in 7.0
+    //deprecated since 6.0, will be removed in 7.0
     @Deprecated
     @SuppressWarnings("unused")
     public void setShowGroup(boolean showGroup) {

@@ -183,6 +183,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     public final PropertyObjectInstance<?> propertyGridElementClass;
     public final PropertyObjectInstance<?> propertyValueElementClass;
     public final PropertyObjectInstance<?> propertyCaptionElementClass;
+    public final PropertyObjectInstance<?> propertyFooterElementClass;
     public final PropertyObjectInstance<?> propertyFont;
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
@@ -207,6 +208,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     public ExtraReaderInstance gridElementClassReader;
     public ExtraReaderInstance valueElementClassReader;
     public ExtraReaderInstance captionElementClassReader;
+    public ExtraReaderInstance footerElementClassReader;
     public ExtraReaderInstance fontReader;
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
@@ -244,6 +246,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         propertyGridElementClass = isList() ? propertyExtras.get(PropertyDrawExtraType.GRIDELEMENTCLASS) : null;
         propertyValueElementClass = propertyExtras.get(PropertyDrawExtraType.VALUEELEMENTCLASS);
         propertyCaptionElementClass = propertyExtras.get(PropertyDrawExtraType.CAPTIONELEMENTCLASS);
+        propertyFooterElementClass = propertyExtras.get(PropertyDrawExtraType.FOOTERELEMENTCLASS);
         propertyFont = propertyExtras.get(PropertyDrawExtraType.FONT);
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
@@ -268,6 +271,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         gridElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.GRIDELEMENTCLASS, propertyGridElementClass);
         valueElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUEELEMENTCLASS, propertyValueElementClass);
         captionElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTIONELEMENTCLASS, propertyCaptionElementClass);
+        footerElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.FOOTERELEMENTCLASS, propertyFooterElementClass);
         fontReader = new ExtraReaderInstance(PropertyDrawExtraType.FONT, propertyFont);
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);

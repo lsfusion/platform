@@ -29,8 +29,7 @@ public class ClientTreeGroup extends ClientGridProperty{
     public ClientToolbar toolbar;
 
     public boolean plainTreeMode;
-    
-    public boolean expandOnClick;
+
     public int hierarchicalWidth;
     public String hierarchicalCaption;
 
@@ -65,7 +64,6 @@ public class ClientTreeGroup extends ClientGridProperty{
 
         plainTreeMode = inStream.readBoolean();
         
-        expandOnClick = inStream.readBoolean();
         hierarchicalWidth = inStream.readInt();
         hierarchicalCaption = pool.readString(inStream);
 

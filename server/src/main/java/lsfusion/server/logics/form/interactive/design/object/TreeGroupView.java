@@ -20,7 +20,6 @@ import static lsfusion.base.BaseUtils.nvl;
 public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEntity> {
     public static final String TREE_PREFIX = "TREE";
 
-    private NFProperty<Boolean> expandOnClick = NFFact.property();
     private NFProperty<Integer> hierarchicalWidth = NFFact.property();
 
     private NFProperty<String> hierarchicalCaption = NFFact.property();
@@ -69,17 +68,9 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
         pool.serializeCollection(outStream, getFilters());
 
         outStream.writeBoolean(false);
-        
-        outStream.writeBoolean(isExpandOnClick());
+
         outStream.writeInt(getHierarchicalWidth());
         pool.writeString(outStream, getHierarchicalCaption());
-    }
-
-    public boolean isExpandOnClick() {
-        return nvl(expandOnClick.get(), true);
-    }
-    public void setExpandOnClick(Boolean value, Version version) {
-        expandOnClick.set(value, version);
     }
 
     public int getHierarchicalWidth() {
@@ -121,7 +112,6 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     public void extend(TreeGroupView src, ObjectMapping mapping) {
         super.extend(src, mapping);
 
-        mapping.sets(expandOnClick, src.expandOnClick);
         mapping.sets(hierarchicalWidth, src.hierarchicalWidth);
 
         mapping.sets(hierarchicalCaption, src.hierarchicalCaption);

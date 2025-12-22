@@ -26,12 +26,6 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
         target.setBoxed(boxed, getVersion());
     }
 
-    @Deprecated //deprecated since 6.2; removed in 7.0
-    @SuppressWarnings("unused")
-    public void setExpandOnClick(boolean expandOnClick) {
-        target.setExpandOnClick(expandOnClick, getVersion());
-    }
-
     @SuppressWarnings("unused")
     public void setHierarchicalWidth(int hierarchicalWidth) {
         target.setHierarchicalWidth(hierarchicalWidth, getVersion());

@@ -55,7 +55,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ShowIfReader showIfReader = new ShowIfReader();
     public GridElementClassReader gridElementClassReader = new GridElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
-    public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
+    public ExtraPropReader captionElementClassReader = new ExtraPropReader(CAPTIONELEMENTCLASS);
+    public ExtraPropReader footerElementClassReader = new ExtraPropReader(FOOTERELEMENTCLASS);
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
@@ -105,6 +106,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
+    public String footerElementClass;
     public boolean toolbar;
     public boolean toolbarActions;
 
@@ -613,6 +615,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         inputType = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
+        footerElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
         toolbarActions = pool.readBoolean(inStream);
 
@@ -1053,6 +1056,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.CAPTIONELEMENTCLASS;
+        }
+    }
+
+    public class FooterElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.FOOTERELEMENTCLASS;
         }
     }
 

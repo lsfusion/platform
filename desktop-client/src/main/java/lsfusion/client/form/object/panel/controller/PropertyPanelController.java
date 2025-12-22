@@ -185,7 +185,7 @@ public class PropertyPanelController {
 
     public void update(Color rowBackground, Color rowForeground) {
         boolean hide = property.hide;
-        if (!hide || property.changeKey != null) {
+        if (!hide || property.changeKey != null || property.changeMouse != null) {
 
             List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
             Pair<List<ClientGroupObjectValue>, List<ClientGroupObjectValue>> pair = getDiff(columnKeys);

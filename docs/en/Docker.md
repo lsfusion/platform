@@ -55,7 +55,7 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
 - Building the image:
 
   Building a Docker image is tied to Maven phases and is activated by the `docker` profile.
-    - In the `install` phase, the image is built and loaded into the local registry.
+    - In the `install` phase, the image is built and loaded into the local storage.
     - In the `deploy` phase, the image is uploaded to a public registry (e.g. Docker Hub).
 
   To build the image, run the command in the project folder:
@@ -66,6 +66,10 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
   ```bash
   mvn install -P assemble,embed-server,docker
   ```
+  By default, an image specific to the architecture and operating system of the Docker daemon. To build a multi-architecture image (linux/amd64 and linux/arm64), you need to add the `multiarch` profile. This only works during the `deploy` phase:
+  ```bash
+  mvn deploy -P assemble,docker,multiarch
+  ``` 
 
 - Uploading the image to the public registry:
 

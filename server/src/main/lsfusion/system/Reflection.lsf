@@ -202,8 +202,11 @@ columnSort '{reflection.column.sort.property.draw}' = DATA INTEGER (PropertyDraw
 columnAscendingSort '{reflection.column.ascending.sort.property.draw.custom.user}' = DATA BOOLEAN (PropertyDraw, CustomUser);
 columnAscendingSort '{reflection.column.ascending.sort.property.draw}' = DATA BOOLEAN (PropertyDraw);
 
+inGrid = DATA BOOLEAN (PropertyDraw, CustomUser);
+inGrid = DATA BOOLEAN (PropertyDraw);
+
 hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'= DATA BOOLEAN (GroupObject, CustomUser);
-countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
+countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show AND inGrid(property, u) BY groupObject(property);
 countUserPreferences '{authentication.users.number}' (GroupObject g) = GROUP SUM 1 IF hasUserPreferences(g, CustomUser u);
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
 //reset user preferences if all shown properties were removed from form
@@ -213,7 +216,7 @@ WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupOb
 }
 
 hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
-countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
+countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show AND inGrid(property) BY groupObject(property);
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
 hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
 //reset user preferences if all shown properties were removed from form
@@ -489,7 +492,7 @@ FORM forms '{reflection.form.forms}'
     // global
     OBJECTS p = PropertyDraw
     PROPERTIES(p) READONLY canonicalNameActionOrProperty, sid, caption 
-    PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     ORDERS captionShow(p), columnOrder(p)
     FILTERS groupObject(p) = g
 
@@ -502,13 +505,13 @@ FORM forms '{reflection.form.forms}'
 
     OBJECTS pu = PropertyDraw
     PROPERTIES(pu) READONLY canonicalNameActionOrProperty, sid, caption
-    PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     ORDERS captionShow(pu, u), columnOrder(pu, u)
     FILTERS groupObject(pu) = g
     
     OBJECTS up = CustomUser
     PROPERTIES(up) READONLY firstName, lastName, login
-    PROPERTIES(pu, up) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(pu, up) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     FILTERGROUP userShow
         FILTER '{reflection.show.property.draw.custom.user}' show(pu, up) = PropertyDrawShowStatus.Show DEFAULT
 

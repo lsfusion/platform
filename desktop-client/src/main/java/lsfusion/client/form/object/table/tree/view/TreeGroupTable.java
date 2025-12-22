@@ -245,35 +245,33 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         });
 
         addKeyListener(new TreeGroupQuickSearchHandler(this));
-        
-        if (treeGroup.expandOnClick) {
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    // should be synchronized with checkMouseEvent (see below)
-                    if (!e.isConsumed() && MouseStrokes.isDblClickEvent(e) && !editPerformed) {
-                        final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
-                        if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
-                            final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
 
-                            if (node.isExpandable() && node.group != null) {
-                                RmiQueue.runAction(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (!isExpanded(path)) {
-                                            form.expandGroupObject(node.group, node.key);
-                                        } else {
-                                            form.collapseGroupObject(node.group, node.key);
-                                        }
-                                        e.consume();
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // should be synchronized with checkMouseEvent (see below)
+                if (!e.isConsumed() && MouseStrokes.isDblClickEvent(e) && !editPerformed) {
+                    final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
+                    if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
+                        final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
+
+                        if (node.isExpandable() && node.group != null) {
+                            RmiQueue.runAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (!isExpanded(path)) {
+                                        form.expandGroupObject(node.group, node.key);
+                                    } else {
+                                        form.collapseGroupObject(node.group, node.key);
                                     }
-                                });
-                            }
+                                    e.consume();
+                                }
+                            });
                         }
                     }
                 }
-            });
-        }
+            }
+        });
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);

@@ -215,8 +215,13 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCaptionElementClasses(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updateFooterElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -344,10 +349,6 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
         return formController.changeFilter(treeGroup, conditions);
-    }
-    
-    public boolean isExpandOnClick() {
-        return treeGroup.expandOnClick;
     }
 
     public void fireExpandNodeRecursive(boolean current) {

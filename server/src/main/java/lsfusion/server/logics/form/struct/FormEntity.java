@@ -35,6 +35,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
@@ -80,6 +81,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -2010,4 +2012,13 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return nvl(customizeForm, this);
     }
 
+
+    public boolean showNewEdit(SecurityPolicy policy) {
+        for (PropertyDrawEntity propertyDraw : getPropertyDrawsList()) {
+            ActionOrProperty action = propertyDraw.actionOrProperty.property;
+            if (action instanceof Action && ((Action<?>) action).isNewEdit && policy.checkPropertyChangePermission(action, (Action) action))
+                return true;
+        }
+        return false;
+    }
 }

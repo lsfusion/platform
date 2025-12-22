@@ -22,11 +22,9 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 import java.util.function.*;
 
-import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.MainFrame.v5;
+import static lsfusion.gwt.client.view.MainFrame.*;
 
 public class GwtClientUtils {
 
@@ -135,10 +133,17 @@ public class GwtClientUtils {
             input = createFocusElement("textarea");
         } else {
             input = createFocusElement("input");
-            input.setAttribute("type", type);
+            //change to type="text" to disable validation of entered values at the mobile browser level
+            // for example, a separator that does not match the device locale causes errors
+            if (mobile && type.equals("number")) {
+                input.setAttribute("type", "text");
+                input.setAttribute("inputmode", "decimal");
+            } else {
+                input.setAttribute("type", type);
+            }
         }
         return (InputElement) input;
-    };
+    }
 
     public static InputElement createImageElement(String type) {
         Element element = Document.get().createElement(type);
@@ -2083,6 +2088,31 @@ public class GwtClientUtils {
             }
             return true;
         }
+    }-*/;
+
+    public static native void setAttribute(JavaScriptObject elem, String attr, String value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native void setAttribute(JavaScriptObject elem, String attr, boolean value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native boolean hasAttribute(Element elem, String name) /*-{
+        if (elem == null) return false;
+
+        var ret = elem.getAttribute(name);
+        if (!(ret === undefined || ret == null))
+            return true;
+
+        var children = elem.children;
+        for (var i = 0; i < children.length; i++) {
+            if (@GwtClientUtils::hasAttribute(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(children[i], name)) {
+                return true;
+            }
+        }
+
+        return false;
     }-*/;
 
 }

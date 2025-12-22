@@ -118,6 +118,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
                 return form.getProperty(readerId).captionElementClassReader;
+            case GPropertyReadType.FOOTERELEMENTCLASS:
+                return form.getProperty(readerId).footerElementClassReader;
             case GPropertyReadType.CELL_FONT:
                 return form.getProperty(readerId).fontReader;
             case GPropertyReadType.CELL_BACKGROUND:
@@ -226,5 +228,6 @@ public class GFormChanges {
         public final static byte CHANGEKEY = 33;
         public final static byte CHANGEMOUSE = 34;
         public final static byte TREE_HIERARCHICALCAPTION = 35;
+        public final static byte FOOTERELEMENTCLASS = 36;
     }
 }

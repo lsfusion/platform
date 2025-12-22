@@ -103,12 +103,6 @@ public abstract class FormReportManager extends FormDataManager {
         return getReportData(printType, FormSelectTop.NULL());
     }
 
-    // backward compatibility
-    @Deprecated
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences preferences) throws SQLException, SQLHandledException {
-        throw new UnsupportedOperationException();
-    }
-
     public ReportGenerationData getReportData(FormPrintType printType, FormSelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
         // report sources
         ReportStaticDataGenerator sourceGenerator = new ReportStaticDataGenerator(reportInterface);

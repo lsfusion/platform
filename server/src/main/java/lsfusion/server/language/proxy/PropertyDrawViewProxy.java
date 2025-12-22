@@ -285,6 +285,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.CAPTIONELEMENTCLASS, getVersion());
     }
 
+    public void setFooterClass(Object valueClass) {
+        if(valueClass instanceof LocalizedString)
+            target.setFooterElementClass(((LocalizedString) valueClass).getSourceString(), getVersion());
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.FOOTERELEMENTCLASS, getVersion());
+    }
+
     @SuppressWarnings("unused")
     public void setCaption(Object caption) {
         if(caption instanceof LocalizedString)

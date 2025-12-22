@@ -47,6 +47,7 @@ public class GFormLayout extends SizedFlexPanel {
         super(true);
 
         this.form = iform;
+        this.form.formLayout = this; //Because formController.getFormLayout() is used inside CustomContainerView.addImpl before formController is fully initialized, formLayout may be null.
         this.mainContainer = mainContainer;
 
         attachContainer = new ResizableComplexPanel();

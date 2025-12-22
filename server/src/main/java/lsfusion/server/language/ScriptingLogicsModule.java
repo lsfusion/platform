@@ -159,6 +159,7 @@ import org.codehaus.janino.SimpleCompiler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.mail.Message;
+import javax.swing.*;
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -1264,11 +1265,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (ps.extId != null)
             actionOrProperty.setExtId(ps.extId);
 
-        if (ps.contextMenuEventAction != null)
-            setScriptedContextMenuAction(property, ps.contextMenuEventCaption, ps.contextMenuEventAction);
-        if(ps.editEventActionType != null)
-            setScriptedEventAction(property, ps.editEventActionType, ps.editEventBefore, ps.editEventAction);
-
+        for (ActionOrPropertySettings.EditEvent editEvent : ps.editEvents) {
+            LAWithParams action = (LAWithParams) editEvent.action;
+            if (editEvent.isContextMenu())
+                setScriptedContextMenuAction(property, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.getLP().action));
+            else if (editEvent.isKeyPress())
+                setScriptedKeyPressAction(property, action, editEvent.keyPress);
+            else
+                setScriptedEventAction(property, action, editEvent.actionType, editEvent.before);
+        }
     }
 
     public void addSettingsToAction(LA action, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings as) throws ScriptingErrorLog.SemanticErrorException {
@@ -1279,14 +1284,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         ActionOrProperty actionOrProperty = action.getActionOrProperty();
         ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
 
-        if(as.contextMenuForMainPropertyUsage != null) {
-            LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(as.contextMenuForMainPropertyUsage);
-            action.addToContextMenuFor(mainProperty, as.contextMenuForCaption);
-
-            action.setAsEventActionFor(action.action.getSID(), mainProperty);
+        for(ActionSettings.EditEvent editEvent : as.actionEditEvents) {
+            LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage((ActionOrPropertyUsage) editEvent.action);
+            String actionSID = action.action.getSID();
+            if (editEvent.isContextMenu()) {
+                mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action));
+                action.setAsEventActionFor(actionSID, mainProperty);
+            } else if (editEvent.isKeyPress()) {
+//                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
+                action.setAsEventActionFor(actionSID, mainProperty);
+            } else {
+                if(editEvent.before != null) {
+                    throw new UnsupportedOperationException("ASON CHANGE BEFORE|AFTER is not supported");
+                }
+                action.setAsEventActionFor(editEvent.actionType, mainProperty);
+            }
         }
-        if(as.eventActionSID != null)
-            setAsEventActionFor(action, as.eventActionSID, as.eventActionBefore, as.eventActionMainPropertyUsage);
         if(as.askConfirm != null)
             drawOptions.setAskConfirm(as.askConfirm);
     }
@@ -1421,22 +1434,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingErrorLog.emitSemanticError(errorMessage.toString(), new ScriptingErrorLog.SemanticErrorException(parser.getCurrentParser().input));
     }
 
-    public void addToContextMenuFor(ActionSettings as, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        as.contextMenuForCaption = contextMenuCaption;
-        as.contextMenuForMainPropertyUsage = mainPropertyUsage;
-    }
-
-    public void setAsEventActionFor(LA eventAction, String eventActionSID, Boolean before, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        if(before != null) {
-            throw new UnsupportedOperationException("ASON CHANGE BEFORE|AFTER is not supported");
-        }
-
-        assert mainPropertyUsage != null;
-
-        LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(mainPropertyUsage);
-        eventAction.setAsEventActionFor(eventActionSID, mainProperty);
-    }
-
     public void setPivotOptions(LAP property, PivotOptions pivotOptions) {
         property.setPivotOptions(pivotOptions);
     }
@@ -1514,7 +1511,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return options;
     }
 
-    public void setScriptedEventAction(LAP property, String actionType, Boolean before, LAWithParams action) {
+    public void setScriptedEventAction(LAP property, LAWithParams action, String actionType, Boolean before) {
         if(before != null) {
             throw new UnsupportedOperationException("ON CHANGE BEFORE|AFTER is not supported");
         }
@@ -1523,13 +1520,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().setEventAction(actionType, actionImplements.get(0));
     }
 
-    public void setScriptedContextMenuAction(LAP property, LocalizedString contextMenuCaption, LAWithParams action) {
+    public void setScriptedContextMenuAction(LAP property, LAWithParams action, LocalizedString contextMenuCaption) {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.action.getSID();
         property.getActionOrProperty().setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.action));
+        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
+    }
+
+    public void setScriptedKeyPressAction(LAP property, LAWithParams action, KeyStroke keyPress) {
+        List<Object> params = getParamsPlainList(Collections.singletonList(action));
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
+
+        String actionSID = actionImplement.action.getSID();
+//        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
         property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 
@@ -5791,6 +5798,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams patchExtendParams(LPWithParams lpWithParams, List<TypedParameter> newContext, boolean dynamic, DebugInfo.DebugPoint debugPoint) {
         LP<?> lp = lpWithParams.getLP();
         if((!dynamic && lp.listInterfaces.size() != newContext.size()) || propertyNeedsToBeWrapped(lp)) { // all are used and we don't need to wrapProperty
+            if(lpWithParams.getLP() == null)
+                lpWithParams = new LPWithParams(baseLM.object, lpWithParams.usedParams);
+
             // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает
             List<LPWithParams> allCreationParams = new ArrayList<>();
             allCreationParams.add(lpWithParams);

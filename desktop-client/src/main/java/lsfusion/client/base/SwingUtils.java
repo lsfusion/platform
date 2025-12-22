@@ -24,8 +24,7 @@ import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
@@ -220,13 +219,14 @@ public class SwingUtils {
     public static Object getMessageTextPane(Object message, Color backgroundColor) {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
-        textPane.setText(toHtml(message)); //message can be null
+        String strMessage = message != null ? String.valueOf(message) : "";
+        textPane.setText(toHtml(strMessage));
         textPane.setEditable(false);
-        JRootPane rootPane = MainFrame.instance.getRootPane();
+        JRootPane rootPane = MainFrame.instance != null ? MainFrame.instance.getRootPane() : null;
         if (rootPane != null) {
             int width = (int) (rootPane.getWidth() * 0.3);
             textPane.setSize(new Dimension(width, 10));
-            if (getWidth(String.valueOf(message)) >= width) { //set preferred size only for text with long lines
+            if (getWidth(strMessage) >= width) { //set preferred size only for text with long lines
                 int height = Math.min((int) (rootPane.getHeight() * 0.9), textPane.getPreferredSize().height);
                 textPane.setPreferredSize((new Dimension(width, height)));
             }
@@ -315,8 +315,8 @@ public class SwingUtils {
         return new Dimension(bounds.width, bounds.height);
     }
 
-    public static String toHtml(Object value) {
-        return String.valueOf(value).replace("\n", "<br>");
+    public static String toHtml(String value) {
+        return "<pre>" + value.replace("\n", "<br>") + "</pre>";
     }
 
     public static String toMultilineHtml(Component c, String text, Font font) {

@@ -145,7 +145,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         stopCellEditing();
         if (!properties.isEmpty()) {
             int selectedColumn = getSelectedColumn();
-            if (selectedColumn != -1) {
+            if (selectedColumn != -1 && model.getColumnCount() > selectedColumn) {
                 List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
                 ClientGroupObjectValue columnKey = getSelectedColumnKey();
                 columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
@@ -1769,6 +1769,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
+    }
+
+    public void setInGrid(ClientPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
     }
 
     public Comparator<ClientPropertyDraw> getUserSortComparator() {

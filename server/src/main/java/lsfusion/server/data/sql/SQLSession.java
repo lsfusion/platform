@@ -1744,7 +1744,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 prevRow = row;
                 row = (String) result.getObject("QUERY PLAN");
 
-                Pattern pt = Pattern.compile(" rows=((\\d)+) ");
+                Pattern pt = Pattern.compile(" rows=((\\d)+)[ .]");
                 Matcher matcher = pt.matcher(row);
                 long est = 0;
                 long act = -1;

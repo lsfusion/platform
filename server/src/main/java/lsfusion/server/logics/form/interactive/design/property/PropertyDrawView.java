@@ -94,6 +94,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     private NFProperty<String> inputType = NFFact.property();
     private NFProperty<String> valueElementClass = NFFact.property();
     private NFProperty<String> captionElementClass = NFFact.property();
+    private NFProperty<String> footerElementClass = NFFact.property();
 
     private NFProperty<Boolean> panelCustom = NFFact.property();
 
@@ -610,6 +611,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeString(outStream, getInputType(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
+        pool.writeString(outStream, getFooterElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
         pool.writeBoolean(outStream, hasToolbarActions(pool.context));
 
@@ -768,6 +770,13 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         } else
             return Settings.get().getChangeActionOnSingleClick();
 
+        return null;
+    }
+
+    public String getFooterElementClass(FormInstanceContext context) {
+        String footerElementClass = this.footerElementClass.get();
+        if (footerElementClass != null)
+            return footerElementClass;
         return null;
     }
     public void setChangeOnSingleClick(Boolean value, Version version) {
@@ -1091,6 +1100,10 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
     public void setCaptionElementClass(String value, Version version) {
         captionElementClass.set(value, version);
+    }
+
+    public void setFooterElementClass(String value, Version version) {
+        footerElementClass.set(value, version);
     }
 
     public boolean isPanelCustom(FormInstanceContext context) {
@@ -1688,6 +1701,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         mapping.sets(inputType, src.inputType);
         mapping.sets(valueElementClass, src.valueElementClass);
         mapping.sets(captionElementClass, src.captionElementClass);
+        mapping.sets(footerElementClass, src.footerElementClass);
 
         mapping.sets(panelCustom, src.panelCustom);
 
