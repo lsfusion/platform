@@ -16,12 +16,6 @@ function interpreter() {
             element.aceEditor = aceEditor;
 
             aceEditor.container.addEventListener('keydown', function (e) {
-
-                //when autocomplete popup shown, it is appended to the body and stays in the DOM when the editor is closed.
-                let completer = aceEditor.completer;
-                if (completer && completer.popup && completer.popup.container && !element.contains(completer.popup.container))
-                    element.appendChild(completer.popup.container);
-
                 // disable propagation enter key
                 if (e.keyCode === 13 || e.which === 13)
                     e.stopPropagation();
@@ -69,6 +63,11 @@ function interpreter() {
             });
 
             aceEditor.onBlur = function (e) {
+                // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
+                let completer = aceEditor.completer;
+                if (completer && completer.activated)
+                    completer.destroy();
+
                 //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
                 aceEditor.$isFocused = false;
                 //disable text caret cursor blinking
