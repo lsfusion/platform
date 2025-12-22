@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // OpenAI Java SDK
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.Encoding;
+import com.knuddels.jtokkit.api.EncodingRegistry;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.models.ChatModel;
@@ -16,9 +19,6 @@ import java.util.function.Function;
 
 public class AIAgent {
 
-    public static final ChatModel baseModel = ChatModel.GPT_5;
-    public static final ChatModel model = baseModel;
-
     public static final ObjectMapper M = new ObjectMapper();
 
     //— reads OPENAI_API_KEY from the env
@@ -26,6 +26,10 @@ public class AIAgent {
 
     // there is no lang chain agent executor for java yet, so we'll do it manually
     public static String request(String prompt, List<CustomFunction> allFunctions, ResponseFormatJsonSchema jsonSchema) {
+        return request(prompt, allFunctions, jsonSchema, ChatModel.GPT_5);
+    }
+
+    public static String request(String prompt, List<CustomFunction> allFunctions, ResponseFormatJsonSchema jsonSchema, ChatModel model) {
         try {
             Map<String, Function<Map<String, Object>, Object>> handlers = new HashMap<>();
             List<ChatCompletionTool> fns = new ArrayList<>();
@@ -98,12 +102,30 @@ public class AIAgent {
 
     public static String requestWithRAG(String prompt,
                                         List<CustomFunction> customs, ResponseFormatJsonSchema jsonSchema) throws Exception {
+        return requestWithRAG(prompt, customs, jsonSchema, ChatModel.GPT_5);
+    }
+
+    public static String requestWithRAG(String prompt,
+                                        List<CustomFunction> customs, ResponseFormatJsonSchema jsonSchema, ChatModel model) throws Exception {
 
         List<CustomFunction> allFunctions = new ArrayList<>();
         allFunctions.addAll(customs);
         allFunctions.add(RAGRetrieve.getRetrieveFunction());
 
-        String docsJson = M.writeValueAsString(RAGRetrieve.retrieveDocs(prompt, true));
-        return request(Prompts.RETRIEVE_DOCS_ON_DEMAND + "\n" + Prompts.FIRST_RETRIEVE_DOCS + docsJson + "\n" + Prompts.AFTER_RETRIVE_PROMPT + prompt, allFunctions, jsonSchema);
+
+
+        EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
+        Encoding encoding = registry.getEncodingForModel("gpt-4").get();
+
+        String exPrompt;
+        int multiplier = 1;
+        while (true) {
+            String docsJson = M.writeValueAsString(RAGRetrieve.retrieveDocs(prompt, true, multiplier));
+            exPrompt = Prompts.RETRIEVE_DOCS_ON_DEMAND + "\n" + Prompts.FIRST_RETRIEVE_DOCS + docsJson + "\n" + Prompts.AFTER_RETRIVE_PROMPT + prompt;
+//            if(encoding.encode(exPrompt).size() < 7000)
+                break;
+//            multiplier = multiplier * 2;
+        }
+        return request(exPrompt, allFunctions, jsonSchema, model);
     }
 }
