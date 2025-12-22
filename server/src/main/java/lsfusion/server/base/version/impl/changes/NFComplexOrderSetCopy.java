@@ -7,6 +7,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 
 import java.util.List;
+import java.util.function.IntFunction;
 
 public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
 
@@ -18,44 +19,80 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
         this.mapping = mapping;
     }
 
-    private static Pair<Integer, Integer> findGroupRange(int group, List<Integer> groupList) {
+    // Generic group range finder for any "indexable" group list.
+    // Assumes groups are ordered by value (as in original targetGroups logic).
+    private static Pair<Integer, Integer> findGroupRange(int group, int size, IntFunction<Integer> groupAt) {
         int start = 0;
-        while(start < groupList.size() && groupList.get(start) < group)
+        while (start < size && groupAt.apply(start) < group)
             start++;
         int end = start;
-        while(end < groupList.size() && groupList.get(end) == group)
+        while (end < size && groupAt.apply(end) == group)
             end++;
         return new Pair<>(start, end);
     }
 
-    private static <K> int indexOf(List<K> target, K element, Pair<Integer, Integer> range) {
-        for(int i = range.first; i < range.second; i++) {
-            if(target.get(i).equals(element))
+    // Generic "group block" range finder around a known index (contiguous block of equal group values).
+    // This is used for sourceGroups where we rely on contiguity and already know sourceIndex belongs to sourceGroup.
+    private static Pair<Integer, Integer> findGroupRangeAroundIndex(int index, int group, int size, IntFunction<Integer> groupAt) {
+        int start = index;
+        while (start > 0 && groupAt.apply(start - 1).equals(group))
+            start--;
+
+        int end = index + 1;
+        while (end < size && groupAt.apply(end).equals(group))
+            end++;
+
+        return new Pair<>(start, end);
+    }
+
+    // Generic indexOf in a half-open range [range.first, range.second).
+    private static <K> int indexOfInRange(IntFunction<K> at, Pair<Integer, Integer> range, K element) {
+        for (int i = range.first; i < range.second; i++) {
+            if (at.apply(i).equals(element))
                 return i;
         }
         return -1;
     }
-    private static <K> int findInsertIndexInGroup(int sourceIndex, int sourceGroup, ImOrderSet<K> source, ImList<Integer> sourceGroups, List<K> target, List<Integer> targetGroups) {
-        Pair<Integer, Integer> range = findGroupRange(sourceGroup, targetGroups);
 
-        for(int j = sourceIndex + 1, size = source.size(); j < size; j++) {
-            if(!sourceGroups.get(j).equals(sourceGroup))
-                break;
+    private static <K> int findInsertIndexInGroup(int sourceIndex, int sourceGroup,
+                                                  ImOrderSet<K> source, ImList<Integer> sourceGroups,
+                                                  List<K> target, List<Integer> targetGroups) {
 
-            int targetLocation = indexOf(target, source.get(j), range);
-            if(targetLocation >= 0)
+        // Range of this group in the current target (list/groupList).
+        Pair<Integer, Integer> targetRange =
+                findGroupRange(sourceGroup, targetGroups.size(), targetGroups::get);
+
+        // Range of this group in the source (mapped/sourceGroups), computed locally around sourceIndex.
+        Pair<Integer, Integer> sourceRange =
+                findGroupRangeAroundIndex(sourceIndex, sourceGroup, sourceGroups.size(), sourceGroups::get);
+
+        // 1) Prefer anchoring by the next element to the right within the same group:
+        // if it already exists in target, insert BEFORE it.
+        for (int j = sourceIndex + 1; j < sourceRange.second; j++) {
+            int targetLocation = indexOfInRange(target::get, targetRange, source.get(j));
+            if (targetLocation >= 0)
                 return targetLocation;
         }
-        for(int j = sourceIndex - 1; j >= 0; j--) {
-            if(!sourceGroups.get(j).equals(sourceGroup))
-                break;
 
-            int targetLocation = indexOf(target, source.get(j), range);
-            if(targetLocation >= 0)
-                return targetLocation + 1;
+        // 2) Otherwise anchor by the previous element to the left within the same group:
+        // insert AFTER it, but do not insert before "extra" target elements that are NOT in source.
+        for (int j = sourceIndex - 1; j >= sourceRange.first; j--) {
+            int targetLocation = indexOfInRange(target::get, targetRange, source.get(j));
+            if (targetLocation >= 0) {
+                int insertIndex = targetLocation + 1;
 
+                // IMPORTANT CHANGE:
+                // Skip elements inside the target group range that do NOT exist in the source group range.
+                while (insertIndex < targetRange.second
+                        && indexOfInRange(source::get, sourceRange, target.get(insertIndex)) < 0) {
+                    insertIndex++;
+                }
+                return insertIndex;
+            }
         }
-        return range.second;
+
+        // 3) If there are no anchors at all, append to the end of the group range.
+        return targetRange.second;
     }
 
     @Override
@@ -64,13 +101,15 @@ public class NFComplexOrderSetCopy<K> implements NFComplexOrderSetChange<K> {
     }
 
     @Override
-    public void proceedComplexOrderSet(List<K> list, List<Integer> groupList, NFComplexOrderSetChange<K> nextChange, Version version) {
+    public void proceedComplexOrderSet(List<K> list, List<Integer> groupList,
+                                       NFComplexOrderSetChange<K> nextChange, Version version) {
         Pair<ImOrderSet<K>, ImList<Integer>> nf = col.getNFCopy(version);
 
         ImOrderSet<K> mapped = nf.first.mapOrderSetValues(mapping::apply);
         ImList<Integer> sourceGroups = nf.second;
+
         int size = mapped.size();
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             K element = mapped.get(i);
             if (!list.contains(element)) {
                 int group = sourceGroups.get(i);
