@@ -551,16 +551,16 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 formFormsList
 @init {
     boolean extend = false;
-	List<String> forms = new ArrayList<>();
+    String form = null;
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingForms(forms, extend, self.getVersion());
+		$formStatement::form.addScriptingForm(extend, form, self.getVersion());
 	}
 }
-	:	('EXTEND' { extend = true; } )? 'FORMS'
-		formName=compoundID { forms.add($formName.sid); }
-		(',' formName=compoundID { forms.add($formName.sid); })*
+	:	('EXTEND' { extend = true; } )?
+	    'FORM'
+		formName=compoundID { form = $formName.sid; }
 	;
 
 formGroupObjectsList
@@ -5333,7 +5333,7 @@ formComponentSelector[ScriptingFormView formView] returns [ComponentView compone
 	;
 formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
-    |   gs = componentSingleSelectorType { $sid = $gs.text; }
+    |   gs = componentSingleSelectorType { $sid = $gs.text; } ('(' 'FORM' go = ID ')' { $sid += "(FORM " + $go.text + ")"; })?
     |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = "GROUP(," + $ggo.sid + ")"; }
                     |   ggr = compoundID ',' ggo = groupObjectTreeSelector { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + "," + $ggo.sid + ")"; }
                     |   ggr = compoundID { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + ")"; }

@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static lsfusion.server.logics.form.interactive.design.FormContainerSet.getFormSID;
+
 public class DefaultFormView extends FormView<DefaultFormView> implements PropertyContainersView<DefaultFormView> {
 
     public static int GROUP_CONTAINER_LINES_COUNT = 3;
@@ -465,10 +467,22 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
     }
 
     public void addForm(FormView src, ObjectMapping mapping, Version version) {
-        addToObjectsContainer(mapping.get(src.mainContainer), version);
-        // todo: we need to change containers sid's
+        ContainerView mainContainer = mapping.get(src.mainContainer);
+        addToObjectsContainer(mainContainer, version);
+
+        // maybe later should be moved to resolving
+        String formName = src.entity.getName();
+        updateContainerSID(mainContainer, formName);
+        if(src instanceof DefaultFormView) {
+            for(ContainerView container : ((DefaultFormView) src).getContainers().getContainers())
+                if(container != null)
+                    updateContainerSID(container, formName);
+        }
     }
 
+    private void updateContainerSID(ContainerView container, String formName) {
+        container.setSID(container.getSID() + "(" + getFormSID(formName) + ")");
+    }
 
     public DefaultFormView(DefaultFormView src, ObjectMapping mapping) {
         super(src, mapping);

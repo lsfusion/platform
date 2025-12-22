@@ -1679,7 +1679,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(canonicalName)) : null;
             if (extendCode != null) {
                 try {
-                    String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";\nrun{}";
+                    String script = "FORM " + name + " EXTEND FORM " + canonicalName + ";\n" + extendCode + ";\nrun{}";
                     Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
 
                     FormEntity copyForm = evalResult.second.findForm(name);

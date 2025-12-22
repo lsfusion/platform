@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.design;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.logics.form.interactive.event.FormContainerEvent;
 import lsfusion.server.physics.admin.Settings;
 
 public class FormContainerSet {
@@ -15,6 +16,12 @@ public class FormContainerSet {
             public static final String TOOLBARRIGHT_CONTAINER = "TOOLBARRIGHT";
                 public static final String TOOLBAR_CONTAINER = "TOOLBAR";
                 public static final String POPUP_CONTAINER = "POPUP";
+
+    public static final String FORM_PREFIX = "FORM";
+
+    public static String getFormSID(String sID) {
+        return FormContainerSet.FORM_PREFIX + " " + sID;
+    }
 
     private ContainerView mainContainer;
     private ContainerView objectsContainer;

@@ -38,13 +38,16 @@ public class ObjectMapping {
 
     private final Set<ServerIdentityObject> copied = new HashSet<>();
 
-    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(Version version, FormEntity addForm, FormEntity form) {
+    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form) {
         MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
 
-        fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-        fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>)fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+        if(extend) {
+            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+
+            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
+            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+        }
 
         return mImplicitAdd.immutableRev();
     }
@@ -139,11 +142,14 @@ public class ObjectMapping {
                 object.copy(this); // it addes to objectsMap in the constructor for the recursive links
             }
 
-            if (result == null)
+            boolean copy = result == null;
+            if (copy)
                 result = object.copy(this);
 
-            // have to be here not in constructor to have all NF fields initialized
-            result.extend(object, this);
+            if(extend || copy) { // we don't want formApply, etc. to be moved to other forms
+                // have to be here not in constructor to have all NF fields initialized
+                result.extend(object, this);
+            }
 
             result.add(object, this);
             return result;
