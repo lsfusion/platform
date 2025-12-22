@@ -597,9 +597,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         
         groupObject.filtersContainer = convertOrCast(clientGroupObject.filtersContainer);
         groupObject.filtersControls = convertOrCast(clientGroupObject.filterControls);
-        for (ClientFilter filter : clientGroupObject.filters) {
-            groupObject.filters.add(convertOrCast(filter));
-        }
+        if(clientGroupObject.filters != null)
+            for (ClientFilter filter : clientGroupObject.filters) {
+                groupObject.filters.add(convertOrCast(filter));
+            }
         
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);

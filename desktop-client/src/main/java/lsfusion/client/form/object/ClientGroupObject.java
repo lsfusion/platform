@@ -55,7 +55,7 @@ public class ClientGroupObject extends ClientIdentityObject {
 
     public ClientContainer filtersContainer;
     public ClientFilterControls filterControls;
-    public List<ClientFilter> filters = new ArrayList<>();
+    public List<ClientFilter> filters;
     public ClientGrid grid;
     public ClientToolbar toolbar;
     public ClientCalculations calculations;
@@ -145,12 +145,15 @@ public class ClientGroupObject extends ClientIdentityObject {
 
         parent = pool.deserializeObject(inStream);
 
-        grid = pool.deserializeObject(inStream);
-        toolbar = pool.deserializeObject(inStream);
-        filtersContainer = pool.deserializeObject(inStream);
-        filterControls = pool.deserializeObject(inStream);
-        pool.deserializeCollection(filters, inStream);
-        calculations = pool.deserializeObject(inStream);
+        if(parent == null) { // isInTree
+            grid = pool.deserializeObject(inStream);
+            toolbar = pool.deserializeObject(inStream);
+            filtersContainer = pool.deserializeObject(inStream);
+            filterControls = pool.deserializeObject(inStream);
+            filters = new ArrayList<>();
+            pool.deserializeCollection(filters, inStream);
+            calculations = pool.deserializeObject(inStream);
+        }
 
         isRecursive = inStream.readBoolean();
         isMap = inStream.readBoolean();

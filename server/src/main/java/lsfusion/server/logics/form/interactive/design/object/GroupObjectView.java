@@ -45,7 +45,8 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
 
         objects = entity.getOrderObjects().mapOrderSetValues(object -> new ObjectView(object, this));
 
-        grid = new GridView(idGen, containerFactory, this, version);
+        if(!entity.isInTree())
+            grid = new GridView(idGen, containerFactory, this, version);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -56,14 +57,19 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         pool.writeString(outStream, entity.getMapTileProvider());
         pool.writeBoolean(outStream, entity.isAsyncInit());
         pool.serializeCollection(outStream, objects);
-        pool.serializeObject(outStream, pool.context.view.getTreeGroup((TreeGroupEntity) entity.treeGroup));
 
-        pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, grid.toolbarSystem);
-        pool.serializeObject(outStream, grid.filtersContainer);
-        pool.serializeObject(outStream, grid.filterControls);
-        pool.serializeCollection(outStream, grid.getFilters());
-        pool.serializeObject(outStream, grid.calculations);
+        TreeGroupView treeGroup = pool.context.view.getTreeGroup(entity.treeGroup);
+        pool.serializeObject(outStream, treeGroup);
+
+        if(treeGroup == null) { // !isInTree
+            GridView grid = this.grid;
+            pool.serializeObject(outStream, grid);
+            pool.serializeObject(outStream, grid.toolbarSystem);
+            pool.serializeObject(outStream, grid.filtersContainer);
+            pool.serializeObject(outStream, grid.filterControls);
+            pool.serializeCollection(outStream, grid.getFilters());
+            pool.serializeObject(outStream, grid.calculations);
+        }
 
         outStream.writeBoolean(entity.getIsParent() != null);
         outStream.writeBoolean(pool.context.entity.isMap(entity));
@@ -88,7 +94,8 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
     }
 
     public void finalizeAroundInit() {
-        grid.finalizeAroundInit();
+        if(!entity.isInTree())
+            grid.finalizeAroundInit();
 
         for(ObjectView object : objects)
             object.finalizeAroundInit();

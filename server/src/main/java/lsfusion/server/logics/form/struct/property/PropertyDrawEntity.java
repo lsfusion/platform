@@ -1318,6 +1318,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         inheritedProperty = src.inheritedProperty;
         actionOrProperty = mapping.get((ActionOrPropertyObjectEntity)src.actionOrProperty);
         cellProperty = mapping.get((PropertyObjectEntity) src.cellProperty);
+
         activeProperty = mapping.get(src.activeProperty);
 
         addParent = mapping.get(src.addParent);
