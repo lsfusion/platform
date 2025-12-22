@@ -157,6 +157,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
     private final NFProperty<Boolean> highlightDuplicate = NFFact.property();
 
+    private final NFProperty<LocalizedString> defaultValue = NFFact.property();
+
     @Override
     public int getID() {
         return entity.getID();
@@ -305,6 +307,9 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
     private boolean isCustomNeedReadonly(FormInstanceContext context) {
         return entity.isCustomNeedReadonly(context);
+    }
+    private boolean isCustomNeedDefaultValue(FormInstanceContext context) {
+        return entity.isCustomNeedDefaultValue(context);
     }
 
     public static final boolean defaultSync = true;
@@ -556,6 +561,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         pool.writeObject(outStream, getFocusable());
         outStream.writeByte(entity.getEditType().serialize());
+        pool.writeString(outStream, ThreadLocalContext.localize(getDefaultValue()));
 
         outStream.writeBoolean(isPanelCustom(pool.context));
         outStream.writeBoolean(isPanelColumnVertical());
@@ -724,6 +730,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
         pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
         pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
+        pool.writeBoolean(outStream, isCustomNeedDefaultValue(pool.context));
 
         pool.writeString(outStream, entity.getEventID());
 
@@ -1667,6 +1674,13 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return getCustomRenderFunction(context) != null;
     }
 
+    public LocalizedString getDefaultValue() {
+        return defaultValue.get();
+    }
+    public void setDefaultValue(LocalizedString value, Version version) {
+        defaultValue.set(value, version);
+    }
+
     // copy-constructor
     protected PropertyDrawView(PropertyDrawView<P, AddParent> src, ObjectMapping mapping) {
         super(src, mapping);
@@ -1765,6 +1779,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         mapping.sets(highlightDuplicate, src.highlightDuplicate);
 
         mapping.sets(defaultContainer, src.defaultContainer);
+
+        mapping.sets(defaultValue, src.defaultValue);
     }
 
     @Override

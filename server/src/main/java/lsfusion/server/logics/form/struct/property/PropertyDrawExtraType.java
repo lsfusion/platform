@@ -373,6 +373,22 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "CHANGEMOUSE";
         }
+    },
+    DEFAULTVALUE {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.DEFAULTVALUE;
+        }
+
+        @Override
+        public String getText() {
+            return "DEFAULTVALUE";
+        }
     }
     ;
 

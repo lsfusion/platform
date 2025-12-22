@@ -106,6 +106,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     public static final String SELECT = "<<select>>";
     public static final String NOSELECT = "<<no>>";
     public static final String AUTOSELECT = "<<auto>>";
+    public static final String INTERPRETER = "interpreter";
     private final NFProperty<String> customChangeFunction = NFFact.property();
     private final NFProperty<String> eventID = NFFact.property();
 
@@ -834,7 +835,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, GRIDELEMENTCLASS, VALUEELEMENTCLASS,
                 CAPTIONELEMENTCLASS, FOOTERELEMENTCLASS, FONT, BACKGROUND, FOREGROUND, IMAGE, READONLYIF,
                 COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER, PATTERN, REGEXP, REGEXPMESSAGE, TOOLTIP, VALUETOOLTIP,
-                PROPERTY_CUSTOM_OPTIONS, CHANGEKEY, CHANGEMOUSE};
+                PROPERTY_CUSTOM_OPTIONS, CHANGEKEY, CHANGEMOUSE, DEFAULTVALUE};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {
@@ -1156,6 +1157,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return null;
     }
 
+    public boolean isCustomInterpreter() {
+        String custom = getCustomRenderFunction();
+        return custom != null && custom.equals(INTERPRETER);
+    }
+
     private String getCustomChangeFunction() {
         return customChangeFunction.get();
     }
@@ -1198,6 +1204,15 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         Select selectProperty = getCustomSelectProperty(context);
         if(selectProperty != null && ((selectProperty.elementType.equals("List") || selectProperty.elementType.startsWith("Button"))))
             return true; // we use setReadonlyFnc for the _option function in select.js
+        if(isCustomInterpreter())
+            return true;
+
+        return false;
+    }
+
+    public boolean isCustomNeedDefaultValue(FormInstanceContext context) {
+        if(isCustomInterpreter())
+            return true;
 
         return false;
     }

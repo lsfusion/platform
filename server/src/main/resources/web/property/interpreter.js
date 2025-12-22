@@ -79,7 +79,7 @@ function interpreter() {
                     editorValue = '';
                     aceEditor.setValue(editorValue, true);
                 }
-                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue) {
+                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
                     element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
 
                     element.currentValue = editorValue;
@@ -88,7 +88,7 @@ function interpreter() {
 
             element.currentValue = aceEditor.getValue();
         },
-        update: function (element, controller, value) {
+        update: function (element, controller, value, extraValue) {
             if (element.controller == null)
                 element.controller = controller;
 
@@ -121,19 +121,15 @@ function interpreter() {
                     element.currentValue = editorValue;
                 }
 
-                if(aceEditor.defaultValue == null) {
-                    aceEditor.defaultValue = value.defaultText;
-                    if(aceEditor.defaultValue != null) {
-                        aceEditor.on("focus", function () {
-                            if (aceEditor.getValue() === '') {
-                                aceEditor.setValue(aceEditor.defaultValue, true);
-                            }
-                        });
+
+                aceEditor.setReadOnly(extraValue != null ? extraValue.readonly : false);
+
+                aceEditor.defaultValue = extraValue != null ? extraValue.defaultValue : null;
+                aceEditor.on("focus", function () {
+                    if (aceEditor.getValue() === '') {
+                        aceEditor.setValue(aceEditor.defaultValue, true);
                     }
-                    if(value.readonly) {
-                        aceEditor.setReadOnly(true);
-                    }
-                }
+                });
             }
         }
     }

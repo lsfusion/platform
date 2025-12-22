@@ -276,7 +276,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
-        
+        propertyDraw.customNeedDefaultValue = clientPropertyDraw.customNeedDefaultValue;
+
         propertyDraw.wrap = clientPropertyDraw.wrap;
         propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
         propertyDraw.collapse = clientPropertyDraw.collapse;
@@ -352,6 +353,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
+        propertyDraw.defaultValue = convertOrCast(clientPropertyDraw.defaultValue);
 
         propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
 
@@ -400,6 +402,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
         propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
         propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
+        propertyDraw.defaultValueReader = convertExtraPropReader(clientPropertyDraw.defaultValueReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {

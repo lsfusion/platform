@@ -500,4 +500,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setBoxed(boolean boxed) {
         //do nothing in v7, backward compatibility
     }
+
+    public void setDefaultValue(Object defaultValue) {
+        Version version = getVersion();
+        if(defaultValue instanceof LocalizedString)
+            target.setDefaultValue((LocalizedString) defaultValue, version);
+        else {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) defaultValue, PropertyDrawExtraType.DEFAULTVALUE, version);
+        }
+    }
 }

@@ -47,6 +47,8 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updateCellCaptionElementClasses(this, values);
         } else if(readerType == FOOTERELEMENTCLASS) {
             controller.updateCellFooterElementClasses(this, values);
+        } else if (readerType == DEFAULTVALUE) {
+            controller.updateDefaultValueValues(this, values);
         }
     }
 

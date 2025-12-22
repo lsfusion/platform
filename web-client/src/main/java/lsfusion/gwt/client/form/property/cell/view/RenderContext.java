@@ -24,4 +24,6 @@ public interface RenderContext {
     String getRegexp();
 
     String getRegexpMessage();
+
+    String getDefaultValue();
 }

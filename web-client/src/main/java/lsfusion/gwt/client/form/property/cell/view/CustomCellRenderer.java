@@ -37,30 +37,35 @@ public class CustomCellRenderer extends CellRenderer {
     public static class ExtraValue {
         public final String placeholder;
         public final Boolean readonly;
+        public final String defaultValue;
 
-        public ExtraValue(String placeholder, Boolean readonly) {
+        public ExtraValue(String placeholder, Boolean readonly, String defaultValue) {
             this.placeholder = placeholder;
             this.readonly = readonly;
+            this.defaultValue = defaultValue;
         }
 
         public JavaScriptObject getJsObject() {
-            return getJsObject(placeholder, readonly);
+            return getJsObject(placeholder, readonly, defaultValue);
         }
-        protected native JavaScriptObject getJsObject(String placeholder, Boolean readonly)/*-{
+        protected native JavaScriptObject getJsObject(String placeholder, Boolean readonly, String defaultValue)/*-{
             return {
                 placeholder: placeholder,
-                readonly: readonly
+                readonly: readonly,
+                defaultValue: defaultValue
             };
         }-*/;
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof ExtraValue && GwtClientUtils.nullEquals(readonly, ((ExtraValue) o).readonly) && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
+            return this == o || o instanceof ExtraValue && GwtClientUtils.nullEquals(readonly, ((ExtraValue) o).readonly)
+                    && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder)
+                    && GwtClientUtils.nullEquals(defaultValue, ((ExtraValue) o).defaultValue);
         }
 
         @Override
         public int hashCode() {
-            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly != null ? (readonly ? 2 : 1) : 0);
+            return GwtClientUtils.nullHash(defaultValue) * 31 * 31 + GwtClientUtils.nullHash(placeholder) * 31 + (readonly != null ? (readonly ? 2 : 1) : 0);
         }
     }
 
@@ -68,8 +73,10 @@ public class CustomCellRenderer extends CellRenderer {
     protected Object getExtraValue(UpdateContext updateContext) {
         boolean customNeedPlaceholder = property.customNeedPlaceholder;
         boolean customNeedReadonly = property.customNeedReadonly;
-        if(customNeedPlaceholder || customNeedReadonly)
-            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : null);
+        boolean customNeedDefaultValue = property.customNeedDefaultValue;
+        if(customNeedPlaceholder || customNeedReadonly || customNeedDefaultValue)
+            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null,
+                    customNeedReadonly ? updateContext.isPropertyReadOnly() : null, customNeedDefaultValue ? updateContext.getDefaultValue() : null);
 
         return super.getExtraValue(updateContext);
     }

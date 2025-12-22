@@ -951,6 +951,11 @@ protected Double getUserFlex(int i) {
             public String getRegexpMessage() {
                 return GGridPropertyTable.this.getRegexpMessage(cell, property, column);
             }
+
+            @Override
+            public String getDefaultValue() {
+                return null;
+            }
         };
     }
 

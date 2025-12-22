@@ -199,6 +199,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     public final PropertyObjectInstance<?> propertyCustomOptions;
     public final PropertyObjectInstance<?> propertyChangeKey;
     public final PropertyObjectInstance<?> propertyChangeMouse;
+    public final PropertyObjectInstance<?> propertyDefaultValue;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -224,6 +225,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     public ExtraReaderInstance propertyCustomOptionsReader;
     public ExtraReaderInstance changeKeyReader;
     public ExtraReaderInstance changeMouseReader;
+    public ExtraReaderInstance defaultValueReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P, ?> entity,
@@ -262,6 +264,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         propertyCustomOptions = propertyExtras.get(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS);
         propertyChangeKey = propertyExtras.get(PropertyDrawExtraType.CHANGEKEY);
         propertyChangeMouse = propertyExtras.get(PropertyDrawExtraType.CHANGEMOUSE);
+        propertyDefaultValue = propertyExtras.get(PropertyDrawExtraType.DEFAULTVALUE);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -287,6 +290,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         propertyCustomOptionsReader = new ExtraReaderInstance(PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, propertyCustomOptions);
         changeKeyReader = new ExtraReaderInstance(PropertyDrawExtraType.CHANGEKEY, propertyChangeKey);
         changeMouseReader = new ExtraReaderInstance(PropertyDrawExtraType.CHANGEMOUSE, propertyChangeMouse);
+        defaultValueReader = new ExtraReaderInstance(PropertyDrawExtraType.DEFAULTVALUE, propertyDefaultValue);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
