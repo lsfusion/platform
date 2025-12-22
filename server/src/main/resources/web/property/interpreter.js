@@ -75,15 +75,15 @@ function interpreter() {
                 aceEditor.renderer.hideCursor();
 
                 let editorValue = aceEditor.getValue();
+                //reset default text set by aceEditor.on("focus"...
+                if (editorValue === aceEditor.defaultValue) {
+                    editorValue = '';
+                    aceEditor.setValue(editorValue, true);
+                }
                 if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue) {
                     element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
 
                     element.currentValue = editorValue;
-                }
-
-                //reset default text set by aceEditor.on("focus"...
-                if (aceEditor.getValue() === aceEditor.defaultValue) {
-                    aceEditor.setValue('');
                 }
             }
 
@@ -117,7 +117,7 @@ function interpreter() {
                 let currentEditorValue = aceEditor.getValue();
                 // first check means that there is no editing is done (because we don't have any start / end editing here)
                 if (currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
-                    aceEditor.setValue(editorValue);
+                    aceEditor.setValue(editorValue, true);
 
                     element.currentValue = editorValue;
                 }
@@ -127,7 +127,7 @@ function interpreter() {
                     if(aceEditor.defaultValue != null) {
                         aceEditor.on("focus", function () {
                             if (aceEditor.getValue() === '') {
-                                aceEditor.setValue(aceEditor.defaultValue);
+                                aceEditor.setValue(aceEditor.defaultValue, true);
                             }
                         });
                     }

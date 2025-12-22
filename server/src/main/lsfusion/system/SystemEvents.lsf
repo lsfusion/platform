@@ -1051,7 +1051,7 @@ dataExtendCode = DATA TEXT (Form, User);
 extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
 extendCode(STRING sid) = extendCode(form(sid));
 
-defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + ';';
+defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
 jsonCode (STRING code, STRING sid, BOOLEAN readonly) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), readonly = readonly, type = 'script';
 jsonCode (STRING code, STRING sid) = jsonCode(code, sid, NULL);
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
@@ -1060,6 +1060,8 @@ enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN();
 enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL BOOLEAN(); 
 enableExtendCodeCurrentUser '{action.form.customize.current.user}' = DATA LOCAL BOOLEAN();
 recreate = DATA LOCAL BOOLEAN();
+
+nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
 
 FORM customizeForm '{action.form.customize}' IMAGE 'settings'
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
@@ -1072,7 +1074,7 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
                 LOCAL text = STRING();
                 IMPORT JSON FROM resultFile() TO() text;
                 SEEK customizeForm.extendCodeAll = text();
-                dataExtendCode(form(sid)) <- text();
+                dataExtendCode(form(sid)) <- nullEmpty(text());
             }
         },
         extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
@@ -1081,20 +1083,13 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
                 LOCAL text = STRING();
                 IMPORT JSON FROM resultFile() TO() text;
                 SEEK customizeForm.extendCodeCurrentUser = text();
-                dataExtendCode(form(sid), currentUser()) <- text();
+                dataExtendCode(form(sid), currentUser()) <- nullEmpty(text());
             }
         }
     ON INIT {
         enableOriginalCode() <- TRUE;
         enableExtendCodeAll() <- TRUE IF extendCodeAll;
         enableExtendCodeCurrentUser() <- TRUE; 
-    }
-    ON OK {
-        IF enableExtendCodeAll() THEN
-            dataExtendCode(form(sid)) <- extendCodeAll;
-        IF enableExtendCodeCurrentUser() THEN
-            dataExtendCode(form(sid), currentUser()) <- extendCodeCurrentUser;
-        recreate() <- TRUE;
     }
 ;
 
@@ -1144,12 +1139,9 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    DIALOG customizeForm OBJECTS sid = sid, 
-        code = code, 
-        extendCodeAll = dataExtendCode(form(sid)) NULL, 
-        extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL
-        NOMANAGESESSION;
-    IF recreate() THEN {
+    DIALOG customizeForm OBJECTS sid = sid, code = code,
+        extendCodeAll = dataExtendCode(form(sid)) NULL,
+        extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL NOMANAGESESSION DO {
         formRecreate();
     }
 }
