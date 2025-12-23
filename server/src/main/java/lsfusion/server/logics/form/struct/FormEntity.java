@@ -267,8 +267,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public ImSet<FilterEntity> getDefaultRegularFilters() {
-        return getRegularFilterGroupsList().filterOrder(element -> element.getDefault() >= 0)
-                .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
+        return getRegularFilterGroupsList().filterOrder(element -> element.getDefaultFilterIndex() >= 0)
+                .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefaultFilterIndex()).filter).getSet();
     }
 
     private NFOrderMap<PropertyDrawEntity,Boolean> defaultOrders = NFFact.orderMap();
@@ -482,14 +482,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         FormView richDesign = view;
         if (richDesign != null)
             richDesign.addRegularFilterGroup(group, version);
-    }
-    
-    public void addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, boolean isDefault, Version version) {
-        filterGroup.addFilter(filter, isDefault, version);
-
-        FormView richDesign = view;
-        if (richDesign != null)
-            richDesign.addRegularFilter(filterGroup, filter, version);
     }
 
     public IDGenerator genID;

@@ -15,38 +15,43 @@ import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class RegularFilterGroupEntity extends IdentityEntity<RegularFilterGroupEntity, GroupObjectEntity> {
 
     public NFOrderSet<RegularFilterEntity> filters = NFFact.orderSet();
 
-    private NFProperty<Integer> defaultFilterIndex = NFFact.property();
-
-    public boolean noNull;
+    private final NFProperty<Integer> defaultFilterIndex = NFFact.property();
+    private final NFProperty<Boolean> noNull = NFFact.property();
 
     @Override
     protected String getDefaultSIDPrefix() {
         return "regularFilter";
     }
 
-    public RegularFilterGroupEntity(IDGenerator ID, String sID, boolean noNull, Version version) {
+    public RegularFilterGroupEntity(IDGenerator ID, String sID) {
         super(ID, sID, null);
-        this.defaultFilterIndex.set(noNull ? 0 : -1, version);
-        this.noNull = noNull;
     }
 
     public void addFilter(RegularFilterEntity filter, boolean setDefault, Version version) {
         if (setDefault) {
-            setDefault(filters.size(version), version);
+            setDefaultFilterIndex(filters.size(version), version);
         }
         filters.add(filter, version);
     }
 
-    public void setDefault(int index, Version version) {
-        defaultFilterIndex.set(index, version);
+    public int getDefaultFilterIndex() {
+        return defaultFilterIndex.get();
+    }
+    public void setDefaultFilterIndex(int value, Version version) {
+        defaultFilterIndex.set(value, version);
     }
 
-    public int getDefault() {
-        return defaultFilterIndex.get();
+    public boolean isNoNull() {
+        return nvl(noNull.get(), false);
+    }
+    public void setNoNull(Boolean value, Version version) {
+        noNull.set(value, version);
     }
     
     public int getFiltersCount(Version version) {
@@ -94,7 +99,6 @@ public class RegularFilterGroupEntity extends IdentityEntity<RegularFilterGroupE
     protected RegularFilterGroupEntity(RegularFilterGroupEntity src, ObjectMapping mapping) {
         super(src, mapping);
 
-        noNull = src.noNull;
         view = mapping.get(src.view);
     }
 
@@ -103,6 +107,7 @@ public class RegularFilterGroupEntity extends IdentityEntity<RegularFilterGroupE
         super.extend(src, mapping);
 
         mapping.sets(defaultFilterIndex, src.defaultFilterIndex);
+        mapping.sets(noNull, src.noNull);
     }
 
     @Override

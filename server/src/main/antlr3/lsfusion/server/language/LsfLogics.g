@@ -438,7 +438,6 @@ scope {
 		|	formHintsList
 		|	formEventsList
 		|	filterGroupDeclaration
-		|	extendFilterGroupDeclaration
 		|	userFiltersDeclaration
 		|	formOrderByList
 	    |   formPivotOptionsDeclaration
@@ -1285,32 +1284,19 @@ scheduleEventDeclaration returns [int period, boolean fixed]
 
 filterGroupDeclaration
 @init {
+    boolean extend = false;
 	String filterGroupSID = null;
 	boolean noNull = false;
 	List<RegularFilterInfo> filters = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, noNull, filters, self.getVersion());
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, noNull, filters, extend, self.getVersion());
 	}
 }
-	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; } ('NONULL' { noNull = true; })?
+	:	('EXTEND' { extend = true; } )?
+	    'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; } ('NULL' { noNull = false; } | 'NONULL' { noNull = true; })?
 		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )*
-	;
-
-extendFilterGroupDeclaration
-@init {
-	String filterGroupSID = null;
-	List<RegularFilterInfo> filters = new ArrayList<>();
-}
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.extendScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
-	}
-}
-	:	'EXTEND'	
-		'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
-		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )+
 	;
 	
 formRegularFilterDeclaration returns [RegularFilterInfo filter]

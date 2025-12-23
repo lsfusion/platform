@@ -371,7 +371,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
-            int defaultInd = filterGroup.entity.getDefault();
+            int defaultInd = filterGroup.entity.getDefaultFilterIndex();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
                 setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd), stack);
             }

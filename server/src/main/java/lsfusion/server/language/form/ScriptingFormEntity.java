@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -795,26 +794,24 @@ public class ScriptingFormEntity {
             form.addHintsIncrementTable(version, properties);
         }
     }
-    
-    public void addScriptedRegularFilterGroup(String sid, boolean noNull, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (form.getNFRegularFilterGroup(sid, version) != null) {
-            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "filter group", sid);
-        }
 
-        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID, sid, noNull, version);
-
-        addRegularFilters(regularFilterGroup, filters, version, false);
-
-        form.addRegularFilterGroup(regularFilterGroup, version);
-    }
-
-    public void extendScriptedRegularFilterGroup(String sid, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedRegularFilterGroup(String sid, boolean noNull, List<RegularFilterInfo> filters, boolean extend, Version version) throws ScriptingErrorLog.SemanticErrorException {
         RegularFilterGroupEntity filterGroup = form.getNFRegularFilterGroup(sid, version);
-        if (filterGroup == null) {
-            LM.getErrLog().emitFilterGroupNotFoundError(LM.getParser(), sid);
+        if (extend) {
+            if (filterGroup == null)
+                LM.getErrLog().emitFilterGroupNotFoundError(LM.getParser(), sid);
+        } else {
+            if (filterGroup != null)
+                LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "filter group", sid);
+            filterGroup = new RegularFilterGroupEntity(form.genID, sid);
+            filterGroup.setDefaultFilterIndex(noNull ? 0 : -1, version);
         }
-        
-        addRegularFilters(filterGroup, filters, version, true);
+
+        assert filterGroup != null;
+        filterGroup.setNoNull(noNull, version);
+        addRegularFilters(filterGroup, filters, version, extend);
+        if (!extend)
+            form.addRegularFilterGroup(filterGroup, version);
     }
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
@@ -832,10 +829,11 @@ public class ScriptingFormEntity {
             RegularFilterEntity filter = new RegularFilterEntity(form.genID, null,
                     new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
                     info.caption, keyInputEvent, info.showKey, mouseInputEvent, info.showMouse);
+            filterGroup.addFilter(filter, info.isDefault, version);
             if (extend) {
-                form.addRegularFilter(filterGroup, filter, info.isDefault, version);
-            } else {
-                filterGroup.addFilter(filter, info.isDefault, version);
+                FormView richDesign = form.view;
+                if (richDesign != null)
+                    richDesign.addRegularFilter(filterGroup, filter, version);
             }
         }
     }
