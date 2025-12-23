@@ -241,6 +241,10 @@
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.sejda.imageio</groupId>
+            <artifactId>webp-imageio</artifactId>
+        </dependency>
         <!-- for html link renderer -->
         <dependency>
             <groupId>net.sf.cssbox</groupId>

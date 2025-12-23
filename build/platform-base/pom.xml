@@ -59,8 +59,8 @@
         <jna.version>5.4.0</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
-        <imageio-jpeg.version>3.9.4</imageio-jpeg.version>
-        <imageio-webp.version>3.9.4</imageio-webp.version>
+        <twelvemonkeys.imageio.version>3.12.0</twelvemonkeys.imageio.version>
+        <sejda.imageio.version>0.1.6</sejda.imageio.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>8.0.30</mysql.version>
@@ -370,12 +370,17 @@
             <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-jpeg</artifactId>
-                <version>${imageio-jpeg.version}</version>
+                <version>${twelvemonkeys.imageio.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-webp</artifactId>
-                <version>${imageio-webp.version}</version>
+                <version>${twelvemonkeys.imageio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.sejda.imageio</groupId>
+                <artifactId>webp-imageio</artifactId>
+                <version>${sejda.imageio.version}</version>
             </dependency>
 
             <dependency>
