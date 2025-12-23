@@ -42,7 +42,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?, ?> drawProperty, GroupObjectEntity toDraw) {
             return null;
         }
 
@@ -78,7 +78,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?, ?> drawProperty, GroupObjectEntity toDraw) {
             return null;
         }
 

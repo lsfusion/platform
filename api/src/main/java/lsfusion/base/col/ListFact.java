@@ -4,9 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.implementations.ArCol;
 import lsfusion.base.col.implementations.order.ArList;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 
 import java.util.ArrayList;
@@ -214,4 +212,14 @@ public class ListFact {
         return BaseUtils.immutableCast(mSet);
     }
 
+    private final static AddValue<Object, ImList<Object>> addMergeList = new SymmAddValue<Object, ImList<Object>>() {
+        @Override
+        public ImList<Object> addValue(Object key, ImList<Object> prevValue, ImList<Object> newValue) {
+            return prevValue.addList(newValue);
+        }
+    };
+
+    public static <K, V> AddValue<K, ImList<V>> addMergeList() {
+        return BaseUtils.immutableCast(addMergeList);
+    }
 }

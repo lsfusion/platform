@@ -721,6 +721,22 @@ public class BaseUtils {
         return removeList;
     }
 
+    public static <K> List<K> removeList(List<K> list, Predicate<K> remove) {
+        List<K> removeList = new ArrayList<>();
+        for (K property : list)
+            if (!remove.test(property))
+                removeList.add(property);
+        return removeList;
+    }
+
+    public static <K> Set<K> removeSet(Set<K> set, Predicate<K> remove) {
+        Set<K> removeSet = new HashSet<>();
+        for (K property : set)
+            if (!remove.test(property))
+                removeSet.add(property);
+        return removeSet;
+    }
+
     public static <K> List<K> removeList(List<K> list, int index) {
         if(index < 0)
             return list;
@@ -2131,11 +2147,11 @@ public class BaseUtils {
         return result.toString();
     }
 
-    public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
+    public static <T> Iterable<T> mergeIterables(final Iterable<? extends T> it1, final Iterable<? extends T> it2) {
         return () -> mergeIterators(it1.iterator(), it2.iterator());
     }
 
-    public static <T> Iterator<T> mergeIterators(final Iterator<T> it1, final Iterator<T> it2) {
+    public static <T> Iterator<T> mergeIterators(final Iterator<? extends T> it1, final Iterator<? extends T> it2) {
         return new Iterator<T>() {
             boolean it1Running = true;
 

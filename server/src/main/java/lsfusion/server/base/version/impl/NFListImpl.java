@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.impl.changes.NFAddFirstList;
-import lsfusion.server.base.version.impl.changes.NFListChange;
-import lsfusion.server.base.version.impl.changes.NFRemoveAll;
+import lsfusion.server.base.version.impl.changes.*;
 import lsfusion.server.base.version.interfaces.NFList;
+
+import java.util.function.Predicate;
 
 public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> implements NFList<T> {
 
@@ -24,12 +24,21 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     public ImList<T> getNFList(Version version) {
-        ImList<T> result = proceedVersionFinal(version);
+        return getNFList(version, false);
+    }
+
+    @Override
+    public ImList<T> getNFCopyList(Version version) {
+        return getNFList(version, true);
+    }
+
+    public ImList<T> getNFList(Version version, boolean allowRead) {
+        ImList<T> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
             
         final MList<T> mList = ListFact.mList();
-        proceedChanges(change -> change.proceedList(mList), version);
+        proceedChanges((change, nextChange) -> change.proceedList(mList, version), version);
         return mList.immutableList();
     }
 
@@ -48,7 +57,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     public Iterable<T> getNFListIt(Version version) {
         return getNFListIt(this, version);
     }
-    
+
     // множественное наследование
     
     public static <T> Iterable<T> getListIt(NFList<T> list) {
@@ -59,8 +68,17 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
         return list.getNFList(version);
     }
 
-    public void removeAll(Version version) {
-        addChange(NFRemoveAll.getInstance(), version);
+    public static <T> ImList<T> getNFCopyList(NFList<T> list, Version version) {
+        return list.getNFCopyList(version);
+    }
+
+    @Override
+    public void add(NFList<T> element, NFCopy.Map<T> mapper, Version version) {
+        addChange(new NFListCopy<>(element, mapper), version);
+    }
+
+    public void removeAll(Predicate<T> filter, Version version) {
+        addChange(new NFRemoveAll<>(filter), version);
     }
 
     public void addFirst(T element, Version version) {

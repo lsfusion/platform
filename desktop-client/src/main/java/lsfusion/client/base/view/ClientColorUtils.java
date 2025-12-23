@@ -1,7 +1,8 @@
 package lsfusion.client.base.view;
 
 import lsfusion.client.controller.MainController;
-import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.client.form.design.ClientComponent;
+import lsfusion.interop.form.design.FontInfo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,17 +50,50 @@ public class ClientColorUtils {
         return createFilteredImageIcon(i, getDefaultThemePanelBackground(), SwingDefaults.getPanelBackground(), SwingDefaults.getButtonForeground());
     }
 
-    public static void designComponent(JComponent comp, ComponentDesign design) {
-        design.installFont(comp);
+    public static void designComponent(JComponent comp, ClientComponent clientComponent) {
+        installFont(clientComponent.font, comp);
 
-        if (design.background != null) {
-            comp.setBackground(getThemedColor(design.background));
+        if (clientComponent.background != null) {
+            comp.setBackground(getThemedColor(clientComponent.background));
             comp.setOpaque(true);
         }
 
-        if (design.foreground != null) {
-            comp.setForeground(getThemedColor(design.foreground));
+        if (clientComponent.foreground != null) {
+            comp.setForeground(getThemedColor(clientComponent.foreground));
         }
+    }
+
+    public static void installFont(FontInfo font, JComponent comp) {
+        if (font != null) {
+            comp.setFont(getOrDeriveComponentFont(font, comp));
+        }
+    }
+
+    public static void designHeader(FontInfo captionFont, Component comp) {
+        if (captionFont != null) {
+            comp.setFont(getCaptionFont(captionFont, comp));
+        }
+    }
+
+    public static Font getCaptionFont(FontInfo captionFont, Component component) {
+        return getOrDeriveComponentFont(captionFont, component);
+    }
+
+    public static Font getOrDeriveComponentFont(FontInfo fontInfo, Component component) {
+        if (fontInfo == null) {
+            return component.getFont();
+        }
+
+        Object oFont = component instanceof JComponent ? ((JComponent) component).getClientProperty(fontInfo) : null;
+        if (oFont instanceof Font) {
+            return (Font) oFont;
+        }
+
+        Font cFont = fontInfo.deriveFrom(component);
+        if (component instanceof JComponent) {
+            ((JComponent) component).putClientProperty(fontInfo, cFont);
+        }
+        return cFont;
     }
 
     public static class ImageThemeFilter extends RGBImageFilter {

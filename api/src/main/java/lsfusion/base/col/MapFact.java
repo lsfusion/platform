@@ -368,6 +368,24 @@ public class MapFact {
         return (AddValue<K, V>) keep;
     }
 
+    private final static AddValue<Object, Object> nullOrSame = new SymmAddValue<Object, Object>() {
+        public Object addValue(Object key, Object prevValue, Object newValue) {
+            assert prevValue == null || prevValue.equals(newValue);
+            return newValue;
+        }
+
+        public boolean reversed() {
+            return false;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            throw new UnsupportedOperationException();
+        }
+    };
+    public static <K, V> AddValue<K, V> nullOrSame() {
+        return (AddValue<K, V>) nullOrSame;
+    }
+
     private final static AddValue<Object, Object> override = new SimpleAddValue<Object, Object>() {
         public Object addValue(Object key, Object prevValue, Object newValue) {
             return newValue;

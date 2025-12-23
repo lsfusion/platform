@@ -38,7 +38,7 @@ public class ExpandCollapseGroupObjectAction extends SeekAction {
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         FormInstance formInstance = context.getFormInstance(false, true);
-        GroupObjectInstance groupObjectInstance = formInstance.getGroupObjectInstance(groupObject.getSID());
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
 
         ImMap<ObjectInstance, DataObject> value;
         if(objects.isEmpty()) {
@@ -46,7 +46,7 @@ public class ExpandCollapseGroupObjectAction extends SeekAction {
         } else {
             value = MapFact.EMPTY();
             for (int i = 0; i < objects.size(); ++i) {
-                ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
+                ObjectInstance instance = form.instanceFactory.getExInstance(objects.get(i));
                 ObjectValue objectValue = context.getKeyValue(getOrderInterfaces().get(i));
                 if(objectValue instanceof DataObject) {
                     value = value.addExcl(instance, (DataObject) objectValue);

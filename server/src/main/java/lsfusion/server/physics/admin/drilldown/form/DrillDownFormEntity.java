@@ -13,9 +13,9 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -45,7 +45,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
             ObjectEntity paramObject = addSingleGroupObject(interfaceClasses.get(pi));
             addPropertyDraw(paramObject, LM.getIdGroup());
             addValuePropertyDraw(LM, paramObject);
-            paramObject.groupTo.setViewTypePanel();
+            paramObject.groupTo.setViewTypePanel(this, baseVersion);
 
             mInterfaceObjects.revAdd(pi, paramObject);
             mParamObjects.exclAdd(paramObject);
@@ -56,9 +56,11 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
 
         setupDrillDownForm();
 
-        setNFEditType(PropertyEditType.READONLY);
+        setEditType(PropertyEditType.READONLY);
 
         finalizeInit(); // не красиво конечно, но иначе по хорошему надо во все setEditType version'ы вставлять
+
+        setupDrillDownDesign(getInitDesign(), baseVersion);
     }
 
     protected void setupDrillDownForm() {
@@ -68,27 +70,22 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     protected ContainerView paramsContainer;
     protected ContainerView detailsContainer;
 
-    @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
-
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
         paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"), version);
-        paramsContainer.setAlignment(FlexAlignment.STRETCH);
+        paramsContainer.setAlignment(FlexAlignment.STRETCH, version);
         design.mainContainer.addFirst(paramsContainer, version);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getBoxContainer(obj.groupTo), version);
         }
 
         valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"), version);
-        valueContainer.setAlignment(FlexAlignment.STRETCH);
+        valueContainer.setAlignment(FlexAlignment.STRETCH, version);
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
         detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"), version);
-        detailsContainer.setFlex(1.0);
-        detailsContainer.setAlignment(FlexAlignment.STRETCH);
+        detailsContainer.setFlex(1.0, version);
+        detailsContainer.setAlignment(FlexAlignment.STRETCH, version);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);
-
-        return design;
     }
 
     protected boolean isNotId(PropertyMapImplement<?, ?> mapImplement) {

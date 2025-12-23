@@ -8,7 +8,7 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
     }
 
     public void setVisible(boolean visible) {
-        target.visible = visible;
+        target.setVisible(visible, getVersion());
     }
 
     //deprecated since 6.0, will be removed in 7.0
@@ -20,37 +20,37 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
 
     @SuppressWarnings("unused")
     public void setShowViews(boolean showViews) {
-        target.showViews = showViews;
+        target.setShowViews(showViews, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowFilters(boolean showFilters) {
-        target.showFilters = showFilters;
+        target.setShowFilters(showFilters, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowSettings(boolean showSettings) {
-        target.showSettings = showSettings;
+        target.setShowSettings(showSettings, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowCountQuantity(boolean showCountQuantity) {
-        target.showCountQuantity = showCountQuantity;
+        target.setShowCountQuantity(showCountQuantity, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowCalculateSum(boolean showCalculateSum) {
-        target.showCalculateSum = showCalculateSum;
+        target.setShowCalculateSum(showCalculateSum, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowPrintGroupXls(boolean showPrintGroupXls) {
-        target.showPrintGroupXls = showPrintGroupXls;
+        target.setShowPrintGroupXls(showPrintGroupXls, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setShowManualUpdate(boolean showManualUpdate) {
-        target.showManualUpdate = showManualUpdate;
+        target.setShowManualUpdate(showManualUpdate, getVersion());
     }
 
 }

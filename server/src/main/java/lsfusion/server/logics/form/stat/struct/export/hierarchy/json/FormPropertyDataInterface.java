@@ -50,7 +50,7 @@ public class FormPropertyDataInterface<P extends PropertyInterface> {
         if(orders == null)
             orders = MapFact.EMPTYORDER();
 
-        return orders.mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(orderEntity -> ((OrderEntity<?>)orderEntity).getImplement(mapObjects));
+        return orders.mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(orderEntity -> ((OrderEntity<?, ?>)orderEntity).getImplement(mapObjects));
     }
 
 

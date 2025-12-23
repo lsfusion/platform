@@ -4,11 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientFilterControls;
@@ -18,14 +15,12 @@ import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.interop.form.object.AbstractGroupObject;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +29,7 @@ import java.util.Map;
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
 
-public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent, String> {
+public class ClientGroupObject extends ClientIdentityObject {
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
@@ -60,7 +55,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public ClientContainer filtersContainer;
     public ClientFilterControls filterControls;
-    public List<ClientFilter> filters = new ArrayList<>();
+    public List<ClientFilter> filters;
     public ClientGrid grid;
     public ClientToolbar toolbar;
     public ClientCalculations calculations;
@@ -114,7 +109,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public String getActionID() {
         if (actionID == null)
-            actionID = "changeGroupObject" + idGenerator.idShift();
+            actionID = "changeGroupObject" + idGenerator.id();
         return actionID;
     }
 
@@ -133,40 +128,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return result;
     }
 
-    public ClientComponent getGrid() {
-        return grid;
-    }
-
-    @Override
-    public ClientComponent getToolbarSystem() {
-        return toolbar;
-    }
-
-    @Override
     public ClientContainer getFiltersContainer() {
         return filtersContainer;
-    }
-
-    @Override
-    public ClientFilterControls getFilterControls() {
-        return filterControls;
-    }
-
-    @Override
-    public ClientComponent getCalculations() {
-        return calculations;
-    }
-
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        pool.serializeCollection(outStream, objects);
-        pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream,filtersContainer);
-        pool.serializeObject(outStream, filterControls);
-        pool.serializeCollection(outStream, filters);
-        pool.serializeObject(outStream, calculations);
-        outStream.writeBoolean(needVerticalScroll);
-        outStream.writeBoolean(enableManualUpdate);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -182,12 +145,15 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         parent = pool.deserializeObject(inStream);
 
-        grid = pool.deserializeObject(inStream);
-        toolbar = pool.deserializeObject(inStream);
-        filtersContainer = pool.deserializeObject(inStream);
-        filterControls = pool.deserializeObject(inStream);
-        pool.deserializeCollection(filters, inStream);
-        calculations = pool.deserializeObject(inStream);
+        if(parent == null) { // isInTree
+            grid = pool.deserializeObject(inStream);
+            toolbar = pool.deserializeObject(inStream);
+            filtersContainer = pool.deserializeObject(inStream);
+            filterControls = pool.deserializeObject(inStream);
+            filters = new ArrayList<>();
+            pool.deserializeCollection(filters, inStream);
+            calculations = pool.deserializeObject(inStream);
+        }
 
         isRecursive = inStream.readBoolean();
         isMap = inStream.readBoolean();

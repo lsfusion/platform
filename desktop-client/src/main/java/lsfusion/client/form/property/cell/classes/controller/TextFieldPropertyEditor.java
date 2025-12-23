@@ -356,8 +356,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private void setDesign(JTextField component) {
         if (property != null) {
-            if (property.design != null)
-                ClientColorUtils.designComponent(component, property.design);
+            ClientColorUtils.designComponent(component, property);
 
             Integer valueAlignment = property.getSwingValueAlignmentHorz();
             if (valueAlignment != null) {

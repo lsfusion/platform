@@ -5,7 +5,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -29,8 +28,7 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
 
         valueContainer.add(design.get(propertyDraw), version);
         ContainerView newValueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.new.value}"), version);
@@ -40,7 +38,5 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
 
         design.mainContainer.addAfter(newValueContainer, valueContainer, version);
         design.mainContainer.addAfter(oldValueContainer, newValueContainer, version);
-
-        return design;
     }
 }

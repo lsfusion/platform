@@ -6,7 +6,6 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientGrid extends ClientGridProperty {
@@ -54,15 +53,6 @@ public class ClientGrid extends ClientGridProperty {
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.grid") + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
-    }
-
-    public void setTabVertical(boolean tabVertical) {
-        this.tabVertical = tabVertical;
-        updateDependency(this, "tabVertical");
-    }
-
-    public boolean getTabVertical() {
-        return tabVertical;
     }
 
     public int getHeaderHeight() {

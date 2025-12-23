@@ -102,6 +102,8 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' () CHANGEKEY 'ctrl ENTER' CHANGEMOUSE 'DBLCLK;priority=2000;dialog=only;group=input;preview=only' IMAGE 'ok.png';
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' () CHANGEKEY 'ESCAPE' IMAGE 'close.png';
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
+formCustomize '{action.form.customize}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormCustomizeAction' () IMAGE 'settings.png';
+formCustomizeBackground = ABSTRACT COLOR();
 
 navigatorRefresh INTERNAL 'lsfusion.server.logics.navigator.NavigatorRefreshAction' ();
 

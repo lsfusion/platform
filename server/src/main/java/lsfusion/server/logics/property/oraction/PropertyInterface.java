@@ -7,12 +7,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -43,14 +41,16 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>, Comparable<P> {
+public class PropertyInterface<P extends PropertyInterface<P>> implements lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>, Comparable<P> {
+
+    private int ID;
 
     public PropertyInterface() {
         this(-1);
     }
 
     public PropertyInterface(int ID) {
-        super(ID, "PropInt" + ID);
+        this.ID = ID;
     }
 
     // similar to isIdentity
@@ -109,7 +109,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     public int compareTo(P o) {
-        return ID-o.ID;
+        return ID-o.getID();
     }
 
     // actually it is strong lazy
@@ -285,5 +285,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     @Override
     public PropertyMapImplement<?, P> mapChangeValueClassProperty(Property<?> to) {
         return to.getValueClassProperty().mapPropertyImplement(MapFact.singletonRev("value", (P)this));
+    }
+
+    public int getID() {
+        return ID;
     }
 }

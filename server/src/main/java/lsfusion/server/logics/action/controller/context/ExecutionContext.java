@@ -10,9 +10,8 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.MessageClientType;
-import lsfusion.interop.form.ModalityWindowFormType;
+import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -44,9 +43,9 @@ import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
@@ -59,7 +58,6 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -73,8 +71,6 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -554,7 +550,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance form = getFormFlowInstance();
-        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, getPushedAddObject(), stack);
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getExInstance(object), cls, getPushedAddObject(), stack);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {
@@ -670,9 +666,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, FormOptions options) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, syncType, formId, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, options, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException { // have to be used with getRequestChangeExtProps
@@ -759,13 +755,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, interactive, options);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, ModalityWindowFormType.FLOAT, null, false);
+        return createFormInstance(formEntity, MapFact.EMPTY(), getSession(), false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, null, false, false, false, false, false, null));
+    }
+
+    public FormInstance createAndRequestFormInstance(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                                                     FormOptions options) throws SQLException, SQLHandledException {
+        FormInstance newFormInstance = createFormInstance(form, mapObjects, getSession(), true, options);
+        requestFormUserInteraction(newFormInstance, options);
+
+        FormInstance recreatedForm = newFormInstance.recreatedForm;
+        return recreatedForm != null ? recreatedForm : newFormInstance;
     }
 
     public SQLSyntax getDbSyntax() {

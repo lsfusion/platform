@@ -16,9 +16,9 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
-    import lsfusion.interop.form.event.FormChangeEvent;
-    import lsfusion.interop.form.event.FormContainerEvent;
-    import lsfusion.interop.form.event.FormScheduler;
+    import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
+    import lsfusion.server.logics.form.interactive.event.FormContainerEvent;
+    import lsfusion.server.logics.form.interactive.event.FormServerScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PivotOptions;
@@ -43,6 +43,7 @@ grammar LsfLogics;
     import lsfusion.server.language.form.design.Bounds;
     import lsfusion.server.language.form.design.ScriptingFormView;
     import lsfusion.server.language.form.object.ScriptingGroupObject;
+    import lsfusion.server.language.form.object.ScriptingObject;
     import lsfusion.server.language.navigator.window.BorderPosition;
     import lsfusion.server.language.navigator.window.DockPosition;
     import lsfusion.server.language.navigator.window.NavigatorWindowOptions;
@@ -73,6 +74,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+    import lsfusion.server.logics.form.interactive.event.FormServerEvent;
+    import lsfusion.server.logics.form.interactive.event.ObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -82,6 +85,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+    import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
     import lsfusion.server.logics.form.struct.object.ObjectEntity;
     import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -412,17 +416,22 @@ scope {
 }
 @init {
 	boolean initialDeclaration = false;
+	List<String> formStatementTokens;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-	if (inMainParseState() && initialDeclaration) {
-		self.finalizeScriptedForm($formStatement::form);
+	if (inMainParseState()) {
+	    $formStatement::form.getForm().addFormOrDesignStatementTokens(formStatementTokens);
+        if(initialDeclaration)
+    		self.finalizeScriptedForm($formStatement::form);
 	}
 }
-	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
+	:	{ self.getParser().enterFormOrDesignStatementState(); }
+	    (	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
-		(	formGroupObjectsList
+		(	formFormsList
+		|	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
 		|	formPropertiesList
@@ -438,8 +447,10 @@ scope {
 		|	reportFilesDeclaration
 		|	reportDeclaration
 		|   formExtIDDeclaration
+		|   localAsyncDeclaration
 		)*
 		';'
+		{ formStatementTokens = self.getParser().leaveFormOrDesignStatementState(); }
 	;
 
 dialogFormDeclaration
@@ -471,7 +482,7 @@ reportPath
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(groupObject, property);	
+		$formStatement::form.setReportPath(groupObject, property, self.getVersion());
 	}
 }
 	:	(	'TOP' 
@@ -486,10 +497,19 @@ reportDeclaration
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(property);
+		$formStatement::form.setReportPath(property, self.getVersion());
 	}
 }
 	:	'REPORT' prop = formPropertyObject { property = $prop.property; }
+	;
+
+localAsyncDeclaration
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.setLocalAsync(true, self.getVersion());
+	}
+}
+	:	'LOCALASYNC'
 	;
 
 formExtIDDeclaration
@@ -506,21 +526,16 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	String image = null;
-	String title = null;
-	boolean localAsync = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	img=imageOption
-		|	('LOCALASYNC' { localAsync = true; })
-		)*
+		(img=imageOption)?
 	;
 
 
@@ -533,45 +548,73 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 	:	'EXTEND' 'FORM' formName=compoundID
 	;
 
-formGroupObjectsList
+formFormsList
 @init {
-	List<ScriptingGroupObject> groups = new ArrayList<>();
+    boolean extend = false;
+    String form = null;
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint(true));
+		$formStatement::form.addScriptingForm(extend, form, self.getVersion());
 	}
 }
-	:	'OBJECTS'
-		groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); }
-		(',' groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); })*
+	:	('EXTEND' { extend = true; } )?
+	    'FORM'
+		formName=compoundID { form = $formName.sid; }
+	;
+
+formGroupObjectsList
+@init {
+	boolean extend = false;
+}
+	:	('EXTEND' { extend = true; } )?
+	    'OBJECTS'
+		formGroupObjectDeclaration[extend]
+		(',' formGroupObjectDeclaration[extend])*
 	;
 
 formTreeGroupObjectList
 @init {
 	String treeSID = null;
-	List<ScriptingGroupObject> groups = new ArrayList<>();
+	List<GroupObjectEntity> groups = new ArrayList<>();
 	List<List<LP>> properties = new ArrayList<>();
 	List<List<ImOrderSet<String>>> propertyMappings = new ArrayList<>();
+
+	boolean extend = false;
+	TreeGroupEntity treeGroup = null;
 }
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint(true));
-	}
-}
-	:	'TREE'
+	:	('EXTEND' { extend = true; } )?
+	    'TREE'
 		(id = ID { treeSID = $id.text; })?
-		groupElement=formTreeGroupObject { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); }
-		(',' groupElement=formTreeGroupObject { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); })*
+		groupElement=formTreeGroupObject[extend] { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); }
+		(',' groupElement=formTreeGroupObject[extend] { groups.add($groupElement.groupObject); properties.add($groupElement.properties); propertyMappings.add($groupElement.propertyMappings); })*
+        {
+            if (inMainParseState()) {
+                treeGroup = $formStatement::form.addScriptingTreeGroupObject(extend, treeSID, groups,  self.getVersion(), getCurrentDebugPoint(true));
+            }
+        }
 	    opts = formTreeGroupObjectOptions
+        {
+            if (inMainParseState()) {
+                $formStatement::form.applyTreeGroupObjectOptions(treeGroup, $opts.location, properties, propertyMappings, self.getVersion());
+            }
+        }
 	;
 
-formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formGroupObject { $groupObject = $object.groupObject; }
-	    formGroupObjectOptions[$groupObject]
+formGroupObjectDeclaration[boolean extend] returns [ScriptingGroupObject groupObject]
+	:	object=formGroupObject[extend]
+	    opts=formGroupObjectOptions
+        {
+            if (inMainParseState()) {
+                $formStatement::form.applyGroupObjectOptions($object.groupObject, $opts.groupObject, self.getVersion());
+            }
+        }
 	;
 
-formGroupObjectOptions[ScriptingGroupObject groupObject]
+formGroupObjectOptions returns [ScriptingGroupObject groupObject]
+@init {
+	$groupObject = new ScriptingGroupObject();
+}
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options);
 	                                           $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); $groupObject.setCustomOptions($viewType.customOptions);
 	                                           $groupObject.setMapTileProvider($viewType.mapTileProvider);}
@@ -592,30 +635,15 @@ formTreeGroupObjectOptions returns [ComplexLocation<GroupObjectEntity> location]
 		)*
 	;
 
-formGroupObject returns [ScriptingGroupObject groupObject]
-	:	sdecl=formSingleGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
-		}
-	|	mdecl=formMultiGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
-		}
+formGroupObject[boolean extend] returns [GroupObjectEntity groupObject]
+	:	sdecl=formSingleGroupObjectDeclaration[extend] { $groupObject = $sdecl.groupObject; }
+	|	mdecl=formMultiGroupObjectDeclaration[extend] { $groupObject = $mdecl.groupObject; }
 	;
 
-formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
-	:	( sdecl=formSingleGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
-		}
-
+formTreeGroupObject[boolean extend] returns [GroupObjectEntity groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
+	:	( sdecl=formSingleGroupObjectDeclaration[extend] { $groupObject = $sdecl.groupObject; }
 		('PARENT' decl=formExprDeclaration { $properties = asList($decl.property); $propertyMappings = asList($decl.mapping); })? )
-
-	|	mdecl=formMultiGroupObjectDeclaration
-		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
-		}
-
+	|	mdecl=formMultiGroupObjectDeclaration[extend] { $groupObject = $mdecl.groupObject; }
         ( '('
 		'PARENT' {$properties = new ArrayList<>(); $propertyMappings = new ArrayList<>();} first=formExprDeclaration { $properties.add($first.property); $propertyMappings.add($first.mapping); }
         		(',' next=formExprDeclaration { $properties.add($next.property); $propertyMappings.add($next.mapping); })*
@@ -766,72 +794,77 @@ formSubReport returns [PropertyObjectEntity pathProperty]
 	:	'SUBREPORT' (prop=formPropertyObject { pathProperty = $prop.property; })?
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
-	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; $extID = $foDecl.extID; }
+formSingleGroupObjectDeclaration[boolean extend] returns [GroupObjectEntity groupObject]
+	:	foDecl=formObjectDeclaration[extend, true] { $groupObject = $foDecl.groupObject; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> extIDs]
+formMultiGroupObjectDeclaration[boolean extend] returns [GroupObjectEntity groupObject]
 @init {
-	$objectNames = new ArrayList<>();
-	$classNames = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$events = new ArrayList<>();
-	$extIDs = new ArrayList<>();
+    String name = null;
+	List<ObjectEntity> objects = new ArrayList<>();
 }
-	:	(gname=ID { $groupName = $gname.text; } EQ)?
+	:	(gname=ID { name = $gname.text; } EQ)?
 		'('
-			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); }
-			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); })*
+			objDecl=formObjectDeclaration[extend, false] { objects.add($objDecl.object); }
+			(',' objDecl=formObjectDeclaration[extend, false] { objects.add($objDecl.object); })*
 		')'
+        {
+            if (inMainParseState()) {
+                $groupObject = $formStatement::form.addScriptingGroupObject(extend, name, objects, self.getVersion(), getCurrentDebugPoint(true));
+            }
+        }
 	;
 
-
-formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
-	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
+formObjectDeclaration[boolean extend, boolean single] returns [ObjectEntity object, GroupObjectEntity groupObject]
+@init {
+	String name = null;
+	String className = null;
+	LocalizedString caption = null;
+	ActionObjectEntity event = null;
+	String extID = null;
+}
+	:	((objectName=ID { name = $objectName.text; })? (c=localizedStringLiteral { caption = $c.val; })? EQ)?
 		id=classId {
-		    $className = $id.sid;
+            className = $id.sid;
 		    if (inMainParseState()) {
-                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, BaseUtils.nvl($name, $className)));
+                $object = $formStatement::form.addScriptingObject(extend, name, className, self.getVersion());
+                if(single)
+                    $groupObject = $formStatement::form.addScriptingGroupObject(extend, null, asList($object), self.getVersion(), getCurrentDebugPoint(true));
             }
 		}
 		(
-		    'ON' 'CHANGE' faprop=formActionObject { $event = $faprop.action; }
-		|   'EXTID' eid=stringLiteral { $extID = $eid.val; }
+		    'ON' 'CHANGE' faprop=formActionObject { event = $faprop.action; }
+		|   'EXTID' eid=stringLiteral { extID = $eid.val; }
 		)*
-	; 
+		{
+		    if (inMainParseState()) {
+		        $formStatement::form.applyObjectOptions($object, new ScriptingObject(caption, event, extID), self.getVersion());
+            }
+		}
+	;
 	
 formPropertiesList
 @init {
-	List<? extends AbstractFormActionOrPropertyUsage> properties = new ArrayList<>();
-	List<String> aliases = new ArrayList<>();
-	List<LocalizedString> captions = new ArrayList<>();	
-	List<DebugInfo.DebugPoint> points = new ArrayList<>();
-	FormPropertyOptions commonOptions = null;
+	boolean extend = false;
+	List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
 	List<FormPropertyOptions> options = new ArrayList<>();
 }
 @after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, commonOptions, options, self.getVersion(), points);
+	if (inMainParseState()) { // only locations
+		$formStatement::form.applyPropertyOptions(propertyDraws, $opts.options, options, self.getVersion());
 	}
 }
-	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]
+	:	('EXTEND' { extend = true; } )?
+	    ('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[extend, $objects.ids, $opts.options]
 		{
-			commonOptions = $opts.options;
-			properties = $list.properties;
-			aliases = $list.aliases;
-			captions = $list.captions;
+			propertyDraws = $list.propertyDraws;
 			options = $list.options;
-			points = $list.points;
 		}
-	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
+	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList[extend, $opts.options]
 		{
-			commonOptions = $opts.options;
-			properties = $mappedList.properties;
-			aliases = $mappedList.aliases;
-			captions = $mappedList.captions;
+			propertyDraws = $mappedList.propertyDraws;
 			options = $mappedList.options;
-			points = $mappedList.points;
-		}
+		})
 	;	
 
 // потенциально две проблемы с убиранием =pE -> (a=)?pe | pe решается простым lookahead, два pe подряд SHOWIF pe pe, факторится с ? так чтобы formPropertyOptionsList заканчивался на pe а дальше formMappedProperty | pe после чего formMappedProperty lookahead'ся 
@@ -885,29 +918,40 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> captions, List<AbstractFormActionOrPropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formMappedPropertiesList[boolean extend, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
-	$aliases = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$properties = new ArrayList<>();
+	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
-	$points = new ArrayList<>(); 
+}
+	:	first=formMappedPropertyListItem[extend, commonOptions]
+		{
+			$propertyDraws.add($first.propertyDraw);
+			$options.add($first.opts);
+		}
+		(',' next=formMappedPropertyListItem[extend, commonOptions]
+		{
+			$propertyDraws.add($next.propertyDraw);
+			$options.add($next.opts);
+		})*
+	;
+
+formMappedPropertyListItem[boolean extend, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+@init {
 	String alias = null;
 	LocalizedString caption = null;
-    AbstractFormActionOrPropertyUsage lpUsage = null;
+	AbstractFormActionOrPropertyUsage lpUsage = null;
 }
-	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-		(		
+	:	(
 			mappedProp=formMappedProperty
 			{
-        		$properties.add($mappedProp.propUsage);
-			} 
-		| 	
+        		lpUsage = $mappedProp.propUsage;
+			}
+		|
 		    (
 		    	(id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
 				EQ
 				(   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
-                    { lpUsage = $mappedProp.propUsage; }                        
+                    { lpUsage = $mappedProp.propUsage; }
 				|   expr=formExprOrTrivialLADeclaration
 				    {
                         if(inMainParseState()) {
@@ -924,56 +968,19 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
                         }
 				    })
 				)
-				{
-					$properties.add(lpUsage);
-				} 
 			)
-		opts=formPropertyOptionsList
 		{
-			$aliases.add(alias);
-			$captions.add(caption);
-			$options.add($opts.options);
-		}
-		(','
-            { alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-            (		
-                mappedProp=formMappedProperty
-                {
-                    $properties.add($mappedProp.propUsage);
-                } 
-            | 	
-                (
-                    (id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
-                    EQ
-                    (   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
-                        { lpUsage = $mappedProp.propUsage; }                        
-                    |   expr=formExprOrTrivialLADeclaration
-                        {
-                            if(inMainParseState()) {
-                                if($expr.fu != null)
-                                    lpUsage = $expr.fu;
-                                else
-                                    lpUsage = new FormLPUsage($expr.property, $expr.mapping, $expr.signature);
-                            }
-                        }
-                    |	action=formActionDeclaration
-                        {
-                            if(inMainParseState()) {
-                                lpUsage = new FormLAUsage($action.action, $action.mapping, $action.signature);
-                            }
-                        })
-                    )
-                    {
-                        $properties.add(lpUsage);
-                    } 
-                )
-            opts=formPropertyOptionsList
-            {
-                $aliases.add(alias);
-                $captions.add(caption);
-                $options.add($opts.options);
+		    if (inMainParseState()) {
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, lpUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
             }
-		)*
+		}
+		options=formPropertyOptionsList
+		{
+			$opts = $options.options;
+		    if (inMainParseState()) {
+		        $formStatement::form.applyPropertyOptions($propertyDraw, commonOptions, $opts, caption, self.getVersion());
+            }
+		}
 	;
 
 formPropertyObject returns [PropertyObjectEntity property = null, Object literal]
@@ -1076,36 +1083,42 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList[List<String> mapping] returns [List<String> aliases, List<LocalizedString> captions, List<BaseFormActionOrPropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formPropertyUList[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
-	$aliases = new ArrayList<>();
-	$captions = new ArrayList<>();
-	$properties = new ArrayList<>();
+	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
-	$points = new ArrayList<>();
+}
+	:	first=formPropertyUListItem[extend, mapping, commonOptions]
+		{
+			$propertyDraws.add($first.propertyDraw);
+			$options.add($first.opts);
+		}
+		(',' next=formPropertyUListItem[extend, mapping, commonOptions]
+		{
+			$propertyDraws.add($next.propertyDraw);
+			$options.add($next.opts);
+		})*
+	;
+
+formPropertyUListItem[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+@init {
 	String alias = null;
 	LocalizedString caption = null;
 }
-	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-		(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
-		pu=formPropertyUsage[mapping] opts=formPropertyOptionsList
+	:	(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
+		pu=formPropertyUsage[mapping]
 		{
-			$aliases.add(alias);
-			$captions.add(caption);
-			$properties.add($pu.propUsage);
-			$options.add($opts.options);
+		    if (inMainParseState()) {
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, $pu.propUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
+            }
 		}
-		(','
-			{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
-			(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })?
-			pu=formPropertyUsage[mapping] opts=formPropertyOptionsList
-			{
-				$aliases.add(alias);
-				$captions.add(caption);
-				$properties.add($pu.propUsage);
-				$options.add($opts.options);
-			}
-		)*
+		options=formPropertyOptionsList
+		{
+			$opts = $options.options;
+		    if (inMainParseState()) {
+		        $formStatement::form.applyPropertyOptions($propertyDraw, commonOptions, $opts, caption, self.getVersion());
+            }
+		}
 	;
 
 formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage propUsage]
@@ -1194,7 +1207,7 @@ formHintsList
 formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
-	List<Object> types = new ArrayList<>();
+	List<FormServerEvent> types = new ArrayList<>();
 	List<Boolean> replaces = new ArrayList<>();
 }
 @after {
@@ -1208,7 +1221,7 @@ formEventsList
 	;
 
 
-formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean replace = null]
+formEventDeclaration returns [ActionObjectEntity action, FormServerEvent type, Boolean replace = null]
 @init {
     Boolean before = null;
 }
@@ -1222,22 +1235,22 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
-		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
-		| 	schedule = scheduleEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
+		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.component, $containerEvent.collapse); }
+		| 	schedule = scheduleEventDeclaration { $type = new FormServerScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
 
-changeEventDeclaration returns [Object type]
+changeEventDeclaration returns [FormServerEvent type]
 @init {
     Boolean before = null;
 }
     :
-    'CHANGE' objectId=ID { $type = $objectId.text; }
+    'CHANGE' objectId=ID { $type = new ObjectEventObject($objectId.text); }
     |
     'CHANGE'? (
-        ('OBJECT' objectId=ID { $type = $objectId.text; }
+        ('OBJECT' objectId=ID { $type = new ObjectEventObject($objectId.text); }
         |  'FILTER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.FILTER); }
         |  'ORDER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.ORDER); }
         |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER); }
@@ -1249,11 +1262,21 @@ changeEventDeclaration returns [Object type]
      )
     ;
 
-formContainerEventDeclaration returns [String sid, boolean collapse = false]
+formContainerEventDeclaration returns [ComponentView component, boolean collapse = false]
+@init {
+	ScriptingFormView formView = null;
+}
     :   ('COLLAPSE' { $collapse = true; } | 'EXPAND' | 'TAB')
-        (   obj=ID { $sid = $obj.text; }
-        |   comp=formContainersComponentSelector { $sid = $comp.sid; }
-        )
+        {
+            if(inMainParseState()) {
+                formView = self.getFormDesign($formStatement::form.getForm());
+            }
+        }
+        comp=formComponentSelector[formView] {
+            if (inMainParseState()) {
+                $component = $comp.component;
+            }
+        }
     ;
 
 scheduleEventDeclaration returns [int period, boolean fixed]
@@ -1454,7 +1477,7 @@ pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new
 	;
 
 pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
-    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=ID { property = new PivotColumn($group.text); } ')'
+    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=formGroupObjectEntity { property = new PivotColumn($group.groupObject); } ')'
     ;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5188,9 +5211,17 @@ scope {
 @init {
 	ScriptingFormView formView = null;
 	boolean applyDefault = false;
+	List<String> designStatementTokens;
 }
-	:	header=designHeader	{ $designStatement::design = formView = $header.view; }
+@after {
+	if (inMainParseState()) {
+	    formView.getView().entity.addFormOrDesignStatementTokens(designStatementTokens);
+	}
+}
+	:   { self.getParser().enterFormOrDesignStatementState(); }
+	    header=designHeader	{ $designStatement::design = formView = $header.view; }
 		componentStatementBody[formView == null ? null : formView.getMainContainer()]
+		{ designStatementTokens = self.getParser().leaveFormOrDesignStatementState(); }
 	;
 
 designHeader returns [ScriptingFormView view]
@@ -5287,7 +5318,7 @@ formComponentSelector[ScriptingFormView formView] returns [ComponentView compone
 	;
 formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
-    |   gs = componentSingleSelectorType { $sid = $gs.text; }
+    |   gs = componentSingleSelectorType { $sid = $gs.text; } ('(' 'FORM' go = ID ')' { $sid += "(FORM " + $go.text + ")"; })?
     |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = "GROUP(," + $ggo.sid + ")"; }
                     |   ggr = compoundID ',' ggo = groupObjectTreeSelector { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + "," + $ggo.sid + ")"; }
                     |   ggr = compoundID { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + ")"; }

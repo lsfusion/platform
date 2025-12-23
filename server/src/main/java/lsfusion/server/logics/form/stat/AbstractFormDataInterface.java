@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.stat;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -49,7 +48,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
     }
 
     public static ImSet<GroupObjectEntity> getValueGroupObjects(ImSet<ObjectEntity> objects) {
-        return objects.group(key -> key.groupTo).filterFn((key, value) -> {
+        return objects.group((ObjectEntity key) -> key.groupTo).filterFn((key, value) -> {
             return key.getObjects().size() == value.size(); // only groups with all objects
         }).keys();
     }

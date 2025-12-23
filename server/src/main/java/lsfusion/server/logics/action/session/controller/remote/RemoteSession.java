@@ -95,6 +95,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             public String getCurrentForm() {
                 return null;
             }
+
+            @Override
+            public String getActiveForm() {
+                return null;
+            }
         };
     }
 

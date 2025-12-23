@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.oraction;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -59,7 +58,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
@@ -339,34 +337,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
     }
 
-    // для всех    
-    private String mouseBinding;
-    private Object keyBindings;
     private Object contextMenuBindings;
     private Object eventActions;
-
-    public void setMouseAction(String actionSID) {
-        setMouseBinding(actionSID);
-    }
-
-    public void setMouseBinding(String mouseBinding) {
-        this.mouseBinding = mouseBinding;
-    }
-
-    public void setKeyAction(KeyStroke ks, String actionSID) {
-        if (keyBindings == null) {
-            keyBindings = MapFact.mMap(MapFact.override());
-        }
-        ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
-    }
-
-    public String getMouseBinding() {
-        return mouseBinding;
-    }
-
-    public ImMap<KeyStroke, String> getKeyBindings() {
-        return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
-    }
 
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
         setContextMenuAction(actionSID, null, caption);
@@ -509,7 +481,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     protected void finalizeChanges() {
         eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
-        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }
 
@@ -619,6 +590,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return ThreadLocalContext.getBaseLM();
     }
 
+    protected BusinessLogics getBusinessLogics() {
+        return ThreadLocalContext.getBusinessLogics();
+    }
+
     public static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, Object object, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
@@ -685,7 +660,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
         void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version);
-        void proceedDefaultDesign(PropertyDrawView propertyView);
+        default void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
+        }
     }
 
     // + caption, который одновременно и draw и не draw
@@ -734,59 +710,67 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
-        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
-            entity.viewType = viewType;
-            entity.customChangeFunction = customEditorFunction;
-            entity.askConfirm = BaseUtils.nvl(askConfirm, false);
-            entity.askConfirmMessage = askConfirmMessage;
-            entity.eventID = eventID;
+        public void proceedDefaultDraw(PropertyDrawEntity<?, ?> entity, FormEntity form, Version version) {
+            if(viewType != null)
+                entity.setViewType(viewType, form, version);
+            if(customEditorFunction != null)
+                entity.setCustomChangeFunction(customEditorFunction, version);
+            if(askConfirm != null)
+                entity.setAskConfirm(askConfirm, version);
+            if(askConfirmMessage != null)
+                entity.setAskConfirmMessage(askConfirmMessage, version);
+            if(eventID != null)
+                entity.setEventID(eventID, version);
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form, version);
+
+            if(form.view != null) // can be non-interactive
+                proceedDefaultDesign(entity.view, version);
         }
 
-        public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.charWidth == null)
-                propertyView.setCharWidth(charWidth);
-            if(propertyView.getValueFlex() == null)
-                propertyView.setValueFlex(valueFlex);
-            if(propertyView.valueWidth == null)
-                propertyView.setValueWidth(valueWidth);
-            if(propertyView.valueHeight == null)
-                propertyView.setValueHeight(valueHeight);
-            if(propertyView.captionWidth == null)
-                propertyView.setCaptionWidth(captionWidth);
-            if(propertyView.captionHeight == null)
-                propertyView.setCaptionHeight(captionHeight);
-            if (propertyView.changeKey == null)
-                propertyView.changeKey = changeKey;
-            if (propertyView.showChangeKey == null)
-                propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
-            if (propertyView.changeMouse == null)
-                propertyView.changeMouse = changeMouse;
-            if (propertyView.showChangeMouse == null)
-                propertyView.showChangeMouse = BaseUtils.nvl(showChangeMouse, true);
+        public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
+            if(charWidth != null)
+                propertyView.setCharWidth(charWidth, version);
+            if(valueFlex != null)
+                propertyView.setValueFlex(valueFlex, version);
+            if(valueWidth != null)
+                propertyView.setValueWidth(valueWidth, version);
+            if(valueWidth != null)
+                propertyView.setValueHeight(valueHeight, version);
+            if(captionWidth != null)
+                propertyView.setCaptionWidth(captionWidth, version);
+            if(captionHeight != null)
+                propertyView.setCaptionHeight(captionHeight, version);
+            if(changeKey != null)
+                propertyView.setChangeKey(changeKey, version);
+            if(showChangeKey != null)
+                propertyView.setShowChangeKey(showChangeKey, version);
+            if(changeMouse != null)
+                propertyView.setChangeMouse(changeMouse, version);
+            if(showChangeMouse != null)
+                propertyView.setShowChangeMouse(showChangeMouse, version);
 
-            if(propertyView.pattern == null)
-                propertyView.pattern = pattern;
-            if(propertyView.regexp == null)
-                propertyView.regexp = regexp;
-            if(propertyView.regexpMessage == null)
-                propertyView.regexpMessage = regexpMessage;
+            if(pattern != null)
+                propertyView.setPattern(pattern, version);
+            if(regexp != null)
+                propertyView.setRegexp(regexp, version);
+            if(regexpMessage != null)
+                propertyView.setRegexpMessage(regexpMessage, version);
 
-            if (propertyView.echoSymbols == null)
-                propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
-            
-            if(propertyView.defaultCompare == null)
-                propertyView.defaultCompare = defaultCompare;
+            if(echoSymbols != null)
+                propertyView.setEchoSymbols(echoSymbols, version);
 
-            if(propertyView.sticky == null)
-                propertyView.sticky = sticky;
-            if(propertyView.sync == null)
-                propertyView.sync = sync;
+            if(defaultCompare != null)
+                propertyView.setDefaultCompare(defaultCompare, version);
+
+            if(sticky != null)
+                propertyView.setSticky(sticky, version);
+            if(sync != null)
+                propertyView.setSync(sync, version);
 
             for(DefaultProcessor processor : processors)
-                processor.proceedDefaultDesign(propertyView);
+                processor.proceedDefaultDesign(propertyView, version);
         }
         
         public void inheritDrawOptions(DrawOptions options) {

@@ -10,6 +10,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
+import lsfusion.server.physics.admin.authentication.property.ActiveFormProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -207,6 +208,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass propertyDrawSIDClass = StringClass.get(100);
 
     public LP currentForm;
+    public LP activeForm;
 
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Reflection.lsf");
@@ -237,6 +239,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public void initMainLogic() throws RecognitionException {
         currentForm = addProperty(null, new LP<>(new CurrentFormProperty(formCanonicalNameClass)));
         makePropertyPublic(currentForm, "currentForm");
+
+        activeForm = addProperty(null, new LP<>(new ActiveFormProperty()));
+        makePropertyPublic(activeForm, "activeForm");
 
         super.initMainLogic();
 

@@ -25,7 +25,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 
@@ -55,6 +54,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onFinallyStarted;
 
     public LA<?> shareAction;
+
+    public LP extendCode;
+    public LA<?> customize;
 
     public LA<?> initCurrentSize;
 
@@ -180,6 +182,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onFinallyStarted = findAction("onFinallyStartedApply[]");
 
         shareAction = findAction("shareAction[STRING]");
+
+        extendCode = findProperty("extendCode[STRING]");
+        customize = findAction("customize[STRING,TEXT]");
 
         initCurrentSize = findAction("initCurrentSize[]");
 

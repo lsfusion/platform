@@ -2,6 +2,7 @@ package lsfusion.server.base.version.impl.changes;
 
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.base.version.Version;
 
 public class NFAddFirstList<T> implements NFListChange<T> {
 
@@ -11,10 +12,10 @@ public class NFAddFirstList<T> implements NFListChange<T> {
         this.element = element;
     }
 
-    public void proceedCol(MCol<T> mCol) {
+    public void proceedCol(MCol<T> mCol, Version version) {
     }
 
-    public void proceedList(MList<T> list) {
+    public void proceedList(MList<T> list, Version version) {
         list.addFirst(element);
     }
 }

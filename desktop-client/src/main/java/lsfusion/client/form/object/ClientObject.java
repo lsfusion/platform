@@ -1,7 +1,6 @@
 package lsfusion.client.form.object;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -12,7 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientObject extends IdentityObject implements ClientIdentitySerializable {
+public class ClientObject extends ClientIdentityObject {
 
     public String caption;
 
@@ -20,9 +19,6 @@ public class ClientObject extends IdentityObject implements ClientIdentitySerial
     public ClientGroupObject groupObject;
 
     public ClientClass baseClass;
-
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-    }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         groupObject = pool.deserializeObject(inStream);

@@ -46,7 +46,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
     protected final FormEntity getForm() {
-        return form.getStaticForm(getBaseLM());
+        return form.getStaticForm(getBusinessLogics());
     }
 
     public <C extends PropertyInterface> FormAction(LocalizedString caption,
@@ -102,7 +102,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<O, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL().LM, context.getSession(), mapObjectValues);
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL(), context.getSession(), mapObjectValues);
         if(resolvedForm == null)
             return;
 
@@ -147,13 +147,13 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself
         // so we'll just add extra checks ChangeFlowType.HASINTERACTIVEFORM
         if(this instanceof FormStaticAction) {
-            for (PropertyDrawEntity<?> propertyDraw : getForm().getStaticPropertyDrawsList()) {
+            for (PropertyDrawEntity<?, ?> propertyDraw : getForm().getStaticPropertyDrawsList()) {
                 for (PropertyReaderEntity reader : this instanceof ExportAction ? SetFact.singleton(propertyDraw) : propertyDraw.getQueryProps())
                     mProps.add((Property) reader.getReaderProperty().property, false); // assert propertyDraw.isProperty
             }
             for (FilterEntity<?> filterEntity : getForm().getFixedFilters())
                 mProps.add(filterEntity.getProperty().property, false);
-            for (OrderEntity<?> orderEntity : getForm().getFixedOrdersList().keyIt())
+            for (OrderEntity<?, ?> orderEntity : getForm().getFixedOrdersList().keyIt())
                 if(orderEntity instanceof PropertyObjectEntity)
                     mProps.add(((PropertyObjectEntity<?>) orderEntity).property, false);
         }

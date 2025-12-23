@@ -1,23 +1,24 @@
 package lsfusion.server.logics.form.interactive.design.filter;
 
+import lsfusion.base.identity.IDGenerator;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.BaseComponentView;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.BaseIdentityComponentView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.IdentityEntity;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class FilterView extends BaseComponentView {
-    public PropertyDrawView property;
+public class FilterView<P extends PropertyInterface, AddParent extends IdentityEntity<AddParent, ?>> extends BaseIdentityComponentView<FilterView<P, AddParent>, PropertyDrawView<P, AddParent>> {
+    public PropertyDrawView<P, AddParent> property;
 
-    public FilterView() {
-    }
+    public FilterView(IDGenerator idGenerator, PropertyDrawView<P, AddParent> property) {
+        super(idGenerator);
 
-    public FilterView(int ID, PropertyDrawView property) {
-        super(ID);
         this.property = property;
+        this.property.filter = this;
     }
 
     @Override
@@ -26,9 +27,23 @@ public class FilterView extends BaseComponentView {
         pool.serializeObject(outStream, property);
     }
 
+    // copy-constructor
+    protected FilterView(FilterView<P, AddParent> src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        property = mapping.get(src.property);
+    }
+
     @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-        property = pool.deserializeObject(inStream);
+    public PropertyDrawView<P, AddParent> getAddParent(ObjectMapping mapping) {
+        return property;
+    }
+    @Override
+    public FilterView<P, AddParent> getAddChild(PropertyDrawView<P, AddParent> pdv, ObjectMapping mapping) {
+        return pdv.filter;
+    }
+    @Override
+    public FilterView<P, AddParent> copy(ObjectMapping mapping) {
+        return new FilterView<>(this, mapping);
     }
 }

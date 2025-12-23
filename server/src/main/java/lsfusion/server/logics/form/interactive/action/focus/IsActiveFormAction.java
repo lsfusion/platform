@@ -15,6 +15,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class IsActiveFormAction extends SystemExplicitAction {
 
     private LP<?> isActiveFormProperty;
@@ -33,8 +35,6 @@ public class IsActiveFormAction extends SystemExplicitAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance activeFormInstance = context.getFormInstance(true, false);
-        FormEntity activeForm = activeFormInstance == null ? null : activeFormInstance.entity;
-        Boolean isActive = activeForm != null && activeForm.equals(requestedForm);
-        isActiveFormProperty.change(isActive, context);
+        isActiveFormProperty.change(activeFormInstance != null && activeFormInstance.entity.isOrHasExEntity(requestedForm), context);
     }
 }

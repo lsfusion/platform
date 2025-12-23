@@ -18,7 +18,6 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -30,7 +29,6 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.sql.SQLException;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 

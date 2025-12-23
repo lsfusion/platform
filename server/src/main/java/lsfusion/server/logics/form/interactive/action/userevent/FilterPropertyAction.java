@@ -31,11 +31,13 @@ public class FilterPropertyAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-
-        GroupObjectEntity toDraw = property.getToDraw(formInstance.entity);
-        String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
-        String value = (String) context.getKeyObject(fromInterface);
-        context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()),
-                ObjectValue.getValue(value, StringClass.instance));
+        PropertyDrawEntity propertyEntity = (PropertyDrawEntity) formInstance.instanceFactory.getExInstance(property).entity;
+        if(propertyEntity != null) {
+            GroupObjectEntity toDraw = propertyEntity.getToDraw(formInstance.entity);
+            String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
+            String value = (String) context.getKeyObject(fromInterface);
+            context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(propertyEntity.getSID()),
+                    ObjectValue.getValue(value, StringClass.instance));
+        }
     }
 }

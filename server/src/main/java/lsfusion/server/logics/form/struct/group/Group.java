@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.struct.group;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -24,13 +25,16 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Group extends AbstractNode {
 
     private final String canonicalName;
 
     public final LocalizedString caption;
 
-    private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
+    private NFOrderSet<AbstractNode> children = NFFact.orderSet();
 
     private DebugInfo.DebugPoint debugPoint;
 
@@ -65,14 +69,6 @@ public class Group extends AbstractNode {
         return children.getListIt();
     }
 
-    public Iterable<AbstractNode> getNFChildrenIt(Version version) {
-        return children.getNFIt(version);
-    }
-
-    public Iterable<AbstractNode> getNFChildrenListIt(Version version) {
-        return children.getNFListIt(version);
-    }
-
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
@@ -91,11 +87,17 @@ public class Group extends AbstractNode {
             }
             prevParent.remove(prop, version);
         }
+
+//        if(!childrenAdded.add(prop))
+//            prop = prop;
+
         children.add(prop, version);
         prop.setParent(this, version);
         if(isSimple)
-            cleanParentActionOrPropertiesCaches();
+            cleanParentActionOrPropertiesCaches(version);
     }
+
+//    Set<AbstractNode> childrenAdded = new ConcurrentIdentityWeakHashSet<>();
 
     @IdentityStartLazy
     public ImMap<ActionOrProperty, Integer> getIndexedPropChildren() { // оптимизация
@@ -119,15 +121,6 @@ public class Group extends AbstractNode {
         return getActionOrProperties().contains(prop);
     }
 
-    public boolean hasNFChild(ActionOrProperty prop, Version version) {
-        for (AbstractNode child : getNFChildrenIt(version)) {
-            if (child.hasNFChild(prop, version)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void cleanAllActionOrPropertiesCaches() {
         actionOrProperties = null;
 
@@ -135,12 +128,12 @@ public class Group extends AbstractNode {
             if(child instanceof Group)
                 ((Group) child).cleanAllActionOrPropertiesCaches();
     }
-    public void cleanParentActionOrPropertiesCaches() {
+    public void cleanParentActionOrPropertiesCaches(Version version) {
         actionOrProperties = null;
 
-        Group parent = getParent();
+        Group parent = getNFParent(version, true);
         if(parent != null)
-            parent.cleanParentActionOrPropertiesCaches();
+            parent.cleanParentActionOrPropertiesCaches(version);
     }
 
     private ImOrderSet<ActionOrProperty> actionOrProperties;

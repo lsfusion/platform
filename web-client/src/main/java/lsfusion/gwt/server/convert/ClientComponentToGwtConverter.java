@@ -92,19 +92,16 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         component.overflowHorz = clientComponent.overflowHorz;
         component.overflowVert = clientComponent.overflowVert;
 
-        if (clientComponent.design.getBackground() != null) {
-            component.background = convertColor(clientComponent.design.getBackground());
+        if (clientComponent.background != null) {
+            component.background = convertColor(clientComponent.background);
         }
 
-        if (clientComponent.design.getForeground() != null) {
-            component.foreground = convertColor(clientComponent.design.getForeground());
+        if (clientComponent.foreground != null) {
+            component.foreground = convertColor(clientComponent.foreground);
         }
 
-        FontInfo clientFont = clientComponent.design.getFont();
-        component.font = convertFont(clientFont);
-
-        FontInfo captionFont = clientComponent.design.getCaptionFont();
-        component.captionFont = convertFont(captionFont);
+        component.font = convertFont(clientComponent.font);
+        component.captionFont = convertFont(clientComponent.captionFont);
 
         component.captionVertical = clientComponent.captionVertical;
         component.captionLast = clientComponent.captionLast;
@@ -279,7 +276,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
-        
+        propertyDraw.customNeedDefaultValue = clientPropertyDraw.customNeedDefaultValue;
+
         propertyDraw.wrap = clientPropertyDraw.wrap;
         propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
         propertyDraw.collapse = clientPropertyDraw.collapse;
@@ -355,6 +353,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
+        propertyDraw.defaultValue = convertOrCast(clientPropertyDraw.defaultValue);
 
         propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
 
@@ -403,6 +402,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.propertyCustomOptionsReader = convertExtraPropReader(clientPropertyDraw.propertyCustomOptionsReader);
         propertyDraw.changeKeyReader = convertExtraPropReader(clientPropertyDraw.changeKeyReader);
         propertyDraw.changeMouseReader = convertExtraPropReader(clientPropertyDraw.changeMouseReader);
+        propertyDraw.defaultValueReader = convertExtraPropReader(clientPropertyDraw.defaultValueReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -597,9 +597,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         
         groupObject.filtersContainer = convertOrCast(clientGroupObject.filtersContainer);
         groupObject.filtersControls = convertOrCast(clientGroupObject.filterControls);
-        for (ClientFilter filter : clientGroupObject.filters) {
-            groupObject.filters.add(convertOrCast(filter));
-        }
+        if(clientGroupObject.filters != null)
+            for (ClientFilter filter : clientGroupObject.filters) {
+                groupObject.filters.add(convertOrCast(filter));
+            }
         
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
@@ -662,9 +663,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         form.creationPath = clientForm.creationPath;
         form.path = clientForm.path;
-        for(FormScheduler formScheduler : clientForm.formSchedulers) {
-            form.formSchedulers.add(convertOrCast(formScheduler));
-        }
         for(Map.Entry<FormEvent, ClientAsyncEventExec> asyncExec : clientForm.asyncExecMap.entrySet()) {
             form.asyncExecMap.put(convertOrCast(asyncExec.getKey()), asyncConverter.convertOrCast(asyncExec.getValue()));
         }

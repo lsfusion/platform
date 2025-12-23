@@ -209,6 +209,43 @@ public class ScriptParser {
         return parsers.size() > 1;
     }
 
+    private boolean insideFormOrDesignStatement = false;
+    private int prevFormOrDesignStatementToken;
+    private List<String> formOrDesignStatementTokens;
+    public void enterFormOrDesignStatementState() {
+        insideFormOrDesignStatement = true;
+        formOrDesignStatementTokens = new ArrayList<>();
+        markFormOrDesignStatementCode();
+    }
+
+    public void grabFormOrDesignStatementCode() {
+        if(!insideFormOrDesignStatement)
+            return;
+
+        Parser curParser = getCurrentParser();
+        int newToken = curParser.input.index();
+        for(int i = prevFormOrDesignStatementToken; i < newToken; i++) {
+            formOrDesignStatementTokens.add(curParser.input.get(i).getText());
+        }
+        prevFormOrDesignStatementToken = newToken;
+    }
+
+    private void markFormOrDesignStatementCode() {
+        Token prevToken = getCurrentParser().input.LT(-1);
+        prevFormOrDesignStatementToken = prevToken != null ? prevToken.getTokenIndex() + 1 : 0;
+    }
+
+    public List<String> leaveFormOrDesignStatementState() {
+        grabFormOrDesignStatementCode();
+
+        List<String> result = formOrDesignStatementTokens;
+
+        formOrDesignStatementTokens = null;
+        insideFormOrDesignStatement = false;
+
+        return result;
+    }
+
     public LsfLogicsParser getCurrentParser() {
         if(parsers.size() > 0)
             return getCurrentParserInfo().getParser();

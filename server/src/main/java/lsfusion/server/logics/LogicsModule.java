@@ -22,6 +22,8 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
@@ -66,7 +68,6 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
@@ -74,7 +75,6 @@ import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -109,6 +109,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -773,7 +774,7 @@ public abstract class LogicsModule {
     }
 
     private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                               boolean hasWhere, Object[] params, boolean interactive) throws FormEntity.AlreadyDefined {
+                                               boolean hasWhere, Object[] params, boolean interactive) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
 
@@ -791,7 +792,7 @@ public abstract class LogicsModule {
     }
 
     protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> explicitInnerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                                                                  PropertyInterfaceImplement<I> where, boolean interactive) throws FormEntity.AlreadyDefined {
+                                                                                  PropertyInterfaceImplement<I> where, boolean interactive) {
         // creating integration form
         IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, explicitInnerClasses, mapInterfaces, properties, propUsages,
                 where, orders, false, interactive, version);
@@ -805,7 +806,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
+                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
 
         return addJSONFormProp(caption, integrationForm, selectTop, returnString);
@@ -827,7 +828,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
-                                        Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+                                        Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
@@ -842,7 +843,7 @@ public abstract class LogicsModule {
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
-                                        String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasRoot, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+                                        String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasRoot, boolean hasWhere, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
@@ -1176,7 +1177,7 @@ public abstract class LogicsModule {
             if (valueClass instanceof ConcreteCustomClass) {
                 // adding newedit action
                 contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass,
-                        targetProp, contextScope, policy -> form.getStaticForm(baseLM).showNewEdit(policy)), contextActions);
+                        targetProp, contextScope, policy -> form.getStaticForm(ThreadLocalContext.getBusinessLogics()).showNewEdit(policy)), contextActions);
             }
         }
 
@@ -1932,11 +1933,11 @@ public abstract class LogicsModule {
 
     // ---------------------- VALUE ---------------------- //
 
-    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public LP getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         return baseLM.getObjIntervalProp(form, objectFrom, objectTo, intervalProperty, fromIntervalProperty, toIntervalProperty);
     }
 
@@ -1988,6 +1989,11 @@ public abstract class LogicsModule {
         action.setImage(AppServerImage.DELETE);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getDeleteActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("DELETE", version); // for NEW, DELETE will set integration SID for js integration
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -2055,17 +2061,16 @@ public abstract class LogicsModule {
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getAddActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
 
-        if(objectEntity != null) {
-            action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                        if(entity.toDraw == null)
-                            entity.toDraw = objectEntity.groupTo;
-                    }
-                    public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                    }
-                });
-        }
-    }
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("NEW", version);  // for NEW, DELETE will set integration SID for js integration
+            if(objectEntity != null) {
+                if (entity.getNFToDraw(version) == null)
+                    entity.setToDraw(objectEntity.groupTo, form, version);
+            }
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
+}
 
     // ---------------------- Edit Form ---------------------- //
 
@@ -2095,6 +2100,9 @@ public abstract class LogicsModule {
         action.drawOptions.setShowChangeKey(false);
         action.drawOptions.setChangeMouse(new InputBindingEvent(new MouseInputEvent(MouseInputEvent.DBLCLK, bindingModes), null));
         action.drawOptions.setShowChangeMouse(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     public LA addProp(Action prop) {
@@ -2162,12 +2170,14 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        return baseLM.addGroupObjectProp(groupObject, prop);
+    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
+        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
+        return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
     }
 
-    public LP addValueObjectProp(ObjectEntity object) {
-        return baseLM.addValueObjectProp(object);
+    public LP addValueObjectProp(ObjectEntity object, Version version) {
+        Property<?> valueProperty = object.getNFValueProperty(version);
+        return new LP<>(valueProperty);
     }
 
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {

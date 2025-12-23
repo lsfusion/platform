@@ -70,7 +70,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public void execute(DestroyFormClientAction action) {
-        getFormController().destroyForm();
+        getFormController().destroyForm(action.keepRemoteForm);
     }
 
     public void execute(ProcessFormChangesClientAction action) {

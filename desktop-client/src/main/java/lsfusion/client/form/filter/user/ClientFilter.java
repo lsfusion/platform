@@ -26,12 +26,6 @@ public class ClientFilter extends ClientComponent {
     }
 
     @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-        pool.serializeObject(outStream, property);
-    }
-
-    @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
         property = pool.deserializeObject(inStream);

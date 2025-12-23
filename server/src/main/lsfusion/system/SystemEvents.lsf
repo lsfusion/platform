@@ -1017,7 +1017,7 @@ EXTEND FORM computers
     PROPERTIES(c) READONLY javaVersionNativeDesktop, javaVersionNativeMobile, javaVersionWebDesktop, javaVersionWebMobile
 ;
 
-// NOTIFY, PUSH, SHARE actions
+// NOTIFY, PUSH, SHARE, CUSTOMIZE actions
 
 FORM shareUrlForm
     OBJECTS share = TEXT PANEL
@@ -1044,6 +1044,105 @@ share(STRING url, STRING text, STRING title) {
 
 shareAction(STRING relativeUrl) {
     share(currentContextUrl(relativeUrl), 'The link to share the form', 'Share');
+}
+
+dataExtendCode = DATA TEXT (Form);
+dataExtendCode = DATA TEXT (Form, User);
+extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
+extendCode(STRING sid) = extendCode(form(sid));
+
+defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
+jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
+formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
+
+enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
+enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL BOOLEAN(); 
+enableExtendCodeCurrentUser '{action.form.customize.current.user}' = DATA LOCAL BOOLEAN();
+recreate = DATA LOCAL BOOLEAN();
+
+nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
+
+FORM customizeForm '{action.form.customize}' IMAGE 'settings'
+    PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
+    PROPERTIES sid = VALUE(sid),
+        code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+            INPUT s = TEXT DO {
+                LOCAL text = STRING();
+                text() <- fieldText(JSON((s)), 'text');
+                SEEK customizeForm.extendCodeAll = text();
+                dataExtendCode(form(sid)) <- nullEmpty(text());
+            }
+        },
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+            INPUT s = TEXT DO {
+                LOCAL text = STRING();
+                text() <- fieldText(JSON(STRING(s)), 'text');
+                SEEK customizeForm.extendCodeCurrentUser = text();
+                dataExtendCode(form(sid), currentUser()) <- nullEmpty(text());
+            }
+        }
+    ON INIT {
+        enableOriginalCode() <- TRUE;
+        enableExtendCodeAll() <- TRUE IF extendCodeAll;
+        enableExtendCodeCurrentUser() <- TRUE; 
+    }
+;
+
+DESIGN customizeForm {
+    width = -1;
+    NEW main BEFORE TOOLBARBOX {
+        fill = 1;
+        NEW showPanel {
+            alignment = CENTER;
+            custom = '';
+            class = 'btn-group';
+            MOVE PROPERTY(enableOriginalCode()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+            MOVE PROPERTY(enableExtendCodeAll()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+            MOVE PROPERTY(enableExtendCodeCurrentUser()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+        }
+        NEW codePanel {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE PROPERTY(code) {
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+            MOVE PROPERTY(extendCodeAll) {
+                defaultValue = defaultExtendCode(form(sid));
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+            MOVE PROPERTY(extendCodeCurrentUser) {
+                defaultValue = defaultExtendCode(form(sid));
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+        }
+    }
+    REMOVE PROPERTY(sid);
+}
+
+formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
+customize(STRING sid, STRING code) {
+    DIALOG customizeForm OBJECTS sid = sid, code = code,
+        extendCodeAll = dataExtendCode(form(sid)) NULL,
+        extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL NOMANAGESESSION DO {
+        formRecreate();
+    }
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

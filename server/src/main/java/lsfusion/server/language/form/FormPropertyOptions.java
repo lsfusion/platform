@@ -19,7 +19,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import javax.swing.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.*;
@@ -46,7 +45,6 @@ public class FormPropertyOptions {
     private String customEditorFunction;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
-    private Map<KeyStroke, String> keyBindings;
     private Map<String, ActionObjectEntity> eventActions;
     private List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions;
     private String eventId;
@@ -297,7 +295,7 @@ public class FormPropertyOptions {
             } else if (editEvent.isKeyPress()) {
                 String propertySID = action.property.getSID();
                 addEventAction(propertySID, action);
-                addKeyBinding(editEvent.keyPress, propertySID);
+//                addKeyBinding(editEvent.keyPress, propertySID);
             } else if(editEvent.before != null) {
                 if(formChangeEventActions == null) {
                     formChangeEventActions = new ArrayList<>();
@@ -336,21 +334,6 @@ public class FormPropertyOptions {
     public void setContextMenuBindings(OrderedMap<String, LocalizedString> contextMenuBindings) {
         this.contextMenuBindings = contextMenuBindings;
     }
-
-    public void addKeyBinding(KeyStroke key, String actionSID) {
-        if (keyBindings == null) {
-            keyBindings = new HashMap<>();
-        }
-        keyBindings.put(key, actionSID);
-    }
-    
-    public Map<KeyStroke, String> getKeyBindings() {
-        return keyBindings;
-    }
-    
-    public void setKeyBindings(Map<KeyStroke, String> keyBindings) {
-        this.keyBindings = keyBindings;
-    } 
 
     public Map<String, ActionObjectEntity> getEventActions() {
         return eventActions;
@@ -521,10 +504,8 @@ public class FormPropertyOptions {
         merged.setEventActions(nullMerge(overrides.getEventActions(), eventActions));
         merged.setFormChangeEventActions(nullMergeList(overrides.getFormChangeEventActions(), formChangeEventActions));
         merged.setContextMenuBindings(nullMerge(overrides.getContextMenuBindings(), contextMenuBindings));
-        merged.setKeyBindings(nullMerge(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
-        merged.setLocation(nvl(overrides.getLocation(), location), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
 
         merged.formula = nvl(overrides.formula, formula);
         merged.formulaOperands = nvl(overrides.formulaOperands, formulaOperands);

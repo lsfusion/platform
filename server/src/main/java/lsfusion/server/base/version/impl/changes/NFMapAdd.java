@@ -1,6 +1,7 @@
 package lsfusion.server.base.version.impl.changes;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.server.base.version.Version;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class NFMapAdd<K, V> implements NFOrderMapChange<K, V>, NFMapChange<K, V>
     }
 
     @Override
-    public void proceedOrderMap(List<K> keysList, List<V> valuesList) {
+    public void proceedOrderMap(List<K> keysList, List<V> valuesList, Version version) {
         if(!keysList.contains(key)) {
             keysList.add(key);
             valuesList.add(value);
@@ -22,7 +23,7 @@ public class NFMapAdd<K, V> implements NFOrderMapChange<K, V>, NFMapChange<K, V>
     }
 
     @Override
-    public void proceedMap(MMap<K, V> map) {
+    public void proceedMap(MMap<K, V> map, Version version) {
         map.add(key, value);
     }
 }

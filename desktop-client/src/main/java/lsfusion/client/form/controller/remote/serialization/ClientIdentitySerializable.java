@@ -1,9 +1,13 @@
 package lsfusion.client.form.controller.remote.serialization;
 
-import lsfusion.interop.form.remote.serialization.IdentitySerializable;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-//вообще должно быть так:
-//public interface ClientIdentitySerializable extends ClientCustomSerializable, IdentitySerializable<ClientSerializationPool> {
-//но при компиляции AspectJ выдаёт кучу ошибок cyclic dependency/hierarchy inconsistent
-public interface ClientIdentitySerializable extends IdentitySerializable<ClientSerializationPool> {
+public interface ClientIdentitySerializable extends ClientCustomSerializable {
+
+    void setID(int ID);
+
+    default void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 }

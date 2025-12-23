@@ -59,6 +59,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+    public boolean customNeedDefaultValue;
 
     public boolean wrap;
     public boolean wrapWordBreak;
@@ -301,6 +302,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
+    public String defaultValue;
 
     public boolean echoSymbols;
     public boolean noSort;
@@ -397,6 +399,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GExtraPropReader propertyCustomOptionsReader;
     public GExtraPropReader changeKeyReader;
     public GExtraPropReader changeMouseReader;
+    public GExtraPropReader defaultValueReader;
 
     // for pivoting
     public String formula;
@@ -1058,7 +1061,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && !hide && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
     }
 
     public boolean isInline() {

@@ -91,6 +91,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -855,39 +856,46 @@ public class ScriptingLogicsModule extends LogicsModule {
         group.setDebugPoint(debugPoint);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         
+        Version version = getVersion();
+        FormEntity formEntity = new FormEntity(true, elementCanonicalName(formName), version, point);
+
+        FormView formView = formEntity.view;
+        ContainerView mainContainer = formView.mainContainer;
         if(caption == null)
             caption = LocalizedString.create(BaseUtils.humanize(formName));
+        mainContainer.setCaption(caption, version);
+        if (icon != null)
+            mainContainer.setImage(icon, formView, version);
 
-        String canonicalName = elementCanonicalName(formName);
-
-        FormEntity formEntity = new FormEntity(canonicalName, point, caption, icon, getVersion());
         addFormEntity(formEntity);
-                
-        ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setLocalAsync(localAsync);
-
-        return form;
+        return new ScriptingFormEntity(this, formEntity);
     }
 
     public ScriptingFormView getFormDesign(String formName, LocalizedString caption, boolean custom) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = findForm(formName);
+
+        ScriptingFormView scriptingView = getFormDesign(form);
+
+        if (caption != null) { // later should be removed
+            scriptingView.getView().mainContainer.setCaption(caption, getVersion());
+        }
+
+        return scriptingView;
+    }
+
+    public ScriptingFormView getFormDesign(FormEntity form) {
         Version version = getVersion();
 
-        FormEntity form = findForm(formName);
         FormView view;
-        if (custom) {
-            view = new FormView(form, version);
-            form.setRichDesign(view, version);
-        } else {
-            view = form.getNFRichDesign(version);
-        }
-
-        if (view != null && caption != null) {
-            view.setCaption(caption);
-        }
+//        if (custom) {
+//            view = new FormView(form, version);
+//            form.setRichDesign(view, version);
+//        } else {
+        view = form.view;
+//        }
 
         return new ScriptingFormView(view, this);
     }
@@ -1283,7 +1291,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action));
                 action.setAsEventActionFor(actionSID, mainProperty);
             } else if (editEvent.isKeyPress()) {
-                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
+//                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
                 action.setAsEventActionFor(actionSID, mainProperty);
             } else {
                 if(editEvent.before != null) {
@@ -1528,7 +1536,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.action.getSID();
-        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
+//        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
         property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 
@@ -2547,7 +2555,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private GroupObjectEntity getSeekGroupObject(FormEntity form, String formObjectName) {
-        return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion());
+        return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion(), true);
     }
 
     private RegularFilterGroupEntity getSeekFilterGroup(FormEntity form, String formFilterGroupName) {
@@ -2688,7 +2696,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.filterGroups);
             }
-            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup.getID(), (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup, (DataClass) getTypeByParamProperty(from, context)), Collections.singletonList(from));
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2699,7 +2707,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
         if (filterGroup != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup, targetProp), Collections.emptyList());
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -4451,13 +4459,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         // we need explicit inner classes, because json property is lazy, and for it integration form classes are important (will be null otherwise)
         ImList<ValueClass> explicitInnerClasses = getValueClassesFromTypedParams(oldContext.size(), resultInterfaces, newContext);
 
-        LP result = null;
-        try {
-            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders,
+        LP result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders,
                     whereProperty != null, selectTop.mapValues(this, newContext), returnString, resultParams.toArray());
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
@@ -4475,7 +4478,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public GroupObjectEntity findGroupObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity result = form.getNFGroupObject(objectName, getVersion());
+        GroupObjectEntity result = form.getNFGroupObject(objectName, getVersion(), true); // external usages
         if (result == null) {
             errLog.emitGroupObjectNotFoundError(parser, objectName);
         }
@@ -4555,10 +4558,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Pair<>(new LPWithParams(paramIndex), isCompoundID ? new LPCompoundID(name, semanticError) : null);
     }
 
-    public void throwAlreadyDefinePropertyDraw(FormEntity.AlreadyDefined alreadyDefined) throws ScriptingErrorLog.SemanticErrorException {
-        getErrLog().emitAlreadyDefinedPropertyDrawError(getParser(), alreadyDefined.formCanonicalName, alreadyDefined.newSID, alreadyDefined.formPath);
-    }
-
     public LP addScriptedGroupObjectProp(String name, GroupObjectProp prop, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
@@ -4569,12 +4568,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         FormEntity form = findForm(formName);
 
-        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
+        Version version = getVersion();
+        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, version, true);
         if (groupObject != null) {
             for (ObjectEntity obj : groupObject.getOrderObjects()) {
                 outClasses.add(obj.getResolveClassSet());
             }
-            resultProp = addGroupObjectProp(groupObject, prop);
+            resultProp = addGroupObjectProp(groupObject, prop, version);
         } else {
             errLog.emitNotFoundError(parser, "group оbject", objectName);
         }
@@ -4591,7 +4591,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ObjectEntity object = findForm(formName).getNFObject(objectName, getVersion());
         if (object != null) {
-            resultProp = new LPWithParams(addValueObjectProp(object));
+            resultProp = new LPWithParams(addValueObjectProp(object, getVersion()));
         } else  {
             errLog.emitNotFoundError(parser, "оbject", objectName);
         }
@@ -4727,13 +4727,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ImList<ValueClass> explicitInnerClasses = getValueClassesFromTypedParams(oldContext.size(), resultInterfaces, newContext);
 
-        LA result = null;
-        try {
-            result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders, targetProp,
+        LA result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), explicitInnerClasses, exPropUsages, orders, targetProp,
                     whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop.mapValues(this, oldContext), charset, attr, resultParams.toArray());
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
 
         mapping.addAll(selectTop.getParams());
         if(sheetNameProperty != null)
@@ -4982,13 +4977,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(sheet != null)
             params.add(sheet);
 
-        LA importAction = null;
-        try {
-            importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
+        LA importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
                     noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
-        } catch (FormEntity.AlreadyDefined alreadyDefined) {
-            throwAlreadyDefinePropertyDraw(alreadyDefined);
-        }
         return proceedImportDoClause(noParams, doAction, elseAction, context, newContext, whereLCP, props, nulls != null ? ListFact.fromJavaList(nulls) : null, addScriptedJoinAProp(importAction, params));
     }
 
@@ -5134,7 +5124,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property) {
-        Property<?> activeProp = tab != null ? tab.getActiveTab() : property.getActiveProperty();
+        Version version = getVersion();
+        Property<?> activeProp = tab != null ? tab.getNFActiveTab(version) : property.getNFActiveProperty(version);
         return new LPWithParams(new LP<>(activeProp));
     }
 
@@ -5473,7 +5464,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.image;
+            defaultImage = form.view.mainContainer.getNFImage(getVersion());
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;

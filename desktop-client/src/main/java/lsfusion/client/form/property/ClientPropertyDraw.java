@@ -3,6 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
@@ -48,7 +49,7 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable, ClientPropertyDrawOrPivotColumn {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
@@ -76,6 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader propertyCustomOptionsReader = new ExtraPropReader(PROPERTY_CUSTOM_OPTIONS);
     public ExtraPropReader changeKeyReader = new ExtraPropReader(CHANGEKEY);
     public ExtraPropReader changeMouseReader = new ExtraPropReader(CHANGEMOUSE);
+    public ExtraPropReader defaultValueReader = new ExtraPropReader(DEFAULTVALUE);
 
     public boolean boxed;
 
@@ -141,6 +143,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
+    public String defaultValue;
 
     public boolean panelColumnVertical;
     public boolean panelCustom;
@@ -219,6 +222,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+    public boolean customNeedDefaultValue;
 
     public String creationScript;
     public String creationPath;
@@ -248,11 +252,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean getShowChangeKey() {
         return showChangeKey;
-    }
-
-    public void setShowChangeKey(boolean showKey) {
-        showChangeKey = showKey;
-        updateDependency(this, "showChangeKey");
     }
 
     public boolean isEditableNotNull() {
@@ -306,7 +305,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueWidth > -1) {
             return valueWidth;
         }
-        FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
+        FontMetrics fontMetrics = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp));
 
         String widthString = null;
         if(charWidth != -1)
@@ -328,9 +327,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int insetsHeight = insets.top + insets.bottom;
         int lines = charHeight == -1 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
-        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (design.font != null ? design.font.fontSize : -1);
+        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (font != null ? font.fontSize : -1);
         if (fontSize > 0 || lines > 1) {
-            int lineHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
+            int lineHeight = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp)).getHeight();
             height = lineHeight * lines + insetsHeight;
         } else {
             height = SwingDefaults.getValueHeight();
@@ -578,6 +577,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
+        defaultValue = pool.readString(inStream);
 
         panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
@@ -709,6 +709,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customCanBeRenderedInTD = pool.readBoolean(inStream);
         customNeedPlaceholder = pool.readBoolean(inStream);
         customNeedReadonly = pool.readBoolean(inStream);
+        customNeedDefaultValue = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 

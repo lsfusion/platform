@@ -6,91 +6,82 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.identity.IdentityObject;
+import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.group.Group;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
-public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
+import static lsfusion.base.BaseUtils.nvl;
 
-    public static int PAGE_SIZE_DEFAULT_VALUE = 50;
+public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectEntity> implements Instantiable<GroupObjectInstance> {
 
     public TreeGroupEntity treeGroup;
+
+    public PropertyDrawEntity count;
 
     public boolean isInTree() {
         return treeGroup != null;
     }
 
-    public boolean isSubReport;
-    public PropertyObjectEntity<?> reportPathProp;
+    private NFProperty<Boolean> isSubReport = NFFact.property();
+    private NFProperty<PropertyObjectEntity> reportPathProp = NFFact.property();
 
-    private DebugInfo.DebugPoint debugPoint;
-    
-    public UpdateType updateType;
-    
-    public Group propertyGroup; // used for integration (export / import)
 
-    private Pair<Integer, Integer> scriptIndex;
+    private final NFProperty<UpdateType> updateType = NFFact.property();
 
-    public boolean enableManualUpdate;
+    private NFProperty<Group> propertyGroup = NFFact.property(); // used for integration (export / import)
 
-    private String integrationSID;
-    private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
+    private NFProperty<Boolean> enableManualUpdate = NFFact.property();
 
-    public boolean isIndex() {
-        return !integrationKey;
-    }
-
-    public void setIntegrationKey(boolean integrationKey) {
-        this.integrationKey = integrationKey;
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
-        this.scriptIndex = Pair.create(debugPoint.getScriptLine(), debugPoint.offset);
-    }
-
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
-    }
+    private NFProperty<String> integrationSID = NFFact.property();
+    private NFProperty<Boolean> integrationKey = NFFact.property(); // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
 
     private static class UpStaticParamsProcessor extends GroupObjectInstance.FilterProcessor {
         public UpStaticParamsProcessor(GroupObjectInstance groupObject) {
@@ -115,226 +106,304 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-            if(!groupObject.getOrderObjects().getSet().containsAll(filt.getObjects())) // если есть "внешние" объекты исключаем
+            if(!groupObject.objects.containsAll(filt.getObjects())) // если есть "внешние" объекты исключаем
                 return null;
             return super.process(filt, mapKeys, modifier, reallyChanged);
         }
     }
 
-    // конечно не очень красивое решение с groupObject, но в противном случае пришлось бы дублировать логику определения GroupObject'ов для фильтров +
+    private UpdateType lazyUpdateType;
     @ManualLazy
     public UpdateType getUpdateType(GroupObjectInstance groupObject) throws SQLException, SQLHandledException {
-        if(updateType == null) { // default
-            if(!Settings.get().isDisableUpdateTypeHeur()) {
-                // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
-                // в частности в таком случае нет смысла seek делать
-                Modifier modifier = Property.defaultModifier;
+        if(lazyUpdateType == null) {
+            UpdateType updateTypeValue = updateType.get();
+            if (updateTypeValue == null) { // default
+                if (!Settings.get().isDisableUpdateTypeHeur()) {
+                    // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
+                    // в частности в таком случае нет смысла seek делать
+                    Modifier modifier = Property.defaultModifier;
 
-                ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
-                Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
-                Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                    ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
+                    Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                    Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
 
-                boolean narrow = false;
-                if (dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
-                    narrow = true;
-                else {
-                    Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
-
-                    // сравниваем статистику фильтра со статистикой класса
-                    StatType type = StatType.UPDATE;
-                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
-                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
-
-                    if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                    boolean narrow = false;
+                    if (dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
                         narrow = true;
+                    else {
+                        Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
+
+                        // сравниваем статистику фильтра со статистикой класса
+                        StatType type = StatType.UPDATE;
+                        Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
+                        Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
+
+                        if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                            narrow = true;
+                    }
+                    if (narrow)
+                        updateTypeValue = UpdateType.FIRST;
                 }
-                if (narrow)
-                    updateType = UpdateType.FIRST;
+
+                if (updateTypeValue == null)
+                    updateTypeValue = UpdateType.PREV;
             }
-
-            if(updateType == null)
-                updateType = UpdateType.PREV;
+            lazyUpdateType = updateTypeValue;
         }
-        return updateType;
-
+        return lazyUpdateType;
     }
 
-    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup) {
-        this(ID, (String)null);
-        this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
+    private final FormEntity.ExProperty listViewTypeProp;
+    public Property<?> getNFListViewType(Version version) {
+        return listViewTypeProp.getNF(version);
+    }
+    public Property<?> getListViewType() {
+        return listViewTypeProp.get();
     }
 
-    private Property<?> listViewTypeProp;
-    public Property<?> getListViewType(ConcreteCustomClass listViewType) {
-        if (listViewTypeProp == null) {
-            listViewTypeProp = PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType);
-        }
-        return listViewTypeProp;
-    }
+    private final NFProperty<ClassViewType> viewType = NFFact.property();
+    private final NFProperty<ListViewType> listViewType = NFFact.property();
 
-    public GroupObjectEntity(int ID, String sID) {
-        super(ID, sID != null ? sID : "groupObj" + ID);
-    }
+    private final NFProperty<String> pivotType = NFFact.property();
+    private final NFProperty<PropertyGroupType> pivotAggregation = NFFact.property();
+    private final NFProperty<Boolean> pivotShowSettings = NFFact.property();
+    private final NFProperty<String> pivotConfigFunction = NFFact.property();
 
-    public ClassViewType viewType = ClassViewType.DEFAULT;
-    public ListViewType listViewType = ListViewType.DEFAULT;
-    public PivotOptions pivotOptions;
-    public String customRenderFunction;
-    public PropertyObjectEntity<?> propertyCustomOptions;
-    public String mapTileProvider;
+    private final NFProperty<String> customRenderFunction = NFFact.property();
+    private final NFProperty<PropertyObjectEntity> propertyCustomOptions = NFFact.property();
+    private final NFProperty<String> mapTileProvider = NFFact.property();
 
     // for now will use async init since pivot is analytics and don't need for example focuses and can afford extra round trip
-    public boolean asyncInit = true; // so far supported only for pivot
+    private final NFProperty<Boolean> asyncInit = NFFact.property(); // default true
 
-    public Integer pageSize;
+    private final NFProperty<Integer> pageSize = NFFact.property();
 
-    public PropertyObjectEntity<?> propertyBackground;
-    public PropertyObjectEntity<?> propertyForeground;
+    private final NFProperty<PropertyObjectEntity> propertyBackground = NFFact.property();
+    private final NFProperty<PropertyObjectEntity> propertyForeground = NFFact.property();
 
-    public boolean isFilterExplicitlyUsed; // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
-    public boolean isOrderExplicitlyUsed; // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
 
-    private boolean finalizedProps = false;
-    private Object props = MapFact.mExclMap();
-    @NFLazy
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
-        if(finalizedProps)
-            return getProperties().get(type);
-
-        assert finalizedObjects;
-        MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
-        if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = PropertyFact.createDataPropRev(type.toString(), objects, getObjects().mapValues(new Function<ObjectEntity, ValueClass>() {
-                public ValueClass apply(ObjectEntity value) {
-                    return value.baseClass;
-                }}), type.getValueClass(), null);
-            mProps.exclAdd(type, prop);
-        }
-        return prop;
+    public boolean isFilterExplicitlyUsed() {
+        return isFilterExplicitlyUsed.get() != null;
+    }
+    public boolean isOrderExplicitlyUsed() {
+        return isOrderExplicitlyUsed.get() != null;
     }
 
-    @NFLazy
-    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
-        if(!finalizedProps) {
-            props = ((MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();
-            finalizedProps = true;
+    public static class ExGroupProperty extends FormEntity.ExMapProp<PropertyObjectEntity<ClassPropertyInterface>, ExGroupProperty> {
+
+        public ExGroupProperty(Supplier<PropertyObjectEntity<ClassPropertyInterface>> supplier) {
+            super(supplier);
         }
-        return (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
+
+        public ExGroupProperty(ExGroupProperty exProp, ObjectMapping mapping) {
+            super(exProp, mapping);
+        }
+
+        @Override
+        public ExGroupProperty get(ObjectMapping mapping) {
+            return new ExGroupProperty(this, mapping);
+        }
+    }
+    private final ImMap<GroupObjectProp, ExGroupProperty> props;
+    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectProp type, Version version) {
+        if(type.equals(GroupObjectProp.FILTER))
+            isFilterExplicitlyUsed.set(true, version);
+        if(type.equals(GroupObjectProp.ORDER))
+            isOrderExplicitlyUsed.set(true, version);
+        return props.get(type).getNF(version);
+    }
+
+    public LocalizedString getContainerCaption() {
+        if (!objects.isEmpty())
+            return objects.get(0).getCaption();
+        else
+            return null;
+    }
+
+    public void fillGroupChanges(Version version) {
+        props.get(GroupObjectProp.FILTER).getNF(version);
+        props.get(GroupObjectProp.ORDER).getNF(version);
+    }
+    public PropertyObjectEntity<ClassPropertyInterface> getGroupChange(GroupObjectProp type) {
+        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER);
+        return props.get(type).get();
+    }
+    public ImMap<GroupObjectProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
+        return props.mapValues(p -> p.get()).removeNulls();
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
 
-    public ImMap<ObjectEntity, PropertyObjectEntity<?>> isParent = null;
+    private final NFProperty<ImMap<ObjectEntity, PropertyObjectEntity>> isParent = NFFact.property();
 
-    public void setIsParents(final PropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
+    public UpdateType getUpdateType() {
+        return updateType.get();
     }
 
-    public void setViewType(ClassViewType viewType) {
-        this.viewType = viewType;
+    public void setUpdateType(UpdateType value, Version version) {
+        updateType.set(value, version);
     }
 
-    public void setListViewType(ListViewType listViewType) {
-        this.listViewType = listViewType;
+    public ClassViewType getViewType() {
+        ClassViewType value = viewType.get();
+        return value != null ? value : ClassViewType.DEFAULT;
     }
 
-    public void setPivotOptions(PivotOptions pivotOptions) {
-        if(this.pivotOptions != null) {
-            this.pivotOptions.merge(pivotOptions);
-        } else {
-            this.pivotOptions = pivotOptions;
-        }
+    public ClassViewType getNFViewType(Version version) {
+        ClassViewType value = viewType.getNF(version);
+        return value != null ? value : ClassViewType.DEFAULT;
     }
 
-    public void setCustomRenderFunction(String customRenderFunction) {
-        this.customRenderFunction = customRenderFunction;
+    public void setViewType(ClassViewType viewType, FormEntity form, Version version) {
+        this.viewType.set(viewType, version);
+
+        form.updatePropertyDraws(version);
     }
 
-    public void setCustomOptions(PropertyObjectEntity<?> propertyCustomOptions) {
-        this.propertyCustomOptions = propertyCustomOptions;
+    public ListViewType getListViewTypeValue() {
+        ListViewType value = listViewType.get();
+        return value != null ? value : ListViewType.DEFAULT;
     }
 
-    public void setMapTileProvider(String mapTileProvider) {
-        this.mapTileProvider = mapTileProvider;
+    public void setListViewType(ListViewType listViewType, Version version) {
+        this.listViewType.set(listViewType, version);
     }
 
-    public void setViewTypePanel() {
-        setViewType(ClassViewType.PANEL);
+    public PivotOptions getPivotOptions() {
+        return new PivotOptions(pivotType.get(), pivotAggregation.get(), pivotShowSettings.get(), pivotConfigFunction.get());
+    }
+
+    public void setPivotOptions(PivotOptions pivotOptions, Version version) {
+        pivotType.set(pivotOptions.getType(), version);
+        pivotAggregation.set(pivotOptions.getAggregation(), version);
+        pivotShowSettings.set(pivotOptions.getShowSettings(), version);
+        pivotConfigFunction.set(pivotOptions.getConfigFunction(), version);
+    }
+
+    public String getCustomRenderFunction() {
+        return customRenderFunction.get();
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction, Version version) {
+        this.customRenderFunction.set(customRenderFunction, version);
+    }
+
+    public void setPropertyCustomOptions(PropertyObjectEntity<?> propertyCustomOptions, Version version) {
+        this.propertyCustomOptions.set(propertyCustomOptions, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyCustomOptions() {
+        return propertyCustomOptions.get();
+    }
+
+    public String getMapTileProvider() {
+        return mapTileProvider.get();
+    }
+
+    public void setMapTileProvider(String mapTileProvider, Version version) {
+        this.mapTileProvider.set(mapTileProvider, version);
+    }
+
+    public boolean isAsyncInit() {
+        Boolean value = asyncInit.get();
+        return value == null || value;
+    }
+
+    public void setAsyncInit(boolean asyncInit, Version version) {
+        this.asyncInit.set(asyncInit, version);
+    }
+
+    public Integer getPageSize() {
+        return pageSize.get();
+    }
+
+    public void setPageSize(Integer pageSize, Version version) {
+        this.pageSize.set(pageSize, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyBackground() {
+        return propertyBackground.get();
+    }
+
+    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground, Version version) {
+        this.propertyBackground.set(propertyBackground, version);
+    }
+
+    public PropertyObjectEntity<?> getPropertyForeground() {
+        return propertyForeground.get();
+    }
+
+    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground, Version version) {
+        this.propertyForeground.set(propertyForeground, version);
+    }
+
+    public ImMap<ObjectEntity, PropertyObjectEntity> getIsParent() {
+        return isParent.get();
+    }
+
+    public void setIsParents(Version version, final PropertyObjectEntity... properties) {
+        isParent.set(getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity>) i -> properties[i]), version);
+    }
+
+    public void setViewTypePanel(FormEntity form, Version version) {
+        setViewType(ClassViewType.PANEL, form, version);
     }
     
-    public void setViewTypeList() {
-        setViewType(ClassViewType.LIST);
+    public void setViewTypeList(FormEntity form, Version version) {
+        setViewType(ClassViewType.LIST, form, version);
     }
 
     public boolean isPanel() {
-        return viewType.isPanel();
+        return getViewType().isPanel();
     }
 
     public boolean isCustom() {
-        return !isPanel() && listViewType == ListViewType.CUSTOM;
+        return !isPanel() && getListViewTypeValue() == ListViewType.CUSTOM;
     }
 
     public boolean isSimpleState() {
+        ListViewType listViewType = getListViewTypeValue();
         return !isPanel() && (listViewType == ListViewType.CUSTOM || listViewType == ListViewType.MAP || listViewType == ListViewType.CALENDAR);
     }
 
-    public Pair<Integer, Integer> getScriptIndex() {
-        return scriptIndex;
+    public ObjectEntity getObject(String sid) {
+        for (ObjectEntity object : getObjects()) {
+            if (object.getSID().equals(sid)) {
+                return object;
+            }
+        }
+        return null;
     }
 
-    public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
-        this.propertyBackground = propertyBackground;
-    }
-
-    public void setPropertyForeground(PropertyObjectEntity<?> propertyForeground) {
-        this.propertyForeground = propertyForeground;
-    }
-
-    public void setIntegrationSID(String integrationSID) {
-        this.integrationSID = integrationSID;
-    }
-
-    public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : getSID();
-    }   
-
-    private boolean finalizedObjects;
-    private Object objects = SetFact.mOrderExclSet();
-
+    private final ImOrderSet<ObjectEntity> objects;
     public ImSet<ObjectEntity> getObjects() {
-        return getOrderObjects().getSet();
+        return objects.getSet();
     }
     @LongMutable
     public ImOrderSet<ObjectEntity> getOrderObjects() {
-        if(!finalizedObjects) {
-            finalizedObjects = true;
-            objects = ((MOrderExclSet<ObjectEntity>)objects).immutableOrder();
-        }
-
-        return (ImOrderSet<ObjectEntity>)objects;
+        return objects;
     }
 
-    public void add(ObjectEntity objectEntity) {
-        assert !finalizedObjects;
-        objectEntity.groupTo = this;
-        ((MOrderExclSet<ObjectEntity>)objects).exclAdd(objectEntity);
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "groupObj";
     }
-    
-    public void setObjects(ImOrderSet<ObjectEntity> objects) {
-        assert !finalizedObjects;
-        finalizedObjects = true;
+
+    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, debugPoint);
+
+        ConcreteCustomClass listViewType = LM.listViewType;
+        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
+        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
+                () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
+
         this.objects = objects;
         for(ObjectEntity object : objects)
             object.groupTo = this;
-    }
-
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects) {
-        this(ID, (String)null);
-
-        setObjects(objects);
     }
 
 
@@ -411,10 +480,149 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
+        super(() -> -1, null, null);
+        listViewTypeProp = null;
+        props = null;
+        objects = null;
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
     public boolean isSimpleList() {
-        return getObjects().size() == 1 && viewType.isList() && !isInTree();
+        return getObjects().size() == 1 && getViewType().isList() && !isInTree();
+    }
+
+    public GroupObjectView view;
+
+    public boolean isSubReport() {
+        return nvl(isSubReport.get(), false);
+    }
+    public void setIsSubReport(Boolean value, Version version) {
+        isSubReport.set(value, version);
+    }
+
+    public PropertyObjectEntity getReportPathProp() {
+        return reportPathProp.get();
+    }
+    public void setReportPathProp(PropertyObjectEntity<?> value, Version version) {
+        reportPathProp.set(value, version);
+    }
+
+    public Pair<Integer, Integer> getScriptIndex() {
+        return debugPoint != null ? Pair.create(debugPoint.getScriptLine(), debugPoint.offset) : null;
+    }
+
+    public Group getPropertyGroup() {
+        return propertyGroup.get();
+    }
+    public void setPropertyGroup(Group value, Version version) {
+        propertyGroup.set(value, version);
+    }
+
+    public boolean isEnableManualUpdate() {
+        return nvl(enableManualUpdate.get(), false);
+    }
+    public void setEnableManualUpdate(Boolean value, Version version) {
+        enableManualUpdate.set(value, version);
+    }
+
+    public String getIntegrationSIDValue() {
+        String integrationSID = getIntegrationSID();
+        if (integrationSID != null)
+            return integrationSID;
+
+        if(sID != null)
+            return sID;
+
+        integrationSID = "";
+        for (ObjectEntity obj : getOrderObjects()) {
+            integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+        }
+
+        return integrationSID;
+    }
+    public String getIntegrationSID() {
+        return integrationSID.get();
+    }
+    public void setIntegrationSID(String value, Version version) {
+        integrationSID.set(value, version);
+    }
+
+    public boolean isIndex() {
+        boolean integrationKey = nvl(getIntegrationKey(), false);
+        return !integrationKey;
+    }
+    public Boolean getIntegrationKey() {
+        return integrationKey.get();
+    }
+    public void setIntegrationKey(Boolean value, Version version) {
+        integrationKey.set(value, version);
+    }
+
+    // copy-constructor
+    protected GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        objects = mapping.get(src.objects);
+
+        treeGroup = mapping.get(src.treeGroup); // nullable
+        view = mapping.get(src.view);
+        count = mapping.get(src.count); // nullable
+
+        props = mapping.gets(src.props);
+        listViewTypeProp = mapping.get(src.listViewTypeProp);
+    }
+
+    @Override
+    public void extend(GroupObjectEntity src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        mapping.sets(isSubReport, src.isSubReport);
+        mapping.sets(propertyGroup, src.propertyGroup);
+        mapping.sets(enableManualUpdate, src.enableManualUpdate);
+        mapping.sets(integrationSID, src.integrationSID);
+        mapping.sets(integrationKey, src.integrationKey);
+        mapping.sets(isFilterExplicitlyUsed, src.isFilterExplicitlyUsed);
+        mapping.sets(isOrderExplicitlyUsed, src.isOrderExplicitlyUsed);
+
+        mapping.sets(updateType, src.updateType);
+        mapping.sets(viewType, src.viewType);
+        mapping.sets(listViewType, src.listViewType);
+
+        mapping.sets(pivotType, src.pivotType);
+        mapping.sets(pivotAggregation, src.pivotAggregation);
+        mapping.sets(pivotShowSettings, src.pivotShowSettings);
+        mapping.sets(pivotConfigFunction, src.pivotConfigFunction);
+
+        mapping.sets(customRenderFunction, src.customRenderFunction);
+        mapping.sets(mapTileProvider, src.mapTileProvider);
+        mapping.sets(asyncInit, src.asyncInit);
+        mapping.sets(pageSize, src.pageSize);
+
+        mapping.set(propertyCustomOptions, src.propertyCustomOptions);
+        mapping.set(propertyBackground, src.propertyBackground);
+        mapping.set(propertyForeground, src.propertyForeground);
+        mapping.setm(isParent, src.isParent);
+
+        mapping.set(reportPathProp, src.reportPathProp);
+    }
+
+    @Override
+    public ObjectEntity getAddParent(ObjectMapping mapping) {
+        return getOrderObjects().get(0);
+    }
+
+    @Override
+    public GroupObjectEntity getAddChild(ObjectEntity parent, ObjectMapping mapping) {
+        return parent.groupTo;
+    }
+//    @Override
+//    public GroupObjectEntity getAdd(ObjectMapping mapping) {
+//        if(mapping.extend) // in theory it makes sense to check neighbours and tree that they perfectly match
+//            return mapping.addForm.getNFGroupObject(getSID(), mapping.getFindVersion());
+//        return null;
+//    }
+    @Override
+    public GroupObjectEntity copy(ObjectMapping mapping) {
+        return new GroupObjectEntity(this, mapping);
     }
 }

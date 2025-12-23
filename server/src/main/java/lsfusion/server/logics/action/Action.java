@@ -16,7 +16,6 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadUtils;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -37,7 +36,6 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
@@ -45,10 +43,8 @@ import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.action.ActionClassImplement;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -75,7 +71,6 @@ import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -99,16 +94,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public Action(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
 
-        drawOptions.addProcessor(new DefaultProcessor() {
-            @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                if(entity.viewType == null)
-                    entity.viewType = ClassViewType.PANEL;
-            }
-
-            @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            }
+        drawOptions.addProcessor((entity, form, version) -> {
+            if(entity.getNFViewType(version) == null)
+                entity.setViewType(ClassViewType.PANEL, form, version);
         });
     }
 
@@ -769,8 +757,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
-        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
-                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping),
+        return getGroupChange(entity.getGroupChange(GroupObjectProp.FILTER).getImplement(reversedMapping),
+                              entity.getGroupChange(GroupObjectProp.ORDER).getImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
     private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {

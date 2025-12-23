@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
@@ -18,7 +16,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLFunction;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.property.AggrReaderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -46,10 +43,10 @@ public class GroupMode {
         MOrderSet<GroupColumn> mAggrGroupProps = SetFact.mOrderSet(aggrProps.toOrderSet());
         for(int i=0;i<mAggrGroupProps.size();i++) {
             GroupColumn groupColumn = mAggrGroupProps.get(i);
-            PropertyDrawEntity<?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
+            PropertyDrawEntity<?, ?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
 
-            if(entity.formula != null)
-                for(PropertyDrawEntity formulaOperand : entity.formulaOperands) {
+            if(entity.getFormula() != null)
+                for(PropertyDrawEntity formulaOperand : entity.getFormulaOperands()) {
                     GroupColumn formulaColumn = new GroupColumn(instanceFactory.getInstance(formulaOperand), groupColumn.columnKeys);
                     if(!groupProps.contains(formulaColumn))
                         mAggrGroupProps.add(formulaColumn);
@@ -59,8 +56,9 @@ public class GroupMode {
 
         return new GroupMode(groupProps, group(aggrGroupProps.getSet(), groupColumn -> {
             PropertyDrawEntity entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
-            if(entity.aggrFunc != null)
-                return entity.aggrFunc;
+            PropertyGroupType aggrFunc = entity.getAggrFunc();
+            if(aggrFunc != null)
+                return aggrFunc;
             return aggrType;
         }));
     }
@@ -102,7 +100,7 @@ public class GroupMode {
 
                     // first find last values
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getGroupProperty()));
-                    ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.lastAggrDesc);
+                    ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.isLastAggrDesc());
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastValues = property.aggrLastReaders.getSet().mapValues((PropertyDrawInstance<K>.LastReaderInstance aggrLastReader) ->
                             GroupExpr.create(groupModeExprs, ListFact.toList(ValueExpr.get(groupModeWhere), lastAggrExprs.get(aggrLastReader)), orders, false, GroupType.LAST, groupModeExprs, false));
 

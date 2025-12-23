@@ -28,8 +28,7 @@ public class GForm implements Serializable {
     public String creationPath;
     public String path;
 
-    public ArrayList<GFormScheduler> formSchedulers = new ArrayList<>();
-    public Map<GFormEvent, GAsyncEventExec> asyncExecMap = new HashMap<>();
+    public LinkedHashMap<GFormEvent, GAsyncEventExec> asyncExecMap = new LinkedHashMap<>();
 
     public GContainer mainContainer;
     public HashSet<GTreeGroup> treeGroups = new HashSet<>();

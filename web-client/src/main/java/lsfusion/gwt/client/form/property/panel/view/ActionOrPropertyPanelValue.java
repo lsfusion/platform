@@ -50,6 +50,14 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
+    public String getDefaultValue() {
+        String defaultValue = property.defaultValue;
+        if(defaultValue != null)
+            return defaultValue;
+        return super.getDefaultValue();
+    }
+
+    @Override
     public CellRenderer.ToolbarAction[] getToolbarActions() {
         return !property.toolbarActions || this.isPropertyReadOnly() != null ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
     }

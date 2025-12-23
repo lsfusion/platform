@@ -8,6 +8,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -17,11 +18,11 @@ public class DialogFormEntity extends BaseClassFormEntity {
     public DialogFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, cls.caption);
 
-        object.groupTo.setViewTypeList();
+        object.groupTo.setViewTypeList(this, baseVersion);
 
 //        LM.addObjectActions(this, object);
 
-        setNFEditType(PropertyEditType.READONLY);
+        setEditType(PropertyEditType.READONLY);
 
         if (!cls.dialogReadOnly) {
             FormSessionScope scope = FormSessionScope.NEWSESSION;
@@ -37,8 +38,9 @@ public class DialogFormEntity extends BaseClassFormEntity {
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, FormSessionScope scope, ImOrderSet<ObjectEntity> objects) {
-        PropertyDrawEntity propertyDraw = addPropertyDraw(property, ComplexLocation.LAST(), objects);
-        propertyDraw.defaultChangeEventScope = scope;
+        PropertyDrawEntity propertyDraw = addPropertyDraw(property, objects);
+        setDefaultChangeEventScope(propertyDraw, scope);
+        movePropertyDraw(propertyDraw, ComplexLocation.LAST());
         return propertyDraw;
     }
 }

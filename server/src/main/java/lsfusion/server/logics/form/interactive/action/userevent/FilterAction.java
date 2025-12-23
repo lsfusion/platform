@@ -8,6 +8,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -35,42 +36,46 @@ public class FilterAction extends UserEventAction {
         FormInstance formInstance = context.getFormInstance(true, true);
         List<JSONObject> objectList = readJSON(context);
 
-        List<FilterClientAction.FilterItem> filters = new ArrayList<>();
-        if (objectList != null) {
-            for (JSONObject jsonObject : objectList) {
-                FilterClientAction.FilterItem filterItem;
-                String propertyString = jsonObject.optString(PROPERTY_KEY);
-                if (!isRedundantString(propertyString)) {
-                    PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
-                    if (propertyDraw != null) {
-                        // make sure group object is the same
-                        GroupObjectEntity propertyGO = propertyDraw.toDraw.entity;
-                        if (propertyGO == groupObject) {
-                            filterItem = new FilterClientAction.FilterItem(propertyDraw.getID());
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
+        if(groupObjectInstance != null) {
 
-                            String compareString = jsonObject.optString(COMPARE_KEY);
-                            if (!isRedundantString(compareString)) {
-                                Compare compare = Compare.get(compareString);
-                                if (compare != null) {
-                                    filterItem.compare = compare.serialize();
+            List<FilterClientAction.FilterItem> filters = new ArrayList<>();
+            if (objectList != null) {
+                for (JSONObject jsonObject : objectList) {
+                    FilterClientAction.FilterItem filterItem;
+                    String propertyString = jsonObject.optString(PROPERTY_KEY);
+                    if (!isRedundantString(propertyString)) {
+                        PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
+                        if (propertyDraw != null) {
+                            // make sure group object is the same
+                            GroupObjectInstance propertyGO = propertyDraw.toDraw;
+                            if (propertyGO == groupObjectInstance) {
+                                filterItem = new FilterClientAction.FilterItem(propertyDraw.getID());
+
+                                String compareString = jsonObject.optString(COMPARE_KEY);
+                                if (!isRedundantString(compareString)) {
+                                    Compare compare = Compare.get(compareString);
+                                    if (compare != null) {
+                                        filterItem.compare = compare.serialize();
+                                    }
                                 }
-                            }
-                            filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
-                            // value may be String (when stored via ReadFiltersAction), may be any other Object
-                            try {
-                                filterItem.value = FormChanges.serializeConvertFileValue(jsonObject.opt(VALUE_KEY), context);
-                            } catch (IOException e) {
-                                throw Throwables.propagate(e);
-                            }
-                            filterItem.junction = !jsonObject.optBoolean(OR_KEY);
+                                filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
+                                // value may be String (when stored via ReadFiltersAction), may be any other Object
+                                try {
+                                    filterItem.value = FormChanges.serializeConvertFileValue(jsonObject.opt(VALUE_KEY), context);
+                                } catch (IOException e) {
+                                    throw Throwables.propagate(e);
+                                }
+                                filterItem.junction = !jsonObject.optBoolean(OR_KEY);
 
-                            filters.add(filterItem);
+                                filters.add(filterItem);
+                            }
                         }
                     }
                 }
             }
+            FilterClientAction filterClientAction = new FilterClientAction(groupObjectInstance.entity.getID(), filters);
+            context.delayUserInteraction(filterClientAction);
         }
-        FilterClientAction filterClientAction = new FilterClientAction(groupObject.getID(), filters);
-        context.delayUserInteraction(filterClientAction);
     }
 }

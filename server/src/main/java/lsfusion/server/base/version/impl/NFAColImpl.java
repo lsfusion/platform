@@ -18,16 +18,29 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
     protected abstract ImCol<T> getFinalCol(F fcol);  
     
     public ImCol<T> getNFCol(Version version) {
-        F result = proceedVersionFinal(version);
+        return getNFCol(version, false);
+    }
+
+    private ImCol<T> getNFCol(Version version, boolean allowRead) {
+        F result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalCol(result);
         
         final MCol<T> mCol = ListFact.mCol();
-        proceedChanges(change -> change.proceedCol(mCol), version);
+        proceedChanges((change, nextChange) -> change.proceedCol(mCol, version), version);
         return mCol.immutableCol();
     }
 
     public Iterable<T> getNFIt(Version version) {
         return getNFCol(version);
+    }
+
+    @Override
+    public Iterable<T> getNFIt(Version version, boolean allowRead) {
+        return getNFCol(version, allowRead);
+    }
+
+    public Iterable<T> getNFCopyIt(Version version) {
+        return getNFCol(version, true);
     }
 }

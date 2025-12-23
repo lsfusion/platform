@@ -54,7 +54,7 @@ public class ModalForm extends FormContainer {
         //GwtClientUtils.addXStyleName(contentWidget.getBody(), "form-shrink-padded-container");
     }
 
-    protected void initPreferredSize() {
+    public void initPreferredSize() {
         if(!async) {
             GSize maxWidth = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(20));
             GSize maxHeight = GwtClientUtils.getOffsetHeight(Document.get().getBody()).subtract(GSize.CONST(100));

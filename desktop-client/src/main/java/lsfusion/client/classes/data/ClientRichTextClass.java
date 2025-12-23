@@ -28,12 +28,12 @@ public class ClientRichTextClass extends ClientTextClass {
 
     @Override
     public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
-        return new RichTextPropertyEditor(ownerComponent, value, property.design);
+        return new RichTextPropertyEditor(ownerComponent, value);
     }
 
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return new RichTextPropertyEditor(value, property.design);
+        return new RichTextPropertyEditor(value);
     }
 
     @Override

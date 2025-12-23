@@ -1,61 +1,43 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFSet;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
+import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.BaseComponentView;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
-import lsfusion.server.logics.form.interactive.design.filter.FilterView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class TreeGroupView extends GridPropertyView implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractTreeGroup<ComponentView> {
+import static lsfusion.base.BaseUtils.nvl;
+
+public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEntity> {
     public static final String TREE_PREFIX = "TREE";
-    
-    public List<GroupObjectView> groups = new ArrayList<>();
+
+    private NFProperty<Integer> hierarchicalWidth = NFFact.property();
+
+    private NFProperty<String> hierarchicalCaption = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyHierarchicalCaption = NFFact.property();
+
+    public final ImOrderSet<GroupObjectView> groups;
 
     public TreeGroupEntity entity;
 
-    public ToolbarView toolbarSystem;
-    public NFSet<FilterView> filters;
-    public ImSet<FilterView> getFilters() {
-        return filters.getSet();
+    @Override
+    public String toString() {
+        return entity.toString();
     }
-    public Iterable<FilterView> getFiltersIt() {
-        return filters.getIt();
-    }
-
-    public ContainerView filtersContainer;
-    public FilterControlsView filterControls;
-
-    public int hierarchicalWidth;
-    public String hierarchicalCaption;
-    public PropertyObjectEntity propertyHierarchicalCaption;
 
     @Override
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || propertyHierarchicalCaption != null;
+        return super.hasPropertyComponent() || getPropertyHierarchicalCaption() != null;
     }
-
-    IDGenerator idGenerator;
 
     @Override
     public String getPropertyGroupContainerSID() {
@@ -67,61 +49,13 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         return entity.getSID();
     }
 
-    public TreeGroupView() {
-        
-    }
-
-    public TreeGroupView(FormView form, TreeGroupEntity entity, Version version) {
-        super(entity.getID());
+    public TreeGroupView(IDGenerator idGenerator, ContainerFactory<ContainerView> containerFactory, TreeGroupEntity entity, Version version) {
+        super(idGenerator, containerFactory, version);
 
         this.entity = entity;
+        this.entity.view = this;
 
-        for (GroupObjectEntity group : entity.getGroups()) {
-            groups.add(form.getNFGroupObject(group, version));
-        }
-
-        idGenerator = form.idGenerator;
-        toolbarSystem = new ToolbarView(idGenerator.idShift());
-
-        filtersContainer = new ContainerView(idGenerator.idShift());
-        if (Settings.get().isVerticalColumnsFiltersContainer()) {
-            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
-        } else {
-            filtersContainer.setHorizontal(true);
-        }
-//        filtersContainer.setAlignCaptions(true);
-//        filtersContainer.setLineSize(0);
-//        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
-
-        filterControls = new FilterControlsView(idGenerator.idShift());
-
-        filters = NFFact.orderSet();
-    }
-
-    @Override
-    public BaseComponentView getToolbarSystem() {
-        return toolbarSystem;
-    }
-
-    @Override
-    public ContainerView getFiltersContainer() {
-        return filtersContainer;
-    }
-
-    @Override
-    public FilterControlsView getFilterControls() {
-        return filterControls;
-    }
-
-    public void add(GroupObjectView group) {
-        groups.add(group);
-    }
-
-    public FilterView addFilter(PropertyDrawView property, Version version) {
-        FilterView filterView = new FilterView(idGenerator.idShift(), property);
-        filters.add(filterView, version);
-        filtersContainer.add(filterView, version);
-        return filterView;
+        groups = entity.getGroups().mapOrderSetValues(group -> group.view);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
@@ -133,24 +67,67 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, getFilters());
 
-        outStream.writeBoolean(entity.plainTreeMode);
+        outStream.writeBoolean(false);
 
-        outStream.writeInt(hierarchicalWidth);
-        pool.writeString(outStream, hierarchicalCaption);
+        outStream.writeInt(getHierarchicalWidth());
+        pool.writeString(outStream, getHierarchicalCaption());
     }
 
-    @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    public int getHierarchicalWidth() {
+        return nvl(hierarchicalWidth.get(), 0);
+    }
+    public void setHierarchicalWidth(Integer value, Version version) {
+        hierarchicalWidth.set(value, version);
+    }
 
-        toolbarSystem.finalizeAroundInit();
-        for (FilterView filter : getFiltersIt()) {
-            filter.finalizeAroundInit();
-        }
+    public String getHierarchicalCaption() {
+        return hierarchicalCaption.get();
+    }
+    public void setHierarchicalCaption(String value, Version version) {
+        hierarchicalCaption.set(value, version);
+    }
+
+    public PropertyObjectEntity getPropertyHierarchicalCaption() {
+        return propertyHierarchicalCaption.get();
+    }
+    public void setPropertyHierarchicalCaption(PropertyObjectEntity value, Version version) {
+        propertyHierarchicalCaption.set(value, version);
     }
 
     @Override
     protected boolean isCustom() {
         return false;
+    }
+
+    // copy-constructor
+    protected TreeGroupView(TreeGroupView src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        entity = mapping.get(src.entity);
+
+        groups = mapping.get(src.groups);
+    }
+
+    @Override
+    public void extend(TreeGroupView src, ObjectMapping mapping) {
+        super.extend(src, mapping);
+
+        mapping.sets(hierarchicalWidth, src.hierarchicalWidth);
+
+        mapping.sets(hierarchicalCaption, src.hierarchicalCaption);
+        mapping.set(propertyHierarchicalCaption, src.propertyHierarchicalCaption);
+    }
+
+    @Override
+    public TreeGroupEntity getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public TreeGroupView getAddChild(TreeGroupEntity treeGroupEntity, ObjectMapping mapping) {
+        return treeGroupEntity.view;
+    }
+    @Override
+    public TreeGroupView copy(ObjectMapping mapping) {
+        return new TreeGroupView(this, mapping);
     }
 }

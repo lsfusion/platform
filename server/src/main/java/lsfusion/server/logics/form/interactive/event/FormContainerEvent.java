@@ -1,22 +1,31 @@
-package lsfusion.interop.form.event;
+package lsfusion.server.logics.form.interactive.event;
+
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
-public class FormContainerEvent extends FormEvent {
-    public String container;
+public class FormContainerEvent extends FormServerEvent<FormContainerEvent> {
+    public ComponentView container;
     public boolean collapse;
 
-    public FormContainerEvent(String container, boolean collapse) {
+    public FormContainerEvent(ComponentView container, boolean collapse) {
         this.container = container;
         this.collapse = collapse;
     }
 
+    public FormContainerEvent(FormContainerEvent src, ObjectMapping mapping) {
+        this.container = mapping.get(src.container);
+        this.collapse = src.collapse;
+    }
+
     @Override
-    public int getType() {
-        return 2;
+    public FormContainerEvent get(ObjectMapping mapping) {
+        return new FormContainerEvent(this, mapping);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

@@ -75,7 +75,9 @@
 
         <spring.version>5.2.7.RELEASE</spring.version>
         <spring.security.version>5.3.0.RELEASE</spring.security.version>
+
         <aspectj.version>1.9.2</aspectj.version>
+        <aspectj.maven.version>1.12.1</aspectj.maven.version>
 
         <validation.api.version>1.0.0.GA</validation.api.version>
         <json.version>20240303</json.version>
@@ -784,7 +786,7 @@
                 <plugin>
                     <groupId>com.nickwongdev</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.12.1</version>
+                    <version>${aspectj.maven.version}</version>
 
                     <configuration>
                         <!--для вывода в консоль при дебаге-->

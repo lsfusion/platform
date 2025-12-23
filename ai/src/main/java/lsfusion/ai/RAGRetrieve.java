@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RAGRetrieve {
 
@@ -184,7 +183,7 @@ public class RAGRetrieve {
     /**
      * 1) Embed with OpenAI → 2) Query Pinecone → 3) Sort and return.
      */
-    public static List<Map<String,Object>> retrieveDocs(String query, boolean includeSystem) {
+    public static List<Map<String,Object>> retrieveDocs(String query, boolean includeSystem, int multiplier) {
         List<Float> vec = getEmbedding(query);
 
         List<Map<String,Object>> out = new ArrayList<>();
@@ -194,8 +193,9 @@ public class RAGRetrieve {
                     continue;
             }
 
+            int topValue = e.getValue() / multiplier;
             QueryResponseWithUnsignedIndices resp = index.query(
-                    /*topK=*/           e.getValue(),
+                    /*topK=*/           topValue,
                     /*vector=*/         vec,
                     /*sparseIndices=*/  null,
                     /*sparseValues=*/   null,
@@ -218,14 +218,62 @@ public class RAGRetrieve {
         return out;
     }
 
-    @NotNull
-    public static List<Float> getEmbedding(String query) {
-        CreateEmbeddingResponse emb = AIAgent.openai.embeddings()
+    public static List<String> chunkByWords(String text, int maxWords) {
+        String[] words = text.split("\\s+");
+        if (words.length <= maxWords) return Collections.singletonList(text);
+
+        List<String> chunks = new ArrayList<>();
+        int start = 0;
+        while (start < words.length) {
+            int end = Math.min(start + maxWords, words.length);
+            chunks.add(String.join(" ", Arrays.copyOfRange(words, start, end)));
+            start = end; // no overlap
+        }
+        return chunks;
+    }
+
+    public static List<Float> getEmbedding(String text) {
+        List<String> chunks = chunkByWords(text, 4000);
+
+        CreateEmbeddingResponse resp = AIAgent.openai.embeddings()
                 .create(EmbeddingCreateParams.builder()
-                        .model(EMBEDDING) // should correspond index embedding
-                        .input(query)
+                        .model(EMBEDDING)
+                        .input(EmbeddingCreateParams.Input.ofArrayOfStrings(chunks))
                         .build());
-        return new ArrayList<>(emb.data().get(0).embedding());
+
+        // If only one chunk → behave exactly like the old code
+        if (resp.data().size() == 1) {
+            return new ArrayList<>(resp.data().get(0).embedding());
+        }
+
+        // Otherwise, average all returned vectors (optionally normalize first)
+        int dim = resp.data().get(0).embedding().size();
+        float[] sum = new float[dim];
+
+        for (int j = 0; j < resp.data().size(); j++) {
+            List<Float> vec = resp.data().get(j).embedding();
+            // Optional: normalize each chunk vector to unit length for stability
+            float[] normed = new float[dim];
+            double norm = 0.0;
+            for (int i = 0; i < dim; i++) {
+                float v = vec.get(i);
+                norm += (double) v * (double) v;
+            }
+            norm = Math.sqrt(norm);
+            if (norm == 0.0) norm = 1.0;
+            for (int i = 0; i < dim; i++) {
+                normed[i] = (float) (vec.get(i) / norm);
+                sum[i] += normed[i];
+            }
+        }
+
+        // Mean pooling
+        int n = resp.data().size();
+        List<Float> result = new ArrayList<>(dim);
+        for (int i = 0; i < dim; i++) {
+            result.add(sum[i] / n);
+        }
+        return result;
     }
 
     public static final String RETRIEVE_FN = "retrieve_docs";
@@ -257,6 +305,6 @@ public class RAGRetrieve {
                 .build();
         return new CustomFunction(ChatCompletionTool.ofFunction(ChatCompletionFunctionTool.builder()
                 .function(function)
-                .build()), args -> retrieveDocs((String) args.get("query"), false));
+                .build()), args -> retrieveDocs((String) args.get("query"), false, 1));
     }
 }

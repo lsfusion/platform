@@ -14,7 +14,6 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
 
@@ -94,7 +93,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         this.path = path;
     }
 
-    public ActionOrPropertyObjectEntity<T, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
+    public ActionOrPropertyObjectEntity<T, ?, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
         return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath, path);
     }
 

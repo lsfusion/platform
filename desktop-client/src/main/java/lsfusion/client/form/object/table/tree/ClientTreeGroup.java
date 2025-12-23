@@ -11,7 +11,6 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
@@ -19,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientTreeGroup extends ClientGridProperty implements ClientIdentitySerializable, AbstractTreeGroup<ClientComponent> {
+public class ClientTreeGroup extends ClientGridProperty{
 
     public List<ClientGroupObject> groups = new ArrayList<>();
 
@@ -37,19 +36,8 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
     public ClientTreeGroup() {
     }
 
-    @Override
-    public ClientComponent getToolbarSystem() {
-        return toolbar;
-    }
-
-    @Override
     public ClientContainer getFiltersContainer() {
         return filtersContainer;
-    }
-
-    @Override
-    public ClientFilterControls getFilterControls() {
-        return filterControls;
     }
 
     public List<ClientFilter> getFilters() {

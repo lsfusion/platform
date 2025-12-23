@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.controller;
 
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.table.view.AsyncChangeCellTableInterface;
@@ -37,7 +38,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
 
         assert component != null;
 
-        component.setFont(property.design.getFont(jTable));
+        component.setFont(ClientColorUtils.getOrDeriveComponentFont(property.font, jTable));
 
         return component;
     }

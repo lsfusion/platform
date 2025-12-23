@@ -2,13 +2,8 @@ package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.action.*;
-import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupOwner;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -20,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 
@@ -47,14 +41,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(final GFormAction action) {
-        if (action.showFormType.isDockedModal() && !canShowDockedModal()) {
-            action.showFormType = GModalityShowFormType.MODAL;
-        }
+    protected FormsController.OpenContext getOpenContext(GFormAction action) {
+        return new FormsController.OpenContext(editEventHandler != null ? editEventHandler.event : null, editContext, form, form.getFormDockableContainer(action.showFormType.isDockedModal()));
+    }
 
-        executeAsyncNoResult(action.showFormType.isModal() && action.syncType, onResult -> {
-            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, action.syncType, editEventHandler != null ? editEventHandler.event : null, editContext, () -> onResult.accept(null), action.formId);
-        });
+    @Override
+    protected FormsController getFormsController() {
+        return form.getFormsController();
     }
 
     @Override
@@ -80,8 +73,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GHideFormAction action) {
-        form.hideForm(getAsyncFormController(getDispatchingIndex()), editFormCloseReason != null ? editFormCloseReason : CancelReason.HIDE);
+    public void execute(GHideFormAction action, GActionDispatcherLookAhead lookAhead) {
+        form.hideForm(getAsyncFormController(getDispatchingIndex()), lookAhead, editFormCloseReason != null ? editFormCloseReason : CancelReason.HIDE);
     }
 
     @Override

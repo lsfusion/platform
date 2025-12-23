@@ -13,6 +13,7 @@ public interface QueryEnvironment {
     ValueParseInterface getSQLUser();
     ValueParseInterface getSQLComputer();
     ValueParseInterface getSQLForm();
+    ValueParseInterface getActiveForm();
     ValueParseInterface getSQLConnection();
     ValueParseInterface getIsServerRestarting();
     ValueParseInterface getSQLAuthToken();

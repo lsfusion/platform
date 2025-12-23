@@ -19,11 +19,15 @@ import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
@@ -79,7 +83,18 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         String script = getScript(context);
 
         ExecutionStack stack = context.stack;
-        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, stack.getEvalLM(), action);
+        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
+
+        FormInstance formInstance = context.getFormInstance(false, false);
+        if(formInstance != null) {
+            EvalScriptingLogicsModule customizeEvalLM = formInstance.entity.getCustomizeLM();
+            if (customizeEvalLM != null)
+                parentLMs.add(customizeEvalLM);
+        }
+        EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
+        if (stackEvalLM != null)
+            parentLMs.add(stackEvalLM);
+        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, parentLMs, action);
         return evalResult.first.execute(context.override(new EvalStack(evalResult.second, context.getSession(), stack)), getParams(context));
     }
     @Override

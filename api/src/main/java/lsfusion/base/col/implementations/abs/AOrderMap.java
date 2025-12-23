@@ -297,6 +297,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
 
     public ImOrderMap<K, V> mergeOrder(ImOrderMap<? extends K, ? extends V> imOrderMap) {
         if(imOrderMap.isEmpty()) return this;
+        if(isEmpty()) return (ImOrderMap<K, V>) imOrderMap;
 
         MOrderMap<K, V> mResult = MapFact.mOrderMap(this);
         mResult.addAll(imOrderMap);

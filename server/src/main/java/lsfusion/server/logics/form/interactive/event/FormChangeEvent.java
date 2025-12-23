@@ -1,4 +1,8 @@
-package lsfusion.interop.form.event;
+package lsfusion.server.logics.form.interactive.event;
+
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -7,18 +11,23 @@ import java.util.Objects;
 
 import static lsfusion.base.BaseUtils.nullEquals;
 
-public class FormChangeEvent extends FormEvent {
-    public Object propertyDrawEntity;
+public class FormChangeEvent extends FormServerEvent<FormChangeEvent> {
+    public PropertyDrawEntity propertyDrawEntity;
     public Boolean before;
 
-    public FormChangeEvent(Object propertyDrawEntity, Boolean before) {
+    public FormChangeEvent(PropertyDrawEntity propertyDrawEntity, Boolean before) {
         this.propertyDrawEntity = propertyDrawEntity;
         this.before = before;
     }
 
+    public FormChangeEvent(FormChangeEvent src, ObjectMapping mapping) {
+        this.propertyDrawEntity = mapping.get(src.propertyDrawEntity);
+        this.before = src.before;
+    }
+
     @Override
-    public int getType() {
-        return 3;
+    public FormChangeEvent get(ObjectMapping mapping) {
+        return new FormChangeEvent(this, mapping);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

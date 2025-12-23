@@ -27,7 +27,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
     private final GroupObjectEntity group;
 
     public String getKey() {
-        return group.getIntegrationSID();
+        return group.getIntegrationSIDValue();
     }
 
     public GroupObjectParseNode(ImOrderSet<ChildParseNode> children, GroupObjectEntity group) {

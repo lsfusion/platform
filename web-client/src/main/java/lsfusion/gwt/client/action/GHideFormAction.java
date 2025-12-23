@@ -7,6 +7,11 @@ public class GHideFormAction extends GExecuteAction {
 
     @Override
     public void execute(GActionDispatcher dispatcher) throws Throwable {
-        dispatcher.execute(this);
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void execute(GActionDispatcher dispatcher, GActionDispatcherLookAhead lookAhead) throws Throwable {
+        dispatcher.execute(this, lookAhead);
     }
 }

@@ -12,15 +12,15 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
-import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
 import java.util.List;
 import java.util.function.Supplier;
+
+import static lsfusion.server.logics.form.interactive.design.FormView.createContainer;
 
 public class ScriptingFormView {
     private final FormView view;
@@ -72,7 +72,8 @@ public class ScriptingFormView {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, sid, sid, version, debugPoint);
+        ContainerView container = createContainer(null, sid, debugPoint, view.containerFactory, version);
+        view.setComponentSID(container, sid, version);
 
         addOrMoveComponent(container, parentComponent, location, version);
 
@@ -90,7 +91,7 @@ public class ScriptingFormView {
             location = ComplexLocation.DEFAULT();
 
         if(parentComponent instanceof GridView) {
-            parentComponent = ((GridView) parentComponent).getNFRecord(view);
+            parentComponent = ((GridView) parentComponent).getNFRecord(version);
         }
 
         if (!(parentComponent instanceof ContainerView))
@@ -107,7 +108,7 @@ public class ScriptingFormView {
             }
         }
 
-        ComponentView incorrectNeighbour = ((ContainerView) parentComponent).addOrMoveChecked(component, location, version);
+        ComponentView incorrectNeighbour = ((ContainerView<?>) parentComponent).addOrMoveChecked(component, location, version);
         if(incorrectNeighbour != null)
             errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parentComponent.getSID(), incorrectNeighbour.getSID());
     }
@@ -120,15 +121,6 @@ public class ScriptingFormView {
         }
 
         view.removeComponent(component, version);
-    }
-
-    public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObjectEntity = view.entity.getNFGroupObject(sid, version);
-        if (groupObjectEntity == null) {
-            errLog.emitComponentNotFoundError(parser, sid);
-        }
-
-        return view.getNFGroupObject(groupObjectEntity, version);
     }
 
     public PropertyDrawView getPropertyView(String name, Version version) throws ScriptingErrorLog.SemanticErrorException {

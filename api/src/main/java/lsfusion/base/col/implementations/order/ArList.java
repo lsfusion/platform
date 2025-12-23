@@ -8,6 +8,8 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 
+import java.util.function.Predicate;
+
 public class ArList<K> extends AList<K> implements MList<K> {
 
     private final ArCol<K> col;
@@ -73,6 +75,9 @@ public class ArList<K> extends AList<K> implements MList<K> {
 
     public void removeAll() {
         col.removeAll();
+    }
+    public void removeAll(Predicate<? super K> filter) {
+        col.removeAll(filter);
     }
     public void removeLast() {
         col.removeLast();

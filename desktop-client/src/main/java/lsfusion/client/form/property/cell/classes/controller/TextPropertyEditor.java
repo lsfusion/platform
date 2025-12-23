@@ -4,10 +4,10 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
-import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -39,15 +39,15 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
     private String btnCancel = ClientResourceBundle.getString("form.editor.cancel");
     private boolean state;
 
-    public TextPropertyEditor(Object value, ComponentDesign design) {
-        this(null, value, design);
+    public TextPropertyEditor(Object value, ClientComponent clientComponent) {
+        this(null, value, clientComponent);
     }
 
-    public TextPropertyEditor(Component owner, Object value, ComponentDesign design) {
-        this(owner, value, design, null);
+    public TextPropertyEditor(Component owner, Object value, ClientComponent clientComponent) {
+        this(owner, value, clientComponent, null);
     }
     
-    public TextPropertyEditor(Component owner, Object value, ComponentDesign design, AsyncChangeInterface asyncChange) {
+    public TextPropertyEditor(Component owner, Object value, ClientComponent clientComponent, AsyncChangeInterface asyncChange) {
         textArea = new JTextArea(new PlainDocument() {
             @Override
             public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
@@ -61,8 +61,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
-        if (design != null)
-            ClientColorUtils.designComponent(textArea, design);
+        ClientColorUtils.designComponent(textArea, clientComponent);
         textArea.setBackground(SwingDefaults.getTableCellBackground());
         Insets insets = getTableCellMargins();
         textArea.setBorder(BorderFactory.createEmptyBorder(insets.top - 1, insets.left - 1, insets.bottom, insets.right - 1));

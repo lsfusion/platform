@@ -20,8 +20,11 @@ public class NeighbourComplexLocation<T> extends ComplexLocation<T> {
         int index = list.indexOf(element);
         int insertIndex;
         if (index < 0) { // the problem that neighbour can be moved from the container in a "parallel" module
-            elementGroup = ComplexLocation.DEFAULTGROUP;
-            insertIndex = list.size();
+            // Keep groups non-decreasing: DEFAULTGROUP must be inserted into the DEFAULTGROUP segment,
+            // not blindly appended after higher groups.
+            Pair<Integer, Integer> insert = ComplexLocation.<T>DEFAULT().getInsertGroup(list, groupList);
+            elementGroup = insert.second;
+            insertIndex = insert.first;
         } else {
             elementGroup = groupList.get(index);
             if (isAfter)

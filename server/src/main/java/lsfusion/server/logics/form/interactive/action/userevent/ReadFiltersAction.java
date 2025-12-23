@@ -26,7 +26,7 @@ public class ReadFiltersAction extends ReadUserEventsAction<List<FilterInstance>
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        List<FilterInstance> userFilters = formInstance.getGroupObjectInstance(groupObject.ID).getUserFilters();
+        List<FilterInstance> userFilters = formInstance.instanceFactory.getExInstance(groupObject).getUserFilters();
         store(context, userFilters);
     }
 

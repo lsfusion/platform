@@ -3,8 +3,11 @@ package lsfusion.server.base.version.impl;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.changes.NFCopy;
 import lsfusion.server.base.version.impl.changes.NFRemove;
 import lsfusion.server.base.version.impl.changes.NFSetChange;
+import lsfusion.server.base.version.impl.changes.NFSetCopy;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.Set;
@@ -12,10 +15,6 @@ import java.util.Set;
 public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterable<T>> extends NFColChangeImpl<T, CH, R> implements NFSet<T> {
 
     protected NFASetImpl() {
-    }
-
-    protected NFASetImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
     }
 
     public void remove(T element, Version version) {
@@ -29,17 +28,42 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     protected abstract ImSet<T> getFinalSet(R fcol);
 
     public ImSet<T> getNFSet(Version version) {
-        R result = proceedVersionFinal(version);
+        return getNFSet(version, false);
+    }
+
+    @Override
+    public ImSet<T> getNFCopySet(Version version) {
+        return getNFSet(version, true);
+    }
+
+    public ImSet<T> getNFSet(Version version, boolean allowRead) {
+        R result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalSet(result);
 
         final Set<T> mSet = SetFact.mAddRemoveSet(); 
-        proceedChanges(change -> change.proceedSet(mSet), version);
+        proceedChanges((change, nextChange) -> change.proceedSet(mSet, version), version);
         return SetFact.fromJavaSet(mSet);
     }
 
     public Iterable<T> getNFIt(Version version) {
         return getNFSet(version);
+    }
+
+    @Override
+    public Iterable<T> getNFIt(Version version, boolean allowRead) {
+        return getNFSet(version, allowRead);
+    }
+
+    @Override
+    public Iterable<T> getNFCopyIt(Version version) {
+        return getNFCopySet(version);
+    }
+
+    @Override
+    public void add(NFSet<T> element, NFCopy.Map<T> mapper, Version version) {
+        assert !(this instanceof NFOrderSet);
+        addChange((CH) new NFSetCopy<>(element, mapper), version);
     }
 
     @Override

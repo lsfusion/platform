@@ -84,7 +84,7 @@ public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends
         P propertyInterface;
 
         public KeyInterface(P propertyInterface) {
-            super(propertyInterface.ID);
+            super(propertyInterface.getID());
 
             this.propertyInterface = propertyInterface;
         }

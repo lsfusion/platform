@@ -1,6 +1,7 @@
 package lsfusion.server.base.version.impl.changes;
 
 import lsfusion.server.base.version.FindIndex;
+import lsfusion.server.base.version.Version;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class NFMapMove<K, V> implements NFOrderMapChange<K, V> {
     }
 
     @Override
-    public void proceedOrderMap(List<K> keysList, List<V> valuesList) {
+    public void proceedOrderMap(List<K> keysList, List<V> valuesList, Version version) {
         int index = keysList.indexOf(key);
         if(index >= 0) {
             keysList.remove(index);
