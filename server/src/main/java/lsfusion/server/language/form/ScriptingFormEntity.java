@@ -338,8 +338,8 @@ public class ScriptingFormEntity {
             setReportPath(property, version);
     }
 
-    public void setIntegrationSID(String sID) {
-        form.setIntegrationSID(sID);
+    public void setIntegrationSID(String sID, Version version) {
+        form.setIntegrationSID(sID, version);
     }
 
     public void setReportPath(PropertyObjectEntity property, Version version) {

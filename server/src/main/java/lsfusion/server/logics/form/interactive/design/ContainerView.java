@@ -466,9 +466,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     public DebugInfo.DebugPoint getDebugPoint() {
         return debugPoint;
     }
-    public void setDebugPoint(DebugInfo.DebugPoint value) {
-        debugPoint = value;
-    }
 
     public String getValueClass() {
         return valueClass.get();

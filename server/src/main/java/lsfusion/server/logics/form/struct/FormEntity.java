@@ -91,7 +91,6 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
@@ -105,8 +104,6 @@ import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implements FormSelector<ObjectEntity> {
-    private final static Logger logger = Logger.getLogger(FormEntity.class);
-    
     public static Boolean DEFAULT_NOCANCEL = null;
 
     public static final IsDevProperty isDev = IsDevProperty.instance;
@@ -1371,14 +1368,13 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return null;
     }
 
-    private String integrationSID;
+    private final NFProperty<String> integrationSID = NFFact.property();
     
     public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : getName();
+        return integrationSID.get();
     }
-
-    public void setIntegrationSID(String integrationSID) {
-        this.integrationSID = integrationSID;
+    public void setIntegrationSID(String value, Version version) {
+        integrationSID.set(value, version);
     }
 
     public String getCreationPath() {
@@ -1772,7 +1768,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         customizeLM = src.customizeLM; // strictly for form customizing, not sure that needed at all, because customized form is customized once
 
-        integrationSID = src.integrationSID;
+        mapping.sets(integrationSID, src.integrationSID);
 
         view = mapping.get(src.view);
 

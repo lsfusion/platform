@@ -517,7 +517,7 @@ formExtIDDeclaration
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setIntegrationSID(formExtID);
+		$formStatement::form.setIntegrationSID(formExtID, self.getVersion());
 	}
 }
 	:	'FORMEXTID' id=stringLiteral { formExtID = $id.val; }
