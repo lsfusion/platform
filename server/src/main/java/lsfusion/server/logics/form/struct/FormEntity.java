@@ -406,6 +406,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             customizeActionPropertyDraw = addPropertyDraw(baseLM.getFormCustomize(), version);
             customizeActionPropertyDraw.setAddParent(this, (Function<FormEntity, PropertyDrawEntity>) formEntity -> formEntity.customizeActionPropertyDraw);
             customizeActionPropertyDraw.setPropertyExtra((PropertyObjectEntity<?>) baseLM.getFormCustomizeBackground().createObjectEntity(SetFact.EMPTYORDER()), PropertyDrawExtraType.BACKGROUND, version);
+            customizeActionPropertyDraw.setPropertyExtra((PropertyObjectEntity<?>) baseLM.getFormCustomizeShowIf().createObjectEntity(SetFact.EMPTYORDER()), PropertyDrawExtraType.SHOWIF, version);
         }
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);

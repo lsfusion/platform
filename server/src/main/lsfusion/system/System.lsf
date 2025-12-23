@@ -104,6 +104,7 @@ formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interact
 formShare '{action.form.share}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormShareAction' () IMAGE 'share.png';
 formCustomize '{action.form.customize}' INTERNAL 'lsfusion.server.logics.form.interactive.action.FormCustomizeAction' () IMAGE 'settings.png';
 formCustomizeBackground = ABSTRACT COLOR();
+formCustomizeShowIf = ABSTRACT BOOLEAN();
 
 navigatorRefresh INTERNAL 'lsfusion.server.logics.navigator.NavigatorRefreshAction' ();
 

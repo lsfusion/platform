@@ -1054,6 +1054,7 @@ extendCode(STRING sid) = extendCode(form(sid));
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
 jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
+formCustomizeShowIf() += isWeb();
 
 enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
 enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL BOOLEAN(); 

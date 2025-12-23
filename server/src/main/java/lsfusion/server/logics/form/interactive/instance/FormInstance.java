@@ -2981,8 +2981,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return manageSession && session.isStoredDataChanged() && !isEditing;
     }
 
-    public void formClose(ExecutionContext<ClassPropertyInterface> context, boolean keepRemoteForm) throws SQLException, SQLHandledException {
-        if (!context.isPushedConfirmedClose() && needConfirm() && !keepRemoteForm) {
+    public void formClose(ExecutionContext<ClassPropertyInterface> context, boolean skipConfirmCloseDialog) throws SQLException, SQLHandledException {
+        if (!context.isPushedConfirmedClose() && needConfirm() && !skipConfirmCloseDialog) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
@@ -2990,14 +2990,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         fireOnClose(context.stack);
-        formHideAndDestroy(context, keepRemoteForm);
+        formHideAndDestroy(context);
     }
 
     private void formHideAndDestroy(ExecutionContext context) throws SQLException, SQLHandledException {
-        formHideAndDestroy(context, false);
-    }
-
-    private void formHideAndDestroy(ExecutionContext context, boolean keepRemoteForm) throws SQLException, SQLHandledException {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
 
         //reset all activeTab properties
@@ -3008,7 +3004,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         context.delayUserInteraction(new HideFormClientAction());
 
         // destroy will be postponed to the last response
-        context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay(), keepRemoteForm));
+        context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
     }
 
     public void formDrop(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
