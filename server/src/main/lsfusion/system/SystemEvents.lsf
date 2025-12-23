@@ -1064,28 +1064,22 @@ nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
 
 FORM customizeForm '{action.form.customize}' IMAGE 'settings'
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
-    OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL
     PROPERTIES sid = VALUE(sid),
         code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
-        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(dataExtendCode(form(sid))) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
-                LOCAL text = STRING();
-                text() <- fieldText(JSON((s)), 'text');
-                SEEK customizeForm.extendCodeAll = text();
-                dataExtendCode(form(sid)) <- nullEmpty(text());
+                dataExtendCode(form(sid)) <- nullEmpty(fieldText(JSON((s)), 'text'));
             }
         },
-        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(dataExtendCode(form(sid), currentUser())) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
             INPUT s = TEXT DO {
-                LOCAL text = STRING();
-                text() <- fieldText(JSON(STRING(s)), 'text');
-                SEEK customizeForm.extendCodeCurrentUser = text();
-                dataExtendCode(form(sid), currentUser()) <- nullEmpty(text());
+                dataExtendCode(form(sid), currentUser()) <- nullEmpty(fieldText(JSON((s)), 'text'));
             }
         }
     ON INIT {
         enableOriginalCode() <- TRUE;
-        enableExtendCodeAll() <- TRUE IF extendCodeAll;
+        enableExtendCodeAll() <- TRUE IF dataExtendCode(form(sid));
         enableExtendCodeCurrentUser() <- TRUE; 
     }
 ;
@@ -1138,9 +1132,7 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    DIALOG customizeForm OBJECTS sid = sid, code = code,
-        extendCodeAll = dataExtendCode(form(sid)) NULL,
-        extendCodeCurrentUser = dataExtendCode(form(sid), currentUser()) NULL NOMANAGESESSION DO {
+    DIALOG customizeForm OBJECTS sid = sid, code = code NOMANAGESESSION DO {
         formRecreate();
     }
 }
