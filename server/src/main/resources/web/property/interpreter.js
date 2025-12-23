@@ -62,6 +62,12 @@ function interpreter() {
                     e.preventDefault();
             });
 
+            aceEditor.on("focus", function () {
+                if (aceEditor.getValue() === '' && aceEditor.defaultValue) {
+                    aceEditor.setValue(aceEditor.defaultValue, true);
+                }
+            });
+
             aceEditor.onBlur = function (e) {
                 // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
                 let completer = aceEditor.completer;
@@ -123,13 +129,7 @@ function interpreter() {
 
 
                 aceEditor.setReadOnly(extraValue != null ? extraValue.readonly : false);
-
                 aceEditor.defaultValue = extraValue != null ? extraValue.defaultValue : null;
-                aceEditor.on("focus", function () {
-                    if (aceEditor.getValue() === '') {
-                        aceEditor.setValue(aceEditor.defaultValue, true);
-                    }
-                });
             }
         }
     }

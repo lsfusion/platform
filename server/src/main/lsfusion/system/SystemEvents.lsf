@@ -1052,7 +1052,7 @@ extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser(
 extendCode(STRING sid) = extendCode(form(sid));
 
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
-jsonCode (STRING code, STRING sid) = JSON FROM text = (OVERRIDE code, ''), defaultText = defaultExtendCode(form(sid)), type = 'script';
+jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
 
 enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
@@ -1066,16 +1066,16 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
     PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
     OBJECTS sid = STRING PANEL, code = TEXT PANEL, extendCodeAll = TEXT PANEL NULL, extendCodeCurrentUser = TEXT PANEL NULL
     PROPERTIES sid = VALUE(sid),
-        code '{action.form.customize.base}' = jsonCode(code, sid) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
-        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+        code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
                 LOCAL text = STRING();
-                text() <- fieldText(JSON(STRING(s)), 'text');
+                text() <- fieldText(JSON((s)), 'text');
                 SEEK customizeForm.extendCodeAll = text();
                 dataExtendCode(form(sid)) <- nullEmpty(text());
             }
         },
-        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser, sid) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
             INPUT s = TEXT DO {
                 LOCAL text = STRING();
                 text() <- fieldText(JSON(STRING(s)), 'text');
