@@ -128,7 +128,7 @@ public class ObjectMapping {
         if(result != null)
             return result;
 
-        synchronized (extend ? addForm : this) { // if extend we need to synchronize form for getAdd (and finding objects) / add, otherwise only inside this mapping
+        synchronized (addForm) {
             result = (T) objectsMap.get(object);
             if(result != null)
                 return result;
