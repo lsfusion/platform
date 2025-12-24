@@ -18,9 +18,7 @@ import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
-import lsfusion.gwt.client.classes.data.GIntegralType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
-import lsfusion.gwt.client.classes.data.GLongType;
+import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -1108,6 +1106,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    public JavaScriptObject formatDate(String columnName, JavaScriptObject value) {
+        if (value == null || columnName.equals(COLUMN))
+            return null;
+
+        GPropertyDraw property = columnMap.get(columnName).property;
+        GType cellType = property.getCellType();
+        return cellType instanceof GADateType ? fromObject(((GADateType) cellType).toJsDate(getPValue(property, value))) : null;
+    }
+
     private native JavaScriptObject getNaN() /*-{
         return NaN;
     }-*/;
@@ -2022,6 +2029,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             formatNumeric: function (columnName, value) {
                 return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatNumeric(*)(columnName, value);
+            },
+
+            formatDate: function (columnName, value) {
+                return instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::formatDate(*)(columnName, value);
             }
         }
 

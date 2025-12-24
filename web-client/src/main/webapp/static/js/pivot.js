@@ -461,7 +461,7 @@
     rd = /\d/;
     rz = /^0/;
     naturalSort = (as, bs, attr, callbacks) => {
-      var a, a1, b, b1, nas, nbs;
+      var a, a1, b, b1, das, dbs, nas, nbs;
       if ((bs != null) && (as == null)) {
         //nulls first
         return -1;
@@ -474,6 +474,17 @@
         return -1;
       }
       if (typeof bs === "number" && isNaN(bs)) {
+        return 1;
+      }
+      //try to format and compare Date objects
+      if (callbacks) {
+        das = callbacks.formatDate(attr, as);
+        dbs = callbacks.formatDate(attr, bs);
+      }
+      if (das < dbs) {
+        return -1;
+      }
+      if (das > dbs) {
         return 1;
       }
       //numbers and numbery strings group together
