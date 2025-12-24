@@ -80,14 +80,25 @@ callWithJQuery ($, Plotly) ->
 
             rowKeys = pivotData.getRowKeys()
             colKeys = pivotData.getColKeys()
+
+            rowAttrs = pivotData.rowAttrs;
+            colAttrs = pivotData.colAttrs;
+
             if reverse
                 tKeys = rowKeys
                 rowKeys = colKeys
                 colKeys = tKeys
+
+                tAttrs = rowAttrs
+                rowAttrs = colAttrs
+                colAttrs = tAttrs
+
             traceKeys = if transpose then colKeys else rowKeys
             traceKeys.push([]) if traceKeys.length == 0
             datumKeys = if transpose then rowKeys else colKeys
             datumKeys.push([]) if datumKeys.length == 0
+            dataAttrs = if transpose then rowAttrs else colAttrs
+            traceDataAttrs = if transpose then colAttrs else rowAttrs
 
             fullAggName = pivotData.aggregatorName
             if pivotData.valAttrs.length
@@ -102,9 +113,9 @@ callWithJQuery ($, Plotly) ->
                         if transpose ^ reverse then traceKey else datumKey
                     ).value())
                     values.push(if isFinite(val) then val else null)
-                    labels.push(datumKey.join(' - ') || ' ')
+                    labels.push(pivotData.callbacks.formatArray(dataAttrs, datumKey).join(' - ') || ' ')
 
-                trace = {name: traceKey.join(' - ') || fullAggName}
+                trace = {name: pivotData.callbacks.formatArray(traceDataAttrs, traceKey).join(' - ') || fullAggName}
                 if traceOptions.type == "pie"
                     trace.values = values
                     trace.labels = if labels.length > 1 then labels else [fullAggName]
@@ -210,8 +221,8 @@ callWithJQuery ($, Plotly) ->
             for colKey in colKeys
                 v = pivotData.getAggregator(rowKey, colKey).value()
                 if v?
-                    data.x.push(colKey.join(' - '))
-                    data.y.push(rowKey.join(' - '))
+                    data.x.push(pivotData.callbacks.formatArray(pivotData.colAttrs, colKey).join(' - '))
+                    data.y.push(pivotData.callbacks.formatArray(pivotData.rowAttrs, rowKey).join(' - '))
                     data.text.push(v)
 
         colAttrsString = getJoinedAttrsNames(pivotData.colAttrs, opts)

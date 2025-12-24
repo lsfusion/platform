@@ -238,6 +238,13 @@ callWithJQuery ($) ->
         return -1 if typeof as == "number" and isNaN(as)
         return  1 if typeof bs == "number" and isNaN(bs)
 
+        #try to format and compare Date objects
+        if callbacks
+            das = callbacks.formatDate(attr, as)
+            dbs = callbacks.formatDate(attr, bs)
+        return -1 if das < dbs
+        return  1 if das > dbs
+
         #numbers and numbery strings group together
         nas = if callbacks then callbacks.formatNumeric(attr, as) else +as
         nbs = if callbacks then callbacks.formatNumeric(attr, bs) else +bs
