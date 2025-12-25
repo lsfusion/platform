@@ -904,9 +904,9 @@ public abstract class LogicsModule {
                 readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params), localsInScope)));
     }
 
-    protected LA addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params) {
+    protected LA addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params, ValueClass returnClass, ImList<ValueClass> returnClasses) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addAction(null, new LA<>(new ListAction(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addAction(null, new LA<>(new ListAction(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)), returnClass, returnClasses)));
     }
 
     // ------------------- Try action ----------------- //
@@ -982,9 +982,9 @@ public abstract class LogicsModule {
         return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
-    protected LA addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
+    protected LA addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params, ValueClass returnClass, ImList<ValueClass> returnClasses) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)), returnClass, returnClasses)));
     }
 
     // ------------------- For action ----------------- //
@@ -1035,11 +1035,10 @@ public abstract class LogicsModule {
     protected LA addJoinAProp(Group group, LocalizedString caption, LA action, Object... params) {
         return addJoinAProp(group, caption, null, action, params);
     }
-
-    protected LA addJoinAProp(Group group, LocalizedString caption, ValueClass[] classes, LA action, Object... params) {
+    protected LA addJoinAProp(Group group, LocalizedString caption, LP result, LA action, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(listInterfaces, params);
-        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements))));
+        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements), result)));
     }
 
     // ------------------------ APPLY / CANCEL ----------------- //

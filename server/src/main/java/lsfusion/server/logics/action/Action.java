@@ -2,6 +2,7 @@ package lsfusion.server.logics.action;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -129,7 +130,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     protected ImMap<Property, Boolean> getChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
+        ActionMapImplement<?, P> compile = compile(recursiveAbstracts);
         if(compile!=null)
             return compile.action.getChangeExtProps(recursiveAbstracts);
 
@@ -178,7 +179,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
     
     protected ImMap<Property, Boolean> getUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
+        ActionMapImplement<?, P> compile = compile( recursiveAbstracts);
         if(compile!=null)
             return compile.action.getUsedExtProps(recursiveAbstracts);
 
@@ -281,7 +282,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public abstract ImSet<Action> getDependActions();
-    
+
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getInnerDebugActions(ImSet<Action<?>> recursiveAbstracts) {
         ImSet<Pair<String, Integer>> result = getRecInnerDebugActions(recursiveAbstracts);
@@ -500,7 +501,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                 return beforeResult;
         }
 
-        ActionMapImplement<?, P> compile = callCompile(true, SetFact.EMPTY());
+        ActionMapImplement<?, P> compile = execCompile(SetFact.EMPTY());
         if (compile != null)
             return compile.execute(context);
 
@@ -515,7 +516,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        callCompile(true, SetFact.EMPTY());
+        execCompile(SetFact.EMPTY());
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -812,9 +813,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionCalcDepends(false).filterFn(element -> element instanceof ChangedProperty);
     }
 
-    private ActionMapImplement<?, P> callCompile(boolean forExecution, ImSet<Action<?>> recursiveAbstracts) {
-        //не включаем компиляцию экшенов при дебаге
-        if (forExecution && debugger.isEnabled() && !forceCompile()) {
+    private ActionMapImplement<?, P> execCompile(ImSet<Action<?>> recursiveAbstracts) {
+        if (debugger.isEnabled() && !forceCompile()) {
             if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(recursiveAbstracts), getChangePropsLocations())) {
                 return null;
             }
@@ -832,25 +832,22 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     @FunctionalInterface
     public interface ActionReplacer {
-        <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action);
+        <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action, Result<Boolean> stopReplacing);
     }
     public ActionMapImplement<?, P> replace(ActionReplacer replacer) {
         return replace(replacer, SetFact.EMPTY());
     }
     public ActionMapImplement<?, P> replace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this);
-        if(replacedAction != null)
+        Result<Boolean> stopReplacing = new Result<>(false);
+        ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this, stopReplacing);
+        if(replacedAction != null || stopReplacing.result)
             return replacedAction;            
         return aspectReplace(replacer, recursiveAbstracts);
     }
     protected ActionMapImplement<?, P> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
-    
-    public ImList<ActionMapImplement<?, P>> getList() {
-        return getList(SetFact.EMPTY());
-    }
-    
+
     @IdentityLazy
     public ImList<ActionMapImplement<?, P>> getList(ImSet<Action<?>> recursiveAbstracts) {
         return ListFact.singleton(getImplement());
@@ -897,6 +894,28 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             return event;
         }
         return null;
+    }
+
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        ImList<ValueClass> resultInterfaceClasses = null;
+        ValueClass resultValueClass = null;
+        for(Action<?> action : getDependActions()) { // it is called during parsing, so should be careful with abstracts
+            Pair<ValueClass, ImList<ValueClass>> dependClasses = action.getResultClasses();
+            if(dependClasses != null) {
+                if(resultInterfaceClasses == null) {
+                    resultInterfaceClasses = dependClasses.second;
+                    resultValueClass = dependClasses.first;
+                } else {
+                    resultValueClass = Property.op(resultValueClass, dependClasses.first, true);
+                    resultInterfaceClasses = resultInterfaceClasses.mapListValues((int index, ValueClass interfaceClass) -> Property.op(interfaceClass, dependClasses.second.get(index), true));
+                }
+            }
+        }
+
+        if(resultInterfaceClasses == null)
+            return null;
+
+        return new Pair<>(resultValueClass, resultInterfaceClasses);
     }
 
     public ImMap<Property, Boolean> getRequestChangeExtProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {

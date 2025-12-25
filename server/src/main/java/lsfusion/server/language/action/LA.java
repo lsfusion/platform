@@ -1,6 +1,7 @@
 package lsfusion.server.language.action;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -59,6 +60,10 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
 
     public void execute(ExecutionEnvironment session, ExecutionStack stack, FormEnvironment<T> formEnv, ObjectValue... objects) throws SQLException, SQLHandledException {
         action.execute(getMapValues(objects), session, stack, formEnv);
+    }
+
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        return action.getResultClasses();
     }
 
     public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {

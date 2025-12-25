@@ -1,7 +1,10 @@
 package lsfusion.server.logics.property.data;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
@@ -40,6 +43,8 @@ public class SessionDataProperty extends DataProperty {
         finalizeInit();
     }
     public boolean noNestingInNestedSession; // hack for sessionOwners
+    public ImOrderSet<ClassPropertyInterface> returnInterfaces; // hack for return
+    public Pair<ValueClass, ImList<ValueClass>> returnClasses; // hack for return
 
     public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
         return (SFunctionSet<SessionDataProperty>) element -> element.nestedType != null && (element.nestedType == LocalNestedType.ALL || (element.nestedType == LocalNestedType.MANAGESESSION) == manageSession);

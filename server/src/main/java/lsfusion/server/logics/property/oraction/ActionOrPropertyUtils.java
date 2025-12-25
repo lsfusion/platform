@@ -18,58 +18,9 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 public class ActionOrPropertyUtils {
-    public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces) {
-        return getValueClasses(dataProperties, mapInterfaces, true);
-    }
-
-    public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
-        Map<Integer, ValueClass> mapClasses = new HashMap<>(); // deprecated этот метод скоро уйдет
-        for (int i = 0; i < dataProperties.length; ++i) {
-            LA<?> dataProperty = dataProperties[i];
-
-            if (dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
-                continue;
-
-            int[] mapPropInterfaces = mapInterfaces[i];
-            if (mapPropInterfaces == null) {
-                mapPropInterfaces = BaseUtils.consecutiveInts(dataProperty.listInterfaces.size());
-            }
-
-            ValueClass[] propClasses = dataProperty.getInterfaceClasses();
-
-            assert propClasses.length == mapPropInterfaces.length;
-
-            for (int j = 0; j < mapPropInterfaces.length; ++j) {
-                ValueClass valueClass = propClasses[j];
-
-                int thisIndex = mapPropInterfaces[j];
-
-                ValueClass definedValueClass = mapClasses.get(thisIndex);
-                if (definedValueClass != null) {
-                    if (valueClass.isCompatibleParent(definedValueClass)) {
-                        valueClass = definedValueClass;
-                    } else {
-                        assert definedValueClass.isCompatibleParent(valueClass);
-                    }
-                }
-
-                mapClasses.put(thisIndex, valueClass);
-            }
-        }
-
-        ValueClass classes[] = new ValueClass[mapClasses.size()];
-        for (int i = 0; i < mapClasses.size(); ++i) {
-            classes[i] = mapClasses.get(i);
-            assert allowMissingInterfaces || classes[i] != null;
-        }
-
-        return classes;
-    }
 
     public static Integer[] getParams(LAP prop) {
         Integer[] params  = new Integer[prop.listInterfaces.size()];

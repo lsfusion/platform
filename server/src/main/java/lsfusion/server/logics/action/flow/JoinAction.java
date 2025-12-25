@@ -1,16 +1,22 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.change.SetAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -22,16 +28,21 @@ import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     public final ActionImplement<T, PropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
+    protected LP<?> result;
+
     public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement) {
+        this(caption, listInterfaces, implement, null);
+    }
+    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement, LP result) {
         super(caption, listInterfaces.size());
 
         action = PropertyFact.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
+        this.result = result;
         assert checkProps(action.mapping.values());
 
         finalizeInit();
@@ -65,6 +76,11 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        return null;
+    }
+
+    @Override
     public ImMap<Property, Boolean> calculateUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
         MSet<Property> used = SetFact.mSet();
         for(PropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
@@ -88,7 +104,29 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         if(identityMap == null)
             return super.getList(recursiveAbstracts);
 
+        ActionMapImplement<?, PropertyInterface> compile = compile(recursiveAbstracts);
+        if(compile != null)
+            return compile.getList(recursiveAbstracts);
+
         return PropertyFact.mapActionImplements(identityMap, action.action.getList(recursiveAbstracts));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public ActionMapImplement<?, PropertyInterface> compile(ImSet<Action<?>> recursiveAbstracts) {
+        if(result != null) {
+            return replace(new ActionReplacer() {
+                public <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action, Result<Boolean> stopReplacing) {
+                    if(action instanceof SetAction)
+                        return (ActionMapImplement<?, P>) ((SetAction) action).replaceReturnAction(result);
+                    if(JoinAction.this != action && action instanceof JoinAction)
+                        stopReplacing.set(true);
+                    return null;
+                }
+            });
+        }
+
+        return super.compile(recursiveAbstracts);
     }
 
     @Override

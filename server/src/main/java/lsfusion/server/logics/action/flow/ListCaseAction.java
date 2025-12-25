@@ -30,6 +30,7 @@ import java.util.function.Function;
 public abstract class ListCaseAction extends KeepContextAction {
 
     private final PropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
+    private final Pair<ValueClass, ImList<ValueClass>> abstractReturn;
     protected boolean isExclusive;
     
     public enum AbstractType { CASE, MULTI, LIST }
@@ -66,12 +67,13 @@ public abstract class ListCaseAction extends KeepContextAction {
         super(caption, innerInterfaces.size());
 
         this.abstractWhere = null;
+        this.abstractReturn = null;
         this.type = null;
         this.isExclusive = isExclusive;
     }
 
     // mutable реализация
-    public <I extends PropertyInterface> ListCaseAction(LocalizedString caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseAction(LocalizedString caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses, ValueClass returnClass, ImList<ValueClass> returnClasses)  {
         super(caption, innerInterfaces.size());
 
         this.checkExclusiveImplementations = checkExclusiveImplementations;
@@ -85,6 +87,7 @@ public abstract class ListCaseAction extends KeepContextAction {
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
         abstractWhere = PropertyFact.createUnion(checkExclusiveImplementations, checkAllImplementations, isLast, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractReturn = returnClass != null ? new Pair<>(returnClass, returnClasses) : null;
     }
 
     protected abstract PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();
@@ -120,6 +123,14 @@ public abstract class ListCaseAction extends KeepContextAction {
     public void markRecursions(Set<Action> marks) {
         assert isAbstract();
         markRecursions(SetFact.EMPTY(), marks);
+    }
+
+    @Override
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        if(isAbstract())
+            return abstractReturn;
+
+        return super.getResultClasses();
     }
 
     @Override

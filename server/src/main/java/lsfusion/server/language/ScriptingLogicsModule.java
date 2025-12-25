@@ -117,6 +117,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
@@ -929,13 +930,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, String returnClassName, List<String> returnClassNames) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = getParams(paramClasses, true);
+        ValueClass returnClass = returnClassName != null ? findClass(returnClassName) : null;
+        ImList<ValueClass> returnClasses = returnClassNames != null ? findClasses(returnClassNames) : ListFact.EMPTY();
         LA<?> result;
         if (type == ListCaseAction.AbstractType.LIST) {
-            result = addAbstractListAProp(isChecked, isLast, params);
+            result = addAbstractListAProp(isChecked, isLast, params, returnClass, returnClasses);
         } else {
-            result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
+            result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params, returnClass, returnClasses);
         }
         return result;
     }
@@ -1640,7 +1643,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         return findLAByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true, false);
     }
 
-    public Pair<LPWithParams, LPTrivialLA> addScriptedJProp(boolean user, NamedPropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    public static class ActionStatementContext {
+
+        public final List<TypedParameter> context;
+        public List<LAWithParams> beforeActions;
+        public List<LAWithParams> afterActions;
+
+        public void addBeforeAction(LAWithParams action) {
+            if(beforeActions == null)
+                beforeActions = new ArrayList<>();
+            beforeActions.add(action);
+        }
+        public void addAfterAction(LAWithParams action) {
+            if(afterActions == null)
+                afterActions = new ArrayList<>();
+            afterActions.add(action);
+        }
+
+        public ActionStatementContext(List<TypedParameter> context) {
+            this.context = context;
+        }
+    }
+
+    public Pair<LPWithParams, LPTrivialLA> addScriptedJProp(boolean user, NamedPropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params, ScriptingLogicsModule.ActionStatementContext actions) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findLPByPropertyUsage(pUsage, paramProps, params, true);
 
         LPWithParams result = null;
@@ -1648,7 +1673,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(mainProp != null) {
             result = addScriptedJProp(user, mainProp, paramProps);
         } else {
-            findLAByPropertyUsage(pUsage, paramProps, params, true);
+//            splitting paramProps to using extend params, and not using (if there is a explicit classes, move from not extend params to extend
+            List<LPWithParams> extendParamProps = null;
+            if(actions != null) {
+                int exParams = paramProps.size() - 1;
+                while(exParams >= 0 && !getExtendInterfaces(actions.context.size(), paramProps.get(exParams).usedParams).isEmpty()) {
+                    exParams--;
+                }
+                extendParamProps = paramProps.subList(exParams + 1, paramProps.size());
+                paramProps = paramProps.subList(0, exParams + 1);
+            }
+
+            LA<?> mainAction = findLAByPropertyUsage(pUsage, paramProps, params, true);
+
+            if(actions != null) {
+                LP<?> returnDataProp = PropertyFact.createReturnDataProp(mainAction.getResultClasses());
+
+                result = addScriptedJProp(user, returnDataProp, extendParamProps);
+
+                actions.addBeforeAction(addScriptedJoinAProp(mainAction, returnDataProp, paramProps));
+            }
         }                
 
         // this whole thing is needed for PROPERTIES f(a,b) block in form (to keep LL(*) parser there, just like with GROUP BY)
@@ -2235,6 +2279,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ArrayList<>(s);
     }
 
+    public LAWithParams addScriptedListAProp(List<LAWithParams> properties) {
+        return addScriptedListAProp(properties, Collections.emptyList());
+    }
+
     public LAWithParams addScriptedListAProp(List<LAWithParams> properties, List<LP> localProps) {
         List<Object> resultParams = getParamsPlainList(properties);
 
@@ -2499,16 +2547,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         addModuleLAP(lp, localPropertyData.name, localPropertyData.signature);
     }
 
-    public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LA mainAction = findLAByPropertyUsage(pUsage, properties, params);
-        return addScriptedJoinAProp(mainAction, properties);
+    public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, NamedPropertyUsage toUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        LA<?> mainAction = findLAByPropertyUsage(pUsage, properties, params);
+
+        LP result = null;
+        if(toUsage != null)
+            result = findLPParamByPropertyUsage(toUsage, mainAction.getResultClasses().second);
+
+        return addScriptedJoinAProp(mainAction, result, properties);
     }
 
     public LAWithParams addScriptedJoinAProp(LA mainAction, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(mainAction, null, properties);
+    }
+    public LAWithParams addScriptedJoinAProp(LA mainAction, LP result, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkParamCount(mainAction, properties.size());
 
         List<Object> resultParams = getParamsPlainList(properties);
-        LA action = addJoinAProp(null, LocalizedString.NONAME, mainAction, resultParams.toArray());
+        LA action = addJoinAProp(null, LocalizedString.NONAME, result, mainAction, resultParams.toArray());
         return new LAWithParams(action, mergeAllParams(properties));
     }
 
@@ -2797,9 +2853,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LAWithParams addScriptedChangeAProp(List<TypedParameter> oldContext, LPWithParams fromProperty, LPWithParams whereProperty, LPWithParams toProperty, List<TypedParameter> newContext, int exParams, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkAssignProperty(fromProperty, toProperty);
 
-        List<Integer> allParams = mergeNullableAllParams(toProperty, fromProperty, whereProperty);
-        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), allParams);
-        List<Integer> extendInterfaces = getExtendInterfaces(oldContext.size(), allParams);
+        List<Integer> extendInterfaces = getExtendInterfaces(oldContext.size(), mergeNullableAllParams(toProperty, fromProperty, whereProperty));
 
         if (!extendInterfaces.isEmpty()) {
             if (fromProperty.getLP() != null && !fromProperty.getLP().property.isExplicitNotNull() &&
@@ -2818,6 +2872,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             whereProperty = patchExtendParams(whereProperty, BaseUtils.toList(addScriptedChangeClassProp(toProperty), addScriptedChangeValueClassProp(toProperty, fromProperty)), newContext, oldContext.size(), debugPoint);
         }
 
+        return addScriptedChangeAProp(oldContext, fromProperty, whereProperty, toProperty);
+    }
+
+    private LAWithParams addScriptedChangeAProp(List<TypedParameter> oldContext, LPWithParams fromProperty, LPWithParams whereProperty, LPWithParams toProperty) {
+        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), mergeNullableAllParams(toProperty, fromProperty, whereProperty));
+
         List<LAPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
             paramsList.add(new LPWithParams(resI));
@@ -2827,7 +2887,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
-        
+
         LA result = addSetPropertyAProp(null, LocalizedString.NONAME, resultInterfaces.size(), whereProperty != null, getParamsPlainList(paramsList).toArray());
         return new LAWithParams(result, resultInterfaces);
     }
@@ -2879,6 +2939,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(paramsList);
         LA result = addAddObjAProp((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
         return new LAWithParams(result, resultInterfaces);
+    }
+
+    public LAWithParams addScriptedReturnProp(List<TypedParameter> context, ActionStatementContext actions, LPWithParams resultProperty, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        // we're patching it here to get missing classes for resultProperty + avoid getting writeTo property into where (for correct replace then)
+        if(resultProperty != null)
+            resultProperty = patchExtendParams(resultProperty, newContext, context.size(), debugPoint);
+
+        ValueClass returnClass = getValueClassByParamProperty(resultProperty, newContext);
+        ValueClass[] resultClasses = resultProperty.getLP().getInterfaceClasses(ClassType.signaturePolicy);
+        List<Integer> returnInterfaces = new ArrayList<>();
+        int oldContextSize = context.size();
+        int exSize = newContext.size() - oldContextSize;
+        MList<ValueClass> mReturnClasses = ListFact.mList(exSize);
+        for (int i = 0; i < exSize; i++) {
+            mReturnClasses.add(resultClasses[resultClasses.length - exSize + i]);
+            returnInterfaces.add(oldContextSize + i);
+        }
+        ImList<ValueClass> returnInterfaceClasses = mReturnClasses.immutableList();
+        Pair<ValueClass, ImList<ValueClass>> returnClasses = new Pair<>(returnClass, returnInterfaceClasses);
+
+        LP<ClassPropertyInterface> returnLP = PropertyFact.createReturnDataProp(returnClasses);
+        ((SessionDataProperty)returnLP.property).returnInterfaces = returnLP.listInterfaces;
+        ((SessionDataProperty)returnLP.property).returnClasses = returnClasses;
+
+        LPWithParams returnDataProp = new LPWithParams(returnLP, returnInterfaces);
+
+        actions.addAfterAction(getTerminalFlowAction(ChangeFlowActionType.RETURN));
+        return addScriptedChangeAProp(context, resultProperty, null, returnDataProp);
     }
 
     public LAWithParams addScriptedDeleteAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, LPWithParams whereProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
@@ -3701,7 +3789,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LPWithParams, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    public Pair<LPWithParams, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, ScriptingLogicsModule.ActionStatementContext actions, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
@@ -3716,9 +3804,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             case STRING:
                 String str = unquote((String) value);
                 if (isInlineSequence(str)) {
-                    return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
+                    return Pair.create(addStringInlineProp(str, lineNumber, context, actions, dynamic), null);
                 } else if (containsSpecialSequence(str)) {
-                    return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);
+                    return Pair.create(addStringInterpolateProp(str, lineNumber, context, actions, dynamic), null);
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
                     lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
@@ -3736,11 +3824,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return Pair.create(new LPWithParams(lp), new LPLiteral(value));
     }
 
-    protected LPWithParams addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, ScriptingLogicsModule.ActionStatementContext actions, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String resourceName = transformToResourceName(source.substring(INLINE_PREFIX.length(), source.length() - 1));
         String code = parseStringInlineProp(resourceName);
         code = quote(escapeInlineContent(code));
-        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic);
+        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, actions, dynamic);
     }
 
     private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
@@ -3751,14 +3839,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    protected LPWithParams addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, ScriptingLogicsModule.ActionStatementContext actions, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String code = null;
         try {
             code = StringUtils.join(ScriptedStringUtils.parseStringInterpolateProp(source), " + ");
         } catch (TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
-        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic);
+        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, actions, dynamic);
     }
 
     private LP addNumericConst(BigDecimal value) {
@@ -4156,7 +4244,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(doAction != null)
                 actions.add(extendImportDoAction(noParams, paramOld, oldContext, newContext, doAction, elseAction, whereLCP, importParamProps, nulls));
 
-            LAWithParams listAction = addScriptedListAProp(actions, Collections.emptyList());
+            LAWithParams listAction = addScriptedListAProp(actions);
             // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах
             return addScriptedIfAProp(new LPWithParams(baseLM.vtrue), listAction, null);
         }
@@ -4194,7 +4282,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         if(fillNulls != null) {
-            LAWithParams fillNullsAction = addScriptedListAProp(fillNulls, Collections.emptyList());
+            LAWithParams fillNullsAction = addScriptedListAProp(fillNulls);
             if(!noParams) // FOR where(row)
                 fillNullsAction = addScriptedForAProp(oldContext, new LPWithParams(noParams ? baseLM.vtrue : whereLCP, params), Collections.emptyList(), fillNullsAction,
                     null, null, null, false, false, false, Collections.emptyList(), false);
@@ -4251,7 +4339,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
                 ScriptingLogicsModule.setDebugInfo(null, assignLP.second, assignAction.getLP().action);
 
-                doAction = addScriptedListAProp(Arrays.asList(assignAction, doAction), new ArrayList<>());
+                doAction = addScriptedListAProp(Arrays.asList(assignAction, doAction));
             }
 
             boolean paramNoNull = nulls != null && !nulls.get(paramNum - paramOld);
@@ -5623,8 +5711,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void actionDefinitionBodyCreated(LAWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate, List<ResolveClassSet> signature) {
-        actionDefinitionBodyCreated((LA<PropertyInterface>) lpWithParams.getLP(), startPoint, endPoint, modifyContext, needToCreateDelegate, signature);
+    public LAWithParams actionDefinitionBodyCreated(LAWithParams laWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, ActionStatementContext actions, boolean modifyContext) {
+        if(actions.beforeActions != null || actions.afterActions != null) {
+            laWithParams = addScriptedListAProp(BaseUtils.mergeLists(
+                    actions.beforeActions != null ? actions.beforeActions : Collections.emptyList(),
+                    Collections.singletonList(laWithParams),
+                    actions.afterActions != null ? actions.afterActions : Collections.emptyList()));
+        }
+
+        actionDefinitionBodyCreated(laWithParams, null, startPoint, endPoint, modifyContext, null);
+
+        return laWithParams;
+    }
+
+    public void actionDefinitionBodyCreated(LAWithParams lpWithParams, List<ResolveClassSet> signature, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) {
+        actionDefinitionBodyCreated(lpWithParams.getLP(), startPoint, endPoint, modifyContext, needToCreateDelegate, signature);
     }
 
     public void actionDefinitionBodyCreated(LA<?> lAction, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate, List<ResolveClassSet> signature) {

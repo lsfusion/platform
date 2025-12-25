@@ -59,7 +59,6 @@ import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.*;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -763,9 +762,14 @@ public class PropertyFact {
         return dataProperty.getImplement(orderInterfaces.keyOrderSet());
     }
 
+    public static LP<ClassPropertyInterface> createReturnDataProp(Pair<ValueClass, ImList<ValueClass>> classes) {
+        return new LP<>(new SessionDataProperty(LocalizedString.NONAME, classes.second.toArray(new ValueClass[classes.second.size()]), classes.first, true));
+    }
+
     public static Property<?> createDataPropRev(String caption, Object object, ValueClass valueClass) {
         return createDataPropRev(caption, object, SetFact.EMPTYORDER(), valueClass, LocalNestedType.ALL).property;
     }
+    // form data property
     public static PropertyObjectEntity<ClassPropertyInterface> createDataPropRev(String typeString, Object objects, ImOrderSet<ObjectEntity> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
         ImOrderSet<ValueClass> interfaceClasses = interfaces.mapOrderSetValues((ObjectEntity p) -> p.baseClass);
 //        " (" + objects.toString() + ")" we don't want to call toString for now, not to finalize caption

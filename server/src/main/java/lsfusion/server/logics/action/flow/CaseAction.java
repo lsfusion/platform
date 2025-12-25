@@ -135,8 +135,8 @@ public class CaseAction extends ListCaseAction {
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, boolean isChecked, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(caption, isExclusive, isChecked, isLast, type, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, boolean isChecked, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses, ValueClass returnClass, ImList<ValueClass> returnClasses)  {
+        super(caption, isExclusive, isChecked, isLast, type, innerInterfaces, mapClasses, returnClass, returnClasses);
 
         cases = NFFact.list();
     }

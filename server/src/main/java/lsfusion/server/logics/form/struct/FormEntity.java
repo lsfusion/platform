@@ -1345,14 +1345,12 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         Iterable<ActionObjectEntity<?>> eventActionsNFList = getNFEventActionsListIt(FormEventType.INIT, version);
         if (eventActionsNFList != null) {
             for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList) {
-                for (ActionMapImplement<?, ?> actionMapImplement : actionObjectEntity.property.getList()) {
-                    if (actionMapImplement.hasFlow(ChangeFlowType.INTERNALASYNC)) {
-                        ActionMapImplement<?, PropertyInterface> internalClientAction = PropertyFact
-                                .createJoinAction(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), true),
-                                        PropertyFact.createStatic(LocalizedString.create("empty.js", false), StringClass.text));
-                        addActionsOnEvent(FormEventType.INIT, version, new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV()));
-                        return;
-                    }
+                if (actionObjectEntity.property.hasFlow(ChangeFlowType.INTERNALASYNC)) {
+                    ActionMapImplement<?, PropertyInterface> internalClientAction = PropertyFact
+                            .createJoinAction(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), true),
+                                    PropertyFact.createStatic(LocalizedString.create("empty.js", false), StringClass.text));
+                    addActionsOnEvent(FormEventType.INIT, version, new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV()));
+                    return;
                 }
             }
         }

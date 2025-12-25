@@ -115,12 +115,12 @@ public class ScriptParser {
         });
     }
 
-    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) {
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.ActionStatementContext actions, boolean dynamic) {
         Result<ScriptingLogicsModule.LPWithParams> result = new Result();
 
         runCode(LM, code, 0, moduleName, "", lineNumber, parser -> {
             try {
-                result.set(parser.propertyExpression(context, dynamic));
+                result.set(parser.propertyExpression(context, actions, dynamic));
             } catch (RecognitionException e) {
                 throw Throwables.propagate(e);
             }
