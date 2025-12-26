@@ -126,7 +126,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return mapKeys;
     }
     @Override
-    @IdentityStrongLazy
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
     public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
