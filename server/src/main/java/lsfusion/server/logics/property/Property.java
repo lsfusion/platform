@@ -1869,7 +1869,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    @IdentityStrongLazy
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
     public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         if(!forceSelect && !canBeChanged(false)) // optimization
             return null; // ? because sometimes can be used to display one of the option
@@ -1978,11 +1978,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         Type nameType = name.property.getType();
-        return new Select<>(filterSelected -> {
-            if(filterSelected && !fallbackToFilterSelected)
-                return null;
+        return new Select<>(new SelectProperty<T>() {
+            @Override
+            public PropertyMapImplement<?, T> get(boolean filterSelected) {
+                if (filterSelected && !fallbackToFilterSelected)
+                    return null;
 
-            return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
+                return getSelect(filterSelected);
+            }
+
+            @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
+            private PropertyMapImplement<?, T> getSelect(boolean filterSelected) {
+                return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
+            }
         }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readContextEntity != null ? ListFact.singleton(readContextEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
     }
 
