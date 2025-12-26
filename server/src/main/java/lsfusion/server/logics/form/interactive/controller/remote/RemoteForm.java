@@ -941,11 +941,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 pendingActions.removeAll(delayedDestroyForms);
             else {
                 ServerLoggers.remoteLifeLog("FORM DELAYED DESTROY : " + this);
-                try {
-                    form.syncLikelyOnClose(false, stack);
-                } catch (SQLException | SQLHandledException e) {
-                    throw Throwables.propagate(e);
-                }
+
+                form.cleanViews();
+
                 deactivateAndCloseLater(false);
             }
         }

@@ -1724,7 +1724,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         session.env.form.changeCurrentForm(entity.getCanonicalName());
     }
 
-    private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = getSession();
         LP<?> sessionOwners = BL.LM.sessionOwners;
         int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
@@ -1733,18 +1733,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return prevOwners;
     }
 
-    // сейчас закрытие формы асинхронно (для экономии round trip'а), для записи же скажем sessionOwner'а нужна синхронная работа сессии
-    // для этого можно делать это либо при отсылке hide'а формы на сервере (но тогда owner может сброситься чуть раньше чем надо)
-    // или в контексте вызова, но тогда в случае немодальной формы, sessionOwner не сбрасывается, то есть мы полагаемся на то что сессия сразу же закроется (де-факто так и будет, но мало ли)
-    // в будущем если все же вернемся к синхронизации закрытия возможно проблема уйдет
-    private static boolean useCallerSyncOnClose = false;
-    public void syncLikelyOnClose(boolean call, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if(call == useCallerSyncOnClose) {
-            updateSessionOwner(false, stack);
-
-            for(SessionModifier modifier : modifiers.values()) // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
-                modifier.cleanViews();
-        }
+    public void cleanViews() {
+        for(SessionModifier modifier : modifiers.values()) // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
+            modifier.cleanViews();
     }
 
     @Override
@@ -3005,6 +2996,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // destroy will be postponed to the last response
         context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
+
+        updateSessionOwner(false, context.stack);
     }
 
     public void formDrop(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
