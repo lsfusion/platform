@@ -740,8 +740,6 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeString(outStream, debug.getPath());
         pool.writeString(outStream, entity.getFormPath());
 
-        pool.writeString(outStream, null);
-
         ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
         outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
         if (keyBindings != null) {

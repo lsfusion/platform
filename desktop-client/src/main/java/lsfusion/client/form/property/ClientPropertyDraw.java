@@ -718,12 +718,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         path = pool.readString(inStream);
         formPath = pool.readString(inStream);
 
-        String mouseBinding = pool.readString(inStream);
-        if (mouseBinding != null) {
-            initEditBindingMap();
-            editBindingMap.setMouseAction(mouseBinding);
-        }
-
         int keyBindingSize = inStream.readInt();
         if (keyBindingSize > 0) {
             initEditBindingMap();
