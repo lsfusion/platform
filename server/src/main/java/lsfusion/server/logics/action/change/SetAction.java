@@ -188,7 +188,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         Property<P> toProperty = writeTo.property;
         ImOrderSet<P> returnInterfaces;
         if(toProperty instanceof SessionDataProperty && (returnInterfaces = (ImOrderSet<P>) ((SessionDataProperty) toProperty).returnInterfaces) != null) {
-            assert where == null;
+            assert where == null || where.mapIsOr(writeTo); // actually the second assert is that where = from OR to
             return PropertyFact.createSetAction(innerInterfaces, mapInterfaces, result.getImplement(returnInterfaces.mapOrder(writeTo.mapping)), writeFrom);
         }
         return null;
@@ -202,5 +202,14 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
             return returnClasses;
 
         return super.getResultClasses();
+    }
+
+    @Override
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        Property<P> toProperty = writeTo.property;
+        if(toProperty instanceof SessionDataProperty && ((SessionDataProperty) toProperty).returnClasses != null)
+            return SetFact.singleton((SessionDataProperty) toProperty);
+
+        return super.getResultProps(recursiveAbstracts);
     }
 }

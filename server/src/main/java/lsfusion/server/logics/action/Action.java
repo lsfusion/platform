@@ -62,6 +62,7 @@ import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -916,6 +917,18 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             return null;
 
         return new Pair<>(resultValueClass, resultInterfaceClasses);
+    }
+
+    @IdentityLazy
+    public ImOrderSet<SessionDataProperty> getResultProps() {
+        return getResultProps(SetFact.EMPTY()).toOrderSet();
+    }
+
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        ImSet<SessionDataProperty> resultProps = SetFact.EMPTY();
+        for(Action<?> action : getDependActions())
+            resultProps = resultProps.merge(action.getResultProps(recursiveAbstracts));
+        return resultProps;
     }
 
     public ImMap<Property, Boolean> getRequestChangeExtProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {

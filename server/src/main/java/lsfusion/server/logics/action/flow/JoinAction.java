@@ -20,6 +20,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -78,6 +79,11 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     @Override
     public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
         return null;
+    }
+
+    @Override
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        return SetFact.EMPTY();
     }
 
     @Override

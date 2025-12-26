@@ -2942,7 +2942,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedReturnProp(List<TypedParameter> context, ActionStatementContext actions, LPWithParams resultProperty, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        // we're patching it here to get missing classes for resultProperty + avoid getting writeTo property into where (for correct replace then)
+        // we're patching it here to get missing classes for resultProperty
         if(resultProperty != null)
             resultProperty = patchExtendParams(resultProperty, newContext, context.size(), debugPoint);
 
@@ -2966,7 +2966,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams returnDataProp = new LPWithParams(returnLP, returnInterfaces);
 
         actions.addAfterAction(getTerminalFlowAction(ChangeFlowActionType.RETURN));
-        return addScriptedChangeAProp(context, resultProperty, null, returnDataProp);
+        return addScriptedChangeAProp(context, resultProperty, null, returnDataProp, newContext, 0, debugPoint);
     }
 
     public LAWithParams addScriptedDeleteAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, LPWithParams whereProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {

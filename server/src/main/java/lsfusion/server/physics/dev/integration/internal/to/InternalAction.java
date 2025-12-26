@@ -22,6 +22,7 @@ import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 
 import java.io.IOException;
@@ -95,7 +96,7 @@ public abstract class InternalAction extends ExplicitAction {
     }
 
     public ObjectValue readResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException {
-        return getBaseLM().getExportValueProperty().readFirstNotNull(context.getSession(), new Result<>(), la.action);
+        return RemoteConnection.readResult(la.action, context.getEnv(), getBaseLM(), new Result<>()).second[0];
     }
 
     public Object readJSONResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException, IOException {

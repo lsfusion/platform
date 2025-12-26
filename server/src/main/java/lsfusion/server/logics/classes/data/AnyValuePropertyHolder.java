@@ -1,7 +1,9 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -22,7 +24,9 @@ import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
 import lsfusion.server.logics.classes.data.time.*;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 
@@ -345,19 +349,23 @@ public class AnyValuePropertyHolder {
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 
-    private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, Action<?> action, Result<SessionDataProperty> readedProperty) {
+    public static Pair<String[], ObjectValue[]> getFirstChangeProp(ImOrderSet<SessionDataProperty> props, Action<?> action, Result<SessionDataProperty> readedProperty) {
         ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());
         if(changedProps.isEmpty())
             changedProps = props;
         
         readedProperty.set(changedProps.get(0));
-        return NullValue.instance;
+        return new Pair<>(new String[] {null}, new ObjectValue[] { NullValue.instance });
     }
     
-    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, Action<?> action) throws SQLException, SQLHandledException { // return, not drop first value
-        DataSession session = env.getSession();
+    public Pair<String[], ObjectValue[]> readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, Action<?> action) throws SQLException, SQLHandledException { // return, not drop first value
+        ImOrderSet<SessionDataProperty> resultProps = action.getResultProps();
+        return readFirstNotNull(env, readedProperty, action, !resultProps.isEmpty() ? resultProps : getProps());
+    }
 
-        ImOrderSet<SessionDataProperty> props = getProps();
+    @NotNull
+    private static Pair<String[], ObjectValue[]> readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, Action<?> action, ImOrderSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
+        DataSession session = env.getSession();
         ImSet<SessionDataProperty> changedProps = SetFact.fromJavaSet(session.getSessionChanges(props.getSet()));
 
         if(changedProps.isEmpty()) // optimization
@@ -365,16 +373,32 @@ public class AnyValuePropertyHolder {
         if(changedProps.size() == 1) { // optimization
             SessionDataProperty prop = changedProps.single();
             readedProperty.set(prop);
-            return prop.readClasses(env);
+            return readResult(prop, env);
         }
 
         for(SessionDataProperty prop : props.filterOrder(changedProps)) {
-            ObjectValue changedValue = prop.readClasses(env);
-            if (changedValue instanceof DataObject) {
+            Pair<String[], ObjectValue[]> changedValue = readResult(prop, env);
+            if (changedValue.second.length > 0 && changedValue.second[0] instanceof DataObject) {
                 readedProperty.set(prop);
                 return changedValue;
             }
         }
         return getFirstChangeProp(props, action, readedProperty);
+    }
+
+    private static Pair<String[], ObjectValue[]> readResult(SessionDataProperty property, ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        if(property.interfaces.isEmpty())
+            return new Pair<>(new String[] {null}, new ObjectValue[] { property.readClasses(env) });
+
+        ImMap<ImMap<ClassPropertyInterface, DataObject>, DataObject> allValues = property.readAllClasses(env);
+        int size = allValues.size();
+        String[] names = new String[size];
+        ObjectValue[] values = new ObjectValue[size];
+        for (int i = 0; i < size; i++) {
+            ImMap<ClassPropertyInterface, DataObject> key = allValues.getKey(i);
+            names[i] = property.returnInterfaces.toString(p -> key.get(p).formatString(), ",");
+            values[i] = allValues.getValue(i);
+        }
+        return new Pair<>(names, values);
     }
 }

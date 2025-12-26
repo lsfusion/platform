@@ -18,6 +18,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -131,6 +132,16 @@ public abstract class ListCaseAction extends KeepContextAction {
             return abstractReturn;
 
         return super.getResultClasses();
+    }
+
+    @Override
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        if(isRecursive) {
+            if (recursiveAbstracts.contains(this)) return SetFact.EMPTY();
+            recursiveAbstracts = recursiveAbstracts.addExcl(this);
+        }
+
+        return super.getResultProps(recursiveAbstracts);
     }
 
     @Override
