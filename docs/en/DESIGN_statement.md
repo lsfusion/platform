@@ -149,6 +149,7 @@ To access design components, you can use their names or address property compone
 |`captionAlignmentHorz`|Component caption horizontal alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`captionAlignmentVert`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`showIf`|Specifies a condition under which the container will be displayed.|Expression (logical value)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
+|`defaultValue`|Default value (on start editing, only for custom interpreter)|Expression (string value)|`NULL`|`default value`<br/>`defaultValue(a, b)`|
 
 ### Container properties
 
