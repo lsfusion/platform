@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -551,10 +550,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
-
-        for(ComponentView removedComponent : removedComponents)
-            if(removedComponent.getContainer() == null)
-                removedComponent.finalizeAroundInit();
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);
@@ -563,14 +558,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         mainContainer.prereadAutoIcons(this, context);
     }
 
-    protected transient Set<ComponentView> removedComponents = new ConcurrentIdentityWeakHashSet<>();
-
     // the problem is that if removed components are not put somewhere they are not finalized
     public void removeComponent(ComponentView component, Version version) {
         if(component instanceof PropertyDrawView) {
             ((PropertyDrawView) component).entity.setRemove(true, version);
         }
-        removedComponents.add(component);
         component.removeFromParent(version);
     }
 
@@ -597,11 +589,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         mapping.add(pivotMeasures, src.pivotMeasures);
 
         mapping.add(components, src.components);
-
-        // should be versioned too
-        for(ComponentView v : src.removedComponents) {
-            removedComponents.add(mapping.get(v));
-        }
     }
 
     @Override
