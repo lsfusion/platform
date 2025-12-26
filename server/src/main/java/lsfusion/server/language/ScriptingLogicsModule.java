@@ -1294,7 +1294,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action));
                 action.setAsEventActionFor(actionSID, mainProperty);
             } else if (editEvent.isKeyPress()) {
-//                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
+                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
                 action.setAsEventActionFor(actionSID, mainProperty);
             } else {
                 if(editEvent.before != null) {
@@ -1539,7 +1539,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.action.getSID();
-//        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
+        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
         property.getActionOrProperty().setEventAction(actionSID, actionImplement);
     }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -71,6 +72,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang.StringUtils;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
@@ -92,6 +94,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> remove = NFFact.property();
 
     private final NFOrderMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings = NFFact.orderMap();
+    private Map<KeyStroke, String> keyBindings;
     private final NFMap<String, ActionObjectSelector> eventActions = NFFact.map();
 
     private final NFProperty<Boolean> isSelector = NFFact.property();
@@ -402,7 +405,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private boolean isChange(String eventActionSID, FormInstanceContext context) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
         boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
-        assert isEdit || hasContextMenuBinding(eventActionSID, context);
+        assert isEdit || hasContextMenuBinding(eventActionSID, context) || hasKeyBinding(eventActionSID, context);
         return isEdit;
     }
     
@@ -681,6 +684,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return sync.get();
     }
 
+    public void setKeyAction(KeyStroke ks, String actionSID) {
+        if (keyBindings == null) {
+            keyBindings = new HashMap<>();
+        }
+        keyBindings.put(ks, actionSID);
+    }
+
     public void setContextMenuAction(String actionSID, LocalizedString caption, Version version) {
         contextMenuBindings.add(actionSID, new ActionOrProperty.ContextMenuBinding(caption, null), version);
     }
@@ -727,7 +737,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {
-        return BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keyIt());
+        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keyIt()), getKeyBindings(context).valueIt());
     }
     public ImOrderMap<String, ActionOrProperty.ContextMenuBinding> getContextMenuBindings(FormInstanceContext context) {
        return getContextMenuBindings().mergeOrder(getBindingProperty(context).getContextMenuBindings());
@@ -746,6 +756,18 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public boolean hasContextMenuBinding(String actionSid, FormInstanceContext context) {
         return getContextMenuBindings(context).containsKey(actionSid);
+    }
+
+    public boolean hasKeyBinding(String actionId, FormInstanceContext context) {
+        ImMap<KeyStroke, String> keyBindings = getKeyBindings(context);
+        return keyBindings != null && keyBindings.containsValue(actionId);
+    }
+
+    public ImMap<KeyStroke, String> getKeyBindings(FormInstanceContext context) {
+        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty(context).getKeyBindings();
+        if(keyBindings != null)
+            propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
+        return propertyKeyBindings;
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {

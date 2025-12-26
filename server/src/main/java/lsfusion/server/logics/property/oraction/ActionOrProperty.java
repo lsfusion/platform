@@ -58,6 +58,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
@@ -337,8 +338,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
     }
 
+    private Object keyBindings;
     private Object contextMenuBindings;
     private Object eventActions;
+
+    public void setKeyAction(KeyStroke ks, String actionSID) {
+        if (keyBindings == null) {
+            keyBindings = MapFact.mMap(MapFact.override());
+        }
+        ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
+    }
+
+    public ImMap<KeyStroke, String> getKeyBindings() {
+        return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
+    }
 
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
         setContextMenuAction(actionSID, null, caption);
@@ -481,6 +494,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     protected void finalizeChanges() {
         eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
+        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }
 

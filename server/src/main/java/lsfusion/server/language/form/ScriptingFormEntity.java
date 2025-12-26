@@ -61,6 +61,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -650,6 +651,13 @@ public class ScriptingFormEntity {
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i), version);
+            }
+        }
+
+        Map<KeyStroke, String> keyBindings = options.getKeyBindings();
+        if (keyBindings != null) {
+            for (KeyStroke key : keyBindings.keySet()) {
+                property.setKeyAction(key, keyBindings.get(key));
             }
         }
         

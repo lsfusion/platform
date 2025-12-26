@@ -55,6 +55,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
+import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -740,7 +741,15 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeString(outStream, entity.getFormPath());
 
         pool.writeString(outStream, null);
-        outStream.writeInt(0);
+
+        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
+        outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
+        if (keyBindings != null) {
+            for (int i=0,size=keyBindings.size();i<size;i++) {
+                pool.writeObject(outStream, keyBindings.getKey(i));
+                pool.writeString(outStream, keyBindings.getValue(i));
+            }
+        }
 
         ImOrderMap<String, ContextMenuInfo> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
