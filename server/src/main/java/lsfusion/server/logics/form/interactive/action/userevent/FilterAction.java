@@ -6,6 +6,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -62,8 +63,9 @@ public class FilterAction extends UserEventAction {
                                 filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
                                 // value may be String (when stored via ReadFiltersAction), may be any other Object
                                 try {
-                                    filterItem.value = FormChanges.serializeConvertFileValue(jsonObject.opt(VALUE_KEY), context);
-                                } catch (IOException e) {
+                                    Object value = propertyDraw.entity.getStaticType().parseJSON(jsonObject.opt(VALUE_KEY));
+                                    filterItem.value = FormChanges.serializeConvertFileValue(value, context);
+                                } catch (IOException | ParseException e) {
                                     throw Throwables.propagate(e);
                                 }
                                 filterItem.junction = !jsonObject.optBoolean(OR_KEY);
