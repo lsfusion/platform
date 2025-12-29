@@ -1311,10 +1311,19 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         eventActions.finalizeChanges();
         defaultOrders.finalizeChanges();
         fixedOrders.finalizeChanges();
+
+        pivotColumns.finalizeChanges();
+        pivotRows.finalizeChanges();
+        pivotMeasures.finalizeChanges();
+        reportPathProp.finalizeChanges();
         
         hintsIncrementTable.finalizeChanges();
         hintsNoUpdate.finalizeChanges();
-        
+
+        integrationSID.finalizeChanges();
+        if (customizeForm != null)
+            customizeForm.finalizeChanges();
+
         for(RegularFilterGroupEntity regularFilterGroup : getRegularFilterGroupsIt())
             regularFilterGroup.finalizeAroundInit();
 

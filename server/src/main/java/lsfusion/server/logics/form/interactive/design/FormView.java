@@ -541,6 +541,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         defaultOrders.finalizeChanges();
 
+        mainContainer.finalizeAroundInit();
+
         for(RegularFilterGroupView regularFilter : getRegularFiltersIt())
             regularFilter.finalizeAroundInit();
 
@@ -550,6 +552,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
+        
+        components.finalizeChanges();
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);

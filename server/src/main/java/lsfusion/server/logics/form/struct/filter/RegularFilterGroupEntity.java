@@ -91,6 +91,8 @@ public class RegularFilterGroupEntity extends IdentityEntity<RegularFilterGroupE
     public void finalizeAroundInit() {
         filters.finalizeChanges();
         defaultFilterIndex.finalizeChanges();
+        noNull.finalizeChanges();
+        view.finalizeAroundInit();
     }
 
     public RegularFilterGroupView view;

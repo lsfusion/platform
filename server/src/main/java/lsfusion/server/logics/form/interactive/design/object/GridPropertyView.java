@@ -64,6 +64,15 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         for (FilterView filter : getFiltersIt()) {
             filter.finalizeAroundInit();
         }
+        filters.finalizeChanges();
+        captionHeight.finalizeChanges();
+        captionCharHeight.finalizeChanges();
+        resizeOverflow.finalizeChanges();
+        valueClass.finalizeChanges();
+        propertyValueClass.finalizeChanges();
+        lineWidth.finalizeChanges();
+        lineHeight.finalizeChanges();
+        boxed.finalizeChanges();
     }
 
     protected NFProperty<Integer> captionHeight = NFFact.property();

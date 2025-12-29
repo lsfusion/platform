@@ -679,6 +679,35 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
+
+        caption.finalizeChanges();
+        name.finalizeChanges();
+        image.finalizeChanges();
+        valueClass.finalizeChanges();
+        captionClass.finalizeChanges();
+        collapsible.finalizeChanges();
+        popup.finalizeChanges();
+        border.finalizeChanges();
+        collapsed.finalizeChanges();
+        horizontal.finalizeChanges();
+        tabbed.finalizeChanges();
+        childrenAlignment.finalizeChanges();
+        grid.finalizeChanges();
+        wrap.finalizeChanges();
+        alignCaptions.finalizeChanges();
+        resizeOverflow.finalizeChanges();
+        lines.finalizeChanges();
+        reversed.finalizeChanges();
+        lineSize.finalizeChanges();
+        captionLineSize.finalizeChanges();
+        lineShrink.finalizeChanges();
+        customDesign.finalizeChanges();
+        propertyCaption.finalizeChanges();
+        propertyCaptionClass.finalizeChanges();
+        propertyValueClass.finalizeChanges();
+        propertyImage.finalizeChanges();
+        propertyCustomDesign.finalizeChanges();
+        children.finalizeChanges();
     }
 
     @Override

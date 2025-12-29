@@ -99,6 +99,14 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
         return false;
     }
 
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        hierarchicalWidth.finalizeChanges();
+        hierarchicalCaption.finalizeChanges();
+        propertyHierarchicalCaption.finalizeChanges();
+    }
+
     // copy-constructor
     protected TreeGroupView(TreeGroupView src, ObjectMapping mapping) {
         super(src, mapping);

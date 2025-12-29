@@ -1688,6 +1688,74 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         defaultValue.set(value, version);
     }
 
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        if(filter != null)
+            filter.finalizeAroundInit();
+        changeOnSingleClick.finalizeChanges();
+        maxValue.finalizeChanges();
+        echoSymbols.finalizeChanges();
+        noSort.finalizeChanges();
+        defaultCompare.finalizeChanges();
+        charWidth.finalizeChanges();
+        charHeight.finalizeChanges();
+        valueWidth.finalizeChanges();
+        valueHeight.finalizeChanges();
+        captionWidth.finalizeChanges();
+        captionHeight.finalizeChanges();
+        captionCharHeight.finalizeChanges();
+        valueFlex.finalizeChanges();
+        tag.finalizeChanges();
+        inputType.finalizeChanges();
+        valueElementClass.finalizeChanges();
+        captionElementClass.finalizeChanges();
+        footerElementClass.finalizeChanges();
+        panelCustom.finalizeChanges();
+        changeKey.finalizeChanges();
+        showChangeKey.finalizeChanges();
+        changeMouse.finalizeChanges();
+        showChangeMouse.finalizeChanges();
+        drawAsync.finalizeChanges();
+        inline.finalizeChanges();
+        focusable.finalizeChanges();
+        panelColumnVertical.finalizeChanges();
+        valueAlignmentHorz.finalizeChanges();
+        valueAlignmentVert.finalizeChanges();
+        valueOverflowHorz.finalizeChanges();
+        valueOverflowVert.finalizeChanges();
+        valueShrinkHorz.finalizeChanges();
+        valueShrinkVert.finalizeChanges();
+        comment.finalizeChanges();
+        commentElementClass.finalizeChanges();
+        panelCommentVertical.finalizeChanges();
+        panelCommentFirst.finalizeChanges();
+        panelCommentAlignment.finalizeChanges();
+        placeholder.finalizeChanges();
+        pattern.finalizeChanges();
+        regexp.finalizeChanges();
+        regexpMessage.finalizeChanges();
+        tooltip.finalizeChanges();
+        valueTooltip.finalizeChanges();
+        wrap.finalizeChanges();
+        wrapWordBreak.finalizeChanges();
+        collapse.finalizeChanges();
+        ellipsis.finalizeChanges();
+        captionWrap.finalizeChanges();
+        captionWrapWordBreak.finalizeChanges();
+        captionCollapse.finalizeChanges();
+        captionEllipsis.finalizeChanges();
+        clearText.finalizeChanges();
+        notSelectAll.finalizeChanges();
+        toolbar.finalizeChanges();
+        toolbarActions.finalizeChanges();
+        notNull.finalizeChanges();
+        sticky.finalizeChanges();
+        sync.finalizeChanges();
+        highlightDuplicate.finalizeChanges();
+        defaultValue.finalizeChanges();
+    }
+
     // copy-constructor
     protected PropertyDrawView(PropertyDrawView<P, AddParent> src, ObjectMapping mapping) {
         super(src, mapping);

@@ -106,6 +106,19 @@ public class ToolbarView<AddGridParent extends GridPropertyView<AddGridParent, ?
         super(idGen, groupView);
     }
 
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        visible.finalizeChanges();
+        showViews.finalizeChanges();
+        showFilters.finalizeChanges();
+        showSettings.finalizeChanges();
+        showCountQuantity.finalizeChanges();
+        showCalculateSum.finalizeChanges();
+        showPrintGroupXls.finalizeChanges();
+        showManualUpdate.finalizeChanges();
+    }
+
     // copy-constructor
     protected ToolbarView(ToolbarView<AddGridParent> src, ObjectMapping mapping) {
         super(src, mapping);

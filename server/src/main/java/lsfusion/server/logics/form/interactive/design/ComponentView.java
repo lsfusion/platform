@@ -655,7 +655,35 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     }
 
     public void finalizeAroundInit() {
+        elementClass.finalizeChanges();
+        propertyElementClass.finalizeChanges();
+        width.finalizeChanges();
+        height.finalizeChanges();
+        span.finalizeChanges();
+        defaultComponent.finalizeChanges();
+        activated.finalizeChanges();
+        flex.finalizeChanges();
+        alignment.finalizeChanges();
+        shrink.finalizeChanges();
+        alignShrink.finalizeChanges();
+        alignCaption.finalizeChanges();
+        overflowHorz.finalizeChanges();
+        overflowVert.finalizeChanges();
+        captionVertical.finalizeChanges();
+        captionLast.finalizeChanges();
+        captionAlignmentHorz.finalizeChanges();
+        captionAlignmentVert.finalizeChanges();
+        marginTop.finalizeChanges();
+        marginBottom.finalizeChanges();
+        marginLeft.finalizeChanges();
+        marginRight.finalizeChanges();
+        font.finalizeChanges();
+        captionFont.finalizeChanges();
+        background.finalizeChanges();
+        foreground.finalizeChanges();
+        showIf.finalizeChanges();
         container.finalizeChanges();
+        defaultContainer.finalizeChanges();
     }
 
     public void prereadAutoIcons(FormView formView, ConnectionContext context) {

@@ -109,6 +109,9 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
+        tabVertical.finalizeChanges();
+        quickSearch.finalizeChanges();
+
         calculations.finalizeAroundInit();
 
         ContainerView record = getRecord();
