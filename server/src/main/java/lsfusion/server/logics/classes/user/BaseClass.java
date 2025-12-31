@@ -101,30 +101,29 @@ public class BaseClass extends AbstractCustomClass {
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
-        List<String> canonicalNames = new ArrayList<>();
-        List<LocalizedString> captions = new ArrayList<>();
+        List<String> sidClasses = new ArrayList<>();
+        List<LocalizedString> nameClasses = new ArrayList<>();
         List<String> images = new ArrayList<>();
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass) {
-                canonicalNames.add(customClass.getCanonicalName());
-                assert customClass.getCanonicalName() != null;
-                captions.add(customClass.caption);
+                sidClasses.add(customClass.getSID());
+                nameClasses.add(customClass.caption);
                 images.add(customClass.image);
             }
-        ConcreteCustomClass.fillObjectClass(objectClass, canonicalNames, captions, images, version);
+        ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, images, version);
     }
 
     public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP staticCaption, LP staticImage, LP<?> staticName, LP<?> staticOrder, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, DBManager.IDChanges dbChanges, ChangesController changesController) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
         Set<Long> usedIds = new HashSet<>();
 
-        // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как участвуют в addObject
+        // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         ID = 0L;
 
         objectClass.ID = Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
 
         if(objectClass.readData(objectClass.ID, sql, env, changesController) == null)
-            dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), objectClass.getCanonicalName(), ThreadLocalContext.localize(objectClass.caption), "object", 0));
+            dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), ThreadLocalContext.localize(objectClass.caption), "object", 0));
 
         usedSIds.put(objectClass.getSID(), objectClass);
         usedIds.add(objectClass.ID);
