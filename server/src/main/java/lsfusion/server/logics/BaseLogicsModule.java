@@ -224,8 +224,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP random;
     public LP objectClassName;
     public LP staticName;
-    public LP fullName;
-    public LP name;
     public LP staticCaption;
     public LP staticOrder;
 
@@ -638,8 +636,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         applyAll = findAction("applyAll[]");
 
         staticName = findProperty("staticName[StaticObject]");
-        fullName = findProperty("fullName[StaticObject]");
-        name = findProperty("name[StaticObject]");
         staticCaption = findProperty("staticCaption[StaticObject]");
         staticOrder = findProperty("order[StaticObject]");
         staticImage = findProperty("image[StaticObject]");
