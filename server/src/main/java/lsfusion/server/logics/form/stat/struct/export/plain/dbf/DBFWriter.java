@@ -5,6 +5,7 @@
  * <p>Company: iihero.com</p>
  * @author : He Xiong
  * @version 1.1
+ * fixed month in writeHeader
  */
 
 package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
@@ -117,7 +118,7 @@ public class DBFWriter {
     abyte0[0] = 3;
     Calendar calendar = Calendar.getInstance();
     abyte0[1] = (byte) (calendar.get(1) - 1900);
-    abyte0[2] = (byte) calendar.get(2);
+    abyte0[2] = (byte)(calendar.get(2) + 1); //fixed month
     abyte0[3] = (byte) calendar.get(5);
     abyte0[4] = 0;
     abyte0[5] = 0;
