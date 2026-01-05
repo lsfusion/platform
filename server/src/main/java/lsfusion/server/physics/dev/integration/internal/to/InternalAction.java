@@ -107,7 +107,7 @@ public abstract class InternalAction extends ExplicitAction {
     public static Object readJSON(ObjectValue result, Type valueType) {
         String charset = ExternalUtils.jsonCharset.toString();
         RawFileData file = readRawFile(result, valueType, charset);
-        if(file != null)
+        if(file != null && file.getLength() > 0)
             return JSONReader.readObject(file, charset);
         return null;
     }
