@@ -135,7 +135,7 @@ public class DBFWriter {
         abyte0[15] = 0;
         stream.write(abyte0, 0, abyte0.length);
         for (int l = 0; l < 16; l++) {
-            abyte0[l] = l == 12 ? getLanguageDriverNameByte() : 0;
+            abyte0[l] = l == 13 ? getLanguageDriverNameByte() : 0;
         }
         stream.write(abyte0, 0, abyte0.length);
     }
