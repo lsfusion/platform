@@ -54,6 +54,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
+import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginContext;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -333,7 +334,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 String password = ((PasswordAuthentication) authentication).getPassword();
 
                 boolean useDefaultAuthentication = true;
-                String ldapException = null;
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
@@ -354,10 +354,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                                 (String) userPrincipals.get("firstName"), (String) userPrincipals.get("lastName"),
                                 (String) userPrincipals.get("email"), (List<String>) userPrincipals.get("groupNames"),
                                 false, userAttributesPrincipals);
+                    } catch (FailedLoginException fle) {
+                        useDefaultAuthentication = false;
+                        logLdapException(fle);
                     } catch (javax.security.auth.login.LoginException e) {
-                        String errorMessage = "LDAP authentication failed";
-                        systemLogger.error(errorMessage, e);
-                        ldapException = errorMessage + ", " + e.getMessage();
+                        logLdapException(e);
                     }
                 }
 
@@ -366,7 +367,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         userObjectAndLogin = readUser(userName, userName, session);
 
                     if (userObjectAndLogin == null || userObjectAndLogin.second == null || !authenticationLM.checkPassword(session, userObjectAndLogin.first, password))
-                        throw ldapException == null ? new LoginException() : new LoginException(ldapException);
+                        throw new LoginException();
                 }
             } else {
                 OAuth2Authentication oauth2 = (OAuth2Authentication) authentication;
@@ -386,6 +387,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private void logLdapException(javax.security.auth.login.LoginException e) {
+        systemLogger.error("LDAP authentication failed", e);
     }
 
     private boolean krbProps = false;
@@ -594,11 +599,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (userRoleSIDs != null) {
                 for (String userRoleName : userRoleSIDs) {
                     ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleName));
-
-                    if (userRole instanceof DataObject) {
+                    if (userRole instanceof DataObject)
                         securityLM.inCustomUserUserRole.change(true, session, customUser, (DataObject) userRole);
-                        break;
-                    }
                 }
             }
 
