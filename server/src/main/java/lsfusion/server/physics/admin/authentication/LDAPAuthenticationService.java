@@ -6,11 +6,10 @@ import javax.naming.*;
 import javax.naming.directory.*;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.*;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
+import javax.security.auth.login.*;
 import javax.security.auth.spi.LoginModule;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.*;
 
@@ -146,8 +145,19 @@ public class LDAPAuthenticationService implements LoginModule {
 
             success = true;
             return true;
-        } catch (Exception e) {
-            throw new LoginException(e.getMessage());
+
+//            because this method can only throw LoginException
+        } catch (CommunicationException ce) { //no connection to AD
+            throw new LoginException(ce.getMessage());
+        } catch (NamingException ne) { // incorrect login or password
+            throw new FailedLoginException(ne.getMessage());
+        } catch (LoginException le) { //useServiceUser
+            if (le.getCause() instanceof SocketTimeoutException) //no connection to Kerberos
+                throw le;
+            else
+                throw new FailedLoginException(le.getMessage()); // incorrect login or password
+        } catch (IOException | UnsupportedCallbackException e) {
+            return false;
         }
     }
 
