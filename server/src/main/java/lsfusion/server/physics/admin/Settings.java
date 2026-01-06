@@ -3584,4 +3584,15 @@ public class Settings implements Cloneable {
     public void setHideDesktopClientLink(boolean hideDesktopClientLink) {
         this.hideDesktopClientLink = hideDesktopClientLink;
     }
+
+    //option for DBFWriter: write charset to 29 header byte
+    public boolean exportDBFLanguageDriverName = false;
+
+    public boolean isExportDBFLanguageDriverName() {
+        return exportDBFLanguageDriverName;
+    }
+
+    public void setExportDBFLanguageDriverName(boolean exportDBFLanguageDriverName) {
+        this.exportDBFLanguageDriverName = exportDBFLanguageDriverName;
+    }
 }

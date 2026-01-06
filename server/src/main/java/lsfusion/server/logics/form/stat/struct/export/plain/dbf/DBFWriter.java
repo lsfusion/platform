@@ -12,6 +12,7 @@ package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.hexiong.jdbf.JDBFException;
 import com.hexiong.jdbf.JDBField;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.*;
 import java.util.Calendar;
@@ -66,7 +67,6 @@ public class DBFWriter {
    * @param ajdbfield 字段列表
    * @param s1 字符集编码类型
    * @throws JDBFException
-   * @see init
    */
   public DBFWriter(String s, JDBField ajdbfield[], String s1) throws
       JDBFException {
@@ -109,42 +109,44 @@ public class DBFWriter {
     }
   }
 
-  /**
-   * 写dbf文件头
-   * @throws IOException
-   */
-  private void writeHeader() throws IOException {
-    byte abyte0[] = new byte[16];
-    abyte0[0] = 3;
-    Calendar calendar = Calendar.getInstance();
-    abyte0[1] = (byte) (calendar.get(1) - 1900);
-    abyte0[2] = (byte)(calendar.get(2) + 1); //fixed month
-    abyte0[3] = (byte) calendar.get(5);
-    abyte0[4] = 0;
-    abyte0[5] = 0;
-    abyte0[6] = 0;
-    abyte0[7] = 0;
-    int i = (fields.length + 1) * 32 + 1;
-    abyte0[8] = (byte) (i % 256);
-    abyte0[9] = (byte) (i / 256);
-    int j = 1;
-    for (int k = 0; k < fields.length; k++) {
-      j += fields[k].getLength();
-
+    private void writeHeader() throws IOException {
+        byte[] abyte0 = new byte[16];
+        abyte0[0] = 3;
+        Calendar calendar = Calendar.getInstance();
+        abyte0[1] = (byte) (calendar.get(Calendar.YEAR) - 1900);
+        abyte0[2] = (byte) (calendar.get(Calendar.MONTH) + 1); //fixed month
+        abyte0[3] = (byte) calendar.get(Calendar.DATE);
+        abyte0[4] = 0;
+        abyte0[5] = 0;
+        abyte0[6] = 0;
+        abyte0[7] = 0;
+        int i = (fields.length + 1) * 32 + 1;
+        abyte0[8] = (byte) (i % 256);
+        abyte0[9] = (byte) (i / 256);
+        int j = 1;
+        for (JDBField field : fields) {
+            j += field.getLength();
+        }
+        abyte0[10] = (byte) (j % 256);
+        abyte0[11] = (byte) (j / 256);
+        abyte0[12] = 0;
+        abyte0[13] = 0;
+        abyte0[14] = 0;
+        abyte0[15] = 0;
+        stream.write(abyte0, 0, abyte0.length);
+        for (int l = 0; l < 16; l++) {
+            abyte0[l] = l == 12 ? getLanguageDriverNameByte() : 0;
+        }
+        stream.write(abyte0, 0, abyte0.length);
     }
-    abyte0[10] = (byte) (j % 256);
-    abyte0[11] = (byte) (j / 256);
-    abyte0[12] = 0;
-    abyte0[13] = 0;
-    abyte0[14] = 0;
-    abyte0[15] = 0;
-    stream.write(abyte0, 0, abyte0.length);
-    for (int l = 0; l < 16; l++) {
-      abyte0[l] = 0;
 
+    //byte 29
+    private byte getLanguageDriverNameByte() {
+        if (Settings.get().isExportDBFLanguageDriverName() && dbfEncoding.equalsIgnoreCase("cp866")) {
+            return 0x26;
+        } else
+            return 0;
     }
-    stream.write(abyte0, 0, abyte0.length);
-  }
 
   /**
    * 写一个字段的元信息
