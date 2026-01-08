@@ -560,7 +560,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public ObjectEntity getNFObject(String sid, Version version) {
-        for (ObjectEntity object : getNFObjectsIt(version))
+        for (ObjectEntity object : getNFObjectsIt(version, true))
             if (object.getSID().equals(sid)) {
                 return object;
             }
@@ -587,7 +587,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         List<String> names = new ArrayList<>();
         classes.clear();
 
-        for (ObjectEntity object : getNFObjectsIt(version)) {
+        for (ObjectEntity object : getNFObjectsIt(version, true)) {
             names.add(object.getSID());
             classes.add(object.baseClass);
         }
