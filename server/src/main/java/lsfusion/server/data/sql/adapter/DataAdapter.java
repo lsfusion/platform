@@ -607,6 +607,12 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated //backward compatibility
+    public void ensureScript(String script, Properties props) throws IOException {
+        String scriptString = readResource(getPath() + script);
+        executeEnsure(stringResolver.replacePlaceholders(scriptString, props), null);
+    }
+
     protected String getConcTypeName(ConcatenateType type) {
         return syntax.getConcTypeName(type);
     }
