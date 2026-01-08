@@ -1140,6 +1140,11 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public FormView view;
 
+    @Deprecated //backward compatibility
+    public FormView getRichDesign() {
+        return view;
+    }
+
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
 

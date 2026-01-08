@@ -1870,4 +1870,9 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     public PropertyDrawView<P, AddParent> copy(ObjectMapping mapping) {
         return new PropertyDrawView<>(this, mapping);
     }
+
+    @Deprecated //backward compatibility
+    public LocalizedString getCaption() {
+        return entity.getCaption();
+    }
 }
