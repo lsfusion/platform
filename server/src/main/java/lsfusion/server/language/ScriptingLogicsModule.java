@@ -4024,15 +4024,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> List<TypedParameter> getTypedObjectsNames(MappedForm<O> mapped) {
-        return getTypedObjectsNames(mapped, false);
-    }
-
-    public <O extends ObjectSelector> List<TypedParameter> getTypedObjectsNames(MappedForm<O> mapped, boolean allowRead) {
         FormEntity staticForm = mapped.form.getNFStaticForm();
         if(staticForm == null) // can be only mapped objects
             return Collections.singletonList(new TypedParameter(mapped.form.getBaseClass(mapped.objects.single()),"object"));
 
-        return ScriptingFormEntity.getTypedObjectsNames(this, staticForm, getVersion(), allowRead);
+        return ScriptingFormEntity.getTypedObjectsNames(this, staticForm, getVersion(), true);
     }
 
     private <O extends ObjectSelector> ImOrderSet<O> getMappingObjectsArray(MappedForm<O> mapped, List<TypedParameter> objectsContext) throws ScriptingErrorLog.SemanticErrorException {

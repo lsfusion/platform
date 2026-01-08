@@ -2365,7 +2365,7 @@ jsonFormPropertyDefinition[List<TypedParameter> context, ActionStatementContext 
 }
 	:   ('JSON' | 'JSONTEXT' { returnString = true; }) '(' mf=mappedForm[context, null, actions, dynamic] {
                 if(inMainParseState())
-                    objectsContext = self.getTypedObjectsNames($mf.mapped, true);
+                    objectsContext = self.getTypedObjectsNames($mf.mapped);
             }
             (cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
             (fts = formTopOffset[$mf.form, context, actions, dynamic])?
@@ -3419,7 +3419,7 @@ formActionDefinitionBody[List<TypedParameter> context, ActionStatementContext ac
 	:	'SHOW' (formIdVal = stringLiteral { formId = $formIdVal.val; } '=' )? mf=mappedForm[context, null, actions, dynamic]
 	    {
 	        if(inMainParseState())
-                objectsContext = self.getTypedObjectsNames($mf.mapped, true);
+                objectsContext = self.getTypedObjectsNames($mf.mapped);
 	    }
 		(
 		    cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); }
@@ -3460,7 +3460,7 @@ dialogActionDefinitionBody[List<TypedParameter> context, ActionStatementContext 
 	:	'DIALOG' mf=mappedForm[context, newContext, actions, false]
 	    {
             if(inMainParseState())
-        	    objectsContext = self.getTypedObjectsNames($mf.mapped, true);
+        	    objectsContext = self.getTypedObjectsNames($mf.mapped);
         }
 		(   cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); }
 		|   window = windowTypeLiteral { windowType = $window.val; }
@@ -3537,7 +3537,7 @@ printActionDefinitionBody[List<TypedParameter> context, ActionStatementContext a
 	:	'PRINT' ('CLIENT' | 'SERVER' { server = true; })?
 	    mf=mappedForm[context, null, actions, dynamic] {
             if(inMainParseState())
-                 objectsContext = self.getTypedObjectsNames($mf.mapped, true);
+                 objectsContext = self.getTypedObjectsNames($mf.mapped);
         }
         (cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
         (
@@ -3597,7 +3597,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, ActionStatementCont
 }
 	:	'EXPORT' mf=mappedForm[context, null, actions, dynamic] {
 	        if(inMainParseState())
-                objectsContext = self.getTypedObjectsNames($mf.mapped, true);
+                objectsContext = self.getTypedObjectsNames($mf.mapped);
 	    }
 	    (cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, actions, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
