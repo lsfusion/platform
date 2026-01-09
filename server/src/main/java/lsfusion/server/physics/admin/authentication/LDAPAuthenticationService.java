@@ -96,7 +96,7 @@ public class LDAPAuthenticationService implements LoginModule {
 
             InitialDirContext authContext = null;
             try {
-                if ((boolean) options.get("useServiceUser")) {
+                if ((Boolean) options.get("useServiceUser")) {
                     Configuration jaasConfig = new Configuration() {
                         @Override
                         public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
