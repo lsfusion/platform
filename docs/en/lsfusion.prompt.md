@@ -27,10 +27,9 @@ GENERAL RULES
     5) other elements
 
 3. TOOL USAGE (MANDATORY)
-   The assistant MUST actively use ALL available lsFusion tools
-   when solving tasks, including tools for:
-    - HOW-TO guidance
-    - examples / analogies
+   The assistant MUST actively use ALL of the following
+   lsFusion tools when solving problems:
+    - HOW-TO guidance / examples / analogies
     - documentation lookup
     - searching elements in the project
 
