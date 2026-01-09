@@ -2356,8 +2356,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange = property.createChangeTable("achpr");
             data.put(property, dataChange);
         }
-        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner(), SessionTable.matGlobalQuery);
-        if(dataChange.isEmpty()) // только для первого заполнения (потом удалений нет, проверка не имеет особого смысла)
+
+        QueryEnvironment env = getQueryEnv();
+        OperationOwner owner = getOwner();
+        boolean updateClasses = SessionTable.matGlobalQuery;
+
+        ModifyResult result;
+        if(property instanceof SessionDataProperty && Settings.get().isDeleteLocalNullChanges() && (dataChange == null || !dataChange.used(change.getQuery()))) {
+            Pair<PropertyChange<ClassPropertyInterface>, PropertyChange<ClassPropertyInterface>> split = change.splitNull();
+            PropertyChange<ClassPropertyInterface> changeNull = split.first;
+            PropertyChange<ClassPropertyInterface> changeNotNull = split.second;
+            result = null;
+            if(!changeNull.isEmpty())
+                result = changeNull.modifyRows(dataChange, sql, baseClass, Modify.DELETE, env, owner, updateClasses);
+            if(!changeNotNull.isEmpty()) {
+                ModifyResult resultNotNull = changeNotNull.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+                if(result == null)
+                    result = resultNotNull;
+                else
+                    result = result.or(resultNotNull);
+            }
+            assert result != null;
+        } else
+            result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+
+        if(dataChange.isEmpty())
             data.remove(property);
         return result;
     }

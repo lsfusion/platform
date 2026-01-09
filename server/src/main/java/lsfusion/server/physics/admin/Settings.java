@@ -2009,6 +2009,16 @@ public class Settings implements Cloneable {
         this.updateStatisticsLimit = updateStatisticsLimit;
     }
 
+    private boolean deleteLocalNullChanges = true;
+
+    public boolean isDeleteLocalNullChanges() {
+        return deleteLocalNullChanges;
+    }
+
+    public void setDeleteLocalNullChanges(boolean deleteLocalNullChanges) {
+        this.deleteLocalNullChanges = deleteLocalNullChanges;
+    }
+
     private int maxRecursionStatsIterations = 3;
 
     public int getMaxRecursionStatsIterations() {
