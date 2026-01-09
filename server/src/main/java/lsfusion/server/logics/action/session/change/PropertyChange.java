@@ -161,6 +161,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return new PropertyChange<>(mapValues, mapKeys, expr, where.and(andWhere));
     }
 
+    public Pair<PropertyChange<T>, PropertyChange<T>> splitNull() {
+        Where exprWhere = expr.getWhere();
+        return new Pair<>(new PropertyChange<>(mapValues, mapKeys, expr, where.and(exprWhere.not())), new PropertyChange<>(mapValues, mapKeys, expr, where.and(exprWhere)));
+    }
+
     public <P extends PropertyInterface> PropertyChange<P> mapChange(ImRevMap<P, T> mapping) {
         return new PropertyChange<>(mapping.rightJoin(mapValues), mapping.rightJoin(mapKeys), expr, where);
     }
@@ -237,7 +242,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null && !table.hasCorrelations())
             return table.modifyRecord(session, mapValues, exprValue, type, owner);
         else
-            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
+            return table.modifyRows(session, type == Modify.DELETE ? getDeleteQuery() : getQuery(), baseClass, type, queryEnv, updateClasses);
     }
 
     public void writeRows(PropertyChangeTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv, boolean updateClasses) throws SQLException, SQLHandledException {
@@ -246,6 +251,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)), queryEnv.getOpOwner());
         else
             table.writeRows(session, getQuery(), baseClass, queryEnv, updateClasses);
+    }
+
+    @IdentityInstanceLazy
+    public Query<T, String> getDeleteQuery() {
+        return new Query<>(getFullMapKeys(mapKeys, mapValues), where, mapValues, MapFact.EMPTY());
     }
 
     @IdentityInstanceLazy
