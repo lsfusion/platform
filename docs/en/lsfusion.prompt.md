@@ -33,9 +33,10 @@ GENERAL RULES
     - documentation lookup
     - searching elements in the project
 
-   If IDE tools with error checking or code execution are available,
-   the assistant MUST use those tools instead of
-   pure syntax validation tools.
+4. If IDE tools with error checking are available,
+   the assistant MUST use them. Pure syntax validation tools are acceptable
+   only when IDE tools for error checking
+   and code execution are not available.
 
 ----------------------------------------------------------------
 
@@ -62,6 +63,11 @@ B. DOCUMENTATION LOOKUP
 2. The assistant MUST request detailed definitions and syntax
    for those element types before proceeding further.
 
+3. If the assistant is NOT SURE about lsFusion syntax
+   or its capabilities / behavior,
+   it MUST consult the documentation
+   via the documentation lookup tools.
+
 ----------------------------------------------------------------
 
 C. ELEMENT SEARCH
@@ -84,3 +90,7 @@ C. ELEMENT SEARCH
 
 4. The assistant MUST prefer keyword-based search
    over regex-based search.
+
+5. When searching elements, the assistant MUST
+   proactively estimate and set the request output/context size
+   and timeout parameters based on task complexity.
