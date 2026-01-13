@@ -33,10 +33,10 @@ public class TableStatKeys extends TwinImmutableObject {
     }
 
     // по идее не важно (в отличии от WhereJoins), в остальных за счет того что статистика округляется вверх по идее должен выполняться assertion из конструктора
-    public static TableStatKeys createForTable(Integer rows, final ImMap<KeyField, Integer> distinct) {
+    public static TableStatKeys createForTable(Long rows, final ImMap<KeyField, Long> distinct) {
 
         Stat rowStat = new Stat(rows);
-        DistinctKeys<KeyField> distStat = new DistinctKeys<>(distinct.mapValues((Function<Integer, Stat>) Stat::new));
+        DistinctKeys<KeyField> distStat = new DistinctKeys<>(distinct.mapValues((Function<Long, Stat>) Stat::new));
 
         Stat distStatMax = distStat.getMax();
         if(distStatMax.less(rowStat)) { // если сумма меньше дотягиваем разновидности до ceiling'ов пока не получим >=

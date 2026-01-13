@@ -6,7 +6,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -77,18 +76,15 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
-
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
         valueContainer.add(design.get(implPropertyDraw), version);
         for (int i = propProperties.size()-1; i >= 0; i--) {
             ContainerView propsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where}" + " " + (i + 1)), version);
-            propsContainer.setAlignment(FlexAlignment.STRETCH);
+            propsContainer.setAlignment(FlexAlignment.STRETCH, version);
             propsContainer.add(design.get(propProperties.get(i)), version);
             if (i < whereProperties.size()) // может быть else
                 propsContainer.add(design.get(whereProperties.get(i)), version);
             design.mainContainer.addAfter(propsContainer, valueContainer, version);
         }
-        return design;
     }
 }

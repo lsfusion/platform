@@ -2,8 +2,7 @@ package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -131,7 +130,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
     T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
-    T parseFile(RawFileData value, String extension, String charset);
+    T parseFile(NamedFileData value, String charset);
 
     T read(Object value); // it is also a sort of parsing, but some "really close" types instead of strings
 
@@ -144,7 +143,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatConnectionString(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
     ExternalRequest.Result formatHTTP(T value, Charset charset, boolean needFileName); // returns String or FileData (not null), null's encode'it depending on type
-    FileData formatFile(T value, String charset);
+    NamedFileData formatFile(T value, String charset);
 
     T parseUI(String value, String pattern) throws ParseException;
     String formatUI(T object, String pattern);

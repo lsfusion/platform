@@ -63,9 +63,9 @@ import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.action.userevent.*;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -242,6 +242,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP exportFile;
     public LP importFile;
     public LP readFile;
+    public LP readDialogPath;
 
     public LP showResult;
     public LP eventSource;
@@ -286,9 +287,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public Group privateGroup;
 
     public TableFactory tableFactory;
-
-    // счетчик идентификаторов
-    private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
@@ -392,6 +390,36 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LA getFormShare() {
         try {
             return findAction("formShare[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public LA getFormCustomize() {
+        try {
+            return findAction("formCustomize[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public LP getFormCustomizeBackground() {
+        try {
+            return findProperty("formCustomizeBackground[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public LP getFormCustomizeShowIf() {
+        try {
+            return findProperty("formCustomizeShowIf[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -613,6 +641,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
         readFile = findProperty("readFile[]");
+        readDialogPath = findProperty("readDialogPath[]");
 
         eventSource = findProperty("eventSource[]");
         showResult = findProperty("showResult[]");
@@ -758,23 +787,20 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return form;
     }
 
+    private static final IDGenerator idGenerator = new DefaultIDGenerator();
     public static int generateStaticNewID() {
-        return idGenerator.idShift();
+        return idGenerator.id();
     }
 
     public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean interactive) {
-        try {
-            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
-            addAutoFormEntityFinalized(integrationForm.form);
-            return integrationForm;
-        } catch (FormEntity.AlreadyDefined e) {
-            throw Throwables.propagate(e);
-        }
+        IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
+        addAutoFormEntityFinalized(integrationForm.form);
+        return integrationForm;
     }
 
     public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
         LP jsonFormProp = addJSONFormProp(caption, integrationForm, SelectTop.NULL(), false);
-//        jsonFormProp.property.finalizeInit();
+        jsonFormProp.property.finalizeInit();
         ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
         return jsonFormProp;
     }
@@ -1033,7 +1059,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
-        return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.groupTo.updateType != UpdateType.NULL);
+        return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, objectEntity.groupTo.getUpdateType() != UpdateType.NULL);
     }
 
     protected LP<?> wrapObjProperty(LP<?> property) {
@@ -1042,20 +1068,25 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         LP value;
-        if(!obj.noClasses()) {
+        boolean hasClasses = !obj.noClasses();
+        boolean isData = obj.baseClass instanceof DataClass; // && obj.groupTo.isPanel();
+
+        if(hasClasses) {
             value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
-            if (formEntity.getCanonicalName() != null) {
-                value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties
+
+            boolean named = formEntity.isNamed();
+            if(named || isData)
+                value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties or we need selector as a default event
+            if (named) {
                 String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
                 makePropertyPublic(value, name, obj.baseClass.getResolveSet());
             }
         } else
             value = object;
 
-        ActionObjectSelector onChange = null;
-        if (!obj.noClasses() && obj.baseClass instanceof DataClass && obj.groupTo.viewType.isPanel()) {
+        if (hasClasses && isData) {
             DataClass dataClass = (DataClass) obj.baseClass;
 
             LP targetProp = getRequestedValueProperty(dataClass);
@@ -1064,26 +1095,36 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
             ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(), obj.getSeekPanelAction(this, targetProp), null);
 
-            PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, obj, null, null));
-
-            onChange = request.mapObjects(MapFact.EMPTYREV());
+            setSelector(obj, value, request);
         }
-        return new Pair<>(value, onChange);
+        return value;
+    }
+
+    private static void setSelector(ObjectEntity obj, LP value, ActionMapImplement<?, ClassPropertyInterface> request) {
+        PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, obj, null, null));
+
+        // there are two options, either putting event actions in proceedDefaultDesign, or adding event action to the property itself
+        // but we need to mark it as a selector
+        ActionObjectSelector<?> onChange = request.mapObjects(MapFact.EMPTYREV());
+
+        value.property.drawOptions.addProcessor((entity, form, version) -> entity.setSelectorAction(onChange, version));
     }
 
     @Override
     @IdentityStrongLazy
-    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public LP getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         LP value = intervalProperty;
 
-        if (formEntity.getCanonicalName() != null) {
-            value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties
+        boolean named = formEntity.isNamed();
+        boolean isDataPanel = objectFrom.groupTo.isPanel() && ((GroupObjectEntity) objectTo.groupTo).isPanel();
+        if(named || isDataPanel)
+            value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties or we need a selector action
+        if (named) {
             String name = intervalPrefix + getFormPrefix(formEntity) + getObjectPrefix(objectFrom) + getObjectPrefix(objectTo); // issue #47
             makePropertyPublic(value, name, objectFrom.baseClass.getResolveSet(), objectTo.baseClass.getResolveSet());
         }
 
-        ActionObjectSelector onChange = null;
-        if(objectFrom.groupTo.viewType.isPanel() && objectTo.groupTo.viewType.isPanel()) {
+        if(isDataPanel) {
             DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 
             LP targetProp = getRequestedValueProperty(dataClass);
@@ -1095,12 +1136,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                             objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
                             objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null);
 
-            PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, objectFrom, null, null));
-
-            onChange = request.mapObjects(MapFact.EMPTYREV());
+            setSelector(objectFrom, value, request);
         }
 
-        return new Pair<>(value, onChange);
+        return value;
     }
 
     @Override
@@ -1119,22 +1158,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         }
 
         return result;
-    }
-
-    @IdentityStrongLazy
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
-        if(prop.equals(GroupObjectProp.FILTER))
-            groupObject.isFilterExplicitlyUsed = true;
-        if(prop.equals(GroupObjectProp.ORDER))
-            groupObject.isOrderExplicitlyUsed = true;
-        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
-    }
-
-    @IdentityStrongLazy
-    public LP addValueObjectProp(ObjectEntity object) {
-        Property<?> valueProperty = object.getNFValueProperty();
-        return addProperty(null, new LP<>(valueProperty));
     }
 
     @IdentityStrongLazy
@@ -1201,12 +1224,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterGroupAProp(Integer filterGroup, DataClass fromType) {
+    public LA<?> addFilterGroupAProp(RegularFilterGroupEntity filterGroup, DataClass fromType) {
         return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromType)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
+    public LA<?> addReadFilterGroupsAProp(RegularFilterGroupEntity filterGroup, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
     }
 
@@ -1397,8 +1420,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
+    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+        return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
     }
     
     public LP<?> getCurrentAppServerProperty() {

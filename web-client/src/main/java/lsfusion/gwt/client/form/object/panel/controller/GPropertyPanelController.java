@@ -57,6 +57,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions;
     private NativeHashMap<GGroupObjectValue, PValue> changeKeys;
     private NativeHashMap<GGroupObjectValue, PValue> changeMouses;
+    private NativeHashMap<GGroupObjectValue, PValue> defaultValues;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -114,7 +115,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public void update() {
         if (columnsUpdated) {
             boolean hide = property.hide;
-            if (!hide || property.hasKeyBinding()) {
+            if (!hide || property.hasKeyBinding() || property.hasMouseBinding()) {
 
                 Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
                 List<GGroupObjectValue> optionsToAdd = pair.first;
@@ -202,6 +203,11 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             propertyCustomOption = propertyCustomOptions.get(columnKey);
         }
 
+        PValue defaultValue = null;
+        if(defaultValues != null) {
+            defaultValue = defaultValues.get(columnKey);
+        }
+
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -215,6 +221,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 regexp == null ? property.regexp : PValue.getStringValue(regexp),
                 regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip),
+                defaultValue == null ? property.defaultValue : PValue.getStringValue(defaultValue),
                 propertyCustomOption);
 
         if (captions != null)
@@ -389,5 +396,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyChangeMouses(NativeHashMap<GGroupObjectValue, PValue> changeMouses) {
         this.changeMouses = changeMouses;
+    }
+
+    public void setPropertyDefaultValues(NativeHashMap<GGroupObjectValue, PValue> defaultValues) {
+        this.defaultValues = defaultValues;
     }
 }

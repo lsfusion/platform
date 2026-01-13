@@ -7,7 +7,7 @@ The `NEW` operator creates an [action](Actions.md) that [creates objects](New_ob
 ### Syntax
 
 ```
-NEW className [WHERE whereExpr] [TO propertyId(prm1, ..., prmN)]
+NEW className [WHERE whereExpr [TO propertyId(prm1, ..., prmN)]]
 ```
 
 ### Description

@@ -21,13 +21,10 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MakeZipFileAction extends InternalAction {
 
@@ -48,39 +45,19 @@ public class MakeZipFileAction extends InternalAction {
             query.and(findProperty("zipping[STRING[1000]]").getExpr(modifier, iExpr).getWhere().or(findProperty("zippingPath[STRING[1000]]").getExpr(modifier, iExpr).getWhere()));
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context);
-            if(!result.isEmpty()) {
-
-                File zipFile = null;
-                try {
-                    zipFile = File.createTempFile("zip", ".zip");
-                    FileOutputStream fos = new FileOutputStream(zipFile);
-                    try (ZipOutputStream zos = new ZipOutputStream(fos)) {
-
-                        for (int i = 0; i < result.size(); i++) {
-                            String fileName = (String) result.getKey(i).get("i").getValue();
-                            FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
-                            if(fileBytes == null) {
-                                String filePath = (String) result.getValue(i).get("zippingPath").getValue();
-                                fileBytes = new FileData(new RawFileData(filePath), BaseUtils.getFileExtension(filePath));
-                            }
-
-                            InputStream bis = fileBytes.getRawFile().getInputStream();
-                            ZipEntry ze = new ZipEntry(fileName);
-                            if(zeroTime)
-                                ze.setTime(0); //to make zip file deterministic
-                            zos.putNextEntry(ze);
-                            byte[] buf = new byte[1024];
-                            int len;
-                            while ((len = bis.read(buf)) > 0) {
-                                zos.write(buf, 0, len);
-                            }
-                            bis.close();
-                        }
+            if (!result.isEmpty()) {
+                Map<String, RawFileData> files = new HashMap<>();
+                for (int i = 0; i < result.size(); i++) {
+                    String fileName = (String) result.getKey(i).get("i").getValue();
+                    FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
+                    if (fileBytes == null) {
+                        String filePath = (String) result.getValue(i).get("zippingPath").getValue();
+                        fileBytes = new FileData(new RawFileData(filePath), BaseUtils.getFileExtension(filePath));
                     }
-                    findProperty("zipped[]").change(new FileData(new RawFileData(zipFile), "zip"), context);
-                } finally {
-                    BaseUtils.safeDelete(zipFile);
+                    files.put(fileName, fileBytes.getRawFile());
                 }
+                FileData zipFile = ZipUtils.makeZipFile(files, zeroTime);
+                findProperty("zipped[]").change(zipFile, context);
             }
 
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {

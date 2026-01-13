@@ -112,6 +112,8 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
             inputElement.setAttribute("step", ((GIntegralType) type.type).getStep());
         if (inputType.isMultilineText() && property.hasAutoHeight())
             autosizeTextarea(inputElement);
+        if(property.eventID != null && property.eventID.equals("SCANNER"))
+            GwtClientUtils.addGroupSeparatorEventListener(inputElement);
         return inputElement;
     }
     public static GFullInputType getInputType(GPropertyDraw property, RendererType rendererType) {

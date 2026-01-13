@@ -56,15 +56,15 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 - `imageSetting`
 
-    Configuring the display of the form's icon. By default, the presence or absence of an icon is controlled by the [parameters](Working_parameters.md) `settings.defaultImagePathRankingThreshold` and `settings.defaultAutoImageRankingThreshold`. This option allows you to manually configure the icon display. It can have one of two forms:
+    Icon settings for the form. This option allows you to configure the icon manually. It can have one of the following forms:
 
-    - `IMAGE [fileExpr]`
+    - `IMAGE [imageLiteral]`
 
-        Specifying the relative path to the image file that will be displayed as the form's icon. If `fileExpr` is not specified, the default icon display mode is activated.
+        [Manual icon specification](Icons.md#manual) for the form. If `imageLiteral` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
 
-        - `fileExpr`
+        - `imageLiteral`
 
-            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+            String literal whose value defines the icon.
 
     - `NOIMAGE`
 

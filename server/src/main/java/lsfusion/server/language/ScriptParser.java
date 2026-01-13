@@ -115,12 +115,12 @@ public class ScriptParser {
         });
     }
 
-    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) {
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.ActionStatementContext actions, boolean dynamic) {
         Result<ScriptingLogicsModule.LPWithParams> result = new Result();
 
         runCode(LM, code, 0, moduleName, "", lineNumber, parser -> {
             try {
-                result.set(parser.propertyExpression(context, dynamic));
+                result.set(parser.propertyExpression(context, actions, dynamic));
             } catch (RecognitionException e) {
                 throw Throwables.propagate(e);
             }
@@ -207,6 +207,43 @@ public class ScriptParser {
 
     public boolean isInsideMetacode() {
         return parsers.size() > 1;
+    }
+
+    private boolean insideFormOrDesignStatement = false;
+    private int prevFormOrDesignStatementToken;
+    private List<String> formOrDesignStatementTokens;
+    public void enterFormOrDesignStatementState() {
+        insideFormOrDesignStatement = true;
+        formOrDesignStatementTokens = new ArrayList<>();
+        markFormOrDesignStatementCode();
+    }
+
+    public void grabFormOrDesignStatementCode() {
+        if(!insideFormOrDesignStatement)
+            return;
+
+        Parser curParser = getCurrentParser();
+        int newToken = curParser.input.index();
+        for(int i = prevFormOrDesignStatementToken; i < newToken; i++) {
+            formOrDesignStatementTokens.add(curParser.input.get(i).getText());
+        }
+        prevFormOrDesignStatementToken = newToken;
+    }
+
+    private void markFormOrDesignStatementCode() {
+        Token prevToken = getCurrentParser().input.LT(-1);
+        prevFormOrDesignStatementToken = prevToken != null ? prevToken.getTokenIndex() + 1 : 0;
+    }
+
+    public List<String> leaveFormOrDesignStatementState() {
+        grabFormOrDesignStatementCode();
+
+        List<String> result = formOrDesignStatementTokens;
+
+        formOrDesignStatementTokens = null;
+        insideFormOrDesignStatement = false;
+
+        return result;
     }
 
     public LsfLogicsParser getCurrentParser() {

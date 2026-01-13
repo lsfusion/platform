@@ -21,8 +21,7 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.FormChangeEvent;
-import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.interactive.event.*;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -39,6 +38,7 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
@@ -93,6 +93,7 @@ import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.input.*;
@@ -103,8 +104,6 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
-import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
-import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.*;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
@@ -121,7 +120,6 @@ import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -129,6 +127,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.navigator.controller.env.FormContextQueryEnvironment;
 import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -172,7 +171,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             new Function<ComponentView, PropertyObjectInstance<?>>() {
                 @Override
                 public PropertyObjectInstance<?> apply(ComponentView key) {
-                    return instanceFactory.getInstance(key.showIf);
+                    return instanceFactory.getInstance(key.getShowIf());
                 }
             };
 
@@ -191,7 +190,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance<?>> properties;
 
-    public final ImSet<ObjectEntity> inputObjects;
+    public FormOptions options;
+
+    public FormInstance recreatedForm;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
@@ -204,8 +205,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isShownHidden.remove(property);
     }
 
-    private final boolean checkOnOk;
-
     private final boolean isSync;
     private final boolean isModal;
     private final boolean isEditing;
@@ -217,9 +216,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isModal;
     }
 
-    private final boolean manageSession;
-
-    private final boolean showDrop;
+    public final boolean manageSession;
     
     private final Locale locale;
 
@@ -234,27 +231,22 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // init form instance + some rare / deprecated branches
     public final FormInstanceContext context;
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener focusListener, CustomClassListener classListener,
-                        ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack,
-                        boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
-                        boolean showDrop, boolean interactive, WindowFormType type,
-                        boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
-                        boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this.isSync = isSync;
+    public final FormContextQueryEnvironment env;
+
+    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+                        FocusListener focusListener, CustomClassListener classListener, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                        ExecutionStack stack, boolean interactive, boolean isExternal, Locale locale, FormOptions options) throws SQLException, SQLHandledException {
+        WindowFormType type = options.getWindowFormType();
+        this.isSync = options.syncType;
         this.isModal = type.isModal();
         this.isEditing = type.isEditing();
-        this.checkOnOk = checkOnOk;
-        this.showDrop = showDrop;
 
         this.session = session;
         this.entity = entity;
         this.logicsInstance = logicsInstance;
         this.BL = logicsInstance.getBusinessLogics();
-        this.inputObjects = inputObjects;
 
-        if(showReadOnly)
+        if(options.showReadonly)
             securityPolicy = securityPolicy.add(logicsInstance.getSecurityManager().getReadOnlySecurityPolicy(session));
         this.securityPolicy = securityPolicy;
 
@@ -263,7 +255,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
+        this.env = new FormContextQueryEnvironment(entity, session.env);
+
+        FormInstanceContext context = new FormInstanceContext(entity, entity.view, securityPolicy, isUseBootstrap(), isContentWordWrap(), highlightDuplicateValue(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -283,14 +277,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if(groupObject.viewType.isList()) {
                 // should correspond RemoteForm.changeMode in general
-                ListViewType listViewType = groupEntity.listViewType;
+                ListViewType listViewType = groupEntity.getListViewTypeValue();
 
-                if (groupObject.entity.enableManualUpdate)
+                if (groupObject.entity.isEnableManualUpdate())
                     groupObject.setUpdateMode(UpdateMode.MANUAL);
 
                 if(listViewType != ListViewType.GRID) {
                     if (listViewType == ListViewType.PIVOT) {
-                        if(groupEntity.asyncInit) // will wait for first changeGroupMode
+                        if(groupEntity.isAsyncInit()) // will wait for first changeGroupMode
                             groupObject.setUpdateMode(UpdateMode.MANUAL);
                         else {
                             // should correspond RemoteForm.changeMode method (block with changeGroupMode)
@@ -310,7 +304,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             if (measureProps != null)
                                 measureColumns = measureProps.mapSetValues(propToColumn);
 
-                            groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.pivotOptions.getAggregation(), instanceFactory));
+                            groupObject.changeGroupMode(GroupMode.create(pivotColumns, measureColumns, groupEntity.getPivotOptions().getAggregation(), instanceFactory));
                         }
                     }
                     changePageSize(groupObject, listViewType == ListViewType.CALENDAR ? 10 : 1000); // GStateTableView.getDefaultPageSize
@@ -326,7 +320,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance<?>> mProperties = ListFact.mListMax(propertyDraws.size());
-        for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
+        for (PropertyDrawEntity<?, ?> propertyDrawEntity : propertyDraws)
             if (securityPolicy.checkPropertyViewPermission(propertyDrawEntity.getSecurityProperty())) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null)
@@ -336,8 +330,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         properties = mProperties.immutableList();
 
         ImSet<FilterEntityInstance> allFixedFilters = BaseUtils.immutableCast(entity.getFixedFilters());
-        if (contextFilters != null)
-            allFixedFilters = allFixedFilters.addExcl(contextFilters);
+        if (options.contextFilters != null)
+            allFixedFilters = allFixedFilters.addExcl(options.contextFilters);
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(value -> value.getInstance(instanceFactory)).group(key -> key.getApplyObject());
         for (int i = 0, size = fixedFilters.size(); i < size; i++)
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
@@ -348,14 +342,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        for(Property property : entity.asyncInitPropertyChanges)
-            asyncPropertyChanges.put(property, HasChanges.NULL);
+//        for(Property property : entity.asyncInitPropertyChanges)
+//            asyncPropertyChanges.put(property, HasChanges.NULL);
 
-        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
-            public GroupObjectInstance group(OrderInstance key) {
-                return key.getApplyObject();
-            }
-        });
+        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity, OrderInstance>) value -> ((OrderEntity<?, ?>)value).getInstance(instanceFactory)).groupOrder(key -> key.getApplyObject());
         for (int i = 0, size = fixedOrders.size(); i < size; i++)
             fixedOrders.getKey(i).fixedOrders = fixedOrders.getValue(i);
 
@@ -381,14 +371,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
-            int defaultInd = filterGroup.entity.getDefault();
+            int defaultInd = filterGroup.entity.getDefaultFilterIndex();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
                 setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd), stack);
             }
         }
 
         Set<GroupObjectInstance> wasOrder = new HashSet<>();
-        ImOrderMap<PropertyDrawEntity<?>, Boolean> defaultOrders = entity.getDefaultOrdersList();
+        ImOrderMap<PropertyDrawEntity, Boolean> defaultOrders = entity.getDefaultOrdersList();
         for (int i=0,size=defaultOrders.size();i<size;i++) {
             PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
             GroupObjectInstance toDraw = property.toDraw;
@@ -412,35 +402,39 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(interactive) {
             int prevOwners = updateSessionOwner(true, stack);
 
-            if(manageSession == ManageSessionType.AUTO)
-                adjManageSession = heuristicManageSession(context, showReadOnly, prevOwners, session.isNested());
+            if(options.manageSession == ManageSessionType.AUTO)
+                adjManageSession = heuristicManageSession(context, options.showReadonly, prevOwners, session.isNested());
             else
-                adjManageSession = manageSession.isManageSession();
+                adjManageSession = options.manageSession.isManageSession();
 
-            if(noCancel == null)
+            if(options.noCancel == null)
                 adjNoCancel = heuristicNoCancel(mapObjects);
             else
-                adjNoCancel = noCancel;
+                adjNoCancel = options.noCancel;
         } else { // deprecated ветка, в будущем должна уйти
             adjManageSession = false;
             adjNoCancel = false; // temp
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(options.syncType || adjManageSession, type, isExternal, adjNoCancel, adjManageSession, options.showDrop);
 
-        MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
+        this.options = options;
+
+        // here it's tricky here, because of the forms aggregation (when the same form is aggregated twice), one data property can be used for several object instances
+        // so we use the first just like in the getExEntity
+        MMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mMap(MapFact.keep());
         for (GroupObjectInstance groupObject : groupObjects) {
             ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
             for(int i = 0, size = props.size(); i<size; i++)
-                mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
+                mEnvironmentIncrementSources.add((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
         
         if (!interactive) // deprecated ветка, в будущем должна уйти
             getChanges(stack, context);
-        
-        processComponent(entity.getRichDesign().getMainContainer());
+
+        processComponent(entity.view.getMainContainer());
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -519,9 +513,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     
     private void processComponent(ComponentView component) throws SQLException, SQLHandledException {
         if (component instanceof ContainerView) {
-            ContainerView container = (ContainerView) component;
+            ContainerView<?> container = (ContainerView) component;
             
-            if (container.collapsed) {
+            if (container.isCollapsed()) {
                 collapseContainer(container);
             }
             
@@ -530,7 +524,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
         
-        if (component.activated) {
+        if (component.isActivated()) {
             activateTab(component);
         }
     } 
@@ -622,7 +616,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Set<PropertyDrawInstance<?>> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
-            if (property.toDraw == go && !property.getEntity().remove) {
+            if (property.toDraw == go && !property.getEntity().isRemove()) {
                 if (!hiddenSidsList.contains(property.getSID())) {
                     hiddenProps.remove(property);        
                 } else {
@@ -658,7 +652,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             Integer order = (Integer) values.get(prefix + "Order");
             Integer sort = (Integer) values.get(prefix + "Sort");
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
-            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null), null);
 
             Integer pageSize = (Integer) values.get(prefix + "PageSize");
             Integer headerHeight = (Integer) values.get(prefix + "HeaderHeight");
@@ -734,6 +728,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
+                        BL.reflectionLM.inGridPropertyDraw.change(columnPreferences.inGrid, dataSession, propertyDrawObject);
                     } else if (!completeOverride) {
                         changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
@@ -773,6 +768,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    
+        BL.reflectionLM.inGridPropertyDrawCustomUser.change(columnPreferences.inGrid, dataSession, propertyDrawObject, user);
     }
     
     private void changeUserGOPreferences(GroupObjectUserPreferences preferences, DataSession dataSession, DataObject groupObject, DataObject user) throws SQLException, SQLHandledException {
@@ -842,6 +838,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public ObjectInstance getObjectInstance(int objectID) {
         for (ObjectInstance object : getObjects())
             if (object.getID() == objectID)
+                return object;
+        return null;
+    }
+
+    public ObjectInstance getObjectInstance(String sid) {
+        for (ObjectInstance object : getObjects())
+            if (object.getSID().equals(sid))
                 return object;
         return null;
     }
@@ -1222,10 +1225,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             int estNeededRead = (int) BaseUtils.min(((double) neededCount * estDistinctRate), maxLimitRead);
             while (estNeededRead <= maxLimitRead) {
                 // t(o) = LIMIT estX BY t(o)
-                int ceilEstNeedRead = new Stat((long) estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
-                Pair<PropertyAsync<P>[], Integer> result = getAsyncValues(sql, env, baseClass, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
+                long ceilEstNeedRead = new Stat((long) estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
+                Pair<PropertyAsync<P>[], Long> result = getAsyncValues(sql, env, baseClass, SubQueryExpr.create(listExpr, false, (int) ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
                 PropertyAsync<P>[] resultValues = result.first;
-                int count = result.second;
+                long count = result.second;
 
                 boolean foundNeeded = resultValues.length >= neededCount;
                 if (foundNeeded || // found it
@@ -1270,14 +1273,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return -1;
     }
 
-    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(SQLSession sql, QueryEnvironment env, BaseClass baseClass, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
+    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Long> getAsyncValues(SQLSession sql, QueryEnvironment env, BaseClass baseClass, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
         // z = GROUP SUM 1 BY t(o)
         Expr countExpr;
         Expr listExpr;
         Where listWhere;
         ImRevMap<Q, KeyExpr> groupListKeys;
         boolean needObjects = asyncMode.isObjects();
-        boolean readObjects = needObjects || !orderExprs.isEmpty();
+        boolean readObjects = needObjects || !AbstractOuterContext.getOuterColKeys(orderExprs.keys()).isEmpty(); // because we use value order exprs to enforce ranking ordering
         if(readObjects) {
             groupListKeys = (ImRevMap<Q, KeyExpr>) baseKeys;
             countExpr = ValueExpr.COUNT;
@@ -1301,15 +1304,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap();
         mProps.exclAdd("highlight", value.isEmpty() || !highlight ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
 
-        for(int i = 0, size = orderExprs.size(); i < size; i++) {
-            mProps.exclAdd("order" + i, orderExprs.getKey(i));
-            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
-        }
-
         mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
         mOrders.exclAdd("rank", true);
         mProps.exclAdd("count", countExpr);
         mOrders.exclAdd("count", true);
+
+        for(int i = 0, size = orderExprs.size(); i < size; i++) {
+            mProps.exclAdd("order" + i, orderExprs.getKey(i));
+            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
+        }
 
         if(readObjects)
             mProps.exclAdd("raw", listExpr);
@@ -1318,13 +1321,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 executeClasses(sql, mOrders.immutableOrder(), new LimitOffset(neededCount), baseClass, env);
 
         PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
-        int count = 0;
-        for(int i = 0, size = result.size(); i < size; i++) {
+        long count = 0;
+        for (int i = 0, size = result.size(); i < size; i++) {
             ImMap<String, ObjectValue> values = result.getValue(i);
-            count += (Integer)values.get("count").getValue();
+            count += (Long) values.get("count").getValue();
             resultValues[i] = new PropertyAsync<P>(BaseUtils.nullToString(values.get("highlight").getValue()), // acutally there is always String, because of isDefaultWYSInput check, except when using in getSelectProperty
-                    readObjects ? BaseUtils.nullToString(values.get("raw").getValue()) : (String)result.getKey(i).singleValue().getValue(),
-                    needObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
+                    readObjects ? BaseUtils.nullToString(values.get("raw").getValue()) : (String) result.getKey(i).singleValue().getValue(),
+                    needObjects ? (ImMap<P, DataObject>) result.getKey(i) : null);
         }
 
         return new Pair<>(resultValues, count);
@@ -1721,7 +1724,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         session.env.form.changeCurrentForm(entity.getCanonicalName());
     }
 
-    private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = getSession();
         LP<?> sessionOwners = BL.LM.sessionOwners;
         int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
@@ -1730,18 +1733,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return prevOwners;
     }
 
-    // сейчас закрытие формы асинхронно (для экономии round trip'а), для записи же скажем sessionOwner'а нужна синхронная работа сессии
-    // для этого можно делать это либо при отсылке hide'а формы на сервере (но тогда owner может сброситься чуть раньше чем надо)
-    // или в контексте вызова, но тогда в случае немодальной формы, sessionOwner не сбрасывается, то есть мы полагаемся на то что сессия сразу же закроется (де-факто так и будет, но мало ли)
-    // в будущем если все же вернемся к синхронизации закрытия возможно проблема уйдет
-    private static boolean useCallerSyncOnClose = false;
-    public void syncLikelyOnClose(boolean call, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if(call == useCallerSyncOnClose) {
-            updateSessionOwner(false, stack);
-
-            for(SessionModifier modifier : modifiers.values()) // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
-                modifier.cleanViews();
-        }
+    public void cleanViews() {
+        for(SessionModifier modifier : modifiers.values()) // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
+            modifier.cleanViews();
     }
 
     @Override
@@ -1766,11 +1760,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    @Deprecated
-    public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
-        seekObject(object, value);
-    }
-
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
         changeObjectValue(object, value);
 
@@ -1783,14 +1772,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
 //        else
         object.changeValue(session, this, value);
-    }
-
-    private boolean hasEventActions() {
-        ImMap<Object, ImList<ActionObjectEntity<?>>> eventActions = entity.getEventActions();
-        for(ImList<ActionObjectEntity<?>> list : eventActions.valueIt())
-            if(list.size() > 0)
-                return true;
-        return false;
     }
 
     // explicit SEEK with explicit updateType
@@ -2217,7 +2198,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            if(forceLocalEvents || !entity.localAsync) {
+            if(forceLocalEvents || !entity.getLocalAsync()) {
                 session.executeSessionEvents(BL, this, stack);
             } else {
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
@@ -2228,7 +2209,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
             mChangedProps.set(mChangedProps.result.merge(update));
-            if(forceLocalEvents || !entity.localAsync) {
+            if(forceLocalEvents || !entity.getLocalAsync()) {
                 dataChanged = false;
             }
         }
@@ -2447,7 +2428,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector) { // don't show property if it is always null
+        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector()) { // don't show property if it is always null
             return false;
         }
 
@@ -2464,7 +2445,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
         ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
-                key -> key.showIf != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.showIf), SetFact.EMPTY(), changedProps, false)));
+                key -> key.getShowIf() != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false)));
 
         if(changed.isEmpty()) // optimization
             return;
@@ -2552,6 +2533,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.footerElementClassReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.gridElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
@@ -2570,6 +2552,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.propertyCustomOptionsReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.changeKeyReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.changeMouseReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.defaultValueReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
             } else if (oldPropIsShown) {
@@ -2758,7 +2741,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // ---------------------------------------- Events ----------------------------------------
 
     public void fireObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(object.entity, stack);
+        fireEvent(new ObjectEventObject(object.entity.getSID()), stack);
     }
 
     private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
@@ -2839,33 +2822,37 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(new UserEventObject(filter, type), stack);
     }
 
-    public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
-        fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
+    public void fireContainerEvent(ExecutionStack stack, ComponentView container, boolean collapse) throws SQLException, SQLHandledException {
+        fireEvent(new FormContainerEvent(container, collapse), stack, null, null);
+    }
+
+    public void fireClientEvent(ExecutionStack stack, FormServerEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+        fireEvent(formEvent, stack, null, pushedAsyncResult);
     }
 
     public void fireChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
         fireEvent(new FormChangeEvent(property.getEntity(), before), stack, keys);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(eventObject, stack, null);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
         fireEvent(eventObject, stack, keys, null);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+    private void fireEvent(FormServerEvent eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         for(ActionValueImplement event : getEvents(eventObject, keys))
             event.execute(this, stack, pushedAsyncResult);
     }
 
-    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {
+    private ImOrderSet<ActionValueImplement> getEvents(FormServerEvent eventObject) {
         return getEvents(eventObject, null);
     }
 
-    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
-        MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
+    private ImOrderSet<ActionValueImplement> getEvents(FormServerEvent eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+        MOrderSet<ActionValueImplement> mResult = SetFact.mOrderSet();
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
@@ -2875,7 +2862,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
                     }
 
-                    mResult.exclAdd(autoInstance.getValueImplement(this));
+                    mResult.add(autoInstance.getValueImplement(this));
                 }
             }
         }
@@ -2985,8 +2972,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return manageSession && session.isStoredDataChanged() && !isEditing;
     }
 
-    public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (!context.isPushedConfirmedClose() && needConfirm()) {
+    public void formClose(ExecutionContext<ClassPropertyInterface> context, boolean skipConfirmCloseDialog) throws SQLException, SQLHandledException {
+        if (!context.isPushedConfirmedClose() && needConfirm() && !skipConfirmCloseDialog) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
@@ -3009,6 +2996,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // destroy will be postponed to the last response
         context.delayUserInteraction(new DestroyFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
+
+        updateSessionOwner(false, context.stack);
     }
 
     public void formDrop(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -3019,7 +3008,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void formOk(ExecutionContext context) throws SQLException, SQLHandledException {
         assert context.getEnv() == this;
         
-        if (checkOnOk) {
+        if (options.checkOnOk) {
             if (!checkApply(context.stack, context)) {
                 return;
             }
@@ -3067,5 +3056,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public static List<String> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null, SetFact.EMPTY());
         return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
+    }
+
+
+    @Override
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 }

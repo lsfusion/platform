@@ -225,7 +225,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.size()==0;
     }
 
-    public int getCount() {
+    public long getCount() {
         return rows.size();
     }
 

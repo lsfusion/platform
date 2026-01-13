@@ -22,7 +22,7 @@ public interface GActionDispatcher {
 
     Object execute(GConfirmAction action);
 
-    void execute(GHideFormAction action);
+    void execute(GHideFormAction action, GActionDispatcherLookAhead lookAhead);
 
     void execute(GDestroyFormAction action);
 
@@ -64,7 +64,7 @@ public interface GActionDispatcher {
 
     String execute(GGetAvailablePrintersAction action);
 
-    void execute(GPrintFileAction action);
+    String execute(GPrintFileAction action);
 
     String execute(GWriteToPrinterAction action);
 

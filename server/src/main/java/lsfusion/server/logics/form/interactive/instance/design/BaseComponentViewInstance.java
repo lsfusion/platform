@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.instance.design;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;

@@ -2,10 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.WriteClientAction;
-import lsfusion.base.file.WriteUtils;
+import lsfusion.base.file.*;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -38,28 +35,27 @@ public class WriteAction extends SystemAction {
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue sourceObject = context.getKeys().getValue(0);
-        assert sourceObject.getType() instanceof FileClass;
 
         ObjectValue pathObject = context.getKeys().getValue(1);
         assert pathObject.getType() instanceof StringClass;
 
-        FileData fileData = readFile(sourceObject, sourcePropertyType, ExternalUtils.resultCharset.toString());
-        if(fileData != null && pathObject instanceof DataObject) {
-            String path = (String) pathObject.getValue();
-            try {
-                String extension = fileData.getExtension();
-                RawFileData rawFileData = fileData.getRawFile();
-                if (clientAction) {
-                    if (append && dialog) {
-                        throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
+        if(pathObject instanceof DataObject) {
+            NamedFileData fileData = readFile(sourceObject, sourcePropertyType, ExternalUtils.resultCharset.toString());
+            if (fileData != null) {
+                String path = (String) pathObject.getValue();
+                try {
+                    if (clientAction) {
+                        if (append && dialog) {
+                            throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
+                        } else {
+                            context.requestUserInteraction(new WriteClientAction(fileData, path, append, dialog));
+                        }
                     } else {
-                        context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
+                        WriteUtils.write(fileData, path, false, append);
                     }
-                } else {
-                    WriteUtils.write(rawFileData, path, extension, false, append);
+                } catch (Exception e) {
+                    throw Throwables.propagate(e);
                 }
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
             }
         }
         return FlowResult.FINISH;

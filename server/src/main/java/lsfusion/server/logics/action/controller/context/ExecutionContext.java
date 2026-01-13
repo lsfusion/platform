@@ -10,9 +10,8 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.MessageClientType;
-import lsfusion.interop.form.ModalityWindowFormType;
+import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -27,9 +26,11 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
+import lsfusion.server.logics.action.flow.ScheduledFutureService;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
@@ -42,9 +43,9 @@ import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
@@ -57,7 +58,6 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -71,7 +71,6 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -126,8 +125,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return result.addExcl(super.getAllParamsWithValuesInStack());
         }
 
-        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+        public ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack() {
+            ImSet<Pair<LP, LogicsModule.LocalPropertyData>> result = SetFact.EMPTY();
 
             if(locals != null)
                 result = result.addExcl(locals);
@@ -182,7 +181,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     
     private final ExecutionEnvironment env;
 
-    private final ScheduledExecutorService executorService;
+    private final ScheduledFutureService scheduledService;
 
     private final ConnectionService connectionService;
 
@@ -191,7 +190,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // debug info 
     private ImRevMap<String, P> paramsToInterfaces;
     private ImMap<String, String> paramsToFQN;
-    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
+    private ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals;
     private boolean newDebugStack;
     private Processor<ImMap<String, ObjectValue>> watcher;
     
@@ -216,12 +215,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this(keys, null, env, null, null, formEnv, stack, false);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, ExecutionEnvironment env, ScheduledExecutorService executorService,
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, ExecutionEnvironment env, ScheduledFutureService scheduledService,
                             ConnectionService connectionService, FormEnvironment<P> form, ExecutionStack stack, boolean hasMoreSessionUsages) {
         this.keys = keys;
         this.pushedAsyncResult = pushedAsyncResult;
         this.env = env;
-        this.executorService = executorService;
+        this.scheduledService = scheduledService;
         this.connectionService = connectionService;
         this.form = form;
         this.stack = new ContextStack(stack);
@@ -229,18 +228,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
     
     public ExecutionContext<P> override(boolean hasMoreSessionUsages) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
         this.paramsToInterfaces = paramsToInterfaces;
     }
 
-    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
+    public void setLocals(ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals) {
         this.locals = locals;
     }
     
@@ -256,8 +255,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.watcher = watcher;
     }
 
-    public ScheduledExecutorService getExecutorService() {
-        return executorService;
+    public ScheduledFutureService getScheduledService() {
+        return scheduledService;
     }
 
     public ConnectionService getConnectionService() {
@@ -294,8 +293,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return result;
     }
 
-    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+    public ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack() {
+        ImSet<Pair<LP, LogicsModule.LocalPropertyData>> result = SetFact.EMPTY();
         
         if(locals != null)
             result = result.addExcl(locals);
@@ -471,9 +470,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public static class NewSession<P extends PropertyInterface> extends ExecutionContext<P> implements AutoCloseable {
 
-        public NewSession(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, DataSession session, ScheduledExecutorService executorService,
+        public NewSession(ImMap<P, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult, DataSession session, ScheduledFutureService scheduledService,
                           ConnectionService connectionService, FormEnvironment<P> form, ExecutionStack stack) {
-            super(keys, pushedAsyncResult, session, executorService, connectionService, form, stack, false);
+            super(keys, pushedAsyncResult, session, scheduledService, connectionService, form, stack, false);
         }
 
         @Override
@@ -488,7 +487,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return newSession(getSession().sql, fixedForms);
     }
     public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
-        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), executorService, connectionService, form, stack);
+        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), scheduledService, connectionService, form, stack);
     }
 
     public ActionOrProperty getSecurityProperty() {
@@ -551,7 +550,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance form = getFormFlowInstance();
-        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, getPushedAddObject(), stack);
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getExInstance(object), cls, getPushedAddObject(), stack);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {
@@ -603,20 +602,20 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         getEnv().cancel(stack, keep);
     }
 
-    public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, newExecutorService, connectionService, form, stack, hasMoreSessionUsages);
+    public ExecutionContext<P> override(ScheduledFutureService newScheduledService) {
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, newScheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ConnectionService newConnectionService) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, newConnectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, newConnectionService, form, stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack, PushAsyncResult pushedAsyncResult) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, executorService, connectionService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, scheduledService, connectionService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends PropertyInterfaceImplement<P>> mapInterfaces) {
@@ -632,11 +631,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys, boolean hasMoreSessionUsages) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
-        return new ExecutionContext<>(keys, pushedAsyncResult, env, executorService, connectionService, form, stack, hasMoreSessionUsages);
+        return new ExecutionContext<>(keys, pushedAsyncResult, env, scheduledService, connectionService, form, stack, hasMoreSessionUsages);
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -667,9 +666,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, FormOptions options) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, syncType, formId, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, options, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException { // have to be used with getRequestChangeExtProps
@@ -756,13 +755,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, interactive, options);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, ModalityWindowFormType.FLOAT, null, false);
+        return createFormInstance(formEntity, MapFact.EMPTY(), getSession(), false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, null, false, false, false, false, false, null));
+    }
+
+    public FormInstance createAndRequestFormInstance(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                                                     FormOptions options) throws SQLException, SQLHandledException {
+        FormInstance newFormInstance = createFormInstance(form, mapObjects, getSession(), true, options);
+        requestFormUserInteraction(newFormInstance, options);
+
+        FormInstance recreatedForm = newFormInstance.recreatedForm;
+        return recreatedForm != null ? recreatedForm : newFormInstance;
     }
 
     public SQLSyntax getDbSyntax() {

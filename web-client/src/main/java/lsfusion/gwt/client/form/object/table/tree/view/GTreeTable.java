@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
@@ -116,15 +115,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
         };
 
-        if(treeGroupController.isExpandOnClick())
-            form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null, null, null, null),
-                    () -> {
-                        GTreeObjectTableNode node = getExpandSelectedNode();
-                        return node != null && node.isExpandable();
-                    },
-                    event -> {
+        form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null, null, null, null),
+                () -> {
+                    GTreeObjectTableNode node = getExpandSelectedNode();
+                    return node != null && node.isExpandable();
+                },
+                event -> {
+                    if (!hasTreeNode(event)) {
                         fireExpandSelectedNode(null);
-                    }, getWidget(), groupObject);
+                    }
+                }, getWidget(), groupObject);
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
@@ -164,7 +164,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 //                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
 //                String tooltip = property.getTooltip(propertyCaption);
                 GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, property, gridColumn);
-                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky(), form);
+                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, null, property, null, null, gridColumn.isSticky(), form);
 
                 insertColumn(index, gridColumn, header, footer);
 
@@ -364,20 +364,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return null;
         }
 
+        EventTarget prevDownEventTarget = null;
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
             Event event = handler.event;
-            boolean changeEvent = GMouseStroke.isChangeEvent(event);
-            if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
-                String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
-                if (attrID != null) {
-                    boolean consumed = false;
-                    if(changeEvent)
-                        consumed = changeTreeState(editCell);
-                    if(consumed)
-                        handler.consume();
+            if (GMouseStroke.isDownEvent(event) && hasTreeNode(event) && !ignoreDoubleDown(event)) {
+                if (changeTreeState(editCell)) {
+                    prevDownEventTarget = event.getEventTarget();
+                    handler.consume();
                 }
             }
+        }
+
+        private boolean ignoreDoubleDown(Event event) {
+            return GMouseStroke.isDblDownEvent(event) && event.getEventTarget().equals(prevDownEventTarget);
         }
 
         private boolean changeTreeState(Cell cell) {
@@ -1261,5 +1261,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             ((GGridPropertyTableHeader) getHeader(0)).updateCaption(caption);
             headersChanged();
         }
+    }
+
+    private boolean hasTreeNode(Event event) {
+        return GwtClientUtils.hasAttribute(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
     }
 }

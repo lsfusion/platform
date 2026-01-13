@@ -39,15 +39,15 @@ public abstract class FormToolbarAction extends InternalAction {
                 if(readOnlyIf != null) {
                     entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
                 }
-            }
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                if (!isShowCaption()) {
-                    propertyView.caption = LocalizedString.NONAME;
-                }
 
+                if (!isShowCaption()) {
+                    entity.setCaption(LocalizedString.NONAME, version);
+                }
+            }
+            public void proceedDefaultDesign(PropertyDrawView propertyView, Version version) {
                 String valueElementClass = getValueElementClass();
                 if(valueElementClass != null)
-                    propertyView.valueElementClass = valueElementClass;
+                    propertyView.setValueElementClass(valueElementClass, version);
             }
         });
     }

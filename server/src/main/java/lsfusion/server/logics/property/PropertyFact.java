@@ -51,13 +51,14 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.*;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -761,14 +762,20 @@ public class PropertyFact {
         return dataProperty.getImplement(orderInterfaces.keyOrderSet());
     }
 
-    public static Property<?> createDataPropRev(String caption, Object object, ValueClass valueClass) {
-        return createDataPropRev(caption, object, MapFact.EMPTY(), valueClass, LocalNestedType.ALL).property;
+    public static LP<ClassPropertyInterface> createReturnDataProp(Pair<ValueClass, ImList<ValueClass>> classes) {
+        return new LP<>(new SessionDataProperty(LocalizedString.NONAME, classes.second.toArray(new ValueClass[classes.second.size()]), classes.first, true));
     }
-    public static <T> PropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(String typeString, Object objects, ImMap<T, ValueClass> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
-        ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
-        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create(typeString + " (" + objects.toString() + ")", false), orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass);
+
+    public static Property<?> createDataPropRev(String caption, Object object, ValueClass valueClass) {
+        return createDataPropRev(caption, object, SetFact.EMPTYORDER(), valueClass, LocalNestedType.ALL).property;
+    }
+    // form data property
+    public static PropertyObjectEntity<ClassPropertyInterface> createDataPropRev(String typeString, Object objects, ImOrderSet<ObjectEntity> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
+        ImOrderSet<ValueClass> interfaceClasses = interfaces.mapOrderSetValues((ObjectEntity p) -> p.baseClass);
+//        " (" + objects.toString() + ")" we don't want to call toString for now, not to finalize caption
+        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create(typeString, false), interfaceClasses.toArray(new ValueClass[interfaceClasses.size()]), valueClass);
         dataProperty.nestedType = nestedType;
-        return dataProperty.getRevImplement(orderInterfaces.keyOrderSet());
+        return new PropertyObjectEntity<>(dataProperty, dataProperty.getFriendlyOrderInterfaces().mapSet(interfaces));
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> where, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction) {

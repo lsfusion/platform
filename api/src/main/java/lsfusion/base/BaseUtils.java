@@ -49,6 +49,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -62,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 358;
+        return 370;
     }
 
     public static String getPlatformVersion() {
@@ -718,6 +719,22 @@ public class BaseUtils {
             if (!remove.contains(property))
                 removeList.add(property);
         return removeList;
+    }
+
+    public static <K> List<K> removeList(List<K> list, Predicate<K> remove) {
+        List<K> removeList = new ArrayList<>();
+        for (K property : list)
+            if (!remove.test(property))
+                removeList.add(property);
+        return removeList;
+    }
+
+    public static <K> Set<K> removeSet(Set<K> set, Predicate<K> remove) {
+        Set<K> removeSet = new HashSet<>();
+        for (K property : set)
+            if (!remove.test(property))
+                removeSet.add(property);
+        return removeSet;
     }
 
     public static <K> List<K> removeList(List<K> list, int index) {
@@ -1567,6 +1584,76 @@ public class BaseUtils {
         return extension != null && !extension.isEmpty() ? (name + "." + extension) : name;
     }
 
+    /**
+     * Converts a technical identifier (camelCase, PascalCase, snake_case, kebab-case)
+     * into a human-readable caption in sentence case.
+     * <p>
+     * Rules:
+     * <ul>
+     *   <li>Splits on camel/pascal boundaries, underscores, and dashes.</li>
+     *   <li>First word is capitalized (Sentence case); subsequent words are lowercased.</li>
+     *   <li>All-caps acronyms (length ≥ 2, letters/digits) are preserved as-is (e.g., "URL", "ID").</li>
+     * </ul>
+     * Examples:
+     * <pre>
+     *   documentHeader   -> "Document header"
+     *   userIDNumber     -> "User ID number"
+     *   URLValue         -> "URL value"
+     *   http_status-code2XX -> "HTTP status code 2XX"
+     * </pre>
+     */
+    public static String humanize(String input) {
+        if (input == null || input.isEmpty()) return input;
+
+        // 1) Normalize separators (underscores/dashes) to spaces.
+        String s = input.trim().replaceAll("[-_]+", " ");
+
+        // 2) Insert spaces at camel/pascal/number boundaries.
+        //    - Between lower->upper (documentHeader -> document Header)
+        //    - Between acronym->capitalized word (URLValue -> URL Value)
+        //    - Between letters<->digits (Version2 -> Version 2, 2FA -> 2 FA)
+        s = s.replaceAll(
+                "(?<=[A-Z])(?=[A-Z][a-z])"   // URL|Value
+                        + "|(?<=[a-z])(?=[A-Z])"       // document|Header
+                        + "|(?<=[A-Za-z])(?=\\d)"      // Version|2
+                        + "|(?<=\\d)(?=[A-Za-z])",     // 2|FA
+                " "
+        );
+
+        // 3) Collapse multiple spaces to single spaces.
+        s = s.replaceAll("\\s+", " ").trim();
+        if (s.isEmpty()) return s;
+
+        // 4) Build sentence case while preserving acronyms.
+        String[] parts = s.split(" ");
+        StringBuilder out = new StringBuilder(s.length());
+        for (int i = 0; i < parts.length; i++) {
+            String w = parts[i];
+
+            // Detect acronym: length ≥ 2, all uppercase letters/digits, and contains at least one letter.
+            boolean isAcronym = w.length() >= 2
+                    && w.replaceAll("[A-Za-z0-9]", "").isEmpty()
+                    && w.equals(w.toUpperCase(Locale.ROOT))
+                    && w.matches(".*[A-Za-z].*");
+
+            String normalized;
+            if (isAcronym) {
+                normalized = w; // keep as-is
+            } else if (i == 0) {
+                // Sentence case for the first word.
+                String lower = w.toLowerCase(Locale.ROOT);
+                normalized = Character.toUpperCase(lower.charAt(0)) + (lower.length() > 1 ? lower.substring(1) : "");
+            } else {
+                // Lowercase for subsequent words.
+                normalized = w.toLowerCase(Locale.ROOT);
+            }
+
+            if (i > 0) out.append(' ');
+            out.append(normalized);
+        }
+        return out.toString();
+    }
+
     public static String firstWord(String string, String separator) {
         int first = string.indexOf(separator);
         if (first >= 0)
@@ -2060,11 +2147,11 @@ public class BaseUtils {
         return result.toString();
     }
 
-    public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
+    public static <T> Iterable<T> mergeIterables(final Iterable<? extends T> it1, final Iterable<? extends T> it2) {
         return () -> mergeIterators(it1.iterator(), it2.iterator());
     }
 
-    public static <T> Iterator<T> mergeIterators(final Iterator<T> it1, final Iterator<T> it2) {
+    public static <T> Iterator<T> mergeIterators(final Iterator<? extends T> it1, final Iterator<? extends T> it2) {
         return new Iterator<T>() {
             boolean it1Running = true;
 
@@ -2337,5 +2424,9 @@ public class BaseUtils {
             }
         }
         return true;
+    }
+
+    public static List<String> splitTrim(String value) {
+        return value == null ? new ArrayList<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }

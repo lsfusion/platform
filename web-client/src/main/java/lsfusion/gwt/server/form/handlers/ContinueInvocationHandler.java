@@ -20,14 +20,6 @@ public class ContinueInvocationHandler extends FormServerResponseActionHandler<C
 
     @Override
     public ServerResponseResult executeEx(final ContinueInvocation action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                Object actionResults[] = new Object[action.actionResults.length];
-                for (int i = 0; i < actionResults.length; ++i) {
-                    actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i]);
-                }
-                return remoteForm.continueServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, actionResults);
-            }
-        });
+        return getServerResponseResult(action, remoteForm -> remoteForm.continueServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, gwtConverter.convertOrCast(action.actionResult)));
     }
 }

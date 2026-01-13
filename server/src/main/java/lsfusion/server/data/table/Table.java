@@ -89,7 +89,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);
 
     // важно чтобы статистика таблицы была адекватна статистике классов, так как иначе infinite push down'ы могут пойти
-    private static int getObjectKeyFieldStat(AndClassSet classSet) {
+    private static long getObjectKeyFieldStat(AndClassSet classSet) {
         OrClassSet orClassSet = classSet.getOr();
         if(orClassSet instanceof OrObjectClassSet) {
             ObjectValueClassSet valueClassSet = ((OrObjectClassSet) orClassSet).getValueClassSet();
@@ -117,8 +117,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         throw new UnsupportedOperationException();
     }
 
-    private static int getKeyFieldStat(KeyField field, Table table) {
-        int resultStat = -1;
+    private static long getKeyFieldStat(KeyField field, Table table) {
+        long resultStat = -1;
         if (field.type instanceof ObjectType) {
             AndClassSet commonClass = table.getClasses().getCommonClass(field);
             if (commonClass != null)
@@ -145,8 +145,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return resultStat;
     }
 
-    protected static TableStatKeys getStatKeys(Table table, final int count) { // для мн-го наследования
-        ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues((KeyField value) -> BaseUtils.min(count, getKeyFieldStat(value, table)));
+    protected static TableStatKeys getStatKeys(Table table, final long count) { // для мн-го наследования
+        ImMap<KeyField, Long> statMap = table.getTableKeys().mapValues((KeyField value) -> BaseUtils.min(count, getKeyFieldStat(value, table)));
         return TableStatKeys.createForTable(count, statMap);
     }
 

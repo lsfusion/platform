@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -15,7 +14,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
@@ -29,7 +28,6 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -39,22 +37,20 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        requestFormUserInteraction(createRemoteForm(formInstance, stack), showFormType, forbidDuplicate, syncType, formId, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, FormOptions formOptions, ExecutionStack stack) throws SQLException, SQLHandledException {
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), formOptions, stack);
     }
 
-    protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(forbidDuplicate, syncType, remoteForm, remoteForm.initClientData(stack), showFormType, formId);
-        if(showFormType.isModal() && syncType) {
+    protected void requestFormUserInteraction(RemoteForm remoteForm, FormOptions options, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(options.forbidDuplicate, options.syncType, remoteForm, remoteForm.initClientData(stack), options.type, options.formId);
+        if(options.type.isModal() && options.syncType)
             requestUserInteraction(action);
-            remoteForm.form.syncLikelyOnClose(true, stack);
-        } else
+        else
             delayUserInteraction(action);
     }
 
@@ -119,16 +115,12 @@ public abstract class RemoteUIContext extends AbstractContext {
         return false;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                                           DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack,
-                                           boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters,
-                                           boolean readonly) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
-                session,
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
-                mapObjects, stack, isModal,
-                noCancel, manageSession,
-                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale());
+    @Override
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                                           DataSession session, ExecutionStack stack, boolean interactive,
+                                           FormOptions options) throws SQLException, SQLHandledException {
+        return new FormInstance(formEntity, getLogicsInstance(), session, getSecurityPolicy(), getFocusListener(),
+                getClassListener(), mapObjects, stack, interactive, isExternal(), getLocale(), options);
     }
 
     protected abstract int getExportPort();

@@ -379,7 +379,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         if(pessQuery != null && !Settings.get().isDisablePessQueries())
             return materializePessQuery(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);
         
-        Result<Integer> actual = new Result<>();
+        Result<Long> actual = new Result<>();
         final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();
 
         final ImOrderSet<String> keys = keyReaders.keys().toOrderSet();
@@ -390,7 +390,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
         final PureTime pureTime = new PureTime();
         String table = session.getTemporaryTable(keyOrder, propOrder.getSet(), new FillTemporaryTable() {
-            public Integer fill(String name) throws SQLException, SQLHandledException {
+            public Long fill(String name) throws SQLException, SQLHandledException {
                 SQLDML dml = getInsertDML(name, keyOrder, propOrder, false, keys, properties, session.syntax);
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.registerSession(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, () -> outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, true, owner));

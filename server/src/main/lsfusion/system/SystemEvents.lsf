@@ -13,7 +13,7 @@ onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
 // todo onLoginLoad = ABSTRACT CASE INTEGER(STRING) IS DEPRECATED! DO NOT USE! Only for backward compatibility
-onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onLoginLoad = ABSTRACT CASE INTEGER(STRING) @@deprecated('6.1');
 onLoginInit ABSTRACT LIST ();
 onLoginInit = DATA LOCAL INTEGER (STRING);
 
@@ -24,7 +24,7 @@ onLoginInit() +{
 }
 
 // todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
-onWebClientLoad ABSTRACT LIST ();
+onWebClientLoad ABSTRACT LIST () @@deprecated('6.1');
 onWebClientStarted () +{
     onWebClientLoad();
 }
@@ -128,7 +128,7 @@ captionSize '{system.events.size}' (DesignEnv d) = staticCaption(designEnvSize(d
 serverSize '{system.events.size}' = DATA Size ();
 captionServerSize '{system.events.size}' = staticCaption(serverSize());
 
-heuristicSize = ABSTRACT Size();
+heuristicSize = ABSTRACT VALUE Size();
 size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), heuristicSize();
 isMini = size(currentDesignEnv()) == Size.mini;
 isTiny = size(currentDesignEnv()) == Size.tiny;
@@ -311,7 +311,7 @@ onWebClientInit() + {
     
     onWebClientInit('arrow-buttons.css') <- 36;    
 }
-
+dbServer = DATA STRING();
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();
 unusedDBNames = DATA LOCAL STRING (STRING);
@@ -544,8 +544,7 @@ currentOriginUrl(STRING relativeUrl) = IF currentConnection() THEN originUrl(cur
 currentContextUrl(STRING relativeUrl) = IF currentConnection() THEN contextUrl(currentConnection(), relativeUrl) ELSE apiOriginUrl(relativeUrl);
 currentOriginUrl(LINK relativeLink) = IF currentConnection() THEN originUrl(currentConnection(), relativeLink) ELSE apiOriginUrl(relativeLink);
 
-// deprecated, current * should be used instead
-originUrl(STRING relativeUrl) = currentOriginUrl(relativeUrl);
+originUrl(STRING relativeUrl) = currentOriginUrl(relativeUrl) @@deprecated('6.1','current * should be used instead');
 contextUrl(STRING relativeUrl) = currentContextUrl(relativeUrl);
 originUrl(LINK relativeLink) = currentOriginUrl(relativeLink);
 
@@ -657,7 +656,7 @@ toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigat
 logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
-nameUser '{system.events.user.session}' (Session session) = name(user(session));
+nameUser '{system.events.user.session}' (Session session) = name(user(session)) IN id;
 nameContact '{system.events.user.session}' (Session session) = name[Contact](user(session));
 user (Session session) <- currentUser() WHEN SET(session IS Session);
 
@@ -682,7 +681,7 @@ dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) INDEXED I
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
 form '{system.events.form.session}' = DATA Form (Session);
-captionForm '{system.events.caption.form.session}' (Session session) = caption(form(session));
+captionForm '{system.events.caption.form.session}' (Session session) = caption(form(session)) IN id;
 
 connection '{system.events.connection.session}' = DATA Connection(Session) INDEXED;
 hostnameComputerConnection '{system.events.hostname.computer.connection.session}' = hostnameComputer(connection(Session session))IN id;
@@ -1018,7 +1017,7 @@ EXTEND FORM computers
     PROPERTIES(c) READONLY javaVersionNativeDesktop, javaVersionNativeMobile, javaVersionWebDesktop, javaVersionWebMobile
 ;
 
-// NOTIFY, PUSH, SHARE actions
+// NOTIFY, PUSH, SHARE, CUSTOMIZE actions
 
 FORM shareUrlForm
     OBJECTS share = TEXT PANEL
@@ -1045,6 +1044,98 @@ share(STRING url, STRING text, STRING title) {
 
 shareAction(STRING relativeUrl) {
     share(currentContextUrl(relativeUrl), 'The link to share the form', 'Share');
+}
+
+dataExtendCode = DATA TEXT (Form);
+dataExtendCode = DATA TEXT (Form, User);
+extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
+extendCode(STRING sid) = extendCode(form(sid));
+
+defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
+jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
+formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
+formCustomizeShowIf() += isWeb();
+
+enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
+enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL BOOLEAN(); 
+enableExtendCodeCurrentUser '{action.form.customize.current.user}' = DATA LOCAL BOOLEAN();
+recreate = DATA LOCAL BOOLEAN();
+
+nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
+
+FORM customizeForm '{action.form.customize}' IMAGE 'settings'
+    PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
+    OBJECTS sid = STRING PANEL, code = TEXT PANEL
+    PROPERTIES sid = VALUE(sid),
+        code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(dataExtendCode(form(sid))) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+            INPUT s = TEXT DO {
+                dataExtendCode(form(sid)) <- nullEmpty(fieldText(JSON((s)), 'text'));
+            }
+        },
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(dataExtendCode(form(sid), currentUser())) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+            INPUT s = TEXT DO {
+                dataExtendCode(form(sid), currentUser()) <- nullEmpty(fieldText(JSON((s)), 'text'));
+            }
+        }
+    ON INIT {
+        enableOriginalCode() <- TRUE;
+        enableExtendCodeAll() <- TRUE IF dataExtendCode(form(sid));
+        enableExtendCodeCurrentUser() <- TRUE; 
+    }
+;
+
+DESIGN customizeForm {
+    width = -1;
+    NEW main BEFORE TOOLBARBOX {
+        fill = 1;
+        NEW showPanel {
+            alignment = CENTER;
+            custom = '';
+            class = 'btn-group';
+            MOVE PROPERTY(enableOriginalCode()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+            MOVE PROPERTY(enableExtendCodeAll()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+            MOVE PROPERTY(enableExtendCodeCurrentUser()) {
+                valueClass = 'btn-check';
+                captionClass = 'btn btn-outline-primary btn-arrow-right';
+            };
+        }
+        NEW codePanel {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE PROPERTY(code) {
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+            MOVE PROPERTY(extendCodeAll) {
+                defaultValue = defaultExtendCode(form(sid));
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+            MOVE PROPERTY(extendCodeCurrentUser) {
+                defaultValue = defaultExtendCode(form(sid));
+                panelCaptionVertical = TRUE;
+                charHeight = 30;
+                charWidth = 50;
+            }
+        }
+    }
+    REMOVE PROPERTY(sid);
+}
+
+formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
+customize(STRING sid, STRING code) {
+    DIALOG customizeForm OBJECTS sid = sid, code = code NOMANAGESESSION DO {
+        formRecreate();
+    }
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

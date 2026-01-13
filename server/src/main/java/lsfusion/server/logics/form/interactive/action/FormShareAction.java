@@ -37,4 +37,9 @@ public class FormShareAction extends FormFlowAction {
     protected LP getShowIf() {
         return showIf;
     }
+
+    @Override
+    protected boolean isShowCaption() {
+        return false;
+    }
 }

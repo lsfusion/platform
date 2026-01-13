@@ -1,8 +1,8 @@
 package lsfusion.server.logics.action.change;
 
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -15,6 +15,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -25,17 +26,16 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -182,5 +182,34 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
                 return asyncChange.map(mapInterfaces.reverse());
         }
         return null;
+    }
+
+    public <X extends PropertyInterface> ActionMapImplement<?, PropertyInterface> replaceReturnAction(LP<X> result) {
+        Property<P> toProperty = writeTo.property;
+        ImOrderSet<P> returnInterfaces;
+        if(toProperty instanceof SessionDataProperty && (returnInterfaces = (ImOrderSet<P>) ((SessionDataProperty) toProperty).returnInterfaces) != null) {
+            assert where == null || where.mapIsOr(writeTo); // actually the second assert is that where = from OR to
+            return PropertyFact.createSetAction(innerInterfaces, mapInterfaces, result.getImplement(returnInterfaces.mapOrder(writeTo.mapping)), writeFrom);
+        }
+        return null;
+    }
+
+    @Override
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        Property<P> toProperty = writeTo.property;
+        Pair<ValueClass, ImList<ValueClass>> returnClasses;
+        if(toProperty instanceof SessionDataProperty && (returnClasses = ((SessionDataProperty) toProperty).returnClasses) != null)
+            return returnClasses;
+
+        return super.getResultClasses();
+    }
+
+    @Override
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        Property<P> toProperty = writeTo.property;
+        if(toProperty instanceof SessionDataProperty && ((SessionDataProperty) toProperty).returnClasses != null)
+            return SetFact.singleton((SessionDataProperty) toProperty);
+
+        return super.getResultProps(recursiveAbstracts);
     }
 }

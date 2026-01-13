@@ -40,7 +40,7 @@ import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
+public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
     public int ID;
     public String nativeSID;
     public String sID;
@@ -48,6 +48,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String caption;
     public String captionElementClass;
+    public String footerElementClass;
     public AppStaticImage appImage;
 
     public String canonicalName;
@@ -58,6 +59,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+    public boolean customNeedDefaultValue;
 
     public boolean wrap;
     public boolean wrapWordBreak;
@@ -300,6 +302,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
+    public String defaultValue;
 
     public boolean echoSymbols;
     public boolean noSort;
@@ -378,7 +381,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GGridElementClassReader gridElementClassReader;
     public GValueElementClassReader valueElementClassReader;
 
-    public GCaptionElementClassReader captionElementClassReader;
+    public GExtraPropReader captionElementClassReader;
+    public GExtraPropReader footerElementClassReader;
     public GExtraPropReader fontReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
@@ -395,6 +399,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GExtraPropReader propertyCustomOptionsReader;
     public GExtraPropReader changeKeyReader;
     public GExtraPropReader changeMouseReader;
+    public GExtraPropReader defaultValueReader;
 
     // for pivoting
     public String formula;
@@ -447,6 +452,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String tooltip;
     public String valueTooltip;
 
+    public String eventID;
     public Boolean changeOnSingleClick;
 
     public boolean hide;
@@ -1055,7 +1061,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && !hide && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
     }
 
     public boolean isInline() {
@@ -1076,8 +1082,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return sid != null && sid.equals("image");
     }
 
+    @Override
+    public boolean equalsGroupObject(GGroupObject group) {
+        return GwtSharedUtils.nullEquals(groupObject, group);
+    }
+
+    @Override
+    public String getCaption(Map<GPropertyDraw, String> columnCaptionMap) {
+        return columnCaptionMap.get(this);
+    }
+
     public static class ContextMenuDebugInfo implements Serializable {
-        public String creationScript;
+        public String sid;
         public String creationPath;
         public String path;
 
@@ -1085,8 +1101,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         public ContextMenuDebugInfo() {
         }
 
-        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
-            this.creationScript = creationScript;
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
             this.creationPath = creationPath;
             this.path = path;
         }
@@ -1095,7 +1111,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             if (!MainFrame.showDetailedInfo) {
                 return caption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, caption);
             } else {
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationScript, ""), nvl(creationPath, ""));
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationPath, ""));
             }
         }
 
@@ -1105,7 +1121,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         public static String getDetailedActionToolTipFormat() {
             return createTooltipHorizontalSeparator() +
                     "<b>sID:</b> %s<br>" +
-                    "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
                     "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
                     "</html>";
         }

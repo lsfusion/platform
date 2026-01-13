@@ -9,18 +9,15 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
 
 public class ScriptingGroupObject {
-    public String groupName;
-    public List<String> objects;
-    public List<String> classes;
-    public List<LocalizedString> captions;
-    public List<ActionObjectEntity> events;
-    public List<String> integrationSIDs;
+    public List<ObjectEntity> objects;
+
     public ClassViewType viewType;
     public ListViewType listViewType;
     public PivotOptions pivotOptions;
@@ -42,17 +39,6 @@ public class ScriptingGroupObject {
     public String customRenderFunction;
     public ScriptingLogicsModule.FormLPUsage customOptions;
     public String mapTileProvider;
-
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
-        assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
-
-        groupName = name;
-        this.objects = objects;
-        this.classes = classes;
-        this.captions = captions;
-        this.events = events;
-        this.integrationSIDs = integrationSIDs;
-    }
 
     public void setViewType(ClassViewType viewType, ListViewType listViewType) {
         this.viewType = viewType;

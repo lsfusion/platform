@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.controller.MainController;
@@ -144,7 +145,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         stopCellEditing();
         if (!properties.isEmpty()) {
             int selectedColumn = getSelectedColumn();
-            if (selectedColumn != -1) {
+            if (selectedColumn != -1 && model.getColumnCount() > selectedColumn) {
                 List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
                 ClientGroupObjectValue columnKey = getSelectedColumnKey();
                 columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
@@ -186,7 +187,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                 setFont(getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
             }
         } else if (getDesignFont() != null) {
-            setFont(groupObject.grid.design.getFont(this));
+            setFont(ClientColorUtils.getOrDeriveComponentFont(getDesignFont(), this));
         }
 
         setName(groupObject.toString());
@@ -1770,6 +1771,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
     }
 
+    public void setInGrid(ClientPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
+    }
+
     public Comparator<ClientPropertyDraw> getUserSortComparator() {
         return getCurrentPreferences().getUserSortComparator();
     }
@@ -1985,7 +1990,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                     @Override
                     public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                         Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
-                        model.getColumnProperty(column).design.designHeader(comp);
+                        ClientPropertyDraw columnProperty = model.getColumnProperty(column);
+                        ClientColorUtils.designHeader(columnProperty.captionFont, comp);
                         return comp;
                     }
                 };
@@ -1999,7 +2005,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     public FontInfo getDesignFont() {
-        return groupObject.grid.design.getFont();
+        return groupObject.grid.font;
     }
 
     @Override

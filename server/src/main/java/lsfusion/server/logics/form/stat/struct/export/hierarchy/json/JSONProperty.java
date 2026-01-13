@@ -104,9 +104,8 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         this.returnString = returnString;
     }
 
-    @Override
-    protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toExValue(returnString ? JSONTextClass.instance : JSONClass.instance);
+    protected ValueClass getLazyValueClass() {
+        return returnString ? JSONTextClass.instance : JSONClass.instance;
     }
 
     @Override
@@ -116,7 +115,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
     @Override
     protected PropertyMapImplement<?, ClassPropertyInterface> createProperty() {
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBaseLM());
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBusinessLogics());
         ImRevMap<ObjectEntity, ClassPropertyInterface> mappedObjects = staticForm.second.rightJoin(this.mapObjects);
 
         ImSet<GroupObjectEntity> valueGroups = AbstractFormDataInterface.getValueGroupObjects(mappedObjects.keys());
@@ -252,7 +251,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             }
 
             @Override
-            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
+            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?, ?> drawProperty, GroupObjectEntity toDraw) {
                 return new AsyncInput(type, null, null, null);
             }
 
@@ -311,7 +310,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
 
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBaseLM());
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBusinessLogics());
         ImRevMap<ObjectEntity, ClassPropertyInterface> mappedObjects = staticForm.second.rightJoin(this.mapObjects);
 
         ChangeAction changeAction = new ChangeAction(LocalizedString.NONAME, staticForm.first, mappedObjects.keys().toOrderSet());

@@ -1,10 +1,21 @@
-FROM openjdk:21-jdk-slim
+FROM amazoncorretto:21-alpine-jdk
 
-# jenkins uses regex for replace jar file version in next line before build. Check jenkins branch on change
+# jenkins uses regex to replace jar file version in next line before build. Check jenkins branch on change
 ADD https://download.lsfusion.org/java/lsfusion-server-7.0-SNAPSHOT.jar server.jar
+
+# java.lang.UnsatisfiedLinkError: /usr/local/openjdk-21/lib/libfontmanager.so: libfreetype.so.6: cannot open shared object file: No such file or directory
+# java.lang.NoClassDefFoundError: Could not initialize class sun.awt.X11FontManager
+# JRRuntimeException: Error initializing graphic environment.
+# https://stackoverflow.com/a/58765562/13017592
+# https://github.com/docker-library/openjdk/pull/235#issuecomment-424466077
+RUN apk add ttf-dejavu
 
 WORKDIR /lsfusion
 
 EXPOSE 7652
 
-CMD ["java",  "-cp", ".:./*:../server.jar", "lsfusion.server.logics.BusinessLogicsBootstrap"]
+# Moved to enrypoint to be able to pass JAVA_OPTS, leaving exec-form
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

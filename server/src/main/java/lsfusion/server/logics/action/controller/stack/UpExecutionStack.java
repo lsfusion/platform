@@ -10,13 +10,12 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public abstract class UpExecutionStack implements ExecutionStack {
 
@@ -39,7 +38,7 @@ public abstract class UpExecutionStack implements ExecutionStack {
         return MapFact.EMPTY();
     }
 
-    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+    public ImSet<Pair<LP, LogicsModule.LocalPropertyData>> getAllLocalsInStack() {
         if(upStack != null)
             return upStack.getAllLocalsInStack();
         return SetFact.EMPTY();

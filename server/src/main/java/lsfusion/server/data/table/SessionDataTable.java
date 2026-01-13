@@ -250,7 +250,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return false;
     }
 
-    public int getCount() {
+    public long getCount() {
         return table.count;
     }
 

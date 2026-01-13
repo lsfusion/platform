@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapOpenForm;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
@@ -136,7 +137,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         return true;
     }
 
-    private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context) {
+    private boolean heuristicSyncType(ExecutionContext<ClassPropertyInterface> context, Boolean syncType) {
+        if(syncType != null)
+            return syncType;
         FormInstance formInstance;
         return context.hasMoreSessionUsages || ((formInstance = context.getFormInstance(false, false)) != null && formInstance.isModal()) || (windowType != null && windowType.isModal());
     }
@@ -151,11 +154,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImRevMap<O, ObjectEntity> mapRevObjects = mapObjects.reverse();
 
         // sync and modality types
-        boolean syncType; 
-        if(this.syncType != null)
-            syncType = this.syncType;
-        else
-            syncType = heuristicSyncType(context);
+        boolean syncType = heuristicSyncType(context, this.syncType);
         ShowFormType showFormType = getShowFormType(syncType);
 
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
@@ -164,9 +163,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
             context.executeSessionEvents();
 
-        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
-
+        FormInstance newFormInstance = context.createAndRequestFormInstance(form, mapObjectValues,
+                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, forbidDuplicate, syncType, isShowDrop(), checkOnOk, formId));
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
 
@@ -175,7 +173,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                 MList<RequestResult> mResult = ListFact.mList(resolvedInputObjects.size());
                 for (int i = 0; i < resolvedInputObjects.size(); i++) {
                     ObjectEntity inputObject = resolvedInputObjects.get(i);
-                    ObjectInstance object = newFormInstance.instanceFactory.getInstance(inputObject);
+                    ObjectInstance object = newFormInstance.instanceFactory.getExInstance(inputObject);
 
                     ObjectValue chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
                     mResult.add(new RequestResult(chosenValue, object.getType(), inputProps.get(i)));

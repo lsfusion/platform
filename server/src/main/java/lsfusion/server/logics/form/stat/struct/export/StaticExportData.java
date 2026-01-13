@@ -16,15 +16,16 @@ import lsfusion.server.logics.form.stat.struct.hierarchy.ExportData;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 
 import java.util.Map;
 
 public class StaticExportData implements ExportData {
 
     private final Map<GroupObjectEntity, StaticKeyData> keyData;
-    private final StaticPropertyData<PropertyDrawEntity> propData;
+    private final StaticPropertyData<PropertyReaderEntity> propData;
 
-    public StaticExportData(Map<GroupObjectEntity, StaticKeyData> keyData, StaticPropertyData<PropertyDrawEntity> propData) {
+    public StaticExportData(Map<GroupObjectEntity, StaticKeyData> keyData, StaticPropertyData<PropertyReaderEntity> propData) {
         this.keyData = keyData;
         this.propData = propData;
     }
@@ -57,12 +58,12 @@ public class StaticExportData implements ExportData {
     }
 
     @Override
-    public Type getType(PropertyDrawEntity<?> entity) {
+    public Type getType(PropertyDrawEntity<?, ?> entity) {
         return propData.types.get(entity);
     }
 
     @Override
-    public Object getProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> keys) {
+    public Object getProperty(PropertyReaderEntity entity, ImMap<ObjectEntity, Object> keys) {
         return StaticPropertyData.getProperty(propData, entity, keys);
     }
 

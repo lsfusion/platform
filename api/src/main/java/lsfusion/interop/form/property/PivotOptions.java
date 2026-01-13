@@ -3,12 +3,19 @@ package lsfusion.interop.form.property;
 import java.io.Serializable;
 
 public class PivotOptions implements Serializable {
-    String type;
-    PropertyGroupType aggregation;
-    Boolean showSettings;
-    String configFunction;
+    private String type;
+    private PropertyGroupType aggregation;
+    private Boolean showSettings;
+    private String configFunction;
 
     public PivotOptions() {
+    }
+
+    public PivotOptions(String type, PropertyGroupType aggregation, Boolean showSettings, String configFunction) {
+        this.type = type;
+        this.aggregation = aggregation;
+        this.showSettings = showSettings;
+        this.configFunction = configFunction;
     }
 
     public String getType() {

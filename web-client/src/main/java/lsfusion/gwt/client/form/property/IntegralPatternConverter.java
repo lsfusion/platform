@@ -2,35 +2,35 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.LocaleInfo;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class IntegralPatternConverter {
     public static JavaScriptObject convert(String pattern) {
         if(pattern == null)
             return null;
 
-        JavaScriptObject options = JSNIHelper.createObject();
+        JavaScriptObject options = GwtClientUtils.newObject();
         DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
         
         if (pOptions.isIntegerPattern) {
-            JSNIHelper.setAttribute(options, "alias", "integer");
+            GwtClientUtils.setAttribute(options, "alias", "integer");
         } else {
-            JSNIHelper.setAttribute(options, "alias", "decimal");
+            GwtClientUtils.setAttribute(options, "alias", "decimal");
 //            if (pOptions.minFractionalLength == 0 || pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .### or .000
-            JSNIHelper.setAttribute(options, "digits", String.valueOf(pOptions.maxFractionalLength));
+            GwtClientUtils.setAttribute(options, "digits", String.valueOf(pOptions.maxFractionalLength));
 //            temporary disabled due to several issues
 //            if (pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .000
-//                JSNIHelper.setAttribute(options, "digitsOptional", false);
+//                GwtClientUtils.setAttribute(options, "digitsOptional", false);
 //            }
 //            } else { // .00#
-//                JSNIHelper.setAttribute(options, "digits", pOptions.minFractionalLength + "," + pOptions.maxFractionalLength);
+//                GwtClientUtils.setAttribute(options, "digits", pOptions.minFractionalLength + "," + pOptions.maxFractionalLength);
 //            }
         }
         
         if (pOptions.groupSize > 0) {
-            JSNIHelper.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
+            GwtClientUtils.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
         }
-        JSNIHelper.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
+        GwtClientUtils.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
         return options;
     }
     

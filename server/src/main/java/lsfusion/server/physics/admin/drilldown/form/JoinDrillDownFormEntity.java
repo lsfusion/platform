@@ -11,10 +11,10 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.JoinProperty;
@@ -62,7 +62,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                 if(innerObject == null || usedObjects.add(innerObject)) {
                     //добавляем дополнительный объект, если на входе - свойство
                     innerObject  = addSingleGroupObject(implClasses.get(iFace));
-                    innerObject.groupTo.setViewTypePanel();
+                    innerObject.groupTo.setViewTypePanel(this, baseVersion);
     
                     PropertyInterface innerInterface = new PropertyInterface();
                     PropertyRevImplement filterProp = PropertyFact.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));
@@ -88,8 +88,8 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
 
         ContainerView extraParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.inner.params}"), version);
         design.mainContainer.addAfter(extraParamsContainer, valueContainer, version);
@@ -102,7 +102,5 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
 
             valueContainer.add(design.get(implPropertyDraw), version);
         }
-
-        return design;
     }
 }

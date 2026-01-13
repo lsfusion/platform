@@ -2,6 +2,7 @@ package lsfusion.server.physics.admin.authentication.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -23,6 +24,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
@@ -625,7 +627,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> action, DataSession dataSession) throws SQLException, SQLHandledException {
 
         ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
@@ -655,11 +657,16 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset, returnProps.length > 1 ? returnProp.property.getName() : null));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>();
-            ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
-            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset, null));
+            Pair<String[], ObjectValue[]> result = readResult(action, dataSession, businessLogics.LM, resultProp);
+            for (int i = 0; i < result.second.length; i++)
+                returns.add(formatReturnValue(result.second[i].getValue(), resultProp.result, charset, result.first[i]));
         }
 
         return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
+    }
+
+    public static Pair<String[], ObjectValue[]> readResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm, Result<SessionDataProperty> resultProp) throws SQLException, SQLHandledException {
+        return lm.getExportValueProperty().readFirstNotNull(env, resultProp, action);
     }
 
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {

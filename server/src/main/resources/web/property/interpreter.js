@@ -16,12 +16,6 @@ function interpreter() {
             element.aceEditor = aceEditor;
 
             aceEditor.container.addEventListener('keydown', function (e) {
-
-                //when autocomplete popup shown, it is appended to the body and stays in the DOM when the editor is closed.
-                let completer = aceEditor.completer;
-                if (completer && completer.popup && completer.popup.container && !element.contains(completer.popup.container))
-                    element.appendChild(completer.popup.container);
-
                 // disable propagation enter key
                 if (e.keyCode === 13 || e.which === 13)
                     e.stopPropagation();
@@ -68,14 +62,30 @@ function interpreter() {
                     e.preventDefault();
             });
 
+            aceEditor.on("focus", function () {
+                if (aceEditor.getValue() === '' && aceEditor.defaultValue) {
+                    aceEditor.setValue(aceEditor.defaultValue, true);
+                }
+            });
+
             aceEditor.onBlur = function (e) {
+                // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
+                let completer = aceEditor.completer;
+                if (completer && completer.activated)
+                    completer.destroy();
+
                 //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
                 aceEditor.$isFocused = false;
                 //disable text caret cursor blinking
                 aceEditor.renderer.hideCursor();
 
                 let editorValue = aceEditor.getValue();
-                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue) {
+                //reset default text set by aceEditor.on("focus"...
+                if (editorValue === aceEditor.defaultValue) {
+                    editorValue = '';
+                    aceEditor.setValue(editorValue, true);
+                }
+                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
                     element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
 
                     element.currentValue = editorValue;
@@ -84,7 +94,7 @@ function interpreter() {
 
             element.currentValue = aceEditor.getValue();
         },
-        update: function (element, controller, value) {
+        update: function (element, controller, value, extraValue) {
             if (element.controller == null)
                 element.controller = controller;
 
@@ -112,10 +122,14 @@ function interpreter() {
                 let currentEditorValue = aceEditor.getValue();
                 // first check means that there is no editing is done (because we don't have any start / end editing here)
                 if (currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
-                    aceEditor.setValue(editorValue);
+                    aceEditor.setValue(editorValue, true);
 
                     element.currentValue = editorValue;
                 }
+
+
+                aceEditor.setReadOnly(extraValue != null ? extraValue.readonly : false);
+                aceEditor.defaultValue = extraValue != null ? extraValue.defaultValue : null;
             }
         }
     }

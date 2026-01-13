@@ -5,10 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -71,12 +68,12 @@ public class GroupObjectHierarchy {
 
         private boolean isNonSqueezable() {
             GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup != null && firstGroup.isSubReport;
+            return firstGroup != null && firstGroup.isSubReport();
         }
 
         public PropertyObjectEntity getReportPathProp(FormEntity formEntity) {
             GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup == null ? formEntity.reportPathProp : firstGroup.reportPathProp;
+            return firstGroup == null ? formEntity.getReportPathProp() : firstGroup.getReportPathProp();
         }
 
         public GroupObjectEntity getLastGroup() {

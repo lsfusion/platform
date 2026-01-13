@@ -9,6 +9,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -22,7 +24,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance>, FilterEntityInstance {
+public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance>, FilterEntityInstance, MappingInterface<FilterEntity<P>> {
 
     private PropertyObjectEntity<P> property;
     public boolean resolveAdd;
@@ -66,5 +68,17 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return property.getImplement(mapObjects);
+    }
+
+    // copy-constructor
+    public FilterEntity(FilterEntity src, ObjectMapping mapping) {
+        resolveAdd = src.resolveAdd;
+
+        property = mapping.get(src.property);
+    }
+
+    @Override
+    public FilterEntity<P> get(ObjectMapping mapping) {
+        return new FilterEntity<>(this, mapping);
     }
 }

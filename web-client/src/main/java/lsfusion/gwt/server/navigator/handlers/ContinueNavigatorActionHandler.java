@@ -18,11 +18,6 @@ public class ContinueNavigatorActionHandler extends NavigatorServerResponseActio
 
     @Override
     public ServerResponseResult executeEx(ContinueNavigatorAction action, ExecutionContext context) throws RemoteException {
-        Object actionResults[] = new Object[action.actionResults.length];
-        for (int i = 0; i < actionResults.length; ++i) {
-            actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i]);
-        }
-
-        return getServerResponseResult(action, getRemoteNavigator(action).continueServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, actionResults));
+        return getServerResponseResult(action, getRemoteNavigator(action).continueServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, gwtConverter.convertOrCast(action.actionResult)));
     }
 }

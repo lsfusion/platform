@@ -4,13 +4,12 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
-import lsfusion.interop.action.RunCommandActionResult;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.net.ftp.FTPFile;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -25,8 +24,9 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.awt.image.BufferedImage.TYPE_BYTE_INDEXED;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
-import static lsfusion.base.file.WriteUtils.appendExtension;
 
 //lsfusion.base.FileUtils is copy of this one
 //todo: Replace all usages to lsfusion.base.FileUtils (available since 6.1)
@@ -48,22 +48,11 @@ public class FileUtils {
         if (srcPath.type.equals("file") && destPath.type.equals("file")) {
             copyFile(new File(srcPath.path), new File(destPath.path), move);
         } else if (move && equalFTPServers(srcPath, destPath)) {
-            renameFTP(srcPath.path, destPath.path, null);
+            renameFTP(srcPath.path, destPath.path);
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, null);
             if (readResult != null) {
-                RawFileData rawFile = readResult.fileData.getRawFile();
-                switch (destPath.type) {
-                    case "file":
-                        rawFile.write(destPath.path);
-                        break;
-                    case "ftp":
-                        WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
-                        break;
-                    case "sftp":
-                        WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
-                        break;
-                }
+                WriteUtils.write(readResult.fileData, destinationPath, false, false);
                 if (move) {
                     delete(srcPath);
                 }
@@ -103,11 +92,11 @@ public class FileUtils {
         } else return false;
     }
 
-    public static void renameFTP(String srcPath, String destPath, String extension) {
+    public static void renameFTP(String srcPath, String destPath) {
         IOUtils.ftpAction(srcPath, (srcProperties, ftpClient) -> {
             try {
                 FTPPath destProperties = FTPPath.parseFTPPath(destPath);
-                boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
+                boolean done = ftpClient.rename(srcProperties.remoteFile, destProperties.remoteFile);
                 if (!done) {
                     throw new RuntimeException("Failed to rename ftp file: " + ftpClient.getReplyString());
                 }
@@ -413,5 +402,20 @@ public class FileUtils {
 
     public static String ping(String host) throws IOException {
         return InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
+    }
+
+    public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scale) throws IOException {
+        return createThumbnails(inputFile, image, scale, scale);
+    }
+
+    public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scaleWidth, double scaleHeight) throws IOException {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Thumbnails.Builder<? extends InputStream> builder = Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight);
+            if (image.getType() == TYPE_BYTE_INDEXED) {
+                builder.imageType(TYPE_INT_ARGB);
+            }
+            builder.toOutputStream(os);
+            return new RawFileData(os);
+        }
     }
 }

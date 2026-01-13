@@ -109,15 +109,15 @@ public class Stat {
         return deg;
     }
 
-    public int getCount() {
+    public long getCount() {
         int statDegree = Settings.get().getStatDegree();
         long result = 1;
         for(int i=0,size=getWeight();i<size;i++) {
-            result = result * statDegree;
-            if(result > Integer.MAX_VALUE)
+            if (result > Long.MAX_VALUE / statDegree) //overflow check
                 break;
+            result = result * statDegree;
         }
-        return (int) Math.min(result, Integer.MAX_VALUE);
+        return result;
     }
     
     public Stat avg(Stat add) {
@@ -133,5 +133,12 @@ public class Stat {
         } else {
             return mult(coeff).lessEquals(changedStat) || changedStat.mult(coeff).lessEquals(this);
         }
+    }
+
+    public static Long restrictLongValuesInStat(Long value) {
+        if (Settings.get().isRestrictLongValuesInStat() && value != null)
+            return Math.min(value, Integer.MAX_VALUE);
+        else
+            return value;
     }
 }

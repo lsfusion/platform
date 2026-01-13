@@ -511,7 +511,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
         GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, property, column);
-        GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, column.isSticky(), form);
+        GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, column, form);
 
         insertColumn(index, column, header, footer);
 
@@ -1283,6 +1283,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public void setUserAscendingSort(GPropertyDraw property, Boolean userAscendingSort) {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
+    }
+
+    public void setInGrid(GPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
     }
 
     public Comparator<GPropertyDraw> getUserSortComparator() {

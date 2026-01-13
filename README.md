@@ -131,5 +131,9 @@ It is possible to run the code snippets in lsfusion programming language [online
 - [Slack community](https://join.slack.com/t/lsfusion/shared_invite/zt-1itj7vlmf-9aBIP__nj9iMJglDaecqXg)
 - [Telegram group](https://t.me/lsfusion_official)
 
+## Maintainers
+- [Aliaksei Kirkouski](https://github.com/CrushBy)
+- [Aliaksandr Kirkouski](https://github.com/AlexKirkouski)
+
 ## License
 The platform is licensed under [LGPL v3](http://www.gnu.org/licenses/lgpl-3.0.en.html), which allows you to freely use, distribute, and modify the platform as you wish.

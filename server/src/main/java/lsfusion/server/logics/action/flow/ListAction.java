@@ -64,8 +64,8 @@ public class ListAction extends ListCaseAction {
     }
 
     // abstract конструктор без finalize'а
-    public <I extends PropertyInterface> ListAction(LocalizedString caption, boolean isChecked, boolean isLast, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(caption, false, isChecked, isLast, AbstractType.LIST, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> ListAction(LocalizedString caption, boolean isChecked, boolean isLast, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses, ValueClass returnClass, ImList<ValueClass> returnClasses)  {
+        super(caption, false, isChecked, isLast, AbstractType.LIST, innerInterfaces, mapClasses, returnClass, returnClasses);
 
         actions = NFFact.list();
         localsInScope = SetFact.EMPTY();

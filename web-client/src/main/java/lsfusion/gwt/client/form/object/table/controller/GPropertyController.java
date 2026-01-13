@@ -23,7 +23,8 @@ public abstract class GPropertyController {
 
     public abstract void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
-    public abstract void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
@@ -44,6 +45,7 @@ public abstract class GPropertyController {
     public abstract void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateChangeKeyValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateChangeMouseValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);

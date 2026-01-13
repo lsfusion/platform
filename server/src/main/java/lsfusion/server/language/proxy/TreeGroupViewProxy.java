@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -11,58 +12,56 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
 
     @SuppressWarnings("unused")
     public void setAutoSize(boolean autoSize) {
-        if(target.width == null || target.width < 0)
-            target.width = autoSize ? -1 : -2;
-        if(target.height == null || target.height < 0)
-            target.height = autoSize ? -1 : -2;
+        Version version = getVersion();
+        Integer width = target.getNFWidth(version);
+        Integer height = target.getNFHeight(version);
+        if(width == null || width < 0)
+            target.setWidth(autoSize ? -1 : -2, version);
+        if(height == null || height < 0)
+            target.setHeight(autoSize ? -1 : -2, version);
     }
 
     @SuppressWarnings("unused")
     public void setBoxed(boolean boxed) {
-        target.boxed = boxed;
-    }
-
-    @SuppressWarnings("unused")
-    public void setExpandOnClick(boolean expandOnClick) {
-        target.expandOnClick = expandOnClick;
+        target.setBoxed(boxed, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setHierarchicalWidth(int hierarchicalWidth) {
-        target.hierarchicalWidth = hierarchicalWidth;
+        target.setHierarchicalWidth(hierarchicalWidth, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setHierarchicalCaption(Object caption) {
         if(caption instanceof LocalizedString)
-            target.hierarchicalCaption = ((LocalizedString) caption).getSourceString();
+            target.setHierarchicalCaption(((LocalizedString) caption).getSourceString(), getVersion());
         else
-            target.propertyHierarchicalCaption = (PropertyObjectEntity<?>) caption;
+            target.setPropertyHierarchicalCaption((PropertyObjectEntity<?>) caption, getVersion());
     }
 
     @Deprecated
     @SuppressWarnings("unused")
     public void setHeaderHeight(int headerHeight) {
-        target.captionHeight = headerHeight;
+        target.setCaptionHeight(headerHeight, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setCaptionHeight(int height) {
-        target.captionHeight = height;
+        target.setCaptionHeight(height, getVersion());
     }
 
     @SuppressWarnings("unused")
     public void setResizeOverflow(boolean resizeOverflow) {
-        target.resizeOverflow = resizeOverflow;
+        target.setResizeOverflow(resizeOverflow, getVersion());
     }
 
     @SuppressWarnings("unused")
-    public void setLineHeight(int lines) {
-        target.lineHeight = lines;
+    public void setLineWidth(int lineWidth) {
+        target.setLineWidth(lineWidth, getVersion());
     }
 
     @SuppressWarnings("unused")
-    public void setLineWidth(int lines) {
-        target.lineWidth = lines;
+    public void setLineHeight(int lineHeight) {
+        target.setLineHeight(lineHeight, getVersion());
     }
 }

@@ -28,8 +28,8 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     protected MessageClientAction delayedMessageAction = null;
 
-    private Object[] actionResults;
-    private Throwable clientThrowable;
+    private Object actionResult;
+    private Throwable actionThrowable;
 
     /**
      * рабочий поток
@@ -62,33 +62,33 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     /**
      * рабочий поток
      */
-    public final Object[] pauseForUserInteraction(ClientAction... actions) {
+    public final Object pauseForUserInteraction(ClientAction action) {
         if (ServerLoggers.isPausableLogEnabled()) {
-            ServerLoggers.pausableLog("Interaction " + sid + " called pauseForUserInteraction: " + Arrays.toString(actions));
+            ServerLoggers.pausableLog("Interaction " + sid + " called pauseForUserInteraction: " + action);
         }
 
-        int neededActionResultsCnt = actions.length;
-        Collections.addAll(delayedActions, actions);
+        delayedActions.add(action);
 
         pause();
 
-        if (clientThrowable != null) {
-            Throwable t = clientThrowable;
-            clientThrowable = null;
-            throw Throwables.propagate(t);
+        try {
+            if (actionThrowable != null)
+                throw Throwables.propagate(actionThrowable);
+            return actionResult;
+        } finally {
+            actionResult = null;
+            actionThrowable = null;
         }
-
-        return Arrays.copyOfRange(actionResults, actionResults.length - neededActionResultsCnt, actionResults.length);
     }
 
     /**
      * основной поток
      */
-    public final ServerResponse resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
+    public final ServerResponse resumeAfterUserInteraction(Object actionResult) throws RemoteException {
         if (ServerLoggers.isPausableLogEnabled())
-            ServerLoggers.pausableLog("Interaction " + sid + " resumed after userInteraction: " + Arrays.toString(actionResults));
+            ServerLoggers.pausableLog("Interaction " + sid + " resumed after userInteraction: " + actionResult);
 
-        this.actionResults = actionResults;
+        this.actionResult = actionResult;
         return resumeAfterPause();
     }
 
@@ -96,7 +96,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         if (ServerLoggers.isPausableLogEnabled())
             ServerLoggers.pausableLog("Interaction " + sid + " thrown client exception: ", clientThrowable);
 
-        this.clientThrowable = clientThrowable;
+        this.actionThrowable = clientThrowable;
         return resumeAfterPause();
     }
 

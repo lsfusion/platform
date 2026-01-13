@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.change;
 
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 
@@ -7,7 +8,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 // actually needed for SELECTOR logics, pretty similar to FormSelector class
 // we can get rid of this class if in getSelectorAction we change InputFilterEntity -> FormInputContextFilterSelector
 // but since default event actions are created also on demand it's not that obvious that we should do that
-public interface ActionObjectSelector {
+public interface ActionObjectSelector<This extends ActionObjectSelector<This>> extends MappingInterface<This> {
 
     ActionObjectEntity<?> getAction(FormInstanceContext context);
 }

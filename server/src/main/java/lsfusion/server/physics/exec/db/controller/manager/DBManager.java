@@ -344,8 +344,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     };
 
-    public static Integer getPropertyInterfaceStat(Property property) {
-        Integer statsProperty = null;
+    public static Long getPropertyInterfaceStat(Property property) {
+        Long statsProperty = null;
         Stat interfaceStat = property.getInterfaceStat(false);
         if (interfaceStat != null)
             statsProperty = interfaceStat.getCount();
@@ -435,13 +435,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void updateClassStats(SQLSession session, Result<Integer> majorStatChangedCount, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> classStats = readClassStatsFromDB(session, classes);
+        ImMap<String, Long> classStats = readClassStatsFromDB(session, classes);
         for (CustomClass customClass : (classes != null ? classes : LM.baseClass.getAllClasses()))
             if (customClass instanceof ConcreteCustomClass)
                 ((ConcreteCustomClass) customClass).updateStat(classStats, majorStatChangedCount);
     }
 
-    public ImMap<String, Integer> readClassStatsFromDB(SQLSession session, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
+    public ImMap<String, Long> readClassStatsFromDB(SQLSession session, ImSet<ConcreteCustomClass> classes) throws SQLException, SQLHandledException {
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("key", customObjectClassExpr);
 
@@ -455,9 +455,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
 
-        MExclMap<String, Integer> mCustomObjectClassMap = MapFact.mExclMapMax(result.size());
+        MExclMap<String, Long> mCustomObjectClassMap = MapFact.mExclMapMax(result.size());
         for (int i=0,size=result.size();i<size;i++) {
-            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            Long statCustomObjectClass = (Long) result.getValue(i).get("statCustomObjectClass");
             String sID = (String)result.getValue(i).get("staticName");
             if(sID != null)
                 mCustomObjectClassMap.exclAdd(sID.trim(), statCustomObjectClass);
@@ -496,29 +496,29 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     // we're taking full tables stats, and adjusting class stats to match it
     private void adjustClassStats(SQLSession sql, ImSet<ImplementTable> tables) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tables);
-        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tables);
+        ImMap<String, Long> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null, reflectionLM.sidTable, tables);
+        ImMap<String, Long> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null, reflectionLM.sidTableTableKey, tables);
 
-        MMap<CustomClass, Integer> mClassFullStats = MapFact.mMap(MapFact.max());
+        MMap<CustomClass, Long> mClassFullStats = MapFact.mMap(MapFact.max());
         for (ImplementTable dataTable : (tables != null ? tables : LM.tableFactory.getImplementTables())) {
             dataTable.fillFullClassStat(tableStats, keyStats, mClassFullStats);
         }
-        ImMap<CustomClass, Integer> classFullStats = mClassFullStats.immutable();
+        ImMap<CustomClass, Long> classFullStats = mClassFullStats.immutable();
 
         // правим статистику по классам
-        ImOrderMap<CustomClass, Integer> orderedClassFullStats = classFullStats.sort(BaseUtils.immutableCast(ValueClass.comparator));// для детерминированности
+        ImOrderMap<CustomClass, Long> orderedClassFullStats = classFullStats.sort(BaseUtils.immutableCast(ValueClass.comparator));// для детерминированности
         for(int i=0,size=orderedClassFullStats.size();i<size;i++) {
             CustomClass customClass = orderedClassFullStats.getKey(i);
-            int quantity = orderedClassFullStats.getValue(i);
+            long quantity = orderedClassFullStats.getValue(i);
             ImOrderSet<ConcreteCustomClass> concreteChildren = customClass.getUpSet().getSetConcreteChildren().sortSet(BaseUtils.immutableCast(ValueClass.comparator));// для детерминированности
-            int childrenStat = 0;
+            long childrenStat = 0;
             for(ConcreteCustomClass child : concreteChildren) {
                 childrenStat += child.getCount();
             }
             quantity = quantity - childrenStat; // сколько дораспределить
             for(ConcreteCustomClass child : concreteChildren) {
-                int count = child.getCount();
-                int newCount = (int)((long)quantity * (long)count / (long)childrenStat);
+                long count = child.getCount();
+                long newCount = quantity * count / childrenStat;
                 child.stat = count + newCount;
                 assert child.stat >= 0;
                 quantity -= newCount;
@@ -528,9 +528,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void updateTableStats(SQLSession sql, boolean statDefault, Result<Integer> majorStatChangedCount, ImSet<ImplementTable> tables) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> tableStats;
-        ImMap<String, Integer> keyStats;
-        ImMap<String, Pair<Integer, Integer>> propStats;
+        ImMap<String, Long> tableStats;
+        ImMap<String, Long> keyStats;
+        ImMap<String, Pair<Long, Long>> propStats;
         if(statDefault) {
             tableStats = MapFact.EMPTY();
             keyStats = MapFact.EMPTY();
@@ -560,7 +560,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(key -> ((String) key.singleValue()).trim(), value -> {
             if (notNullProp != null) {
-                return (V) new Pair<>((Integer) value.get("property"), (Integer) value.get("notNull"));
+                return (V) new Pair<>((Long) value.get("property"), ((Long) value.get("notNull")));
             } else
                 return (V) value.singleValue();
         });
@@ -916,17 +916,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return createSession();
     }
 
-    @Deprecated
-    public DataSession createSession(SQLSession sql) throws SQLException {
-        return createSession(sql, null);
-    }
-
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
         Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
 
-        Integer maxStatsProperty = null;
+        Long maxStatsProperty = null;
         try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
+            maxStatsProperty = (Long) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
         } catch (Exception ignored) {
         }
 
@@ -950,9 +945,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             } catch (Exception ignored) {
             }
             if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = null;
+                Long statsProperty = null;
                 if(lcp.property instanceof AggregateProperty) {
-                    statsProperty = (Integer) values.get("overStatsProperty");
+                    statsProperty = (Long) values.get("overStatsProperty");
                     if (statsProperty == null)
                         statsProperty = getPropertyInterfaceStat(lcp.property);
                 }
@@ -1158,6 +1153,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     @Override
                     public String getCurrentForm() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getActiveForm() {
                         return null;
                     }
                 },
@@ -1668,6 +1668,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // with apply outside transaction
         try (DataSession session = createSession()) {
+            setDefaultDBPreferences(session);
             setDefaultUserLocalePreferences(session);
             setLogicsParams(session);
 
@@ -1793,19 +1794,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             dropTables(sql, oldDBStructure, newDBStructure);
 
+            IDChanges idChanges = new IDChanges();
             if(master) {
                 packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
-
                 startLog("Filling static objects ids");
-                IDChanges idChanges = new IDChanges();
                 LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName, LM.staticOrder,
                         migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                         migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
                         idChanges, changesController);
+            }
 
-                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                    newClass.ID = newClass.customClass.ID;
-                }
+            //It is important to execute this not only for the master to prevent errors when connecting the slave.
+            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                newClass.ID = newClass.customClass.ID;
+            }
+
+            if (master) {
 
                 // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
                 new TaskRunner(getBusinessLogics()).runTask(initTask);
@@ -1910,7 +1914,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
                     MRevMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mRevMapMax(newProperty.property.interfaces.size());
                     for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
-                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
+                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.getID());
                         if (mapKeyField != null)
                             mFoundInterfaces.revAdd(mapKeyField, propertyInterface);
                     }
@@ -2144,6 +2148,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         apply(session);
     }
 
+    private void setDefaultDBPreferences(DataSession session) throws SQLException, SQLHandledException {
+        serviceLM.hostDBMaster.change(getAdapter().getMaster().host, session);
+        apply(session);
+    }
+
     private void setDefaultUserLocalePreferences(DataSession session) throws SQLException, SQLHandledException {
         businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
         businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
@@ -2211,7 +2220,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImMap<PropertyField, String> fields = propertySet.mapKeyValues(property -> property.first.field, property -> property.first.getCanonicalName());
         ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property.second).mapSetValues(property -> property.first.field);
 
-        Result<ImMap<String, Pair<Integer, Integer>>> propsStat = new Result<>();
+        Result<ImMap<String, Pair<Long, Long>>> propsStat = new Result<>();
         runWithStartLog((E2Runnable<SQLException, SQLHandledException>) () -> {
             propsStat.result = table.recalculateStat(reflectionLM, session, fields, new HashSet<>(), skipRecalculateFields);
             apply(session);
@@ -3132,7 +3141,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             this.dbName = property.getDBName();
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
-            this.mapKeys = property.mapTable.mapKeys.mapKeys(value -> value.ID);
+            this.mapKeys = property.mapTable.mapKeys.mapKeys(PropertyInterface::getID);
             this.property = property;
         }
 

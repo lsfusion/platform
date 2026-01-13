@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.action.printer;
 
+import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GActionDispatcher;
 import lsfusion.gwt.client.action.GExecuteAction;
 
-public class GPrintFileAction extends GExecuteAction {
+public class GPrintFileAction implements GAction {
     public String fileData;
     public String filePath;
     public String printerName;
@@ -17,7 +18,7 @@ public class GPrintFileAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws Throwable {
-        dispatcher.execute(this);
+    public String dispatch(GActionDispatcher dispatcher) throws Throwable {
+        return dispatcher.execute(this);
     }
 }

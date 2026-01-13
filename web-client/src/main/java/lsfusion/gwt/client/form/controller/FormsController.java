@@ -12,6 +12,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
+import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GDestroyFormAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
@@ -46,6 +48,7 @@ import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
+import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -54,6 +57,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -447,9 +451,30 @@ public abstract class FormsController {
         return container;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
+    public static class OpenContext {
+        public final Event editEvent;
+        public final EditContext editContext;
+        public final GFormController formController;
+        public final FormDockable contextFormDockable;
+
+        public OpenContext(Event editEvent, EditContext editContext, GFormController formController, FormDockable contextFormDockable) {
+            this.editEvent = editEvent;
+            this.editContext = editContext;
+            this.formController = formController;
+            this.contextFormDockable = contextFormDockable;
+        }
+    }
+
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, OpenContext context, boolean canShowDockedModal, Consumer<Throwable> onResult) {
+        if (showFormType.isDockedModal() && !canShowDockedModal) {
+            showFormType = GModalityShowFormType.MODAL;
+        }
+
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
+
+        FormDockable contextFormDockable = context.contextFormDockable;
+        GFormController formController = context.formController;
 
         if(!asyncOpened) {
             FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate);
@@ -468,7 +493,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, false, syncType, -1, form.canonicalName, editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, false, syncType, -1, form.canonicalName, context.editEvent, context.editContext, formController);
         }
 
         int dispatchPriority = (formController != null ? formController.getDispatchPriority() : 0);
@@ -480,7 +505,66 @@ public abstract class FormsController {
                     (int)asyncFormController.getEditRequestIndex() * RemoteDispatchAsync.requestIndexDeepStep;
         }
 
-        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), dispatchPriority, formId);
+        if (contextFormDockable != null) {
+            contextFormDockable.block();
+            contextFormDockable.setBlockingForm((FormDockable) formContainer);
+        }
+
+        boolean isDialog = showFormType.isDialog();
+
+        FormContainer fFormContainer = formContainer; GShowFormType fShowFormType = showFormType; int fDispatchPriority = dispatchPriority;
+        Result<WindowHiddenHandler> recursionHiddenHandler = new Result<>();
+        WindowHiddenHandler hiddenHandler = (lookAhead, hideAsyncFormController, editFormCloseReason) -> {
+            // checking if there is other form opening -> using the same container
+            GForm recreateForm = null;
+            GAction action;
+            while((action = lookAhead.next()) != null) {
+                if(action instanceof GDestroyFormAction)
+                    continue;
+                if(action instanceof GFormAction) {
+                    GFormAction formAction = (GFormAction) action;
+                    GShowFormType newShowFormType = formAction.showFormType;
+
+                    if (newShowFormType.isDockedModal() && !canShowDockedModal) {
+                        newShowFormType = GModalityShowFormType.MODAL;
+                    }
+
+                    // the same form open type
+                    if(newShowFormType.equals(fShowFormType) && formAction.syncType == syncType && GwtClientUtils.nullEquals(formAction.formId, formId)) {
+                        recreateForm = formAction.form;
+                        lookAhead.drop();
+                    }
+                }
+
+                break;
+            }
+            if(recreateForm != null) {
+                fFormContainer.initForm(FormsController.this, recursionHiddenHandler.result, recreateForm, isDialog, fDispatchPriority, formId);
+
+                if(fFormContainer instanceof ModalForm) // it's a hack but for now it's the best place
+                    ((ModalForm)fFormContainer).initPreferredSize();
+                return;
+            }
+
+            // closing container
+            Pair<FormDockable, Integer> asyncClosedForm = hideAsyncFormController.removeAsyncClosedForm();
+            if(asyncClosedForm == null)
+                fFormContainer.queryHide(editFormCloseReason);
+            removeFormContainer(fFormContainer);
+
+            if (contextFormDockable != null) {
+                contextFormDockable.setBlockingForm(null);
+                contextFormDockable.unblock();
+
+                selectTab(contextFormDockable);
+            } else if (fShowFormType.isDocked() || fShowFormType.isDockedModal())
+                ensureTabSelected();
+
+            onResult.accept(null);
+        };
+        recursionHiddenHandler.set(hiddenHandler);
+
+        formContainer.initForm(this, hiddenHandler, form, isDialog, dispatchPriority, formId);
 
         if(asyncOpened)
             formContainer.onAsyncInitialized();
@@ -559,16 +643,6 @@ public abstract class FormsController {
         return null;
     }
 
-    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, int dispatchPriority, String formId) {
-        formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
-            Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
-            if(asyncClosedForm == null) {
-                formContainer.queryHide(editFormCloseReason);
-            }
-            hiddenHandler.onHidden();
-        }, dialog, dispatchPriority, formId);
-    }
-
     public void selectTab(FormDockable dockable) {
         tabsPanel.selectTab(forms.indexOf(dockable));
     }
@@ -583,7 +657,8 @@ public abstract class FormsController {
         ListIterator<FormContainer> iterator = formContainers.listIterator();
         while(iterator.hasNext()){
             FormContainer formContainer = iterator.next();
-            if(formId.equals(formContainer.formId)) {
+            GFormController form = formContainer.getForm();
+            if(form != null && formId.equals(form.formId)) {
                 formContainer.closePressed();
                 iterator.remove();
             }

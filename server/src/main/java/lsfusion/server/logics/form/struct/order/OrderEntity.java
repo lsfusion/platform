@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
@@ -17,7 +18,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, CompareEntity {
+public interface OrderEntity<T extends OrderInstance, This extends OrderEntity<T, This>> extends Instantiable<T>, CompareEntity, MappingInterface<This> {
 
     GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects);
 

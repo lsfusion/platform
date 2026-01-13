@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -23,11 +22,9 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 import java.util.function.*;
 
-import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.MainFrame.v5;
+import static lsfusion.gwt.client.view.MainFrame.*;
 
 public class GwtClientUtils {
 
@@ -136,10 +133,17 @@ public class GwtClientUtils {
             input = createFocusElement("textarea");
         } else {
             input = createFocusElement("input");
-            input.setAttribute("type", type);
+            //change to type="text" to disable validation of entered values at the mobile browser level
+            // for example, a separator that does not match the device locale causes errors
+            if (mobile && type.equals("number")) {
+                input.setAttribute("type", "text");
+                input.setAttribute("inputmode", "decimal");
+            } else {
+                input.setAttribute("type", type);
+            }
         }
         return (InputElement) input;
-    };
+    }
 
     public static InputElement createImageElement(String type) {
         Element element = Document.get().createElement(type);
@@ -1642,6 +1646,17 @@ public class GwtClientUtils {
         return name != null ? prototype[name]() : name;
     }-*/;
 
+    public static String getFileName(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+
+        int slashIndex = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        String fileName = (slashIndex == -1) ? path : path.substring(slashIndex + 1);
+
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+    }
     public static String getFileExtension(String filename) {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);
@@ -1998,6 +2013,10 @@ public class GwtClientUtils {
         return !!object[property];
     }-*/;
 
+    public static native JavaScriptObject getProperty(JavaScriptObject object, String property)/*-{
+        return object[property];
+    }-*/;
+
     public static native void setAttributeOrStyle(Element element, String attribute, String value)/*-{
         $wnd.setAttributeOrStyle(element, attribute, value);
     }-*/;
@@ -2015,6 +2034,85 @@ public class GwtClientUtils {
 
     public static native void addShowCollapsedContainerEvent(Element parent, String toggleElementSelector, String containerElementSelector, String collapsibleClass) /*-{
         $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
+    }-*/;
+
+    public static native void addGroupSeparatorEventListener(Element input)/*-{
+        var preventDefaultMode = false; //alt+digit switches tab in browser in linux; F12 opens console - need to prevent it
+        input.sequence = [];
+        //F8 = 119; F12 = 123; CTRL + ] = 17 + 221;
+        // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 96 [+ 96] + 98 + 105 + 10018
+        var targets = [[119], [123], [17, 221], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
+        input.addEventListener('keydown', function (e) {
+            input.sequence.push(e.keyCode);
+            checkSequence();
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = true;
+            if(preventDefaultMode)
+                e.preventDefault();
+        });
+        input.addEventListener('keyup', function (e) {
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = false;
+            if(e.keyCode === 18) { //alt
+                input.sequence.push(10000 + e.keyCode);
+                checkSequence();
+            }
+        });
+
+        function checkSequence() {
+            if (input.sequence.length > 6) //max target length
+                input.sequence.shift();
+
+            for (var i = 0; i < targets.length; i++) {
+                var target = targets[i];
+                if(compareFromEnd(input.sequence, target)) {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    // paste U+001D (Group Separator)
+                    var val = input.value;
+                    input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+                    // move cursor
+                    input.selectionStart = input.selectionEnd = start + 1;
+                }
+            }
+        }
+
+        function compareFromEnd(arr1, arr2) {
+            var len1 = arr1.length;
+            var len2 = arr2.length;
+            if (len1 < len2) return false;
+            for (var i = 0; i < len2; i++) {
+                if (arr1[len1 - len2 + i] !== arr2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }-*/;
+
+    public static native void setAttribute(JavaScriptObject elem, String attr, String value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native void setAttribute(JavaScriptObject elem, String attr, boolean value) /*-{
+        elem[attr] = value;
+    }-*/;
+
+    public static native boolean hasAttribute(Element elem, String name) /*-{
+        if (elem == null) return false;
+
+        var ret = elem.getAttribute(name);
+        if (!(ret === undefined || ret == null))
+            return true;
+
+        var children = elem.children;
+        for (var i = 0; i < children.length; i++) {
+            if (@GwtClientUtils::hasAttribute(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(children[i], name)) {
+                return true;
+            }
+        }
+
+        return false;
     }-*/;
 
 }

@@ -29,7 +29,7 @@ public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyDr
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        GroupObjectInstance groupObjectInstance = formInstance.getGroupObjectInstance(groupObject.ID);
+        GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         ImOrderMap<OrderInstance, Boolean> userOrders = groupObjectInstance.getUserOrders();
         ImMap<OrderInstance, PropertyDrawInstance> propMapping = groupObjectInstance.getUserOrdersPropertyMapping();
 

@@ -7,13 +7,13 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -43,11 +43,10 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(element -> element instanceof PropertyInterface).reverse()
         );
 
-        detailsGroup = new GroupObjectEntity(genID(), "");
-
         ImMap<I, ValueClass> innerClasses = property.getInnerInterfaceClasses();
         MRevMap<I, ObjectEntity> mInnerObjects = MapFact.mRevMap();
         MAddSet<ObjectEntity> usedObjects = SetFact.mAddSet();
+        MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet();
 
         for (int i = 0; i < innerClasses.size(); ++i) {
             ValueClass innerIntClass = innerClasses.getValue(i);
@@ -59,8 +58,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = interfaceObjects.get(byInterface);
             } 
             if(innerObject == null || usedObjects.add(innerObject)) {
-                innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME, innerIntClass == null);
-                detailsGroup.add(innerObject);
+                innerObject = new ObjectEntity(genID, innerIntClass);
+                mObjects.exclAdd(innerObject);
 
                 addValuePropertyDraw(LM, innerObject);
                 addPropertyDraw(innerObject, LM.getIdGroup());
@@ -68,7 +67,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
 
             mInnerObjects.revAdd(innerInterface, innerObject);
         }
-        addGroupObject(detailsGroup);
+
+        detailsGroup = addGroupObjectEntity(mObjects.immutableOrder());
 
         ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();
         
@@ -131,13 +131,11 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     }
 
     @Override
-    public FormView createDefaultRichDesign(Version version) {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+    protected void setupDrillDownDesign(DefaultFormView design, Version version) {
+        super.setupDrillDownDesign(design, version);
 
         detailsContainer.add(design.getBoxContainer(detailsGroup), version);
 
         valueContainer.add(design.get(implPropertyDraw), version);
-
-        return design;
     }
 }

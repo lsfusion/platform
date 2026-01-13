@@ -20,16 +20,22 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
+PATTERN patternExpr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
+EVENTID eventId
 LAZY [WEAK | STRONG]
+imageSetting
+annotationSetting
 ```
 
 ## Description and parameters
@@ -64,11 +70,11 @@ LAZY [WEAK | STRONG]
 
     - `LIKE`
 
-        Keyword. If specified, creates GIN index instead of the usual index.
+        Keyword. If specified, creates GIN index additionally to the usual index.
 
     - `MATCH`
 
-        Keyword. If specified, creates GIN index and GIN index with to_tsvector instead of the usual index.
+        Keyword. If specified, creates GIN index and GIN index with to_tsvector additionally to the usual index.
 
 - `NONULL [DELETE] eventClause`
 
@@ -112,6 +118,39 @@ LAZY [WEAK | STRONG]
 
         [Context-dependent action operator](Action_operators.md#contextdependent). An operator that defines the action executed on an event. You can use the parameters of the property itself as operator parameters.
 
+- `imageSetting`
+
+    Icon settings for the property. This option allows you to configure the icon manually. It can have one of the following forms:
+
+    - `IMAGE [imageLiteral]`
+
+        [Manual icon specification](Icons.md#manual) for the property. If `imageLiteral` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
+
+        - `imageLiteral`
+
+            String literal whose value defines the icon.
+
+    - `NOIMAGE`
+
+        Keyword indicating that the property should have no icon.
+
+- `annotationSetting`
+
+Property annotation. Begins with `@@`. The following annotations are supported:
+
+    - `@@deprecated`
+    - `@@deprecated(since)`
+    - `@@deprecated(since, message)`
+
+        Marks the property as deprecated and not recommended for use.
+        The plugin displays such properties as strikethrough.
+
+      - `since`
+          String literal indicating the platform version since which the property is considered deprecated.
+
+      - `message`
+          String literal providing an explanation of why the property is marked as deprecated.
+
 ### `DESIGN` statement default values block
 
 - `CHARWIDTH width [FLEX | NOFLEX]`
@@ -129,6 +168,14 @@ LAZY [WEAK | STRONG]
     - `NOFLEX`
 
         Keyword. If specified, the extension coefficient of the property value is automatically set equal to zero.
+
+- `PATTERN patternExpr`
+
+    Specifies the formatting pattern for the property value. The syntax for defining the pattern is similar to [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) or [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) depending on the value type.
+
+    - `patternExpr`
+
+      [Expression](Expression.md), whose value defines the formatting pattern.
 
 - `REGEXP rexpr [message]`
 
@@ -169,57 +216,57 @@ LAZY [WEAK | STRONG]
     
               - `preview = previewValue`
                   All events are checked for execution twice: first with isPreview = true, then with isPreview = false. Supported `previewValue` values:
-                  - `AUTO`, `ONLY` -> isPreview
-                  - `NO` -> !isPreview
-                  - `ALL` -> true
+                  - `auto`, `only` -> isPreview
+                  - `no` -> !isPreview
+                  - `all` -> true
     
               - `dialog = dialogValue`
                   Checks whether CHANGEKEY should be executed in a dialog window. Supported `dialogValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> isDialog
-                  - `NO` -> !isDialog
+                  - `auto`, `all` -> true
+                  - `only` -> isDialog
+                  - `no` -> !isDialog
     
               - `window = windowValue`
                   Checks whether CHANGEKEY should be executed in a modal window. Supported `windowValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> isWindow
-                  - `NO` -> !isWindow
+                  - `auto`, `all` -> true
+                  - `only` -> isWindow
+                  - `no` -> !isWindow
     
               - `group = groupValue`
                   Checks whether the object group matches. Supported `groupValue` values:
-                  - `AUTO`, `ALL` -> true
-                  - `ONLY` -> equalGroup
-                  - `NO` -> !equalGroup
+                  - `auto`, `all` -> true
+                  - `only` -> equalGroup
+                  - `no` -> !equalGroup
     
               - `editing = editingValue`
                   Checks whether CHANGEKEY should be executed in property editing mode. Supported `editingValue` values:
-                  - `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
-                  - `ALL` -> true
-                  - `ONLY` -> isEditing
-                  - `NO` -> !isEditing
+                  - `auto` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+                  - `all` -> true
+                  - `only` -> isEditing
+                  - `no` -> !isEditing
     
               - `showing = showingValue`
-                  Checks whether the property is currently visible on the form. Supported `showingValue` values:
-                  - `AUTO`, `ONLY` -> isShowing
-                  - `ALL` -> true
-                  - `NO` -> !isShowing
+                  Checks whether the property is currently visible on the form (for properties with `hide` in design). Supported `showingValue` values:
+                  - `auto`, `only` -> isShowing
+                  - `all` -> true
+                  - `no` -> !isShowing
     
               - `panel = panelValue`
                   Checks whether the property is located in a panel. Supported `panelValue` values:
-                  - `AUTO` -> !isMouse || !isPanel
-                  - `ALL` -> true
-                  - `ONLY` -> isPanel
-                  - `NO` -> !isPanel
+                  - `auto` -> !isMouse || !isPanel
+                  - `all` -> true
+                  - `only` -> isPanel
+                  - `no` -> !isPanel
     
               - `cell = cellValue`
                   Checks whether the property is located in a table cell. Supported `cellValue` values:
-                   - `AUTO` -> !isMouse || isCell
-                   - `ALL` -> true
-                   - `ONLY` -> isCell
-                   - `NO` -> !isCell
+                   - `auto` -> !isMouse || isCell
+                   - `all` -> true
+                   - `only` -> isCell
+                   - `no` -> !isCell
     
     
-              For all options except `priority`, the default value is `AUTO`.
+              For all options except `priority`, the default value is `auto`.
 
     - `SHOW`
 
@@ -235,7 +282,7 @@ LAZY [WEAK | STRONG]
 
     - `key`
 
-    [String literal](Literals.md#strliteral)describing a mouse key combination. Syntax:
+    [String literal](Literals.md#strliteral), describing a mouse key combination. Syntax:
         ```
         keyStroke [;(modeKey=modeValue;)*]
         ```
@@ -254,6 +301,18 @@ LAZY [WEAK | STRONG]
 
         Keyword indicating that the mouse key combination should not be displayed in the property header.
 
+- `STICKY` | `NOSTICKY`
+
+    Keywords. `STICKY` indicates that the property in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically.
+
+- `syncType`
+
+    Defines whether the property is executed synchronously or asynchronously:
+
+    - `WAIT` — synchronously.
+
+    - `NOWAIT` — asynchronously. This is the default behaviour.
+
 - `DEFAULTCOMPARE [compare]`
 
     Specifies a [default filter](Interactive_view.md#userfilters) type for the property.
@@ -261,6 +320,14 @@ LAZY [WEAK | STRONG]
     - `compare`
 
         Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
+
+- `EVENTID eventId`
+
+    Specifies special input mode for the property.
+  
+    - `eventId`
+        
+        String literal. Now only `SCANNER` value is supported. Enables special keydown handling mode to detect GS (group separator) input.
 
 - `LAZY [WEAK | STRONG]`
 

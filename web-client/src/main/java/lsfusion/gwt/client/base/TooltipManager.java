@@ -33,6 +33,11 @@ public class TooltipManager {
         }
         return null;
     }
+    public static void removeTooltip(Widget widget) {
+        JavaScriptObject tippy = GwtClientUtils.getProperty(widget.getElement(), "_tippy");
+        if(tippy != null)
+            GwtClientUtils.hideAndDestroyTippyPopup(tippy);
+    }
 
     public static void updateContent(JavaScriptObject tippy, final TooltipHelper tooltipHelper, String dynamicTooltip) {
         if(tippy != null) {

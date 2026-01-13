@@ -1,12 +1,20 @@
 package lsfusion.server.logics.form.interactive.event;
 
-public class GroupObjectEventObject {
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.server.logics.form.ObjectMapping;
+
+public class GroupObjectEventObject extends FormServerEvent<GroupObjectEventObject> {
     public final String groupObject;
     public final Type type;
 
     public GroupObjectEventObject(String groupObject, Type type) {
         this.groupObject = groupObject;
         this.type = type;
+    }
+
+    @Override
+    public GroupObjectEventObject get(ObjectMapping mapping) {
+        return this;
     }
 
     @Override

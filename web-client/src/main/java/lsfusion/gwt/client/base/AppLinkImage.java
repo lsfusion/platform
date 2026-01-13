@@ -25,11 +25,12 @@ public class AppLinkImage implements BaseImage {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof AppLinkImage && url.equals(((AppLinkImage) o).url);
+        return this == o || o instanceof AppLinkImage && GwtClientUtils.nullEquals(url, ((AppLinkImage) o).url)
+                && GwtClientUtils.nullEquals(extension, ((AppLinkImage) o).extension);
     }
 
     @Override
     public int hashCode() {
-        return url.hashCode();
+        return GwtClientUtils.nullHash(url) * 31 + GwtClientUtils.nullHash(extension);
     }
 }

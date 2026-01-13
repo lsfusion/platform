@@ -81,5 +81,5 @@ run() {
 ```
 
 ```lsf
-MESSAGE JSON (FROM code = '1', message = 'OK');
+MESSAGE JSON FROM code = '1', message = 'OK';
 ```

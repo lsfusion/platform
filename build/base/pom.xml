@@ -19,6 +19,7 @@
 
         <!-- MAVEN PLUGIN VERSIONS -->
         <aspectj.version>1.9.2</aspectj.version>
+        <aspectj.maven.version>1.12.1</aspectj.maven.version>
 
         <!-- general properties -->
         <maven.test.skip>true</maven.test.skip>
@@ -86,24 +87,12 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.2.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.matthiasmann</groupId>
                             <artifactId>p200ant</artifactId>
                             <version>1.0</version>
-                        </dependency>
-                        <!-- Fix of 'java.lang.UnsupportedOperationException: The Security Manager is deprecated
-                        and will be removed in a future release' error when compiling on Java 18+.
-                        Fails on execution of LSFLogicsParserPostProcess (server pom.xml)
-                        The issue has been resolved in Ant 1.10.14
-                        https://bz.apache.org/bugzilla/show_bug.cgi?id=65381
-                        This dependency can be removed when new version on antrun plugin arrives 
-                        as current latest version 3.1.0 uses Ant 1.10.12 -->
-                        <dependency>
-                            <groupId>org.apache.ant</groupId>
-                            <artifactId>ant</artifactId>
-                            <version>1.10.14</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -152,7 +141,7 @@
                 <plugin>
                     <groupId>com.nickwongdev</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.12.1</version>
+                    <version>${aspectj.maven.version}</version>
                     <configuration>
                         <!--для вывода в консоль при дебаге-->
                         <!--<showWeaveInfo>true</showWeaveInfo>-->

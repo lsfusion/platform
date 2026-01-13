@@ -1,48 +1,70 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.base.identity.IDGenerator;
-import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.IdentityView;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectView extends IdentityObject implements ServerIdentitySerializable {
+public class ObjectView extends IdentityView<ObjectView, ObjectEntity> {
 
     public ObjectEntity entity;
     
     private GroupObjectView groupObject;
 
-    public ObjectView() {
+    @Override
+    public int getID() {
+        return entity.getID();
     }
 
-    public ObjectView(IDGenerator idGen, ObjectEntity entity, GroupObjectView groupTo) {
-        super(entity.getID(), entity.getSID());
+    public String getSID() {
+        return entity.getSID();
+    }
 
+    @Override
+    public String toString() {
+        return entity.toString();
+    }
+
+    public ObjectView(ObjectEntity entity, GroupObjectView groupTo) {
         this.entity = entity;
+
         this.groupObject = groupTo;
     }
-
-    public LocalizedString getCaption() {
-        return entity.getCaption();
-    }
+    // no extend and add
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, groupObject);
-        pool.writeString(outStream, ThreadLocalContext.localize(entity.caption));
+        pool.writeString(outStream, ThreadLocalContext.localize(entity.getCaption()));
 
         entity.baseClass.serialize(outStream);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        entity = pool.context.entity.getObject(ID);
+    public void finalizeAroundInit() {
     }
 
-    public void finalizeAroundInit() {
+    // copy-constructor
+    protected ObjectView(ObjectView src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        entity = mapping.get(src.entity);
+        groupObject = mapping.get(src.groupObject);
+    }
+    // no extend and add
+
+    @Override
+    public ObjectEntity getAddParent(ObjectMapping mapping) {
+        return entity;
+    }
+    @Override
+    public ObjectView getAddChild(ObjectEntity groupObjectView, ObjectMapping mapping) {
+        return groupObjectView.view;
+    }
+    @Override
+    public ObjectView copy(ObjectMapping mapping) {
+        return new ObjectView(this, mapping);
     }
 }

@@ -504,8 +504,9 @@ getServerSettings() + WHEN TRUE THEN {
             noAuthResourcesOrder(actualUrl) <- order;
         }
     }
-    
-    generateJnlpUrls();
+
+    IF NOT valueSettingBoolean('hideDesktopClientLink') THEN
+        generateJnlpUrls();
     EXPORT JSON FROM logicsName(), displayName(), logicsLogo = encodeBytesBase64(FILE(logicsLogo())), logicsIcon = encodeBytesBase64(FILE(logicsIcon())),
     PWAIcon = encodeBytesBase64(FILE(PWAIcon())), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
@@ -1059,16 +1060,27 @@ heuristicSize() += CASE
 // DB scaling
 
 CLASS ABSTRACT DBServer '{service.scaling.db.server}';
-name '{service.scaling.db.server.name}' = ABSTRACT STRING (DBServer);
+host '{service.scaling.db.server.host}' = ABSTRACT STRING (DBServer);
+slaveHost '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
+snmpPort '{service.scaling.db.server.snmp.port}' = DATA INTEGER (DBServer);
+host(DBMaster server) += dbServer() IF server IS DBMaster;
+host(DBSlave server) += slaveHost(server);
 
 CLASS DBMaster '{service.scaling.db.master}' {
     instance '{service.scaling.master}'
 } : DBServer;
-name(DBMaster server) += '{service.scaling.master}' IF server IS DBMaster;
+
+load '{service.scaling.db.server.load}' = DATA LOCAL DOUBLE (DBServer);
+lsn '{service.scaling.db.server.lsn}' = DATA LOCAL STRING(DBServer);
+readyStatus '{service.scaling.db.server.ready.status}' = DATA LOCAL BOOLEAN(DBServer);
+availability '{service.scaling.db.server.availability}' = DATA LOCAL BOOLEAN(DBServer);
+lag '{service.scaling.db.server.lag}' = DATA LOCAL DOUBLE (DBServer);
+usedCpu '{service.scaling.db.server.used.cpu}' = DATA LOCAL DOUBLE (DBServer);
+numberConnections '{service.scaling.db.server.number.connections}' = DATA LOCAL INTEGER(DBServer);
+
+updateServersAction '{service.scaling.db.server.update.servers}' INTERNAL 'lsfusion.server.physics.admin.monitor.action.UpdateServersAction' (); 
 
 CLASS DBSlave '{service.scaling.db.slave}' : DBServer;
-host '{service.scaling.db.server.name}' = DATA STRING (DBSlave);
-name(DBSlave server) += host(server);
 addSlave INTERNAL 'lsfusion.server.physics.admin.service.action.AddSlaveAction' (DBSlave);
 removeSlave INTERNAL 'lsfusion.server.physics.admin.service.action.RemoveSlaveAction' (DBSlave);
 asyncAddSlave (DBSlave slave) {
@@ -1092,14 +1104,24 @@ onStarted() +{
 
 
 FORM scaling '{service.scaling}'
+    PROPERTIES() TOOLBAR updateServersAction
     OBJECTS s = DBServer
-    PROPERTIES (s) GRID name
+    PROPERTIES (s) GRID host READONLYIF s IS DBMaster, snmpPort 
+    PROPERTIES (s) READONLY load, lsn, readyStatus, availability, lag, usedCpu, numberConnections
     PROPERTIES (s) NEW[DBSlave], DELETE
     
     OBJECTS as = AppServer
     PROPERTIES (as) name, connectionString READONLY, isStarted READONLY
     PROPERTIES (as) NEW, DELETE
 ;
+
+DESIGN scaling {
+    NEW stats {
+        fill = 1;
+        MOVE BOX(s);
+        MOVE TOOLBARBOX;
+    }
+}
 
 NAVIGATOR {
     system {

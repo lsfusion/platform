@@ -61,7 +61,7 @@ public class FormImportData implements ImportData {
         }
     }
 
-    public void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
+    public void addProperty(PropertyDrawEntity<?, ?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         addProperty(entity, entity.getImportProperty(), upKeyValues, value, isExclusive);
     }
 

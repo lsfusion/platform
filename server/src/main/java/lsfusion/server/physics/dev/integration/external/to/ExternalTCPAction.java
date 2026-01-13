@@ -9,7 +9,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 import org.olap4j.impl.Base64;
 
 import java.io.IOException;
@@ -23,12 +22,10 @@ public class ExternalTCPAction extends ExternalSocketAction {
 
     @Override
     protected void send(ExecutionContext<PropertyInterface> context, String host, Integer port, byte[] fileBytes) throws SQLException, SQLHandledException, IOException {
-        boolean externalTCPWaitForByteMinusOne = Settings.get().isExternalTCPWaitForByteMinusOne();
-
         Integer timeout = (Integer) context.getBL().LM.timeoutTcp.read(context);
         byte[] response;
         if (clientAction) {
-            Object result = context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
+            Object result = context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout));
             if(result instanceof byte[])
                 response = (byte[]) result;
             else
@@ -46,7 +43,7 @@ public class ExternalTCPAction extends ExternalSocketAction {
                     connectionService.putTCPSocket(host, port, socket);
             }
             try {
-                response = ExternalUtils.sendTCP(fileBytes, socket, timeout, externalTCPWaitForByteMinusOne);
+                response = ExternalUtils.sendTCP(fileBytes, socket, timeout);
             } finally {
                 if (connectionService == null)
                     socket.close();

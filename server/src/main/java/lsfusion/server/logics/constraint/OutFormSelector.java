@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -49,13 +49,13 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     // IdentityStrongLazy is important to avoid memory leaks
     @Override
     @IdentityStrongLazy
-    public FormEntity getStaticForm(BaseLogicsModule LM) {
-        return LM.getLogForm(property, messageProperty, properties);
+    public FormEntity getStaticForm(BusinessLogics BL) {
+        return BL.LM.getLogForm(property, messageProperty, properties);
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
-        return new Pair<>(getStaticForm(LM), MapFact.EMPTYREV());
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
+        return new Pair<>(getStaticForm(BL), MapFact.EMPTYREV());
     }
 
     @Override

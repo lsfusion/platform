@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -46,6 +47,7 @@ public class GFormLayout extends SizedFlexPanel {
         super(true);
 
         this.form = iform;
+        this.form.formLayout = this; //Because formController.getFormLayout() is used inside CustomContainerView.addImpl before formController is fully initialized, formLayout may be null.
         this.mainContainer = mainContainer;
 
         attachContainer = new ResizableComplexPanel();

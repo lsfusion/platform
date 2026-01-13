@@ -37,6 +37,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.controller.remote.RequestLog;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
@@ -376,8 +377,15 @@ public abstract class CallHTTPAction extends CallAction {
                                     .responseCookies(responseCookies)
                                     .responseExtraValue((responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
-                if (!successfulResponse)
-                    throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
+                if (!successfulResponse) {
+                    //because CLIENT uses com.google.gwt.xhr.client.XMLHttpRequest, which runs in the browser,
+                    // and the browser does not “throw” network errors out in a readable form.
+                    // If there is a DNS error, connection failure, CORS block, etc. the browser simply returns status = 0, statusText = “”, without any details.
+                    String exceptionMessage = clientAction && statusCode == 0 ? LocalizedString.create("{http.client.action.exception}").toString()
+                            : responseStatus + (responseEntity == null ? "" : "\n" + responseEntity);
+
+                    throw new RuntimeException(exceptionMessage);
+                }
             }
         } catch (Exception e) {
             if (logBuilder != null)

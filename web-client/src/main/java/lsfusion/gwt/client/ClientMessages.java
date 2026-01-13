@@ -81,6 +81,7 @@ public interface ClientMessages extends Messages {
     String formGridPreferencesFontSize();
     String formGridPreferencesFontStyleBold();
     String formGridPreferencesFontStyleItalic();
+    String formGridPreferencesFilter();
 
     String formFilterCompareGreater();
     String formFilterCompareGreaterEquals();

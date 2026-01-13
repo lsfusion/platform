@@ -13,10 +13,6 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
         super();
     }
 
-    protected NFChangeImpl(boolean allowVersionFinalRead) {
-        super(allowVersionFinalRead);
-    }
-
     protected NFChangeImpl(F changes) {
         super(changes);
     }
@@ -26,7 +22,7 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
     }
 
     protected interface ChangeProcessor<CH> {
-        void proceed(CH change);
+        void proceed(CH change, CH nextChange);
     }
     
     protected void proceedChanges(ChangeProcessor<CH> processor, Version version) {
@@ -47,7 +43,7 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
 
             MList<CH> list = change.getValue();
             for(int i=0,size=list.size();i<size;i++)
-                processor.proceed(list.get(i));
+                processor.proceed(list.get(i), i + 1 < size ? list.get(i + 1) : null);
         }
     }
 

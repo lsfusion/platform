@@ -1,6 +1,10 @@
 package lsfusion.server.logics.form.interactive.controller.remote.serialization;
 
-import lsfusion.interop.form.remote.serialization.CustomSerializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public interface ServerCustomSerializable extends CustomSerializable<ServerSerializationPool> {
+public interface ServerCustomSerializable {
+
+    void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException;
 }

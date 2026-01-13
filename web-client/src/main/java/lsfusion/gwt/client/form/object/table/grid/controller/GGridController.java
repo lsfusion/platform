@@ -485,8 +485,12 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCaptionElementClasses(formController.getProperty(reader.propertyID), values);
+    }
+
+    public void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateFooterElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -515,6 +519,10 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public void updateCellCommentElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
@@ -647,11 +655,11 @@ public class GGridController extends GAbstractTableController {
         return formController.getDefaultOrders(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns() {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns() {
         return formController.getPivotColumns(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows() {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows() {
         return formController.getPivotRows(groupObject);
     }
 

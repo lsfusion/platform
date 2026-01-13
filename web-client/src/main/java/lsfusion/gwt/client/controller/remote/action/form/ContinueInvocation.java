@@ -3,18 +3,15 @@ package lsfusion.gwt.client.controller.remote.action.form;
 import java.io.Serializable;
 
 public class ContinueInvocation extends FormRequestAction<ServerResponseResult> {
-    public Serializable[] actionResults;
+    public Serializable actionResult;
     public int continueIndex;
 
     public ContinueInvocation() {
     }
 
-    public ContinueInvocation(long requestIndex, Object[] actionResults, int continueIndex) {
+    public ContinueInvocation(long requestIndex, Object actionResult, int continueIndex) {
         super(requestIndex);
-        this.actionResults = new Serializable[actionResults.length];
-        for (int i = 0; i < actionResults.length; i++) {
-            this.actionResults[i] = (Serializable) actionResults[i];
-        }
+        this.actionResult = (Serializable) actionResult;
         this.continueIndex = continueIndex;
     }
 }

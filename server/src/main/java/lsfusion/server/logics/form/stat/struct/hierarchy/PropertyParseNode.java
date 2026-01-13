@@ -3,19 +3,22 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.expr.formula.FieldShowIf;
+import lsfusion.server.data.expr.formula.JSONField;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyParseNode implements ChildParseNode {
-    private final PropertyDrawEntity<?> property;
+    private final PropertyDrawEntity<?, ?> property;
     private final boolean isExclusive;
 
-    public PropertyParseNode(PropertyDrawEntity<?> property, boolean isExclusive) {
+    public PropertyParseNode(PropertyDrawEntity<?, ?> property, boolean isExclusive) {
         this.property = property;
         this.isExclusive = isExclusive;
     }
@@ -23,14 +26,28 @@ public class PropertyParseNode implements ChildParseNode {
     public String getKey() {
         return property.getIntegrationSID();
     }
+
+    @Override
+    public JSONField getField() {
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        FieldShowIf fieldShowIf = showIfProp != null ? FieldShowIf.SHOWIF : property.isExtNull() ? FieldShowIf.EXTNULL : null;
+        return new JSONField(getKey(), fieldShowIf);
+    }
+
+    @Override
+    public PropertyMapImplement getShowIfProperty(ImRevMap mapObjects) {
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        return showIfProp != null ? showIfProp.getReaderProperty().getImplement(mapObjects) : null;
+    }
+
     public boolean isAttr() {
-        return property.attr;
+        return property.isAttr();
     }
 
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
         Object propertyValue;
         try {
-            propertyValue = node.getValue(getKey(), property.attr, property.getImportType());
+            propertyValue = node.getValue(getKey(), property.isAttr(), property.getImportType());
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
@@ -38,9 +55,10 @@ public class PropertyParseNode implements ChildParseNode {
     }
     
     public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
-        Object value = exportData.getProperty(this.property, upValues);
-        if(value != null || property.extNull) {
-            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
+        Object value = exportData.getProperty(property, upValues);
+        PropertyReaderEntity showIfProp = property.getShowIfProp();
+        if (showIfProp != null ? exportData.getProperty(showIfProp, upValues) != null : (value != null || property.isExtNull())) {
+            node.addValue(node, getKey(), property.isAttr(), value, exportData.getType(property));
             return true;
         }
         return false;

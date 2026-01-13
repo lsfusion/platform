@@ -57,7 +57,7 @@ public class FormGroupHierarchyCreator {
      */
     private void addDependenciesToGraph(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
         Iterable<PropertyDrawEntity> propertyDraws = form.getStaticPropertyDrawsList();
-        for (PropertyDrawEntity<?> property : propertyDraws) {
+        for (PropertyDrawEntity<?, ?> property : propertyDraws) {
             Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances(), groups);
             if(supportGroupColumns)
                 propObjects.removeAll(property.getColumnGroupObjects().toJavaList());

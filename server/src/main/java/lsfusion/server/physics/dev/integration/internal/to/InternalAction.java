@@ -3,6 +3,7 @@ package lsfusion.server.physics.dev.integration.internal.to;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -21,6 +22,7 @@ import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 
 import java.io.IOException;
@@ -94,7 +96,7 @@ public abstract class InternalAction extends ExplicitAction {
     }
 
     public ObjectValue readResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException {
-        return getBaseLM().getExportValueProperty().readFirstNotNull(context.getSession(), new Result<>(), la.action);
+        return RemoteConnection.readResult(la.action, context.getEnv(), getBaseLM(), new Result<>()).second[0];
     }
 
     public Object readJSONResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException, IOException {
@@ -104,9 +106,9 @@ public abstract class InternalAction extends ExplicitAction {
 
     public static Object readJSON(ObjectValue result, Type valueType) {
         String charset = ExternalUtils.jsonCharset.toString();
-        FileData file = readFile(result, valueType, charset);
-        if(file != null)
-            return JSONReader.readObject(file.getRawFile(), charset);
+        RawFileData file = readRawFile(result, valueType, charset);
+        if(file != null && file.getLength() > 0)
+            return JSONReader.readObject(file, charset);
         return null;
     }
 

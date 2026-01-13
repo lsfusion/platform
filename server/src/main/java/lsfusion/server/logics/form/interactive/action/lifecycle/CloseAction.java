@@ -24,7 +24,7 @@ public class CloseAction extends FormFlowAction {
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        form.formClose(context);
+        form.formClose(context, false);
     }
 
     @Override

@@ -12,7 +12,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -36,7 +35,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> explicitInnerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages,
                                                                PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, boolean interactive, Version version) {
-        super(LocalizedString.NONAME, version);
+        super(interactive, version);
 
         this.interactive = interactive;
 
@@ -49,21 +48,21 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> {
             ValueClass interfaceClass = interfaceClasses.get(value);
-            return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
+            return new ObjectEntity(genID, interfaceClass);
         });
 
         if(!valueInterfaces.isEmpty()) {
-            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
-            valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
-            addGroupObject(valueGroupObject, version);
+            GroupObjectEntity valueGroupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
+
+            valueGroupObject.setViewType(ClassViewType.PANEL, this, version); // for interactive view
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
-            groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
-            groupObject.setSID("value"); // for JSON and XML
-            groupObject.setListViewType(ListViewType.CUSTOM);
-            groupObject.setCustomRenderFunction("selectMultiInput");
-            addGroupObject(groupObject, version);
+            // sID - for JSON and XML
+            groupObject = addGroupObjectEntity(LM, innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), version); // we don't know parameter classes
+            groupObject.setSID("value");
+            groupObject.setListViewType(ListViewType.CUSTOM, version);
+            groupObject.setCustomRenderFunction("selectMultiInput", version);
         } else
             groupObject = null;
         
@@ -86,13 +85,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 ObjectEntity object = mapObjects.get((P)property);
                 propertyDraw = addValuePropertyDraw(LM, object, version);
                 addObjects = SetFact.singleton(object);
-                propertyDraw.setIntegrationSID(object.getIntegrationSID()); // also sID can be set, but now it's not clear what for
+                propertyDraw.setSID(object.getSID()); // important for SELECT change json somewhy
             }
 
             String alias = propUsage.alias;
             if(alias != null) {
                 if(propUsage.literal) {
-                    propertyDraw.setIntegrationSID(alias);
+                    propertyDraw.setIntegrationSID(alias, version);
                     alias = null;
                 } else
                     mapAliases.exclAdd(alias, propertyDraw);
@@ -100,15 +99,16 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
-            setFinalPropertyDrawSID(propertyDraw, alias);
+            if(alias != null)
+                propertyDraw.setSID(alias);
 
-            propertyDraw.group = propUsage.group;
+            propertyDraw.setGroup(propUsage.group, this, version);
 
             if(groupObject != null && !addObjects.intersect(groupObject.getObjects()))
-                propertyDraw.toDraw = groupObject;
+                propertyDraw.setToDraw(groupObject, this, version);
 
             if(attr)
-                propertyDraw.attr = true;
+                propertyDraw.setAttr(true, version);
         }
 
         if(where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
@@ -118,7 +118,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         
         for(int i=0,size=orders.size();i<size;i++) {
             PropertyDrawEntity property = mapAliases.get(orders.getKey(i));
-            property.setIntegrationSID(null);
+            property.setIntegrationSID(PropertyDrawEntity.NOEXTID, version);
             property.setPropertyExtra(addPropertyObject(LM.vnull), PropertyDrawExtraType.SHOWIF, version); // for interactive view
             addDefaultOrder(property, orders.getValue(i), version);
         }
@@ -127,14 +127,15 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         if(interactive) {
             // for interactive view
-            DefaultFormView formView = (DefaultFormView) getNFRichDesign(version);
+            DefaultFormView formView = (DefaultFormView) view;
 
 //        OBJECTS {
 //            border = FALSE;
 //            class = '';
 //        }
-            formView.objectsContainer.setBorder(false);
-            formView.objectsContainer.setElementClass(null);
+            ContainerView objectsContainer = formView.getBoxContainer(formView);
+            objectsContainer.setBorder(false, version);
+            objectsContainer.setElementClass(null, version);
 
 //        BOX(i) {
 //            caption = NULL;
@@ -143,19 +144,12 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
             if (groupObject != null) {
                 ContainerView boxContainer = formView.getBoxContainer(groupObject);
-                boxContainer.setCaption(null);
+                boxContainer.setCaption(null, version);
 
                 ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
                 formView.removeComponent(toolbarBoxContainer, version);
             }
         }
-    }
-
-    @Override
-    public FormView createDefaultRichDesign(Version version) {
-        if(interactive)
-            return super.createDefaultRichDesign(version);
-        return null;
     }
 
     @Override
@@ -174,7 +168,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     public LocalizedString getCaption() {
         if(interactive)
             return super.getCaption();
-        return getInitCaption();
+        return LocalizedString.NONAME;
     }
 
     @Override

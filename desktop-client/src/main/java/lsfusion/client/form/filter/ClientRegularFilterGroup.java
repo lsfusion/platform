@@ -26,13 +26,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
     }
 
     @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
-        super.customSerialize(pool, outStream);
-
-        pool.serializeCollection(outStream, filters);
-    }
-
-    @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 

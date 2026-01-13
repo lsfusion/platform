@@ -1,52 +1,53 @@
 package lsfusion.server.logics.form.struct.object;
 
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.identity.IdentityObject;
+import lsfusion.base.identity.IDGenerator;
+import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 
-public class TreeGroupEntity extends IdentityObject {
-    public boolean plainTreeMode = false;
+public class TreeGroupEntity extends IdentityEntity<TreeGroupEntity, GroupObjectEntity> {
 
-    public TreeGroupEntity() {
-        
+    @Override
+    protected String getDefaultSIDPrefix() {
+        return "tree";
     }
 
-    public TreeGroupEntity(int ID) {
-        this.ID = ID;
-    }
+    public TreeGroupEntity(IDGenerator ID, String sID, ImOrderSet<GroupObjectEntity> groups, DebugInfo.DebugPoint debugPoint) {
+        super(ID, sID, debugPoint);
 
-    private DebugInfo.DebugPoint debugPoint;
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
-    }
-
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
-    }
-
-    private Object groups = SetFact.mOrderExclSet();
-    private boolean finalizedGroups;
-
-    @LongMutable
-    public ImOrderSet<GroupObjectEntity> getGroups() {
-        if(!finalizedGroups) {
-            finalizedGroups = true;
-            groups = ((MOrderExclSet<GroupObjectEntity>)groups).immutableOrder();
-        }
-        return (ImOrderSet<GroupObjectEntity>) groups;
-    }
-    public void add(GroupObjectEntity group) {
-        assert !finalizedGroups;
-        group.treeGroup = this;
-        ((MOrderExclSet<GroupObjectEntity>)groups).exclAdd(group);
-    }
-    public void setGroups(ImOrderSet<GroupObjectEntity> groups) {
-        assert !finalizedGroups;
-        finalizedGroups = true;
         this.groups = groups;
+        for(GroupObjectEntity object : groups)
+            object.treeGroup = this;
+    }
+
+    private final ImOrderSet<GroupObjectEntity> groups;
+
+    public ImOrderSet<GroupObjectEntity> getGroups() {
+        return groups;
+    }
+
+    public TreeGroupView view;
+
+    // copy-constructor
+    protected TreeGroupEntity(TreeGroupEntity src, ObjectMapping mapping) {
+        super(src, mapping);
+
+        groups = mapping.get(src.groups);
+        view = mapping.get(src.view);
+    }
+
+    @Override
+    public GroupObjectEntity getAddParent(ObjectMapping mapping) {
+        return getGroups().get(0);
+    }
+    @Override
+    public TreeGroupEntity getAddChild(GroupObjectEntity groupObjectEntity, ObjectMapping mapping) {
+        return groupObjectEntity.treeGroup;
+    }
+    @Override
+    public TreeGroupEntity copy(ObjectMapping mapping) {
+        return new TreeGroupEntity(this, mapping);
     }
 }

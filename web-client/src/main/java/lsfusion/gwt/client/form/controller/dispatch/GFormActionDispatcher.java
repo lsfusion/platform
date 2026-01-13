@@ -2,13 +2,8 @@ package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.action.*;
-import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupOwner;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -20,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 
@@ -32,8 +26,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        form.continueServerInvocation(requestIndex, actionResults, continueIndex, callback);
+    protected void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        form.continueServerInvocation(requestIndex, actionResult, continueIndex, callback);
     }
 
     @Override
@@ -47,26 +41,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(final GFormAction action) {
-        if (action.showFormType.isDockedModal() && !canShowDockedModal()) {
-            action.showFormType = GModalityShowFormType.MODAL;
-        }
+    protected FormsController.OpenContext getOpenContext(GFormAction action) {
+        return new FormsController.OpenContext(editEventHandler != null ? editEventHandler.event : null, editContext, form, form.getFormDockableContainer(action.showFormType.isDockedModal()));
+    }
 
-        if (action.showFormType.isModal() && action.syncType) {
-            pauseDispatching();
-        }
-        WindowHiddenHandler onClose = () -> {
-            if (action.showFormType.isModal() && action.syncType) {
-                continueDispatching();
-            }
-        };
-        try {
-            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, action.syncType, editEventHandler != null ? editEventHandler.event : null, editContext, onClose, action.formId);
-        } catch (Throwable t) {
-            onClose.onHidden();
-            throw t;
-        }
-
+    @Override
+    protected FormsController getFormsController() {
+        return form.getFormsController();
     }
 
     @Override
@@ -81,19 +62,9 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public Object execute(GChooseClassAction action) {
-        pauseDispatching();
-        Result<Object> result = new Result<>();
-        GClassDialog.showDialog(action.baseClass, action.defaultClass, action.concreate, chosenClass -> continueDispatching(chosenClass == null ? null : chosenClass.ID, result), getPopupOwner());
-        return result.result;
-    }
-
-    @Override
-    public Object execute(GConfirmAction action) {
-        pauseDispatching();
-
-        Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(), chosenOption -> continueDispatching(chosenOption.asInteger(), result));
-        return result.result;
+        return executeAsyncResult(onResult -> {
+            GClassDialog.showDialog(action.baseClass, action.defaultClass, action.concreate, chosenClass -> onResult.accept(chosenClass == null ? null : chosenClass.ID, null), getPopupOwner());
+        });
     }
 
     @Override
@@ -102,8 +73,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GHideFormAction action) {
-        form.hideForm(getAsyncFormController(getDispatchingIndex()), editFormCloseReason != null ? editFormCloseReason : CancelReason.HIDE);
+    public void execute(GHideFormAction action, GActionDispatcherLookAhead lookAhead) {
+        form.hideForm(getAsyncFormController(getDispatchingIndex()), lookAhead, editFormCloseReason != null ? editFormCloseReason : CancelReason.HIDE);
     }
 
     @Override
@@ -169,21 +140,17 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public Object execute(GRequestUserInputAction action) {
+        return executeAsyncResult(onResult -> {
+            // we'll be optimists and assume that this value will stay
+            long dispatchingIndex = getDispatchingIndex();
+            form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.convertFileValue(action.oldValue), action.inputList, action.inputListActions,
+                    (value, onExec) -> {
+                        onExec.accept(dispatchingIndex);
 
-        pauseDispatching();
-
-        // we should not drop at least editSetValue since GUpdateEditValueAction might use it
-        Result<Object> result = new Result<>();
-        // we'll be optimists and assume that this value will stay
-        long dispatchingIndex = getDispatchingIndex();
-        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.convertFileValue(action.oldValue), action.inputList, action.inputListActions,
-                (value, onExec) -> {
-                    onExec.accept(dispatchingIndex);
-
-                    continueDispatching(value, result);
-                },
-                (cancelReason) -> continueDispatching(GUserInputResult.canceled, result), editContext, ServerResponse.INPUT, null);
-        return result.result;
+                        onResult.accept(value, null);
+                    },
+                    (cancelReason) -> onResult.accept(GUserInputResult.canceled, null), editContext, ServerResponse.INPUT, null);
+        });
     }
 
     @Override

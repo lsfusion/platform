@@ -80,6 +80,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> footerElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellGridElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new NativeSIDMap<>();
@@ -115,6 +116,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return PValue.getClassStringValue(propCaptionElementClasses.get(columnKey));
 
         return property.captionElementClass;
+    }
+    public static String getFooterElementClass(NativeHashMap<GGroupObjectValue, PValue> propFooterElementClasses, GPropertyDraw property, GGroupObjectValue columnKey) {
+        if (propFooterElementClasses != null)
+            return PValue.getClassStringValue(propFooterElementClasses.get(columnKey));
+
+        return property.footerElementClass;
     }
     public static AppBaseImage getPropertyImage(NativeHashMap<GGroupObjectValue, PValue> propImages, GPropertyDraw property, GGroupObjectValue columnKey) {
         if (propImages != null)
@@ -411,6 +418,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         captionsUpdated = true;
     }
 
+    public void updateFooterElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        footerElementClasses.put(propertyDraw, values);
+        footersUpdated = true;
+    }
+
     public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         propertyFooters.put(propertyDraw, values);
         footersUpdated = true;
@@ -668,6 +680,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         GGridPropertyTableFooter footer = getGridFooter(index);
         if(footer != null) {
             footer.setValue(getPropertyFooter(property, columnKey));
+            footer.setFooterElementClass(getFooterElementClass(property, columnKey));
         }
     }
 
@@ -714,6 +727,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected String getCaptionElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {
         return getCaptionElementClass(captionElementClasses.get(property), property, columnKey);
+    }
+
+    protected String getFooterElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return getFooterElementClass(footerElementClasses.get(property), property, columnKey);
     }
 
     protected GInputBindingEvent getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -933,6 +950,11 @@ protected Double getUserFlex(int i) {
             @Override
             public String getRegexpMessage() {
                 return GGridPropertyTable.this.getRegexpMessage(cell, property, column);
+            }
+
+            @Override
+            public String getDefaultValue() {
+                return null;
             }
         };
     }

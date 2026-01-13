@@ -5,6 +5,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
 import lsfusion.server.physics.admin.service.property.CurrentAppServerProperty;
@@ -39,7 +40,10 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP overBaseValueSettingUserRole;
 
     public ConcreteCustomClass dbSlave;
+    public AbstractCustomClass dbServer;
+    public LP<?> hostDBMaster;
     public LP<?> hostDBSlave;
+    public LP<?> snmpPort;
 
     public LP allowExcessAllocatedBytes;
 
@@ -113,7 +117,10 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");
 
         dbSlave = (ConcreteCustomClass) findClass("DBSlave");
+        dbServer = (AbstractCustomClass) findClass("DBServer");
+        hostDBMaster = findProperty("dbServer[]");
         hostDBSlave = findProperty("host[DBSlave]");
+        snmpPort = findProperty("snmpPort[DBServer]");
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");

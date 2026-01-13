@@ -3,6 +3,7 @@ package lsfusion.server.data.type;
 import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalRequest;
@@ -125,29 +126,29 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T parseFile(RawFileData value, String extension, String charset) {
+    public T parseFile(NamedFileData value, String charset) {
         if(value == null)
             return null;
-        return writePropNotNull(value, extension, charset);
+        return writePropNotNull(value, charset);
     }
 
-    protected T writePropNotNull(RawFileData value, String extension, String charset) {
+    protected T writePropNotNull(NamedFileData value, String charset) {
         try {
-            return parseString(value.getString(charset));
+            return parseString(value.getRawFile().getString(charset));
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
     }
 
     @Override
-    public FileData formatFile(T value, String charset) {
+    public NamedFileData formatFile(T value, String charset) {
         if(value == null)
             return null;
         return readPropNotNull(value, charset);
     }
 
-    public FileData readPropNotNull(T value, String charset) {
-        return new FileData(new RawFileData(formatString(value), charset), "dat");
+    public NamedFileData readPropNotNull(T value, String charset) {
+        return new NamedFileData(new RawFileData(formatString(value), charset));
     }
 
     public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {

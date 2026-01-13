@@ -1,7 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.net.rabbitmq;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -35,7 +34,7 @@ public class GetStatusRabbitMQAction extends InternalAction {
             String virtualHost = (String) findProperty("vHost[Channel]").read(context, channelObject);
 
             String status = context.getLogicsInstance().getRabbitMQServer().getStatus(host, queue, user, password, virtualHost);
-            context.requestUserInteraction(new MessageClientAction(status, "RabbitMQ"));
+            findProperty("status[Channel]").change(status, context, channelObject);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

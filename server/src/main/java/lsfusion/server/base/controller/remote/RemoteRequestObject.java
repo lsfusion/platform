@@ -242,8 +242,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return invocationSID;
     }
 
-    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws RemoteException {
-        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, currentInvocation -> currentInvocation.resumeAfterUserInteraction(actionResults));
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object actionResult) throws RemoteException {
+        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, currentInvocation -> currentInvocation.resumeAfterUserInteraction(actionResult));
     }
 
     public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Throwable clientThrowable) throws RemoteException {
@@ -280,8 +280,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         RemotePausableInvocation.runUserInteraction(currentInvocation -> { currentInvocation.delayUserInteraction(action); return null;});
     }
 
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(actions));
+    public Object requestUserInteraction(ClientAction action) {
+        return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(action));
     }
 
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
@@ -339,8 +339,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object actionResult) throws Throwable {
             return syncExecute(object.syncContinueServerInvocationMap, requestIndex, joinPoint);
         }
         @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")

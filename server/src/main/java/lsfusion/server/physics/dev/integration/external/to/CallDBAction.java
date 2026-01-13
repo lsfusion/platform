@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
@@ -26,7 +27,6 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.TableClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
@@ -77,11 +77,8 @@ public abstract class CallDBAction extends CallAction {
                 DataObject paramObject = (DataObject) paramValue;
                 DataClass paramClass = (DataClass) getFileClass(paramObject, paramTypes.get(param));
                 if (paramClass instanceof FileClass) {
-                    FileData fileData = readFile(paramObject, paramClass, null);
-                    String extension = fileData.getExtension();
-                    if (extension.equals(TableClass.extension)) { // значит таблица
-                        JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileData.getRawFile());
-
+                    JDBCTable jdbcTable = readTableFile(paramObject, paramClass);
+                    if (jdbcTable != null) {
                         String table = "ti_" + tableParamNum; // создаем временную таблицу с сгенерированным именем
                         SQLSession.uploadTableToConnection(table, syntax, jdbcTable, conn, owner);
                         tempTables.add(table);

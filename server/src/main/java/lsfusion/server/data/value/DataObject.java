@@ -145,6 +145,10 @@ public class DataObject extends ObjectValue<DataObject> implements ImportKeyInte
         this.valueExpr = valueExpr;
     }
 
+    public String formatString() {
+        return objectClass.getType().formatString(object);
+    }
+
     public InconsistentStaticValueExpr getInconsistentExpr() {
         return new InconsistentStaticValueExpr((ConcreteObjectClass) objectClass, object);
     }

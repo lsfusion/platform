@@ -7,6 +7,8 @@ CLASS Channel 'Channel';
 host 'Host' = DATA STRING (Channel);
 vHost 'vHost' = DATA STRING (Channel);
 queue 'Queue name' = DATA STRING (Channel);
+isDurable 'Durable' = DATA BOOLEAN (Channel);
+persistentDeliveryMode 'Persistent Delivery Mode' = DATA BOOLEAN (Channel);
 threadCount 'Thread count' = DATA INTEGER (Channel);
 prefetchCount 'Prefetch count' = DATA INTEGER (Channel);
 user 'User' = DATA STRING (Channel);
@@ -20,9 +22,16 @@ channel = GROUP AGGR Channel c BY host(c), queue(c);
 startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 
 start 'Start' (Channel c) {
-    startConsumer(c);
-    started(c) <- TRUE;
-    apply();
+    checkIsServer();
+    IF isServer() THEN {
+        startConsumer(c);
+        started(c) <- TRUE;
+        APPLY NESTED LOCAL;
+    }
+}
+startForm 'Start' (Channel c) {
+    start(c);
+    IF NOT isServer() THEN MESSAGE 'Consuming disabled, change serverComputer() to enable';
 }
 
 sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
@@ -37,7 +46,7 @@ stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.t
 stop 'Stop' (Channel c) {
     stopConsumer(c);
     started(c) <- NULL;
-    apply();
+    APPLY NESTED LOCAL;
 }
 
 restartConsumers 'Restart all consumers' () {
@@ -46,17 +55,27 @@ restartConsumers 'Restart all consumers' () {
         start(c);
     }
 }
+restartConsumersForm 'Restart all consumers' () {
+    restartConsumers();
+    IF NOT isServer() THEN MESSAGE 'Consuming disabled, change serverComputer() to enable';
+}
 
-getStatus 'Get Status' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.GetStatusRabbitMQAction' (Channel);
+status = DATA LOCAL STRING(Channel);
+getStatus INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.GetStatusRabbitMQAction' (Channel);
+showStatus 'Show Status' (Channel c) {
+    getStatus(c);
+    MESSAGE status(c) HEADER 'RabbitMQ';
+}
 
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), vHost READONLYIF started(c), queue READONLYIF started(c),
-        threadCount, prefetchCount, user, password, 
-        start GRID SHOWIF isConsumer(c) AND NOT started(c),
+    PROPERTIES(c) local, isConsumer
+    PROPERTIES(c) READONLYIF started(c) host, vHost, queue, isDurable, persistentDeliveryMode SHOWIF isDurable(c)
+    PROPERTIES(c) threadCount, prefetchCount, user, password,
+        startForm GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
-        getStatus GRID, NEW, DELETE
-    PROPERTIES restartConsumers(), VALUE(s), sendMessage(c, s)
+        showStatus GRID, NEW, DELETE
+    PROPERTIES restartConsumersForm(), VALUE(s), sendMessage(c, s)
 ;
 
 NAVIGATOR {

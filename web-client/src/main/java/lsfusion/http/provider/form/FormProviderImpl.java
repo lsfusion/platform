@@ -97,15 +97,17 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<>();
         for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
             ColumnUserPreferences columnUP = entry.getValue();
-            gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userFlex, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
+            gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userFlex,
+                    columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort, columnUP.inGrid));
         }
         GFont userFont = convertFont(groupObjectUP.fontInfo);
         GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
-        if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size > 0) {
+        GFont gridFont = groupObj.grid.font;
+        if (groupObj != null && gridFont != null && gridFont.size > 0) {
             if (userFont.size == 0) {
-                userFont.size = groupObj.grid.font.size;
+                userFont.size = gridFont.size;
             }
-            userFont.family = groupObj.grid.font.family;
+            userFont.family = gridFont.family;
         } else {
             userFont.family = "";
         }

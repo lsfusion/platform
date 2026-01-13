@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
@@ -10,6 +9,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.Header;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -233,6 +233,10 @@ public class GGridPropertyTableHeader extends Header<String> {
             CellRenderer.renderWrapTextAlignment(th, horzTextAlignment, vertTextAlignment);
 
             CellRenderer.renderFlexAlignment(renderElement, horzTextAlignment, vertTextAlignment);
+        }
+
+        if (property != null && property.captionFont != null) {
+            GFormController.setFont(th, property.captionFont);
         }
 
         return th;

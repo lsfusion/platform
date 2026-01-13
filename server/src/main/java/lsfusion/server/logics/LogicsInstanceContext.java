@@ -1,24 +1,18 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ResetServerSettingsCacheClientAction;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
@@ -26,8 +20,6 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.Locale;
-
-import static lsfusion.server.physics.admin.log.ServerLoggers.systemLogger;
 
 public class LogicsInstanceContext extends AbstractContext {
     private static final Logger logger = Logger.getLogger(LogicsInstanceContext.class);
@@ -95,14 +87,11 @@ public class LogicsInstanceContext extends AbstractContext {
     // used in some deprecated actions
     @Deprecated
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
         assert false;
-        return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
-                session,
+        return new FormInstance(formEntity, getLogicsInstance(), session,
                 SecurityManager.baseServerSecurityPolicy, getFocusListener(), getClassListener(),
-                mapObjects, stack, isModal,
-                noCancel, manageSession,
-                checkOnOk, showDrop, interactive, type, false, contextFilters, readonly, getLocale());
+                mapObjects, stack, interactive, false, getLocale(), options);
     }
 
     @Override

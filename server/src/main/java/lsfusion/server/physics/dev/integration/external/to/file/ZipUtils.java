@@ -9,10 +9,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -21,8 +18,33 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class ZipUtils {
+
+    public static FileData makeZipFile(Map<String, RawFileData> files, boolean zeroTime) throws IOException {
+        File zipFile = File.createTempFile("zip", ".zip");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
+                for (Map.Entry<String, RawFileData> logFile : files.entrySet()) {
+                    InputStream bis = logFile.getValue().getInputStream();
+                    ZipEntry ze = new ZipEntry(logFile.getKey());
+                    if(zeroTime)
+                        ze.setTime(0); //to make zip file deterministic
+                    zos.putNextEntry(ze);
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = bis.read(buf)) > 0) {
+                        zos.write(buf, 0, len);
+                    }
+                    bis.close();
+                }
+            }
+            return new FileData(new RawFileData(zipFile), "zip");
+        } finally {
+            BaseUtils.safeDelete(zipFile);
+        }
+    }
 
     public static Map<String, FileData> unpackFile(RawFileData file, String extension, boolean throwUnsupported) {
         Map<String, FileData> result;

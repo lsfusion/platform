@@ -32,23 +32,18 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResults, requestIndex, continueIndex), callback, true);
+    protected void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        MainFrame.syncDispatch(new ContinueNavigatorAction(actionResult, requestIndex, continueIndex), callback, true);
     }
 
     @Override
-    public void execute(final GFormAction action) {
-        if (action.showFormType.isModal()) {
-            pauseDispatching();
-        }
-        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, null, null, null, () -> {
-            if(action.showFormType.isDocked() || action.showFormType.isDockedModal())
-                formsController.ensureTabSelected();
+    protected FormsController getFormsController() {
+        return formsController;
+    }
 
-            if (action.showFormType.isModal()) {
-                continueDispatching();
-            }
-        }, action.formId);
+    @Override
+    protected FormsController.OpenContext getOpenContext(GFormAction action) {
+        return new FormsController.OpenContext(null, null, null, null);
     }
 
     @Override

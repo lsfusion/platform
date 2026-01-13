@@ -20,7 +20,8 @@ setWebHookTelegram(Account account) {
         setWebHookTelegramResult() <- description();
     }
 }
-WHEN SET (Account a IS Account) AND isTelegram(a) DO {
+skipSetWebHookTelegram = ABSTRACT BOOLEAN(Account);
+WHEN SET (Account a IS Account) AND isTelegram(a) AND NOT skipSetWebHookTelegram(a) DO {
     setWebHookTelegram(a);
     IF setWebHookTelegramResult() THEN {
         MESSAGE setWebHookTelegramResult() NOWAIT;

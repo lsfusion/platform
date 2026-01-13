@@ -88,7 +88,7 @@ public class SQLTemporaryPool {
 
     // SQLSession.assertLock : temporaryTables.lock + read
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -145,9 +145,9 @@ public class SQLTemporaryPool {
     }
 
     // lockRead, нет temporaryTables.lock
-    public void fillData(SQLSession session, FillTemporaryTable data, Integer count, Result<Integer> resultActual, String table, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void fillData(SQLSession session, FillTemporaryTable data, Long count, Result<Long> resultActual, String table, OperationOwner owner) throws SQLException, SQLHandledException {
 
-        Integer actual = data.fill(table); // заполняем
+        Long actual = data.fill(table); // заполняем
         assert (actual!=null)==(count==null);
         if(session.syntax.supportsAnalyzeSessionTable()) {
             if (Settings.get().isAutoAnalyzeTempStats())
@@ -186,7 +186,7 @@ public class SQLTemporaryPool {
 
         private final Object statistics;
 
-        public FieldStruct(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count) {
+        public FieldStruct(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count) {
             this.keys = keys;
             this.properties = properties;
 
@@ -208,7 +208,7 @@ public class SQLTemporaryPool {
         }
     }
 
-    public static Object getDBStatistics(int count) {
+    public static Object getDBStatistics(long count) {
         return new Stat(count);
     }
 }

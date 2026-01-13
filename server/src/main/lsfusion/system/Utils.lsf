@@ -92,7 +92,7 @@ resourcePaths = DATA LOCAL STRING (STRING);
 readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
 readResourcePaths (STRING pattern) { readResourcePaths(pattern, NULL); }
 
-resourceFile '{utils.resource.file}' = resource(); // deprecated
+resourceFile '{utils.resource.file}' = resource() @@deprecated('6.1');
 
 properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
@@ -161,6 +161,8 @@ regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FO
 substr (TEXT string, INTEGER from, INTEGER len) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT string, INTEGER from) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
+substring(STRING string, STRING regexp) = FORMULA NULL STRING PG 'SELECT substring($string, $regexp)';
+
 regexPatternMatch (TEXT str, STRING pattern) = FORMULA NULL BOOLEAN PG 'CASE WHEN $1~$2 THEN 1 ELSE NULL END';
 
 ltrim (TEXT string) = FORMULA TEXT 'ltrim($1)';
@@ -201,8 +203,8 @@ encodeBase64Unchunked (NAMEDFILE f) = encodeBase64Unchunked(RAWFILE(f));
 encodeBytes = FORMULA TEXT 'encode(($1),($2))';
 encodeBytesBase64(bytes) = encodeBytes(bytes, 'base64');
 
-encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))'; // deprecated
-decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')'; // deprecated
+encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))' @@deprecated('6.1');
+decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')' @@deprecated('6.1');
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64Action' (TEXT);
@@ -393,10 +395,13 @@ xmlFile = DATA LOCAL XMLFILE();
 tableFile = DATA LOCAL TABLEFILE();
 
 // --------------------------------- Logging --------------------------------- //
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction' (TEXT);
+printToLog (TEXT message, STRING logger, STRING level) INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction';
+printToLog (TEXT message, STRING logger) { printToLog(message, logger, 'info');}
+printToLog (TEXT message) { printToLog(message, 'system');}
+
 logToFile (STRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', toChar(currentDateTimeMillis(), 'YYYY-MM-DD HH24:MI:SS.MS'), message, '\n'));
-}
+} @@deprecated('7.0', 'use printToLog');
 logToFile (STRING[1000] file, FILE message) {
     fileToString(message, 'UTF-8');
     logToFile(file, resultString());

@@ -23,6 +23,7 @@ import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.stack.*;
@@ -48,7 +49,6 @@ import lsfusion.server.data.sql.exception.SQLTimeoutException;
 import lsfusion.server.data.sql.lambda.SQLConsumer;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.parse.StringParseInterface;
@@ -1630,7 +1630,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(AbstractContext.LogMessage message : messages) {
             if (logBuilder.length() > 0) 
                 logBuilder.append('\n');
-            if(addFailed && message.failed)
+            if(addFailed && message.type == MessageClientType.ERROR)
                 logBuilder.append("(failed) ");
             logBuilder.append(message.message);
         }
@@ -2258,6 +2258,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return empty;
             }
 
+            public ValueParseInterface getActiveForm() {
+                return empty;
+            }
+
             @Override
             public ValueParseInterface getSQLConnection() {
                 return empty;
@@ -2357,8 +2361,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange = property.createChangeTable("achpr");
             data.put(property, dataChange);
         }
-        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner(), SessionTable.matGlobalQuery);
-        if(dataChange.isEmpty()) // только для первого заполнения (потом удалений нет, проверка не имеет особого смысла)
+
+        QueryEnvironment env = getQueryEnv();
+        OperationOwner owner = getOwner();
+        boolean updateClasses = SessionTable.matGlobalQuery;
+
+        ModifyResult result;
+        if(property instanceof SessionDataProperty && Settings.get().isDeleteLocalNullChanges() && (dataChange == null || !dataChange.used(change.getQuery()))) {
+            Pair<PropertyChange<ClassPropertyInterface>, PropertyChange<ClassPropertyInterface>> split = change.splitNull();
+            PropertyChange<ClassPropertyInterface> changeNull = split.first;
+            PropertyChange<ClassPropertyInterface> changeNotNull = split.second;
+            result = null;
+            if(!changeNull.isEmpty())
+                result = changeNull.modifyRows(dataChange, sql, baseClass, Modify.DELETE, env, owner, updateClasses);
+            if(!changeNotNull.isEmpty()) {
+                ModifyResult resultNotNull = changeNotNull.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+                if(result == null)
+                    result = resultNotNull;
+                else
+                    result = result.or(resultNotNull);
+            }
+            assert result != null;
+        } else
+            result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+
+        if(dataChange.isEmpty())
             data.remove(property);
         return result;
     }
@@ -2722,5 +2749,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Override
     public void close() throws SQLException {
         unregisterThreadStack();
+    }
+
+    @Override
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 }

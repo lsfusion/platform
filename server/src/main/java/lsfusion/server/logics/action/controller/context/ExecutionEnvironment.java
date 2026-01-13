@@ -38,9 +38,7 @@ import java.sql.SQLException;
 
 public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
-    public QueryEnvironment getQueryEnv() {
-        return getSession().env;
-    }
+    public abstract QueryEnvironment getQueryEnv();
 
     public <P extends PropertyInterface> void change(Property<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация

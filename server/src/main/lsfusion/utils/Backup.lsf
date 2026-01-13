@@ -66,6 +66,9 @@ exclude '{backup.exclude.table}' = DATA BOOLEAN (Table);
 TABLE backupTable(Backup, Table);
 exclude '{backup.exclude.backup.table}' = DATA BOOLEAN (Backup, Table);
 
+extraExclude '{backup.exclude.table}' = DATA STRING ();
+extraExclude '{backup.exclude.backup.tables}' = DATA STRING (Backup);
+
 FORM backup '{backup.backup}'
     OBJECTS b = Backup
     PROPERTIES() binPath, dumpDir, threadCount, saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
@@ -83,6 +86,8 @@ FORM backup '{backup.backup}'
     OBJECTS t2 = Table
     PROPERTIES(t2) READONLY sid
     PROPERTIES(b, t2) READONLY exclude
+    
+    PROPERTIES extraExclude(), extraExclude(b) PANEL
 ;
 
 DESIGN backup {
@@ -96,6 +101,7 @@ DESIGN backup {
                 fill = 1;
                 MOVE BOX(b);
                 MOVE BOX(t1);
+                MOVE PROPERTY(extraExclude());
             }
             NEW rightPane {
                 fill = 1;
@@ -106,6 +112,7 @@ DESIGN backup {
                 MOVE BOX(t2) {
                     caption = '{backup.form.backup.caption.copied.tables}';
                 }
+                MOVE PROPERTY(extraExclude(b));
             }
         }
         NEW pane2 {

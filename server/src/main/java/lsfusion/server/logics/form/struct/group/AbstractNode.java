@@ -26,11 +26,12 @@ public abstract class AbstractNode extends ImmutableObject {
     @NFLazy
     private NFProperty<Group> getParentProperty() {
         if(parent == null)
-            parent = NFFact.property(true);
+            parent = NFFact.property();
         return parent;
     }
     public Group getParent() { return parent != null ? parent.get() : null; }
     public Group getNFParent(Version version) { return parent != null ? parent.getNF(version) : null; }
+    public Group getNFParent(Version version, boolean allowRead) { return parent != null ? parent.getNF(version, allowRead) : null; }
     public void setParent(Group group, Version version) {
         getParentProperty().set(group, version);
     }
@@ -41,8 +42,6 @@ public abstract class AbstractNode extends ImmutableObject {
     }
 
     public abstract boolean hasChild(ActionOrProperty prop);
-
-    public abstract boolean hasNFChild(ActionOrProperty prop, Version version);
 
     public abstract ImOrderSet<ActionOrProperty> getActionOrProperties();
 

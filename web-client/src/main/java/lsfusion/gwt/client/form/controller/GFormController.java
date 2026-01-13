@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GActionDispatcherLookAhead;
 import lsfusion.gwt.client.action.GFilterAction;
 import lsfusion.gwt.client.action.GMessageAction;
 import lsfusion.gwt.client.base.*;
@@ -79,7 +80,6 @@ import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -110,7 +110,7 @@ public class GFormController implements EditManager {
     private final FormContainer formContainer;
 
     public final GForm form;
-    public final GFormLayout formLayout;
+    public GFormLayout formLayout;
 
     private final boolean isDialog;
 
@@ -158,14 +158,21 @@ public class GFormController implements EditManager {
     // we need the global id to make ids globally unique in some cases
     public String globalID;
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, int dispatchPriority, Event editEvent) {
+    public String formId;
+
+    public WindowHiddenHandler hiddenHandler;
+
+    public GFormController(FormsController formsController, WindowHiddenHandler hiddenHandler, FormContainer formContainer, GForm gForm, boolean isDialog, String formId, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
+
+        this.hiddenHandler = hiddenHandler;
 
         this.formsController = formsController;
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
 
+        this.formId = formId;
         this.globalID = "" + (idCounter++);
 
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
@@ -331,19 +338,14 @@ public class GFormController implements EditManager {
             }
         }
 
-        filterBox.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
-            }
-        });
+        filterBox.addChangeHandler(event -> setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - (filterGroup.noNull ? 0 : 1)));
 
         GwtClientUtils.addClassName(filterBox, "filter-group-select");
         GwtClientUtils.addClassName(filterBox, "form-select");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
-            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + (filterGroup.noNull ? 0 : 1));
         }
     }
 
@@ -413,7 +415,9 @@ public class GFormController implements EditManager {
     }
 
     public Pair<Widget, Boolean> getCaptionWidget() {
-        return new Pair<>(formContainer.getCaptionWidget(), formContainer.async);
+        boolean captionInitialized = formContainer.captionInitialized;
+        formContainer.captionInitialized = true; // need this for the recreate form
+        return new Pair<>(formContainer.getCaptionWidget(), captionInitialized);
     }
     private void initializeParams() {
         hasColumnGroupObjects = false;
@@ -427,7 +431,7 @@ public class GFormController implements EditManager {
                 groupObject.highlightDuplicateValue |= property.highlightDuplicateValue();
 
                 if (groupObject.columnCount < 10) {
-                    GFont font = groupObject.grid.font;
+                    GFont font = groupObject.grid != null ? groupObject.grid.font : null;
                     // in theory property renderers padding should be included, but it's hard to do that (there will be problems with the memoization)
                     // plus usually there are no paddings for the property renderers in the table (td paddings are used, and they are included see the usages)
                     groupObject.setColumnSumWidth(groupObject.getColumnSumWidth().add(property.getValueWidth(font, true, true)));
@@ -507,11 +511,11 @@ public class GFormController implements EditManager {
         return form.getDefaultOrders(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns(GGroupObject groupObject) {
         return form.getPivotColumns(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows(GGroupObject groupObject) {
         return form.getPivotRows(groupObject);
     }
 
@@ -524,8 +528,9 @@ public class GFormController implements EditManager {
     }
 
     private void initializeFormSchedulers() {
-        for(GFormScheduler formScheduler : form.formSchedulers) {
-            scheduleFormScheduler(formScheduler);
+        for(GFormEvent formEvent : form.asyncExecMap.keySet()) {
+            if(formEvent instanceof GFormScheduler)
+                scheduleFormScheduler((GFormScheduler) formEvent);
         }
     }
 
@@ -857,27 +862,7 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
-        FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
-        if (contextFormDockable != null)
-            contextFormDockable.block();
-
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, syncType, editEvent, editContext, this, () -> {
-            if(contextFormDockable != null) {
-                contextFormDockable.unblock();
-
-                formsController.selectTab(contextFormDockable);
-            } else if(showFormType.isDocked())
-                formsController.ensureTabSelected();
-
-            handler.onHidden();
-        }, formId);
-
-        if (contextFormDockable != null)
-            contextFormDockable.setBlockingForm((FormDockable) blockingForm);
-    }
-
-    private FormDockable getFormDockableContainer(boolean isDockedModal) {
+    public FormDockable getFormDockableContainer(boolean isDockedModal) {
         if (isDockedModal) {
             return (FormDockable) getContextContainer();
         } else {
@@ -1246,8 +1231,8 @@ public class GFormController implements EditManager {
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
-    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
+    public void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ContinueInvocation(requestIndex, actionResult, continueIndex), callback, true);
     }
 
     public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1753,14 +1738,29 @@ public class GFormController implements EditManager {
         return getTargetAndPreview(element, event) != null;
     }
 
-    protected void onFormHidden(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
-        formsController.removeFormContainer(formContainer);
+    // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
+    private boolean formHidden;
+    public void hideForm(GAsyncFormController asyncFormController, GActionDispatcherLookAhead lookAhead, EndReason editFormCloseReason) {
+        if(formHidden)
+            return;
+
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);
         }
+
+        // because when recreating, there should not be tooltip in the caption (it will break the assertion)
+        TooltipManager.removeTooltip(getCaptionWidget().first);
+
+        formHidden = true;
+
+        hiddenHandler.onHidden(lookAhead, asyncFormController, editFormCloseReason);
     }
 
-    protected void onFormDestroyed(int closeDelay) {
+    private boolean formDestroyed;
+    public void destroyForm(int closeDelay) {
+        if(formDestroyed)
+            return;
+
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwner()) {
@@ -1770,24 +1770,9 @@ public class GFormController implements EditManager {
             });
             closeDispatcher.close();
         });
+
 //        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
-    }
-
-    // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
-    private boolean formHidden;
-    public void hideForm(GAsyncFormController asyncFormController, EndReason editFormCloseReason) {
-        if(!formHidden) {
-            onFormHidden(asyncFormController, editFormCloseReason);
-            formHidden = true;
-        }
-    }
-
-    private boolean formDestroyed;
-    public void destroyForm(int closeDelay) {
-        if(!formDestroyed) {
-            onFormDestroyed(closeDelay);
-            formDestroyed = true;
-        }
+        formDestroyed = true;
     }
 
     public void initPreferredSize(Widget maxWindow, GSize maxWidth, GSize maxHeight) {

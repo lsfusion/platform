@@ -1,7 +1,9 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -31,11 +33,12 @@ public class PushRequestAction extends AroundAspectAction {
     }
     
     @Override
+    @IdentityStrongLazy
     public ActionMapImplement<?, PropertyInterface> compile(ImSet<Action<?>> recursiveAbstracts) {
 //        if(hasFlow(REQUESTPUSHED)) in theory flow should be checked for requestPushed, requestCanceled properties, but it's not clear how it should be handled
         // so now we'll just remove RequestAction
         return replace(new ActionReplacer() {
-            public <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action) {
+            public <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action, Result<Boolean> stopReplacing) {
                 if(action instanceof RequestAction) // if there is requestAction, we'll replace it with (since !isRequestCanceled)
                     return (ActionMapImplement<?, P>) ((RequestAction) action).getDoAction();
                 return null;

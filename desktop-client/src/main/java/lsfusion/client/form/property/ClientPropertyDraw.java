@@ -3,6 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
@@ -48,13 +49,14 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
     public GridElementClassReader gridElementClassReader = new GridElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
-    public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
+    public ExtraPropReader captionElementClassReader = new ExtraPropReader(CAPTIONELEMENTCLASS);
+    public ExtraPropReader footerElementClassReader = new ExtraPropReader(FOOTERELEMENTCLASS);
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
@@ -75,6 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader propertyCustomOptionsReader = new ExtraPropReader(PROPERTY_CUSTOM_OPTIONS);
     public ExtraPropReader changeKeyReader = new ExtraPropReader(CHANGEKEY);
     public ExtraPropReader changeMouseReader = new ExtraPropReader(CHANGEMOUSE);
+    public ExtraPropReader defaultValueReader = new ExtraPropReader(DEFAULTVALUE);
 
     public boolean boxed;
 
@@ -104,6 +107,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
+    public String footerElementClass;
     public boolean toolbar;
     public boolean toolbarActions;
 
@@ -139,6 +143,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
+    public String defaultValue;
 
     public boolean panelColumnVertical;
     public boolean panelCustom;
@@ -217,6 +222,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+    public boolean customNeedDefaultValue;
 
     public String creationScript;
     public String creationPath;
@@ -246,11 +252,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean getShowChangeKey() {
         return showChangeKey;
-    }
-
-    public void setShowChangeKey(boolean showKey) {
-        showChangeKey = showKey;
-        updateDependency(this, "showChangeKey");
     }
 
     public boolean isEditableNotNull() {
@@ -304,7 +305,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueWidth > -1) {
             return valueWidth;
         }
-        FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
+        FontMetrics fontMetrics = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp));
 
         String widthString = null;
         if(charWidth != -1)
@@ -326,9 +327,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         int insetsHeight = insets.top + insets.bottom;
         int lines = charHeight == -1 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
-        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (design.font != null ? design.font.fontSize : -1);
+        int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (font != null ? font.fontSize : -1);
         if (fontSize > 0 || lines > 1) {
-            int lineHeight = comp.getFontMetrics(design.getFont(comp)).getHeight();
+            int lineHeight = comp.getFontMetrics(ClientColorUtils.getOrDeriveComponentFont(font, comp)).getHeight();
             height = lineHeight * lines + insetsHeight;
         } else {
             height = SwingDefaults.getValueHeight();
@@ -576,6 +577,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
+        defaultValue = pool.readString(inStream);
 
         panelCustom = inStream.readBoolean();
         panelColumnVertical = inStream.readBoolean();
@@ -617,6 +619,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         inputType = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
+        footerElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
         toolbarActions = pool.readBoolean(inStream);
 
@@ -706,6 +709,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customCanBeRenderedInTD = pool.readBoolean(inStream);
         customNeedPlaceholder = pool.readBoolean(inStream);
         customNeedReadonly = pool.readBoolean(inStream);
+        customNeedDefaultValue = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 
@@ -713,12 +717,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         creationPath = pool.readString(inStream);
         path = pool.readString(inStream);
         formPath = pool.readString(inStream);
-
-        String mouseBinding = pool.readString(inStream);
-        if (mouseBinding != null) {
-            initEditBindingMap();
-            editBindingMap.setMouseAction(mouseBinding);
-        }
 
         int keyBindingSize = inStream.readInt();
         if (keyBindingSize > 0) {
@@ -738,10 +736,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String caption = pool.readString(inStream);
                 editBindingMap.setContextMenuAction(actionSID, caption);
                 if(pool.readBoolean(inStream)) {
-                    String creationScript = pool.readString(inStream);
-                    String creationPath = pool.readString(inStream);
-                    String path = pool.readString(inStream);
-                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(creationScript, creationPath, path));
+                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(pool.readString(inStream),
+                            pool.readString(inStream), pool.readString(inStream)));
                 }
             }
         }
@@ -1062,6 +1058,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
+    public class FooterElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.FOOTERELEMENTCLASS;
+        }
+    }
+
     public class BackgroundReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
@@ -1140,12 +1153,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public static class ContextMenuDebugInfo implements Serializable {
-        public String creationScript;
+        public String sid;
         public String creationPath;
         public String path;
 
-        public ContextMenuDebugInfo(String creationScript, String creationPath, String path) {
-            this.creationScript = creationScript;
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
             this.creationPath = creationPath;
             this.path = path;
         }

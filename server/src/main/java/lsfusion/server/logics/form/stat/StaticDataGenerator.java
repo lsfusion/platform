@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -124,7 +125,11 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     }
     
     protected void fillQueryProps(PropertyDrawEntity property, MExclSet<SDP> mResult) {
-        mResult.exclAdd((SDP) property);        
+        mResult.exclAdd((SDP) property);
+        PropertyReaderEntity showIf = property.getShowIfProp();
+        if(showIf != null) {
+            mResult.exclAdd((SDP) showIf);
+        }
     }
 
     protected ImMap<ObjectEntity, Expr> addObjectValues(ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) {

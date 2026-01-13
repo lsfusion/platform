@@ -16,6 +16,7 @@ import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
 import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.util.JRSwapFile;
 import net.sf.jasperreports.export.XlsReportConfiguration;
+import net.sf.jasperreports.export.pdf.FontRecipient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,9 +25,11 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.io.*;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.AttributedCharacterIterator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -802,7 +805,17 @@ public class ReportGenerator {
             case HTML:
                 return new ReportHTMLExporter();
             default:
-                return new JRPdfExporter(); // by default exporting to pdf
+                return new JRPdfExporter() {
+                    @Override
+                    protected void setFont(Map<AttributedCharacterIterator.Attribute, Object> attributes, Locale locale, boolean setFontLines, FontRecipient recipient) {
+                        try {
+                            super.setFont(attributes, locale, setFontLines, recipient);
+                        } catch (JRRuntimeException e) {
+                            //need to replace exception because it has wrong font in message
+                            throw new JRRuntimeException("SetFont failed: " + attributes.get(TextAttribute.FAMILY) + ". Cause: " + e.getMessage());
+                        }
+                    }
+                }; // by default exporting to pdf
         }
     }
 

@@ -345,7 +345,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return "(" + source + " IS NULL OR NOT " + getWhereString(set, source) + ")";
     }
 
-    public int getCount() {
+    public long getCount() {
         assert !unknown;
         return getCount(this);
     }

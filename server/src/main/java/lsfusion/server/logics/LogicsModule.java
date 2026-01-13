@@ -22,6 +22,8 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
@@ -66,7 +68,6 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
-import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
@@ -74,7 +75,6 @@ import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -109,6 +109,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -328,15 +329,15 @@ public abstract class LogicsModule {
         }
     }
     
-    protected void addModuleLAP(LAP<?, ?> lap) {
+    protected void addModuleLAP(LAP<?, ?> lap, String name, List<ResolveClassSet> signature) {
         assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
-        String name = null;
+
+        propClasses.put(lap, signature);
+
         assert getNamespace().equals(lap.getActionOrProperty().getNamespace());
         if (lap instanceof LA) {
-            name = ((LA<?>)lap).action.getName();
             putLAPToMap(namedActions, (LA) lap, name);
         } else if (lap instanceof LP) {
-            name = ((LP<?>)lap).property.getName();
             putLAPToMap(namedProperties, (LP)lap, name);
         }
         assert name != null;
@@ -360,8 +361,8 @@ public abstract class LogicsModule {
     }
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
-        propClasses.put(lp, signature);
-        addModuleLAP(lp);
+
+        addModuleLAP(lp, name, signature);
     }
 
     protected void makePropertyPublic(LP<?> lp, String name, ResolveClassSet... signature) {
@@ -774,7 +775,7 @@ public abstract class LogicsModule {
     }
 
     private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                               boolean hasWhere, Object[] params, boolean interactive) throws FormEntity.AlreadyDefined {
+                                               boolean hasWhere, Object[] params, boolean interactive) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
 
@@ -792,7 +793,7 @@ public abstract class LogicsModule {
     }
 
     protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> explicitInnerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                                                                                  PropertyInterfaceImplement<I> where, boolean interactive) throws FormEntity.AlreadyDefined {
+                                                                                  PropertyInterfaceImplement<I> where, boolean interactive) {
         // creating integration form
         IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, explicitInnerClasses, mapInterfaces, properties, propUsages,
                 where, orders, false, interactive, version);
@@ -806,7 +807,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
+                             boolean hasWhere, SelectTop<ValueClass> selectTop, boolean returnString, Object... params) {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
 
         return addJSONFormProp(caption, integrationForm, selectTop, returnString);
@@ -828,7 +829,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ValueClass> explicitInnerClasses, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
-                                        Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+                                        Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, explicitInnerClasses, propUsages, orders, hasWhere, params, false);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
@@ -843,7 +844,7 @@ public abstract class LogicsModule {
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
-                                        String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasRoot, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+                                        String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasRoot, boolean hasWhere, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
@@ -904,9 +905,9 @@ public abstract class LogicsModule {
                 readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params), localsInScope)));
     }
 
-    protected LA addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params) {
+    protected LA addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params, ValueClass returnClass, ImList<ValueClass> returnClasses) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addAction(null, new LA<>(new ListAction(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addAction(null, new LA<>(new ListAction(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)), returnClass, returnClasses)));
     }
 
     // ------------------- Try action ----------------- //
@@ -982,9 +983,9 @@ public abstract class LogicsModule {
         return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
-    protected LA addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
+    protected LA addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params, ValueClass returnClass, ImList<ValueClass> returnClasses) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addAction(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)), returnClass, returnClasses)));
     }
 
     // ------------------- For action ----------------- //
@@ -1040,20 +1041,16 @@ public abstract class LogicsModule {
         return addJoinAProp(group, caption, null, action, allServers, params);
     }
 
-    protected LA addJoinAProp(Group group, LocalizedString caption, ValueClass[] classes, LA action, Object... params) {
-        return addJoinAProp(group, caption, classes, action, false, params);
-    }
-
-    protected LA addJoinAProp(Group group, LocalizedString caption, ValueClass[] classes, LA action, boolean allServers, Object... params) {
+    protected LA addJoinAProp(Group group, LocalizedString caption, LP result, LA action, boolean allServers, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(listInterfaces, params);
-        
+
         LA allServersExternalAction = null;
         if (allServers) {
             ImList<Type> types = listInterfaces.mapListValues(propertyInterface -> propertyInterface.getChangeExpr().getSelfType());
             allServersExternalAction = new LA(new ExternalLSFAction(types, ListFact.EMPTY(), false, false));
         }
-        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements), allServersExternalAction)));
+        return addAction(group, new LA(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements), result, allServersExternalAction)));
     }
 
     // ------------------------ APPLY / CANCEL ----------------- //
@@ -1166,7 +1163,17 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
                                                              T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
-                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull) {
+        return addInputAProp(valueClass, targetProp, hasDrawOldValue, objectOldValue, orderInterfaces, contextList, contextScope,
+                contextSelector,  contextActions, customEditorFunction, notNull, null);
+    }
+
+    public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasDrawOldValue,
+                                                             T objectOldValue, ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
+                                                             FormSessionScope contextScope, InputContextSelector<T> contextSelector,
+                                                             ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
+                                                             boolean notNull, FormSelector form) {
         // adding reset action
         if (!notNull && targetProp != null) {
             contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
@@ -1180,7 +1187,8 @@ public abstract class LogicsModule {
 
             if (valueClass instanceof ConcreteCustomClass) {
                 // adding newedit action
-                contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+                contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass,
+                        targetProp, contextScope, policy -> form.getStaticForm(ThreadLocalContext.getBusinessLogics()).showNewEdit(policy)), contextActions);
             }
         }
 
@@ -1242,7 +1250,7 @@ public abstract class LogicsModule {
             return addInputAProp((CustomClass)objectClass, inputProp, false, formAction.mapObjects.get(inputObject), listInterfaces,
                     mappedList.result, scope, inputSelector,
                     mappedContextActions.result.addList(new InputContextAction<>(AppServerImage.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)),
-                    customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    customChangeFunction, notNull, form); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -1936,11 +1944,11 @@ public abstract class LogicsModule {
 
     // ---------------------- VALUE ---------------------- //
 
-    public Pair<LP, ActionObjectSelector> getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
-    public Pair<LP, ActionObjectSelector> getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
+    public LP getObjIntervalProp(FormEntity form, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
         return baseLM.getObjIntervalProp(form, objectFrom, objectTo, intervalProperty, fromIntervalProperty, toIntervalProperty);
     }
 
@@ -1992,6 +2000,11 @@ public abstract class LogicsModule {
         action.setImage(AppServerImage.DELETE);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getDeleteActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("DELETE", version); // for NEW, DELETE will set integration SID for js integration
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -2054,21 +2067,21 @@ public abstract class LogicsModule {
 
         setFormActions(action);
 
+        action.isNewEdit = true;
         action.setImage(AppServerImage.ADD);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getAddActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
 
-        if(objectEntity != null) {
-            action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                        if(entity.toDraw == null)
-                            entity.toDraw = objectEntity.groupTo;
-                    }
-                    public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                    }
-                });
-        }
-    }
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            entity.setIntegrationSID("NEW", version);  // for NEW, DELETE will set integration SID for js integration
+            if(objectEntity != null) {
+                if (entity.getNFToDraw(version) == null)
+                    entity.setToDraw(objectEntity.groupTo, form, version);
+            }
+
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
+}
 
     // ---------------------- Edit Form ---------------------- //
 
@@ -2098,6 +2111,9 @@ public abstract class LogicsModule {
         action.drawOptions.setShowChangeKey(false);
         action.drawOptions.setChangeMouse(new InputBindingEvent(new MouseInputEvent(MouseInputEvent.DBLCLK, bindingModes), null));
         action.drawOptions.setShowChangeMouse(false);
+        action.drawOptions.addProcessor((entity, form, version) -> {
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
+        });
     }
 
     public LA addProp(Action prop) {
@@ -2165,12 +2181,14 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        return baseLM.addGroupObjectProp(groupObject, prop);
+    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
+        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
+        return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
     }
 
-    public LP addValueObjectProp(ObjectEntity object) {
-        return baseLM.addValueObjectProp(object);
+    public LP addValueObjectProp(ObjectEntity object, Version version) {
+        Property<?> valueProperty = object.getNFValueProperty(version);
+        return new LP<>(valueProperty);
     }
 
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {
@@ -2641,11 +2659,23 @@ public abstract class LogicsModule {
             this.name = name;
             this.signature = signature;
         }
+
+        @Override
+        public boolean equals(Object actionResult) {
+            return actionResult instanceof LocalPropertyData && name.equals(((LocalPropertyData) actionResult).name) && signature.equals(((LocalPropertyData) actionResult).signature);
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode() * 31 + signature.hashCode();
+        }
     }
 
     protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
 
+        // need this for watch + import / export
+        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
         lcp.setExplicitClasses(data.signature);
     }
 
@@ -2657,6 +2687,11 @@ public abstract class LogicsModule {
     public List<ResolveClassSet> getLocalSignature(LP<?> lcp) {
         assert locals.containsKey(lcp);
         return locals.get(lcp).signature;
+    }
+
+    public LocalPropertyData getLocalPropertyData(LP<?> lcp) {
+        assert locals.containsKey(lcp);
+        return locals.get(lcp);
     }
 
     public Map<LP<?>, LocalPropertyData> getLocals() {

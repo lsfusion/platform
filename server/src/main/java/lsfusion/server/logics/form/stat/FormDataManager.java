@@ -15,6 +15,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -74,7 +75,7 @@ public abstract class FormDataManager {
 
     public ExportResult getExportData(FormSelectTop<Integer> selectTop) throws SQLException, SQLHandledException {
         ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
-        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
+        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> data = sourceGenerator.generate(selectTop);
         return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
     }
 
@@ -90,16 +91,16 @@ public abstract class FormDataManager {
 
         // filling titles
         List<String> titles = new ArrayList<>();
-        FormView formView = getFormEntity().getRichDesign();
-        for(PropertyDrawEntity<?> property : tableProperties)
-            titles.add(ThreadLocalContext.localize(formView.get(property).getCaption()));
+        FormView formView = getFormEntity().view;
+        for(PropertyDrawEntity<?, ?> property : tableProperties)
+            titles.add(ThreadLocalContext.localize(property.getCaption()));
 
         // filling data
         List<List<String>> rows = new ArrayList<>();
         for(ImMap<ObjectEntity, Object> row : tableData.data) {
             List<String> dataRow = new ArrayList<>();
-            for(PropertyDrawEntity<?> property : tableProperties)
-                dataRow.add(sources.properties.types.get(property).formatUI(StaticPropertyData.getProperty(sources.properties, property, row), formView.get(property).getPattern()));
+            for(PropertyDrawEntity<?, ?> property : tableProperties)
+                dataRow.add(sources.properties.types.get(property).formatUI(StaticPropertyData.getProperty(sources.properties, property, row), formView.get(property).getPatternString()));
             rows.add(dataRow);
         }
 
@@ -124,10 +125,10 @@ public abstract class FormDataManager {
 
     public static class ExportResult {
         public final Map<GroupObjectEntity, StaticKeyData> keys;
-        public final StaticPropertyData<PropertyDrawEntity> properties;
+        public final StaticPropertyData<PropertyReaderEntity> properties;
         public final StaticDataGenerator.Hierarchy hierarchy;
 
-        public ExportResult(Map<GroupObjectEntity, StaticKeyData> keys, StaticPropertyData<PropertyDrawEntity> properties, StaticDataGenerator.Hierarchy hierarchy) {
+        public ExportResult(Map<GroupObjectEntity, StaticKeyData> keys, StaticPropertyData<PropertyReaderEntity> properties, StaticDataGenerator.Hierarchy hierarchy) {
             this.keys = keys;
             this.properties = properties;
             this.hierarchy = hierarchy;

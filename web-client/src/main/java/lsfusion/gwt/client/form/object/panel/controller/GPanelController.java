@@ -89,11 +89,15 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellCaptionElementClasses(values);
 
         updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
@@ -240,6 +244,14 @@ public class GPanelController extends GPropertyController {
     public void updateChangeMouseValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyChangeMouses(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyDefaultValues(values);
 
         updatedProperties.put(property, TRUE);
     }

@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -21,7 +22,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
+public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>, ActionObjectEntity<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector<ActionObjectEntity<P>> {
 
     public ActionObjectEntity() {
         //нужен для десериализации
@@ -43,7 +44,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, PropertyObjectEntity<?> readOnly) {
-        if(entity == null || !entity.viewType.isList())
+        if(entity == null || !entity.getViewType().isList())
             return null;
         
         return this.property.getGroupChange(entity, mapping, readOnly);
@@ -83,5 +84,15 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     @Override
     public ActionObjectEntity<P> getAction(FormInstanceContext context) {
         return this;
+    }
+
+    // copy-constructor
+    public ActionObjectEntity(ActionObjectEntity<P> src, ObjectMapping mapping) {
+        super(src, mapping);
+    }
+
+    @Override
+    public ActionObjectEntity<P> get(ObjectMapping mapping) {
+        return new ActionObjectEntity<>(this, mapping);
     }
 }

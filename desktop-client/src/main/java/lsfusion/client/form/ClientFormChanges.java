@@ -153,6 +153,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CAPTIONELEMENTCLASS:
                 return clientForm.getProperty(inStream.readInt()).captionElementClassReader;
+            case PropertyReadType.FOOTERELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).footerElementClassReader;
             case PropertyReadType.CELL_FONT:
                 return clientForm.getProperty(inStream.readInt()).fontReader;
             case PropertyReadType.CELL_BACKGROUND:
@@ -211,6 +213,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).changeMouseReader;
             case PropertyReadType.TREE_HIERARCHICALCAPTION:
                 return ((ClientTreeGroup)clientForm.findComponentByID(inStream.readInt())).hierarchicalCaptionClassReader;
+            case PropertyReadType.DEFAULTVALUE:
+                return clientForm.getProperty(inStream.readInt()).defaultValueReader;
             default:
                 throw new IOException();
         }

@@ -185,7 +185,7 @@ public class PropertyPanelController {
 
     public void update(Color rowBackground, Color rowForeground) {
         boolean hide = property.hide;
-        if (!hide || property.changeKey != null) {
+        if (!hide || property.changeKey != null || property.changeMouse != null) {
 
             List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
             Pair<List<ClientGroupObjectValue>, List<ClientGroupObjectValue>> pair = getDiff(columnKeys);
@@ -244,13 +244,13 @@ public class PropertyPanelController {
         if (background == null && cellBackgroundValues != null) {
             background = (Color) cellBackgroundValues.get(columnKey);
         }
-        view.setBackgroundColor(background == null ? property.design.background : background);
+        view.setBackgroundColor(background == null ? property.background : background);
 
         Color foreground = rowForeground;
         if (foreground == null && cellForegroundValues != null) {
             foreground = (Color) cellForegroundValues.get(columnKey);
         }
-        view.setForegroundColor(foreground == null ? property.design.foreground : foreground);
+        view.setForegroundColor(foreground == null ? property.foreground : foreground);
 
         if(imageValues != null) {
             AppFileDataImage image = (AppFileDataImage) imageValues.get(columnKey);

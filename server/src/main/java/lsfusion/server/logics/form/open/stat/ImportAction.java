@@ -59,8 +59,7 @@ public abstract class ImportAction extends SystemAction {
 
     // in IMPORT operator adjustImportFormatFromFileType and addAutoImportFAProp are used, so we know the type / extension, and importFileType is in fact calculated in the adjustImportFormatFromFileType
     protected static RawFileData readRawFile(ObjectValue value, String charset) {
-        FileData fileData = readFile(value, null, charset);
-        return fileData != null ? fileData.getRawFile() : null;
+        return readRawFile(value, null, charset);
     }
 
     protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException;

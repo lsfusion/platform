@@ -6,6 +6,10 @@ public abstract class Version implements Comparable<Version> { // в TreeMap в 
         return LastVersion.LAST;
     } 
     
+    public static Version string() {
+        return current();
+    }
+
     public static Version current() {
         return LastVersion.CURRENT; // в случаях когда целостность / детерминированность гарантируется использующим алгоритмом
     }

@@ -83,6 +83,10 @@ public class ContextQueryEnvironment implements QueryEnvironment {
         }
     }
 
+    public ValueParseInterface getActiveForm() {
+        return NullValue.instance.getParse(StringClass.text);
+    }
+
     @Override
     public Locale getLocale() {
         return locale.getLocale();

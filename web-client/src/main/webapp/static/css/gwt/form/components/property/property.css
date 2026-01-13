@@ -161,7 +161,8 @@ input.prop-text-vert-center {
 }
 
 .cell-with-custom-font,
-.cell-with-custom-font.btn
+.cell-with-custom-font.btn,
+.cell-with-custom-font.form-control
 {
     font-size: var(--custom-font-size);
     font-family: var(--custom-font-family);

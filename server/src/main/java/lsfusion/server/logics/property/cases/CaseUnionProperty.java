@@ -310,7 +310,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     @IdentityStrongLazy
     public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
-        Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
+        Pair<Long, Long> resultStat = new Pair<>(0L, 0L);
         boolean multi = false;
         boolean html = false;
         MList<InputPropertyValueList> mResultValues = ListFact.mList();
@@ -335,7 +335,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 mResultValues = null;
             else if(mResultValues != null)
                 mResultValues.addAll(joinProperty.values);
-            Pair<Integer, Integer> joinStat = joinProperty.stat;
+            Pair<Long, Long> joinStat = joinProperty.stat;
             if(resultStat.second < joinStat.second)
                 resultStat = joinStat;
             multi = multi || joinProperty.multi;

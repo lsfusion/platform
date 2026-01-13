@@ -87,7 +87,7 @@
     };
     makePlotlyChart = function(reverse, traceOptions = {}, layoutOptions = {}, transpose = false) {
       return function(pivotData, opts) {
-        var colKeys, columns, d, data, datumKeys, defaults, fullAggName, hAxisTitle, i, layout, legendTitle, result, rowKeys, rows, tKeys, traceKeys;
+        var colAttrs, colKeys, columns, d, data, dataAttrs, datumKeys, defaults, fullAggName, hAxisTitle, i, layout, legendTitle, result, rowAttrs, rowKeys, rows, tAttrs, tKeys, traceDataAttrs, traceKeys;
         defaults = {
           localeStrings: {
             vs: "vs",
@@ -102,10 +102,15 @@
         opts = $.extend(true, {}, defaults, opts);
         rowKeys = pivotData.getRowKeys();
         colKeys = pivotData.getColKeys();
+        rowAttrs = pivotData.rowAttrs;
+        colAttrs = pivotData.colAttrs;
         if (reverse) {
           tKeys = rowKeys;
           rowKeys = colKeys;
           colKeys = tKeys;
+          tAttrs = rowAttrs;
+          rowAttrs = colAttrs;
+          colAttrs = tAttrs;
         }
         traceKeys = transpose ? colKeys : rowKeys;
         if (traceKeys.length === 0) {
@@ -115,6 +120,8 @@
         if (datumKeys.length === 0) {
           datumKeys.push([]);
         }
+        dataAttrs = transpose ? rowAttrs : colAttrs;
+        traceDataAttrs = transpose ? colAttrs : rowAttrs;
         fullAggName = pivotData.aggregatorName;
         if (pivotData.valAttrs.length) {
           fullAggName += `(${pivotData.valAttrs.join(", ")})`;
@@ -127,10 +134,10 @@
             datumKey = datumKeys[j];
             val = parseFloat(pivotData.getAggregator(transpose ^ reverse ? datumKey : traceKey, transpose ^ reverse ? traceKey : datumKey).value());
             values.push(isFinite(val) ? val : null);
-            labels.push(datumKey.join(' - ') || ' ');
+            labels.push(pivotData.callbacks.formatArray(dataAttrs, datumKey).join(' - ') || ' ');
           }
           trace = {
-            name: traceKey.join(' - ') || fullAggName
+            name: pivotData.callbacks.formatArray(traceDataAttrs, traceKey).join(' - ') || fullAggName
           };
           if (traceOptions.type === "pie") {
             trace.values = values;
@@ -271,8 +278,8 @@
             colKey = colKeys[k];
             v = pivotData.getAggregator(rowKey, colKey).value();
             if (v != null) {
-              data.x.push(colKey.join(' - '));
-              data.y.push(rowKey.join(' - '));
+              data.x.push(pivotData.callbacks.formatArray(pivotData.colAttrs, colKey).join(' - '));
+              data.y.push(pivotData.callbacks.formatArray(pivotData.rowAttrs, rowKey).join(' - '));
               data.text.push(v);
             }
           }

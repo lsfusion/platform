@@ -25,8 +25,7 @@ public class GTreeGroup extends GGridProperty {
     public Boolean boxed;
 
     public GToolbar toolbar;
-    
-    public boolean expandOnClick;
+
     public int hierarchicalWidth;
     public String hierarchicalCaption;
 

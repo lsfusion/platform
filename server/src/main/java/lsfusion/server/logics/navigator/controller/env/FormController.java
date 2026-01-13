@@ -4,4 +4,6 @@ public interface FormController {
 
     void changeCurrentForm(String form);
     String getCurrentForm();
+
+    String getActiveForm();
 }

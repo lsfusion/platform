@@ -2,6 +2,7 @@ package lsfusion.server.logics.action;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -16,13 +17,13 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadUtils;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -36,7 +37,6 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
@@ -44,10 +44,8 @@ import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.action.ActionClassImplement;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -64,6 +62,7 @@ import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -74,7 +73,6 @@ import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -86,28 +84,21 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
-    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
+    private ImSet<Pair<LP, LogicsModule.LocalPropertyData>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
         return debugLocals != null && !debugLocals.isEmpty();
     }
-    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
+    public void setDebugLocals(ImSet<Pair<LP, LogicsModule.LocalPropertyData>> debugLocals) {
         this.debugLocals = debugLocals;
     }
 
     public Action(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
 
-        drawOptions.addProcessor(new DefaultProcessor() {
-            @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
-                if(entity.viewType == null)
-                    entity.viewType = ClassViewType.PANEL;
-            }
-
-            @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            }
+        drawOptions.addProcessor((entity, form, version) -> {
+            if(entity.getNFViewType(version) == null)
+                entity.setViewType(ClassViewType.PANEL, form, version);
         });
     }
 
@@ -140,7 +131,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     protected ImMap<Property, Boolean> getChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
+        ActionMapImplement<?, P> compile = compile(recursiveAbstracts);
         if(compile!=null)
             return compile.action.getChangeExtProps(recursiveAbstracts);
 
@@ -189,7 +180,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
     
     protected ImMap<Property, Boolean> getUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
+        ActionMapImplement<?, P> compile = compile( recursiveAbstracts);
         if(compile!=null)
             return compile.action.getUsedExtProps(recursiveAbstracts);
 
@@ -292,7 +283,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public abstract ImSet<Action> getDependActions();
-    
+
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getInnerDebugActions(ImSet<Action<?>> recursiveAbstracts) {
         ImSet<Pair<String, Integer>> result = getRecInnerDebugActions(recursiveAbstracts);
@@ -511,7 +502,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                 return beforeResult;
         }
 
-        ActionMapImplement<?, P> compile = callCompile(true, SetFact.EMPTY());
+        ActionMapImplement<?, P> compile = execCompile(SetFact.EMPTY());
         if (compile != null)
             return compile.execute(context);
 
@@ -526,7 +517,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        callCompile(true, SetFact.EMPTY());
+        execCompile(SetFact.EMPTY());
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -768,8 +759,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
-        return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
-                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping),
+        return getGroupChange(entity.getGroupChange(GroupObjectProp.FILTER).getImplement(reversedMapping),
+                              entity.getGroupChange(GroupObjectProp.ORDER).getImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
     private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {
@@ -823,9 +814,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionCalcDepends(false).filterFn(element -> element instanceof ChangedProperty);
     }
 
-    private ActionMapImplement<?, P> callCompile(boolean forExecution, ImSet<Action<?>> recursiveAbstracts) {
-        //не включаем компиляцию экшенов при дебаге
-        if (forExecution && debugger.isEnabled() && !forceCompile()) {
+    private ActionMapImplement<?, P> execCompile(ImSet<Action<?>> recursiveAbstracts) {
+        if (debugger.isEnabled() && !forceCompile()) {
             if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(recursiveAbstracts), getChangePropsLocations())) {
                 return null;
             }
@@ -843,25 +833,22 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     @FunctionalInterface
     public interface ActionReplacer {
-        <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action);
+        <P extends PropertyInterface> ActionMapImplement<?, P> replaceAction(Action<P> action, Result<Boolean> stopReplacing);
     }
     public ActionMapImplement<?, P> replace(ActionReplacer replacer) {
         return replace(replacer, SetFact.EMPTY());
     }
     public ActionMapImplement<?, P> replace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this);
-        if(replacedAction != null)
+        Result<Boolean> stopReplacing = new Result<>(false);
+        ActionMapImplement<?, P> replacedAction = replacer.replaceAction(this, stopReplacing);
+        if(replacedAction != null || stopReplacing.result)
             return replacedAction;            
         return aspectReplace(replacer, recursiveAbstracts);
     }
     protected ActionMapImplement<?, P> aspectReplace(ActionReplacer replacer, ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
-    
-    public ImList<ActionMapImplement<?, P>> getList() {
-        return getList(SetFact.EMPTY());
-    }
-    
+
     @IdentityLazy
     public ImList<ActionMapImplement<?, P>> getList(ImSet<Action<?>> recursiveAbstracts) {
         return ListFact.singleton(getImplement());
@@ -898,6 +885,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public boolean ignoreChangeSecurityPolicy;
+    public boolean isNewEdit;
 
     @Override
     public ApplyGlobalEvent getApplyEvent() {
@@ -907,6 +895,40 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             return event;
         }
         return null;
+    }
+
+    public Pair<ValueClass, ImList<ValueClass>> getResultClasses() {
+        ImList<ValueClass> resultInterfaceClasses = null;
+        ValueClass resultValueClass = null;
+        for(Action<?> action : getDependActions()) { // it is called during parsing, so should be careful with abstracts
+            Pair<ValueClass, ImList<ValueClass>> dependClasses = action.getResultClasses();
+            if(dependClasses != null) {
+                if(resultInterfaceClasses == null) {
+                    resultInterfaceClasses = dependClasses.second;
+                    resultValueClass = dependClasses.first;
+                } else {
+                    resultValueClass = Property.op(resultValueClass, dependClasses.first, true);
+                    resultInterfaceClasses = resultInterfaceClasses.mapListValues((int index, ValueClass interfaceClass) -> Property.op(interfaceClass, dependClasses.second.get(index), true));
+                }
+            }
+        }
+
+        if(resultInterfaceClasses == null)
+            return null;
+
+        return new Pair<>(resultValueClass, resultInterfaceClasses);
+    }
+
+    @IdentityLazy
+    public ImOrderSet<SessionDataProperty> getResultProps() {
+        return getResultProps(SetFact.EMPTY()).toOrderSet();
+    }
+
+    public ImSet<SessionDataProperty> getResultProps(ImSet<Action<?>> recursiveAbstracts) {
+        ImSet<SessionDataProperty> resultProps = SetFact.EMPTY();
+        for(Action<?> action : getDependActions())
+            resultProps = resultProps.merge(action.getResultProps(recursiveAbstracts));
+        return resultProps;
     }
 
     public ImMap<Property, Boolean> getRequestChangeExtProps(int count, Function<Integer, Type> type, Function<Integer, LP> targetProp) {

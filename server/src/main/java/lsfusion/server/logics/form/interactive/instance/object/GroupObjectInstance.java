@@ -148,7 +148,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public String getIntegrationSID() {
-        return entity.getIntegrationSID();
+        return entity.getIntegrationSIDValue();
     }
 
     public ObjectInstance getObjectInstance(String objectSID) {
@@ -169,7 +169,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void setPageSize(Integer pageSize) {
-        if(entity.pageSize == null && !pageSize.equals(this.pageSize)){
+        if(entity.getPageSize() == null && !pageSize.equals(this.pageSize)){
             updated |= UPDATED_PAGESIZE;
             this.pageSize = pageSize;
         }
@@ -224,9 +224,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         for(ObjectInstance object : objects)
             object.groupTo = this;
 
-        this.viewType = entity.viewType;
+        this.viewType = entity.getViewType();
 
-        this.pageSize = entity.pageSize;
+        this.pageSize = entity.getPageSize();
 
         this.parent = parent;
         this.props = props;
@@ -973,10 +973,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(isPending != wasPending)
             changes.updateStateObjects.add(this, isPending);
     }
-    private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
-        return props.get(propType) != null;
-    }
-    
+
     private MAddMap<GroupObjectProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
     public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
@@ -999,13 +996,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 mUsedProps = SetFact.mSet();
             else {
                 if(propType.equals(GroupObjectProp.FILTER) &&
-                    !entity.isFilterExplicitlyUsed &&
+                    !entity.isFilterExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_FILTERPROP;
                     return;
                 }
                 if(propType.equals(GroupObjectProp.ORDER) &&
-                    !entity.isOrderExplicitlyUsed &&
+                    !entity.isOrderExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_ORDERPROP;
                     return;
@@ -1299,19 +1296,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                                         (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
                 keys = treeElements.mapOrderValues(MapFact::EMPTY);
 
-                ImOrderMap<ImMap<ObjectInstance, DataObject>, Integer> groupExpandables =
+                ImOrderMap<ImMap<ObjectInstance, DataObject>, Long> groupExpandables =
                         treeElements
                                 .mapOrderValues(
-                                        (Function<ImMap<Object, ObjectValue>, Integer>) value -> {
+                                        (Function<ImMap<Object, ObjectValue>, Long>) value -> {
                                             ObjectValue expandableParent = value.get("expandableParent");
                                             ObjectValue expandableDown = value.get("expandableDown");
                                             if(countTreeSubElements)
-                                                return (expandableParent instanceof DataObject ? (Integer)((DataObject) expandableParent).object : 0) +
-                                                        (expandableDown instanceof DataObject ? (Integer)((DataObject) expandableDown).object : 0);
+                                                return (expandableParent instanceof DataObject ? (Long)((DataObject) expandableParent).object : 0) +
+                                                        (expandableDown instanceof DataObject ? (Long)((DataObject) expandableDown).object : 0);
 
                                             if(expandableParent instanceof DataObject || expandableDown instanceof DataObject)
-                                                return 1;
-                                            return 0;
+                                                return 1L;
+                                            return 0L;
                                         });
 
                 result.expandables.exclAdd(this, groupExpandables.getMap());
@@ -1414,7 +1411,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(this.listViewType != null && this.listViewType.isValue() != value.isValue())
             updated |= UPDATED_VIEWTYPEVALUE;
         this.listViewType = value;
-        execEnv.change(entity.getListViewType(listViewType), new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
+
+        Property<?> listViewTypeProp = entity.getListViewType();
+        if(listViewTypeProp != null)
+            execEnv.change(listViewTypeProp, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
@@ -1439,12 +1439,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void updateOrderProperty(boolean isOrderExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        if (entity.isOrderExplicitlyUsed == isOrderExplicitlyUsed)
+        if (entity.isOrderExplicitlyUsed() == isOrderExplicitlyUsed)
             modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        if (entity.isFilterExplicitlyUsed == isFilterExplicitlyUsed)
+        if (entity.isFilterExplicitlyUsed() == isFilterExplicitlyUsed)
             modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
@@ -1695,7 +1695,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyBackground;
+            return entity.getPropertyBackground();
         }
     }
 
@@ -1719,7 +1719,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyForeground;
+            return entity.getPropertyForeground();
         }
     }
 
@@ -1738,7 +1738,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public Object getProfiledObject() {
-            return entity.propertyCustomOptions;
+            return entity.getPropertyCustomOptions();
         }
     }
 }

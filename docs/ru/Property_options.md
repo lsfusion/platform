@@ -20,16 +20,22 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
+STICKY | NOSTICKY
+syncType
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
+PATTERN patternExpr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE [compare]
+EVENTID eventId
 LAZY [WEAK | STRONG]
+imageSetting
+annotationSetting
 ```
 
 ## Описание и параметры
@@ -64,11 +70,11 @@ LAZY [WEAK | STRONG]
 
     - `LIKE`
 
-        Ключевое слово, указание которого создает вместо обычного индекса GIN индекс.
+        Ключевое слово, указание которого создает кроме обычного индекса дополнительно GIN индекс.
 
     - `MATCH`
 
-        Ключевое слово, указание которого создает вместо обычного индекса два: GIN индекс и GIN индекс с to_tsvector.
+        Ключевое слово, указание которого создает кроме обычного индекса ещё два: GIN индекс и GIN индекс с to_tsvector.
 
 
 - `NONULL [DELETE] eventClause`
@@ -113,6 +119,40 @@ LAZY [WEAK | STRONG]
 
         [Контекстно-зависимый оператор-действие](Action_operators.md#contextdependent). Оператор, описывающий выполняемое по событию действие. В качестве параметров оператора можно использовать параметры самого свойства.
 
+- `imageSetting`
+
+    Настройка иконки, которая будет отображаться для свойства. Эта опция позволяет настроить отображение иконки вручную. Может иметь один из двух видов:
+
+    - `IMAGE [imageLiteral]`
+
+        [Указание иконки](Icons.md#manual), которая будет отображаться в качестве иконки свойства. Если `imageLiteral` не указывается, то происходит переключение в режим [автоматической установки](Icons.md#auto) иконки.
+
+        - `imageLiteral`
+
+            Строковый литерал, значение которого определяет иконку.
+
+    - `NOIMAGE`
+
+        Ключевое слово, указывающее на то, что иконка свойства должна отсутствовать.
+
+- `annotationSetting`
+
+    Аннотация свойства. Начинается с @@. Поддерживаются следующие аннотации:
+
+    - `@@deprecated`
+    - `@@deprecated(since)`
+    - `@@deprecated(since,message)`
+
+       Пометка свойства как устаревшего и не рекомендованного для использования. Плагин показывает использование таких свойств перечёркнутым.
+
+      - `since`
+
+        Строковый литерал, версия платформы, начиная с которой свойство считается устаревшим.
+      
+      - `message`
+
+        Строковый литерал, сообщение, поясняющее, почему свойство помечено устаревшим.
+
 ### Блок значений по умолчанию инструкции `DESIGN`
 
 - `CHARWIDTH width [FLEX | NOFLEX]`
@@ -130,6 +170,14 @@ LAZY [WEAK | STRONG]
     - `NOFLEX`
 
         Ключевое слово. Если указано, коэффициент расширения значения свойства автоматически устанавливается равным нулю.
+
+- `PATTERN patternExpr`
+
+    Указание шаблона форматирования значения свойства. Синтаксис задания шаблона аналогичен синтаксису [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) либо [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) в зависимости от типа значения.
+    
+    - `patternExpr`
+
+      [Выражение](Expression.md), значение которого задает шаблон форматирования.
 
 - `REGEXP rexpr [message]`
 
@@ -170,57 +218,57 @@ LAZY [WEAK | STRONG]
 			
 			- `preview = previewValue`
 				Все события проверяются на выполнение дважды: сначала с isPreview=true, потом - с isPreview=false. Поддерживаемые значения `previewValue`:
-				- `AUTO`, `ONLY` -> isPreview
-				- `NO` -> !isPreview
-				- `ALL` -> true
+				- `auto`, `only` -> isPreview
+				- `no` -> !isPreview
+				- `all` -> true
 				
 			- `dialog = dialogValue`
 				Проверка, выполнять ли `CHANGEKEY` в диалоговом окне. Поддерживаемые значения `dialogValue`:
-				- `AUTO`, `ALL` -> true
-				- `ONLY` -> isDialog
-				- `NO` -> !isDialog
+				- `auto`, `all` -> true
+				- `only` -> isDialog
+				- `no` -> !isDialog
 				
 			- `window = windowValue`
 				Проверка, выполнять ли `CHANGEKEY` в модальном окне. Поддерживаемые значения `windowValue`:
-				- `AUTO`, `ALL` -> true
-				- `ONLY` -> isWindow
-				- `NO` -> !isWindow	
+				- `auto`, `all` -> true
+				- `only` -> isWindow
+				- `no` -> !isWindow	
 			
 			- `group = groupValue`
 				Проверка, совпадает ли группа объектов. Поддерживаемые значения `groupValue`:
-				- `AUTO`, `ALL` -> true
-				- `ONLY` -> equalGroup
-				- `NO` -> !equalGroup
+				- `auto`, `all` -> true
+				- `only` -> equalGroup
+				- `no` -> !equalGroup
 			
 			- `editing = editingValue`
 				Проверка, выполнять ли `CHANGEKEY` в режиме редактирования свойства. Поддерживаемые значения `editingValue`:
-				- `AUTO` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
-				- `ALL` -> true
-				- `ONLY` -> isEditing
-				- `NO` -> !isEditing
+				- `auto` -> !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())))
+				- `all` -> true
+				- `only` -> isEditing
+				- `no` -> !isEditing
 				
 			- `showing = showingValue`
-				Проверка, показывается ли в данный момент свойство на форме. Поддерживаемые значения `showingValue`:
-				- `AUTO`, `ONLY` -> isShowing
-				- `ALL` -> true
-				- `NO` -> !isShowing
+				Проверка, показывается ли в данный момент свойство на форме (для свойств, скрытых через `hide` в дизайне). Поддерживаемые значения `showingValue`:
+				- `auto`, `only` -> isShowing
+				- `all` -> true
+				- `no` -> !isShowing
 				
 			- `panel = panelValue`
 				Проверка, находится ли свойство в панели. Поддерживаемые значения `panelValue`:
-				- `AUTO` -> !isMouse || !isPanel
-				- `ALL` -> true
-				- `ONLY` -> isPanel
-				- `NO` -> !isPanel	
+				- `auto` -> !isMouse || !isPanel
+				- `all` -> true
+				- `only` -> isPanel
+				- `no` -> !isPanel	
 		
 			- `cell = cellValue`
 				Проверка, находится ли свойство в таблице. Поддерживаемые значения `cellValue`:
-				- `AUTO` -> !isMouse || isCell
-				- `ALL` -> true
-				- `ONLY` -> isCell
-				- `NO` -> !isCell
+				- `auto` -> !isMouse || isCell
+				- `all` -> true
+				- `only` -> isCell
+				- `no` -> !isCell
 
 		
-			Для всех опций кроме `priority` значением по умолчанию является `AUTO`.	
+			Для всех опций кроме `priority` значением по умолчанию является `auto`.	
 				
 
     - `SHOW`
@@ -256,6 +304,18 @@ LAZY [WEAK | STRONG]
 
         Ключевое слово, при указании которого комбинация клавиш мыши не будет отображаться в заголовке свойства. 		
 
+- `STICKY` | `NOSTICKY`
+
+  Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
+
+- `syncType`
+
+  Определяет, включены ли для свойства асинхронные действия:
+
+    - `WAIT` - асинхронные действия выключены.
+    - `NOWAIT` - асинхронные действия включены. Это значение используется по умолчанию.
+
+
 - `DEFAULTCOMPARE [compare]`
 
     Указание для свойства типа [фильтра по умолчанию](Interactive_view.md#userfilters).
@@ -263,6 +323,14 @@ LAZY [WEAK | STRONG]
     - `compare`
 
         Тип фильтра по умолчанию. [Строковый литерал](Literals.md#strliteral). Может принимать следующие значения: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. По умолчанию принимает значение `=` для всех типов данных кроме строковых регистронезависимых, для которых принимает значение `CONTAINS`. При включенной настройке `System.defaultCompareForStringContains` по умолчанию принимает значение `CONTAINS` для всех строковых данных независимо от регистрозависимости. Может быть переопределено в инструкции `DESIGN`.
+
+- `EVENTID eventId`
+
+  Указание для свойства специального режима обработки ввода. 
+  	
+    - `eventId`
+        
+        Строковый литерал. На данный момент поддерживается только значение `SCANNER`. Включает специальный режим обработки нажатий клавиш для выявления ввода GS (group separator). 
 
 - `LAZY [WEAK | STRONG]`
 

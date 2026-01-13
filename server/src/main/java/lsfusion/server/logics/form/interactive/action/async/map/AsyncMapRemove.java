@@ -49,9 +49,9 @@ public class AsyncMapRemove<T extends PropertyInterface> extends AsyncMapFormExe
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?, ?> drawProperty, GroupObjectEntity toDraw) {
         ObjectEntity object;
-        if((object = mapObjects.get(propertyInterface)) != null && object.groupTo.isSimpleList())
+        if ((object = mapObjects.get(propertyInterface)) != null && object.groupTo.isSimpleList())
             return new AsyncAddRemove(object, false);
         return null;
     }

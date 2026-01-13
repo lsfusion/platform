@@ -368,6 +368,24 @@ public class MapFact {
         return (AddValue<K, V>) keep;
     }
 
+    private final static AddValue<Object, Object> nullOrSame = new SymmAddValue<Object, Object>() {
+        public Object addValue(Object key, Object prevValue, Object newValue) {
+            assert prevValue == null || prevValue.equals(newValue);
+            return newValue;
+        }
+
+        public boolean reversed() {
+            return false;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            throw new UnsupportedOperationException();
+        }
+    };
+    public static <K, V> AddValue<K, V> nullOrSame() {
+        return (AddValue<K, V>) nullOrSame;
+    }
+
     private final static AddValue<Object, Object> override = new SimpleAddValue<Object, Object>() {
         public Object addValue(Object key, Object prevValue, Object newValue) {
             return newValue;
@@ -384,14 +402,14 @@ public class MapFact {
     public static <K, V> AddValue<K, V> override() {
         return (AddValue<K, V>) override;
     }
-    private final static AddValue<Object, Integer> max = new SymmAddValue<Object, Integer>() {
+    private final static AddValue<Object, Long> max = new SymmAddValue<Object, Long>() {
         @Override
-        public Integer addValue(Object key, Integer prevValue, Integer newValue) {
+        public Long addValue(Object key, Long prevValue, Long newValue) {
             return BaseUtils.max(prevValue, newValue);
         }
     };            
-    public static <K> AddValue<K, Integer> max() {
-        return (AddValue<K, Integer>) max;
+    public static <K> AddValue<K, Long> max() {
+        return (AddValue<K, Long>) max;
     }
     
     private final static AddValue<Object, Boolean> or = new SymmAddValue<Object, Boolean>() {

@@ -10,7 +10,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -63,7 +63,7 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, VirtualObject>> getForm(BaseLogicsModule LM, DataSession session, ImMap<VirtualObject, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
+    public Pair<FormEntity, ImRevMap<ObjectEntity, VirtualObject>> getForm(BusinessLogics BL, DataSession session, ImMap<VirtualObject, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         assert mapObjectValues.isEmpty() || mapObjectValues.singleKey() == virtualObject;
 
         ObjectValue concreteObject = mapObjectValues.isEmpty() ? NullValue.instance : mapObjectValues.singleValue();
@@ -74,29 +74,30 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
                 concreteCustomClass = (ConcreteCustomClass) concreteClass;
         }
 
-        ClassFormEntity formEntity = getForm(LM, concreteCustomClass);
+        ClassFormEntity formEntity = getForm(BL, concreteCustomClass);
         if(formEntity == null)
             return null;
-        
-        return new Pair<>(formEntity.form, MapFact.singletonRev(formEntity.object, virtualObject));
+
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm = formEntity.form.getForm(BL, session, MapFact.singleton(formEntity.object, concreteObject));
+        return new Pair<>(getForm.first, MapFact.singletonRev(getForm.second.reverse().get(formEntity.object), virtualObject));
     }
 
     @Override
-    public FormEntity getStaticForm(BaseLogicsModule LM, CustomClass customClass) {
+    public FormEntity getStaticForm(BusinessLogics BL, CustomClass customClass) {
         if(customClass == null)
-            return getStaticForm(LM);
+            return getStaticForm(BL);
 
-        ClassFormEntity form = getForm(LM, customClass);
+        ClassFormEntity form = getForm(BL, customClass);
         if(form != null)
             return form.form;
         return null;
     }
 
-    public ClassFormEntity getForm(BaseLogicsModule LM, CustomClass customClass) {
+    public ClassFormEntity getForm(BusinessLogics BL, CustomClass customClass) {
         if(edit)
-            return cls.getEditForm(LM, customClass);
+            return cls.getEditForm(BL.LM, customClass);
         else
-            return cls.getDialogForm(LM);
+            return cls.getDialogForm(BL.LM);
     }
 
     @Override

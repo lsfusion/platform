@@ -95,7 +95,7 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         return children.immutable();
     }
 
-    public int getCount() {
+    public long getCount() {
         return OrObjectClassSet.getCount(this);
     }
 

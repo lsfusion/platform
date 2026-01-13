@@ -10,6 +10,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
+import lsfusion.server.physics.admin.authentication.property.ActiveFormProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -124,6 +125,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP columnSortPropertyDraw;
     public LP columnAscendingSortPropertyDrawCustomUser;
     public LP columnAscendingSortPropertyDraw;
+    public LP inGridPropertyDrawCustomUser;
+    public LP inGridPropertyDraw;
     public LP hasUserPreferencesGroupObject;
     public LP hasUserPreferencesGroupObjectCustomUser;
     public LP hasUserPreferencesOverrideGroupObjectCustomUser;
@@ -205,6 +208,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass propertyDrawSIDClass = StringClass.get(100);
 
     public LP currentForm;
+    public LP activeForm;
 
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Reflection.lsf");
@@ -233,8 +237,11 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentForm = addProperty(null, new LP<>(new CurrentFormProperty(form)));
+        currentForm = addProperty(null, new LP<>(new CurrentFormProperty(formCanonicalNameClass)));
         makePropertyPublic(currentForm, "currentForm");
+
+        activeForm = addProperty(null, new LP<>(new ActiveFormProperty()));
+        makePropertyPublic(activeForm, "activeForm");
 
         super.initMainLogic();
 
@@ -347,6 +354,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         columnAscendingSortPropertyDrawCustomUser = findProperty("columnAscendingSort[PropertyDraw,CustomUser]");
         columnAscendingSortPropertyDraw = findProperty("columnAscendingSort[PropertyDraw]");
+
+        inGridPropertyDraw = findProperty("inGrid[PropertyDraw]");
+        inGridPropertyDrawCustomUser = findProperty("inGrid[PropertyDraw,CustomUser]");
 
         hasUserPreferencesGroupObjectCustomUser = findProperty("hasUserPreferences[GroupObject,CustomUser]");
         hasUserPreferencesGroupObject = findProperty("hasUserPreferences[GroupObject]");

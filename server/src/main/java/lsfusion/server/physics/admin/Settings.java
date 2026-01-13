@@ -2009,6 +2009,16 @@ public class Settings implements Cloneable {
         this.updateStatisticsLimit = updateStatisticsLimit;
     }
 
+    private boolean deleteLocalNullChanges = true;
+
+    public boolean isDeleteLocalNullChanges() {
+        return deleteLocalNullChanges;
+    }
+
+    public void setDeleteLocalNullChanges(boolean deleteLocalNullChanges) {
+        this.deleteLocalNullChanges = deleteLocalNullChanges;
+    }
+
     private int maxRecursionStatsIterations = 3;
 
     public int getMaxRecursionStatsIterations() {
@@ -2218,6 +2228,8 @@ public class Settings implements Cloneable {
 
     private int periodProcessDump = 60;
 
+    private int readSQLServerCpuTimePeriod = 5; // in seconds
+
     public int getQueryLengthAverageMax() {
         return queryLengthAverageMax;
     }
@@ -2316,6 +2328,47 @@ public class Settings implements Cloneable {
         this.periodRestartConnections = periodRestartConnections;
     }
 
+    private double baseConnWeight = 0.3;   // minimum connection weight when CPU is idle
+    private double extraConnWeight = 0.9;  // additional weight as CPU approaches 100%
+    private double lagSensitivity  = 2.0;  // how strongly lag influences the cost
+    private double lagScale        = 2.0;  // "acceptable" lag in seconds (saturates after this)
+    private double masterPenalty   = 0.10; // virtual load added to master
+
+    public double getBaseConnWeight() {
+        return baseConnWeight;
+    }
+    public void setBaseConnWeight(double baseConnWeight) {
+        this.baseConnWeight = baseConnWeight;
+    }
+
+    public double getExtraConnWeight() {
+        return extraConnWeight;
+    }
+    public void setExtraConnWeight(double extraConnWeight) {
+        this.extraConnWeight = extraConnWeight;
+    }
+
+    public double getLagSensitivity() {
+        return lagSensitivity;
+    }
+    public void setLagSensitivity(double lagSensitivity) {
+        this.lagSensitivity = lagSensitivity;
+    }
+
+    public double getLagScale() {
+        return lagScale;
+    }
+    public void setLagScale(double lagScale) {
+        this.lagScale = lagScale;
+    }
+
+    public double getMasterPenalty() {
+        return masterPenalty;
+    }
+    public void setMasterPenalty(double masterPenalty) {
+        this.masterPenalty = masterPenalty;
+    }
+
     public int getPeriodBalanceConnections() {
         return periodBalanceConnections;
     }
@@ -2338,6 +2391,14 @@ public class Settings implements Cloneable {
 
     public void setPeriodProcessDump(int periodProcessDump) {
         this.periodProcessDump = periodProcessDump;
+    }
+
+    public int getReadSQLServerCpuTimePeriod() {
+        return readSQLServerCpuTimePeriod;
+    }
+
+    public void setReadSQLServerCpuTimePeriod(int readSQLServerCpuTimePeriod) {
+        this.readSQLServerCpuTimePeriod = readSQLServerCpuTimePeriod;
     }
 
     public int getMaxUsedTempRowsAverageMax() {
@@ -3234,13 +3295,13 @@ public class Settings implements Cloneable {
     public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
         this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
     }
-    
+
     private boolean userFiltersManualApplyMode = false;
-    
+
     public boolean isUserFiltersManualApplyMode() {
         return userFiltersManualApplyMode;
     }
-    
+
     public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
@@ -3528,18 +3589,6 @@ public class Settings implements Cloneable {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
 
-    @Deprecated
-    //todo: backward compatibility, will be removed in v7
-    public boolean externalTCPWaitForByteMinusOne = false;
-
-    public boolean isExternalTCPWaitForByteMinusOne() {
-        return externalTCPWaitForByteMinusOne;
-    }
-
-    public void setExternalTCPWaitForByteMinusOne(boolean externalTCPWaitForByteMinusOne) {
-        this.externalTCPWaitForByteMinusOne = externalTCPWaitForByteMinusOne;
-    }
-
     //used only in desktop-client
     public boolean useDefaultPrinterInPrintIfNotSpecified = false;
 
@@ -3591,5 +3640,37 @@ public class Settings implements Cloneable {
 
     public void setMajorStatChangeDegree(int majorStatChangeDegree) {
         this.majorStatChangeDegree = majorStatChangeDegree;
+    }
+
+    //backward compatibility between 6 and 7 versions
+    public boolean restrictLongValuesInStat = true;
+
+    public boolean isRestrictLongValuesInStat() {
+        return restrictLongValuesInStat;
+    }
+
+    public void setRestrictLongValuesInStat(boolean restrictLongValuesInStat) {
+        this.restrictLongValuesInStat = restrictLongValuesInStat;
+    }
+
+    public boolean hideDesktopClientLink = true;
+
+    public boolean isHideDesktopClientLink() {
+        return hideDesktopClientLink;
+    }
+
+    public void setHideDesktopClientLink(boolean hideDesktopClientLink) {
+        this.hideDesktopClientLink = hideDesktopClientLink;
+    }
+
+    //option for DBFWriter: write charset to 29 header byte
+    public boolean exportDBFLanguageDriverName = false;
+
+    public boolean isExportDBFLanguageDriverName() {
+        return exportDBFLanguageDriverName;
+    }
+
+    public void setExportDBFLanguageDriverName(boolean exportDBFLanguageDriverName) {
+        this.exportDBFLanguageDriverName = exportDBFLanguageDriverName;
     }
 }
