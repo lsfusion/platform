@@ -319,7 +319,7 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
     - `compare`
 
-        Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
+        Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `=*`, `=@`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `=@` or `=*` (if `System.defaultCompareForStringContains` is enabled, then except all string types regardless of case sensitivity). Default value `=@` or `=*` depends on `System.defaultCompareSearchInsteadOfContains` (true - `=@`, false - `=*`, true is by default). Can be overridden in the `DESIGN` statement.
 
 - `EVENTID eventId`
 
