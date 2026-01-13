@@ -551,16 +551,61 @@ formFormsList
 @init {
     boolean extend = false;
     String form = null;
+    Map<String, String> objectsMapping = null;
+    Map<String, String> propertiesMapping = null;
+    Map<String, String> filterGroupsMapping = null;
+    Map<String, String> componentsMapping = null;
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingForm(extend, form, self.getVersion());
+		$formStatement::form.addScriptingForm(extend, form, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, self.getVersion());
 	}
 }
 	:	('EXTEND' { extend = true; } )?
 	    'FORM'
 		formName=compoundID { form = $formName.sid; }
+
+		('('
+		    (
+		        obj = formMappingObjects { objectsMapping = obj; }
+		    |   props = formMappingProperties { propertiesMapping = props; }
+		    |   filterGroups = formMappingFilterGroups { filterGroupsMapping = filterGroups; }
+		    |   components = formMappingComponents { componentsMapping = components; }
+		    )*
+		 ')')?
 	;
+
+formMappingObjects returns [Map<String, String> mapping = new OrderedMap<String, String>()]
+@after {
+}
+    : 'OBJECTS' m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    ;
+
+formMappingProperties returns [Map<String, String> mapping = new OrderedMap<String, String>()]
+@after {
+}
+    : 'PROPERTIES' m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    ;
+
+formMappingFilterGroups returns [Map<String, String> mapping = new OrderedMap<String, String>()]
+@after {
+}
+    : 'FILTERGROUPS' m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    ;
+
+formMappingComponents returns [Map<String, String> mapping = new OrderedMap<String, String>()]
+@after {
+}
+    : 'DESIGN' m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    ;
+
+formMapping returns [String key, String value]
+    : k = ID { $key = $k.text; } EQ v = ID { $value = $v.text; }
+    ;
 
 formGroupObjectsList
 @init {
