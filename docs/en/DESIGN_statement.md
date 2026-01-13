@@ -186,7 +186,7 @@ To access design components, you can use their names or address property compone
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`noSort` |No sorting|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`defaultCompare`|Default filter. Allowed values: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `CONTAINS`, `LIKE`.|String literal|`CONTAINS`|`GREATER`|
+|`defaultCompare`|Default filter. Allowed values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `=*` (contains), `=@` (fuzzy search).|String literal|`=*`|`>`|
 |`valueSize`|Width and height of the property value cell in pixels|A pair of Integer literals (width, height)|`(-1, -1)`|`(100, 20)`|
 |`valueHeight`|Height of the property value cell in pixels|Integer literal|depends on the property|`100`|
 |`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
