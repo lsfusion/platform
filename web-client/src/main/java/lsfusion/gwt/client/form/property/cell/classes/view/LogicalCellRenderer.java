@@ -25,6 +25,7 @@ public class LogicalCellRenderer extends InputBasedCellRenderer {
             Boolean value3s = get3sBooleanValue(value);
             newValue = value3s != null && value3s;
             setIndeterminate(input, value3s == null);
+            setDefaultIndeterminate(input, value3s == null);
         } else
             newValue = getBooleanValue(value);
 
@@ -34,11 +35,20 @@ public class LogicalCellRenderer extends InputBasedCellRenderer {
         return false;
     }
 
-    private native void setIndeterminate(InputElement element, boolean indeterminate) /*-{
+    private static native void setIndeterminate(InputElement element, boolean indeterminate) /*-{
         element.indeterminate = indeterminate;
     }-*/;
 
+    private static native void setDefaultIndeterminate(InputElement element, boolean indeterminate) /*-{
+        element.defaultIndeterminate = indeterminate;
+    }-*/;
+
+    private static native boolean isDefaultIndeterminate(InputElement element) /*-{
+        return element.defaultIndeterminate;
+    }-*/;
+
     public static void cancelChecked(InputElement input) {
+        setIndeterminate(input, isDefaultIndeterminate(input));
         input.setChecked(input.isDefaultChecked());
     }
 
