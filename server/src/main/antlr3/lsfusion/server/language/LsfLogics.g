@@ -578,29 +578,29 @@ formFormsList
 formMappingObjects returns [Map<String, String> mapping = new OrderedMap<String, String>()]
 @after {
 }
-    : 'OBJECTS' m = formMapping { mapping.put($m.key, $m.value); }
-                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    : 'OBJECTS' (m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*)?
     ;
 
 formMappingProperties returns [Map<String, String> mapping = new OrderedMap<String, String>()]
 @after {
 }
-    : 'PROPERTIES' m = formMapping { mapping.put($m.key, $m.value); }
-                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    : 'PROPERTIES' (m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*)?
     ;
 
 formMappingFilterGroups returns [Map<String, String> mapping = new OrderedMap<String, String>()]
 @after {
 }
-    : 'FILTERGROUPS' m = formMapping { mapping.put($m.key, $m.value); }
-                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    : 'FILTERGROUPS' (m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*)?
     ;
 
 formMappingComponents returns [Map<String, String> mapping = new OrderedMap<String, String>()]
 @after {
 }
-    : 'DESIGN' m = formMapping { mapping.put($m.key, $m.value); }
-                (',' m = formMapping { mapping.put($m.key, $m.value); })*
+    : 'DESIGN' (m = formMapping { mapping.put($m.key, $m.value); }
+                (',' m = formMapping { mapping.put($m.key, $m.value); })*)?
     ;
 
 formMapping returns [String key, String value]

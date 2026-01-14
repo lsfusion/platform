@@ -78,12 +78,16 @@ public class ObjectMapping {
             }
         }
 
-        if(extend) {
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        if (extend) {
+            if (objectsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
 
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+            if (propertiesMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
+            if (filterGroupsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+            if (componentsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
         }
 
         return mImplicitAdd.immutableRev();
