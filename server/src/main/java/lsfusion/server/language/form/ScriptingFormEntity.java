@@ -932,8 +932,12 @@ public class ScriptingFormEntity {
     }
 
     public static List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(ScriptingLogicsModule LM, FormEntity form, Version version) {
+        return getTypedObjectsNames(LM, form, version, false);
+    }
+
+    public static List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(ScriptingLogicsModule LM, FormEntity form, Version version, boolean allowRead) {
         List<ValueClass> classes = new ArrayList<>();
-        List<String> objNames = form.getNFObjectsNamesAndClasses(classes, version);
+        List<String> objNames = form.getNFObjectsNamesAndClasses(classes, version, allowRead);
         List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<>();
         for (int i = 0; i < classes.size(); ++i) {
             typedObjects.add(LM.new TypedParameter(classes.get(i), objNames.get(i)));

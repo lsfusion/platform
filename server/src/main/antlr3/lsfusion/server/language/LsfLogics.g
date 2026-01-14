@@ -3460,7 +3460,7 @@ dialogActionDefinitionBody[List<TypedParameter> context, ActionStatementContext 
 	:	'DIALOG' mf=mappedForm[context, newContext, actions, false]
 	    {
             if(inMainParseState())
-        	    objectsContext = self.getTypedObjectsNames($mf.mapped); 
+        	    objectsContext = self.getTypedObjectsNames($mf.mapped);
         }
 		(   cf = contextFiltersClause[context, actions, objectsContext] { contextFilters.addAll($cf.contextFilters); }
 		|   window = windowTypeLiteral { windowType = $window.val; }

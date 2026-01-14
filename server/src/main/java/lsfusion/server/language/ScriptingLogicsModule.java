@@ -430,9 +430,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ImOrderSet<ObjectEntity> getMappingObjectsArray(FormEntity form, ImOrderSet<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return getMappingObjectsArray(form, mapping, false);
+    }
+    public ImOrderSet<ObjectEntity> getMappingObjectsArray(FormEntity form, ImOrderSet<String> mapping, boolean allowRead) throws ScriptingErrorLog.SemanticErrorException {
         MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet(mapping.size()); // throwing exception
         for (int i = 0; i < mapping.size(); i++) {
-            mObjects.exclAdd(getNFObjectEntityByName(form, mapping.get(i)));
+            mObjects.exclAdd(getNFObjectEntityByName(form, mapping.get(i), allowRead));
         }
         return mObjects.immutableOrder();
     }
@@ -455,7 +458,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ObjectEntity getNFObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity obj = form.getNFObject(name, getVersion());
+        return getNFObjectEntityByName(form, name, false);
+    }
+
+    public ObjectEntity getNFObjectEntityByName(FormEntity form, String name, boolean allowRead) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity obj = form.getNFObject(name, getVersion(), allowRead);
         if (obj == null) {
             getErrLog().emitObjectNotFoundError(parser, name);
         }
@@ -4021,7 +4028,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(staticForm == null) // can be only mapped objects
             return Collections.singletonList(new TypedParameter(mapped.form.getBaseClass(mapped.objects.single()),"object"));
 
-        return ScriptingFormEntity.getTypedObjectsNames(this, staticForm, getVersion());
+        return ScriptingFormEntity.getTypedObjectsNames(this, staticForm, getVersion(), true);
     }
 
     private <O extends ObjectSelector> ImOrderSet<O> getMappingObjectsArray(MappedForm<O> mapped, List<TypedParameter> objectsContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -4029,7 +4036,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(staticForm == null) // can be only mapped objects
             return mapped.objects;
         
-        return BaseUtils.immutableCast(getMappingObjectsArray(staticForm, SetFact.fromJavaOrderSet(objectsContext).mapOrderSetValues(value -> value.paramName)));
+        return BaseUtils.immutableCast(getMappingObjectsArray(staticForm, SetFact.fromJavaOrderSet(objectsContext).mapOrderSetValues(value -> value.paramName), true));
     }
     
     // Constraint Change Context Filter
