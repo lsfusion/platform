@@ -1028,9 +1028,14 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return model.isCellFocusable(row, col);
     }
 
+    public boolean mousePressed = false;
+
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        if (!supressDragging && (isInternalNavigating || isCellFocusable(rowIndex, columnIndex))) {
+        boolean cellFocusable = isCellFocusable(rowIndex, columnIndex);
+        if (mousePressed && !cellFocusable)
+            columnIndex = getSelectedColumn();
+        if (!supressDragging && (isInternalNavigating || mousePressed || cellFocusable)) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 if (rowIndex >= getRowCount()) {
                     changeSelection(getRowCount() - 1, columnIndex, toggle, extend);

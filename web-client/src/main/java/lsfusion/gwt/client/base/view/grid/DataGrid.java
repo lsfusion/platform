@@ -628,10 +628,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // Increment the keyboard selected column.
         int selectedColumn = getSelectedColumn();
+        int newSelectedColumn = -1;
         if(selectedColumn == -1)
-            setSelectedColumn(columns.size() - 1);
+            newSelectedColumn = columns.size() - 1;
         else if (beforeIndex <= selectedColumn)
-            setSelectedColumn(selectedColumn + 1);
+            newSelectedColumn = selectedColumn + 1;
+
+        if(newSelectedColumn != -1 && isFocusable(newSelectedColumn))
+            setSelectedColumn(newSelectedColumn);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {
@@ -852,8 +856,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         else if (column >= columnCount)
             column = columnCount - 1;
 
-        assert isFocusable(column);
-        if (setSelectedColumn(column) && columnChangedHandler != null)
+        //assert isFocusable(column); //changeRow call changeSelectedColumn even if column is not focusable
+        if (isFocusable(column) && setSelectedColumn(column) && columnChangedHandler != null)
             columnChangedHandler.run();
     }
 
