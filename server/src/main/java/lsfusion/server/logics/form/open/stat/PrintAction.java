@@ -136,15 +136,18 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 if(exportFile != null)
                     writeResult(exportFile, staticType, context, report, ExternalUtils.resultCharset.toString());
                 else {
-                    context.requestUserInteraction(new ReportClientAction(autoPrint, autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
+                    context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
                 }
             } else {
-                String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
                 List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
-                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), autoPrint, syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
+                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(autoPrint, customReportPathList, readFormCaption(formReportManager), form.getSID(), syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
                 formPageCount.change(pageCount, context);
             }
         }
+    }
+
+    private String readFormCaption(StaticFormReportManager formReportManager) throws SQLException, SQLHandledException {
+        return staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
     }
 
     @Override

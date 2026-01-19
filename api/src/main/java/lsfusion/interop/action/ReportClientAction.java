@@ -29,14 +29,15 @@ public class ReportClientAction implements ClientAction {
     public String sheetName;
     public boolean jasperReportsIgnorePageMargins;
 
-    public ReportClientAction(boolean autoPrint, Integer autoPrintTimeout, FileData fileData) {
+    public ReportClientAction(boolean autoPrint, String formCaption, Integer autoPrintTimeout, FileData fileData) {
         this.autoPrint = autoPrint;
 
+        this.formCaption = formCaption;
         this.autoPrintTimeout = autoPrintTimeout;
         this.fileData = fileData;
     }
 
-    public ReportClientAction(List<String> reportPathList, String formCaption, String formSID, boolean autoPrint, boolean isModal, ReportGenerationData generationData,
+    public ReportClientAction(boolean autoPrint, List<String> reportPathList, String formCaption, String formSID, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
         this.autoPrint = autoPrint;
 

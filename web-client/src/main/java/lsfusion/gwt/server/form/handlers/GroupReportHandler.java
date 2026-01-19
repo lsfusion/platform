@@ -32,7 +32,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
         if(!(reportData instanceof FileData))
             reportData = ClientActionToGwtConverter.exportToFileByteArray(servlet, (ReportGenerationData) reportData, FormPrintType.XLSX, null, null, action.jasperReportsIgnorePageMargins);
 
-        return new GroupReportResult(FileUtils.exportFile((FileData) reportData));
+        return new GroupReportResult(FileUtils.exportFile((FileData) reportData, null));
     }
 
 
