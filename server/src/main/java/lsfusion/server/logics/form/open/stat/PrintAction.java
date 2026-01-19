@@ -140,7 +140,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 }
             } else {
                 List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
-                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(autoPrint, customReportPathList, readFormCaption(formReportManager), form.getSID(), syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
+                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), customReportPathList, form.getSID(), syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
                 formPageCount.change(pageCount, context);
             }
         }
