@@ -9,6 +9,7 @@ import lsfusion.client.classes.data.link.ClientImageLinkClass;
 import lsfusion.client.classes.data.link.ClientPDFLinkClass;
 import lsfusion.client.classes.data.link.ClientVideoLinkClass;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.PDFPropertyRenderer;
@@ -81,7 +82,14 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         boolean toggle = isLeftMouseButton && SwingUtils.isMenuShortcutKeyDown(e);
         boolean extend = isLeftMouseButton && e.isShiftDown();
-        table.changeSelection(pressedRow, pressedCol, toggle, extend);
+        try {
+            if (table instanceof GridTable)
+                ((GridTable) table).mousePressed = true;
+            table.changeSelection(pressedRow, pressedCol, toggle, extend);
+        } finally {
+            if (table instanceof GridTable)
+                ((GridTable) table).mousePressed = false;
+        }
 
         boolean rowHasFocus = (oldRow == pressedRow);
 
