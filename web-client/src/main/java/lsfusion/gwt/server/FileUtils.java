@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static lsfusion.gwt.client.base.GwtSharedUtils.nvl;
+
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
     public static String STATIC_CSS_RESOURCE_PATH = "static/css/"; // all files has to be prefixed with logicsName
@@ -448,9 +450,9 @@ public class FileUtils {
         return saveData.apply(null);
     }
 
-    public static String exportFile(FileData file) {
+    public static String exportFile(FileData file, String displayName) {
         try {
-            return FileUtils.saveActionFile(file.getRawFile(), file.getExtension(), "lsfReport");
+            return FileUtils.saveActionFile(file.getRawFile(), file.getExtension(), nvl(displayName, "lsfReport"));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
