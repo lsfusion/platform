@@ -213,7 +213,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             autoPrintTimeout = action.autoPrint && action.printType != FormPrintType.HTML ? fileData.getLength() / 15 : null;
         }
 
-        return new GReportAction(FileUtils.exportFile(fileData), action.autoPrint, autoPrintTimeout);
+        return new GReportAction(FileUtils.exportFile(fileData, action.formCaption), action.autoPrint, autoPrintTimeout);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
