@@ -178,7 +178,7 @@ public class WriteUtils {
             }
         }
 
-        return path + "." + extension;
+        return BaseUtils.addExtension(path, extension);
     }
 
     private static boolean isSmartExtension(String ext) {
