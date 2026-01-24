@@ -311,8 +311,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     
     public ExClassSet inferJoinValueClass(ImMap<T, ExClassSet> extContext, boolean useExtContext, InferType inferType) {
-        if(!useExtContext && inferType == InferType.resolve()) {
-            assert explicitClasses != null;
+        if(!useExtContext && inferType == InferType.resolve() && explicitClasses != null) { // now joinPropertyDefinition can be wrapped with patchExtendParams before setting explicitClasses, so we just add this check instead of assertion
             return ExClassSet.toEx(getResolveClassSet(explicitClasses));
         }
         return inferValueClass(extContext, inferType);

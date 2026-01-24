@@ -1318,7 +1318,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                                     PropertySettings ps, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateProperty(name, signature);
 
-        if(ps.isMaterialized) // it is also sort of iteration (however it breaks the invariant that materialized and not materialized should behave the same, but it is not important for now)
+        if(!(property.property instanceof StoredDataProperty) && ps.isMaterialized) // it is also sort of iteration (however it breaks the invariant that materialized and not materialized should behave the same, but it is not important for now)
             property = patchExtendParams(property, params, debugPoint); // but if remove this patch then getOrderTableInterfaceClasses should use patchType
 
         addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
