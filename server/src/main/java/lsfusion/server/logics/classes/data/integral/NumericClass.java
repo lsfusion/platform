@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.version.NFStaticLazy;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -168,6 +170,27 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         } catch (Exception e) {
             throw ParseException.propagateWithMessage("Error parsing numeric: " + s, e);
         }
+    }
+
+    @Override
+    public String getIntervalStep() {
+        if(scale.isUnlimited()) // optimization
+            return "1";
+
+        return getIntervalValue().toPlainString();
+    }
+
+    @NotNull
+    private BigDecimal getIntervalValue() {
+        return BigDecimal.ONE.scaleByPowerOfTen(-scale.getValue());
+    }
+
+    @Override
+    public BaseExpr getIntervalStepExpr() {
+        if(scale.isUnlimited())
+            return super.getIntervalStepExpr();
+
+        return getStaticExpr(getIntervalValue());
     }
 
     @Override

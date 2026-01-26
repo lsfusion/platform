@@ -187,7 +187,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         outStream.writeByte(getTypeID());
     }
 
-    public Expr getStaticExpr(Object value) {
+    public StaticValueExpr getStaticExpr(Object value) {
         return new StaticValueExpr(value, this);
     }
 

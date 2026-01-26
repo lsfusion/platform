@@ -195,6 +195,11 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     @Override
+    protected String getIntervalString() {
+        return "1 day";
+    }
+
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

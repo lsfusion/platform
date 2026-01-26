@@ -1,22 +1,28 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.formula.conversion.*;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(
             StringTypeConversion.instance,
-            IntegralTypeConversion.sumTypeConversion
+            IntegralTypeConversion.instance,
+            TimeSeriesTypeConversion.instance
     );
 
     public final static CompoundConversionSource sumConversionSource = new CompoundConversionSource(
-            StringSumConversionSource.instance,
-            IntegralSumConversionSource.instance
+            StringConversionSource.instance,
+            IntegralConversionSource.instance,
+            TimeSeriesConversionSource.instance
     );
 
     public final static SumFormulaImpl instance = new SumFormulaImpl();
@@ -30,11 +36,11 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         return "sum";
     }
 
-    public static class IntegralSumConversionSource extends AbstractConversionSource {
-        public final static IntegralSumConversionSource instance = new IntegralSumConversionSource();
+    public static class IntegralConversionSource extends AbstractConversionSource {
+        public final static IntegralConversionSource instance = new IntegralConversionSource();
 
-        protected IntegralSumConversionSource() {
-            super(IntegralTypeConversion.sumTypeConversion);
+        protected IntegralConversionSource() {
+            super(IntegralTypeConversion.instance);
         }
 
         @Override
@@ -46,17 +52,45 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
             return null;
         }
     }
-    
+
+    public static class StringTypeConversion implements TypeConversion {
+        public final static StringTypeConversion instance = new StringTypeConversion();
+
+        @Override
+        public Type getType(Type type1, Type type2) {
+            if (type1 instanceof StringClass || type2 instanceof StringClass) {
+                if(type1 instanceof TextClass || type2 instanceof TextClass)
+                    return (type1 instanceof RichTextClass) || (type2 instanceof RichTextClass) ? RichTextClass.instance :
+                            (type1 instanceof HTMLTextClass) || (type2 instanceof HTMLTextClass) ? HTMLTextClass.instance : TextClass.instance;
+
+                boolean caseInsensitive =
+                        (type1 instanceof StringClass && ((StringClass) type1).caseInsensitive) ||
+                                (type2 instanceof StringClass && ((StringClass) type2).caseInsensitive);
+
+                boolean blankPadded =
+                        (type1 instanceof StringClass && ((StringClass) type1).blankPadded) &&
+                                (type2 instanceof StringClass && ((StringClass) type2).blankPadded);
+
+                ExtInt length1 = type1 == null ? ExtInt.ZERO : type1.getCharLength();
+                ExtInt length2 = type2 == null ? ExtInt.ZERO : type2.getCharLength();
+                ExtInt length = length1.sum(length2);
+
+                return StringClass.get(blankPadded, caseInsensitive, length);
+            }
+            return null;
+        }
+    }
+
     public static String castToVarString(String source, StringClass resultType, Type operandType, SQLSyntax syntax, TypeEnvironment typeEnv) {
         if(!(operandType instanceof StringClass) || syntax.doesNotTrimWhenSumStrings())
             source = resultType.toVar().getCast(source, syntax, typeEnv, operandType, Type.CastType.TOSTRING);
         return source;
     }
 
-    public static class StringSumConversionSource extends AbstractConversionSource {
-        public final static StringSumConversionSource instance = new StringSumConversionSource();
+    public static class StringConversionSource extends AbstractConversionSource {
+        public final static StringConversionSource instance = new StringConversionSource();
 
-        protected StringSumConversionSource() {
+        protected StringConversionSource() {
             super(StringTypeConversion.instance);
         }
 
@@ -77,4 +111,50 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
             return null;
         }
     }
+
+    public static class TimeSeriesTypeConversion implements TypeConversion {
+
+        public final static TimeSeriesTypeConversion instance = new TimeSeriesTypeConversion();
+
+        @Override
+        public Type getType(Type type1, Type type2) {
+            if (type2 instanceof TimeSeriesClass && ((TimeSeriesClass<?>) type2).hasInterval() && (type1 == null || type1 instanceof IntegralClass)) {
+                return type2;
+            }
+
+            if (type1 instanceof TimeSeriesClass && ((TimeSeriesClass<?>) type1).hasInterval() && (type2 == null || type2 instanceof IntegralClass)) {
+                return type1;
+            }
+
+            return null;
+        }
+    }
+
+    public static class TimeSeriesConversionSource extends AbstractConversionSource {
+        public final static TimeSeriesConversionSource instance = new TimeSeriesConversionSource();
+
+        protected TimeSeriesConversionSource() {
+            super(TimeSeriesTypeConversion.instance);
+        }
+
+        @Override
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
+            if(isToString)
+                return "(" + src1 + "+" + src2 + ")";
+
+            TimeSeriesClass type = (TimeSeriesClass) conversion.getType(type1, type2);
+            if (type != null) {
+                if(type2 instanceof TimeSeriesClass) {
+                    String tsrc = src1; src1 = src2; src2 = tsrc;
+                }
+
+                if(type instanceof DateClass)  // we could use interval, but we want to get date and not timestamp
+                    return "(" + src1 + " + " + IntegerClass.instance.getCast(src2, syntax, env) + ")";
+                else
+                    return "(" + src1 + " + " + type.getIntervalStepString() + " * " + src2 + ")";
+            }
+            return null;
+        }
+    }
+
 }

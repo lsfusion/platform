@@ -73,7 +73,9 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
     public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         Compare compare = getCompare();
         if (needIndexedJoin(operator2, compare.reverse(), operator1, orderTop, null) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
-                needIndexedJoin(operator1, compare, operator2, orderTop, null))
+                needIndexedJoin(operator1, compare, operator2, orderTop, null) ||
+                needKeyCompareJoin(operator2, compare.reverse(), operator1) ||
+                needKeyCompareJoin(operator1, compare, operator2))
             return getSymmetricGreaterWhere().not().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type);
 
         return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);

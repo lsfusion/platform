@@ -2,20 +2,29 @@ package lsfusion.server.data.type;
 
 import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalUtils;
+import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.table.FunctionTable;
+import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
@@ -46,6 +55,39 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException {
         statement.setNull(num.get(), getSQL(syntax));
+    }
+
+    public String getIntervalStep() {
+        return null;
+    }
+    public BaseExpr getIntervalStepExpr() {
+        assert getIntervalStep() != null;
+        return ValueExpr.COUNT;
+    }
+
+    @IdentityStrongLazy
+    public FunctionTable getIntervalTable() {
+        String intervalStep = getIntervalStep();
+        assert intervalStep != null;
+
+        String leftParam = "left";
+        String rightParam = "right";
+
+        KeyField keyField = new KeyField("value", this);
+        KeyField leftField = new KeyField(leftParam, this);
+        KeyField rightField = new KeyField(rightParam, this);
+
+        String leftValue = leftParam;
+        String rightValue = rightParam;
+        if(this instanceof TimeClass) { // DateClass is implicitily converted to timestamp
+            leftValue = "'2000-01-01'::date + " + leftValue;
+            rightValue = "'2000-01-01'::date + " + rightValue;
+        }
+        // generate_series is actually supported only for int, long, numeric, timestamp, timestamptz
+        String value = "generate_series(" + leftValue + ", " + rightValue + ", " + intervalStep + ")";
+
+        CustomFormulaSyntax genSyntax = new CustomFormulaSyntax(value, SetFact.toSet(leftParam, rightParam));
+        return new FunctionTable(genSyntax, SetFact.toOrderExclSet(keyField, leftField, rightField), MapFact.toRevMap(leftParam, leftField, rightParam, rightField), this);
     }
 
     public String getParamFunctionDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

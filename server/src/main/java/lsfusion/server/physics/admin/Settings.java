@@ -1885,6 +1885,16 @@ public class Settings implements Cloneable {
         this.packStatBackwardCompatibility = packStatBackwardCompatibility;
     }
 
+    private boolean compileKeyIntervalBackwardCompatibility = false;
+
+    public boolean isCompileKeyIntervalBackwardCompatibility() {
+        return compileKeyIntervalBackwardCompatibility;
+    }
+
+    public void setCompileKeyIntervalBackwardCompatibility(boolean compileKeyIntervalBackwardCompatibility) {
+        this.compileKeyIntervalBackwardCompatibility = compileKeyIntervalBackwardCompatibility;
+    }
+
     private boolean noTransSyncDB = false;
 
     public boolean isNoTransSyncDB() {

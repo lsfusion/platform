@@ -19,8 +19,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.join.select.ExprIndexedJoin;
+import lsfusion.server.data.expr.join.select.KeyExprCompareJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.StaticExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.query.compile.CompileSource;
@@ -31,7 +33,6 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -101,6 +102,9 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
+    public static boolean needKeyCompareJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr) {
+        return expr instanceof KeyExpr && KeyExprCompareJoin.isInterval((KeyExpr) expr, compare, valueExpr);
+    }
     public static boolean needIndexedJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr, ImOrderSet<Expr> orderTop, Result<Boolean> resultIsOrderTop) {
         if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed(compare)) { // this indexed check is not that good here (at least for "greater" compares), see Property.getSelectStat comment
             boolean isOrderTop = orderTop.contains(expr);
@@ -112,6 +116,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
                 else
                     return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окне
             }
+            if(needKeyCompareJoin(expr, compare, valueExpr))
+                return true;
             // доступ по индексированному полю, нужно для поиска интервалов в WhereJoins.getStatKeys() и соответствующего уменьшения статистики
             if(valueExpr == null)
                 return false;
@@ -130,6 +136,10 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return new ExprIndexedJoin(operator2, compare.reverse(), operator1, isOrderTop.result);
         if(needIndexedJoin(operator1, compare, operator2, orderTop, isOrderTop))
             return new ExprIndexedJoin(operator1, compare, operator2, isOrderTop.result);
+        if(needKeyCompareJoin(operator2, compare.reverse(), operator1))
+            return new KeyExprCompareJoin((KeyExpr)operator2, compare.reverse(), operator1);
+        if(needKeyCompareJoin(operator1, compare, operator2))
+            return new KeyExprCompareJoin((KeyExpr)operator1, compare, operator2);
         return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {

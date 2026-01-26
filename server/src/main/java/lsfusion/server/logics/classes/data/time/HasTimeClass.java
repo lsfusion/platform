@@ -28,4 +28,21 @@ public abstract class HasTimeClass<T extends Temporal> extends TimeSeriesClass<T
             return hasTimeSeriesClass;
         }
     }
+
+    @Override
+    public String getIntervalString() {
+        if(millisLength.isUnlimited() || millisLength.getValue() == 0)
+            return "1 second";
+
+        if(millisLength.getValue() == 1)
+            return "100 milliseconds";
+
+        if(millisLength.getValue() == 2)
+            return "10 milliseconds";
+
+        if(millisLength.getValue() == 3)
+            return "1 milliseconds";
+
+        return null;
+    }
 }

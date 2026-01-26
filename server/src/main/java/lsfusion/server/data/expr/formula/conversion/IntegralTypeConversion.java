@@ -5,7 +5,7 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public abstract class IntegralTypeConversion implements TypeConversion {
 
-    public final static IntegralTypeConversion sumTypeConversion = new IntegralTypeConversion() {
+    public final static IntegralTypeConversion instance = new IntegralTypeConversion() {
         public IntegralClass getIntegralClass(IntegralClass type1, IntegralClass type2) {
             return (IntegralClass) type1.getCompatible(type2);
         }

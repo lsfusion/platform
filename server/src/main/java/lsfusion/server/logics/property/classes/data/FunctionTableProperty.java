@@ -54,7 +54,7 @@ public class FunctionTableProperty extends FormulaProperty<FunctionTableProperty
     public FunctionTableProperty(LocalizedString caption, CustomFormulaSyntax syntax, ImOrderSet<FunctionTableProperty.Interface> interfaces, PropertyField propertyField) {
         super(caption, interfaces);
 
-        this.table = new FunctionTable(syntax, interfaces.mapOrderSetValues(Interface::getField), interfaces.getSet().mapRevKeyValues(Interface::getParamName, Interface::getField).filterFnRev(syntax.params::contains));
+        this.table = new FunctionTable(syntax, interfaces.mapOrderSetValues(Interface::getField), interfaces.getSet().mapRevKeyValues(Interface::getParamName, Interface::getField).filterFnRev(syntax.params::contains), null);
         this.field = propertyField;
 
         finalizeInit();

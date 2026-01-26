@@ -97,17 +97,22 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         ClassExprWhere classWhere = getOperandClassWhere();
 
         boolean isEquals = isEquals();
-        ConcreteClass staticClass;
-        if(operator2 instanceof VariableSingleClassExpr && operator1 instanceof StaticClassExprInterface &&
-                (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null && (isEquals || (staticClass instanceof DataClass && ((DataClass)staticClass).fixedSize())))
-            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator2, staticClass));
+        classWhere = getMeanClassWhere(operator2, operator1, isEquals, classWhere);
+        classWhere = getMeanClassWhere(operator1, operator2, isEquals, classWhere);
+
         if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
-            comps = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
-        if(operator1 instanceof VariableSingleClassExpr && operator2 instanceof StaticClassExprInterface &&
-                (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null && (isEquals || (staticClass instanceof DataClass && ((DataClass)staticClass).fixedSize())))
-            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator1,staticClass));
+            comps = SetFact.singleton(SetFact.toSet((VariableClassExpr) operator1, (VariableClassExpr) operator2));
 
         return new MeanClassWhere(classWhere, comps, isEquals);
+    }
+
+    private ClassExprWhere getMeanClassWhere(BaseExpr operator1, BaseExpr operator2, boolean isEquals, ClassExprWhere classWhere) {
+        ConcreteClass staticClass;
+        if (operator1 instanceof VariableSingleClassExpr && operator2 instanceof StaticClassExprInterface &&
+                (staticClass = ((StaticClassExprInterface) operator2).getStaticClass()) != null &&
+                (isEquals || (staticClass instanceof DataClass && ((DataClass) staticClass).fixedSize()) || BinaryWhere.needKeyCompareJoin(operator1, getCompare(), operator2)))
+            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr) operator1, staticClass));
+        return classWhere;
     }
 
     protected abstract boolean isEquals();

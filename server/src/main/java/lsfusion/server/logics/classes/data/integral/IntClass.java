@@ -7,4 +7,9 @@ public abstract class IntClass<T extends Number> extends IntegralClass<T> {
     public IntClass(LocalizedString caption) {
         super(caption);
     }
+
+    @Override
+    public String getIntervalStep() {
+        return "1";
+    }
 }

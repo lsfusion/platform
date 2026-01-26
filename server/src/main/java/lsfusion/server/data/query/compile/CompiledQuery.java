@@ -26,13 +26,13 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.WindowExpr;
 import lsfusion.server.data.expr.classes.IsClassExpr;
-import lsfusion.server.data.expr.formula.ConcatenateExpr;
-import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.base.BaseJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.query.*;
+import lsfusion.server.data.expr.join.select.KeyExprCompareJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.join.where.WhereJoins;
@@ -58,9 +58,7 @@ import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.table.Field;
-import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.Table;
+import lsfusion.server.data.table.*;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
@@ -775,6 +773,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         final WhereJoins whereJoins;
+        final Map<Table.Join, Where> genJoins;
 
         public InnerJoins getInnerJoins() {
             return whereJoins.getInnerJoins();
@@ -784,7 +783,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public boolean isInner(InnerJoin join) {
-            return getInnerJoins().containsAll(join);
+            return getInnerJoins().containsAll(join) || genJoins.containsKey(join);
         }
 
         final UpWheres<WhereJoin> upWheres;
@@ -802,6 +801,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             this.keyStat = keyStat;
             this.subcontext = subcontext;
             this.whereJoins = whereJoins;
+            this.genJoins = new HashMap<>();
             this.upWheres = upWheres;
             this.keySelect = new HashMap<>(); // сложное рекурсивное заполнение
             this.pending = new HashSet<>();
@@ -908,13 +908,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     mJoins.add(this);
             }
 
-            public abstract String getSource(DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals);
+            public abstract String getSource(String alias, DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals);
 
             public Pair<String, String> getFrom(DebugInfoWriter debugInfoWriter) {
                 Result<ImMap<K, String>> rNotLateralSources = new Result<>();
                 ImMap<K, String> lateralSources = joinSources.splitKeys(laterals, rNotLateralSources);
-                String source = getSource(debugInfoWriter, lateralSources);
-                return new Pair<>(source + " " + alias, rNotLateralSources.result.toString((key, value) -> getKeySource(key) + "=" + value, " AND "));
+                return new Pair<>(getSource(alias, debugInfoWriter, lateralSources), rNotLateralSources.result.toString((key, value) -> getKeySource(key) + "=" + value, " AND "));
             }
 
             protected abstract Where getInnerWhere(); // assert что isInner
@@ -968,6 +967,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(joinSelect!=null)
                     result = result.and(joinSelect.getInnerWhere());
             }
+            for(Where genWhere : genJoins.values())
+                result = result.and(genWhere);
             return result;
         }
 
@@ -1022,8 +1023,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 super(join);
             }
 
-            public String getSource(DebugInfoWriter debugInfoWriter, ImMap<KeyField, String> laterals) {
-                return innerJoin.getQuerySource(InnerSelect.this, laterals);
+            public String getSource(String alias, DebugInfoWriter debugInfoWriter, ImMap<KeyField, String> laterals) {
+                return innerJoin.getQuerySource(alias, InnerSelect.this, laterals);
             }
 
             protected Where getInnerWhere() {
@@ -1068,9 +1069,44 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             });
             assert pending.usedKeys.size() == pending.translate.size();
 
+            if(!this.pending.isEmpty() || keySelect.size() != keys.size()) { // optimization if there are hanging / missing keys
+                Pair<ImMap<KeyExpr, WhereJoins.IntervalSide>, ImMap<KeyExpr, WhereJoins.IntervalSide>> intervals = whereJoins.getKeyIntervals();
+                ImMap<KeyExpr, WhereJoins.IntervalSide> left = intervals.first;
+                ImMap<KeyExpr, WhereJoins.IntervalSide> right = intervals.second;
+
+                for(KeyExpr key : keys)
+                    if(this.pending.contains(key) || !keySelect.containsKey(key)) {
+                        WhereJoins.IntervalSide leftInterval = left.get(key);
+                        WhereJoins.IntervalSide rightInterval = right.get(key);
+                        if(leftInterval != null && rightInterval != null) {
+                            Type type = KeyExprCompareJoin.getIntervalValueType(key, leftInterval.valueExpr).getCompatible(
+                                        KeyExprCompareJoin.getIntervalValueType(key, rightInterval.valueExpr));
+
+                            // actually genStepExpr could be used as a third parameter, but in that case we will need interval / period class and their support in sum / subtract
+                            FunctionTable genFunction = type.getIntervalTable();
+                            BaseExpr genStepExpr = type.getIntervalStepExpr();
+
+                            BaseExpr leftExpr = leftInterval.valueExpr;
+                            if(leftInterval.compare == Compare.GREATER)
+                                leftExpr = (BaseExpr) FormulaExpr.create(SumFormulaImpl.instance, ListFact.toList(leftExpr, genStepExpr));
+                            BaseExpr rightExpr = rightInterval.valueExpr;
+                            if(rightInterval.compare == Compare.LESS)
+                                rightExpr = (BaseExpr) FormulaExpr.create(SubtractFormulaImpl.instance, ListFact.toList(rightExpr, genStepExpr));
+
+                            Table.Join genJoin = genFunction.joinAnd(genFunction.keys.mapList(ListFact.toList(key, leftExpr, rightExpr)));
+
+                            genJoins.put(genJoin, key.compare(leftInterval.valueExpr, leftInterval.compare).and(key.compare(rightInterval.valueExpr, rightInterval.compare)));
+                        }
+                    }
+
+                for(Table.Join genJoin : genJoins.keySet()) {
+                    assert isInner(genJoin);
+                    getTableSelect(genJoin);
+                }
+            }
+
             whereSelect.addAll(mImplicitJoins.immutableList().getCol());
             mJoins.addAll(mOuterOrLateralPendingJoins.immutableOrder());
-            assert this.pending.isEmpty(); // из-за висячего ключа может падать (аналогично EmptyStackException)
             mImplicitJoins = null;
             mOuterOrLateralPendingJoins = null;
 
@@ -1164,7 +1200,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
 
-            public String getSource(DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals) {
+            public String getSource(String alias, DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals) {
                 SQLQuery query = getSQLQuery(debugInfoWriter);
 
                 env.add(query.getEnv());
@@ -1173,7 +1209,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 String sqName = SQLSession.getParamName(subcontext.wrapSiblingSubQuery("sq" + mSubQueries.size()));
                 mSubQueries.exclAdd(sqName, query);
-                return sqName;
+                return sqName + " " + alias;
             }
 
             protected abstract SQLQuery getSQLQuery(DebugInfoWriter debugInfoWriter);

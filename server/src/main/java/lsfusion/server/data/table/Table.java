@@ -29,7 +29,6 @@ import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
-import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.RecursiveTable;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -181,8 +180,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public abstract String getQuerySource(CompileSource source);
-    public String getQuerySource(CompileSource source, ImMap<KeyField, String> lateralSources) {
-        return getQuerySource(source);
+    public String getQuerySource(String alias, CompileSource source, ImMap<KeyField, String> lateralSources) {
+        return getQuerySource(source) + " " + alias;
     }
     public ImSet<KeyField> getLaterals() {
         return SetFact.EMPTY();
@@ -465,8 +464,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return this;
         }
 
-        public String getQuerySource(CompileSource source, ImMap<KeyField, String> joinExprs) {
-            return Table.this.getQuerySource(source, joinExprs);
+        public String getQuerySource(String alias, CompileSource source, ImMap<KeyField, String> joinExprs) {
+            return Table.this.getQuerySource(alias, source, joinExprs);
         }
 
         public ImSet<KeyField> getLaterals() {

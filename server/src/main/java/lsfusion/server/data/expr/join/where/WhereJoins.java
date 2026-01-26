@@ -19,6 +19,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.tree.GreedyTreeBuilding;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -37,15 +38,11 @@ import lsfusion.server.data.expr.join.query.GroupJoin;
 import lsfusion.server.data.expr.join.query.LastJoin;
 import lsfusion.server.data.expr.join.query.PartitionJoin;
 import lsfusion.server.data.expr.join.query.QueryJoin;
-import lsfusion.server.data.expr.join.select.ExprIndexedJoin;
-import lsfusion.server.data.expr.join.select.ExprIntervalJoin;
-import lsfusion.server.data.expr.join.select.ExprJoin;
-import lsfusion.server.data.expr.join.select.ExprStatJoin;
+import lsfusion.server.data.expr.join.select.*;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
@@ -1608,6 +1605,42 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             join = keepIdentJoin;
         if(!mJoins.add(join))
             queue.add(join);
+    }
+
+    public static class IntervalSide {
+        public final BaseExpr valueExpr;
+        public final Compare compare;
+
+        public IntervalSide(BaseExpr valueExpr, Compare compare) {
+            this.valueExpr = valueExpr;
+            this.compare = compare;
+        }
+    }
+    public Pair<ImMap<KeyExpr, IntervalSide>, ImMap<KeyExpr, IntervalSide>> getKeyIntervals() {
+        WhereJoin[] wheres = getAdjWheres();
+
+        MMap<KeyExpr, IntervalSide> mLeft = MapFact.mMap(MapFact.override());
+        MMap<KeyExpr, IntervalSide> mRight = MapFact.mMap(MapFact.override());
+        for (WhereJoin where : wheres) {
+            KeyExpr keyExpr = null;
+            Compare compare = null;
+            BaseExpr valueExpr = null;
+            if (where instanceof ExprIndexedJoin) {
+                ExprIndexedJoin exprIndexedJoin = (ExprIndexedJoin) where;
+                keyExpr = exprIndexedJoin.getKeyExpr();
+                compare = exprIndexedJoin.compare;
+                valueExpr = exprIndexedJoin.valueExpr;
+            } else if (where instanceof KeyExprCompareJoin) {
+                KeyExprCompareJoin keyExprCompareJoin = (KeyExprCompareJoin) where;
+                keyExpr = keyExprCompareJoin.expr1;
+                compare = keyExprCompareJoin.compare;
+                valueExpr = keyExprCompareJoin.expr2;
+            }
+            if (keyExpr != null && valueExpr != null)
+                (compare == Compare.GREATER || compare == Compare.GREATER_EQUALS ? mLeft : mRight).add(keyExpr, new IntervalSide(valueExpr, compare));
+        }
+
+        return new Pair<>(mLeft.immutable(), mRight.immutable());
     }
 
     private ImList<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres, QueryJoin excludeQueryJoin) {

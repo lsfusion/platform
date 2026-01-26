@@ -21,6 +21,7 @@ import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.where.classes.data.BinaryWhere;
 import lsfusion.server.data.query.compile.where.AbstractUpWhere;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;
@@ -30,29 +31,33 @@ import lsfusion.server.physics.admin.Settings;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
-    private final Compare compare;
+    public final Compare compare;
     private final InnerJoins valueJoins;
+    public final BaseExpr valueExpr; // only for >/>= and </<= and baseExpr is KeyExpr (for generate series)
+
     private boolean not; // true только при IS NULL, вообще пока непонятно зачем вообще нужен (по идее для того чтобы разбивать OR с NULL и limit использовал индекс ??? )
     private boolean isOrderTop;
 
     @Override
     public String toString() {
-        return baseExpr + " " + compare + " " + valueJoins + " " + not;
+        return baseExpr + " " + compare + " " + valueJoins + " " + valueExpr + " " + not;
     }
 
     public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, BaseExpr compareExpr, boolean isOrderTop) {
-        this(baseExpr, compare, getInnerJoins(compareExpr), false, isOrderTop);
+        this(baseExpr, compare, getInnerJoins(compareExpr), BinaryWhere.needKeyCompareJoin(baseExpr, compare, compareExpr) ? compareExpr : null, false, isOrderTop);
         assert compareExpr.isValue();
     }
     // IS NULL конструктор
     public ExprIndexedJoin(BaseExpr baseExpr, boolean isOrderTop) {
-        this(baseExpr, Compare.LESS, InnerJoins.EMPTY, true, isOrderTop);
+        this(baseExpr, Compare.LESS, InnerJoins.EMPTY, null, true, isOrderTop);
     }
-    private ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, boolean not, boolean isOrderTop) {
+    private ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, BaseExpr valueExpr, boolean not, boolean isOrderTop) {
         super(baseExpr);
         assert !compare.equals(Compare.EQUALS);
         assert baseExpr.isIndexed(compare);
+        assert valueExpr == null || valueExpr.isValue();
         this.valueJoins = valueJoins;
+        this.valueExpr = valueExpr;
         this.compare = compare;
         this.not = not;
         this.isOrderTop = isOrderTop;
@@ -88,15 +93,15 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 //    }
 
     public int hash(HashContext hashContext) {
-        return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + valueJoins.hash(hashContext.values) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
+        return 31 * (31 * (31 * super.hash(hashContext) + compare.hashCode()) + valueJoins.hash(hashContext.values) + (valueExpr == null ? 0 : valueExpr.hash(hashContext))) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
     }
 
     protected ExprIndexedJoin translate(MapTranslate translator) {
-        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, valueJoins.translate(translator.mapValues()), not, isOrderTop);
+        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, valueJoins.translate(translator.mapValues()), valueExpr == null ? null : valueExpr.translateOuter(translator), not, isOrderTop);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && valueJoins.equals(((ExprIndexedJoin)o).valueJoins) && not == ((ExprIndexedJoin)o).not && isOrderTop == ((ExprIndexedJoin)o).isOrderTop;
+        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && valueJoins.equals(((ExprIndexedJoin)o).valueJoins) && BaseUtils.nullEquals(valueExpr, ((ExprIndexedJoin)o).valueExpr) && not == ((ExprIndexedJoin)o).not && isOrderTop == ((ExprIndexedJoin)o).isOrderTop;
     }
 
     @Override
@@ -164,10 +169,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     }
 
     public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, MList<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
-        ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(new BaseUtils.Group<BaseExpr, ExprIndexedJoin>() {
-            public BaseExpr group(ExprIndexedJoin key) {
-                return key.baseExpr;
-            }});
+        ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(key -> key.baseExpr);
 
         MMap<WhereJoin, UpWhere> mUpIntervalWheres = null;
         if(upAdjWheres != null)
@@ -195,7 +197,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
                 fixedInterval = result == IntervalType.FULL;
             }
 
-            if(fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+            if(Settings.get().isCompileKeyIntervalBackwardCompatibility() && fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
                 if(excludeQueryJoin == null || WhereJoins.givesNoKeys(excludeQueryJoin, (KeyExpr)expr) || Settings.get().isDisableExperimentalFeatures()) {
                     if(innerKeys == null)
                         innerKeys = getInnerKeys(wheres, excludeQueryJoin);

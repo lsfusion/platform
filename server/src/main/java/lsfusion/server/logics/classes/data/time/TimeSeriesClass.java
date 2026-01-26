@@ -4,7 +4,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.logics.classes.data.FormatClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -54,6 +53,24 @@ public abstract class TimeSeriesClass<T extends Temporal> extends FormatClass<T>
             return null;
 
         return getFormat(pattern).format(value);
+    }
+
+    protected abstract String getIntervalString();
+
+    public boolean hasInterval() {
+        return getIntervalStepString() != null;
+    }
+    public String getIntervalStepString() {
+        String intervalString = getIntervalString();
+        if(intervalString == null)
+            return null;
+
+        return "interval '" + intervalString + "'";
+    }
+
+        @Override
+    public String getIntervalStep() {
+        return getIntervalStepString();
     }
 
     private DateTimeFormatter getFormat(String pattern) {

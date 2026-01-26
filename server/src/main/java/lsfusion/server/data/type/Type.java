@@ -8,10 +8,12 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.table.FunctionTable;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.ConcreteClass;
@@ -98,6 +100,10 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     boolean isFlex();
 
     Type getCompatible(Type type);
+
+    String getIntervalStep();
+    BaseExpr getIntervalStepExpr();
+    FunctionTable getIntervalTable();
 
     ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException;
 
