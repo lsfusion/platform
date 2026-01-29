@@ -22,6 +22,7 @@
     </properties>
 
     <build>
+        <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <!-- compiling gwt-->
             <plugin>
@@ -100,6 +101,26 @@
                     <webappDirectory>${war.explodedDir}</webappDirectory>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.4.44.v20210927</version>
+                <configuration>
+                    <supportedPackagings>
+                        <supportedPackaging>jar</supportedPackaging>
+                        <supportedPackaging>war</supportedPackaging>
+                    </supportedPackagings>
+                    <webApp>
+                        <contextPath>/</contextPath>
+                        <resourceBases>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                            <resourceBase>${war.explodedDir}</resourceBase>
+                        </resourceBases>
+                    </webApp>
+                    <stopKey>stop</stopKey>
+                    <stopPort>9999</stopPort>
+                </configuration>
+            </plugin>
             <!-- installing and uploading war -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -155,7 +176,7 @@
 
     <profiles>
         <profile>
-            <!-- for installing locally on tomcat-->
+            <!-- for installing locally (with one permutation for faster compilation) -->
             <id>gwt-dev</id>
             <build>
                 <plugins>
@@ -163,9 +184,10 @@
                         <groupId>net.ltgt.gwt.maven</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <configuration>
-                            <moduleName>lsfusion.gwt.main</moduleName>
-                            <draftCompile>false</draftCompile>
-                            <optimize>1</optimize>
+                            <moduleName>lsfusion.gwt.debug</moduleName>
+                            <forceCompilation>false</forceCompilation>
+                            <draftCompile>true</draftCompile>
+                            <optimize>0</optimize>
                             <style>DETAILED</style>
                             <jvmArgs>-Xmx2512m</jvmArgs>
                         </configuration>
