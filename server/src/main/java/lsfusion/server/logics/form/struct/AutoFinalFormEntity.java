@@ -129,7 +129,8 @@ public class AutoFinalFormEntity extends AutoFormEntity {
 
     public void setEditType(PropertyEditType editType, Version version) {
         for (PropertyDrawEntity propertyView : getNFPropertyDrawsIt(version)) {
-            setEditType(propertyView, editType, version);
+            if (!propertyView.isSystem)
+                setEditType(propertyView, editType, version);
         }
     }
 

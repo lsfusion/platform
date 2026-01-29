@@ -284,6 +284,7 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
         action.setShowChangeMouse(false, version);
         action.setFocusable(false, version);
         action.entity.setEditType(PropertyEditType.EDITABLE, version);
+        action.entity.isSystem = true;
         action.setAlignment(FlexAlignment.STRETCH, version);
     }
 

@@ -123,6 +123,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<LocalizedString> caption = NFFact.property();
     private final NFProperty<AppServerImage.Reader> image = NFFact.property();
 
+    //for auto forms
+    public boolean isSystem = false;
+
     public LocalizedString getCaption() {
         LocalizedString captionValue = caption.get();
         if (captionValue != null)
