@@ -302,7 +302,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
     }
 
     // CELL (GRID / PANEL)
-    @Override
     public PropertyObjectInstance getCellProperty() {
         return cellProperty;
     }
