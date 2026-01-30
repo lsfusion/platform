@@ -60,7 +60,7 @@ public class FunctionTable extends Table {
     }
 
     public int immutableHashCode() {
-        return 31 * (31 * formula.hashCode() + params.hashCode()) + BaseUtils.nullHash(onlyKey.hashCode());
+        return 31 * (31 * formula.hashCode() + params.hashCode()) + BaseUtils.nullHash(onlyKey);
     }
 
     @Override
