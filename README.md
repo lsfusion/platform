@@ -75,7 +75,7 @@ Incremental computing, function-level, reactive, and event-based programming, th
 
 - **Easy-to-use IDE**
 
-  Intellij IDEA-based IDE with everything developers could ever need: search for uses, code/error highlighting, smart auto-completion, quick jump to declarations, class structure, renaming of elements, usage tree, data change breakpoints, debuggers, and more.
+  IntelliJ IDEA-based IDE with everything developers could ever need: search for uses, code/error highlighting, smart auto-completion, quick jump to declarations, class structure, renaming of elements, usage tree, data change breakpoints, debuggers, and more.
 
 - **Advanced tools for administrators**
 
