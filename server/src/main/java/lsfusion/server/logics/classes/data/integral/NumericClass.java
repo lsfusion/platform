@@ -166,7 +166,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     public BigDecimal parseString(String s) throws ParseException {
         try {
-            return isEmptyString(s) ? null : new BigDecimal(BaseUtils.replaceCommaSeparator(s));
+            String preparsed = preparse(s, true);
+            return preparsed == null ? null : new BigDecimal(preparsed);
         } catch (Exception e) {
             throw ParseException.propagateWithMessage("Error parsing numeric: " + s, e);
         }

@@ -231,8 +231,11 @@ public abstract class IntegralClass<T extends Number> extends FormatClass<T> imp
         return FlexAlignment.END;
     }
 
-    protected boolean isEmptyString(String s) {
-        return s.trim().isEmpty();
+    protected String preparse(String s, boolean replaceCommaSeparator) {
+        String trimmed = s.trim();
+        if (trimmed.isEmpty())
+            return null;
+        return replaceCommaSeparator ? BaseUtils.replaceCommaSeparator(trimmed) : trimmed;
     }
 
     @Override
