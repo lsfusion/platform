@@ -4581,7 +4581,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity result = form.getNFObject(objectName, getVersion());
+        ObjectEntity result = form.getNFObject(objectName, getVersion(), true);
         if (result == null) {
             errLog.emitObjectNotFoundError(parser, objectName);
         }
