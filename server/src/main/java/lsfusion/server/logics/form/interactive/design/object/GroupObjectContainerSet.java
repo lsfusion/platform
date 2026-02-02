@@ -26,7 +26,7 @@ public class GroupObjectContainerSet {
                 public static final String POPUP_CONTAINER = "POPUP";
         public static final String PANEL_CONTAINER = "PANEL";
             public static final String GROUP_CONTAINER = "GROUP";
-                public static final String PROPERTY_COMPONENT = "FILTERGROUP";
+                public static final String PROPERTY_COMPONENT = "PROPERTY";
 
 
     private ContainerView boxContainer;
