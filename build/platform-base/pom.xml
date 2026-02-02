@@ -33,7 +33,7 @@
         <netty.version>3.2.1.Final</netty.version>
         <!-- don't forget to merge jasperreports_extension.properties file when updating jasperreports -->
         <!-- and check for jackson version conflicts -->
-        <jasper.version>6.20.6</jasper.version>
+        <jasper.version>6.21.5</jasper.version>
         <jasper.htmlcomponent.version>6.20.5</jasper.htmlcomponent.version>
         <castor.core.version>1.4.1</castor.core.version>
         <ecj.version>3.17.0</ecj.version>
@@ -71,7 +71,7 @@
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <jackson.version>2.14.1</jackson.version> 
+        <jackson.version>2.14.1</jackson.version>
 
         <spring.version>5.2.7.RELEASE</spring.version>
         <spring.security.version>5.3.0.RELEASE</spring.security.version>
