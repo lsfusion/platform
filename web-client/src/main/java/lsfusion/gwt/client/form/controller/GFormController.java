@@ -1589,7 +1589,7 @@ public class GFormController implements EditManager {
         asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
+                controllers.get(groupObject).showRecordQuantity((Long) result.value);
             }
         });
     }

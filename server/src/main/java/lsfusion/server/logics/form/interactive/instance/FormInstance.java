@@ -151,8 +151,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.base.BaseUtils.systemLogger;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.INPUT;
 import static lsfusion.interop.form.order.user.Order.*;
@@ -1098,18 +1097,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
+    public long countRecords(int groupObjectID) throws SQLException, SQLHandledException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
         Expr expr = GroupExpr.create(MapFact.EMPTY(), ValueExpr.COUNT, group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.EMPTY());
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("quant", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
-        Integer quantity = (Integer) result.getValue(0).get("quant");
-        if (quantity != null) {
-            return quantity;
-        } else {
-            return 0;
-        }
+        Long quantity = (Long) result.getValue(0).get("quant");
+        return nvl(quantity, 0L);
     }
 
     private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, ? extends ObjectValue> columnKeys) {
@@ -1194,7 +1189,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 assert !asyncMode.isObjects();
                 ImMap<Integer, PropertyAsync<P>> resultList = asyncs.getMap().mapKeyValues(key -> (Integer) key.singleValue(), valueResult -> {
                     String rawString = (String) valueResult.get(0);
-                    return new PropertyAsync<>(BaseUtils.nvl((String) valueResult.get(1), rawString), rawString, null);
+                    return new PropertyAsync<>(nvl((String) valueResult.get(1), rawString), rawString, null);
                 });
                 return resultList.sort().valuesList().toArray(new PropertyAsync[resultList.size()]);
             }
@@ -1727,7 +1722,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = getSession();
         LP<?> sessionOwners = BL.LM.sessionOwners;
-        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
+        int prevOwners = nvl((Integer) sessionOwners.read(env), 0);
         int newOwners = prevOwners + (set ? 1 : -1);
         sessionOwners.change(newOwners == 0 ? null : newOwners, env);
         return prevOwners;

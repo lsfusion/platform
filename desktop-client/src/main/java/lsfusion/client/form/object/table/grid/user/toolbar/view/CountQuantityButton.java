@@ -13,7 +13,7 @@ public abstract class CountQuantityButton extends ToolbarGridButton {
 
     public abstract void addListener();
 
-    public void showPopupMenu(Integer quantity) {
+    public void showPopupMenu(Long quantity) {
         JPopupMenu menu = new JPopupMenu();
         JLabel label = new JLabel(ClientResourceBundle.getString("form.queries.number.of.entries") + ": " + (quantity == null ? 0 : quantity));
         JPanel panel = new JPanel();

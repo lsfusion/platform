@@ -527,10 +527,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public int countRecords(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
+    public long countRecords(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            int result = form.countRecords(groupObjectID);
+            long result = form.countRecords(groupObjectID);
 
             if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);

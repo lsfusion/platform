@@ -15,7 +15,7 @@ public abstract class GCountQuantityButton extends GToolbarButton {
         format = NumberFormat.getDecimalFormat();
     }
 
-    public void showPopup(int result) {
+    public void showPopup(long result) {
         GwtClientUtils.showTippyPopup(this, new HTML(messages.formQueriesNumberOfEntries() + ": " + format.format(result)));
     }
 }

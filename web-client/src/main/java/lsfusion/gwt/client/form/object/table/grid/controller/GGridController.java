@@ -375,7 +375,7 @@ public class GGridController extends GAbstractTableController {
         formController.changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 
-    public void showRecordQuantity(int quantity) {
+    public void showRecordQuantity(long quantity) {
         assert isList();
         quantityButton.showPopup(quantity);
     }

@@ -163,9 +163,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException {
+    public long countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException {
         logRemoteMethodStartCall("countRecords");
-        int result = target.countRecords(requestIndex, lastReceivedRequestIndex, groupObjectID);
+        long result = target.countRecords(requestIndex, lastReceivedRequestIndex, groupObjectID);
         logRemoteMethodEndCall("countRecords", result);
         return result;
     }

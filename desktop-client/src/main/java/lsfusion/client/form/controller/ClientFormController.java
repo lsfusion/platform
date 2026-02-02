@@ -1623,12 +1623,12 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public Integer countRecords(final int groupObjectID) throws Exception {
+    public Long countRecords(final int groupObjectID) {
         commitOrCancelCurrentEditing();
 
-        return rmiQueue.syncRequest(new RmiCheckNullFormRequest<Integer>("countRecords") {
+        return rmiQueue.syncRequest(new RmiCheckNullFormRequest<Long>("countRecords") {
             @Override
-            protected Integer doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+            protected Long doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.countRecords(requestIndex, lastReceivedRequestIndex, groupObjectID);
             }
         });
