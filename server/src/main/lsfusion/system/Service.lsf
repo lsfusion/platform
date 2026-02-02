@@ -5,8 +5,7 @@ REQUIRE System, Security, SystemEvents;
 NAMESPACE Service;
 
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
-//todo: remove after onFinallyStarted migration
-checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
+checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' () @@deprecated('6.2','use checkMaterializationsAction instead');
 checkMaterializationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
 checkIndicesAction '{service.check.indexes.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckIndexesAction' ();
@@ -23,8 +22,7 @@ updateStats '{service.update.stats.action}' INTERNAL 'lsfusion.server.physics.ad
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -34,8 +32,7 @@ recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  I
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsMultiThreadAction' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkClassesMultiThreadAction (NULL, propertyTimeout); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { recalculateClassesMultiThreadAction (NULL, propertyTimeout); }
@@ -46,8 +43,7 @@ overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.
 
 threadCountMultiThread '{service.thread.count.multi.thread}' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.thread.count}'  { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.thread.count}'  { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.thread.count}'  { recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL); }
