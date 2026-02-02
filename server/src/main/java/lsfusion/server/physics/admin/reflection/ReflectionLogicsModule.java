@@ -433,7 +433,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         disableClassesTableSID = findProperty("disableClasses[ISTRING[100]]");
         disableStatsTableSID = findProperty("disableStatsTable[ISTRING[100]]");
-        disableMaterializationsTableColumnSID = findProperty("disableAggregations[ISTRING[100]]");
+        disableMaterializationsTableColumnSID = findProperty("disableMaterializations[ISTRING[100]]");
         disableStatsTableColumnSID = findProperty("disableStatsTableColumn[ISTRING[100]]");
 
         // Удаленные колонки
