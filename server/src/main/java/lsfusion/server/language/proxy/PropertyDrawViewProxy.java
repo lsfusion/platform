@@ -181,6 +181,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.inputType = inputType.getSourceString();
     }
 
+    @Deprecated //since 6.2
     public void setImagePath(LocalizedString image) {
         setImage(image);
     }
