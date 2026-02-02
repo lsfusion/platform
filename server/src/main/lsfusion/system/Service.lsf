@@ -5,7 +5,6 @@ REQUIRE System, Security, SystemEvents;
 NAMESPACE Service;
 
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
-checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' () @@deprecated('6.2','use checkMaterializationsAction instead');
 checkMaterializationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
 checkIndicesAction '{service.check.indexes.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckIndexesAction' ();
@@ -22,7 +21,6 @@ updateStats '{service.update.stats.action}' INTERNAL 'lsfusion.server.physics.ad
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -32,7 +30,6 @@ recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  I
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsMultiThreadAction' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkClassesMultiThreadAction (NULL, propertyTimeout); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { recalculateClassesMultiThreadAction (NULL, propertyTimeout); }
@@ -43,7 +40,6 @@ overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.
 
 threadCountMultiThread '{service.thread.count.multi.thread}' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.thread.count}'  { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.thread.count}'  { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.thread.count}'  { recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL); }
@@ -56,48 +52,6 @@ analyzeDBAction '{service.analyze.db.action}'  INTERNAL  'lsfusion.server.physic
 vacuumDBAction '{service.vacuum.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.VacuumDBAction' ();
 packAction '{service.pack.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PackAction' ();
 getVMInfo '{service.get.vm.info}'  INTERNAL  'lsfusion.server.physics.admin.service.action.GetVMInfoAction' ();
-
-migratedMaterializations = DATA BOOLEAN ();
-
-copyPermissions(ActionOrProperty target, ActionOrProperty source) {
-    dataPermissionView(UserRole ur, target) <- dataPermissionView(ur, source);
-    dataPermissionChange(UserRole ur, target) <- dataPermissionChange(ur, source);
-    dataPermissionEditObjects(UserRole ur, target) <- dataPermissionEditObjects(ur, source);
-    dataPermissionGroupChange(UserRole ur, target) <- dataPermissionGroupChange(ur, source);
-}
-
-onFinallyStarted() + {
-    IF NOT migratedMaterializations() THEN {
-        notRecalculateMaterializations(TableColumn tc) <- notRecalculate(tc);
-        copyPermissions(propertyCanonicalName('Reflection.notRecalculateMaterializations[Reflection.TableColumn]'), propertyCanonicalName('Reflection.notRecalculate[Reflection.TableColumn]'));
-        
-        copyPermissions(actionCanonicalName('Reflection.recalculateMaterializations[Reflection.TableColumn]'), actionCanonicalName('Reflection.recalculateAggregation[Reflection.TableColumn]'));
-
-        copyPermissions(actionCanonicalName('Reflection.recalculateMaterializationsWithDependencies[Reflection.TableColumn]'), actionCanonicalName('Reflection.recalculateAggregationWithDependencies[Reflection.TableColumn]'));
-
-        copyPermissions(actionCanonicalName('Reflection.recalculateMaterializationsWithDependents[Reflection.TableColumn]'), actionCanonicalName('Reflection.recalculateAggregationWithDependents[Reflection.TableColumn]'));
-
-        copyPermissions(actionCanonicalName('Reflection.checkMaterializations[Reflection.TableColumn]'), actionCanonicalName('Reflection.checkAggregation[Reflection.TableColumn]'));
-
-        copyPermissions(actionCanonicalName('Reflection.checkMaterializations[STRING]'), actionCanonicalName('Reflection.checkAggregation[STRING]'));
-
-        copyPermissions(actionCanonicalName('Reflection.recalculateColumnsMaterializations[Reflection.Table]'), actionCanonicalName('Reflection.recalculateColumnsAggregations[Reflection.Table]'));
-
-        copyPermissions(propertyCanonicalName('Reflection.disableMaterializations[Reflection.TableColumn]'), propertyCanonicalName('Reflection.disableAggregations[Reflection.TableColumn]'));
-
-        copyPermissions(propertyCanonicalName('Reflection.disableMaterializations[STRING]'), propertyCanonicalName('Reflection.disableAggregations[STRING]'));
-
-        copyPermissions(actionCanonicalName('Service.checkMaterializationsAction[]'), actionCanonicalName('Service.checkAggregationsAction[]'));
-
-        copyPermissions(actionCanonicalName('Service.checkMaterializationsMultiThreadAction[INTEGER,INTEGER]'), actionCanonicalName('Service.checkAggregationsMultiThreadAction[INTEGER,INTEGER]'));
-
-        copyPermissions(actionCanonicalName('Service.checkMaterializationsMultiThreadAction[INTEGER]'), actionCanonicalName('Service.checkAggregationsMultiThreadAction[INTEGER]'));
-
-        copyPermissions(actionCanonicalName('Service.checkMaterializationsMultiThreadAction[]'), actionCanonicalName('Service.checkAggregationsMultiThreadAction[]'));
-
-        migratedMaterializations() <- TRUE;
-    }
-}
 
 singleTransaction '{service.single.transaction}' = DATA BOOLEAN ();
 
