@@ -273,4 +273,4 @@ badged(STRING text, INTEGER badgeNumber) = badged(text, STRING(badgeNumber));
 // plugin bug
 //imaged(STRING imageHTML, STRING text, BOOLEAN vertical) = '<div class = "${IF text != \'\' THEN \'wrap-text-not-empty \' ELSE \'\'}${IF imageHTML THEN \'wrap-img-\' + (IF vertical THEN \'vert\' ELSE \'horz\'})">\r\n    ${CONCAT \'\', imageHTML, text}\r\n</div>\r\n'
 
-imagedCaption(StaticObject object) = imaged(image(object), staticCaption(object));
+imagedCaption(StaticObject object) = imaged(image(object), caption(object));

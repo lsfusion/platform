@@ -14,9 +14,9 @@ timeFrom '{schedule.time.from}' = DATA TIME (ScheduleDetail);
 timeTo '{schedule.time.to}' = DATA TIME (ScheduleDetail);
 
 dowFrom '{schedule.dow.from}' = DATA DOW (ScheduleDetail);
-captionDowFrom '{schedule.dow.from}' (ScheduleDetail d) = staticCaption(dowFrom(d));
+captionDowFrom '{schedule.dow.from}' (ScheduleDetail d) = caption(dowFrom(d));
 dowTo = DATA DOW (ScheduleDetail);
-captionDowTo '{schedule.dow.to}' (ScheduleDetail d) = staticCaption(dowTo(d));
+captionDowTo '{schedule.dow.to}' (ScheduleDetail d) = caption(dowTo(d));
 
 dateFrom '{schedule.date.from}' = DATA DATE (ScheduleDetail);
 captionDateFrom '{schedule.date.from}' = DATA STRING[100] (ScheduleDetail);
@@ -29,7 +29,7 @@ CLASS Holidays '{schedule.holidays}' {
 }    
 
 holidays = DATA Holidays (ScheduleDetail);
-captionHolidays '{schedule.holidays}' (ScheduleDetail d)= staticCaption(holidays(d));
+captionHolidays '{schedule.holidays}' (ScheduleDetail d)= caption(holidays(d));
 
 extractDOY(DATE d) = extractMonthNumber(d) * 100 + extractDay(d);
 

@@ -37,7 +37,7 @@ readAddress '{geo.address.poi}' = DATA LOCAL STRING();
 
 isDefault '{geo.api.key.default}' (MapProvider m) = m == showUserMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
-provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
+provider '{geo.api.key.provider}' (MapProvider m) = caption(m) CHARWIDTH 5;
 commercialAPI '{geo.api.key.commercial}' = DATA BOOLEAN(MapProvider); // free or commercial
 
 lsfParams(STRING s) += STRING(basicStaticName(showUserMapProvider())) IF s = 'defaultMapProvider';

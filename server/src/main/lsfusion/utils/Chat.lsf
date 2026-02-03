@@ -130,14 +130,14 @@ CLASS MessageStatus {
 TABLE messageCustomUser(Message, CustomUser);
 
 status '{chat.status.message}' = DATA MessageStatus (Message, CustomUser);
-captionStatus '{chat.status.message}' (Message message, CustomUser user) = staticCaption(status(message, user));
+captionStatus '{chat.status.message}' (Message message, CustomUser user) = caption(status(message, user));
 
 seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
 deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
 
 status '{chat.status.message}' (Message m) = 
     IF own(m) THEN 
-        BPISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen 
+        BPISTRING[10](caption(IF seenCount(m) > 1 THEN MessageStatus.seen 
                                                         ELSE IF deliveredCount(m) > 0 THEN 
                                                                 MessageStatus.delivered 
                                                                 ELSE MessageStatus.sent)) 

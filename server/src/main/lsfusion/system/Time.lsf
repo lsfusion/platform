@@ -160,7 +160,7 @@ number '{time.number.month}' (Month m) = CASE EXCLUSIVE
     WHEN m == Month.december THEN 12
     MATERIALIZED;
 
-name '{master.data.name}' (Month m) = staticCaption(m) IF m IS Month MATERIALIZED CHARWIDTH 10;
+name '{master.data.name}' (Month m) = caption(m) IF m IS Month MATERIALIZED CHARWIDTH 10;
 
 month '{time.month.number}' (number) = GROUP AGGR Month month BY number(month);
 
@@ -206,7 +206,7 @@ numberM '{time.number.dow}' (DOW d) = CASE EXCLUSIVE
     WHEN d == DOW.sunday THEN 6
     MATERIALIZED;
 
-name '{master.data.name}' (DOW d) = staticCaption(d) IF d IS DOW MATERIALIZED CHARWIDTH 10;
+name '{master.data.name}' (DOW d) = caption(d) IF d IS DOW MATERIALIZED CHARWIDTH 10;
 
 FORM DOWs '{time.form.dows}'
     OBJECTS d = DOW

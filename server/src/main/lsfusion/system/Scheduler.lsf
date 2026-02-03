@@ -11,13 +11,13 @@ TABLE schedulerStartType(SchedulerStartType);
 
 FORM schedulerStartTypes '{scheduler.form.scheduler.start.types}'
     OBJECTS s = SchedulerStartType
-    PROPERTIES(s) READONLY staticCaption
+    PROPERTIES(s) READONLY caption
     LIST SchedulerStartType OBJECT s
 ;
 
 DESIGN schedulerStartTypes {
     BOX {
-        PROPERTY(staticCaption(s)) {
+        PROPERTY(caption(s)) {
             caption = '{scheduler.scheduler.start.type}';
         }
     }
@@ -60,7 +60,7 @@ schedulerStartType '{scheduler.scheduler.start.type}' = ABSTRACT SchedulerStartT
 schedulerStartType '{scheduler.scheduler.start.type}' = DATA SchedulerStartType (UserScheduledTask);
 schedulerStartType[ScheduledTask](UserScheduledTask t) += schedulerStartType(t);
 
-nameSchedulerStartType '{scheduler.scheduler.start.type}' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
+nameSchedulerStartType '{scheduler.scheduler.start.type}' = caption(schedulerStartType(ScheduledTask ScheduledTask));
 
 active '{scheduler.active.scheduled.task}' = ABSTRACT BOOLEAN (ScheduledTask);
 active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (UserScheduledTask);
@@ -257,7 +257,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
     FILTERS scheduledTaskLog(ctl) = tl
     
     OBJECTS dow=DOW
-    PROPERTIES (dow) number, staticCaption 
+    PROPERTIES (dow) number, caption 
     PROPERTIES (dow, t) in 
     
     PROPERTIES () TOOLBAR onlySystemTasks SHOWIF onlySystemTasks() READONLY, stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 

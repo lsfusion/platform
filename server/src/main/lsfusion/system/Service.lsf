@@ -62,7 +62,7 @@ CLASS DBType {
 TABLE DBType(DBType);
 uploadType '{service.upload.type}' = DATA DBType ();
 uploadStaticNameType = staticName(uploadType()); 
-uploadStaticCaptionType '{service.upload.type}' = staticCaption(uploadType()); 
+uploadCaptionType '{service.upload.type}' = caption(uploadType()); 
 uploadHost '{service.upload.host}' = DATA STRING[100] ();
 uploadUser '{service.upload.user}' = DATA STRING[100] ();
 uploadPassword '{service.upload.password}' = DATA STRING[100] ();
@@ -162,7 +162,7 @@ isNotServerRestarting () = NOT isServerRestarting();
 
 FORM maintenance '{service.form.maintenance}'
     PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
-                 //uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
+                 //uploadCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
                  clearApplicationLog, 
                  serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
                  checkClassesAction, checkMaterializationsAction, checkIndicesAction, checkTablesAction,
@@ -187,7 +187,7 @@ DESIGN maintenance {
             }    
 //            NEW upload {
 //                caption = '{service.form.maintenance.caption.upload}';
-//                MOVE PROPERTY(uploadStaticCaptionType());
+//                MOVE PROPERTY(uploadCaptionType());
 //                MOVE PROPERTY(uploadHost());
 //                MOVE PROPERTY(uploadUser());
 //                MOVE PROPERTY(uploadPassword());
@@ -621,7 +621,6 @@ CLASS TypeExecEnv {
 }
 TABLE typeExecEnv(TypeExecEnv);
 
-captionExecEnv '{service.caption.exec.env}' (Object type) = staticCaption (type);
 id (TypeExecEnv type) = CASE EXCLUSIVE
                         WHEN type == TypeExecEnv.materialize THEN 2
                         WHEN type == TypeExecEnv.disablenestloop THEN 1
@@ -635,7 +634,7 @@ refreshExecEnv '{service.refresh.exec.env.user}'(User user)  {
 WHEN CHANGED(execEnv(User user)) DO {
     refreshExecEnv(user);
 }
-nameExecEnv '{service.exec.env.user}' (User user) = captionExecEnv(execEnv(user)) IN base;
+nameExecEnv '{service.exec.env.user}' (User user) = caption(execEnv(user)) IN base;
 
 setVolatileStatsEnabled '{service.set.volatile.stats.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetVolatileStatsEnabledUserAction' (BOOLEAN, User);
 volatileStatsEnabled '{service.volatile.stats.enabled}' = DATA BOOLEAN (User);

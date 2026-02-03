@@ -156,9 +156,9 @@ caption '{system.static.caption.object}' (StaticObject o) = staticCaption(o) MAT
 order = DATA INTEGER (StaticObject) TABLE staticObject IN id;
 image '{classes.image}' = DATA HTML (StaticObject) TABLE staticObject IN id;
 
-objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o)) @@deprecated('6.1','use className instead');
+objectClassName '{system.object.class.name.object}' (Object o) = caption(objectClass(o)) @@deprecated('6.1','use className instead');
 className '{system.object.class.name.object}' (Object o) = caption(class(o));
-prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o))) @@deprecated('6.1','use prevClassName instead');
+prevObjectClassName '{system.object.class.name.object}' (Object o) = caption(PREV(objectClass(o))) @@deprecated('6.1','use prevClassName instead');
 prevClassName '{system.object.class.name.object}' (Object o) = caption(PREV(class(o)));
 
 defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();

@@ -11,7 +11,7 @@ TABLE profileData(ProfileObject, ProfileObject, User, Form);
 
 text '{profiler.text.profile.object}' = DATA TEXT (ProfileObject) IN id CHARWIDTH 40;
 onStarted() + { 
-    text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
+    text(ProfileObject po) <- caption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
 profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
 
@@ -103,17 +103,17 @@ CLASS ProfilerIndex {
 
 FORM profilerIndex '{profiler.profiler.index}'
     OBJECTS f=ProfilerIndex
-    PROPERTIES(f) staticCaption READONLY
+    PROPERTIES(f) caption READONLY
     LIST ProfilerIndex OBJECT f
 ;
 
 DESIGN profilerIndex {
-    PROPERTY (staticCaption(f)){caption = '{profiler.profiler.index.name}'; }
+    PROPERTY (caption(f)){caption = '{profiler.profiler.index.name}'; }
 }
 
 active '{profiler.active.profiler.index}' = DATA LOCAL NESTED BOOLEAN (ProfilerIndex);
 order  = DATA LOCAL NESTED ProfilerIndex ();
-nameOrder '{profiler.name.order}' = staticCaption(order());
+nameOrder '{profiler.name.order}' = caption(order());
 
 value '{profiler.value.object.object.user.form.index}'(ProfileObject p1, ProfileObject p2, User u, Form f, ProfilerIndex pi) = CASE EXCLUSIVE 
     WHEN pi == ProfilerIndex.callCount THEN callCount(p1, p2, u, f)
@@ -256,7 +256,7 @@ FORM profiler '{profiler.profiler}'
   
 //settings
     OBJECTS pi = ProfilerIndex
-    PROPERTIES (pi) active, staticCaption READONLY
+    PROPERTIES (pi) active, caption READONLY
 
     OBJECTS r = UserRole
     PROPERTIES (r) inFilter
@@ -273,7 +273,7 @@ FORM profiler '{profiler.profiler}'
     FILTERS active(ihs)
 
     OBJECTS ohs = ProfileObject
-    PROPERTIES READONLY text(ohs), order(ohs), value(ohs, ihs) COLUMNS (ihs) HEADER staticCaption(ihs)
+    PROPERTIES READONLY text(ohs), order(ohs), value(ohs, ihs) COLUMNS (ihs) HEADER caption(ihs)
     ORDERS order(ohs) DESC
     FILTERS order(ohs)
 
@@ -287,7 +287,7 @@ FORM profiler '{profiler.profiler}'
     PROPERTIES(user) READONLY name
     PROPERTIES(form) READONLY canonicalName
     PROPERTIES(po1, po2, user, form) READONLY order
-    PROPERTIES(po1, po2, user, form, i) READONLY value COLUMNS (i) HEADER staticCaption(i)
+    PROPERTIES(po1, po2, user, form, i) READONLY value COLUMNS (i) HEADER caption(i)
     ORDERS order(po1, po2, user, form) DESC 
     FILTERS order(po1, po2, user, form)
 
@@ -305,7 +305,7 @@ FORM profiler '{profiler.profiler}'
     OBJECTS upToDown=ProfileObject
     PROPERTIES (upToDown) READONLY text
     PROPERTIES (down, upToDown) READONLY order
-    PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER staticCaption(iupToDown)
+    PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER caption(iupToDown)
     ORDERS order(down, upToDown) DESC
     FILTERS order(down, upToDown)
     FILTERGROUP  upToDown
@@ -333,7 +333,7 @@ FORM profiler '{profiler.profiler}'
     OBJECTS downToUp=ProfileObject
     PROPERTIES (downToUp) READONLY text
     PROPERTIES (downToUp, up) READONLY order
-    PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER staticCaption(idownToUp)
+    PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER caption(idownToUp)
     ORDERS order(downToUp, up) DESC
     FILTERS order(downToUp, up)
     FILTERGROUP  downToUp

@@ -95,7 +95,7 @@ CLASS SelectType '{reflection.select}' {
 }
 select '{reflection.select}' = DATA SelectType (Property);
 nameSelect '{reflection.select}' (Property property) = basicStaticName(select(property));
-staticCaptionSelect '{reflection.select}' (Property property) = staticCaption(select(property));
+captionSelect '{reflection.select}' (Property property) = caption(select(property));
 
 updateSelect  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSelectAction' (Property, STRING);
 
@@ -154,7 +154,7 @@ TABLE propertyDrawShowStatus(PropertyDrawShowStatus);
 
 FORM propertyDrawShowStatuses
     OBJECTS s = PropertyDrawShowStatus
-    PROPERTIES(s) staticCaption
+    PROPERTIES(s) caption
     LIST PropertyDrawShowStatus OBJECT s
 ;
 
@@ -178,8 +178,8 @@ show '{reflection.show.property.draw.custom.user}' = DATA PropertyDrawShowStatus
 nameShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) CHARWIDTH 50;
 nameShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) CHARWIDTH 50;
 
-captionShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) CHARWIDTH 20;
-captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) CHARWIDTH 20;
+captionShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = caption(show (propertyDraw)) CHARWIDTH 20;
+captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = caption(show(propertyDraw, customUser)) CHARWIDTH 20;
 
 columnCaption '{reflection.column.caption.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser);
 columnCaption '{reflection.column.caption.property.draw}' = DATA STRING[100] (PropertyDraw);
@@ -546,7 +546,7 @@ FORM properties '{reflection.form.properties}'
     OBJECTS p=Property
     PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
         quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, userMaterialized CHANGEABLE, stored CHANGEABLE, isSetNotNull CHANGEABLE, 
-        disableInputList CHANGEABLE, staticCaptionSelect CHANGEABLE, lastRecalculate
+        disableInputList CHANGEABLE, captionSelect CHANGEABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent(tps), ps=Property
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb

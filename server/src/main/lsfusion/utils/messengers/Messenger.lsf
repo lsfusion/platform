@@ -18,7 +18,7 @@ TABLE account (Account);
 name '{messenger.account.name}' = DATA STRING (Account);
 account(LONG id) = GROUP NAGGR Account a BY LONG (a) IF a IS Account; 
 messenger '{messenger.messenger}' = DATA Messenger (Account);
-captionMessenger '{messenger.messenger}' (Account a) = staticCaption(messenger(a));
+captionMessenger '{messenger.messenger}' (Account a) = caption(messenger(a));
 token '{messenger.token}' = DATA STRING (Account) NONULL CHARWIDTH 50;
 
 CLASS Chat '{messenger.chat}';
@@ -34,7 +34,7 @@ from '{messenger.from}' = DATA STRING (Message);
 dateTime '{messenger.datetime}' = DATA DATETIME (Message);
 account = DATA Account (Chat) NONULL DELETE;
 chatType = DATA ChatType (Chat);
-captionChatType '{messenger.chat.type}' (Chat c) = staticCaption(chatType(c)) CHARWIDTH 10 IN id;
+captionChatType '{messenger.chat.type}' (Chat c) = caption(chatType(c)) CHARWIDTH 10 IN id;
 id '{messenger.chat.id}' = DATA STRING (Chat) CHARWIDTH 10;
 chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
 name '{messenger.chat.name}' = DATA STRING (Chat) IN id;

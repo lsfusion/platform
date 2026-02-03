@@ -21,7 +21,7 @@ CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
 }
 TABLE encryptedConnectionTypeStatus(EncryptedConnectionTypeStatus);
 
-name '{email.encrypted.connection.type.status}' (EncryptedConnectionTypeStatus s) = staticCaption(s) IF s IS EncryptedConnectionTypeStatus;
+name '{email.encrypted.connection.type.status}' (EncryptedConnectionTypeStatus s) = caption(s) IF s IS EncryptedConnectionTypeStatus;
 FORM encryptedConnectionTypeStatuses '{email.encrypted.connection.type.status}'
     OBJECTS s = EncryptedConnectionTypeStatus
     PROPERTIES(s) READONLY name
@@ -50,7 +50,7 @@ CLASS ReceiveAccountType '{email.receive.account.type}' {
 }
 TABLE receiveAccountType(ReceiveAccountType);
 
-name '{email.receive.account.type}' (ReceiveAccountType s) = staticCaption(s) IF s IS ReceiveAccountType;
+name '{email.receive.account.type}' (ReceiveAccountType s) = caption(s) IF s IS ReceiveAccountType;
 FORM receiveAccountTypes '{email.receive.account.type}'
     OBJECTS r = ReceiveAccountType
     PROPERTIES(r) READONLY name

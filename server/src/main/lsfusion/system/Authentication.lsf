@@ -419,7 +419,7 @@ designEnvColorTheme '{authentication.color.theme}' (DesignEnv) = DATA ColorTheme
 currentColorTheme = designEnvColorTheme(currentDesignEnv());
 clientColorTheme '{authentication.color.theme}' = DATA ColorTheme (DesignEnv);
 colorTheme '{authentication.color.theme}' (DesignEnv designEnv) = OVERRIDE designEnvColorTheme(designEnv), clientColorTheme(designEnv);
-name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
+name '{authentication.color.theme}' (ColorTheme theme) = caption(theme) IF theme IS ColorTheme;
 colorThemeName '{authentication.color.theme}' (DesignEnv designEnv) = name(designEnvColorTheme(designEnv));
 
 isDarkTheme() = colorTheme(currentDesignEnv()) == ColorTheme.dark;
@@ -957,11 +957,11 @@ unlock(Object object)  {
 }
 
 //dateTimeRanges
-dateTimeRange '{date.time.picker.range.predefined.date}' (DateTimePickerRanges r) = staticCaption(r);
+dateTimeRange '{date.time.picker.range.predefined.date}' (DateTimePickerRanges r) = caption(r);
 isDateTimeRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimePickerRanges, CustomUser);
 
 //dateTimeIntervalRanges
-intervalRange '{date.time.picker.range.predefined.date}' (DateTimeIntervalPickerRanges r) = staticCaption(r);
+intervalRange '{date.time.picker.range.predefined.date}' (DateTimeIntervalPickerRanges r) = caption(r);
 isIntervalRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimeIntervalPickerRanges, CustomUser);
 
 selectedDateTimeRangesCount(user) = GROUP SUM 1 IF isDateTimeRangeSelected(DateTimePickerRanges r, user);

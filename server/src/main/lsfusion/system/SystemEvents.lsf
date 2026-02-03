@@ -109,9 +109,9 @@ CLASS Theme '{system.events.theme}' {
 }
 
 designEnvTheme '{system.events.theme}' = DATA Theme (DesignEnv);
-captionTheme '{system.events.theme}' (DesignEnv d) = staticCaption(designEnvTheme(d));
+captionTheme '{system.events.theme}' (DesignEnv d) = caption(designEnvTheme(d));
 serverTheme '{system.events.theme}' = DATA Theme ();
-captionServerTheme '{system.events.theme}' = staticCaption(serverTheme());
+captionServerTheme '{system.events.theme}' = caption(serverTheme());
 theme '{system.events.theme}' (DesignEnv d) = OVERRIDE designEnvTheme(d), serverTheme(), Theme.classic;
 nameTheme = STRING(basicStaticName(theme(currentDesignEnv())));
 useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
@@ -124,9 +124,9 @@ CLASS Size '{system.events.size}' {
 }
 
 designEnvSize '{system.events.size}' = DATA Size (DesignEnv);
-captionSize '{system.events.size}' (DesignEnv d) = staticCaption(designEnvSize(d));
+captionSize '{system.events.size}' (DesignEnv d) = caption(designEnvSize(d));
 serverSize '{system.events.size}' = DATA Size ();
-captionServerSize '{system.events.size}' = staticCaption(serverSize());
+captionServerSize '{system.events.size}' = caption(serverSize());
 
 heuristicSize = ABSTRACT VALUE Size();
 size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), heuristicSize();
@@ -139,9 +139,9 @@ CLASS Navbar '{system.events.navbar}' {
 }
 
 designEnvNavbar '{system.events.navbar}' = DATA Navbar (DesignEnv);
-captionNavbar '{system.events.navbar}' (DesignEnv d) = staticCaption(designEnvNavbar(d));
+captionNavbar '{system.events.navbar}' (DesignEnv d) = caption(designEnvNavbar(d));
 serverNavbar '{system.events.navbar}' = DATA Navbar ();
-captionServerNavbar '{system.events.navbar}' = staticCaption(serverNavbar());
+captionServerNavbar '{system.events.navbar}' = caption(serverNavbar());
 navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), serverNavbar(), Navbar.horizontal;
 verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 
@@ -404,7 +404,7 @@ TABLE clientType (ClientType);
 
 FORM clientTypes
     OBJECTS t = ClientType
-    PROPERTIES(t) READONLY staticCaption
+    PROPERTIES(t) READONLY caption
     LIST ClientType OBJECT t
 ;
 
@@ -417,7 +417,7 @@ TABLE connectionStatus (ConnectionStatus);
 
 FORM connectionStatuses
     OBJECTS s = ConnectionStatus
-    PROPERTIES(s) READONLY staticCaption
+    PROPERTIES(s) READONLY caption
     LIST ConnectionStatus OBJECT s
 ;
 
@@ -487,7 +487,7 @@ CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
 
 connectionStatus '{system.events.connection.status}' =  DATA ConnectionStatus (Connection) INDEXED;
 INDEX user(Connection c), connectionStatus(c);
-nameConnectionStatus '{system.events.connection.status}' (Connection connection) = staticCaption(connectionStatus(connection));
+nameConnectionStatus '{system.events.connection.status}' (Connection connection) = caption(connectionStatus(connection));
 
 connectTime '{system.events.connect.time.connection}' = DATA DATETIME (Connection);
 connectDate '{system.events.connect.date.connection}' (Connection c) = DATE(connectTime(c));
@@ -549,7 +549,7 @@ contextUrl(STRING relativeUrl) = currentContextUrl(relativeUrl);
 originUrl(LINK relativeLink) = currentOriginUrl(relativeLink);
 
 clientType = DATA ClientType (Connection);
-nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
+nameClientType '{system.events.client.type}' (Connection connection) = caption(clientType(connection));
 
 isNativeDesktop(Connection c) = clientType(c) == ClientType.nativeDesktop;
 isNativeMobile(Connection c) = clientType(c) == ClientType.nativeMobile;

@@ -102,7 +102,7 @@ updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navig
 updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, BOOLEAN, STRING, STRING);
 dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
 
-META initPropertyPermission (type, caption)
+META initPropertyPermission (type, permissionCaption)
     dataPermission###type = DATA Permission (UserRole, PropertyGroup);
     nearestParentPermission###type (UserRole ur, PropertyGroup g) =
         GROUP LAST dataPermission###type(ur, PropertyGroup parent) IF dataPermission###type(ur, parent) ORDER DESC level(g, parent) MATERIALIZED;
@@ -110,7 +110,7 @@ META initPropertyPermission (type, caption)
     backgroundPermission###type(UserRole ur, PropertyGroup g) = childPermissionBackground() IF GROUP SUM 1 IF level(PropertyGroup child, g) AND dataPermission###type(ur, child) AND 
         (NOT dataPermission###type(ur, g) OR dataPermission###type(ur, child) != dataPermission###type(ur, g));     
     permission###type (UserRole ur, PropertyGroup g) = OVERRIDE dataPermission###type(ur, g), nearestParentPermission###type(ur, g);
-    captionPermission###type caption (UserRole ur, PropertyGroup g) = staticCaption(OVERRIDE permission###type(ur, g), Permission.default IF ur IS UserRole AND g IS PropertyGroup) CHARWIDTH 10;
+    captionPermission###type permissionCaption (UserRole ur, PropertyGroup g) = caption(OVERRIDE permission###type(ur, g), Permission.default IF ur IS UserRole AND g IS PropertyGroup) CHARWIDTH 10;
     
     dataPermission###type = DATA Permission (UserRole, ActionOrProperty);
     foregroundPermission###type (UserRole ur, ActionOrProperty p) = parentPermissionForeground() IF NOT dataPermission###type(ur, p);
@@ -124,7 +124,7 @@ META initPropertyPermission (type, caption)
             updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), staticName(permission###type(ur, p)), ''##type);
             
     namePermission###type (UserRole ur, ActionOrProperty p) = staticName(permission###type(ur, p));
-    captionPermission###type caption (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permission###type(ur, p), Permission.default IF ur IS UserRole AND p IS ActionOrProperty) CHARWIDTH 10;
+    captionPermission###type permissionCaption (UserRole ur, ActionOrProperty p) = caption(OVERRIDE permission###type(ur, p), Permission.default IF ur IS UserRole AND p IS ActionOrProperty) CHARWIDTH 10;
     
     copy (UserRole from, UserRole to) +{
         dataPermission###type(to, ActionOrProperty property) <- dataPermission###type(from, property);
@@ -156,7 +156,7 @@ WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, Navigato
         updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), staticName(permission(ur, ne)));
 
 namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
-captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = staticCaption(OVERRIDE permission(ur, e), Permission.default IF ur IS UserRole AND e IS NavigatorElement) CHARWIDTH 10;
+captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = caption(OVERRIDE permission(ur, e), Permission.default IF ur IS UserRole AND e IS NavigatorElement) CHARWIDTH 10;
 
 permit (User u, NavigatorElement ne) = 
     (GROUP MAX has(u, UserRole ur) AND permission(ur, ne) == Permission.permit AND NOT disableRole(ur)) OR NOT 
@@ -188,7 +188,7 @@ defaultNumber (User user, NavigatorElement navigatorElement) =
 defaultForms '{security.default.forms}' (UserRole userRole) = GROUP CONCAT caption(NavigatorElement e) IF defaultNumber(userRole, e), ', ' ORDER defaultNumber(userRole, e) CHARWIDTH 50;
 
 mobileOnly = DATA YesNo (UserRole, NavigatorElement);
-captionMobileOnly'{security.default.forms.mobile.only}' (UserRole ur, NavigatorElement e) = staticCaption(mobileOnly(ur, e)) CHARWIDTH 5; 
+captionMobileOnly'{security.default.forms.mobile.only}' (UserRole ur, NavigatorElement e) = caption(mobileOnly(ur, e)) CHARWIDTH 5; 
     
 showMobileOnly (User u, NavigatorElement e) = GROUP MAX has(u, UserRole ur) AND mobileOnly(ur, e) == YesNo.yes;
 showDesktopOnly (User u, NavigatorElement e) = GROUP MAX has(u, UserRole ur) AND mobileOnly(ur, e) == YesNo.no;
@@ -403,7 +403,7 @@ NAVIGATOR {
 FORM propertyPolicy '{security.form.policy}'
     OBJECTS p = Property PANEL
     PROPERTIES(p) READONLY caption, canonicalName
-    PROPERTIES(p) userLoggable, isSetNotNull, disableInputList, staticCaptionSelect
+    PROPERTIES(p) userLoggable, isSetNotNull, disableInputList, captionSelect
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -425,7 +425,7 @@ DESIGN propertyPolicy {
             MOVE PROPERTY(userLoggable(p));
             MOVE PROPERTY(isSetNotNull(p));
             MOVE PROPERTY(disableInputList(p));
-            MOVE PROPERTY(staticCaptionSelect(p));
+            MOVE PROPERTY(captionSelect(p));
         }
         MOVE BOX(ur);
     }
@@ -572,7 +572,7 @@ countUserPreferences '{authentication.users.number}' (GroupObject g, UserRole r)
 countUser (PropertyDraw pr, UserRole r, PropertyDrawShowStatus s) =
     GROUP SUM 1 IF show(pr, CustomUser u) = s AND has(u, r);
 captionShow '{reflection.show.property.draw}' (PropertyDraw pr, UserRole r) =
-    GROUP CONCAT staticCaption(PropertyDrawShowStatus s) + ' : ' + countUser(pr, r, s), ', ' ORDER s;
+    GROUP CONCAT caption(PropertyDrawShowStatus s) + ' : ' + countUser(pr, r, s), ', ' ORDER s;
 hide '{reflection.property.draw.status.hide}' (PropertyDraw pr, UserRole r) {
     show(pr, CustomUser u) <- PropertyDrawShowStatus.Hide WHERE has(u, r) AND show(pr, u) = PropertyDrawShowStatus.Show;
 }

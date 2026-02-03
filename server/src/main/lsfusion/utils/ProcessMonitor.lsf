@@ -11,7 +11,7 @@ CLASS ProcessType '{process.monitor.process.type}' {
 
 FORM processTypes '{process.monitor.process.types}'
     OBJECTS t = ProcessType
-    PROPERTIES(t) READONLY staticCaption
+    PROPERTIES(t) READONLY caption
     
     LIST ProcessType OBJECT t
 ;
@@ -28,8 +28,8 @@ cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.s
 cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessAction' (STRING[10]);
 
 processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
-nameProcessType '{process.monitor.process.type}' () = staticName(processType()) CHARWIDTH 15;
-captionProcessType '{process.monitor.process.type}' () = staticCaption(processType());
+nameProcessType '{process.monitor.process.type}' () = caption(processType()) CHARWIDTH 15;
+captionProcessType '{process.monitor.process.type}' () = caption(processType());
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
 idThreadProcess '{process.monitor.id.thread.process}' = DATA LOCAL STRING[10] (STRING[10]);
