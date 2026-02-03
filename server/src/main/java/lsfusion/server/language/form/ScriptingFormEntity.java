@@ -82,11 +82,12 @@ public class ScriptingFormEntity {
         return form;
     }
 
-    public void addScriptingForm(boolean extend, String addFormName, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingForm(boolean extend, String addFormName, Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
+                                 Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
         FormEntity addForm = LM.findForm(addFormName);
         FormView addFormView = addForm.view;
 
-        ObjectMapping mapping = new ObjectMapping(form, ObjectMapping.getImplicitAdd(extend, version, addForm, form), extend, version);
+        ObjectMapping mapping = new ObjectMapping(form, addForm, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, extend, version);
 
         if(addFormView != null) {
             FormView formView = mapping.get(addFormView);

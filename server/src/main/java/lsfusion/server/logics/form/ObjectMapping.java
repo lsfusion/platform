@@ -22,9 +22,12 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.IdentityEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -38,15 +41,53 @@ public class ObjectMapping {
 
     private final Set<ServerIdentityObject> copied = new HashSet<>();
 
-    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form) {
+    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form,
+                                                                                      Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
+                                                                                      Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping) {
         MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
 
-        if(extend) {
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+        if(objectsMapping !=null) {
+            for (Map.Entry<String, String> mappingEntry : objectsMapping.entrySet()) {
+                ObjectEntity addFormObject = addForm.getNFObject(mappingEntry.getKey(), version);
+                ObjectEntity formObject = form.getNFObject(mappingEntry.getValue(), version);
+                mImplicitAdd.revAdd(addFormObject, formObject);
+            }
+        }
 
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-            fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
+        if(propertiesMapping !=null) {
+            for (Map.Entry<String, String> mappingEntry : propertiesMapping.entrySet()) {
+                PropertyDrawEntity addFormProperty = addForm.getNFPropertyDraw(mappingEntry.getKey(), version);
+                PropertyDrawEntity formProperty = form.getNFPropertyDraw(mappingEntry.getValue(), version);
+                mImplicitAdd.revAdd(addFormProperty, formProperty);
+            }
+        }
+
+        if(filterGroupsMapping !=null) {
+            for (Map.Entry<String, String> mappingEntry : filterGroupsMapping.entrySet()) {
+                RegularFilterGroupEntity addFormFilterGroup = addForm.getNFRegularFilterGroup(mappingEntry.getKey(), version);
+                RegularFilterGroupEntity formFilterGroup = form.getNFRegularFilterGroup(mappingEntry.getValue(), version);
+                mImplicitAdd.revAdd(addFormFilterGroup, formFilterGroup);
+            }
+        }
+
+        if(componentsMapping !=null) {
+            for (Map.Entry<String, String> mappingEntry : componentsMapping.entrySet()) {
+                ComponentView formComponent = form.view.getComponentBySID(mappingEntry.getValue(), version);
+                ComponentView addFormComponent = addForm.view.getComponentBySID(mappingEntry.getKey(), version);
+                mImplicitAdd.revAdd(addFormComponent, formComponent);
+            }
+        }
+
+        if (extend) {
+            if (objectsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+
+            if (propertiesMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
+            if (filterGroupsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFRegularFilterGroupsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
+            if (componentsMapping == null)
+                fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
         }
 
         return mImplicitAdd.immutableRev();
@@ -92,12 +133,15 @@ public class ObjectMapping {
         return null;
     }
 
-    public ObjectMapping(FormEntity addForm, ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects, boolean extend, Version version) {
+    public ObjectMapping(FormEntity addForm, FormEntity form, Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
+                         Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping, boolean extend, Version version) {
         this.extend = extend;
         this.addForm = addForm;
-        this.addObjects = addObjects;
 
         this.version = version;
+
+        this.addObjects = getImplicitAdd(extend, version, form, addForm, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping);
+
     }
 
     public int id() {
