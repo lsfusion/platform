@@ -41,7 +41,7 @@ public class ObjectMapping {
 
     private final Set<ServerIdentityObject> copied = new HashSet<>();
 
-    public ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form,
+    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form,
                                                                                       Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
                                                                                       Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping) {
         MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
@@ -50,7 +50,7 @@ public class ObjectMapping {
             for (Map.Entry<String, String> mappingEntry : objectsMapping.entrySet()) {
                 ObjectEntity addFormObject = addForm.getNFObject(mappingEntry.getKey(), version);
                 ObjectEntity formObject = form.getNFObject(mappingEntry.getValue(), version);
-                formObject.extend(addFormObject, this);
+                mImplicitAdd.revAdd(addFormObject, formObject);
             }
         }
 
@@ -58,7 +58,7 @@ public class ObjectMapping {
             for (Map.Entry<String, String> mappingEntry : propertiesMapping.entrySet()) {
                 PropertyDrawEntity addFormProperty = addForm.getNFPropertyDraw(mappingEntry.getKey(), version);
                 PropertyDrawEntity formProperty = form.getNFPropertyDraw(mappingEntry.getValue(), version);
-                formProperty.extend(addFormProperty, this);
+                mImplicitAdd.revAdd(addFormProperty, formProperty);
             }
         }
 
@@ -66,7 +66,7 @@ public class ObjectMapping {
             for (Map.Entry<String, String> mappingEntry : filterGroupsMapping.entrySet()) {
                 RegularFilterGroupEntity addFormFilterGroup = addForm.getNFRegularFilterGroup(mappingEntry.getKey(), version);
                 RegularFilterGroupEntity formFilterGroup = form.getNFRegularFilterGroup(mappingEntry.getValue(), version);
-                formFilterGroup.extend(addFormFilterGroup, this);
+                mImplicitAdd.revAdd(addFormFilterGroup, formFilterGroup);
             }
         }
 
@@ -74,7 +74,7 @@ public class ObjectMapping {
             for (Map.Entry<String, String> mappingEntry : componentsMapping.entrySet()) {
                 ComponentView formComponent = form.view.getComponentBySID(mappingEntry.getValue(), version);
                 ComponentView addFormComponent = addForm.view.getComponentBySID(mappingEntry.getKey(), version);
-                formComponent.extend(addFormComponent, this);
+                mImplicitAdd.revAdd(addFormComponent, formComponent);
             }
         }
 
