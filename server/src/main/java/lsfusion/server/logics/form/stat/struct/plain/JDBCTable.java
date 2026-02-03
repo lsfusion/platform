@@ -162,6 +162,7 @@ public class JDBCTable {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
                 return ByteArrayClass.instance;
             case Types.NULL:
                 return NullReader.typeInstance;
