@@ -121,9 +121,9 @@ META initPropertyPermission (type, permissionCaption)
         dropCachedSecurityPolicy(ur);
     WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) <= 100 NOINLINE DO
         FOR CHANGED (permission###type(ur, ActionOrProperty p)) DO
-            updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), staticName(permission###type(ur, p)), ''##type);
+            updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), name(permission###type(ur, p)), ''##type);
             
-    namePermission###type (UserRole ur, ActionOrProperty p) = staticName(permission###type(ur, p));
+    namePermission###type (UserRole ur, ActionOrProperty p) = name(permission###type(ur, p));
     captionPermission###type permissionCaption (UserRole ur, ActionOrProperty p) = caption(OVERRIDE permission###type(ur, p), Permission.default IF ur IS UserRole AND p IS ActionOrProperty) CHARWIDTH 10;
     
     copy (UserRole from, UserRole to) +{
@@ -153,9 +153,9 @@ WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, Navigato
     dropCachedSecurityPolicy(ur);
 WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) <= 100 NOINLINE DO
     FOR CHANGED (permission(ur, NavigatorElement ne)) DO
-        updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), staticName(permission(ur, ne)));
+        updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), name(permission(ur, ne)));
 
-namePermission (UserRole ur, NavigatorElement e) = staticName(permission(ur, e));
+namePermission (UserRole ur, NavigatorElement e) = name(permission(ur, e));
 captionPermission '{security.access}' (UserRole ur, NavigatorElement e) = caption(OVERRIDE permission(ur, e), Permission.default IF ur IS UserRole AND e IS NavigatorElement) CHARWIDTH 10;
 
 permit (User u, NavigatorElement ne) = 

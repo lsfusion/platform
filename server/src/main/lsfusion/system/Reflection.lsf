@@ -94,7 +94,7 @@ CLASS SelectType '{reflection.select}' {
     No '{reflection.select.type.no}'
 }
 select '{reflection.select}' = DATA SelectType (Property);
-nameSelect '{reflection.select}' (Property property) = basicStaticName(select(property));
+nameSelect '{reflection.select}' (Property property) = basicName(select(property));
 captionSelect '{reflection.select}' (Property property) = caption(select(property));
 
 updateSelect  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSelectAction' (Property, STRING);
@@ -175,8 +175,8 @@ propertyDrawByFormNameAndPropertyDrawSid '{reflection.property.draw.by.form.name
 show '{reflection.show.property.draw}' = DATA PropertyDrawShowStatus (PropertyDraw);
 show '{reflection.show.property.draw.custom.user}' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
 
-nameShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) CHARWIDTH 50;
-nameShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) CHARWIDTH 50;
+nameShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = name(show (propertyDraw)) CHARWIDTH 50;
+nameShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = name(show(propertyDraw, customUser)) CHARWIDTH 50;
 
 captionShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = caption(show (propertyDraw)) CHARWIDTH 20;
 captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = caption(show(propertyDraw, customUser)) CHARWIDTH 20;

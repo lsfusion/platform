@@ -242,7 +242,8 @@ copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyT
 
 array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
 
-basicStaticName(StaticObject object) = getWord(staticName(object), '.', 2);
+basicStaticName(StaticObject object) = getWord(name(object), '.', 2) @@deprecated('7.0','use baseName instead');
+basicName(StaticObject object) = getWord(name(object), '.', 2);
 
 zipReportResources() {
     readResource('jasperreports.properties');

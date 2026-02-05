@@ -61,7 +61,7 @@ CLASS DBType {
 }
 TABLE DBType(DBType);
 uploadType '{service.upload.type}' = DATA DBType ();
-uploadStaticNameType = staticName(uploadType()); 
+uploadNameType = name(uploadType()); 
 uploadCaptionType '{service.upload.type}' = caption(uploadType()); 
 uploadHost '{service.upload.host}' = DATA STRING[100] ();
 uploadUser '{service.upload.user}' = DATA STRING[100] ();
@@ -901,8 +901,8 @@ getInitSettings() {
 
 getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN user IS User THEN {
-    LOCAL colorThemeStaticName = STRING();
-    colorThemeStaticName() <- staticName(colorTheme(currentDesignEnv()));
+    LOCAL colorThemeName = STRING();
+    colorThemeName() <- name(colorTheme(currentDesignEnv()));
     
     EXPORT JSON FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
@@ -917,16 +917,16 @@ getClientSettings(User user) + WHEN user IS User THEN {
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
-        colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),
+        colorThemeString = IF (colorThemeName()) THEN substrFrom(colorThemeName(), strpos(colorThemeName(), '.') + 1),
         useBootstrap = useBootstrap(),
-        size = basicStaticName(size()), 
+        size = basicName(size()), 
         selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(user), selectedRowBackgroundColor()),
         selectedCellBackground = (OVERRIDE selectedCellBackgroundColor(user), selectedCellBackgroundColor()),
         focusedCellBackground = (OVERRIDE focusedCellBackgroundColor(user), focusedCellBackgroundColor()),
         focusedCellBorder = (OVERRIDE focusedCellBorderColor(user), focusedCellBorderColor()),
         tableGridColor = overrideTableGridColor(),
-        dateTimePickerRanges = JSON FROM range = basicStaticName(DateTimePickerRanges r) WHERE isDateTimeRangeSelected(r, user),
-        intervalPickerRanges = JSON FROM range = basicStaticName(DateTimeIntervalPickerRanges ir) WHERE isIntervalRangeSelected(ir, user),
+        dateTimePickerRanges = JSON FROM range = basicName(DateTimePickerRanges r) WHERE isDateTimeRangeSelected(r, user),
+        intervalPickerRanges = JSON FROM range = basicName(DateTimeIntervalPickerRanges ir) WHERE isIntervalRangeSelected(ir, user),
         language = language(user),
         country = country(user),
         timeZone = timeZone(user),
