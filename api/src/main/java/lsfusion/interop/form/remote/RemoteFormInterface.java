@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -37,11 +38,11 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : group objects
 
-    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;
+    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value, ChangeSelection changeSelection) throws RemoteException;
 
     ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
-    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException; // скроллинг
+    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException; // home / end
 
     ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException; // paste подряд
 

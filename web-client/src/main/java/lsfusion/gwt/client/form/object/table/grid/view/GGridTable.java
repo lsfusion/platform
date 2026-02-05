@@ -18,9 +18,10 @@ import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -39,6 +40,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
@@ -62,11 +64,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> readOnlyValues = new NativeSIDMap<>();
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
 
+    protected NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = new NativeHashMap<>();
+
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private NativeSIDMap<GPropertyDraw, Boolean> updatedProperties = new NativeSIDMap<>();
     private NativeSIDMap<GPropertyDraw, ArrayList<GGroupObjectValue>> columnKeys = new NativeSIDMap<>();
 
     private boolean rowsUpdated = false;
+    private boolean selectRowsUpdated = false;
     private boolean dataUpdated = false;
 
     private GGroupObject groupObject;
@@ -106,17 +111,26 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         setSelectionHandler(new GridTableSelectionHandler(this));
 
-        setRowChangedHandler(() -> {
-            final GridDataRecord selectedRecord = getSelectedRowValue();
-            if (selectedRecord != null)
-                form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
+        setRowChangedHandler((row, prevRow, reason) -> {
+            final GridDataRecord selectedRecord = getSelectedRowValue(); // getRowValue(row)
+
+            if (selectedRecord != null) {
+                GChangeSelection changeSelection = reason.changeSelection() ? (FormsController.isForceGroupChangeMode() ? GChangeSelection.MOVEEND : GChangeSelection.MOVE) : null;
+
+                NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = updateRowSelection(row, prevRow, changeSelection);
+
+                form.changeGroupObjectLater(groupObject, selectedRecord.getKey(), changeSelection, changeSelectionRows);
+            }
         });
 
-        setColumnChangedHandler(() -> {
+        setColumnChangedHandler((col, prevCol,reason) -> {
+            GPropertyDraw property = getSelectedProperty();
             GGroupObjectValue columnKey = getSelectedColumnKey();
+
+            form.setPropertyActive(property, true);
             ArrayList<GGroupObject> columnGroupObjects = getColumnPropertyDraw(getSelectedColumn()).columnGroupObjects;
             if (columnGroupObjects != null)
-                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey));
+                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
         });
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
@@ -148,6 +162,45 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 return key;
             }
         };
+    }
+
+    @Nullable
+    private NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, GChangeSelection changeSelection) {
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = null;
+        if(changeSelection != null) {
+            changeSelectionRows = new NativeHashMap<>();
+            if (changeSelection == GChangeSelection.MOVE || prevRow < 0) {
+                NativeHashMap<GGroupObjectValue, PValue> fChangeSelectionRows = changeSelectionRows;
+                rowSelectValues.foreachEntry((key, value) -> { if(GridDataRecord.isRowSelect(value)) fChangeSelectionRows.put(key, GridDataRecord.invertSelect(value)); });
+                rowSelectValues.clear();
+            } else {
+                assert row != prevRow;
+                int dir = row > prevRow ? 1 : -1;
+                for (int i = prevRow; (dir > 0 ? i <= row : i >= row); i += dir) {
+                    GGroupObjectValue rowKey = getRowValue(i).getKey();
+
+                    PValue pValue;
+                    if(i == prevRow) // assert rowSelectValues.get(rowKey) is null
+                        pValue = rowSelectValues.get(getRowValue(prevRow + dir).getKey());
+                    else if (i == row)
+                        pValue = PValue.getPValue(true);
+                    else
+                        pValue = rowSelectValues.get(rowKey);
+
+                    PValue newSelectValue = GridDataRecord.invertSelect(pValue);
+
+                    rowSelectValues.put(rowKey, newSelectValue);
+                    changeSelectionRows.put(rowKey, newSelectValue);
+                }
+            }
+
+            if(!changeSelectionRows.isEmpty()) {
+                selectRowsUpdated = true;
+
+                updateModify(false);
+            }
+        }
+        return changeSelectionRows;
     }
 
     public void update(Boolean updateState) {
@@ -186,6 +239,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             rowsUpdated = false;
         }
 
+        if(selectRowsUpdated) {
+            updateSelectRows();
+
+            selectRowsChanged();
+
+            selectRowsUpdated = false;
+        }
+
         updateCurrentRow();
     }
 
@@ -222,6 +283,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             record.setRowBackground(rowBackgroundValues.get(rowKey));
             record.setRowForeground(rowForegroundValues.get(rowKey));
+        }
+    }
+
+    private void updateSelectRows() {
+        int newSize = rowKeys.size();
+        for (int i = 0; i < newSize; i++) {
+            GGroupObjectValue rowKey = rowKeys.get(i);
+            GridDataRecord record = rows.get(i);
+
+            record.setRowSelect(rowSelectValues.get(rowKey));
         }
     }
 
@@ -497,6 +568,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
 
+    @Override
+    protected boolean isSelect(GridDataRecord row) {
+        return row.isRowSelect();
+    }
+
     public GridColumn getGridColumn(int column) {
         return (GridColumn) super.getGridColumn(column);
     }
@@ -768,6 +844,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        if (updateKeys && rowSelectValues != null) {
+            rowSelectValues.putAll(values);
+        } else {
+            NativeHashMap<GGroupObjectValue, PValue> pvalues = new NativeHashMap<>();
+            pvalues.putAll(values);
+            rowSelectValues = pvalues;
+        }
+
+        selectRowsUpdated = true;
+    }
+
+    @Override
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateRowForegroundValues(values);
         rowsUpdated = true;
@@ -823,7 +912,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
             rowKeys.remove(rowKey);
         }
-        setKeys(rowKeys);
+
+        rowsUpdated = true;
+
         if(currentKeyChanged)
             setCurrentKey(currentKey);
 

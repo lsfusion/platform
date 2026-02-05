@@ -83,10 +83,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         treeSelectionHandler = new TreeTableSelectionHandler(this);
         setSelectionHandler(treeSelectionHandler);
 
-        setRowChangedHandler(() -> {
+        setRowChangedHandler((row, prevRow, reason) -> {
             final GTreeGridRecord kbSelectedRecord = getSelectedRowValue();
             if (kbSelectedRecord != null)
-                form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
+                form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey(), null, null);
         });
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
@@ -1078,6 +1078,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public GAbstractTableController getGroupController() {
         return treeGroupController;
+    }
+
+    @Override
+    protected boolean isSelect(GTreeGridRecord row) {
+        return false;
     }
 
     public GPropertyDraw getSelectedFilterProperty() {

@@ -183,12 +183,16 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
     private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
     private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    private final NFProperty<Boolean> isSelectExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of SELECT usages by selection, but selection needs SELECT only when group (grid) is visible and refreshed, so we do select update only if the latter condition is matched
 
     public boolean isFilterExplicitlyUsed() {
         return isFilterExplicitlyUsed.get() != null;
     }
     public boolean isOrderExplicitlyUsed() {
         return isOrderExplicitlyUsed.get() != null;
+    }
+    public boolean isSelectExplicitlyUsed() {
+        return isSelectExplicitlyUsed.get() != null;
     }
 
     public static class ExGroupProperty extends FormEntity.ExMapProp<PropertyObjectEntity<ClassPropertyInterface>, ExGroupProperty> {
@@ -212,6 +216,8 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
             isFilterExplicitlyUsed.set(true, version);
         if(type.equals(GroupObjectProp.ORDER))
             isOrderExplicitlyUsed.set(true, version);
+        if(type.equals(GroupObjectProp.SELECT))
+            isSelectExplicitlyUsed.set(true, version);
         return props.get(type).getNF(version);
     }
 
@@ -222,12 +228,15 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
             return null;
     }
 
-    public void fillGroupChanges(Version version) {
+    public void fillGroupProps(Version version) {
+        // group change
         props.get(GroupObjectProp.FILTER).getNF(version);
         props.get(GroupObjectProp.ORDER).getNF(version);
+        // selection
+        props.get(GroupObjectProp.SELECT).getNF(version);
     }
-    public PropertyObjectEntity<ClassPropertyInterface> getGroupChange(GroupObjectProp type) {
-        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER);
+    public PropertyObjectEntity<ClassPropertyInterface> getGroupProp(GroupObjectProp type) {
+        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER) || type.equals(GroupObjectProp.SELECT);
         return props.get(type).get();
     }
     public ImMap<GroupObjectProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
@@ -583,6 +592,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         mapping.sets(integrationKey, src.integrationKey);
         mapping.sets(isFilterExplicitlyUsed, src.isFilterExplicitlyUsed);
         mapping.sets(isOrderExplicitlyUsed, src.isOrderExplicitlyUsed);
+        mapping.sets(isSelectExplicitlyUsed, src.isSelectExplicitlyUsed);
 
         mapping.sets(updateType, src.updateType);
         mapping.sets(viewType, src.viewType);

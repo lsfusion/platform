@@ -1000,7 +1000,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
+                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize(), null);
             }
         });
     }

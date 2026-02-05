@@ -5,13 +5,15 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 
 public enum GroupObjectProp {
-    FILTER, ORDER, VIEW;
+    FILTER, ORDER, VIEW, SELECT;
 
     public String getSID() {
         if(this==FILTER)
             return "FILTER";
         if(this==VIEW)
             return "VIEW";
+        if(this==SELECT)
+            return "SELECT";
         return "ORDER";
     }
 

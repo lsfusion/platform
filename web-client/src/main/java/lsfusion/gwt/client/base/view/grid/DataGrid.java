@@ -86,6 +86,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private boolean columnsChanged;
     private boolean headersChanged;
     private boolean widthsChanged;
+    private boolean selectRowsChanged;
     private boolean dataChanged;
     private ArrayList<Column> dataColumnsChanged = new ArrayList<>(); // ordered set, null - rows changed
     private boolean selectedRowChanged;
@@ -451,13 +452,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         this.pageIncrement = Math.max(1, pageIncrement);
     }
 
-    private Runnable rowChangedHandler;
-    public void setRowChangedHandler(Runnable handler) {
+    public interface RowColumnChangedHandler {
+        void onChange(int rowColumn, int prevRowColumn, FocusUtils.Reason reason);
+    }
+    private RowColumnChangedHandler rowChangedHandler;
+    public void setRowChangedHandler(RowColumnChangedHandler handler) {
         rowChangedHandler = handler;
     }
 
-    private Runnable columnChangedHandler;
-    public void setColumnChangedHandler(Runnable handler) {
+    private RowColumnChangedHandler columnChangedHandler;
+    public void setColumnChangedHandler(RowColumnChangedHandler handler) {
         columnChangedHandler = handler;
     }
 
@@ -628,14 +632,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // Increment the keyboard selected column.
         int selectedColumn = getSelectedColumn();
-        int newSelectedColumn = -1;
         if(selectedColumn == -1)
-            newSelectedColumn = columns.size() - 1;
+            changeSelectedColumn(columns.size() - 1, FocusUtils.Reason.COLUMNCHANGE);
         else if (beforeIndex <= selectedColumn)
-            newSelectedColumn = selectedColumn + 1;
-
-        if(newSelectedColumn != -1 && isFocusable(newSelectedColumn))
-            setSelectedColumn(newSelectedColumn);
+            setSelectedColumn(selectedColumn + 1);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {
@@ -687,13 +687,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         footers.remove(index);
 
         int selectedColumn = getSelectedColumn();
-        // Decrement the keyboard selected column.
-        if (index <= selectedColumn) {
-            if (selectedColumn == 0 && columns.size() > 0)
-                setSelectedColumn(0);
-            else
-                setSelectedColumn(selectedColumn - 1);
-        }
+        if(index == selectedColumn)
+            changeSelectedColumn(selectedColumn == 0 ? 0 : selectedColumn - 1, FocusUtils.Reason.COLUMNCHANGE);
+        else if(index < selectedColumn)
+            setSelectedColumn(selectedColumn - 1);
     }
 
     /**
@@ -740,6 +737,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
     public void rowsChanged() {
         dataChanged(null);
+    }
+    public void selectRowsChanged() {
+        selectRowsChanged = true;
+        scheduleUpdateDOM();
     }
     private boolean areRowsChanged() {
         return dataChanged && dataColumnsChanged == null;
@@ -843,11 +844,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     public void changeSelectedCell(int row, int column, FocusUtils.Reason reason) {
         // there are index checks inside, sometimes they are redundant, sometimes not
         // however not it's not that important as well, as if the row / column actually was changed
-        changeSelectedRow(row);
-        changeSelectedColumn(column);
+        changeSelectedRow(row, reason);
+        changeSelectedColumn(column, reason);
     }
 
-    private void changeSelectedColumn(int column) {
+    protected void changeSelectedColumn(int column, FocusUtils.Reason reason) {
         int columnCount = getColumnCount();
         if(columnCount == 0)
             return;
@@ -857,11 +858,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             column = columnCount - 1;
 
         //assert isFocusable(column); //changeRow call changeSelectedColumn even if column is not focusable
+        int prevColumn = getSelectedColumn();
         if (isFocusable(column) && setSelectedColumn(column) && columnChangedHandler != null)
-            columnChangedHandler.run();
+            columnChangedHandler.onChange(column, prevColumn, reason);
     }
 
-    private void changeSelectedRow(int row) {
+    private void changeSelectedRow(int row, FocusUtils.Reason reason) {
         int rowCount = getRowCount();
         if(rowCount == 0)
             return;
@@ -871,8 +873,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         else if (row >= rowCount)
             row = rowCount - 1;
 
+        int prevRow = getSelectedRow();
         if(setSelectedRow(row))
-            rowChangedHandler.run();
+            rowChangedHandler.onChange(row, prevRow, reason);
     }
 
     public Cell getSelectedCell() {
@@ -1080,10 +1083,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if (columnsChanged || dataChanged)
             updateDataDOM(columnsChanged, dataColumnsChanged); // updating data (rows + column values)
 
-        if((selectedRowChanged || selectedColumnChanged || focusedChanged)) // this is the check that all columns are already updated
+        if (selectRowsChanged)
+            updateSelectRowsDOM();
+
+        if(selectedRowChanged || selectedColumnChanged || focusedChanged) // this is the check that all columns are already updated
             updateSelectedDOM(dataColumnsChanged, !columnsChanged && !(dataChanged && dataColumnsChanged == null));
 
-        if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
+        if (selectedRowChanged || selectedColumnChanged || focusedChanged || columnsChanged)
             updateFocusedCellDOM(); // updating focus cell border
 
         // moved to GridContainerPanel
@@ -1095,6 +1101,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headersChanged = false;
         columnsChanged = false;
         widthsChanged = false;
+        selectRowsChanged = false;
         dataChanged = false;
         dataColumnsChanged = new ArrayList<>();
         selectedRowChanged = false;
@@ -1414,6 +1421,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return stickyColumns;
     }
 
+    protected void updateSelectRowsDOM() {
+        ArrayList<T> rows = getRows();
+        for(int i = 0, size = rows.size(); i < size; i++) {
+            TableRowElement rowElement = getChildElement(i);
+            setTableSelect(rowElement, isSelect(rows.get(i)));
+        }
+    }
+
+    protected abstract boolean isSelect(T row);
+
     private void updateSelectedDOM(ArrayList<Column> dataColumnsChanged, boolean updateRowImpl) {
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
         int rowCount = rows.getLength();
@@ -1597,6 +1614,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             GwtClientUtils.addClassName(element, "table-active");
         } else {
             GwtClientUtils.removeClassName(element, "table-active");
+        }
+    }
+
+    protected void setTableSelect(Element element, boolean active) {
+        if (active) {
+            GwtClientUtils.addClassName(element, "table-select");
+        } else {
+            GwtClientUtils.removeClassName(element, "table-select");
         }
     }
 

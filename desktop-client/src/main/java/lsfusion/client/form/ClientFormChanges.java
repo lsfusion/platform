@@ -167,6 +167,8 @@ public class ClientFormChanges {
                 return clientForm.getGroupObject(inStream.readInt()).rowBackgroundReader;
             case PropertyReadType.ROW_FOREGROUND:
                 return clientForm.getGroupObject(inStream.readInt()).rowForegroundReader;
+            case PropertyReadType.ROW_SELECT:
+                return clientForm.getGroupObject(inStream.readInt()).rowSelectReader;
             case PropertyReadType.LAST:
                 return clientForm.getProperty(inStream.readInt()).lastReaders.get(inStream.readInt());
             case PropertyReadType.CONTAINER_CAPTION:

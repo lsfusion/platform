@@ -68,14 +68,6 @@ public class CustomObjectInstance extends ObjectInstance {
         return gridClass;
     }
 
-    @Override
-    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
-        super.changeValue(session, form, changeValue);
-
-        if((updated & UPDATED_OBJECT) != 0)
-            updateCurrentClass(session, form);
-    }
-
     public void refreshValueClass(SessionChanges session, FormInstance form) throws SQLException, SQLHandledException {
         value = value.refresh(session, getBaseClass());
         updateCurrentClass(session, form);

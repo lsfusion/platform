@@ -18,6 +18,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -273,7 +274,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return mvKeys.immutableValue();
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value, ChangeSelection changeSelection) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
@@ -281,7 +282,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(valueToSet == null)
                 return;
 
-            groupObject.change(form.session, valueToSet, form, stack);
+            groupObject.change(valueToSet, form, stack, changeSelection);
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
@@ -1196,7 +1197,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ImMap<ObjectInstance, ? extends ObjectValue> objectValues = parseJSON(groupObject, session, values);
         mCurrentObjects.exclAddAll(objectValues);
         if(change)// there is no addSeek so maybe we should use forceChangeObject instead of change
-            groupObject.change(session, objectValues, form, stack);
+            groupObject.change(objectValues, form, stack, null);
     }
 
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {

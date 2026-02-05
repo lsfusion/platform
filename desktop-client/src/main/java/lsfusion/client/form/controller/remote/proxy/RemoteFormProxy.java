@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -91,9 +92,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value, ChangeSelection changeSelection) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value, changeSelection);
         logRemoteMethodEndVoidCall("changeGroupObject");
         return result;
     }

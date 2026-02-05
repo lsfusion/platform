@@ -759,8 +759,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
-        return getGroupChange(entity.getGroupChange(GroupObjectProp.FILTER).getImplement(reversedMapping),
-                              entity.getGroupChange(GroupObjectProp.ORDER).getImplement(reversedMapping),
+        return getGroupChange(entity.getGroupProp(GroupObjectProp.FILTER).getImplement(reversedMapping),
+                              entity.getGroupProp(GroupObjectProp.ORDER).getImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
     private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {

@@ -267,17 +267,17 @@ public abstract class FormsController {
         if(shiftKey != null) {
             boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !tab;
             pressedShift = onlyShift;
-            if (onlyShift && !isDialogMode())
-                setForceEditMode(EditMode.DIALOG);
-            if (!onlyShift && isForceDialogMode())
+            if (onlyShift && !isGroupChangeMode())
+                setForceEditMode(EditMode.GROUPCHANGE);
+            if (!onlyShift && isForceGroupChangeMode())
                 removeForceEditMode();
         }
         if (altKey != null) {
             boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey);
             pressedAlt = true;
-            if (onlyAlt && !isGroupChangeMode())
-                setForceEditMode(EditMode.GROUPCHANGE);
-            if (!onlyAlt && isForceGroupChangeMode())
+            if (onlyAlt && !isDialogMode())
+                setForceEditMode(EditMode.DIALOG);
+            if (!onlyAlt && isForceDialogMode())
                 removeForceEditMode();
 
             if(isAltEvent(event)) // we want to prevent moving focus in the browser to the menu bar

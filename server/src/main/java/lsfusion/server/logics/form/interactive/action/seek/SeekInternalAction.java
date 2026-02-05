@@ -8,7 +8,6 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ConcreteValueClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -50,6 +49,6 @@ public class SeekInternalAction extends InternalAction {
         }
 
         for(ImSet<ObjectInstance> groupedObjects : objects.group(key -> key.groupTo).valueIt())
-            form.seekObjects(null, groupedObjects.toMap(value), UpdateType.FIRST);
+            form.seekObjects(null, groupedObjects.toMap(value), UpdateType.FIRST, context.stack);
     }
 }

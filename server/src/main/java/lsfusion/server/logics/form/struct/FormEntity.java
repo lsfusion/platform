@@ -905,7 +905,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         initDefaultGroupElements(group, version);
 
-        group.fillGroupChanges(version);
+        group.fillGroupProps(version);
     }
 
     public void moveGroupObject(GroupObjectEntity group, ComplexLocation<GroupObjectEntity> location, Version version) {

@@ -56,6 +56,10 @@
     font: var(--fa-font-solid);
 }
 
+.table-select {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.0625);
+}
+
 /*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
 .focused-cell {
     --bs-table-bg-state: rgba(0, 0, 0, 0.3);

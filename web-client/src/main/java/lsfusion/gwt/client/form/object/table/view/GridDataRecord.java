@@ -4,7 +4,6 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 
@@ -14,6 +13,7 @@ public class GridDataRecord implements RowIndexHolder {
     private GGroupObjectValue key;
     private String rowBackground;
     private String rowForeground;
+    private boolean rowSelect;
 
     private NativeStringMap<Object> values;
 
@@ -91,8 +91,7 @@ public class GridDataRecord implements RowIndexHolder {
     }
 
     public String getBackground(String column) {
-        String background = (String) getAttribute(column + "_background");
-        return background != null ? background : rowBackground;
+        return (String) getAttribute(column + "_background");
     }
 
     public void setPlaceholder(String column, String placeholder) {
@@ -148,8 +147,7 @@ public class GridDataRecord implements RowIndexHolder {
     }
 
     public String getForeground(String column) {
-        String foreground = (String) getAttribute(column + "_foreground");
-        return foreground != null ? foreground : rowForeground;
+        return (String) getAttribute(column + "_foreground");
     }
 
     public void setReadOnly(String column, Boolean readOnly) {
@@ -162,6 +160,22 @@ public class GridDataRecord implements RowIndexHolder {
 
     public void setRowBackground(PValue newRowBackground) {
         rowBackground = PValue.getColorStringValue(newRowBackground);
+    }
+
+    public void setRowSelect(PValue newRowSelect) {
+        rowSelect = isRowSelect(newRowSelect);
+    }
+
+    public static boolean isRowSelect(PValue newRowSelect) {
+        return PValue.getBooleanValue(newRowSelect);
+    }
+
+    public static PValue invertSelect(PValue pValue) {
+        return PValue.getPValue(!isRowSelect(pValue));
+    }
+
+    public boolean isRowSelect() {
+        return rowSelect;
     }
 
     public String getRowBackground() {

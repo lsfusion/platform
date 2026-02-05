@@ -366,7 +366,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         mapObjects = MapFact.override(mSeekCachedObjects.immutable(), DataObject.filterDataObjects(mapObjects));
         for (int i = 0, size = mapObjects.size(); i < size; i++)
-            seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i));
+            seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i), stack);
 
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
@@ -904,13 +904,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    // in theory can be done in change value, but in that case update / events will be called for "not checked" objects (for example seeked in SEEK operator)
-    public void onGroupObjectChanged(ImSet<ObjectInstance> objects, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for (ObjectInstance objectInstance : objects) {
-            if ((objectInstance.updated & UPDATED_OBJECT) != 0) {
-                onObjectChanged(objectInstance, stack);
-            }
-        }
+    public void changeValue(ObjectInstance object, ObjectValue changeValue, ExecutionStack stack) throws SQLException, SQLHandledException {
+        object.changeValue(changeValue);
+
+        onObjectChanged(object, stack);
     }
 
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException, SQLHandledException {
@@ -984,7 +981,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
-        seekObject(object, dataObject);
+        seekObject(object, dataObject, stack);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае
 //      changeClassView(object.groupTo, ClassViewType.PANEL);
@@ -1755,22 +1752,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
-        changeObjectValue(object, value);
+    public void seekObject(ObjectInstance object, ObjectValue value, ExecutionStack stack) throws SQLException, SQLHandledException {
+        changeValue(object, value, stack);
 
         if(value instanceof DataObject) // ignoring null values, it's important when we're seeking with NULL option (since we want to set null object if all objects are NULL)
-            object.groupTo.addSeek(object, value, false);
-    }
-
-    public void changeObjectValue(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
-//        if (object instanceof DataObjectInstance && !(value instanceof DataObject))
-//            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
-//        else
-        object.changeValue(session, this, value);
+            object.groupTo.addSeek(object, value);
     }
 
     // explicit SEEK with explicit updateType
-    public void seekObjects(GroupObjectInstance group, ImMap<ObjectInstance, ObjectValue> objectInstances, UpdateType type) throws SQLException, SQLHandledException {
+    public void seekObjects(GroupObjectInstance group, ImMap<ObjectInstance, ObjectValue> objectInstances, UpdateType type, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(group == null)
             group = objectInstances.getKey(0).groupTo;
         if (group == null) //if seek objects from another form
@@ -1780,7 +1770,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         // assert that all objects are from this group
         group.seek(type);
         for (int i = 0; i < objectInstances.size(); ++i)
-            seekObject(objectInstances.getKey(i), objectInstances.getValue(i));
+            seekObject(objectInstances.getKey(i), objectInstances.getValue(i), stack);
     }
 
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
@@ -2279,7 +2269,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
                 if (group.getDownTreeGroups().isEmpty() && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
+                    updateGroupObject.group.update(result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
                 }
             } catch (EmptyStackException e) {
@@ -2487,6 +2477,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 return true;
         }
 
+        if(propertyDraw instanceof GroupObjectInstance.RowSelectReaderInstance) {
+            if((toDraw.updated & UPDATED_SELECT) != 0)
+                return true;
+        }
+
         // since we return null for all not needed props they are not updated (except when keys are updated and we need to resend nulls)
         if(toDraw != null && toDraw.groupMode != null && !(propertyDraw instanceof PropertyDrawInstance && (toDraw.groupMode.need((PropertyDrawInstance) propertyDraw) || groupUpdated(groupObjects, UPDATED_KEYS))))
             return false;
@@ -2563,6 +2558,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+            fillChangedReader(group.rowSelectReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
             fillChangedReader(group.customOptionsReader, group, result, SetFact.EMPTY(), hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
         }
 
@@ -2729,8 +2725,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void onObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
-        object.updateValueProperty(this);
-        fireObjectChanged(object, stack);
+        if ((object.updated & UPDATED_OBJECT) != 0) {
+            if (object instanceof CustomObjectInstance)
+                ((CustomObjectInstance) object).updateCurrentClass(session, this);
+            object.updateValueProperty(this);
+
+            fireObjectChanged(object, stack);
+        }
     }
 
     // ---------------------------------------- Events ----------------------------------------

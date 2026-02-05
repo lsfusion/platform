@@ -521,6 +521,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         return reader == null ? null : new GRowBackgroundReader(reader.getID());
     }
 
+    public GRowSelectReader convertRowSelectReader(ClientGroupObject.RowSelectReader reader) {
+        return reader == null ? null : new GRowSelectReader(reader.getID());
+    }
+
     public GRowForegroundReader convertRowForegroundReader(ClientGroupObject.RowForegroundReader reader) {
         return reader == null ? null : new GRowForegroundReader(reader.getID());
     }
@@ -631,6 +635,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         }
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
+        groupObject.rowSelectReader = convertRowSelectReader(clientGroupObject.rowSelectReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
         groupObject.customOptionsReader = convertCustomOptionsReader(clientGroupObject.customOptionsReader);
 

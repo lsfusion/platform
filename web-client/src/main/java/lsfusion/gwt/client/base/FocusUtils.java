@@ -106,6 +106,8 @@ public class FocusUtils {
         BINDING,
         NOTFOCUSABLE, // BINDING OR MOUSECHANGE ON NOTFOCUSABLE PROPERTY
 
+        COLUMNCHANGE,
+
         SUGGEST,
         REPLACE,
         OTHER;
@@ -116,6 +118,10 @@ public class FocusUtils {
 
         public boolean preventScroll() {
             return this == RESTOREFOCUS || this == MOUSECHANGE || this == SHOW || this == FOCUSNAVIGATE;
+        }
+
+        public boolean changeSelection() {
+            return this == KEYMOVENAVIGATE || this == MOUSENAVIGATE;
         }
     }
 
