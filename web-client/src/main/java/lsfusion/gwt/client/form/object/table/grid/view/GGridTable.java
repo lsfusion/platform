@@ -127,7 +127,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             GPropertyDraw property = getSelectedProperty();
             GGroupObjectValue columnKey = getSelectedColumnKey();
 
+            GChangeSelection changeSelection = reason.changeSelection() ? (FormsController.isForceGroupChangeMode() ? GChangeSelection.MOVEEND : GChangeSelection.MOVE) : null;
+            updateColumnSelection(col, changeSelection);
+
             form.setPropertyActive(property, true);
+
             ArrayList<GGroupObject> columnGroupObjects = getColumnPropertyDraw(getSelectedColumn()).columnGroupObjects;
             if (columnGroupObjects != null)
                 columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
@@ -180,12 +184,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     GGroupObjectValue rowKey = getRowValue(i).getKey();
 
                     PValue pValue;
-                    if(i == prevRow) // assert rowSelectValues.get(rowKey) is null
-                        pValue = rowSelectValues.get(getRowValue(prevRow + dir).getKey());
-                    else if (i == row)
+                    if (i == row)
                         pValue = PValue.getPValue(true);
                     else
-                        pValue = rowSelectValues.get(rowKey);
+                        pValue = rowSelectValues.get(getRowValue(i + dir).getKey());
 
                     PValue newSelectValue = GridDataRecord.invertSelect(pValue);
 
@@ -201,6 +203,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
         }
         return changeSelectionRows;
+    }
+
+    private void updateColumnSelection(int col, GChangeSelection changeSelection) {
+        if(changeSelection != null) {
+            if (changeSelection == GChangeSelection.MOVE || startSelectColumn == -1) {
+                setColumnSelection(col, col);
+            } else {
+                setColumnSelection(startSelectColumn, col);
+            }
+        }
     }
 
     public void update(Boolean updateState) {
@@ -569,7 +581,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    protected boolean isSelect(GridDataRecord row) {
+    protected boolean isRowSelect(GridDataRecord row) {
         return row.isRowSelect();
     }
 

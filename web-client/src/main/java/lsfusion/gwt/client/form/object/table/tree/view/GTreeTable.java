@@ -1081,7 +1081,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected boolean isSelect(GTreeGridRecord row) {
+    protected boolean isRowSelect(GTreeGridRecord row) {
         return false;
     }
 
