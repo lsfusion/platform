@@ -1236,7 +1236,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 //        }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
@@ -1252,7 +1252,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 }
             }
 
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
 

@@ -43,6 +43,8 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Timer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -1958,21 +1960,105 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public static abstract class DataGridSelectionHandler<T> {
         protected final DataGrid<T> display;
+        protected final DataGridDragSelectionHelper dragSelectionHelper;
 
         public DataGridSelectionHandler(DataGrid<T> display) {
             this.display = display;
+            this.dragSelectionHelper = new DataGridDragSelectionHelper();
+        }
+
+        public boolean isDragSelecting() {
+            return dragSelectionHelper.isDragSelecting();
+        }
+
+        public class DataGridDragSelectionHelper {
+            private HandlerRegistration dragSelectionReg;
+            private Timer dragSelectionTimer;
+            private int lastDragX, lastDragY;
+
+            public void start() {
+                if (dragSelectionReg != null)
+                    return;
+
+                Event currentEvent = Event.getCurrentEvent();
+                if (currentEvent != null) {
+                    lastDragX = currentEvent.getClientX();
+                    lastDragY = currentEvent.getClientY();
+                }
+
+                dragSelectionReg = Event.addNativePreviewHandler(preview -> {
+                    NativeEvent nativeEvent = preview.getNativeEvent();
+                    int typeInt = preview.getTypeInt();
+                    if (typeInt == Event.ONMOUSEUP) {
+                        stop();
+                    } else if (typeInt == Event.ONMOUSEMOVE) {
+                        lastDragX = nativeEvent.getClientX();
+                        lastDragY = nativeEvent.getClientY();
+                    }
+                });
+
+                if (dragSelectionTimer == null) {
+                    dragSelectionTimer = new Timer() {
+                        @Override
+                        public void run() {
+                            Element element = display.tableContainer.getElement();
+                            int left = element.getAbsoluteLeft();
+                            int right = left + element.getOffsetWidth();
+                            int top = element.getAbsoluteTop();
+                            int bottom = top + element.getOffsetHeight();
+
+                            Integer keyCode = null;
+                            if (lastDragX < left) {
+                                keyCode = KeyCodes.KEY_LEFT;
+                            } else if (lastDragX > right) {
+                                keyCode = KeyCodes.KEY_RIGHT;
+                            }
+
+                            if (lastDragY < top) {
+                                keyCode = KeyCodes.KEY_UP;
+                            } else if (lastDragY > bottom) {
+                                keyCode = KeyCodes.KEY_DOWN;
+                            }
+
+                            if (keyCode != null)
+                                handleKeyEvent(GKeyStroke.createDragKeyEvent(keyCode), FocusUtils.Reason.MOUSEDRAGNAVIGATE);
+                        }
+                    };
+                    dragSelectionTimer.scheduleRepeating(50);
+                }
+            }
+
+            public void stop() {
+                if (dragSelectionReg != null) {
+                    dragSelectionReg.removeHandler();
+                    dragSelectionReg = null;
+                }
+                if (dragSelectionTimer != null) {
+                    dragSelectionTimer.cancel();
+                    dragSelectionTimer = null;
+                }
+            }
+
+            public boolean isDragSelecting() {
+                return dragSelectionReg != null;
+            }
         }
 
         public void onCellBefore(EventHandler handler, Cell cell, Function<Boolean, Boolean> isChangeOnSingleClick, Supplier<Element> getNativeEventElement) {
             Event event = handler.event;
+            String eventType = event.getType();
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
-            if (changeEvent || GMouseStroke.isContextMenuEvent(event)) {
+
+            boolean isDraggingEvent = dragSelectionHelper.isDragSelecting() && BrowserEvents.MOUSEMOVE.equals(eventType);
+
+            if (changeEvent || isDraggingEvent || GMouseStroke.isContextMenuEvent(event)) {
                 int col = cell.getColumnIndex();
                 int row = cell.getRowIndex();
-                boolean rowChanged = display.getSelectedRow() != row;
-                int selectedColumn = display.getSelectedColumn();
 
-                if (selectedColumn != col || rowChanged) {
+                boolean rowChanged = display.getSelectedRow() != row;
+                boolean columnChanged = display.getSelectedColumn() != col;
+
+                if (columnChanged || rowChanged) {
                     FocusUtils.Reason reason = FocusUtils.Reason.MOUSENAVIGATE;
                     if(!isFocusable(col))
                         changeRow(row, reason, event);
@@ -1983,26 +2069,25 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                         Element nativeEventElement = getNativeEventElement.get();
                         if(nativeEventElement != null)
                             MainFrame.preventClickAfterDown(nativeEventElement, event); // most input elements show popups on mouse click (not mousedown)
-                        // we'll propagate native events by default, at least to enable (support) "text selection" feature
-                        handler.consume(nativeEventElement == null, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
+                        // we don't want at least "text selection" feature, so we'll not propagate native events by default
+                        handler.consume(false, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
                     }
                 }
-//                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
-//                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))
-//                    display.focus();
             }
+
+            if (changeEvent) // should be after changeRowCell to not enable accidentally ChangeSelection.MOVE_END (maybe later move to onCellAfter)
+                dragSelectionHelper.start();
         }
 
         public void onCellAfter(EventHandler handler, Cell cell) {
             Event event = handler.event;
             String eventType = event.getType();
-            if (BrowserEvents.KEYDOWN.equals(eventType) && handleKeyEvent(event))
+            if (BrowserEvents.KEYDOWN.equals(eventType) && handleKeyEvent(event, FocusUtils.Reason.KEYMOVENAVIGATE))
                 handler.consume();
         }
 
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             int keyCode = event.getKeyCode();
-            FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             switch (keyCode) {
                 case KeyCodes.KEY_RIGHT:
                     nextColumn(true, reason, event);
@@ -2064,7 +2149,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             while(true) {
                 if (forward) {
                     if (columnIndex == columnCount - 1) {
-                        if (rowIndex != rowCount - 1) {
+                        if (rowIndex != rowCount - 1 && reason != FocusUtils.Reason.MOUSEDRAGNAVIGATE) {
                             columnIndex = 0;
                             rowIndex++;
                         } else
@@ -2074,7 +2159,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     }
                 } else {
                     if (columnIndex == 0) {
-                        if (rowIndex != 0) {
+                        if (rowIndex != 0 && reason != FocusUtils.Reason.MOUSEDRAGNAVIGATE) {
                             columnIndex = columnCount - 1;
                             rowIndex--;
                         } else

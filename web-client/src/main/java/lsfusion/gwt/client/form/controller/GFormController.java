@@ -2662,8 +2662,9 @@ public class GFormController implements EditManager {
         if(isPropertyEditing)
             requestCellEditor.onBrowserEvent(renderElement, handler);
 
-        if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
-            return;
+//        used in dragging selection
+//        if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
+//            return;
 
         if(handler.consumed)
             return;

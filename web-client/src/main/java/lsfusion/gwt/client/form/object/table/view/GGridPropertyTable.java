@@ -465,11 +465,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
                 int i=0;
                 while (!isFocusable(i))
@@ -483,7 +482,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 changeColumn(i, reason, event);
                 return true;
             }
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
 

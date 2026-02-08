@@ -155,8 +155,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Nullable
-    private static GChangeSelection getChangeSelection(FocusUtils.Reason reason, NativeEvent event) {
-        return reason.changeSelection() ? (event != null && event.getShiftKey() ? GChangeSelection.MOVEEND : GChangeSelection.MOVE) : null;
+    private GChangeSelection getChangeSelection(FocusUtils.Reason reason, NativeEvent event) {
+        return reason.changeSelection() ? selectionHandler.isDragSelecting() || (event != null && event.getShiftKey()) ? GChangeSelection.MOVEEND : GChangeSelection.MOVE : null;
     }
 
     private void updateRowColumn(int prevRow, int prevCol, FocusUtils.Reason reason, NativeEvent event) {
@@ -1528,7 +1528,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
 
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
@@ -1540,11 +1540,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 toEnd = true;
 
             if(toEnd != null) {
-                scrollToEnd(toEnd, FocusUtils.Reason.KEYMOVENAVIGATE, event);
+                scrollToEnd(toEnd, reason, event);
                 return true;
             }
 
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
     
