@@ -1005,8 +1005,8 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new ChangePageSize(groupObject.ID, pageSize));
     }
 
-    public void scrollToEnd(GGroupObject group, boolean toEnd) {
-        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
+    public void scrollToEnd(GGroupObject group, boolean toEnd, GChangeSelection changeSelection) {
+        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
     }
 
     public void onPropertyBinding(Event bindingEvent, ExecuteEditContext editContext) {
@@ -2003,15 +2003,15 @@ public class GFormController implements EditManager {
         bindings.remove(index);
     }
 
-    public void addEnterBindings(GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+    public void addEnterBindings(GBindingMode bindGroup, BiConsumer<Boolean, NativeEvent> selectNextElement, GGroupObject groupObject) {
         addEnterBinding(false, bindGroup, selectNextElement, groupObject);
         addEnterBinding(true, bindGroup, selectNextElement, groupObject);
     }
 
-    private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+    private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, BiConsumer<Boolean, NativeEvent> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
                 new GBindingEnv(-100, GBindingMode.NO, null, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
-                event -> selectNextElement.accept(!shiftPressed),
+                event -> selectNextElement.accept(!shiftPressed, event),
                 null,
                 groupObject);
     }

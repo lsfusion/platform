@@ -21,6 +21,7 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.server.logics.form.interactive.event.*;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
@@ -352,7 +353,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (GroupObjectInstance groupObject : groupObjects) {
             UpdateType updateType = groupObject.getUpdateType();
             if (updateType != UpdateType.PREV) {
-                groupObject.seek(updateType);
+                groupObject.seek(updateType, this, null);
             } else {
                 for (ObjectInstance object : groupObject.objects) {
                     // ставим на объекты из cache'а
@@ -893,15 +894,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // ----------------------------------- Навигация ----------------------------------------- //
 
-    public void changeGroupObject(GroupObjectInstance group, Scroll changeType) {
+    public void changeGroupObject(GroupObjectInstance group, Scroll changeType, ChangeSelection changeSelection) throws SQLException, SQLHandledException {
+        UpdateType updateType = null;
+
         switch (changeType) {
             case HOME:
-                group.seek(UpdateType.FIRST);
+                updateType = UpdateType.FIRST;
                 break;
             case END:
-                group.seek(UpdateType.LAST);
+                updateType = UpdateType.LAST;
                 break;
         }
+
+        group.seek(updateType, this, changeSelection);
     }
 
     public void changeValue(ObjectInstance object, ObjectValue changeValue, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1037,9 +1042,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireChangeEvent(property, stack, keys, false);
     }
 
+    public GroupObjectInstance.SeekOrderObjects getOrderGroupObjectValue(GroupObjectInstance groupObject) throws SQLException, SQLHandledException {
+        return groupObject.getOrderGroupObjectValue(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, this);
+    }
+
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
-        ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size()).keyOrderSet();
+        ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = getOrderGroupObjectValue(groupObject).executeOrders(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size(), true, this).keyOrderSet();
 
         //создание объектов
         int availableQuantity = executeList.size();
@@ -1768,7 +1777,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(type == null)
             type = group.getUpdateType();
         // assert that all objects are from this group
-        group.seek(type);
+        group.seek(type, this, null);
         for (int i = 0; i < objectInstances.size(); ++i)
             seekObject(objectInstances.getKey(i), objectInstances.getValue(i), stack);
     }

@@ -981,7 +981,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGroupObject.end - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize());
+                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize(), null);
             }
         });
     }

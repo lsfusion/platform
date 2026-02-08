@@ -370,7 +370,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType, ChangeSelection changeSelection) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
@@ -379,7 +379,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug(String.format("new type: %s", changeType));
             }
             
-            form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
+            form.changeGroupObject(groupObject, Scroll.deserialize(changeType), changeSelection);
         });
     }
 

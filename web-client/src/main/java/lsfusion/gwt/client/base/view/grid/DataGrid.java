@@ -19,14 +19,12 @@ package lsfusion.gwt.client.base.view.grid;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.dom.client.ScrollHandler;
-import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -166,7 +164,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 //                skipScrollEvent = false;
 //            } else {
                 calcLeftNeighbourRightBorder(true);
-                checkSelectedRowVisible();
+                checkSelectedRowVisible(event);
 
                 updateScrolledStateVertical();
                 updateScrolledStateHorizontal();
@@ -188,7 +186,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         recentlyScrolledClassHandler.onEvent();
     }
 
-    protected abstract void scrollToEnd(boolean toEnd);
+    protected abstract void scrollToEnd(boolean toEnd, FocusUtils.Reason reason, NativeEvent event);
 
     private void updateScrolledStateHorizontal() {
         int horizontalScrollPosition = tableContainer.getHorizontalScrollPosition();
@@ -454,7 +452,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public interface RowColumnChangedHandler {
-        void onChange(int rowColumn, int prevRowColumn, FocusUtils.Reason reason);
+        void onChange(int rowColumn, int prevRowColumn, FocusUtils.Reason reason, NativeEvent event);
     }
     private RowColumnChangedHandler rowChangedHandler;
     public void setRowChangedHandler(RowColumnChangedHandler handler) {
@@ -631,15 +629,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         footers.add(beforeIndex, footer);
         columns.add(beforeIndex, col);
 
-        // Increment the keyboard selected column.
-        int selectedColumn = getSelectedColumn();
-        if(selectedColumn == -1)
-            changeSelectedColumn(columns.size() - 1, FocusUtils.Reason.COLUMNCHANGE);
-        else if (beforeIndex <= selectedColumn)
-            setSelectedColumn(selectedColumn + 1);
-
+        // Increment the keyboard selected column, need before changeSelectedColumn because can change startSelectColumn
         startSelectColumn = shiftIndexOnInsert(startSelectColumn, beforeIndex);
         endSelectColumn = shiftIndexOnInsert(endSelectColumn, beforeIndex);
+
+        int selectedColumn = getSelectedColumn();
+        if(selectedColumn == -1)
+            changeSelectedColumn(columns.size() - 1, FocusUtils.Reason.COLUMNCHANGE, null);
+        else if (beforeIndex <= selectedColumn)
+            setSelectedColumn(selectedColumn + 1);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {
@@ -649,16 +647,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             return;
         }
 
-        int selectedColumn = getSelectedColumn();
-        if (oldIndex == selectedColumn)
-            setSelectedColumn(newIndex);
-        else if (oldIndex < selectedColumn && selectedColumn > 0)
-            setSelectedColumn(selectedColumn - 1);
-
-        // Update selection boundaries as if it's a remove followed by insert
-        startSelectColumn = shiftIndexOnMove(startSelectColumn, oldIndex, newIndex);
-        endSelectColumn = shiftIndexOnMove(endSelectColumn, oldIndex, newIndex);
-
         Column<T, ?> column = columns.remove(oldIndex);
         Header<?> header = headers.remove(oldIndex);
         Header<?> footer = footers.remove(oldIndex);
@@ -666,6 +654,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         columns.add(newIndex, column);
         headers.add(newIndex, header);
         footers.add(newIndex, footer);
+
+        // Update selection boundaries as if it's a remove followed by insert
+        startSelectColumn = shiftIndexOnMove(startSelectColumn, oldIndex, newIndex);
+        endSelectColumn = shiftIndexOnMove(endSelectColumn, oldIndex, newIndex);
+
+        int selectedColumn = getSelectedColumn();
+        if (oldIndex == selectedColumn)
+            setSelectedColumn(newIndex);
+        else if (oldIndex < selectedColumn && selectedColumn > 0)
+            setSelectedColumn(selectedColumn - 1);
     }
 
     // Adjusts an index as if a column at removeIndex was removed
@@ -721,14 +719,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headers.remove(index);
         footers.remove(index);
 
-        int selectedColumn = getSelectedColumn();
-        if(index == selectedColumn)
-            changeSelectedColumn(selectedColumn == 0 ? 0 : selectedColumn - 1, FocusUtils.Reason.COLUMNCHANGE);
-        else if(index < selectedColumn)
-            setSelectedColumn(selectedColumn - 1);
-
         startSelectColumn = shiftIndexOnRemove(startSelectColumn, index);
         endSelectColumn = shiftIndexOnRemove(endSelectColumn, index);
+
+        int selectedColumn = getSelectedColumn();
+        if(index == selectedColumn) {
+            int column = selectedColumn == 0 ? 0 : selectedColumn - 1;
+            changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
+        } else if (index < selectedColumn)
+            setSelectedColumn(selectedColumn - 1);
     }
 
     /**
@@ -883,14 +882,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     // so to handle this there are to ways of doing that, either with GFormController.checkCommitEditing, or moving focus to grid
     // so far will do it with checkCommitEditing (like in form bindings)
     // see overrides
-    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason) {
+    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason, NativeEvent event) {
         // there are index checks inside, sometimes they are redundant, sometimes not
         // however not it's not that important as well, as if the row / column actually was changed
-        changeSelectedRow(row, reason);
-        changeSelectedColumn(column, reason);
+        changeSelectedRow(row, reason, event);
+        changeSelectedColumn(column, reason, event);
     }
 
-    protected void changeSelectedColumn(int column, FocusUtils.Reason reason) {
+    protected void changeSelectedColumn(int column, FocusUtils.Reason reason, NativeEvent event) {
         int columnCount = getColumnCount();
         if(columnCount == 0)
             return;
@@ -902,10 +901,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         //assert isFocusable(column); //changeRow call changeSelectedColumn even if column is not focusable
         int prevColumn = getSelectedColumn();
         if (isFocusable(column) && setSelectedColumn(column) && columnChangedHandler != null)
-            columnChangedHandler.onChange(column, prevColumn, reason);
+            columnChangedHandler.onChange(column, prevColumn, reason, event);
     }
 
-    private void changeSelectedRow(int row, FocusUtils.Reason reason) {
+    private void changeSelectedRow(int row, FocusUtils.Reason reason, NativeEvent event) {
         int rowCount = getRowCount();
         if(rowCount == 0)
             return;
@@ -917,7 +916,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         int prevRow = getSelectedRow();
         if(setSelectedRow(row))
-            rowChangedHandler.onChange(row, prevRow, reason);
+            rowChangedHandler.onChange(row, prevRow, reason, event);
     }
 
     public Cell getSelectedCell() {
@@ -948,7 +947,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected void focusColumn(int columnIndex, FocusUtils.Reason reason) {
         focus(reason);
-        selectionHandler.changeColumn(columnIndex, reason);
+        selectionHandler.changeColumn(columnIndex, reason, null);
     }
 
     public abstract void focus(FocusUtils.Reason reason);
@@ -1190,7 +1189,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return -1;
     }
 
-    public void checkSelectedRowVisible() {
+    public void checkSelectedRowVisible(ScrollEvent event) {
         int selectedRow = getSelectedRow();
         if (selectedRow >= 0) {
             int scrollHeight = tableContainer.getClientHeight();
@@ -1213,7 +1212,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 newRow = getFirstVisibleRow(visibleTop, rowBottom >= visibleTop ? visibleBottom : null, selectedRow + 1);
             }
             if (newRow != -1) {
-                selectionHandler.changeRow(newRow, FocusUtils.Reason.SCROLLNAVIGATE);
+                selectionHandler.changeRow(newRow, FocusUtils.Reason.SCROLLNAVIGATE, event.getNativeEvent());
             }
         }
     }
@@ -1976,9 +1975,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 if (selectedColumn != col || rowChanged) {
                     FocusUtils.Reason reason = FocusUtils.Reason.MOUSENAVIGATE;
                     if(!isFocusable(col))
-                        changeRow(row, reason);
+                        changeRow(row, reason, event);
                     else
-                        changeCell(row, col, reason);
+                        changeCell(row, col, reason, event);
 
                     if(changeEvent && !isChangeOnSingleClick.apply(rowChanged)) {
                         Element nativeEventElement = getNativeEventElement.get();
@@ -2006,28 +2005,28 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             switch (keyCode) {
                 case KeyCodes.KEY_RIGHT:
-                    nextColumn(true, reason);
+                    nextColumn(true, reason, event);
                     return true;
                 case KeyCodes.KEY_LEFT:
-                    nextColumn(false, reason);
+                    nextColumn(false, reason, event);
                     return true;
                 case KeyCodes.KEY_DOWN:
-                    nextRow(true, reason);
+                    nextRow(true, reason, event);
                     return true;
                 case KeyCodes.KEY_UP:
-                    nextRow(false, reason);
+                    nextRow(false, reason, event);
                     return true;
                 case KeyCodes.KEY_PAGEDOWN:
-                    changeRow(display.getSelectedRow() + display.pageIncrement, reason);
+                    changeRow(display.getSelectedRow() + display.pageIncrement, reason, event);
                     return true;
                 case KeyCodes.KEY_PAGEUP:
-                    changeRow(display.getSelectedRow() - display.pageIncrement, reason);
+                    changeRow(display.getSelectedRow() - display.pageIncrement, reason, event);
                     return true;
                 case KeyCodes.KEY_HOME:
-                    changeRow(0, reason);
+                    changeRow(0, reason, event);
                     return true;
                 case KeyCodes.KEY_END:
-                    changeRow(display.getRowCount() - 1, reason);
+                    changeRow(display.getRowCount() - 1, reason, event);
                     return true;
             }
             return false;
@@ -2036,22 +2035,22 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         protected boolean isFocusable(int column) {
             return display.isFocusable(column);
         }
-        protected void changeCell(int row, int column, FocusUtils.Reason reason) {
-            display.changeSelectedCell(row, column, reason);
+        protected void changeCell(int row, int column, FocusUtils.Reason reason, NativeEvent event) {
+            display.changeSelectedCell(row, column, reason, event);
         }
-        public void changeColumn(int column, FocusUtils.Reason reason) {
-            changeCell(display.getSelectedRow(), column, reason);
+        public void changeColumn(int column, FocusUtils.Reason reason, NativeEvent event) {
+            changeCell(display.getSelectedRow(), column, reason, event);
         }
-        public void changeRow(int row, FocusUtils.Reason reason) {
-            changeCell(row, display.getSelectedColumn(), reason);
+        public void changeRow(int row, FocusUtils.Reason reason, NativeEvent event) {
+            changeCell(row, display.getSelectedColumn(), reason, event);
         }
 
-        public void nextRow(boolean down, FocusUtils.Reason reason) {
+        public void nextRow(boolean down, FocusUtils.Reason reason, NativeEvent event) {
             int rowIndex = display.getSelectedRow();
-            changeRow(down ? rowIndex + 1 : rowIndex - 1, reason);
+            changeRow(down ? rowIndex + 1 : rowIndex - 1, reason, event);
         }
 
-        public void nextColumn(boolean forward, FocusUtils.Reason reason) {
+        public void nextColumn(boolean forward, FocusUtils.Reason reason, NativeEvent event) {
             int rowCount = display.getRowCount();
             if(rowCount == 0) // not sure if it's needed
                 return;
@@ -2089,7 +2088,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     break;
             }
 
-            changeCell(rowIndex, columnIndex, reason);
+            changeCell(rowIndex, columnIndex, reason, event);
         }
     }
 
@@ -2100,7 +2099,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         GwtClientUtils.addClassName(button, "btn-sm");
         GwtClientUtils.addClassName(button, "arrow");
         button.appendChild(bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage());
-        GwtClientUtils.setOnClick(button, event -> scrollToEnd(bottom));
+        GwtClientUtils.setOnClick(button, event -> scrollToEnd(bottom, FocusUtils.Reason.MOUSENAVIGATE, event));
 
         Element arrowTH = Document.get().createElement("th");
         GwtClientUtils.addClassName(arrowTH, "arrow-th");

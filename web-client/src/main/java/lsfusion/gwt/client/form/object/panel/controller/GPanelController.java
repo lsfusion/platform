@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -29,7 +30,7 @@ public class GPanelController extends GPropertyController {
     public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
-    private void focusNextElement(boolean forward) {
+    private void focusNextElement(boolean forward, NativeEvent event) {
         formController.focusNextElement(FocusUtils.Reason.KEYNEXTNAVIGATE, forward);
     }
 

@@ -99,9 +99,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType, changeSelection);
         logRemoteMethodEndVoidCall("changeGroupObject");
         return result;
     }

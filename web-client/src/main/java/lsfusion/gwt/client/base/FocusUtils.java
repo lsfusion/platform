@@ -121,7 +121,7 @@ public class FocusUtils {
         }
 
         public boolean changeSelection() {
-            return this == KEYMOVENAVIGATE || this == MOUSENAVIGATE;
+            return this == KEYMOVENAVIGATE || this == MOUSENAVIGATE || this == KEYNEXTNAVIGATE || this == COLUMNCHANGE;
         }
     }
 

@@ -2175,16 +2175,6 @@ public class Settings implements Cloneable {
         this.useSafeMonitorProcess = useSafeMonitorProcess;
     }
 
-    private boolean enableSingleReadObjectsOptimization = true;
-
-    public boolean isEnableSingleReadObjectsOptimization() {
-        return enableSingleReadObjectsOptimization;
-    }
-
-    public void setEnableSingleReadObjectsOptimization(boolean enableSingleReadObjectsOptimization) {
-        this.enableSingleReadObjectsOptimization = enableSingleReadObjectsOptimization;
-    }
-
     private int conflictSleepThreshold = 3; // начинать засыпать после попытки включительно
     private double conflictSleepTimeDegree = 2; // кол-во попыток в степени этого времени (порог ожидания)
 
