@@ -63,7 +63,7 @@ public class LRUUtil {
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     private static final String newSizeFraction = "-XX:G1NewSizePercent=";
-    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetIncLRU, Supplier<Double> adjustTargetDecLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Boolean> disableLRUCollectionUsageThreshold, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetIncLRU, Supplier<Double> adjustTargetDecLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
@@ -91,7 +91,7 @@ public class LRUUtil {
         scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
         multiplier = LRUDefCoeff;
 
-        final boolean collectionUsageNotSupported = !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115  
+        final boolean collectionUsageNotSupported = disableLRUCollectionUsageThreshold.get() || !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115
 
         MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
         NotificationEmitter emitter = (NotificationEmitter) mbean;
