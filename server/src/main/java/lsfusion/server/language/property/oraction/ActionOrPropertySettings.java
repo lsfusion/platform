@@ -48,7 +48,7 @@ public class ActionOrPropertySettings {
             this.actionType = actionType;
             this.before = before;
             this.contextMenuCaption = contextMenuCaption;
-            this.keyPress = KeyStroke.getKeyStroke(keyPress);
+            this.keyPress = getKeyStroke(keyPress);
         }
 
         public boolean isContextMenu() {
@@ -56,6 +56,18 @@ public class ActionOrPropertySettings {
         }
         public boolean isKeyPress() {
             return ServerResponse.KEYPRESS.equals(actionType);
+        }
+
+        private KeyStroke getKeyStroke(String keyPress) {
+            if (keyPress != null) {
+                if (keyPress.equalsIgnoreCase("ctrl"))
+                    keyPress = "ctrl CONTROL";
+                else if (keyPress.equalsIgnoreCase("alt"))
+                    keyPress = "alt ALT";
+                if (keyPress.equalsIgnoreCase("shift"))
+                    keyPress = "shift SHIFT";
+            }
+            return KeyStroke.getKeyStroke(keyPress);
         }
     }
 }
