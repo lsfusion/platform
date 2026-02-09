@@ -841,7 +841,7 @@ DESIGN connections{
 FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY className, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace SHOWIF asyncStackTrace(e) != ''
 ;
 

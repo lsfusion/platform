@@ -31,8 +31,8 @@ public class ChangeColorThemeAction extends InternalAction {
         String colorThemeString = null;
         if (colorTheme != null) {
             try {
-                String colorThemeStaticName = (String) findProperty("staticName[StaticObject]").read(context, context.getSession().getDataObject(findClass("ColorTheme"), colorTheme));
-                colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null;
+                String colorThemeName = (String) findProperty("name[StaticObject]").read(context, context.getSession().getDataObject(findClass("ColorTheme"), colorTheme));
+                colorThemeString = colorThemeName != null ? colorThemeName.substring(colorThemeName.indexOf(".") + 1) : null;
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);
             }
