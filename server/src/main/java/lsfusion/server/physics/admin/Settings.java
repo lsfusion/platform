@@ -1472,6 +1472,8 @@ public class Settings implements Cloneable {
                                          // increased to 40, because Pause Remark phase in Java 21 changes old generation memory usage, but it occurs approximately 20 seconds before mixed collections
     private long unstableLRUMaxCount = 80; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
+    private boolean disableLRUCollectionUsageThreshold = false; // do not rely on collection usage threshold
+
     public long getCriticalLRURangePercent() {
         return criticalLRURangePercent;
     }
@@ -1486,6 +1488,15 @@ public class Settings implements Cloneable {
 
     public void setTargetLRURangePercent(long targetLRURangePercent) {
         this.targetLRURangePercent = targetLRURangePercent;
+    }
+
+
+    public boolean isDisableLRUCollectionUsageThreshold() {
+        return disableLRUCollectionUsageThreshold;
+    }
+
+    public void setDisableLRUCollectionUsageThreshold(boolean disableLRUCollectionUsageThreshold) {
+        this.disableLRUCollectionUsageThreshold = disableLRUCollectionUsageThreshold;
     }
 
     public double getTargetLRUAdjustIncCoeff() {
