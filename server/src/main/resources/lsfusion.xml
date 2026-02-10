@@ -166,6 +166,7 @@
                 <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
                 <entry key="logChangesSession" value="${settings.logChangesSession:}"/>
                 <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
+                <entry key="disableLRUCollectionUsageThreshold" value="${settings.disableLRUCollectionUsageThreshold:}"/>
                 <entry key="noExecuteLocalEventsOnFormShowFallback" value="${settings.noExecuteLocalEventsOnFormShowFallback:}"/>
             </map>
         </property>

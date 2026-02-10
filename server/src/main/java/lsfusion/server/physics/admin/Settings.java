@@ -1473,6 +1473,7 @@ public class Settings implements Cloneable {
     private long unstableLRUMaxCount = 80; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
     private boolean disableLRUCollectionUsageThreshold = false; // do not rely on collection usage threshold
+    private int memGCCollectionThresholdCooldown = 90;
 
     public long getCriticalLRURangePercent() {
         return criticalLRURangePercent;
@@ -1497,6 +1498,14 @@ public class Settings implements Cloneable {
 
     public void setDisableLRUCollectionUsageThreshold(boolean disableLRUCollectionUsageThreshold) {
         this.disableLRUCollectionUsageThreshold = disableLRUCollectionUsageThreshold;
+    }
+
+    public int getMemGCCollectionThresholdCooldown() {
+        return memGCCollectionThresholdCooldown;
+    }
+
+    public void setMemGCCollectionThresholdCooldown(int memGCCollectionThresholdCooldown) {
+        this.memGCCollectionThresholdCooldown = memGCCollectionThresholdCooldown;
     }
 
     public double getTargetLRUAdjustIncCoeff() {
