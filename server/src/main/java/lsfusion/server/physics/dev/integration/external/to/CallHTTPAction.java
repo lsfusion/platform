@@ -46,7 +46,9 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.net.URIBuilder;
 
+import java.net.*;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -117,13 +119,31 @@ public abstract class CallHTTPAction extends CallAction {
         String transformedText = getTransformedText(context, param);
         if(transformedText != null && !noEncode) {
             try {
-                transformedText = URIUtil.encodeQuery(transformedText, charset.toString());
-            } catch (URIException e) {
+                transformedText = URIUtil.encodeQuery(normalizeIdnHost(transformedText), charset.toString());
+            } catch (URIException | URISyntaxException | MalformedURLException e) {
                 throw Throwables.propagate(e);
             }
         }
 
         return transformedText;
+    }
+
+    private static String normalizeIdnHost(String connectionString) throws URISyntaxException, MalformedURLException {
+        URL url = new URL(connectionString);
+        String host = url.getHost();
+        if (host != null) {
+            String asciiHost = IDN.toASCII(host);
+            if (!asciiHost.equals(host)) {
+                return new URIBuilder()
+                        .setScheme(url.getProtocol())
+                        .setHost(asciiHost)
+                        .setPort(url.getPort())
+                        .setPath(url.getPath())
+                        .setCustomQuery(url.getQuery())
+                        .build().toString();
+            }
+        }
+        return connectionString;
     }
 
     public static <P extends PropertyInterface, V> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
