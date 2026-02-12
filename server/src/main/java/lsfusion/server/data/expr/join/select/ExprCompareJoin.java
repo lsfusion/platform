@@ -46,14 +46,6 @@ public abstract class ExprCompareJoin<T extends BaseExpr, This extends ExprCompa
         return MapFact.toMap(0, expr1, 1, expr2);
     }
 
-    private Stat getStat(KeyStat keyStat) {
-        return expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false));
-    }
-
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type) { // тут по идее forJoin и true и false подойдут
-        return new StatKeys<>(SetFact.toExclSet(0, 1), getStat(keyStat));
-    }
-
     @Override
     public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Integer, Stat> pushKeys, ImMap<Integer, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Integer>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
         assert pushProps.isEmpty();
