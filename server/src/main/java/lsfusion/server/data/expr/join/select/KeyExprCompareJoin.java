@@ -1,6 +1,8 @@
 package lsfusion.server.data.expr.join.select;
 
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.type.Type;
@@ -31,5 +33,14 @@ public class KeyExprCompareJoin extends ExprCompareJoin<KeyExpr, KeyExprCompareJ
     @Override
     protected KeyExprCompareJoin createThis(KeyExpr expr1, BaseExpr expr2) {
         return new KeyExprCompareJoin(expr1, compare, expr2);
+    }
+
+    public int hash(HashContext hashContext) {
+        return 31 * super.hash(hashContext) + compare.hashCode();
+    }
+
+    @Override
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && compare == ((KeyExprCompareJoin)o).compare;
     }
 }

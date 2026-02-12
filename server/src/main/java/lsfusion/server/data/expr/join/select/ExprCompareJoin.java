@@ -61,6 +61,6 @@ public abstract class ExprCompareJoin<T extends BaseExpr, This extends ExprCompa
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return expr1.equals(((ExprEqualsJoin) o).expr1) && expr2.equals(((ExprEqualsJoin) o).expr2);
+        return expr1.equals(((ExprCompareJoin) o).expr1) && expr2.equals(((ExprCompareJoin) o).expr2);
     }
 }
