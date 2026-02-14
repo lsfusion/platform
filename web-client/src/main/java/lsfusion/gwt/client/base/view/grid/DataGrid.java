@@ -1432,8 +1432,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         setTableActive(rowElement, selectedRow);
 
-        if(!selectRowsChanged && !isRowSelect(getRowValue(rowIndex))) // will be updated in the updateSelectRowsDOM
-            updateRowColumnSelection(rowElement, selectedRow, selectColumnsChanged);
+//        if(!selectRowsChanged && !isRowSelect(getRowValue(rowIndex))) // will be updated in the updateSelectRowsDOM
+//            updateRowColumnSelection(rowElement, selectedRow, selectColumnsChanged);
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
@@ -1475,7 +1475,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             if(selectRowsChanged)
                 setTableSelect(getChildElement(i), select);
 
-            select |= i == getSelectedRow();
+//            select |= i == getSelectedRow();
 
             if(selectRowsChanged || select)
                 updateRowColumnSelection(getChildElement(i), select, selectColumnsChanged);
@@ -1495,13 +1495,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     setColumnSelect(rowElement.getCells().getItem(j), isRowSelectOrActive);
             }
         }
-    }
-
-    public void setColumnSelection(int start, int end) {
-        this.startSelectColumn = start;
-        this.endSelectColumn = end;
-
-        selectColumnsChanged();
     }
 
     protected abstract boolean isRowSelect(T row);

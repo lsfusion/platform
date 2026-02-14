@@ -57,7 +57,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -80,6 +79,7 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
@@ -712,15 +712,27 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, boolean focused) throws RemoteException {
+    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, byte[] columnKey, boolean focused,
+                                               ChangeSelection changeSelection, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("setPropertyActive Action");
             }
 
-            ComponentView property = richDesign.findById(propertyID);
-            form.setPropertyActive(property != null ? ((PropertyDrawView) property).entity : null, focused);
+            List<FormInstance.ColumnSelection> changeSelectionColumns = null;
+            if (changeSelection != null) {
+                int size = changeSelectionProps.length;
+                changeSelectionColumns = new ArrayList<>(size);
+                for (int i = 0; i < size; i++) {
+                    PropertyDrawEntity selectionProperty = form.entity.getPropertyDraw(changeSelectionProps[i]);
+                    ImMap<ObjectInstance, DataObject> selectionColumnKey = deserializeDataKeysValues(changeSelectionColumnKeys[i]);
+                    changeSelectionColumns.add(new FormInstance.ColumnSelection(selectionProperty, selectionColumnKey, changeSelectionValues[i]));
+                }
+            }
+
+            form.changePropertyActive(propertyID >= 0 ? form.entity.getPropertyDraw(propertyID) : null,
+                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelection, changeSelectionColumns);
         });
     }
 

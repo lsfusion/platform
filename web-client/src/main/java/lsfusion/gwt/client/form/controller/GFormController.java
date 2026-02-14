@@ -59,6 +59,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
@@ -1472,9 +1473,28 @@ public class GFormController implements EditManager {
     }
 
     private GPropertyDraw prevPropertyActive;
-    public void setPropertyActive(GPropertyDraw property, boolean focused) {
+
+    public void updatePropertyActive(GPropertyDraw property, GGroupObjectValue columnKey, boolean focused,
+                                     GChangeSelection changeSelection, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
         if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
-            asyncResponseDispatch(new SetPropertyActive(property != null ? property.ID : -1, focused));
+            int[] changeSelectionProps = null;
+            GGroupObjectValue[] changeSelectionColumnKeys = null;
+            boolean[] changeSelectionValues = null;
+            if(changeSelection != null) {
+                int size = changeSelectionColumns.size();
+                changeSelectionProps = new int[size];
+                changeSelectionColumnKeys = new GGroupObjectValue[size];
+                changeSelectionValues = new boolean[size];
+                for (int i = 0; i < size; i++) {
+                    GGridTable.ColumnSelection selection = changeSelectionColumns.get(i);
+                    changeSelectionProps[i] = selection.property.ID;
+                    changeSelectionColumnKeys[i] = selection.columnKey;
+                    changeSelectionValues[i] = selection.set;
+                }
+            }
+
+            asyncResponseDispatch(new ChangePropertyActive(property != null ? property.ID : -1, columnKey, focused,
+                    changeSelection, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
         }
         prevPropertyActive = property;
     }

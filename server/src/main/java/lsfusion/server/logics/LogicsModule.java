@@ -76,6 +76,7 @@ import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
+import lsfusion.server.logics.form.interactive.property.ColumnProp;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -2172,6 +2173,12 @@ public abstract class LogicsModule {
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
         PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
         return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
+        // todo: if SELECT we have to do (SELECT AND FILTER) OR objects = getNFValueProperty ???
+    }
+
+    public LP addPropertyDrawProp(PropertyDrawEntity<?, ?> propertyDraw, ColumnProp prop, Version version) {
+        PropertyObjectEntity<ClassPropertyInterface> pdProperty = propertyDraw.getNFProperty(prop, version);
+        return new LP<>(pdProperty.property, propertyDraw.getPropColumnObjects(version).mapOrder(pdProperty.mapping.reverse()));
     }
 
     public LP addValueObjectProp(ObjectEntity object, Version version) {

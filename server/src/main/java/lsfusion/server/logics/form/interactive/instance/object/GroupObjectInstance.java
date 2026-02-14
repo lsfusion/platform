@@ -938,9 +938,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getSubElementsExpr(subGroupWhere.and(filterWhere), mapKeys.remove(objects), outerMapKeys, countTreeSubElements); // boolean
     }
 
-    protected int selectionDir = 0;
+    protected int selectionDir = 0; // 0 - no selection, -1 - start <= end, 1 - start > end
     protected SeekOrderObjects startSelection = null;
-    protected SeekOrderObjects endSelection = null;
+    protected SeekOrderObjects endSelection = null; // assert (endSelection == null) == (selectionDir == 0)
 
     public void change(ImMap<ObjectInstance, ? extends ObjectValue> value, FormInstance eventForm, ExecutionStack stack, ChangeSelection changeSelection) throws SQLException, SQLHandledException {
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
@@ -955,23 +955,27 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void changeSelection(FormInstance eventForm, ChangeSelection changeSelection, UpdateType updateType) throws SQLException, SQLHandledException {
-        if(!isInTree() && (changeSelection != null || selectionDir == 0) && updateType != UpdateType.NULL) {
-            SeekOrderObjects changeEndSelection = updateType == UpdateType.PREV ? eventForm.getOrderGroupObjectValue(this) : (updateType == UpdateType.FIRST ? SEEK_HOME : SEEK_END);
+        if (!isInTree() && updateType != UpdateType.NULL) {
+            if (selectionDir == 0 && (changeSelection == null || startSelection == null))
+                changeSelection = ChangeSelection.MOVE; // because we store the prev object in the startSelection
 
-            SeekOrderObjects changeStartSelection;
-            if(changeSelection == null || changeSelection == ChangeSelection.MOVE || startSelection == null)
-                changeStartSelection = changeEndSelection;
-            else
-                changeStartSelection = startSelection;
+            if (changeSelection != null) {
+                SeekOrderObjects changeObject = updateType == UpdateType.PREV ? eventForm.getOrderGroupObjectValue(this) : (updateType == UpdateType.FIRST ? SEEK_HOME : SEEK_END);
+                if (changeSelection == ChangeSelection.MOVE) { // dropping selection
+                    startSelection = changeObject;
+                    if(selectionDir != 0) {
+                        endSelection = null;
+                        selectionDir = 0;
 
-            if(!(BaseUtils.nullHashEquals(startSelection, changeStartSelection) && BaseUtils.nullHashEquals(endSelection, changeEndSelection))) {
-                startSelection = changeStartSelection;
-                endSelection = changeEndSelection;
+                        updated |= UPDATED_SELECT;
+                    }
+                } else { // setting / changing selection
+                    if(selectionDir == 0 || !BaseUtils.nullHashEquals(endSelection, changeObject)) {
+                        endSelection = changeObject;
+                        selectionDir = startSelection.compare(eventForm.session.sql, orders, endSelection);
 
-                int changeSelectionDir = startSelection.compare(eventForm.session.sql, orders, endSelection);
-                if(!(changeSelectionDir == 0 && selectionDir == 0)) {
-                    selectionDir = changeSelectionDir;
-                    updated |= UPDATED_SELECT;
+                        updated |= UPDATED_SELECT;
+                    }
                 }
             }
         }
@@ -1109,7 +1113,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     } else {
                         boolean startLess = selectionDir < 0;
                         Where startWhere = startSelection.getWhere(orders, orderExprs, !startLess);
-                        Where endWhere = endSelection.getWhere(orders, orderExprs, !startLess);
+                        Where endWhere = endSelection.getWhere(orders, orderExprs, startLess);
                         selectWhere = startLess ? startWhere.and(endWhere.not()) : endWhere.and(startWhere.not());
                         change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, selectWhere); // filterWhere.and
                     }
@@ -1657,7 +1661,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         public int compare(SQLSession session, ImOrderMap<OrderInstance, Boolean> orders, SeekOrderObjects object) throws SQLException, SQLHandledException {
             if(BaseUtils.hashEquals(values, object.values) && end == object.end) // optimization
-                return 0;
+                return -1;
 
             return Expr.readValue(session, ValueExpr.TRUE.and(getWhere(orders, object)), OperationOwner.unknown) != null ? -1 : 1;
         }

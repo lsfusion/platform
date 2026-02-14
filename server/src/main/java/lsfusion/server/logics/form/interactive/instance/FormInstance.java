@@ -128,6 +128,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.controller.env.FormContextQueryEnvironment;
 import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.property.Property;
@@ -1924,9 +1925,23 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         activeTabs.put(view, page);
     }
 
-    public void setPropertyActive(PropertyDrawEntity property, boolean focused) throws SQLException, SQLHandledException {
-        updateActiveProperty(property, focused);
-        activeProperty = property;
+    public static class ColumnSelection {
+        public final PropertyDrawEntity property;
+        public final ImMap<ObjectInstance, DataObject> columnKey;
+        public final boolean set;
+
+        public ColumnSelection(PropertyDrawEntity property, ImMap<ObjectInstance, DataObject> columnKey, boolean set) {
+            this.property = property;
+            this.columnKey = columnKey;
+            this.set = set;
+        }
+    }
+
+    public void changePropertyActive(PropertyDrawEntity property, ImMap<ObjectInstance, DataObject> columnKey, boolean focused,
+                                     ChangeSelection changeSelection, List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
+        updateActiveProperty(property, columnKey, focused);
+
+        changeSelection(changeSelection, changeSelectionColumns);
     }
     
     public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
@@ -1945,11 +1960,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         page.updateActiveTabProperty(session, true);
     }
 
-    private void updateActiveProperty(PropertyDrawEntity newActiveProperty, boolean focused) throws SQLException, SQLHandledException {
+    private void updateActiveProperty(PropertyDrawEntity newActiveProperty, ImMap<ObjectInstance, DataObject> columnKey, boolean focused) throws SQLException, SQLHandledException {
         if(activeProperty != null)
             activeProperty.updateActiveProperty(session, null);
         if(newActiveProperty != null)
             newActiveProperty.updateActiveProperty(session, focused ? true : null);
+        activeProperty = newActiveProperty;
+    }
+    private void changeSelection(ChangeSelection changeSelection, List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
+        if(changeSelectionColumns != null)
+            for(ColumnSelection columnSelection : changeSelectionColumns)
+                columnSelection.property.updateSelectProperty(session, columnSelection.columnKey, columnSelection.set ? true : null);
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {

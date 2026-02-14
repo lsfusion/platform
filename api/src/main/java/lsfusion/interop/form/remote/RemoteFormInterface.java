@@ -30,7 +30,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
 
-    ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, boolean focused) throws RemoteException;
+    ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
+                                        ChangeSelection changeSelection, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException;
 
     ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
 

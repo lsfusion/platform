@@ -144,6 +144,14 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return MapFact.immutableMapOrder(mResult);
     }
 
+    @Override
+    public <G> ImOrderSet<G> groupMapOrder(Function<K, ImOrderSet<G>> getter) {
+        MOrderExclSet<G> mResult = SetFact.mOrderExclSet();
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAddAll(getter.apply(get(i)));
+        return mResult.immutableOrder();
+    }
+
     public <M> ImOrderSet<M> mapOrderSetValues(Function<K, M> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)

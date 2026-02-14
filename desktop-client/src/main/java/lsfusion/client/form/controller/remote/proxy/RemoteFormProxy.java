@@ -78,9 +78,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, boolean focused) throws RemoteException {
+    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
+                                               ChangeSelection changeSelection, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
         logRemoteMethodStartVoidCall("setPropertyActive");
-        ServerResponse result = target.setPropertyActive(requestIndex, lastReceivedRequestIndex, propertyID, focused);
+        ServerResponse result = target.changePropertyActive(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, focused, changeSelection, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
         logRemoteMethodEndVoidCall("setPropertyActive");
         return result;
     }

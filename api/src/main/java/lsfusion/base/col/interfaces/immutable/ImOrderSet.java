@@ -14,6 +14,7 @@ public interface ImOrderSet<K> extends ImList<K> {
     boolean contains(K element);
 
     <G> ImMap<G, ImOrderSet<K>> groupOrder(BaseUtils.Group<G, K> getter);
+    <G> ImOrderSet<G> groupMapOrder(Function<K, ImOrderSet<G>> getter);
 
     ImSet<K> getSet();
 

@@ -46,14 +46,9 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
 
     public boolean noClasses = false;
 
-    private Property<?> valueProperty; // just to be symmetric with other form operator properts
-
     public ObjectInstance(ObjectEntity entity) {
         this.entity = entity;
-        this.entity = entity;
         this.noClasses = entity.noClasses();
-
-        this.valueProperty = entity.getValueProperty();
     }
 
     public String toString() {
@@ -77,6 +72,7 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
     public abstract ValueClass getGridClass();
 
     public void updateValueProperty(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        Property<?> valueProperty = entity.getValueProperty();
         if(valueProperty != null)
             valueProperty.change(env, value);
     }

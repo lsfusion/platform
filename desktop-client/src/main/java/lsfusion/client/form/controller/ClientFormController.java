@@ -1246,7 +1246,7 @@ public class ClientFormController implements AsyncListener {
             rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyActive") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.setPropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, focused);
+                    return remoteForm.changePropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, null, focused, null, null, null, null);
                 }
             });
         }
