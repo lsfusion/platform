@@ -112,16 +112,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         setSelectionHandler(new GridTableSelectionHandler(this));
 
         setRowChangedHandler((row, prevRow, reason, event) -> updateRowColumn(prevRow, -2, reason, event));
-
-        setColumnChangedHandler((col, prevCol, reason, event) -> {
-            updateRowColumn(-2, prevCol, reason, event);
-
-            ArrayList<GGroupObject> columnGroupObjects = getColumnPropertyDraw(getSelectedColumn()).columnGroupObjects;
-            if (columnGroupObjects != null) {
-                GGroupObjectValue columnKey = getSelectedColumnKey();
-                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
-            }
-        });
+        setColumnChangedHandler((col, prevCol, reason, event) -> updateRowColumn(-2, prevCol, reason, event));
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
@@ -146,9 +137,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             @Override
             protected Map<GPropertyDraw, GGroupObjectValue> getColumnKey(int column) {
-                GridColumn gridColumn = getGridColumn(column);
                 HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-                key.put(gridColumn.property, gridColumn.columnKey);
+                key.put(getProperty(column), GGridTable.this.getColumnKey(column));
                 return key;
             }
         };
@@ -189,10 +179,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         if(col != prevCol || (changeSelectionColumns != null && !changeSelectionColumns.isEmpty())) {
-            GPropertyDraw property = getSelectedProperty();
-            GGroupObjectValue selectedColumnKey = getSelectedColumnKey();
-            if (property != null)
-                form.updatePropertyActive(property, selectedColumnKey, true, changeSelection, changeSelectionColumns);
+            GPropertyDraw property = col >= 0 ? getProperty(col) : null;
+            GGroupObjectValue columnKey = col >= 0 ? getColumnKey(col) : null;
+            form.updatePropertyActive(property, columnKey, true, changeSelection, changeSelectionColumns);
+
+            ArrayList<GGroupObject> columnGroupObjects;
+            if (col != prevCol && property != null && (columnGroupObjects = property.columnGroupObjects) != null)
+                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
         }
     }
 
@@ -253,21 +246,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             newStart = changeSelection == GChangeSelection.MOVE ? newEnd : startSelectColumn;
             if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
 
-            // Drag-select: only endSelectColumn changes, startSelectColumn stays fixed
-            // current end before update
             int oldL = Math.min(startSelectColumn, endSelectColumn);
             int oldR = Math.max(startSelectColumn, endSelectColumn);
             int newL = Math.min(newStart, newEnd);
             int newR = Math.max(newStart, newEnd);
 
-            // Removed = old \ new (left tail, right tail)
-            for (int i = oldL; i < newL; i++) addSelectedColumn(i, changes, false);
-            for (int i = newR + 1; i <= oldR; i++) addSelectedColumn(i, changes, false);
+            // Removed = old \ new
+            for (int i = oldL; i <= oldR; i++)
+                if (i < newL || i > newR)
+                    addSelectedColumn(i, changes, false);
 
-            // Added = new \ old (left tail, right tail)
-            for (int i = newL; i < oldL; i++) addSelectedColumn(i, changes, true);
-            for (int i = oldR + 1; i <= newR; i++) addSelectedColumn(i, changes, true);
-
+            // Added = new \ old
+            for (int i = newL; i <= newR; i++)
+                if (i < oldL || i > oldR)
+                    addSelectedColumn(i, changes, true);
         }
 
         this.startSelectColumn = newStart;
@@ -279,8 +271,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private void addSelectedColumn(int column, ArrayList<ColumnSelection> changeSelectionColumns, boolean set) {
-        GridColumn gridColumn = getGridColumn(column);
-        changeSelectionColumns.add(new ColumnSelection(gridColumn.property, gridColumn.columnKey, set));
+        changeSelectionColumns.add(new ColumnSelection(getProperty(column), getColumnKey(column), set));
     }
 
     public void update(Boolean updateState) {
@@ -479,7 +470,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
-        return getGridColumn(i).property;
+        return getProperty(i);
     }
 
     public boolean containsProperty(GPropertyDraw property) {

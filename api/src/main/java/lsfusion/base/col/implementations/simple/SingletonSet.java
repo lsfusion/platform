@@ -659,6 +659,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return MapFact.<K, M>singleton(key, getter.apply(key));
     }
 
+    @Override
+    public <M> ImRevMap<K, M> mapItRevValues(Function<K, M> getter) {
+        return MapFact.singletonRev(key, getter.apply(key));
+    }
+
     public <M> ImSet<M> mapItSetValues(Function<K, M> getter) {
         return SetFact.singleton(getter.apply(key));
     }

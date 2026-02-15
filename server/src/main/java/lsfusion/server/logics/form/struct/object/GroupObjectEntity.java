@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.object;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -9,10 +10,12 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.Expr;
@@ -24,6 +27,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
@@ -48,6 +52,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -207,6 +212,16 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         }
     }
 
+    private final FormEntity.ExProperty isSelectProperty;
+    @NFLazy
+    public Property<?> getNFIsSelectProperty(Version version) {
+        return isSelectProperty.getNF(version);
+    }
+
+    public Property<?> getIsSelectProperty() {
+        return isSelectProperty.get();
+    }
+
     private final ImMap<GroupObjectProp, ExGroupProperty> props;
     private final ImMap<GroupObjectProp, NFProperty<Boolean>> isExplicitlyUsed = MapFact.toMap(GroupObjectProp.values(), type -> NFFact.property()); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER, etc. only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
     public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectProp type, Version version) {
@@ -232,11 +247,30 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     }
 
     public void fillGroupProps(Version version) {
-        // group change
+        // we're prereading:
+        // order for using in the group change
+        // filter, select, isSelect for using in the group change / ctrl+c
+        // value for using in the ctrl + c
         props.get(GroupObjectProp.FILTER).getNF(version);
         props.get(GroupObjectProp.ORDER).getNF(version);
         // selection
         props.get(GroupObjectProp.SELECT).getNF(version);
+        getObjects().mapItRevValues(object -> object.getNFValueProperty(version));
+        isSelectProperty.getNF(version);
+    }
+
+    public static PropertyObjectEntity<?> getFullSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp, ImRevMap<ObjectEntity, Property<?>> objectValues) {
+        ImRevMap<ObjectEntity, PropertyInterface> mapObjects = BaseUtils.immutableCast(selectProp.mapping.reverse());
+
+        ImOrderMap<ObjectEntity, Property<?>> orderMap = objectValues.toOrderMap();
+        ImOrderSet<PropertyInterfaceImplement<PropertyInterface>> mapInterfaces = BaseUtils.immutableCast(orderMap.keyOrderSet().mapOrder(mapObjects));
+
+        // IF ISSELECT() THEN SELECT(p1, p2, .., pN) AND FILTER ELSE p1 = value o1 AND p2 = value o2 AND ... AND pN = value oN
+        PropertyMapImplement<?, PropertyInterface> fullSelectImpl = PropertyFact.createIfElseUProp(mapObjects.valuesSet(),
+                isSelectProperty.getImplement(SetFact.EMPTYORDER()), PropertyFact.createAnd(selectProp.getImplement(mapObjects), filterProp.getImplement(mapObjects)),
+                PropertyFact.createCompare(mapInterfaces, orderMap.mapListValues(prop -> prop.getImplement(SetFact.EMPTYORDER())), Compare.EQUALS));
+
+        return new PropertyObjectEntity(fullSelectImpl.property, fullSelectImpl.mapping.join(mapObjects.reverse()));
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
@@ -403,6 +437,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
         ConcreteCustomClass listViewType = LM.listViewType;
         listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
+        isSelectProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("IS SELECT", this, LogicalClass.instance));
         props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
                 () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
 
@@ -487,6 +522,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private GroupObjectEntity() {
         super(() -> -1, null, null);
         listViewTypeProp = null;
+        isSelectProperty = null;
         props = null;
         objects = null;
     }
@@ -575,6 +611,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
         props = mapping.gets(src.props);
         listViewTypeProp = mapping.get(src.listViewTypeProp);
+        isSelectProperty = mapping.get(src.isSelectProperty);
     }
 
     @Override

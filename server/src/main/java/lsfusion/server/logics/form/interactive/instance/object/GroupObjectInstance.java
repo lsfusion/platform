@@ -961,18 +961,21 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             if (changeSelection != null) {
                 SeekOrderObjects changeObject = updateType == UpdateType.PREV ? eventForm.getOrderGroupObjectValue(this) : (updateType == UpdateType.FIRST ? SEEK_HOME : SEEK_END);
+                Property<?> isSelectProperty = entity.getIsSelectProperty();
                 if (changeSelection == ChangeSelection.MOVE) { // dropping selection
                     startSelection = changeObject;
                     if(selectionDir != 0) {
                         endSelection = null;
                         selectionDir = 0;
+                        isSelectProperty.change(eventForm, (Boolean) null);
 
                         updated |= UPDATED_SELECT;
                     }
                 } else { // setting / changing selection
                     if(selectionDir == 0 || !BaseUtils.nullHashEquals(endSelection, changeObject)) {
                         endSelection = changeObject;
-                        selectionDir = startSelection.compare(eventForm.session.sql, orders, endSelection);
+                        selectionDir = startSelection.compare(eventForm.session.sql, orders, endSelection); // != 0
+                        isSelectProperty.change(eventForm, true);
 
                         updated |= UPDATED_SELECT;
                     }

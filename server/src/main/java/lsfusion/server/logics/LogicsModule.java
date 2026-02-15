@@ -2170,10 +2170,15 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
-        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
-        return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
-        // todo: if SELECT we have to do (SELECT AND FILTER) OR objects = getNFValueProperty ???
+    public <T extends PropertyInterface> LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
+        PropertyObjectEntity<T> groupObjectProperty;
+        if(prop == GroupObjectProp.SELECT)
+            groupObjectProperty = (PropertyObjectEntity<T>) GroupObjectEntity.getFullSelectProperty(groupObject.getIsSelectProperty(),
+                            groupObject.getNFProperty(GroupObjectProp.SELECT, version), groupObject.getNFProperty(GroupObjectProp.FILTER, version),
+                            groupObject.getObjects().mapItRevValues(object -> object.getNFValueProperty(version)));
+        else
+            groupObjectProperty = (PropertyObjectEntity<T>) groupObject.getNFProperty(prop, version);
+        return new LP<>(groupObjectProperty.property, groupObject.getOrderObjects().mapOrder(groupObjectProperty.mapping.reverse()));
     }
 
     public LP addPropertyDrawProp(PropertyDrawEntity<?, ?> propertyDraw, ColumnProp prop, Version version) {
