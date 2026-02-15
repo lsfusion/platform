@@ -40,6 +40,11 @@ public class GActionType extends GDataType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
+
+    @Override
     public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
         GSize result = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultWidth(font, propertyDraw, globalCaptionIsDrawn);
 

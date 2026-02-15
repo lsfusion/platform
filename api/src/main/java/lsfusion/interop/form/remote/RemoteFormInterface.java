@@ -45,10 +45,12 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException; // home / end
 
-    ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException; // paste подряд
+    ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, ArrayList<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException; // paste подряд
 
     ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values, Map<Integer, String> rawValues) throws RemoteException; // paste выборочно
-    
+
+    Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys) throws RemoteException; // copy подряд - returns (values, rawValues)
+
     ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, ListViewType listViewType) throws RemoteException;
 
     // events : trees

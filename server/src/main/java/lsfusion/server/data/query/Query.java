@@ -437,6 +437,18 @@ public class Query<K,V> extends IQuery<K,V> {
         return result.immutableValueOrder();
     }
 
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment env, ImOrderMap<? extends Expr, Boolean> orders) throws SQLException, SQLHandledException {
+        if(orders.isEmpty())
+            return execute(session, env);
+
+        ImRevMap<Object, Expr> orderObjects = ((ImOrderMap<Expr, Boolean>)orders).keys().mapRevKeys(Object::new);
+
+        Query<K, Object> orderQuery = new Query<>(mapKeys, MapFact.addExcl(properties, orderObjects), where);
+        ImOrderMap<Object, Boolean> orderProperties = ((ImOrderMap<Expr, Boolean>)orders).map(orderObjects.reverse());
+
+        return orderQuery.execute(session, orderProperties, LimitOffset.NOLIMIT, env).mapOrderValues((ImMap<Object, Object> value) -> value.filterIncl(properties.keys()));
+    }
+
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
         return execute(session, DataSession.emptyEnv(owner));
     }

@@ -820,8 +820,18 @@ protected Double getUserFlex(int i) {
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, eventHandler.event, (Boolean) rowChanged, column), () -> renderElement != null ? InputBasedCellRenderer.getFocusEventTarget(renderElement, eventHandler.event) : null),
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
+                handler -> copyDataToClipboard(cell, renderElement),
+                handler -> pasteDataFromClipboard(cell, renderElement, handler),
                 false, cell.getColumn().isCustomRenderer(RendererType.GRID), true);
+    }
+
+    public void copyDataToClipboard(Cell cell, Element renderElement) {
+        CopyPasteUtils.putIntoClipboard(renderElement);
+    }
+
+    public void pasteDataFromClipboard(Cell cell, Element renderElement, EventHandler handler) {
+        CopyPasteUtils.getFromClipboard(handler, line ->
+            pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line)));
     }
 
     @Override

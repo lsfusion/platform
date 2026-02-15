@@ -19,6 +19,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -204,6 +205,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ClassViewType viewType = ClassViewType.DEFAULT;
 
+    @IdentityInstanceLazy
     public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
         return KeyExpr.getMapKeys(objects);
     }

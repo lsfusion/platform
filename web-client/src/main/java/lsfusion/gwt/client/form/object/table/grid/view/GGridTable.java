@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -1124,6 +1125,42 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             return;
         }
         super.pasteData(cell, renderElement, table);
+    }
+
+    // Fields for column selection (initialized to -1 for "no selection")
+    private int startSelectColumn = -1;
+    private int endSelectColumn = -1;
+
+    @Override
+    public void copyDataToClipboard(Cell cell, Element renderElement) {
+        // Check if we have column selection
+        if (!rowSelectValues.isEmpty() && startSelectColumn >= 0) {
+            int colStart = Math.min(startSelectColumn, endSelectColumn);
+            int colEnd = Math.max(startSelectColumn, endSelectColumn);
+
+            // Collect properties and column keys
+            ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
+            ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
+
+            for (int col = colStart; col <= colEnd && col < getColumnCount(); col++) {
+                GridColumn column = getGridColumn(col);
+                if (column != null) {
+                    propertyList.add(column.property);
+                    columnKeys.add(column.columnKey);
+                }
+            }
+
+            // Make async server call to get the data
+            form.copyExternalTable(propertyList, columnKeys, table -> {
+                // Convert result to clipboard format and copy
+                CopyPasteUtils.copyToClipboard(GwtClientUtils.getClipboardTable(table));
+            });
+
+            return;
+        }
+
+        // No column selection, use parent implementation
+        super.copyDataToClipboard(cell, renderElement);
     }
 
     @Override

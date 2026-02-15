@@ -36,6 +36,10 @@ public abstract class GAStringType extends GTextBasedType {
         return PValue.getPValue(s);
     }
 
+    @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
 
     @Override
     public int getDefaultCharWidth() {

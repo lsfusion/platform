@@ -14,6 +14,8 @@ public abstract class GFormatType extends GTextBasedType {
         return super.getDefaultWidthString(propertyDraw);
     }
 
+    // Override formatString from GType to provide formatted string representation
+    @Override
     public abstract String formatString(PValue value, String pattern);
 
     protected PValue getDefaultWidthValue() {

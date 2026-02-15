@@ -424,7 +424,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final ArrayList<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException {
         return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
@@ -475,6 +475,32 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             form.pasteMulticellValue(keysValues, stack, context);
         });
+    }
+
+    public Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys) throws RemoteException {
+        try {
+            List<PropertyDrawInstance> properties = new ArrayList<>();
+            List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
+            for (int i = 0; i < propertyIDs.size(); i++) {
+                PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
+                properties.add(property);
+                keys.add(deserializeDataKeysValues(columnKeys.get(i)));
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyExternalTable Action");
+
+                if (logger.isTraceEnabled()) {
+                    for (int i = 0; i < propertyIDs.size(); i++) {
+                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
+                    }
+                }
+            }
+
+            return form.copyExternalTable(properties, keys, getRemoteContext());
+        } catch (Exception e) {
+            throw new RemoteException("Error in copyExternalTable", e);
+        }
     }
 
     public ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte modiType, final byte[] columnKeys) throws RemoteException {

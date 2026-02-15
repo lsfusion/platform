@@ -46,6 +46,11 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
+
+    @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         return new FileCellEditor(editManager, storeName, validExtensions, named);
     }

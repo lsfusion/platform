@@ -644,6 +644,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         }
     }
 
+    public String formatCopy(PValue value, GType formatType, String pattern) {
+        if (value == null) {
+            return null;
+        }
+        return formatType.formatString(value, pattern);
+    }
+
     public String getPattern() {
         return nvl(userPattern, pattern);
     }

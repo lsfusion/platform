@@ -45,6 +45,11 @@ public class GObjectType extends GType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeObjectCaption();
     }

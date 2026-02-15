@@ -1277,7 +1277,7 @@ public class ClientFormController implements AsyncListener {
         int propertyColumns = propertyList.size();
 
         List<List<byte[]>> values = new ArrayList<>();
-        List<ArrayList<String>> rawValues = new ArrayList<>();
+        ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
         for (List<String> sRow : table) {
             List<byte[]> valueRow = new ArrayList<>();
             ArrayList<String> rawValueRow = new ArrayList<>();
@@ -1293,7 +1293,7 @@ public class ClientFormController implements AsyncListener {
             rawValues.add(rawValueRow);
         }
 
-        final List<Integer> propertyIdList = new ArrayList<>();
+        final ArrayList<Integer> propertyIdList = new ArrayList<>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }

@@ -86,6 +86,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.*;
@@ -953,6 +954,51 @@ public class GFormController implements EditManager {
         }
 
         syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues));
+    }
+
+    public void copyExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, Consumer<List<List<String>>> callback) {
+        final ArrayList<Integer> propertyIdList = new ArrayList<>();
+        for (GPropertyDraw propertyDraw : propertyList) {
+            propertyIdList.add(propertyDraw.ID);
+        }
+
+        asyncDispatch(new CopyExternalTable(propertyIdList, columnKeys), new RequestCountingAsyncCallback<CopyExternalTableResult>() {
+            @Override
+            public void onSuccess(CopyExternalTableResult result, Runnable onDispatchFinished) {
+                // Process values with convertFileValue and formatCopy (symmetrical to paste)
+                ArrayList<ArrayList<Object>> values = result.getValues();
+                ArrayList<ArrayList<String>> rawValues = result.getRawValues();
+                List<List<String>> table = new ArrayList<>();
+
+                for (int j = 0; j < values.size(); j++) {
+                    ArrayList<Object> valueRow = values.get(j);
+                    ArrayList<String> rawValueRow = rawValues.get(j);
+                    ArrayList<String> stringRow = new ArrayList<>();
+
+                    for (int i = 0; i < propertyList.size() && i < valueRow.size(); i++) {
+                        GPropertyDraw property = propertyList.get(i);
+                        Object value = valueRow.get(i);
+                        String rawValue = rawValueRow.get(i);
+
+                        // Convert file values (symmetrical to convertFileValueBack in paste)
+                        PValue pValue = PValue.convertFileValue((Serializable) value);
+
+                        // Format for clipboard (symmetrical to parsePaste in paste)
+                        GType copyType = property.getPasteType();
+
+                        stringRow.add(copyType != null ? property.formatCopy(pValue, copyType, property.getPattern()) : rawValue);
+                    }
+                    table.add(stringRow);
+                }
+
+                callback.accept(table);
+            }
+
+            @Override
+            public void onFailure(ExceptionResult exceptionResult) {
+                // Handle failure silently - copy operation failed
+            }
+        });
     }
 
     public void pasteValue(ExecuteEditContext editContext, String sValue) {

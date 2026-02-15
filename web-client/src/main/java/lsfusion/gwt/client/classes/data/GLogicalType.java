@@ -60,6 +60,13 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        if (threeState && value == null)
+            return null;
+        return PValue.getBooleanValue(value) ? "true" : "false";
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeLogicalCaption();
     }

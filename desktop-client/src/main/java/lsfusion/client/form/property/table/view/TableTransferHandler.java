@@ -67,9 +67,6 @@ public class TableTransferHandler extends TransferHandler {
         return (rich && flavor.getHumanPresentableName().equals("text/html")) || flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String");
     }
 
-    /**
-     * should always be consistent with lsfusion.gwt.client.base.GwtClientUtils#getClipboardTable(java.lang.String)
-     */
     public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<>();
         List<String> row = new ArrayList<>();

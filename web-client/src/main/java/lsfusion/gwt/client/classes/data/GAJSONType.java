@@ -36,4 +36,9 @@ public abstract class GAJSONType extends GDataType {
     public PValue parseString(String s, String pattern) throws ParseException {
         return PValue.getPValue(s);
     }
+
+    @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
 }

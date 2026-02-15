@@ -115,10 +115,17 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, ArrayList<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
         ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values, rawValues);
         logRemoteMethodEndCall("pasteExternalTable", result);
+        return result;
+    }
+
+    public Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys) throws RemoteException {
+        logRemoteMethodStartCall("copyExternalTable");
+        Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> result = target.copyExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys);
+        logRemoteMethodEndCall("copyExternalTable", result);
         return result;
     }
 

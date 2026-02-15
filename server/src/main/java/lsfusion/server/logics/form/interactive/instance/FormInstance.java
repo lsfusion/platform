@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.lambda.E2Callable;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.*;
@@ -128,7 +129,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.controller.env.FormContextQueryEnvironment;
 import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.property.Property;
@@ -1047,7 +1047,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return groupObject.getOrderGroupObjectValue(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, this);
     }
 
-    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
+    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
         ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = getOrderGroupObjectValue(groupObject).executeOrders(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size(), true, this).keyOrderSet();
 
@@ -1068,6 +1068,74 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder(), stack, context);
         }
+    }
+
+    public Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, FormInstanceContext context) throws SQLException, SQLHandledException, IOException {
+        GroupObjectInstance groupObject = properties.get(0).toDraw;
+
+        // Create KeyExpr map for query
+        ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(groupObject.objects);
+
+        // Get SELECT and FILTER properties
+        // Create WHERE clause: SELECT AND FILTER
+        Where where = groupObject.props.get(GroupObjectProp.SELECT).mapExpr(mapKeys, getModifier()).getWhere().and(
+                        groupObject.props.get(GroupObjectProp.FILTER).mapExpr(mapKeys, getModifier()).getWhere());
+
+        // Build properties map with index and property expressions
+        MExclMap<Integer, Expr> mPropertyExprs = MapFact.mExclMap(properties.size());
+        for (int i = 0; i < properties.size(); i++) {
+            ImMap<ObjectInstance, Expr> fullKeys = MapFact.addExcl(mapKeys, columnKeys.get(i).mapValues(value -> value.getExpr()));
+
+            mPropertyExprs.exclAdd(i, ((PropertyDrawInstance<?>) properties.get(i)).getValueProperty().getExpr(fullKeys, getModifier()));
+        }
+
+        // Get order expressions from groupObject.orders
+        ImOrderMap<Expr, Boolean> orderExprs = groupObject.orders.mapMergeOrderKeysEx(
+            (ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, getModifier())
+        );
+
+        // Execute query
+        Query<ObjectInstance, Integer> query = new Query<>(mapKeys, mPropertyExprs.immutable(), where);
+        ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Integer, ObjectValue>> result =
+            query.executeClasses(session.sql, getQueryEnv(), BL.LM.baseClass, orderExprs);
+
+        // Transform results into List<List<byte[]>> and ArrayList<ArrayList<String>>
+        List<List<byte[]>> values = new ArrayList<>();
+        ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
+
+        for (ImMap<Integer, ObjectValue> row : result.valueIt()) {
+            List<byte[]> valueRow = new ArrayList<>();
+            ArrayList<String> rawValueRow = new ArrayList<>();
+
+            for (int i = 0; i < properties.size(); i++) {
+                PropertyDrawInstance<?> property = properties.get(i);
+
+                ObjectValue objectValue = row.get(i);
+                Object value = objectValue.getValue();
+
+                // Serialize value (for client-side processing)
+                valueRow.add(serializeObject(value));
+
+                // Format value as string (rawValue for clipboard)
+                String stringValue = null;
+                if (value != null) {
+                    Type pasteType = property.entity.getPasteType(context);
+                    if(pasteType == null)
+                        pasteType = objectValue.getType();
+                    try {
+                        stringValue = pasteType.formatUI(value);
+                    } catch (Exception e) {
+                        stringValue = value.toString();
+                    }
+                }
+                rawValueRow.add(stringValue);
+            }
+
+            values.add(valueRow);
+            rawValues.add(rawValueRow);
+        }
+
+        return new Pair<>(values, rawValues);
     }
 
     public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> cellsValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
