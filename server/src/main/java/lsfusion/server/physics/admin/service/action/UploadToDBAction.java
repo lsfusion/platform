@@ -25,7 +25,7 @@ public class UploadToDBAction extends InternalAction {
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            String type = (String) findProperty("uploadStaticNameType[]").read(context);
+            String type = (String) findProperty("uploadNameType[]").read(context);
             String host = (String) findProperty("uploadHost[]").read(context);
             String user = (String) findProperty("uploadUser[]").read(context);
             String password = (String) findProperty("uploadPassword[]").read(context);

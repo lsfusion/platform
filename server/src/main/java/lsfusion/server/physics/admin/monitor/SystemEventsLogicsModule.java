@@ -264,7 +264,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         quantityRemovedClassesSession = findProperty("quantityRemovedClasses[Session]");
         quantityChangedClassesSession = findProperty("quantityChangedClasses[Session]");
         changesSession = findProperty("changes[Session]");
-//        baseLM.objectClassName.makeLoggable(this, true);
 
         pingComputerDateTimeFromDateTimeTo = findProperty("pingFromTo[Computer,DATETIME,DATETIME]");
         minTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("minTotalMemoryFromTo[Computer,DATETIME,DATETIME]");

@@ -8,6 +8,6 @@ public class ClientCaptionElementNavigator extends ClientElementNavigator {
 
     public void update(ClientNavigatorElement rootElement, Object value) {
         ClientNavigatorElement navigatorElement = rootElement.findElementByCanonicalName(canonicalName);
-        navigatorElement.caption = (String) value;
+        navigatorElement.caption = value != null ? String.valueOf(value) : null;
     }
 }

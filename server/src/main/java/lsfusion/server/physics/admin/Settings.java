@@ -168,6 +168,8 @@ public class Settings implements Cloneable {
 
     // the problem is that now there is no class push down in SubQueryExpr (as well, as in PartitionExpr and RecursionExpr) + no value (and class) push down for expressions like SubQueryExpr = value (which can be crucial for not materialized abstract properties for example)
     // so now we have to keep limit really high to avoid problems
+    private int limitComplexWrapComplexity = 30;
+    private int limitPrevWrapComplexity = 300;
     private int limitWrapComplexity = 3000;
 
     private int limitMaterializeComplexity = 20;
@@ -193,10 +195,6 @@ public class Settings implements Cloneable {
     private boolean disableAutoHints = false;
 
     private boolean disableAutoHintCaches = true;
-
-    private boolean disableWrapComplexity = false;
-
-    private boolean enablePrevWrapComplexity = false;
 
     private int groupJoinLevel = 1; // -1 отключить
 
@@ -855,6 +853,22 @@ public class Settings implements Cloneable {
         this.limitHintNoUpdateComplexity = limitHintNoUpdateComplexity;
     }
 
+    public int getLimitComplexWrapComplexity() {
+        return limitComplexWrapComplexity * limitIncrementCoeff;
+    }
+
+    public void setLimitComplexWrapComplexity(int limitComplexWrapComplexity) {
+        this.limitComplexWrapComplexity = limitComplexWrapComplexity;
+    }
+
+    public int getLimitPrevWrapComplexity() {
+        return limitPrevWrapComplexity * limitIncrementCoeff;
+    }
+
+    public void setLimitPrevWrapComplexity(int limitPrevWrapComplexity) {
+        this.limitPrevWrapComplexity = limitPrevWrapComplexity;
+    }
+
     public int getLimitWrapComplexity() {
         return limitWrapComplexity * limitIncrementCoeff;
     }
@@ -1011,22 +1025,6 @@ public class Settings implements Cloneable {
 
     public void setDisableAutoHintCaches(boolean disableAutoHintCaches) {
         this.disableAutoHintCaches = disableAutoHintCaches;
-    }
-
-    public boolean isDisableWrapComplexity() {
-        return disableWrapComplexity;
-    }
-
-    public void setDisableWrapComplexity(boolean disableWrapComplexity) {
-        this.disableWrapComplexity = disableWrapComplexity;
-    }
-
-    public boolean isEnablePrevWrapComplexity() {
-        return enablePrevWrapComplexity;
-    }
-
-    public void setEnablePrevWrapComplexity(boolean enablePrevWrapComplexity) {
-        this.enablePrevWrapComplexity = enablePrevWrapComplexity;
     }
 
     public int getGroupJoinLevel() {
@@ -1472,6 +1470,9 @@ public class Settings implements Cloneable {
                                          // increased to 40, because Pause Remark phase in Java 21 changes old generation memory usage, but it occurs approximately 20 seconds before mixed collections
     private long unstableLRUMaxCount = 80; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
+    private boolean disableLRUCollectionUsageThreshold = false; // do not rely on collection usage threshold
+    private int memGCCollectionThresholdCooldown = 90;
+
     public long getCriticalLRURangePercent() {
         return criticalLRURangePercent;
     }
@@ -1486,6 +1487,23 @@ public class Settings implements Cloneable {
 
     public void setTargetLRURangePercent(long targetLRURangePercent) {
         this.targetLRURangePercent = targetLRURangePercent;
+    }
+
+
+    public boolean isDisableLRUCollectionUsageThreshold() {
+        return disableLRUCollectionUsageThreshold;
+    }
+
+    public void setDisableLRUCollectionUsageThreshold(boolean disableLRUCollectionUsageThreshold) {
+        this.disableLRUCollectionUsageThreshold = disableLRUCollectionUsageThreshold;
+    }
+
+    public int getMemGCCollectionThresholdCooldown() {
+        return memGCCollectionThresholdCooldown;
+    }
+
+    public void setMemGCCollectionThresholdCooldown(int memGCCollectionThresholdCooldown) {
+        this.memGCCollectionThresholdCooldown = memGCCollectionThresholdCooldown;
     }
 
     public double getTargetLRUAdjustIncCoeff() {

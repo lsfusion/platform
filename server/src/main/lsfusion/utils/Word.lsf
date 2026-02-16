@@ -49,7 +49,7 @@ FORM dialogTypes '{word.type}'
 
 type '{word.type.template.entry}' = DATA Type(TemplateEntry);
 nameType '{word.name.type.template.entry}' (TemplateEntry t) = name(type(t));
-idType '{word.id.type.template.entry}' (TemplateEntry t) = staticName(type(t));
+idType '{word.id.type.template.entry}' (TemplateEntry t) = name(type(t));
 
 isTableTemplateEntry '{word.is.table.template.entry}' (TemplateEntry t) = type(t) == Type.table;
 isListTemplateEntry '{word.is.list.template.entry}' (TemplateEntry t) = type(t) == Type.list;

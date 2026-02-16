@@ -203,6 +203,8 @@ public class LogicsInstance implements InitializingBean {
             beforeAspect.run();
             try {
                 LRUUtil.initLRUTuner(lruLogger::info, beforeAspect, afterAspect,
+                        () -> Settings.get().isDisableLRUCollectionUsageThreshold(),
+                        () -> Settings.get().getMemGCCollectionThresholdCooldown(),
                         () -> ((double)Settings.get().getTargetLRURangePercent() / 100.0), 
                         () -> ((double)Settings.get().getCriticalLRURangePercent() / 100.0),
                         () -> Settings.get().getTargetLRUAdjustIncCoeff(),

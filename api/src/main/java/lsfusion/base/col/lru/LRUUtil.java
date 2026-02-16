@@ -52,6 +52,7 @@ public class LRUUtil {
     }
 
     public static double memGCIn100Millis = 0.1; // сколько процентов памяти может собрать сборщик мусора за 100 мс
+    private static long lastGCCollectionThresholdHit = 0;
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;
@@ -63,7 +64,7 @@ public class LRUUtil {
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     private static final String newSizeFraction = "-XX:G1NewSizePercent=";
-    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetIncLRU, Supplier<Double> adjustTargetDecLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
+    public static void initLRUTuner(final LRULogger logger, Runnable beforeAspect, Runnable afterAspect, Supplier<Boolean> disableLRUCollectionUsageThreshold, Supplier<Integer> memGCCollectionThresholdCooldown, Supplier<Double> targetMemRatio, Supplier<Double> criticalMemRatio, Supplier<Double> adjustTargetIncLRU, Supplier<Double> adjustTargetDecLRU, Supplier<Double> adjustCriticalLRU, double LRUDefCoeff, Supplier<Double> LRUMinCoeff, Supplier<Double> LRUMaxCoeff, Supplier<Long> stableMinCount, Supplier<Long> unstableMaxCount) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
 
         // the same as in updateSavePointsInfo
@@ -91,7 +92,7 @@ public class LRUUtil {
         scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
         multiplier = LRUDefCoeff;
 
-        final boolean collectionUsageNotSupported = !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115  
+        final boolean collectionUsageNotSupported = disableLRUCollectionUsageThreshold.get() || !tenuredGenPool.isCollectionUsageThresholdSupported(); // it seems that collectionusage for g1 is pretty relevant now (so we don't need to disable it) : https://bugs.openjdk.java.net/browse/JDK-8195115
 
         MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
         NotificationEmitter emitter = (NotificationEmitter) mbean;
@@ -132,16 +133,21 @@ public class LRUUtil {
                         }
                     } else {
                         if (n.getType().equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
-                            long used = tenuredGenPool.getCollectionUsage().getUsed();
-                            double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
-                            logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
+                            long GCCollectionThresholdHit = System.currentTimeMillis();
+                            if(GCCollectionThresholdHit - lastGCCollectionThresholdHit > memGCCollectionThresholdCooldown.get() * 1000L) {
+                                lastGCCollectionThresholdHit = GCCollectionThresholdHit;
 
-                            if (multiplier > LRUMinCoeff.get()) {
-                                multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
-                                logger.log("DEC THRESHOLD MULTI " + multiplier);
+                                long used = tenuredGenPool.getCollectionUsage().getUsed();
+                                double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
+                                logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
+
+                                if (multiplier > LRUMinCoeff.get()) {
+                                    multiplier /= (1.0 + cleanMem * adjustCriticalLRU.get());
+                                    logger.log("DEC THRESHOLD MULTI " + multiplier);
+                                }
+
+                                ALRUMap.forceRemoveAllLRU(cleanMem);
                             }
-
-                            ALRUMap.forceRemoveAllLRU(cleanMem);
                         }
                     }
                 } finally {

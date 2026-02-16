@@ -224,7 +224,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP objectClass;
     public LP random;
-    public LP objectClassName;
     public LP staticName;
     public LP staticCaption;
     public LP staticOrder;
@@ -672,7 +671,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         sessionOwners = findProperty("sessionOwners[]");
         ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
 
-        objectClassName = findProperty("objectClassName[Object]");
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");
 
         extension = findProperty("extension[FILE]");

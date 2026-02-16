@@ -6,6 +6,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -48,7 +49,7 @@ public class ActionOrPropertySettings {
             this.actionType = actionType;
             this.before = before;
             this.contextMenuCaption = contextMenuCaption;
-            this.keyPress = KeyStroke.getKeyStroke(keyPress);
+            this.keyPress = KeyStrokeConverter.getKeyStroke(keyPress);
         }
 
         public boolean isContextMenu() {

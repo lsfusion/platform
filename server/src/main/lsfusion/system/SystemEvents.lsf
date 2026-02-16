@@ -113,7 +113,7 @@ captionTheme '{system.events.theme}' (DesignEnv d) = caption(designEnvTheme(d));
 serverTheme '{system.events.theme}' = DATA Theme ();
 captionServerTheme '{system.events.theme}' = caption(serverTheme());
 theme '{system.events.theme}' (DesignEnv d) = OVERRIDE designEnvTheme(d), serverTheme(), Theme.classic;
-nameTheme = STRING(basicStaticName(theme(currentDesignEnv())));
+nameTheme = STRING(basicName(theme(currentDesignEnv())));
 useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
 useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
@@ -632,8 +632,8 @@ onWebClientStarted() + {
     }
 }
 WHEN FORMS design CHANGED (size()) DO {
-    INTERNAL CLIENT 'setGlobalClassName' PARAMS NULL, 'size-' + basicStaticName(currentSize());
-    INTERNAL CLIENT 'setGlobalClassName' PARAMS TRUE, 'size-' + basicStaticName(size());
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS NULL, 'size-' + basicName(currentSize());
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS TRUE, 'size-' + basicName(size());
 
     saveCurrentSize(TRUE);
 }
@@ -841,7 +841,7 @@ DESIGN connections{
 FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY className, message, client , login , type, dateTime = date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL javaStackTrace, lsfStackTrace, asyncStackTrace SHOWIF asyncStackTrace(e) != ''
 ;
 

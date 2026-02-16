@@ -13,7 +13,7 @@ import java.util.Iterator;
 public class UpdatePermissionAction extends InternalAction {
     private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface canonicalNameNavigatorElementInterface;
-    private final ClassPropertyInterface staticNamePermissionInterface;
+    private final ClassPropertyInterface namePermissionInterface;
 
     public UpdatePermissionAction(SecurityLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -21,7 +21,7 @@ public class UpdatePermissionAction extends InternalAction {
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         userRoleInterface = i.next();
         canonicalNameNavigatorElementInterface = i.next();
-        staticNamePermissionInterface = i.next();
+        namePermissionInterface = i.next();
     }
 
     @Override
@@ -31,7 +31,7 @@ public class UpdatePermissionAction extends InternalAction {
         String navigatorElement = (String) context.getKeyValue(canonicalNameNavigatorElementInterface).getValue();
         if(userRole != null && navigatorElement != null) {
             SecurityManager securityManager = context.getSecurityManager();
-            Boolean permission = securityManager.getPermissionValue(context.getKeyValue(staticNamePermissionInterface).getValue());
+            Boolean permission = securityManager.getPermissionValue(context.getKeyValue(namePermissionInterface).getValue());
             RoleSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
             if (securityPolicy != null) {
                 securityPolicy.navigator.setPermission(context.getBL().findNavigatorElement(navigatorElement), permission);
