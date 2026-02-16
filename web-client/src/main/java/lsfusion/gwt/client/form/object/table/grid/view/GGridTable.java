@@ -1131,6 +1131,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void copyDataToClipboard(Cell cell, Element renderElement) {
         // Check if we have column selection
         if (!rowSelectValues.isEmpty() && startSelectColumn >= 0) {
+            Element tableElement = getTableDataFocusElement();
+            CopyPasteUtils.addCopyingClass(tableElement);
+
             int colStart = Math.min(startSelectColumn, endSelectColumn);
             int colEnd = Math.max(startSelectColumn, endSelectColumn);
 
@@ -1149,7 +1152,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             // Make async server call to get the data
             form.copyExternalTable(propertyList, columnKeys, table -> {
                 // Convert result to clipboard format and copy
-                CopyPasteUtils.copyToClipboard(GwtClientUtils.getClipboardTable(table));
+                CopyPasteUtils.copyToClipboard(
+                    GwtClientUtils.getClipboardTable(table),
+                    () -> focus(FocusUtils.Reason.RESTOREFOCUS)
+                );
+                CopyPasteUtils.removeCopyingClassDelayed(tableElement);
             });
 
             return;

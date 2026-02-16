@@ -62,8 +62,16 @@
 }
 
 .no-select {
-    -webkit-user-select: none; /* Chrome, Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* IE, Edge */
-    user-select: none;         /* Standard */
+    -webkit-user-select: none !important; /* Chrome, Safari */
+    -moz-user-select: none !important;    /* Firefox */
+    -ms-user-select: none !important;     /* IE, Edge */
+    user-select: none !important;         /* Standard */
 }
+
+.copy-paste-selection {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+

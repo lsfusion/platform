@@ -46,3 +46,8 @@
     /* ??? */
     /*overflow: hidden;*/
 }
+
+/* Copy flash effect for selected cells - universal for all themes */
+.copying-to-clipboard .column-select {
+    filter: brightness(0.8) !important;
+}
