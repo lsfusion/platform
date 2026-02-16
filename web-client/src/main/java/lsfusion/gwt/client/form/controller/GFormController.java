@@ -962,9 +962,9 @@ public class GFormController implements EditManager {
             propertyIdList.add(propertyDraw.ID);
         }
 
-        asyncDispatch(new CopyExternalTable(propertyIdList, columnKeys), new RequestCountingAsyncCallback<CopyExternalTableResult>() {
+        asyncDispatch(new CopyExternalTable(propertyIdList, columnKeys), new SimpleRequestCallback<CopyExternalTableResult>() {
             @Override
-            public void onSuccess(CopyExternalTableResult result, Runnable onDispatchFinished) {
+            protected void onSuccess(CopyExternalTableResult result) {
                 // Process values with convertFileValue and formatCopy (symmetrical to paste)
                 ArrayList<ArrayList<Object>> values = result.getValues();
                 ArrayList<ArrayList<String>> rawValues = result.getRawValues();
@@ -992,11 +992,6 @@ public class GFormController implements EditManager {
                 }
 
                 callback.accept(table);
-            }
-
-            @Override
-            public void onFailure(ExceptionResult exceptionResult) {
-                // Handle failure silently - copy operation failed
             }
         });
     }

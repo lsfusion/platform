@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.gwt.client.controller.remote.action.form.CopyExternalTable;
 import lsfusion.gwt.client.controller.remote.action.form.CopyExternalTableResult;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
@@ -20,6 +21,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 
 public class CopyExternalTableHandler extends FormActionHandler<CopyExternalTable, CopyExternalTableResult> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
+    private final ClientFormChangesToGwtConverter clientValuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
     public CopyExternalTableHandler(MainDispatchServlet servlet) {
         super(servlet);
@@ -45,7 +47,7 @@ public class CopyExternalTableHandler extends FormActionHandler<CopyExternalTabl
             ArrayList<Object> valueRow = new ArrayList<>();
             for(byte[] rowValue : row) {
                 try {
-                    valueRow.add(gwtConverter.convertOrCast(deserializeObject(rowValue)));
+                    valueRow.add(clientValuesConverter.convertOrCast(deserializeObject(rowValue)));
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

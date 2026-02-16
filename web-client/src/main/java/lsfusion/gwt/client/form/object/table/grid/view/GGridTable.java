@@ -1127,10 +1127,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         super.pasteData(cell, renderElement, table);
     }
 
-    // Fields for column selection (initialized to -1 for "no selection")
-    private int startSelectColumn = -1;
-    private int endSelectColumn = -1;
-
     @Override
     public void copyDataToClipboard(Cell cell, Element renderElement) {
         // Check if we have column selection
