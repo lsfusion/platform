@@ -112,14 +112,14 @@ public abstract class CallHTTPAction extends CallAction {
         return responseCookies;
     }
 
-    private String getTransformedEncodedText(ExecutionContext<PropertyInterface> context, PropertyInterface param, Charset charset) {
+    private String getTransformedEncodedText(ExecutionContext<PropertyInterface> context, PropertyInterface param, Charset charset, boolean normalizeHost) {
         if (param == null)
             return null;
 
         String transformedText = getTransformedText(context, param);
         if(transformedText != null && !noEncode) {
             try {
-                transformedText = URIUtil.encodeQuery(normalizeIdnHost(transformedText), charset.toString());
+                transformedText = URIUtil.encodeQuery(normalizeHost ? normalizeIdnHost(transformedText) : transformedText, charset.toString());
             } catch (URIException | URISyntaxException | MalformedURLException e) {
                 throw Throwables.propagate(e);
             }
@@ -278,7 +278,7 @@ public abstract class CallHTTPAction extends CallAction {
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         Charset defaultUrlCharset = ExternalUtils.defaultUrlCharset;
-        String connectionString = getTransformedEncodedText(context, queryInterface, defaultUrlCharset);
+        String connectionString = getTransformedEncodedText(context, queryInterface, defaultUrlCharset, true);
         if(connectionString == null)
             throw new RuntimeException("connectionString not specified");
 
@@ -314,7 +314,7 @@ public abstract class CallHTTPAction extends CallAction {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
                     Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
-                    String bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
+                    String bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset, false);
                     if(bodyUrl != null) {
                         bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
                         if (!rNotUsedParams.result.isEmpty()) {
