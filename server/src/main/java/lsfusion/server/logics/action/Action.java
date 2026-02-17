@@ -759,11 +759,19 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
-        return getGroupChange(entity.getGroupProp(GroupObjectProp.FILTER).getImplement(reversedMapping),
+
+        // Use FILTER AND (NOT ISSELECT OR SELECT) instead of just FILTER for group change
+        PropertyObjectEntity<?> groupChangeSelectProperty = GroupObjectEntity.getGroupChangeSelectProperty(
+                entity.getIsSelectProperty(),
+                entity.getGroupProp(GroupObjectProp.SELECT),
+                entity.getGroupProp(GroupObjectProp.FILTER)
+        );
+
+        return getGroupChange(groupChangeSelectProperty.getImplement(reversedMapping),
                               entity.getGroupProp(GroupObjectProp.ORDER).getImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
-    private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {
+    private <F extends PropertyInterface, G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<F, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {
 
 //        lm.addGroupObjectProp();
         MList<ActionMapImplement<?, P>> mList = ListFact.mList();

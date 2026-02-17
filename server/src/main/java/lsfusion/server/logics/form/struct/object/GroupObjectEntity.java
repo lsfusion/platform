@@ -273,6 +273,22 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return new PropertyObjectEntity(fullSelectImpl.property, fullSelectImpl.mapping.join(mapObjects.reverse()));
     }
 
+    public static PropertyObjectEntity<?> getGroupChangeSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp) {
+        ImRevMap<ObjectEntity, PropertyInterface> mapObjects = BaseUtils.immutableCast(selectProp.mapping.reverse());
+
+        // FILTER AND (NOT ISSELECT OR SELECT)
+        PropertyMapImplement<?, PropertyInterface> groupChangeSelectImpl = PropertyFact.createAnd(
+                filterProp.getImplement(mapObjects),
+                PropertyFact.createUnion(
+                        mapObjects.valuesSet(),
+                        PropertyFact.createNot(isSelectProperty.getImplement(SetFact.EMPTYORDER())),
+                        selectProp.getImplement(mapObjects)
+                )
+        );
+
+        return new PropertyObjectEntity(groupChangeSelectImpl.property, groupChangeSelectImpl.mapping.join(mapObjects.reverse()));
+    }
+
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
