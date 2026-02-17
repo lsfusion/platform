@@ -45,7 +45,7 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.action.ActionClassImplement;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -763,12 +763,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         // Use FILTER AND (NOT ISSELECT OR SELECT) instead of just FILTER for group change
         PropertyObjectEntity<?> groupChangeSelectProperty = GroupObjectEntity.getGroupChangeSelectProperty(
                 entity.getIsSelectProperty(),
-                entity.getGroupProp(GroupObjectProp.SELECT),
-                entity.getGroupProp(GroupObjectProp.FILTER)
+                entity.getGroupProp(GroupObjectRowProp.SELECT),
+                entity.getGroupProp(GroupObjectRowProp.FILTER)
         );
 
         return getGroupChange(groupChangeSelectProperty.getImplement(reversedMapping),
-                              entity.getGroupProp(GroupObjectProp.ORDER).getImplement(reversedMapping),
+                              entity.getGroupProp(GroupObjectRowProp.ORDER).getImplement(reversedMapping),
                               readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
     private <F extends PropertyInterface, G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<F, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {

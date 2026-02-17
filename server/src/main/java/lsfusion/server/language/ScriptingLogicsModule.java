@@ -96,6 +96,8 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.ColumnProp;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormSelectTop;
@@ -4667,10 +4669,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         Version version = getVersion();
         GroupObjectEntity groupObject = form.getNFGroupObject(objectName, version, true);
         if (groupObject != null) {
-            for (ObjectEntity obj : groupObject.getOrderObjects()) {
-                outClasses.add(obj.getResolveClassSet());
+            if (prop instanceof GroupObjectRowProp) {
+                // Row properties with object parameters (FILTER, ORDER, SELECT, VIEW)
+                for (ObjectEntity obj : groupObject.getOrderObjects()) {
+                    outClasses.add(obj.getResolveClassSet());
+                }
+                resultProp = addGroupObjectProp(groupObject, (GroupObjectRowProp) prop, version);
+            } else {
+                // State properties without object parameters (ISSELECT, VIEWTYPE)
+                resultProp = new LP<>(groupObject.getNFStateProperty((GroupObjectStateProp) prop, version));
             }
-            resultProp = addGroupObjectProp(groupObject, prop, version);
         } else {
             errLog.emitNotFoundError(parser, "group оbject", objectName);
         }

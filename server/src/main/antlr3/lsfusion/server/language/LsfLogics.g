@@ -79,6 +79,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+    import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
+    import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
     import lsfusion.server.logics.form.interactive.property.ColumnProp;
     import lsfusion.server.logics.form.open.MappedForm;
     import lsfusion.server.logics.form.stat.FormSelectTop;
@@ -2568,14 +2570,16 @@ groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signat
 }
 @after {
 	if (inMainParseState()) {
-		$signature = new ArrayList<>();	
+		$signature = new ArrayList<>();
 		$property = self.addScriptedGroupObjectProp($gobj.sid, prop, $signature);
 	}
 }
-	:	('FILTER' { prop = GroupObjectProp.FILTER; }
-	    | 'ORDER' { prop = GroupObjectProp.ORDER; }
-	    | 'SELECT' { prop = GroupObjectProp.SELECT; }
-	    | 'VIEW' { prop = GroupObjectProp.VIEW; } )
+	:	('FILTER' { prop = GroupObjectRowProp.FILTER; }
+	    | 'ORDER' { prop = GroupObjectRowProp.ORDER; }
+	    | 'SELECT' { prop = GroupObjectRowProp.SELECT; }
+	    | 'VIEW' { prop = GroupObjectRowProp.VIEW; }
+	    | 'ISSELECT' { prop = GroupObjectStateProp.ISSELECT; }
+	    | 'VIEWTYPE' { prop = GroupObjectStateProp.VIEWTYPE; } )
 		gobj=formGroupObjectID
 	;
 

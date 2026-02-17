@@ -77,7 +77,7 @@ import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.ColumnProp;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
@@ -2170,11 +2170,11 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public <T extends PropertyInterface> LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
+    public <T extends PropertyInterface> LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectRowProp prop, Version version) {
         PropertyObjectEntity<T> groupObjectProperty;
-        if(prop == GroupObjectProp.SELECT)
-            groupObjectProperty = (PropertyObjectEntity<T>) GroupObjectEntity.getFullSelectProperty(groupObject.getIsSelectProperty(),
-                            groupObject.getNFProperty(GroupObjectProp.SELECT, version), groupObject.getNFProperty(GroupObjectProp.FILTER, version),
+        if(prop == GroupObjectRowProp.SELECT)
+            groupObjectProperty = (PropertyObjectEntity<T>) GroupObjectEntity.getFullSelectProperty(groupObject.getNFIsSelectProperty(version),
+                            groupObject.getNFProperty(GroupObjectRowProp.SELECT, version), groupObject.getNFProperty(GroupObjectRowProp.FILTER, version),
                             groupObject.getObjects().mapItRevValues(object -> object.getNFValueProperty(version)));
         else
             groupObjectProperty = (PropertyObjectEntity<T>) groupObject.getNFProperty(prop, version);

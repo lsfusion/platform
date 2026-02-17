@@ -76,7 +76,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -214,7 +214,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects,
                                PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, PropertyObjectInstance propertyCustomOptions,
-                               ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
+                               ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectRowProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -991,7 +991,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         change(value, eventForm, stack, null);
     }
 
-    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
+    public ImMap<GroupObjectRowProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
     private boolean pendingUpdateKeys;
     private boolean pendingUpdateScroll;
@@ -1016,8 +1016,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             changes.updateStateObjects.add(this, isPending);
     }
 
-    private MAddMap<GroupObjectProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
-    public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
+    private MAddMap<GroupObjectRowProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
+    public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectRowProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
     }
 
@@ -1030,26 +1030,26 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return false;
     }
 
-    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
+    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectRowProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
             MSet<Property> mUsedProps = null;
             if(propsChanged)
                 mUsedProps = SetFact.mSet();
             else {
-                if(propType.equals(GroupObjectProp.FILTER) &&
+                if(propType.equals(GroupObjectRowProp.FILTER) &&
                     !entity.isFilterExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_FILTERPROP;
                     return;
                 }
-                if(propType.equals(GroupObjectProp.ORDER) &&
+                if(propType.equals(GroupObjectRowProp.ORDER) &&
                     !entity.isOrderExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_ORDERPROP;
                     return;
                 }
-                if(propType.equals(GroupObjectProp.SELECT) &&
+                if(propType.equals(GroupObjectRowProp.SELECT) &&
                     !entity.isSelectExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_SELECTPROP;
@@ -1063,7 +1063,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             MSet<Property> fmUsedProps = mUsedProps;
             Where filterWhere = null;
-            if(propType.equals(GroupObjectProp.FILTER)) { // || propType.equals(GroupObjectProp.SELECT)
+            if(propType.equals(GroupObjectRowProp.FILTER)) { // || propType.equals(GroupObjectProp.SELECT)
                 filterWhere = getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this) {
                     @Override
                     public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -1077,7 +1077,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
             ImOrderMap<OrderInstance, Boolean> orders = null;
             ImMap<OrderInstance, Expr> orderExprs = null;
-            if(propType.equals(GroupObjectProp.ORDER) || propType.equals(GroupObjectProp.SELECT)) {
+            if(propType.equals(GroupObjectRowProp.ORDER) || propType.equals(GroupObjectRowProp.SELECT)) {
                 int ordersSize = this.orders.size();
                 MOrderExclMap<OrderInstance, Boolean> mOrders = MapFact.mOrderExclMapMax(ordersSize);
                 MExclMap<OrderInstance, Expr> mOrderExprs = MapFact.mExclMapMax(ordersSize);
@@ -1498,7 +1498,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
-        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectRowProp.VIEW);
         if(viewProperty != null) {
             updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE()) :
                     new PropertyChange<>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
@@ -1506,7 +1506,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     
     private void updateViewProperty(ExecutionEnvironment execEnv, NoPropertyTableUsage<ObjectInstance> keyTable1) throws SQLException, SQLHandledException {
-        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectRowProp.VIEW);
         if(viewProperty != null) {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             updateViewProperty(execEnv, viewProperty, new PropertyChange<>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
@@ -1520,17 +1520,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public void updateOrderProperty(boolean isOrderExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (entity.isOrderExplicitlyUsed() == isOrderExplicitlyUsed)
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (entity.isFilterExplicitlyUsed() == isFilterExplicitlyUsed)
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateSelectProperty(boolean isSelectExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (entity.isSelectExplicitlyUsed() == isSelectExplicitlyUsed)
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.SELECT), environmentIncrement, changedProps, reallyChanged, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.SELECT), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     @NotNull
@@ -1853,7 +1853,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         private PropertyRevImplement<ClassPropertyInterface, ObjectInstance> getSelectProperty() {
-            return props.get(GroupObjectProp.SELECT);
+            return props.get(GroupObjectRowProp.SELECT);
         }
 
         public byte getTypeID() {

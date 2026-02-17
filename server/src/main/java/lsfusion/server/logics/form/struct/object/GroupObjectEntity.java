@@ -15,7 +15,6 @@ import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFFact;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.Expr;
@@ -27,7 +26,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
@@ -39,7 +37,8 @@ import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -158,12 +157,25 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return lazyUpdateType;
     }
 
-    private final FormEntity.ExProperty listViewTypeProp;
+    private final ImMap<GroupObjectStateProp, FormEntity.ExProperty> stateProps;
+    public Property<?> getNFStateProperty(GroupObjectStateProp type, Version version) {
+        return stateProps.get(type).getNF(version);
+    }
+    public Property<?> getStateProperty(GroupObjectStateProp type) {
+        return stateProps.get(type).get();
+    }
+
     public Property<?> getNFListViewType(Version version) {
-        return listViewTypeProp.getNF(version);
+        return getNFStateProperty(GroupObjectStateProp.VIEWTYPE, version);
     }
     public Property<?> getListViewType() {
-        return listViewTypeProp.get();
+        return getStateProperty(GroupObjectStateProp.VIEWTYPE);
+    }
+    public Property<?> getNFIsSelectProperty(Version version) {
+        return getNFStateProperty(GroupObjectStateProp.ISSELECT, version);
+    }
+    public Property<?> getIsSelectProperty() {
+        return getStateProperty(GroupObjectStateProp.ISSELECT);
     }
 
     private final NFProperty<ClassViewType> viewType = NFFact.property();
@@ -187,13 +199,13 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private final NFProperty<PropertyObjectEntity> propertyForeground = NFFact.property();
 
     public boolean isFilterExplicitlyUsed() {
-        return isExplicitlyUsed(GroupObjectProp.FILTER);
+        return isExplicitlyUsed(GroupObjectRowProp.FILTER);
     }
     public boolean isOrderExplicitlyUsed() {
-        return isExplicitlyUsed(GroupObjectProp.ORDER);
+        return isExplicitlyUsed(GroupObjectRowProp.ORDER);
     }
     public boolean isSelectExplicitlyUsed() {
-        return isExplicitlyUsed(GroupObjectProp.SELECT);
+        return isExplicitlyUsed(GroupObjectRowProp.SELECT);
     }
 
     public static class ExGroupProperty extends FormEntity.ExMapProp<PropertyObjectEntity<ClassPropertyInterface>, ExGroupProperty> {
@@ -212,30 +224,20 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         }
     }
 
-    private final FormEntity.ExProperty isSelectProperty;
-    @NFLazy
-    public Property<?> getNFIsSelectProperty(Version version) {
-        return isSelectProperty.getNF(version);
-    }
-
-    public Property<?> getIsSelectProperty() {
-        return isSelectProperty.get();
-    }
-
-    private final ImMap<GroupObjectProp, ExGroupProperty> props;
-    private final ImMap<GroupObjectProp, NFProperty<Boolean>> isExplicitlyUsed = MapFact.toMap(GroupObjectProp.values(), type -> NFFact.property()); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER, etc. only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
-    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectProp type, Version version) {
+    private final ImMap<GroupObjectRowProp, ExGroupProperty> props;
+    private final ImMap<GroupObjectRowProp, NFProperty<Boolean>> isExplicitlyUsed = MapFact.toMap(GroupObjectRowProp.values(), type -> NFFact.property()); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER, etc. only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectRowProp type, Version version) {
         isExplicitlyUsed.get(type).set(true, version);
         return props.get(type).getNF(version);
     }
-    public PropertyObjectEntity<ClassPropertyInterface> getGroupProp(GroupObjectProp type) {
-        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER) || type.equals(GroupObjectProp.SELECT);
+    public PropertyObjectEntity<ClassPropertyInterface> getGroupProp(GroupObjectRowProp type) {
+        assert type.equals(GroupObjectRowProp.FILTER) || type.equals(GroupObjectRowProp.ORDER) || type.equals(GroupObjectRowProp.SELECT);
         return props.get(type).get();
     }
-    public ImMap<GroupObjectProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
+    public ImMap<GroupObjectRowProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
         return props.mapValues(p -> p.get()).removeNulls();
     }
-    public boolean isExplicitlyUsed(GroupObjectProp type) {
+    public boolean isExplicitlyUsed(GroupObjectRowProp type) {
         return isExplicitlyUsed.get(type).get() != null;
     }
 
@@ -251,12 +253,12 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         // order for using in the group change
         // filter, select, isSelect for using in the group change / ctrl+c
         // value for using in the ctrl + c
-        props.get(GroupObjectProp.FILTER).getNF(version);
-        props.get(GroupObjectProp.ORDER).getNF(version);
+        props.get(GroupObjectRowProp.FILTER).getNF(version);
+        props.get(GroupObjectRowProp.ORDER).getNF(version);
         // selection
-        props.get(GroupObjectProp.SELECT).getNF(version);
+        props.get(GroupObjectRowProp.SELECT).getNF(version);
         getObjects().mapItRevValues(object -> object.getNFValueProperty(version));
-        isSelectProperty.getNF(version);
+        stateProps.get(GroupObjectStateProp.ISSELECT).getNF(version);
     }
 
     public static PropertyObjectEntity<?> getFullSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp, ImRevMap<ObjectEntity, Property<?>> objectValues) {
@@ -452,9 +454,9 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         super(ID, sID, debugPoint);
 
         ConcreteCustomClass listViewType = LM.listViewType;
-        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
-        isSelectProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("IS SELECT", this, LogicalClass.instance));
-        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
+        stateProps = MapFact.toMap(GroupObjectStateProp.values(), type -> new FormEntity.ExProperty(
+                () -> PropertyFact.createDataPropRev(type.getSID(), this, type.getValueClass(listViewType))));
+        props = MapFact.toMap(GroupObjectRowProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
                 () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
 
         this.objects = objects;
@@ -537,8 +539,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
         super(() -> -1, null, null);
-        listViewTypeProp = null;
-        isSelectProperty = null;
+        stateProps = null;
         props = null;
         objects = null;
     }
@@ -626,8 +627,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         count = mapping.get(src.count); // nullable
 
         props = mapping.gets(src.props);
-        listViewTypeProp = mapping.get(src.listViewTypeProp);
-        isSelectProperty = mapping.get(src.isSelectProperty);
+        stateProps = mapping.gets(src.stateProps);
     }
 
     @Override

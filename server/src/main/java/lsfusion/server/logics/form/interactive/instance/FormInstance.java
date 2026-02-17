@@ -424,9 +424,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // here it's tricky here, because of the forms aggregation (when the same form is aggregated twice), one data property can be used for several object instances
         // so we use the first just like in the getExEntity
-        MMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mMap(MapFact.keep());
+        MMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectRowProp>> mEnvironmentIncrementSources = MapFact.mMap(MapFact.keep());
         for (GroupObjectInstance groupObject : groupObjects) {
-            ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
+            ImMap<GroupObjectRowProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
             for(int i = 0, size = props.size(); i<size; i++)
                 mEnvironmentIncrementSources.add((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
@@ -1078,8 +1078,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // Get SELECT and FILTER properties
         // Create WHERE clause: SELECT AND FILTER
-        Where where = groupObject.props.get(GroupObjectProp.SELECT).mapExpr(mapKeys, getModifier()).getWhere().and(
-                        groupObject.props.get(GroupObjectProp.FILTER).mapExpr(mapKeys, getModifier()).getWhere());
+        Where where = groupObject.props.get(GroupObjectRowProp.SELECT).mapExpr(mapKeys, getModifier()).getWhere().and(
+                        groupObject.props.get(GroupObjectRowProp.FILTER).mapExpr(mapKeys, getModifier()).getWhere());
 
         // Build properties map with index and property expressions
         MExclMap<Integer, Expr> mPropertyExprs = MapFact.mExclMap(properties.size());
@@ -2983,7 +2983,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
     
     private final IncrementChangeProps environmentIncrement;
-    private final ImMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> environmentIncrementSources;
+    private final ImMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectRowProp>> environmentIncrementSources;
 
     public class FormModifier extends OverridePropSourceSessionModifier<SessionDataProperty> {
 
@@ -2993,7 +2993,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         @Override
         protected ImSet<Property> getSourceProperties(SessionDataProperty property) {
-            Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+            Pair<GroupObjectInstance, GroupObjectRowProp> source = environmentIncrementSources.get(property);
             if(source == null)
                 return SetFact.EMPTY();
             ImSet<Property> result = source.first.getUsedEnvironmentIncrementProps(source.second);
@@ -3010,11 +3010,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //            }
 
         // recursion guard, just like in notifySourceChange (however this guard is needed optimization if property is really complex and thus uses a lot of prereads / materialized changes)
-        private ImSet<Pair<GroupObjectInstance, GroupObjectProp>> updateChangesRecursionGuard = SetFact.EMPTY();
+        private ImSet<Pair<GroupObjectInstance, GroupObjectRowProp>> updateChangesRecursionGuard = SetFact.EMPTY();
 
-        public void updateEnvironmentIncrementProp(Pair<GroupObjectInstance, GroupObjectProp> source, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
+        public void updateEnvironmentIncrementProp(Pair<GroupObjectInstance, GroupObjectRowProp> source, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
             if(!updateChangesRecursionGuard.contains(source)) {
-                ImSet<Pair<GroupObjectInstance, GroupObjectProp>> prevRecursionGuard = updateChangesRecursionGuard;
+                ImSet<Pair<GroupObjectInstance, GroupObjectRowProp>> prevRecursionGuard = updateChangesRecursionGuard;
                 updateChangesRecursionGuard = updateChangesRecursionGuard.addExcl(source);
                 try {
                     source.first.updateEnvironmentIncrementProp(environmentIncrement, this, changedProps, reallyChanged, source.second, propsChanged, dataChanged, FormInstance.this::isHidden);
@@ -3027,7 +3027,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         @Override
         protected void updateSource(SessionDataProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
             if(!getSQL().isInTransaction()) { // если в транзакции предполагается что все обновится само (в форме - refresh будет)
-                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+                Pair<GroupObjectInstance, GroupObjectRowProp> source = environmentIncrementSources.get(property);
                 updateEnvironmentIncrementProp(source, environmentIncrement, null, FormInstance.this, false, dataChanged);
             } else
                 ServerLoggers.exinfoLog("FAILED TO UPDATE SOURCE IN TRANSACTION " + property);
