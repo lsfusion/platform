@@ -23,15 +23,31 @@
     /*override in StyleDefaults init*/
     --selected-row-background-color: var(--selection-color-rgba);
     --focused-cell-background-color: var(--selection-color-rgba);
+    --table-select-background-color: var(--table-selection-color-rgba);
+    --column-select-background-color: var(--column-selection-color-rgba);
+}
+
+.table-select > td,
+.table-select > td .background-inherit {
+    box-shadow: inset 0 0 0 9999px var(--table-select-background-color);
+}
+
+.table-select > td.column-select,
+.table-select > td.column-select .background-inherit {
+    box-shadow: inset 0 0 0 9999px var(--column-select-background-color);
 }
 
 .table-active > td,
-.table-active > td .background-inherit {
+.table-active > td .background-inherit,
+.table-select.table-active > td,
+.table-select.table-active > td .background-inherit {
     box-shadow: inset 0 0 0 9999px var(--selected-row-background-color);
 }
 
 .focused-cell,
-.focused-cell .background-inherit {
+.focused-cell .background-inherit,
+.table-select > td.column-select.focused-cell,
+.table-select > td.column-select.focused-cell .background-inherit {
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
 }
 

@@ -5,6 +5,8 @@
     --focus-color: #0489BA; /* after changing, synchronize the appropriate value in StyleDefaults.getFocusColor() */
     --selection-color: #D3E5E8;
     --selection-color-rgba: rgba(167, 203, 209, 0.5);
+    --table-selection-color-rgba: rgba(167, 203, 209, 0.2);
+    --column-selection-color-rgba: rgba(167, 203, 209, 0.35);
     --scrollbar-color: #DCDCDC;
     --dialog-border-color: var(--scrollbar-color);
     --progress-background-color: var(--scrollbar-color);
