@@ -182,12 +182,34 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if(col != prevCol || (changeSelectionColumns != null && !changeSelectionColumns.isEmpty())) {
             GPropertyDraw property = col >= 0 ? getProperty(col) : null;
             GGroupObjectValue columnKey = col >= 0 ? getColumnKey(col) : null;
-            form.updatePropertyActive(property, columnKey, true, changeSelection, changeSelectionColumns);
+            form.updatePropertyActive(property, columnKey, true, changeSelectionColumns);
 
             ArrayList<GGroupObject> columnGroupObjects;
             if (col != prevCol && property != null && (columnGroupObjects = property.columnGroupObjects) != null)
                 columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
         }
+    }
+
+
+    public void selectAllCells() {
+        int colCount = getColumnCount();
+        int rowCount = getRowCount();
+        if(colCount <= 0 || rowCount <= 0)
+            return;
+
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
+        for (int i = 0; i < rowCount; i++)
+            changeSelectionRows.put(getRowValue(i).getKey(), PValue.getPValue(true));
+
+        ArrayList<ColumnSelection> changeSelectionColumns = new ArrayList<>();
+            for (int i = 0; i < colCount; i++)
+                addSelectedColumn(i, changeSelectionColumns, true);
+
+        startSelectColumn = 0;
+        endSelectColumn = colCount - 1;
+        selectColumnsChanged();
+
+        form.selectAll(groupObject, changeSelectionRows, changeSelectionColumns);
     }
 
     @Nullable
@@ -272,7 +294,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     private void addSelectedColumn(int column, ArrayList<ColumnSelection> changeSelectionColumns, boolean set) {
-        changeSelectionColumns.add(new ColumnSelection(getProperty(column), getColumnKey(column), set));
+        GPropertyDraw property = getProperty(column);
+        if(property.hasSelectProperty)
+            changeSelectionColumns.add(new ColumnSelection(property, getColumnKey(column), set));
     }
 
     public void update(Boolean updateState) {
@@ -1615,8 +1639,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            Boolean toEnd = null;
             int keyCode = event.getKeyCode();
+            if (keyCode == 65 && event.getCtrlKey()) { // CTRL+A
+                selectAllCells();
+                return true;
+            }
+            Boolean toEnd = null;
             if (keyCode == KeyCodes.KEY_HOME && event.getCtrlKey())
                 toEnd = false;
             else if (keyCode == KeyCodes.KEY_END && event.getCtrlKey())

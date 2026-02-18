@@ -31,6 +31,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.*;
+import lsfusion.gwt.client.controller.remote.action.form.SelectAll;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
@@ -1051,6 +1052,24 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
     }
 
+    public void selectAll(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+        int size = changeSelectionColumns.size();
+        int[] changeSelectionProps = new int[size];
+        GGroupObjectValue[] changeSelectionColumnKeys = new GGroupObjectValue[size];
+        boolean[] changeSelectionValues = new boolean[size];
+        for (int i = 0; i < size; i++) {
+            GGridTable.ColumnSelection selection = changeSelectionColumns.get(i);
+            changeSelectionProps[i] = selection.property.ID;
+            changeSelectionColumnKeys[i] = selection.columnKey;
+            changeSelectionValues[i] = selection.set;
+        }
+
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
+
+        long requestIndex = syncResponseDispatch(new SelectAll(group.ID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
+        pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
+    }
+
     public void onPropertyBinding(Event bindingEvent, ExecuteEditContext editContext) {
         if(GKeyStroke.isKeyEvent(bindingEvent) && editContext.isFocusable()) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
             editContext.focus(FocusUtils.Reason.BINDING); // we want element to be focused on key binding (if it's possible)
@@ -1516,12 +1535,12 @@ public class GFormController implements EditManager {
     private GPropertyDraw prevPropertyActive;
 
     public void updatePropertyActive(GPropertyDraw property, GGroupObjectValue columnKey, boolean focused,
-                                     GChangeSelection changeSelection, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
-        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
+                                     ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || (property != null && property.hasActiveProperty) || changeSelectionColumns != null) {
             int[] changeSelectionProps = null;
             GGroupObjectValue[] changeSelectionColumnKeys = null;
             boolean[] changeSelectionValues = null;
-            if(changeSelection != null) {
+            if(changeSelectionColumns != null) {
                 int size = changeSelectionColumns.size();
                 changeSelectionProps = new int[size];
                 changeSelectionColumnKeys = new GGroupObjectValue[size];
@@ -1535,7 +1554,7 @@ public class GFormController implements EditManager {
             }
 
             asyncResponseDispatch(new ChangePropertyActive(property != null ? property.ID : -1, columnKey, focused,
-                    changeSelection, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
+                    changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
         }
         prevPropertyActive = property;
     }

@@ -31,7 +31,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
 
     ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
-                                        ChangeSelection changeSelection, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException;
+                                        int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException;
 
     ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
 
@@ -44,6 +44,9 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException; // home / end
+    
+    ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
+                             int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException; // select all cells
 
     ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, ArrayList<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException; // paste подряд
 

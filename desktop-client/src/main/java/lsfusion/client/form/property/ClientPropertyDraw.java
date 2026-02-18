@@ -236,6 +236,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean sticky;
 
     public boolean hasActiveProperty;
+    public boolean hasSelectProperty;
 
     public boolean hasFooter;
 
@@ -747,6 +748,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         sticky = inStream.readBoolean();
 
         hasActiveProperty = inStream.readBoolean();
+        hasSelectProperty = inStream.readBoolean();
 
         hasFooter = inStream.readBoolean();
     }

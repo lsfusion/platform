@@ -741,7 +741,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, byte[] columnKey, boolean focused,
-                                               ChangeSelection changeSelection, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
+                                               int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
@@ -749,19 +749,39 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             List<FormInstance.ColumnSelection> changeSelectionColumns = null;
-            if (changeSelection != null) {
-                int size = changeSelectionProps.length;
-                changeSelectionColumns = new ArrayList<>(size);
-                for (int i = 0; i < size; i++) {
-                    PropertyDrawEntity selectionProperty = form.entity.getPropertyDraw(changeSelectionProps[i]);
-                    ImMap<ObjectInstance, DataObject> selectionColumnKey = deserializeDataKeysValues(changeSelectionColumnKeys[i]);
-                    changeSelectionColumns.add(new FormInstance.ColumnSelection(selectionProperty, selectionColumnKey, changeSelectionValues[i]));
-                }
-            }
+            if (changeSelectionProps != null)
+                changeSelectionColumns = convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
 
             form.changePropertyActive(propertyID >= 0 ? form.entity.getPropertyDraw(propertyID) : null,
-                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelection, changeSelectionColumns);
+                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelectionColumns);
         });
+    }
+
+    @Override
+    public ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
+                                    int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("selectAll: [ID: %1$d]", groupObject.getID()));
+            }
+
+            form.selectAll(groupObject, convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues), stack);
+        });
+    }
+
+    @NotNull
+    private List<FormInstance.ColumnSelection> convertChangeSelectionColumns(int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws IOException {
+        List<FormInstance.ColumnSelection> changeSelectionColumns;
+        int size = changeSelectionProps.length;
+        changeSelectionColumns = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            PropertyDrawEntity selectionProperty = form.entity.getPropertyDraw(changeSelectionProps[i]);
+            ImMap<ObjectInstance, DataObject> selectionColumnKey = deserializeDataKeysValues(changeSelectionColumnKeys[i]);
+            changeSelectionColumns.add(new FormInstance.ColumnSelection(selectionProperty, selectionColumnKey, changeSelectionValues[i]));
+        }
+        return changeSelectionColumns;
     }
 
     @Override

@@ -267,7 +267,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     private void focusedChanged() {
-        form.updatePropertyActive(property, columnKey, isFocused, null, null);
+        form.updatePropertyActive(property, columnKey, isFocused, null);
         form.checkFocusElement(isFocused, getRenderElement());
 
         if(isFocused)

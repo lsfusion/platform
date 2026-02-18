@@ -985,6 +985,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
     }
+    public void selectAll(FormInstance eventForm) throws SQLException, SQLHandledException {
+        assert !isInTree();
+
+        Property<?> isSelectProperty = entity.getIsSelectProperty();
+
+        startSelection = SEEK_HOME;
+        endSelection = SEEK_END;
+        selectionDir = -1;
+
+        isSelectProperty.change(eventForm, true);
+
+        updated |= UPDATED_SELECT;
+    }
 
     public void update(MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, ? extends ObjectValue> value, ExecutionStack stack) throws SQLException, SQLHandledException {
         changes.objects.exclAdd(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);

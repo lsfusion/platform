@@ -23,20 +23,18 @@ public class ChangePropertyActiveHandler extends FormServerResponseActionHandler
     public ServerResponseResult executeEx(final ChangePropertyActive action, ExecutionContext context) throws RemoteException {
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                ChangeSelection changeSelection = null;
                 byte[][] changeSelectionColumnKeys = null;
 
-                if(action.changeSelection != null) {
+                if(action.changeSelectionProps != null) {
                     int size = action.changeSelectionProps.length;
                     changeSelectionColumnKeys = new byte[size][];
                     for (int i = 0; i < size; i++) {
                         changeSelectionColumnKeys[i] = gwtConverter.convertOrCast(action.changeSelectionColumnKeys[i]);
                     }
-                    changeSelection = gwtConverter.convertOrCast(action.changeSelection);
                 }
 
                 return remoteForm.changePropertyActive(action.requestIndex, action.lastReceivedRequestIndex, action.propertyId,
-                        gwtConverter.convertOrCast(action.columnKey), action.focused, changeSelection, action.changeSelectionProps, changeSelectionColumnKeys, action.changeSelectionValues);
+                        gwtConverter.convertOrCast(action.columnKey), action.focused, action.changeSelectionProps, changeSelectionColumnKeys, action.changeSelectionValues);
             }
         });
     }

@@ -770,7 +770,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context));
-        outStream.writeBoolean(entity.getActiveProperty() != null || entity.getColumnProp(ColumnProp.SELECT) != null);
+        outStream.writeBoolean(entity.getActiveProperty() != null);
+        outStream.writeBoolean(entity.getColumnProp(ColumnProp.SELECT) != null);
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

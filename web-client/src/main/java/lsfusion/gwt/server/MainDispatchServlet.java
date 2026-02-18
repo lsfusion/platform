@@ -114,6 +114,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new SetRegularFilterHandler(this));
         registry.addHandler(new SetTabActiveHandler(this));
         registry.addHandler(new ChangePropertyActiveHandler(this));
+        registry.addHandler(new SelectAllHandler(this));
         registry.addHandler(new SetContainerCollapsedHandler(this));
         registry.addHandler(new SetUserFiltersHandler(this));
         registry.addHandler(new ThrowInInvocationHandler(this));

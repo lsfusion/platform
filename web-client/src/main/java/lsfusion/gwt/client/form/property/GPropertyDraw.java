@@ -466,6 +466,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public boolean sticky;
 
     public boolean hasActiveProperty;
+    public boolean hasSelectProperty;
 
     public boolean hasFooter;
 

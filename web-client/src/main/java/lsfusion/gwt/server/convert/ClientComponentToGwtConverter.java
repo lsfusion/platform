@@ -469,6 +469,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.sticky = clientPropertyDraw.sticky;
 
         propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
+        propertyDraw.hasSelectProperty = clientPropertyDraw.hasSelectProperty;
 
         propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 

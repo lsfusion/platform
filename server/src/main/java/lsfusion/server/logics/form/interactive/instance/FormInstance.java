@@ -910,6 +910,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         group.seek(updateType, this, changeSelection);
     }
 
+    public void selectAll(GroupObjectInstance group, List<ColumnSelection> columnSelections, ExecutionStack stack) throws SQLException, SQLHandledException {
+        group.selectAll(this);
+
+        changeSelection(columnSelections);
+    }
+
     public void changeValue(ObjectInstance object, ObjectValue changeValue, ExecutionStack stack) throws SQLException, SQLHandledException {
         object.changeValue(changeValue);
 
@@ -2006,10 +2012,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void changePropertyActive(PropertyDrawEntity property, ImMap<ObjectInstance, DataObject> columnKey, boolean focused,
-                                     ChangeSelection changeSelection, List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
+                                     List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
         updateActiveProperty(property, columnKey, focused);
 
-        changeSelection(changeSelection, changeSelectionColumns);
+        if(changeSelectionColumns != null)
+            changeSelection(changeSelectionColumns);
     }
     
     public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
@@ -2035,10 +2042,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             newActiveProperty.updateActiveProperty(session, focused ? true : null);
         activeProperty = newActiveProperty;
     }
-    private void changeSelection(ChangeSelection changeSelection, List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
-        if(changeSelectionColumns != null)
-            for(ColumnSelection columnSelection : changeSelectionColumns)
-                columnSelection.property.updateSelectProperty(session, columnSelection.columnKey, columnSelection.set ? true : null);
+    private void changeSelection(List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
+        for(ColumnSelection columnSelection : changeSelectionColumns)
+            columnSelection.property.updateSelectProperty(session, columnSelection.columnKey, columnSelection.set ? true : null);
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
