@@ -2578,7 +2578,7 @@ groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signat
 	    | 'ORDER' { prop = GroupObjectRowProp.ORDER; }
 	    | 'SELECT' { prop = GroupObjectRowProp.SELECT; }
 	    | 'VIEW' { prop = GroupObjectRowProp.VIEW; }
-	    | 'ISSELECT' { prop = GroupObjectStateProp.ISSELECT; }
+	    | 'SELECT' 'ACTIVE' { prop = GroupObjectStateProp.ISSELECT; }
 	    | 'VIEWTYPE' { prop = GroupObjectStateProp.VIEWTYPE; } )
 		gobj=formGroupObjectID
 	;
