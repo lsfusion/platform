@@ -538,6 +538,13 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        if (isList()) {
+            table.updateRowSelectValues(values, updateKeys);
+        }
+    }
+
+    @Override
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         if (isList()) {
             table.updateRowForegroundValues(values);

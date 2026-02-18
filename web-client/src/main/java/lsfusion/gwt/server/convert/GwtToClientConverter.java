@@ -19,6 +19,7 @@ import lsfusion.gwt.client.action.file.GReadResult;
 import lsfusion.gwt.client.action.net.GTcpResult;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
@@ -37,6 +38,7 @@ import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.action.RunCommandActionResult;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -184,6 +186,15 @@ public class GwtToClientConverter extends ObjectConverter {
             case EDIT: return EventSource.EDIT;
             case BINDING: return EventSource.BINDING;
             case CUSTOM: return EventSource.CUSTOM;
+        }
+        return null;
+    }
+
+    @Converter(from = GChangeSelection.class)
+    public ChangeSelection convertChangeSelection(GChangeSelection changeSelection) {
+        switch (changeSelection) {
+            case MOVEEND: return ChangeSelection.MOVEEND;
+            case MOVE: return ChangeSelection.MOVE;
         }
         return null;
     }

@@ -441,7 +441,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return false;
     }
 
-    protected void quickSearch(Event event) {
+    protected void quickSearch(NativeEvent event) {
         //do nothing by default
     }
 
@@ -455,8 +455,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         form.runGroupReport(groupObject.ID);
     }
 
-    public void selectNextCellInColumn(boolean forward) {
-        selectionHandler.nextColumn(forward, FocusUtils.Reason.KEYNEXTNAVIGATE);
+    public void selectNextCellInColumn(boolean forward, NativeEvent event) {
+        selectionHandler.nextColumn(forward, FocusUtils.Reason.KEYNEXTNAVIGATE, event);
     }
 
     public static class GridPropertyTableSelectionHandler<T extends GridDataRecord> extends DataGridSelectionHandler<T> {
@@ -465,25 +465,24 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
                 int i=0;
                 while (!isFocusable(i))
                     i++;
-                changeColumn(i, reason);
+                changeColumn(i, reason, event);
                 return true;
             } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
                 int i=display.getColumnCount()-1;
                 while (!isFocusable(i))
                     i--;
-                changeColumn(i, reason);
+                changeColumn(i, reason, event);
                 return true;
             }
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
 
@@ -821,8 +820,18 @@ protected Double getUserFlex(int i) {
                 handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, eventHandler.event, (Boolean) rowChanged, column), () -> renderElement != null ? InputBasedCellRenderer.getFocusEventTarget(renderElement, eventHandler.event) : null),
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
+                handler -> copyDataToClipboard(cell, renderElement),
+                handler -> pasteDataFromClipboard(cell, renderElement, handler),
                 false, cell.getColumn().isCustomRenderer(RendererType.GRID), true);
+    }
+
+    public void copyDataToClipboard(Cell cell, Element renderElement) {
+        CopyPasteUtils.putIntoClipboard(renderElement);
+    }
+
+    public void pasteDataFromClipboard(Cell cell, Element renderElement, EventHandler handler) {
+        CopyPasteUtils.getFromClipboard(handler, line ->
+            pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line)));
     }
 
     @Override
@@ -1104,10 +1113,10 @@ protected Double getUserFlex(int i) {
     }
 
     @Override
-    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason) {
+    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason, NativeEvent event) {
         form.checkCommitEditing();
 
-        super.changeSelectedCell(row, column, reason);
+        super.changeSelectedCell(row, column, reason, event);
 
         if(!checkFocusElement(reason, null))
             focus(reason);

@@ -248,6 +248,13 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return mvResult.immutableValue();
     }
 
+    public <M> ImRevMap<K, M> mapItRevValues(Function<K, M> getter) {
+        ImRevValueMap<K, M> mvResult = mapItRevValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.apply(get(i)));
+        return mvResult.immutableValueRev();
+    }
+
     public <M> ImSet<M> mapItSetValues(Function<K, M> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)

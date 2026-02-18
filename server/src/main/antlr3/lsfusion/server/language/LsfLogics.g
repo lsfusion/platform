@@ -79,6 +79,9 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+    import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
+    import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
+    import lsfusion.server.logics.form.interactive.property.ColumnProp;
     import lsfusion.server.logics.form.open.MappedForm;
     import lsfusion.server.logics.form.stat.FormSelectTop;
     import lsfusion.server.logics.form.stat.SelectTop;
@@ -1961,7 +1964,8 @@ expressionFriendlyPD[List<TypedParameter> context, ActionStatementContext action
 	|	castDef=castPropertyDefinition[context, actions, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, actions, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, actions, dynamic] { $property = $signDef.property; }
-	|	activeDef=activePropertyDefinition[context, actions, dynamic] { $property = $activeDef.property; }
+	|	activePropDef=activePropertyDefinition[context, actions, dynamic] { $property = $activePropDef.property; }
+	|	activeTabDef=activeTabDefinition[context, actions, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, actions, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty[context, actions, dynamic] { $property = $constDef.property; $ci = $constDef.ci; }
 	|	oProp=objectPropertyDefinition { $property = $oProp.property; }
@@ -1973,6 +1977,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 	|	formulaProp=formulaPropertyDefinition[context, innerPD] { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
+	|	pdProp=propertyDrawPropertyDefinition { $property = $pdProp.property; $signature = $pdProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
 
@@ -2470,13 +2475,22 @@ signaturePropertyDefinition[List<TypedParameter> context, ActionStatementContext
 	: 	'ISCLASS' '(' expr=propertyExpression[context, actions, dynamic] ')'
 	;
 
+activeTabDefinition[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inMainParseState()) {
+		$property = self.addScriptedActiveTabProp($fc.component);
+	}
+}
+	: 	'ACTIVE' 'TAB' fc = formComponentID
+	;
+
 activePropertyDefinition[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedActiveProp($fc.component, $fp.propertyDraw);
+		$property = self.addScriptedActivePropertyProp($fp.propertyDraw);
 	}
 }
-	: 	'ACTIVE' ('TAB' fc = formComponentID | 'PROPERTY' fp = formPropertyID)
+	: 	'ACTIVE' 'PROPERTY' fp = formPropertyID
 	;
 
 roundPropertyDefinition[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LPWithParams property]
@@ -2556,12 +2570,32 @@ groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signat
 }
 @after {
 	if (inMainParseState()) {
-		$signature = new ArrayList<>();	
+		$signature = new ArrayList<>();
 		$property = self.addScriptedGroupObjectProp($gobj.sid, prop, $signature);
 	}
 }
-	:	('FILTER' { prop = GroupObjectProp.FILTER; } | 'ORDER' { prop = GroupObjectProp.ORDER; } | 'VIEW' { prop = GroupObjectProp.VIEW; } )
+	:	('FILTER' { prop = GroupObjectRowProp.FILTER; }
+	    | 'ORDER' { prop = GroupObjectRowProp.ORDER; }
+	    | 'SELECT' { prop = GroupObjectRowProp.SELECT; }
+	    | 'VIEW' { prop = GroupObjectRowProp.VIEW; }
+	    | 'SELECT' 'ACTIVE' { prop = GroupObjectStateProp.ISSELECT; }
+	    | 'VIEWTYPE' { prop = GroupObjectStateProp.VIEWTYPE; } )
 		gobj=formGroupObjectID
+	;
+
+propertyDrawPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+@init {
+	ColumnProp prop = null;
+}
+@after {
+	if (inMainParseState()) {
+		$signature = new ArrayList<>();
+		$property = self.addScriptedPropertyDrawProp($fp.propertyDraw, prop, $signature);
+	}
+}
+	:	('SELECT' { prop = ColumnProp.SELECT; })
+	    'PROPERTY'
+	    fp = formPropertyID
 	;
 
 objectPropertyDefinition returns [LPWithParams property]

@@ -4,10 +4,6 @@ public abstract class Version implements Comparable<Version> { // в TreeMap в 
     // converted to static methods to prevent class initialization deadlocks 
     public static Version last() {
         return LastVersion.LAST;
-    } 
-    
-    public static Version string() {
-        return current();
     }
 
     public static Version current() {

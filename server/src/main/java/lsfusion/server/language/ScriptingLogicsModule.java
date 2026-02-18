@@ -94,7 +94,10 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
+import lsfusion.server.logics.form.interactive.property.ColumnProp;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormSelectTop;
@@ -4666,14 +4669,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         Version version = getVersion();
         GroupObjectEntity groupObject = form.getNFGroupObject(objectName, version, true);
         if (groupObject != null) {
-            for (ObjectEntity obj : groupObject.getOrderObjects()) {
-                outClasses.add(obj.getResolveClassSet());
+            if (prop instanceof GroupObjectRowProp) {
+                // Row properties with object parameters (FILTER, ORDER, SELECT, VIEW)
+                for (ObjectEntity obj : groupObject.getOrderObjects()) {
+                    outClasses.add(obj.getResolveClassSet());
+                }
+                resultProp = addGroupObjectProp(groupObject, (GroupObjectRowProp) prop, version);
+            } else {
+                // State properties without object parameters (ISSELECT, VIEWTYPE)
+                resultProp = new LP<>(groupObject.getNFStateProperty((GroupObjectStateProp) prop, version));
             }
-            resultProp = addGroupObjectProp(groupObject, prop, version);
         } else {
             errLog.emitNotFoundError(parser, "group оbject", objectName);
         }
         return resultProp;
+    }
+
+    public LP addScriptedPropertyDrawProp(PropertyDrawEntity<?, ?> propertyDraw, ColumnProp prop, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+        for (ObjectEntity obj : propertyDraw.getPropColumnObjects(version)) {
+            outClasses.add(obj.getResolveClassSet());
+        }
+        return addPropertyDrawProp(propertyDraw, prop, version);
     }
 
     public LPWithParams addScriptedValueObjectProp(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -5218,10 +5235,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, from);
     }
 
-    public LPWithParams addScriptedActiveProp(ComponentView tab, PropertyDrawEntity property) {
-        Version version = getVersion();
-        Property<?> activeProp = tab != null ? tab.getNFActiveTab(version) : property.getNFActiveProperty(version);
-        return new LPWithParams(new LP<>(activeProp));
+    public LPWithParams addScriptedActiveTabProp(ComponentView tab) {
+        return new LPWithParams(new LP<>(tab.getNFActiveTab(getVersion())));
+    }
+
+    public LPWithParams addScriptedActivePropertyProp(PropertyDrawEntity property) {
+        return new LPWithParams(new LP<>(property.getNFActiveProperty(getVersion())));
     }
 
     public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {

@@ -13,13 +13,11 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -48,14 +46,9 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
 
     public boolean noClasses = false;
 
-    private Property<?> valueProperty; // just to be symmetric with other form operator properts
-
     public ObjectInstance(ObjectEntity entity) {
         this.entity = entity;
-        this.entity = entity;
         this.noClasses = entity.noClasses();
-
-        this.valueProperty = entity.getValueProperty();
     }
 
     public String toString() {
@@ -79,13 +72,14 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
     public abstract ValueClass getGridClass();
 
     public void updateValueProperty(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        Property<?> valueProperty = entity.getValueProperty();
         if(valueProperty != null)
             valueProperty.change(env, value);
     }
 
     protected ObjectValue value = NullValue.instance;
 
-    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
+    public void changeValue(ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(BaseUtils.nullEquals(value, changeValue)) return;
 
         value = changeValue;

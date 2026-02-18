@@ -11,7 +11,22 @@
     table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
     width: 100%; /* it's odd but without this table-layout is switched to auto */
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
+
+    /* it interferes with drag selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
+
+/*
+.lsf-table.table .focused-cell {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+*/
 
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
@@ -30,4 +45,9 @@
 
     /* ??? */
     /*overflow: hidden;*/
+}
+
+/* Copy flash effect for selected cells - universal for all themes */
+.copying-to-clipboard .column-select {
+    filter: brightness(0.8) !important;
 }

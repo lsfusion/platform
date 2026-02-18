@@ -75,6 +75,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImRevValueMap<T, M> mapItRevValues();
 
     <M> ImMap<T,M> mapItValues(Function<T, M> getter); // с последействием
+    <M> ImRevMap<T,M> mapItRevValues(Function<T, M> getter); // с последействием
     <M> ImSet<M> mapItSetValues(Function<T, M> getter); // с последействием
 
     <M> ImSet<M> mapSetValues(Function<T, M> getter);

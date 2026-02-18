@@ -38,6 +38,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.property.ColumnProp;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -770,6 +771,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context));
         outStream.writeBoolean(entity.getActiveProperty() != null);
+        outStream.writeBoolean(entity.getColumnProp(ColumnProp.SELECT) != null);
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

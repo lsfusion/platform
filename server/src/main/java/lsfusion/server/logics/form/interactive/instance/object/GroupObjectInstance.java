@@ -12,12 +12,14 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -50,7 +52,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
@@ -75,7 +76,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -84,6 +85,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -93,8 +95,8 @@ import java.util.function.Predicate;
 import static lsfusion.base.BaseUtils.immutableCast;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, ProfiledObject {
-    public final SeekOrderObjects SEEK_HOME = new SeekOrderObjects(false); 
-    public final SeekOrderObjects SEEK_END = new SeekOrderObjects(true); 
+    public final SeekOrderObjects SEEK_HOME = new SeekOrderObjects(false);
+    public final SeekOrderObjects SEEK_END = new SeekOrderObjects(true);
     public SeekOrderObjects SEEK_PREV() {
         return new SeekOrderObjects(false, getGroupObjectValue());
     }
@@ -108,6 +110,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
     public RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
+    public RowSelectReaderInstance rowSelectReader = new RowSelectReaderInstance();
     public CustomOptionsReaderInstance customOptionsReader = new CustomOptionsReaderInstance();
 
     public final GroupObjectEntity entity;
@@ -202,6 +205,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ClassViewType viewType = ClassViewType.DEFAULT;
 
+    @IdentityInstanceLazy
     public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
         return KeyExpr.getMapKeys(objects);
     }
@@ -210,7 +214,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects,
                                PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, PropertyObjectInstance propertyCustomOptions,
-                               ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
+                               ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectRowProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -476,16 +480,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_OBJECT = (1);
     public final static int UPDATED_KEYS = (1 << 2);
     public final static int UPDATED_FORCEMODE = (1 << 4);
+
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
+    public final static int UPDATED_SELECT = (1 << 14);
+
     public final static int UPDATED_EXPANDS = (1 << 7);
     public final static int UPDATED_PAGESIZE = (1 << 8);
 
     public final static int UPDATED_FORCE = (1 << 9);
     public final static int UPDATED_FILTERPROP = (1 << 10);
     public final static int UPDATED_ORDERPROP = (1 << 11);
+    public final static int UPDATED_SELECTPROP = (1 << 12);
 
-    public final static int UPDATED_VIEWTYPEVALUE = (1 << 12);
+    public final static int UPDATED_VIEWTYPEVALUE = (1 << 13);
 
     public int updated = UPDATED_ORDER | UPDATED_FILTER;
 
@@ -635,10 +643,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // поиски по свойствам\объектам
     public SeekObjects userSeeks = null;
 
-    public void addSeek(OrderInstance order, ObjectValue value, boolean down) {
+    public void addSeek(OrderInstance order, ObjectValue value) {
         if(userSeeks==null || userSeeks == SEEK_NULL)
             userSeeks = SEEK_PREV();
-        userSeeks = ((SeekOrderObjects)userSeeks).add(order, value, down);
+        userSeeks = ((SeekOrderObjects)userSeeks).add(order, value);
     }
 
     public void dropSeek(ObjectInstance object) {
@@ -660,11 +668,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
         throw new UnsupportedOperationException();
     }
-    public void seek(UpdateType seek) {
+    public void seek(UpdateType seek, FormInstance eventForm, ChangeSelection changeSelection) throws SQLException, SQLHandledException {
         userSeeks = getSeekObjects(seek);
-    }
-    public void seek(boolean end) {
-        userSeeks = end ? SEEK_END : SEEK_HOME;
+
+        changeSelection(eventForm, changeSelection, seek);
     }
 
     @IdentityLazy
@@ -933,24 +940,71 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getSubElementsExpr(subGroupWhere.and(filterWhere), mapKeys.remove(objects), outerMapKeys, countTreeSubElements); // boolean
     }
 
-    public void change(SessionChanges session, ImMap<ObjectInstance, ? extends ObjectValue> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {
+    protected int selectionDir = 0; // 0 - no selection, -1 - start <= end, 1 - start > end
+    protected SeekOrderObjects startSelection = null;
+    protected SeekOrderObjects endSelection = null; // assert (endSelection == null) == (selectionDir == 0)
+
+    public void change(ImMap<ObjectInstance, ? extends ObjectValue> value, FormInstance eventForm, ExecutionStack stack, ChangeSelection changeSelection) throws SQLException, SQLHandledException {
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
         assert value.isEmpty() || value.keys().equals(upGroups);
         for (ObjectInstance object : upGroups)
-            object.changeValue(session, eventForm, value.isEmpty()? NullValue.instance:value.get(object));
+            eventForm.changeValue(object, value.isEmpty() ? NullValue.instance : value.get(object), stack);
         ImSet<ObjectInstance> downGroups = GroupObjectInstance.getObjects(getDownTreeGroups());
         for(ObjectInstance object : downGroups)
-            object.changeValue(session, eventForm, NullValue.instance);
+            eventForm.changeValue(object, NullValue.instance, stack);
 
-        eventForm.onGroupObjectChanged(upGroups.addExcl(downGroups), stack);
+        changeSelection(eventForm, changeSelection, UpdateType.PREV);
     }
 
-    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, ? extends ObjectValue> value, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void changeSelection(FormInstance eventForm, ChangeSelection changeSelection, UpdateType updateType) throws SQLException, SQLHandledException {
+        if (!isInTree() && updateType != UpdateType.NULL) {
+            if (selectionDir == 0 && (changeSelection == null || startSelection == null))
+                changeSelection = ChangeSelection.MOVE; // because we store the prev object in the startSelection
+
+            if (changeSelection != null) {
+                SeekOrderObjects changeObject = updateType == UpdateType.PREV ? eventForm.getOrderGroupObjectValue(this) : (updateType == UpdateType.FIRST ? SEEK_HOME : SEEK_END);
+                Property<?> isSelectProperty = entity.getIsSelectProperty();
+                if (changeSelection == ChangeSelection.MOVE) { // dropping selection
+                    startSelection = changeObject;
+                    if(selectionDir != 0) {
+                        endSelection = null;
+                        selectionDir = 0;
+                        isSelectProperty.change(eventForm, (Boolean) null);
+
+                        updated |= UPDATED_SELECT;
+                    }
+                } else { // setting / changing selection
+                    if(selectionDir == 0 || !BaseUtils.nullHashEquals(endSelection, changeObject)) {
+                        endSelection = changeObject;
+                        selectionDir = startSelection.compare(eventForm.session.sql, orders, endSelection); // != 0
+                        isSelectProperty.change(eventForm, true);
+
+                        updated |= UPDATED_SELECT;
+                    }
+                }
+            }
+        }
+    }
+    public void selectAll(FormInstance eventForm) throws SQLException, SQLHandledException {
+        assert !isInTree();
+
+        Property<?> isSelectProperty = entity.getIsSelectProperty();
+
+        startSelection = SEEK_HOME;
+        endSelection = SEEK_END;
+        selectionDir = -1;
+
+        isSelectProperty.change(eventForm, true);
+
+        updated |= UPDATED_SELECT;
+    }
+
+    public void update(MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, ? extends ObjectValue> value, ExecutionStack stack) throws SQLException, SQLHandledException {
         changes.objects.exclAdd(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
-        change(session, value, eventForm, stack);
+        change(value, eventForm, stack, null);
     }
 
-    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
+    public ImMap<GroupObjectRowProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
     private boolean pendingUpdateKeys;
     private boolean pendingUpdateScroll;
@@ -959,6 +1013,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private boolean pendingUpdateObject;
     private boolean pendingUpdateFilterProp;
     private boolean pendingUpdateOrderProp;
+    private boolean pendingUpdateSelectProp;
     private boolean pendingUpdatePageSize;
 
     public final Set<PropertyReaderInstance> pendingUpdateProps = new HashSet<>();
@@ -974,8 +1029,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             changes.updateStateObjects.add(this, isPending);
     }
 
-    private MAddMap<GroupObjectProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
-    public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
+    private MAddMap<GroupObjectRowProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
+    public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectRowProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
     }
 
@@ -988,23 +1043,29 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return false;
     }
 
-    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
+    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectRowProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
             MSet<Property> mUsedProps = null;
             if(propsChanged)
                 mUsedProps = SetFact.mSet();
             else {
-                if(propType.equals(GroupObjectProp.FILTER) &&
+                if(propType.equals(GroupObjectRowProp.FILTER) &&
                     !entity.isFilterExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_FILTERPROP;
                     return;
                 }
-                if(propType.equals(GroupObjectProp.ORDER) &&
+                if(propType.equals(GroupObjectRowProp.ORDER) &&
                     !entity.isOrderExplicitlyUsed() &&
                     (hidden.test(this) || isPending())) {
                     updated = updated | UPDATED_ORDERPROP;
+                    return;
+                }
+                if(propType.equals(GroupObjectRowProp.SELECT) &&
+                    !entity.isSelectExplicitlyUsed() &&
+                    (hidden.test(this) || isPending())) {
+                    updated = updated | UPDATED_SELECTPROP;
                     return;
                 }
             }
@@ -1013,50 +1074,66 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             PropertyChange<ClassPropertyInterface> change;
             ImRevMap<ClassPropertyInterface, KeyExpr> mappedKeys = mappedProp.mapping.join(mapKeys);
 
-            // we don't want properties depending on mappedProp to be materialized, since this hints will likely to be dropped during environmentIncrement.add, and lead to "used returned table"
-            // now it's not needed we've cut the while branch with the recursion check
-//            environmentIncrement.eventChange(mappedProp.property, dataChanged, true);
-//            Predicate<Property> prevPredicate = AutoHintsAspect.pushCatchDisabledHint(property -> Property.depends(property, mappedProp.property));
-
-//            try {
             MSet<Property> fmUsedProps = mUsedProps;
+            Where filterWhere = null;
+            if(propType.equals(GroupObjectRowProp.FILTER)) { // || propType.equals(GroupObjectProp.SELECT)
+                filterWhere = getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this) {
+                    @Override
+                    public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+                        final MSet<Property> mFilterUsedProps = SetFact.mSet();
+                        Where result = filt.getWhere(mapKeys, modifier, reallyChanged, mFilterUsedProps);
+                        if (checkEnvironmentRecursion(mappedProp.property, mFilterUsedProps, fmUsedProps))
+                            return Where.TRUE();
+                        return result;
+                    }
+                });
+            }
+            ImOrderMap<OrderInstance, Boolean> orders = null;
+            ImMap<OrderInstance, Expr> orderExprs = null;
+            if(propType.equals(GroupObjectRowProp.ORDER) || propType.equals(GroupObjectRowProp.SELECT)) {
+                int ordersSize = this.orders.size();
+                MOrderExclMap<OrderInstance, Boolean> mOrders = MapFact.mOrderExclMapMax(ordersSize);
+                MExclMap<OrderInstance, Expr> mOrderExprs = MapFact.mExclMapMax(ordersSize);
+                for (int i = 0; i < ordersSize; i++) {
+                    OrderInstance order = this.orders.getKey(i);
+                    final MSet<Property> mOrderUsedProps = SetFact.mSet();
+                    Expr orderExpr = order.getExpr(mapKeys, modifier, reallyChanged, mOrderUsedProps);
+                    if (checkEnvironmentRecursion(mappedProp.property, mOrderUsedProps, fmUsedProps))
+                        continue;
+                    mOrders.exclAdd(order, this.orders.getValue(i));
+                    mOrderExprs.exclAdd(order, orderExpr);
+                }
+                orders = mOrders.immutableOrder();
+                orderExprs = mOrderExprs.immutable();
+            }
+
             switch (propType) {
                 case FILTER:
-                    change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this) {
-                        @Override
-                        public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-                            final MSet<Property> mFilterUsedProps = SetFact.mSet();
-                            Where result = filt.getWhere(mapKeys, modifier, reallyChanged, mFilterUsedProps);
-                            if (checkEnvironmentRecursion(mappedProp.property, mFilterUsedProps, fmUsedProps))
-                                return Where.TRUE();
-                            return result;
-                        }
-                    }));
+                    change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, filterWhere);
                     break;
                 case ORDER:
-                    int ordersSize = orders.size();
-                    MOrderExclMap<Expr, Boolean> mOrderExprs = MapFact.mOrderExclMapMax(ordersSize);
-                    MList<Type> mTypes = ListFact.mListMax(ordersSize);
-                    for (int i = 0; i < ordersSize; i++) {
-                        OrderInstance order = orders.getKey(i);
-                        final MSet<Property> mOrderUsedProps = SetFact.mSet();
-                        Expr orderExpr = order.getExpr(mapKeys, modifier, reallyChanged, mOrderUsedProps);
-                        if (checkEnvironmentRecursion(mappedProp.property, mOrderUsedProps, fmUsedProps))
-                            continue;
-                        mOrderExprs.exclAdd(orderExpr, orders.getValue(i));
-                        mTypes.add(order.getType());
-                    }
-                    ImOrderMap<Expr, Boolean> orderExprs = mOrderExprs.immutableOrder();
-
                     if (orderExprs.isEmpty())
                         change = mappedProp.property.getNoChange();
                     else {
                         Expr orderExpr;
-                        if (orderExprs.size() == 1 && orderExprs.singleValue().equals(false)) // optimization
-                            orderExpr = orderExprs.singleKey();
+                        if (orderExprs.size() == 1 && orders.singleValue().equals(false)) // optimization
+                            orderExpr = orderExprs.singleValue();
                         else
-                            orderExpr = FormulaUnionExpr.create(OrderClass.get(mTypes.immutableList(), orderExprs.valuesList()), orderExprs.keyOrderSet());
+                            orderExpr = FormulaUnionExpr.create(OrderClass.get(orders.keyOrderSet().mapListValues(OrderInstance::getType), orders.valuesList()), orders.keyOrderSet().mapList(orderExprs));
                         change = new PropertyChange<>(mappedKeys, orderExpr);
+                    }
+                    break;
+                case SELECT:
+                    Where selectWhere;
+                    if(selectionDir == 0) {
+                        change = mappedProp.property.getNoChange();
+//                        selectWhere = CompareWhere.compareInclValues(BaseUtils.<ImRevMap<OrderInstance, KeyExpr>>immutableCast(mapKeys), startSelection.values);
+                    } else {
+                        boolean startLess = selectionDir < 0;
+                        Where startWhere = startSelection.getWhere(orders, orderExprs, !startLess);
+                        Where endWhere = endSelection.getWhere(orders, orderExprs, startLess);
+                        selectWhere = startLess ? startWhere.and(endWhere.not()) : endWhere.and(startWhere.not());
+                        change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, selectWhere); // filterWhere.and
                     }
                     break;
                 default:
@@ -1131,11 +1208,25 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     break;
                 }
 
+        boolean updateSelect = (updated & UPDATED_SELECT) != 0;
+
         if(updateOrders) {
             updateOrderProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
 
             changeEvents.onOrderChanged();
+
+            if(selectionDir != 0) { // we need to update selection when order is changed
+                startSelection = readOrderValues(startSelection, sql, env, modifier, baseClass, reallyChanged);
+                endSelection = readOrderValues(endSelection, sql, env, modifier, baseClass, reallyChanged);
+
+                selectionDir = startSelection.compare(sql, orders, endSelection);
+
+                updateSelect = true;
+            }
         }
+
+        if(updateSelect)
+            updateSelectProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
 
         updateFilters = refresh || updateFilters;
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
@@ -1199,17 +1290,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         boolean updateObject = (updated & UPDATED_OBJECT) != 0;
         boolean updateFilterProp = updateFilters || (updated & UPDATED_FILTERPROP) != 0;
         boolean updateOrderProp = updateOrders || (updated & UPDATED_ORDERPROP) != 0;
+        boolean updateSelectProp = updateSelect || (updated & UPDATED_SELECTPROP) != 0;
 
         if(toRefresh())
             result.updateStateObjects.add(this, isPending());
         if(!hidden && toUpdate()) {
-            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updateFilterProp |= pendingUpdateFilterProp; updateOrderProp |= pendingUpdateOrderProp; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
+            updateKeys |= pendingUpdateKeys; updateObjects |= pendingUpdateObjects; updateObject |= pendingUpdateObject; updateFilterProp |= pendingUpdateFilterProp; updateOrderProp |= pendingUpdateOrderProp; updateSelectProp |= pendingUpdateSelectProp; updatePageSize |= pendingUpdatePageSize; updateFilters |= pendingUpdateFilters;
             checkPending(result, () -> { pendingUpdateKeys = false; pendingUpdateScroll = false; } );
             pendingUpdateObjects = false; pendingUpdateObject = false; pendingUpdateFilterProp = false; pendingUpdateOrderProp = false; pendingUpdatePageSize = false; pendingUpdateFilters = false;
         } else {
             boolean finalUpdateKeys = updateKeys; boolean changedScroll = !isInTree() && (updateObject || updatePageSize);
             checkPending(result, () -> { pendingUpdateKeys |= finalUpdateKeys; if(changedScroll) pendingUpdateScroll = updateScroll() != null; });
-            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdateOrderProp |= updateOrderProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
+            pendingUpdateObjects |= updateObjects; pendingUpdateObject |= updateObject; pendingUpdateFilterProp |= updateFilterProp; pendingUpdateOrderProp |= updateOrderProp; pendingUpdateSelectProp |= updateSelectProp; pendingUpdatePageSize |= updatePageSize; pendingUpdateFilters |= updateFilters;
             return null;
         }
 
@@ -1217,6 +1309,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             updateFilterProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
         if(updateOrderProp)
             updateOrderProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
+        if(updateSelectProp)
+            updateSelectProperty(false, modifier, environmentIncrement, changedProps, reallyChanged);
 
         ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
         SeekObjects seeks = null;
@@ -1265,14 +1359,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 if (lowestInd >= keys.size()) // по сути END
                     scroll = new Pair<>(SEEK_END, null);
                 else
-                    scroll = new Pair<>(new SeekOrderObjects(keys.getValue(lowestInd), false), DIRECTION_UP);
+                    scroll = new Pair<>(new SeekOrderObjects(keys.getValue(lowestInd)), DIRECTION_UP);
             } else // наоборот вниз
                 if (downKeys && keyNum >= keys.size() - pageSize) { // assert что pageSize не null
                     int highestInd = keys.size() - pageSize * 2;
                     if (highestInd < 0) // по сути HOME
                         scroll = new Pair<>(SEEK_HOME, null);
                     else
-                        scroll = new Pair<>(new SeekOrderObjects(keys.getValue(highestInd), false), DIRECTION_DOWN);
+                        scroll = new Pair<>(new SeekOrderObjects(keys.getValue(highestInd)), DIRECTION_DOWN);
                 }
         }
         return scroll;
@@ -1346,8 +1440,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                         else
                             orderSeeks = (SeekOrderObjects) seeks;
 
-                        if (!orders.starts(orderSeeks.values.keys())) // если не "хватает" спереди ключей, дочитываем
-                            orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass, reallyChanged);
+                        orderSeeks = readOrderValues(orderSeeks, sql, env, modifier, baseClass, reallyChanged);
 
                         if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
                             if (orderSeeks.values.isEmpty()) {
@@ -1418,7 +1511,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
-        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectRowProp.VIEW);
         if(viewProperty != null) {
             updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE()) :
                     new PropertyChange<>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
@@ -1426,7 +1519,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     
     private void updateViewProperty(ExecutionEnvironment execEnv, NoPropertyTableUsage<ObjectInstance> keyTable1) throws SQLException, SQLHandledException {
-        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectRowProp.VIEW);
         if(viewProperty != null) {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             updateViewProperty(execEnv, viewProperty, new PropertyChange<>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
@@ -1440,17 +1533,35 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public void updateOrderProperty(boolean isOrderExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (entity.isOrderExplicitlyUsed() == isOrderExplicitlyUsed)
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.ORDER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
     public void updateFilterProperty(boolean isFilterExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (entity.isFilterExplicitlyUsed() == isFilterExplicitlyUsed)
-            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.FILTER), environmentIncrement, changedProps, reallyChanged, true, true);
     }
 
-    public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize) throws SQLException, SQLHandledException {
-        SeekOrderObjects orderSeeks = new SeekOrderObjects(keys.getValue(keys.indexOf(getGroupObjectValue())), false);
-        return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, null);
+    public void updateSelectProperty(boolean isSelectExplicitlyUsed, FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (entity.isSelectExplicitlyUsed() == isSelectExplicitlyUsed)
+            modifier.updateEnvironmentIncrementProp(new Pair<>(this, GroupObjectRowProp.SELECT), environmentIncrement, changedProps, reallyChanged, true, true);
+    }
+
+    @NotNull
+    public SeekOrderObjects getOrderGroupObjectValue(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        ImMap<ObjectInstance, DataObject> groupObjectValue = getGroupObjectValue();
+
+        ImMap<OrderInstance, ObjectValue> orderKey = keys.get(groupObjectValue);
+        if(orderKey == null)
+            return readOrderValues(SEEK_PREV(), sql, env, modifier, baseClass, reallyChanged);
+
+        return new SeekOrderObjects(orderKey, false);
+    }
+
+    private SeekOrderObjects readOrderValues(SeekOrderObjects orderSeeks, SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (!orders.starts(BaseUtils.immutableCast(orderSeeks.values.keys()))) // if there are not enough keys at the front, we read on
+            return orderSeeks.readValues(sql, env, modifier, baseClass, reallyChanged);
+
+        return orderSeeks;
     }
 
     public ImOrderSet<ImMap<ObjectInstance, DataObject>> createObjects(DataSession session, FormInstance form, int quantity, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1541,25 +1652,36 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         public ImMap<OrderInstance, ObjectValue> values;
         public boolean end;
 
+        public SeekOrderObjects(ImMap<OrderInstance, ObjectValue> values) {
+            this(values, false);
+        }
+        public SeekOrderObjects(boolean end, ImMap<ObjectInstance, DataObject> values) {
+            this(BaseUtils.immutableCast(values));
+            assert !end;
+        }
         public SeekOrderObjects(ImMap<OrderInstance, ObjectValue> values, boolean end) {
             this.values = values;
             this.end = end;
         }
-
-        public SeekOrderObjects(boolean end, ImMap<ObjectInstance, DataObject> values) {
-            this(BaseUtils.immutableCast(values), end);
-        }
-
         public SeekOrderObjects(boolean end) {
             this(MapFact.EMPTY(), end);
         }
 
-        public SeekOrderObjects add(OrderInstance order, ObjectValue value, boolean end) {
-            return new SeekOrderObjects(values.override(order, value), this.end || end);
+        public SeekOrderObjects add(OrderInstance order, ObjectValue value) {
+            assert !end;
+            return new SeekOrderObjects(values.override(order, value));
         }
 
         public SeekOrderObjects remove(ObjectInstance object) {
-            return new SeekOrderObjects(values.remove(object), end);
+            assert !end;
+            return new SeekOrderObjects(values.remove(object));
+        }
+
+        public int compare(SQLSession session, ImOrderMap<OrderInstance, Boolean> orders, SeekOrderObjects object) throws SQLException, SQLHandledException {
+            if(BaseUtils.hashEquals(values, object.values) && end == object.end) // optimization
+                return -1;
+
+            return Expr.readValue(session, ValueExpr.TRUE.and(getWhere(orders, object)), OperationOwner.unknown) != null ? -1 : 1;
         }
 
         // оптимизация, так как при Limit 1 некоторые СУБД начинают чудить
@@ -1568,27 +1690,26 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             ImMap<ObjectInstance, ObjectValue> objectValues;
             ImMap<ObjectInstance, DataObject> dataObjects;
-            if(!(Settings.get().isEnableSingleReadObjectsOptimization() && // работает, только, если в поиске есть все объекты и все DataObject
-                    (objectValues = values.filter(objects)).size() == objects.size() &&
+            if(!((objectValues = values.filter(objects)).size() == objects.size() &&
                     (dataObjects = DataObject.onlyDataObjects(objectValues)) != null)) {
+                assert orders.keys().containsAll(values.keys());
+
                 fullOrderValues.set(values);
                 return MapFact.EMPTYORDER();
             }
 
             final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-            assert orders.keys().containsAll(values.keys());
-
-            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
+            ImMap<OrderInstance, Expr> orderExprs = OrderInstance.getExprs(mapKeys, orders, modifier);
 
             String filterKey = "filter";
             ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> orderFilterValues = 
-                    castExecuteObjects(new Query<>(mapKeys, MapFact.addExcl(orderExprs, filterKey, ValueExpr.get(getWhere(mapKeys, modifier, reallyChanged))), CompareWhere.compareInclValues(orderExprs, dataObjects)).
+                    castExecuteObjects(new Query<>(mapKeys, MapFact.addExcl(orderExprs, filterKey, ValueExpr.get(GroupObjectInstance.this.getWhere(mapKeys, modifier, reallyChanged))), CompareWhere.compareInclValues(orderExprs, dataObjects)).
                         executeClasses(session, env, baseClass));
 
             ObjectValue filterValue = orderFilterValues.singleValue().get(filterKey);
             ImMap<OrderInstance, ObjectValue> orderValues = BaseUtils.immutableCast(orderFilterValues.singleValue().removeIncl(filterKey));
-            if(filterValue.isNull()) { // не попал в фильтр
+            if(filterValue.isNull()) {
                 fullOrderValues.set(orderValues);
                 return MapFact.EMPTYORDER();
             } else {
@@ -1611,17 +1732,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             assert orders.starts(values.keys());
 
-            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
+            ImMap<OrderInstance, Expr> orderExprs = OrderInstance.getExprs(mapKeys, orders, modifier);
 
-            Where orderWhere = end?Where.FALSE():Where.TRUE(); // строим условия на упорядочивание
-            ImOrderMap<OrderInstance, Boolean> reverseOrder = orders.reverseOrder();
-            for (int i=0,size=reverseOrder.size();i<size;i++) {
-                OrderInstance orderInstance = reverseOrder.getKey(i);
-                ObjectValue toSeek = values.get(orderInstance);
-                if (toSeek != null)
-                    orderWhere = toSeek.order(orderExprs.get(orderInstance), reverseOrder.getValue(i), orderWhere);
-            }
-
+            Where orderWhere = getWhere(orders, orderExprs, false);
             if(!down)
                 orderWhere = orderWhere.not();
 
@@ -1634,19 +1747,41 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
             }
 
-            return castExecuteObjects(new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
+            return castExecuteObjects(new Query<>(mapKeys, orderExprs, GroupObjectInstance.this.getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
                         executeClasses(session, down ? orders : Query.reverseOrder(orders), new LimitOffset(readSize), baseClass, env));
+        }
+
+        public Where getWhere(ImOrderMap<OrderInstance, Boolean> orders, SeekOrderObjects objects) {
+            if(objects.values.isEmpty()) // HOME | END
+                return objects.end ? Where.TRUE() : Where.FALSE();
+
+            return getWhere(orders, objects.values.mapValues(ObjectValue::getExpr), false);
+        }
+        // this <= orderExprs
+        public Where getWhere(ImOrderMap<OrderInstance, Boolean> orders, ImMap<OrderInstance, Expr> orderExprs, boolean notEquals) {
+            if(values.isEmpty()) // HOME | END
+                return end ? Where.FALSE() : Where.TRUE();;
+
+            Where orderWhere = end || notEquals ? Where.FALSE() : Where.TRUE();
+            ImOrderMap<OrderInstance, Boolean> reverseOrder = orders.reverseOrder();
+            for (int i=0,size=reverseOrder.size();i<size;i++) {
+                OrderInstance orderInstance = reverseOrder.getKey(i);
+                ObjectValue toSeek = values.get(orderInstance);
+                if (toSeek != null)
+                    orderWhere = toSeek.order(orderExprs.get(orderInstance), reverseOrder.getValue(i), orderWhere);
+            }
+            return orderWhere;
         }
 
         // считывает одну запись
         private Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             Result<ImMap<OrderInstance, ObjectValue>> fullOrderValues = new Result<>();
             ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeSingleOrders(session, env, modifier, baseClass, reallyChanged, fullOrderValues);
-            if(result.size() == 0)
+            if(result.isEmpty())
                 result = new SeekOrderObjects(fullOrderValues.result, end).executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
-            if (result.size() == 0)
+            if (result.isEmpty())
                 result = new SeekOrderObjects(fullOrderValues.result, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
-            if (result.size() > 0)
+            if (!result.isEmpty())
                 return new Pair<>(result.singleKey(), result.singleValue());
             else
                 return null;
@@ -1663,7 +1798,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         public SeekOrderObjects readValues(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass, reallyChanged);
             if (objects != null)
-                return new SeekOrderObjects(objects.second, end);
+                return new SeekOrderObjects(objects.second);
             else
                 return SEEK_HOME;
         }
@@ -1720,6 +1855,36 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         @Override
         public Object getProfiledObject() {
             return entity.getPropertyForeground();
+        }
+    }
+
+    public class RowSelectReaderInstance implements PropertyReaderInstance {
+
+        public PropertyObjectInstance getReaderProperty() {
+            PropertyRevImplement<ClassPropertyInterface, ObjectInstance> selectProp = getSelectProperty();
+            return new PropertyObjectInstance<>(selectProp.property, selectProp.mapping);
+        }
+
+        private PropertyRevImplement<ClassPropertyInterface, ObjectInstance> getSelectProperty() {
+            return props.get(GroupObjectRowProp.SELECT);
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.ROW_SELECT;
+        }
+
+        public int getID() {
+            return GroupObjectInstance.this.getID();
+        }
+
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize("{logics.select}") + " (" + GroupObjectInstance.this + ")";
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return getSelectProperty().property;
         }
     }
 

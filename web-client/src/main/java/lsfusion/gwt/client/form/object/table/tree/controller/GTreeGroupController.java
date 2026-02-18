@@ -265,6 +265,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    }
+
+    @Override
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateRowForegroundValues(values);
     }

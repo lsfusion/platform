@@ -66,6 +66,7 @@ public class FocusUtils {
                 // it's really odd to start editing while scrolling, and other navigating
                 case SCROLLNAVIGATE:
                 case KEYMOVENAVIGATE:
+                case MOUSEDRAGNAVIGATE:
                 case FOCUSNAVIGATE:
                 // CHANGE will be started anyway
                 case BINDING:
@@ -99,12 +100,15 @@ public class FocusUtils {
         KEYMOVENAVIGATE, // UP, DOWN, LEFT, RIGHT
         KEYNEXTNAVIGATE, // ENTER
         MOUSENAVIGATE, // MOUSE CLICK
+        MOUSEDRAGNAVIGATE, // MOUSE SELECTION DRAG
         SCROLLNAVIGATE, // SCROLL
         FOCUSNAVIGATE,
 
         MOUSECHANGE,
         BINDING,
         NOTFOCUSABLE, // BINDING OR MOUSECHANGE ON NOTFOCUSABLE PROPERTY
+
+        COLUMNCHANGE,
 
         SUGGEST,
         REPLACE,
@@ -116,6 +120,10 @@ public class FocusUtils {
 
         public boolean preventScroll() {
             return this == RESTOREFOCUS || this == MOUSECHANGE || this == SHOW || this == FOCUSNAVIGATE;
+        }
+
+        public boolean changeSelection() {
+            return this == KEYMOVENAVIGATE || this == MOUSENAVIGATE || this == KEYNEXTNAVIGATE || this == MOUSEDRAGNAVIGATE || this == COLUMNCHANGE;
         }
     }
 

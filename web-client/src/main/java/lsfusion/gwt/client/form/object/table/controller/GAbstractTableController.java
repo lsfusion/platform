@@ -169,6 +169,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     public abstract void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
     public abstract void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values);
 

@@ -83,10 +83,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         treeSelectionHandler = new TreeTableSelectionHandler(this);
         setSelectionHandler(treeSelectionHandler);
 
-        setRowChangedHandler(() -> {
+        setRowChangedHandler((row, prevRow, reason, event) -> {
             final GTreeGridRecord kbSelectedRecord = getSelectedRowValue();
             if (kbSelectedRecord != null)
-                form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
+                form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey(), null, null);
         });
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
@@ -1080,6 +1080,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return treeGroupController;
     }
 
+    @Override
+    protected boolean isRowSelect(GTreeGridRecord row) {
+        return false;
+    }
+
     public GPropertyDraw getSelectedFilterProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1 && getSelectedRow() >= 0) {
@@ -1231,7 +1236,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 //        }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
@@ -1247,13 +1252,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 }
             }
 
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
 
     @Override
-    protected void scrollToEnd(boolean toEnd) {
-        selectionHandler.changeRow(toEnd ? (getRowCount() - 1) : 0, FocusUtils.Reason.KEYMOVENAVIGATE);
+    protected void scrollToEnd(boolean toEnd, FocusUtils.Reason reason, NativeEvent event) {
+        selectionHandler.changeRow(toEnd ? (getRowCount() - 1) : 0, reason, event);
     }
 
     public void updateHierarchicalCaption(String caption) {

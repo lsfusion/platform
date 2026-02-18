@@ -224,6 +224,9 @@ public class ObjectMapping {
     public <M1, M2 extends MappingInterface<M2>> ImMap<M1, M2> gets(ImMap<M1, M2> from) {
         return from.mapValues(this::get);
     }
+    public <M1 extends MappingInterface<M1>, M2> ImMap<M1, M2> getks(ImMap<M1, M2> from) {
+        return from.mapKeys(this::get);
+    }
     public <M1, M2 extends MappingInterface<M2>> ImRevMap<M1, M2> gets(ImRevMap<M1, M2> from) {
         return from.mapRevValues((M2 value) -> get(value));
     }
@@ -240,6 +243,11 @@ public class ObjectMapping {
     public <X> void sets(NFProperty<X> to, NFProperty<X> from) {
         assert to != from;
         to.set(from, p -> p, version);
+    }
+
+    public <T, X> void sets(ImMap<T, NFProperty<X>> to, ImMap<T, NFProperty<X>> from) {
+        assert to != from;
+        to.iterate((key, prop) -> sets(prop, from.get(key)));
     }
 
     public <X> void set(NFProperty<X> to, NFProperty<X> from, NFCopy.Map<X> mapper) {

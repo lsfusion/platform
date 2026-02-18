@@ -76,7 +76,8 @@ import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.ColumnProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
@@ -2169,9 +2170,20 @@ public abstract class LogicsModule {
         return mapLProp(from.property.getChangeValueClassProperty(to.property), from.listInterfaces);
     }
 
-    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop, Version version) {
-        PropertyObjectEntity<ClassPropertyInterface> filterProperty = groupObject.getNFProperty(prop, version);
-        return new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse()));
+    public <T extends PropertyInterface> LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectRowProp prop, Version version) {
+        PropertyObjectEntity<T> groupObjectProperty;
+        if(prop == GroupObjectRowProp.SELECT)
+            groupObjectProperty = (PropertyObjectEntity<T>) GroupObjectEntity.getFullSelectProperty(groupObject.getNFIsSelectProperty(version),
+                            groupObject.getNFProperty(GroupObjectRowProp.SELECT, version), groupObject.getNFProperty(GroupObjectRowProp.FILTER, version),
+                            groupObject.getObjects().mapItRevValues(object -> object.getNFValueProperty(version)));
+        else
+            groupObjectProperty = (PropertyObjectEntity<T>) groupObject.getNFProperty(prop, version);
+        return new LP<>(groupObjectProperty.property, groupObject.getOrderObjects().mapOrder(groupObjectProperty.mapping.reverse()));
+    }
+
+    public LP addPropertyDrawProp(PropertyDrawEntity<?, ?> propertyDraw, ColumnProp prop, Version version) {
+        PropertyObjectEntity<ClassPropertyInterface> pdProperty = propertyDraw.getNFProperty(prop, version);
+        return new LP<>(pdProperty.property, propertyDraw.getPropColumnObjects(version).mapOrder(pdProperty.mapping.reverse()));
     }
 
     public LP addValueObjectProp(ObjectEntity object, Version version) {

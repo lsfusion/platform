@@ -78,7 +78,12 @@ public abstract class GType implements Serializable {
     }
 
     public abstract GCompare[] getFilterCompares();
+
+    // Parse string to PValue (for paste)
     public abstract PValue parseString(String s, String pattern) throws ParseException;
+
+    // Format PValue to string (inverse of parseString, for copy)
+    public abstract String formatString(PValue value, String pattern);
 
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return null;

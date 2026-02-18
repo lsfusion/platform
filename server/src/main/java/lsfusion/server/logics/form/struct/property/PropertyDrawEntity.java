@@ -29,6 +29,7 @@ import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -39,6 +40,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -53,7 +55,9 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.property.ColumnProp;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -64,6 +68,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -298,6 +303,20 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             activeProperty.change(session, value);
     }
 
+    public void updateSelectProperty(DataSession session, ImMap<ObjectInstance, DataObject> columnKey, Boolean value) throws SQLException, SQLHandledException {
+        PropertyObjectEntity<ClassPropertyInterface> columnProp = getColumnProp(ColumnProp.SELECT);
+        if(columnProp != null)
+            columnProp.property.change(columnProp.mapping.join(columnKey.mapKeys(obj -> obj.entity)), session, value);
+    }
+
+    private final ImMap<ColumnProp, GroupObjectEntity.ExGroupProperty> props;
+    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(ColumnProp type, Version version) {
+        return props.get(type).getNF(version);
+    }
+    public PropertyObjectEntity<ClassPropertyInterface> getColumnProp(ColumnProp type) {
+        return props.get(type).get();
+    }
+
     @IdentityStrongLazy
     public ImSet<PropertyReaderEntity> getQueryProps() {
         MExclSet<PropertyReaderEntity> mResult = SetFact.mExclSet();
@@ -382,6 +401,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.inheritedProperty = inheritedProperty;
 
         this.activeProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance));
+        this.props = MapFact.toMap(ColumnProp.values(), type -> new GroupObjectEntity.ExGroupProperty(() -> PropertyFact.createDataPropRev(type.toString(), this, getPropColumnObjects(Version.current()), LogicalClass.instance, null)));
+    }
+
+    public ImOrderSet<ObjectEntity> getPropColumnObjects(Version version) {
+        return getNFColumnObjects(version);
     }
 
     public boolean isStaticProperty() {
@@ -781,6 +805,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     public ImOrderSet<GroupObjectEntity> getNFColumnGroupObjects(Version version) {
         ImOrderSet<GroupObjectEntity> value = columnGroupObjects.getNF(version);
         return value != null ? value : SetFact.EMPTYORDER();
+    }
+
+    public ImOrderSet<ObjectEntity> getNFColumnObjects(Version version) {
+        return getNFColumnGroupObjects(version).groupMapOrder(GroupObjectEntity::getOrderObjects);
     }
 
     public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects, FormEntity form, Version version) {
@@ -1361,6 +1389,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         cellProperty = mapping.get((PropertyObjectEntity) src.cellProperty);
 
         activeProperty = mapping.get(src.activeProperty);
+        props = mapping.gets(src.props);
 
         addParent = mapping.get(src.addParent);
         addChild = src.addChild;

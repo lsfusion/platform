@@ -23,7 +23,7 @@ public class ChangeGroupObjectHandler extends FormServerResponseActionHandler<Ch
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
                 byte[] keyValues = gwtConverter.convertOrCast(action.keyValues);
-                return remoteForm.changeGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupId, keyValues);
+                return remoteForm.changeGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupId, keyValues, gwtConverter.convertOrCast(action.changeSelection));
             }
         });
     }

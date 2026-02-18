@@ -31,6 +31,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.*;
+import lsfusion.gwt.client.controller.remote.action.form.SelectAll;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
@@ -59,10 +60,12 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
@@ -84,6 +87,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.*;
@@ -130,9 +134,9 @@ public class GFormController implements EditManager {
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
-    private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
+    private final ArrayList<ModifyObject> pendingModifyObjectRequests = new ArrayList<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
-    private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
+    private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
 
@@ -693,7 +697,7 @@ public class GFormController implements EditManager {
     private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
         fc.properties.foreachEntry((key, value) -> {
             if(filter.test(key))
-                key.update(this, value, key instanceof GPropertyDraw && fc.updateProperties.contains((GPropertyDraw)key));
+                key.update(this, value, fc.updateProperties.contains(key));
         });
     }
 
@@ -742,12 +746,11 @@ public class GFormController implements EditManager {
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
-        for (Iterator<Map.Entry<Long, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
-            Map.Entry<Long, ModifyObject> cell = iterator.next();
-            if (cell.getKey() <= currentDispatchingRequestIndex) {
+        for (Iterator<ModifyObject> iterator = pendingModifyObjectRequests.iterator(); iterator.hasNext(); ) {
+            ModifyObject modifyObject = iterator.next();
+            if (modifyObject.requestIndex <= currentDispatchingRequestIndex) {
                 iterator.remove();
 
-                ModifyObject modifyObject = cell.getValue();
                 GGroupObject groupObject = modifyObject.object.groupObject;
                 // делаем обратный modify, чтобы удалить/добавить ряды, асинхронно добавленные/удалённые на клиенте, если с сервера не пришло подтверждение
                 // возможны скачки и путаница в строках на удалении, если до прихода ответа position утратил свою актуальность
@@ -758,9 +761,8 @@ public class GFormController implements EditManager {
             }
         }
 
-        for (Iterator<Map.Entry<Long, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
-            Map.Entry<Long, ModifyObject> cell = iterator.next();
-            ModifyObject modifyObject = cell.getValue();
+        for (Iterator<ModifyObject> iterator = pendingModifyObjectRequests.iterator(); iterator.hasNext(); ) {
+            ModifyObject modifyObject = iterator.next();
             ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(modifyObject.object.groupObject);
             if (gridObjects != null) {
                 if (modifyObject.add) {
@@ -787,10 +789,9 @@ public class GFormController implements EditManager {
         pendingChangePropertyRequests.foreachEntry((property, values) -> values.foreachEntry((keys, change) -> {
             long requestIndex = change.requestIndex;
             if (requestIndex <= currentDispatchingRequestIndex) {
-
                 removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
-                if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
+                if(!(property instanceof GPropertyDraw && (!getPropertyController((GPropertyDraw) property).isPropertyShown((GPropertyDraw)property) || fc.dropProperties.contains((GPropertyDraw)property)))) {
                     NativeHashMap<GGroupObjectValue, PValue> propertyValues = fc.properties.get(property);
                     if (propertyValues == null) {
                         // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
@@ -893,18 +894,32 @@ public class GFormController implements EditManager {
         applyRemoteChanges(new GFormChanges(), (int) exceptionResult.requestIndex);
     }
 
-    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key));
-        pendingChangeCurrentObjectsRequests.put(group, requestIndex);
+    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
+        long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key, changeSelection));
+        pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
         return requestIndex;
     }
 
+    private void pendingChangeGroupObject(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, long requestIndex) {
+        pendingChangeCurrentObjectsRequests.put(group, requestIndex);
+        if(changeSelectionRows != null)
+            changeSelectionRows.foreachEntry((k, v) -> putToDoubleNativeMap(pendingChangePropertyRequests, group.rowSelectReader, k, new Change(requestIndex, v, GridDataRecord.invertSelect(v))));
+    }
+
+    private final NativeHashMap<GGroupObjectValue, PValue> delayedChangeSelectionRows = new NativeHashMap<>();
+
     // has to be called setCurrentKey before
-    public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key) {
+    public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
+        // we need to pend at once until we'll get the real request index
+        pendingChangeGroupObject(group, changeSelectionRows, Long.MAX_VALUE);
+        if(changeSelectionRows != null)
+            delayedChangeSelectionRows.putAll(changeSelectionRows);
+
         DeferredRunner.get().scheduleGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
-                changeGroupObject(group, key);
+                changeGroupObject(group, key, changeSelection, delayedChangeSelectionRows);
+                delayedChangeSelectionRows.clear();
             }
         });
     }
@@ -940,6 +955,46 @@ public class GFormController implements EditManager {
         }
 
         syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues));
+    }
+
+    public void copyExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, Consumer<List<List<String>>> callback) {
+        final ArrayList<Integer> propertyIdList = new ArrayList<>();
+        for (GPropertyDraw propertyDraw : propertyList) {
+            propertyIdList.add(propertyDraw.ID);
+        }
+
+        asyncDispatch(new CopyExternalTable(propertyIdList, columnKeys), new SimpleRequestCallback<CopyExternalTableResult>() {
+            @Override
+            protected void onSuccess(CopyExternalTableResult result) {
+                // Process values with convertFileValue and formatCopy (symmetrical to paste)
+                ArrayList<ArrayList<Object>> values = result.getValues();
+                ArrayList<ArrayList<String>> rawValues = result.getRawValues();
+                List<List<String>> table = new ArrayList<>();
+
+                for (int j = 0; j < values.size(); j++) {
+                    ArrayList<Object> valueRow = values.get(j);
+                    ArrayList<String> rawValueRow = rawValues.get(j);
+                    ArrayList<String> stringRow = new ArrayList<>();
+
+                    for (int i = 0; i < propertyList.size() && i < valueRow.size(); i++) {
+                        GPropertyDraw property = propertyList.get(i);
+                        Object value = valueRow.get(i);
+                        String rawValue = rawValueRow.get(i);
+
+                        // Convert file values (symmetrical to convertFileValueBack in paste)
+                        PValue pValue = PValue.convertFileValue((Serializable) value);
+
+                        // Format for clipboard (symmetrical to parsePaste in paste)
+                        GType copyType = property.getPasteType();
+
+                        stringRow.add(copyType != null ? property.formatCopy(pValue, copyType, property.getPattern()) : rawValue);
+                    }
+                    table.add(stringRow);
+                }
+
+                callback.accept(table);
+            }
+        });
     }
 
     public void pasteValue(ExecuteEditContext editContext, String sValue) {
@@ -993,8 +1048,26 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new ChangePageSize(groupObject.ID, pageSize));
     }
 
-    public void scrollToEnd(GGroupObject group, boolean toEnd) {
-        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
+    public void scrollToEnd(GGroupObject group, boolean toEnd, GChangeSelection changeSelection) {
+        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
+    }
+
+    public void selectAll(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+        int size = changeSelectionColumns.size();
+        int[] changeSelectionProps = new int[size];
+        GGroupObjectValue[] changeSelectionColumnKeys = new GGroupObjectValue[size];
+        boolean[] changeSelectionValues = new boolean[size];
+        for (int i = 0; i < size; i++) {
+            GGridTable.ColumnSelection selection = changeSelectionColumns.get(i);
+            changeSelectionProps[i] = selection.property.ID;
+            changeSelectionColumnKeys[i] = selection.columnKey;
+            changeSelectionValues[i] = selection.set;
+        }
+
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
+
+        long requestIndex = syncResponseDispatch(new SelectAll(group.ID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
+        pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
     }
 
     public void onPropertyBinding(Event bindingEvent, ExecuteEditContext editContext) {
@@ -1388,7 +1461,7 @@ public class GFormController implements EditManager {
     private void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, GEventSource eventSource, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
-            pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
+            pendingModifyObjectRequests.add(new ModifyObject(requestIndex, object, add, value, position));
 
             controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
         }, onExec);
@@ -1460,9 +1533,28 @@ public class GFormController implements EditManager {
     }
 
     private GPropertyDraw prevPropertyActive;
-    public void setPropertyActive(GPropertyDraw property, boolean focused) {
-        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
-            asyncResponseDispatch(new SetPropertyActive(property != null ? property.ID : -1, focused));
+
+    public void updatePropertyActive(GPropertyDraw property, GGroupObjectValue columnKey, boolean focused,
+                                     ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || (property != null && property.hasActiveProperty) || changeSelectionColumns != null) {
+            int[] changeSelectionProps = null;
+            GGroupObjectValue[] changeSelectionColumnKeys = null;
+            boolean[] changeSelectionValues = null;
+            if(changeSelectionColumns != null) {
+                int size = changeSelectionColumns.size();
+                changeSelectionProps = new int[size];
+                changeSelectionColumnKeys = new GGroupObjectValue[size];
+                changeSelectionValues = new boolean[size];
+                for (int i = 0; i < size; i++) {
+                    GGridTable.ColumnSelection selection = changeSelectionColumns.get(i);
+                    changeSelectionProps[i] = selection.property.ID;
+                    changeSelectionColumnKeys[i] = selection.columnKey;
+                    changeSelectionValues[i] = selection.set;
+                }
+            }
+
+            asyncResponseDispatch(new ChangePropertyActive(property != null ? property.ID : -1, columnKey, focused,
+                    changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
         }
         prevPropertyActive = property;
     }
@@ -1854,12 +1946,15 @@ public class GFormController implements EditManager {
     }
 
     private static class ModifyObject {
+        public final long requestIndex;
+
         public final GObject object;
         public final boolean add;
         public final GGroupObjectValue value;
         public final int position;
 
-        private ModifyObject(GObject object, boolean add, GGroupObjectValue value, int position) {
+        private ModifyObject(long requestIndex, GObject object, boolean add, GGroupObjectValue value, int position) {
+            this.requestIndex = requestIndex;
             this.object = object;
             this.add = add;
             this.value = value;
@@ -1988,15 +2083,15 @@ public class GFormController implements EditManager {
         bindings.remove(index);
     }
 
-    public void addEnterBindings(GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+    public void addEnterBindings(GBindingMode bindGroup, BiConsumer<Boolean, NativeEvent> selectNextElement, GGroupObject groupObject) {
         addEnterBinding(false, bindGroup, selectNextElement, groupObject);
         addEnterBinding(true, bindGroup, selectNextElement, groupObject);
     }
 
-    private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
+    private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, BiConsumer<Boolean, NativeEvent> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
                 new GBindingEnv(-100, GBindingMode.NO, null, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
-                event -> selectNextElement.accept(!shiftPressed),
+                event -> selectNextElement.accept(!shiftPressed, event),
                 null,
                 groupObject);
     }
@@ -2647,8 +2742,9 @@ public class GFormController implements EditManager {
         if(isPropertyEditing)
             requestCellEditor.onBrowserEvent(renderElement, handler);
 
-        if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
-            return;
+//        used in dragging selection
+//        if(DataGrid.getBrowserTooltipMouseEvents().contains(handler.event.getType())) // just not to have problems in debugger
+//            return;
 
         if(handler.consumed)
             return;

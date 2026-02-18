@@ -18,6 +18,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -56,7 +57,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.FormServerEvent;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -79,6 +79,7 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
@@ -273,7 +274,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return mvKeys.immutableValue();
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value, ChangeSelection changeSelection) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
@@ -281,7 +282,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(valueToSet == null)
                 return;
 
-            groupObject.change(form.session, valueToSet, form, stack);
+            groupObject.change(valueToSet, form, stack, changeSelection);
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
@@ -369,7 +370,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType, ChangeSelection changeSelection) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
@@ -378,7 +379,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug(String.format("new type: %s", changeType));
             }
             
-            form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
+            form.changeGroupObject(groupObject, Scroll.deserialize(changeType), changeSelection);
         });
     }
 
@@ -423,7 +424,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final ArrayList<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException {
         return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
@@ -473,6 +474,34 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             form.pasteMulticellValue(keysValues, stack, context);
+        });
+    }
+
+    public Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            try {
+                List<PropertyDrawInstance> properties = new ArrayList<>();
+                List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
+                for (int i = 0; i < propertyIDs.size(); i++) {
+                    PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
+                    properties.add(property);
+                    keys.add(deserializeDataKeysValues(columnKeys.get(i)));
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("copyExternalTable Action");
+
+                    if (logger.isTraceEnabled()) {
+                        for (int i = 0; i < propertyIDs.size(); i++) {
+                            logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
+                        }
+                    }
+                }
+
+                return form.copyExternalTable(properties, keys, getRemoteContext());
+            } catch (Exception e) {
+                throw new RemoteException("Error in copyExternalTable", e);
+            }
         });
     }
 
@@ -711,16 +740,48 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, boolean focused) throws RemoteException {
+    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, byte[] columnKey, boolean focused,
+                                               int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("setPropertyActive Action");
             }
 
-            ComponentView property = richDesign.findById(propertyID);
-            form.setPropertyActive(property != null ? ((PropertyDrawView) property).entity : null, focused);
+            List<FormInstance.ColumnSelection> changeSelectionColumns = null;
+            if (changeSelectionProps != null)
+                changeSelectionColumns = convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
+
+            form.changePropertyActive(propertyID >= 0 ? form.entity.getPropertyDraw(propertyID) : null,
+                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelectionColumns);
         });
+    }
+
+    @Override
+    public ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
+                                    int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("selectAll: [ID: %1$d]", groupObject.getID()));
+            }
+
+            form.selectAll(groupObject, convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues), stack);
+        });
+    }
+
+    @NotNull
+    private List<FormInstance.ColumnSelection> convertChangeSelectionColumns(int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws IOException {
+        List<FormInstance.ColumnSelection> changeSelectionColumns;
+        int size = changeSelectionProps.length;
+        changeSelectionColumns = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            PropertyDrawEntity selectionProperty = form.entity.getPropertyDraw(changeSelectionProps[i]);
+            ImMap<ObjectInstance, DataObject> selectionColumnKey = deserializeDataKeysValues(changeSelectionColumnKeys[i]);
+            changeSelectionColumns.add(new FormInstance.ColumnSelection(selectionProperty, selectionColumnKey, changeSelectionValues[i]));
+        }
+        return changeSelectionColumns;
     }
 
     @Override
@@ -1196,7 +1257,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ImMap<ObjectInstance, ? extends ObjectValue> objectValues = parseJSON(groupObject, session, values);
         mCurrentObjects.exclAddAll(objectValues);
         if(change)// there is no addSeek so maybe we should use forceChangeObject instead of change
-            groupObject.change(session, objectValues, form, stack);
+            groupObject.change(objectValues, form, stack, null);
     }
 
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {

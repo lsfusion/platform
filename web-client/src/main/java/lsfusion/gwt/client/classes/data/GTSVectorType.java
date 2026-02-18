@@ -34,6 +34,11 @@ public class GTSVectorType extends GDataType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        return PValue.getStringValue(value);
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeTSVectorCaption();
     }

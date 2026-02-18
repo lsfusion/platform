@@ -466,6 +466,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public boolean sticky;
 
     public boolean hasActiveProperty;
+    public boolean hasSelectProperty;
 
     public boolean hasFooter;
 
@@ -642,6 +643,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         } catch (ParseException pe) {
             return null;
         }
+    }
+
+    public String formatCopy(PValue value, GType formatType, String pattern) {
+        if (value == null) {
+            return null;
+        }
+        return formatType.formatString(value, pattern);
     }
 
     public String getPattern() {

@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -77,9 +78,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, boolean focused) throws RemoteException {
+    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
+                                               int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
         logRemoteMethodStartVoidCall("setPropertyActive");
-        ServerResponse result = target.setPropertyActive(requestIndex, lastReceivedRequestIndex, propertyID, focused);
+        ServerResponse result = target.changePropertyActive(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, focused, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
         logRemoteMethodEndVoidCall("setPropertyActive");
         return result;
     }
@@ -91,17 +93,26 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value, ChangeSelection changeSelection) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value, changeSelection);
         logRemoteMethodEndVoidCall("changeGroupObject");
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType, changeSelection);
         logRemoteMethodEndVoidCall("changeGroupObject");
+        return result;
+    }
+
+    @Override
+    public ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
+                                    int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
+        logRemoteMethodStartVoidCall("selectAll");
+        ServerResponse result = target.selectAll(requestIndex, lastReceivedRequestIndex, groupID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
+        logRemoteMethodEndVoidCall("selectAll");
         return result;
     }
 
@@ -113,10 +124,17 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, ArrayList<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
         ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values, rawValues);
         logRemoteMethodEndCall("pasteExternalTable", result);
+        return result;
+    }
+
+    public Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> copyExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys) throws RemoteException {
+        logRemoteMethodStartCall("copyExternalTable");
+        Pair<List<List<byte[]>>, ArrayList<ArrayList<String>>> result = target.copyExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys);
+        logRemoteMethodEndCall("copyExternalTable", result);
         return result;
     }
 

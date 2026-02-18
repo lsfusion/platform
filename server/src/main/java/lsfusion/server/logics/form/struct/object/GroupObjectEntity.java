@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.object;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -9,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.caches.ManualLazy;
@@ -35,7 +37,8 @@ import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectStateProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectRowProp;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -48,6 +51,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -153,12 +157,25 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return lazyUpdateType;
     }
 
-    private final FormEntity.ExProperty listViewTypeProp;
+    private final ImMap<GroupObjectStateProp, FormEntity.ExProperty> stateProps;
+    public Property<?> getNFStateProperty(GroupObjectStateProp type, Version version) {
+        return stateProps.get(type).getNF(version);
+    }
+    public Property<?> getStateProperty(GroupObjectStateProp type) {
+        return stateProps.get(type).get();
+    }
+
     public Property<?> getNFListViewType(Version version) {
-        return listViewTypeProp.getNF(version);
+        return getNFStateProperty(GroupObjectStateProp.VIEWTYPE, version);
     }
     public Property<?> getListViewType() {
-        return listViewTypeProp.get();
+        return getStateProperty(GroupObjectStateProp.VIEWTYPE);
+    }
+    public Property<?> getNFIsSelectProperty(Version version) {
+        return getNFStateProperty(GroupObjectStateProp.ISSELECT, version);
+    }
+    public Property<?> getIsSelectProperty() {
+        return getStateProperty(GroupObjectStateProp.ISSELECT);
     }
 
     private final NFProperty<ClassViewType> viewType = NFFact.property();
@@ -181,14 +198,14 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private final NFProperty<PropertyObjectEntity> propertyBackground = NFFact.property();
     private final NFProperty<PropertyObjectEntity> propertyForeground = NFFact.property();
 
-    private final NFProperty<Boolean> isFilterExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
-    private final NFProperty<Boolean> isOrderExplicitlyUsed = NFFact.property(); // optimization hack - there are a lot of ORDER usages by group change, but group change needs ORDER only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
-
     public boolean isFilterExplicitlyUsed() {
-        return isFilterExplicitlyUsed.get() != null;
+        return isExplicitlyUsed(GroupObjectRowProp.FILTER);
     }
     public boolean isOrderExplicitlyUsed() {
-        return isOrderExplicitlyUsed.get() != null;
+        return isExplicitlyUsed(GroupObjectRowProp.ORDER);
+    }
+    public boolean isSelectExplicitlyUsed() {
+        return isExplicitlyUsed(GroupObjectRowProp.SELECT);
     }
 
     public static class ExGroupProperty extends FormEntity.ExMapProp<PropertyObjectEntity<ClassPropertyInterface>, ExGroupProperty> {
@@ -206,13 +223,22 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
             return new ExGroupProperty(this, mapping);
         }
     }
-    private final ImMap<GroupObjectProp, ExGroupProperty> props;
-    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectProp type, Version version) {
-        if(type.equals(GroupObjectProp.FILTER))
-            isFilterExplicitlyUsed.set(true, version);
-        if(type.equals(GroupObjectProp.ORDER))
-            isOrderExplicitlyUsed.set(true, version);
+
+    private final ImMap<GroupObjectRowProp, ExGroupProperty> props;
+    private final ImMap<GroupObjectRowProp, NFProperty<Boolean>> isExplicitlyUsed = MapFact.toMap(GroupObjectRowProp.values(), type -> NFFact.property()); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER, etc. only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
+    public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectRowProp type, Version version) {
+        isExplicitlyUsed.get(type).set(true, version);
         return props.get(type).getNF(version);
+    }
+    public PropertyObjectEntity<ClassPropertyInterface> getGroupProp(GroupObjectRowProp type) {
+        assert type.equals(GroupObjectRowProp.FILTER) || type.equals(GroupObjectRowProp.ORDER) || type.equals(GroupObjectRowProp.SELECT);
+        return props.get(type).get();
+    }
+    public ImMap<GroupObjectRowProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
+        return props.mapValues(p -> p.get()).removeNulls();
+    }
+    public boolean isExplicitlyUsed(GroupObjectRowProp type) {
+        return isExplicitlyUsed.get(type).get() != null;
     }
 
     public LocalizedString getContainerCaption() {
@@ -222,16 +248,47 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
             return null;
     }
 
-    public void fillGroupChanges(Version version) {
-        props.get(GroupObjectProp.FILTER).getNF(version);
-        props.get(GroupObjectProp.ORDER).getNF(version);
+    public void fillGroupProps(Version version) {
+        // we're prereading:
+        // order for using in the group change
+        // filter, select, isSelect for using in the group change / ctrl+c
+        // value for using in the ctrl + c
+        props.get(GroupObjectRowProp.FILTER).getNF(version);
+        props.get(GroupObjectRowProp.ORDER).getNF(version);
+        // selection
+        props.get(GroupObjectRowProp.SELECT).getNF(version);
+        getObjects().mapItRevValues(object -> object.getNFValueProperty(version));
+        stateProps.get(GroupObjectStateProp.ISSELECT).getNF(version);
     }
-    public PropertyObjectEntity<ClassPropertyInterface> getGroupChange(GroupObjectProp type) {
-        assert type.equals(GroupObjectProp.FILTER) || type.equals(GroupObjectProp.ORDER);
-        return props.get(type).get();
+
+    public static PropertyObjectEntity<?> getFullSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp, ImRevMap<ObjectEntity, Property<?>> objectValues) {
+        ImRevMap<ObjectEntity, PropertyInterface> mapObjects = BaseUtils.immutableCast(selectProp.mapping.reverse());
+
+        ImOrderMap<ObjectEntity, Property<?>> orderMap = objectValues.toOrderMap();
+        ImOrderSet<PropertyInterfaceImplement<PropertyInterface>> mapInterfaces = BaseUtils.immutableCast(orderMap.keyOrderSet().mapOrder(mapObjects));
+
+        // IF ISSELECT() THEN SELECT(p1, p2, .., pN) AND FILTER ELSE p1 = value o1 AND p2 = value o2 AND ... AND pN = value oN
+        PropertyMapImplement<?, PropertyInterface> fullSelectImpl = PropertyFact.createIfElseUProp(mapObjects.valuesSet(),
+                isSelectProperty.getImplement(SetFact.EMPTYORDER()), PropertyFact.createAnd(selectProp.getImplement(mapObjects), filterProp.getImplement(mapObjects)),
+                PropertyFact.createCompare(mapInterfaces, orderMap.mapListValues(prop -> prop.getImplement(SetFact.EMPTYORDER())), Compare.EQUALS));
+
+        return new PropertyObjectEntity(fullSelectImpl.property, fullSelectImpl.mapping.join(mapObjects.reverse()));
     }
-    public ImMap<GroupObjectProp, PropertyObjectEntity<ClassPropertyInterface>> getProperties() {
-        return props.mapValues(p -> p.get()).removeNulls();
+
+    public static PropertyObjectEntity<?> getGroupChangeSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp) {
+        ImRevMap<ObjectEntity, PropertyInterface> mapObjects = BaseUtils.immutableCast(selectProp.mapping.reverse());
+
+        // FILTER AND (NOT ISSELECT OR SELECT)
+        PropertyMapImplement<?, PropertyInterface> groupChangeSelectImpl = PropertyFact.createAnd(
+                filterProp.getImplement(mapObjects),
+                PropertyFact.createUnion(
+                        mapObjects.valuesSet(),
+                        PropertyFact.createNot(isSelectProperty.getImplement(SetFact.EMPTYORDER())),
+                        selectProp.getImplement(mapObjects)
+                )
+        );
+
+        return new PropertyObjectEntity(groupChangeSelectImpl.property, groupChangeSelectImpl.mapping.join(mapObjects.reverse()));
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
@@ -397,8 +454,9 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         super(ID, sID, debugPoint);
 
         ConcreteCustomClass listViewType = LM.listViewType;
-        listViewTypeProp = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType));
-        props = MapFact.toMap(GroupObjectProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
+        stateProps = MapFact.toMap(GroupObjectStateProp.values(), type -> new FormEntity.ExProperty(
+                () -> PropertyFact.createDataPropRev(type.getSID(), this, type.getValueClass(listViewType))));
+        props = MapFact.toMap(GroupObjectRowProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
                 () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
 
         this.objects = objects;
@@ -481,7 +539,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     // hack where ImMap used (it does not support null keys)
     private GroupObjectEntity() {
         super(() -> -1, null, null);
-        listViewTypeProp = null;
+        stateProps = null;
         props = null;
         objects = null;
     }
@@ -569,7 +627,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         count = mapping.get(src.count); // nullable
 
         props = mapping.gets(src.props);
-        listViewTypeProp = mapping.get(src.listViewTypeProp);
+        stateProps = mapping.gets(src.stateProps);
     }
 
     @Override
@@ -581,8 +639,8 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         mapping.sets(enableManualUpdate, src.enableManualUpdate);
         mapping.sets(integrationSID, src.integrationSID);
         mapping.sets(integrationKey, src.integrationKey);
-        mapping.sets(isFilterExplicitlyUsed, src.isFilterExplicitlyUsed);
-        mapping.sets(isOrderExplicitlyUsed, src.isOrderExplicitlyUsed);
+
+        mapping.sets(isExplicitlyUsed, src.isExplicitlyUsed);
 
         mapping.sets(updateType, src.updateType);
         mapping.sets(viewType, src.viewType);

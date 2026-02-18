@@ -981,7 +981,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGroupObject.end - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize());
+                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize(), null);
             }
         });
     }
@@ -1000,7 +1000,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
+                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize(), null);
             }
         });
     }
@@ -1246,7 +1246,7 @@ public class ClientFormController implements AsyncListener {
             rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyActive") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.setPropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, focused);
+                    return remoteForm.changePropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, null, focused, null, null, null);
                 }
             });
         }
@@ -1277,7 +1277,7 @@ public class ClientFormController implements AsyncListener {
         int propertyColumns = propertyList.size();
 
         List<List<byte[]>> values = new ArrayList<>();
-        List<ArrayList<String>> rawValues = new ArrayList<>();
+        ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
         for (List<String> sRow : table) {
             List<byte[]> valueRow = new ArrayList<>();
             ArrayList<String> rawValueRow = new ArrayList<>();
@@ -1293,7 +1293,7 @@ public class ClientFormController implements AsyncListener {
             rawValues.add(rawValueRow);
         }
 
-        final List<Integer> propertyIdList = new ArrayList<>();
+        final ArrayList<Integer> propertyIdList = new ArrayList<>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }

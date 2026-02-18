@@ -46,7 +46,7 @@ public class PasteExternalTableHandler extends FormServerResponseActionHandler<P
 
                 List<byte[]> columnKeys = new ArrayList<>();
                 for (int i = 0; i < action.columnKeys.size(); i++) {
-                    columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
+                    columnKeys.add(gwtConverter.convertOrCast(action.columnKeys.get(i)));
                 }
 
                 return remoteForm.pasteExternalTable(action.requestIndex, action.lastReceivedRequestIndex, action.propertyIdList, columnKeys, values, action.rawValues);

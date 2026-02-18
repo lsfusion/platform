@@ -56,6 +56,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public boolean enableManualUpdate;
 
     public GRowBackgroundReader rowBackgroundReader;
+    public GRowSelectReader rowSelectReader;
     public GRowForegroundReader rowForegroundReader;
     public GCustomOptionsReader customOptionsReader;
 

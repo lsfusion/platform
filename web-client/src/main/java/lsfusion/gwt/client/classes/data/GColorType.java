@@ -52,6 +52,12 @@ public class GColorType extends GDataType {
     }
 
     @Override
+    public String formatString(PValue value, String pattern) {
+        ColorDTO color = PValue.getValue(value);
+        return color != null ? "#" + color.value : null;
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeColorCaption();
     }

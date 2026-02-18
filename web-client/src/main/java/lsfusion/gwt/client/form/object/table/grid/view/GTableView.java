@@ -40,6 +40,7 @@ public interface GTableView extends TableComponent {
     // EXTRA SETTERS
     // keys
     void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
+    void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
     void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
 
     default void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {

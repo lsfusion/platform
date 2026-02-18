@@ -64,6 +64,7 @@ public class ClientGroupObject extends ClientIdentityObject {
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
+    public RowSelectReader rowSelectReader = new RowSelectReader();
     public CustomOptionsReader customOptionsReader = new CustomOptionsReader();
 
     // transient
@@ -233,6 +234,24 @@ public class ClientGroupObject extends ClientIdentityObject {
 
         public byte getType() {
             return PropertyReadType.ROW_BACKGROUND;
+        }
+    }
+
+    public class RowSelectReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientGroupObject.this;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+//            controller.updateRowBackgroundValues(readKeys);
+        }
+
+        public int getID() {
+            return ClientGroupObject.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.ROW_SELECT;
         }
     }
 

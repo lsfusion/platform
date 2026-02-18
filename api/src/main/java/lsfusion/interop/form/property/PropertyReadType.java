@@ -76,4 +76,6 @@ public class PropertyReadType {
     public final static byte FOOTERELEMENTCLASS = 36;
 
     public final static byte DEFAULTVALUE = 37;
+
+    public final static byte ROW_SELECT = 38;
 }

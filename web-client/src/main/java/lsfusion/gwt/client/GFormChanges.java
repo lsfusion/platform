@@ -35,7 +35,7 @@ public class GFormChanges {
     public final ArrayList<GContainer> collapseContainers = new ArrayList<>();
     public final ArrayList<GContainer> expandContainers = new ArrayList<>();
 
-    public final HashSet<GPropertyDraw> updateProperties = new HashSet<>();
+    public final HashSet<GPropertyReader> updateProperties = new HashSet<>();
 
     public boolean needConfirm;
 
@@ -132,6 +132,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).footerReader;
             case GPropertyReadType.ROW_BACKGROUND:
                 return form.getGroupObject(readerId).rowBackgroundReader;
+            case GPropertyReadType.ROW_SELECT:
+                return form.getGroupObject(readerId).rowSelectReader;
             case GPropertyReadType.ROW_FOREGROUND:
                 return form.getGroupObject(readerId).rowForegroundReader;
             case GPropertyReadType.LAST:
@@ -232,5 +234,6 @@ public class GFormChanges {
         public final static byte TREE_HIERARCHICALCAPTION = 35;
         public final static byte FOOTERELEMENTCLASS = 36;
         public final static byte DEFAULTVALUE = 37;
+        public final static byte ROW_SELECT = 38;
     }
 }

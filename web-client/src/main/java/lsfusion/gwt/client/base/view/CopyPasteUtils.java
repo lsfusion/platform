@@ -16,32 +16,57 @@ import java.util.function.Consumer;
 
 public class CopyPasteUtils {
 
-    public static native void copyToClipboard(String value)/*-{
+    public static void copyToClipboard(String value) {
+        copyToClipboard(value, null);
+    }
+
+    public static native void addCopyingClass(Element element)/*-{
+        var target = element || $doc.body;
+        target.classList.add('copying-to-clipboard');
+    }-*/;
+
+    public static native void removeCopyingClassDelayed(Element element)/*-{
+        setTimeout(function() {
+            var target = element || $doc.body;
+            target.classList.remove('copying-to-clipboard');
+        }, 100);
+    }-*/;
+
+    public static native void copyToClipboard(String value, Runnable restoreFocus)/*-{
         // navigator clipboard api needs a secure context (https)
         if (navigator.clipboard && window.isSecureContext) {
             //writeText work in Firefox
             navigator.clipboard.writeText(value).then(
                 function () {
+                    if (restoreFocus) {
+                        restoreFocus.@java.lang.Runnable::run()();
+                    }
                 }, function () { //Fallback for Chrome
-                    @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value);
+                    @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value, restoreFocus);
                 }
             );
         } else {
             //execCommand for http
-            @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value);
+            @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value, restoreFocus);
         }
 
     }-*/;
 
-    private static native void copyToClipboardTextArea(String value)/*-{
+    private static native void copyToClipboardTextArea(String value, Runnable restoreFocus)/*-{
         if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
             var textarea = document.createElement("textarea");
             textarea.textContent = value;
+            textarea.style.position = 'fixed'; // Prevent scrolling
+            textarea.style.opacity = '0'; // Make invisible
             document.body.appendChild(textarea);
             textarea.focus();
             textarea.select();
             document.execCommand("copy");
             document.body.removeChild(textarea);
+
+            if (restoreFocus) {
+                restoreFocus.@java.lang.Runnable::run()();
+            }
         }
     }-*/;
 
@@ -50,6 +75,7 @@ public class CopyPasteUtils {
     // actually it justs sets selection, since we don't consume event default handler does the rest
     public static void putIntoClipboard(Element element) {
         if (element != null && (selection.getRange() == null || selection.getRange().getText().isEmpty())) {
+            GwtClientUtils.addClassName(element, "copy-paste-selection");
             Range range = new Range(element);
             selection.setRange(range);
             putSelectionIntoClipboard();
@@ -57,6 +83,7 @@ public class CopyPasteUtils {
             Scheduler.get().scheduleFixedDelay(() -> {
                 range.collapse(true);
                 selection.setRange(range);
+                GwtClientUtils.removeClassName(element, "copy-paste-selection");
                 return false;
             }, 100);
         }

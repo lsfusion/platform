@@ -178,7 +178,11 @@ public class GKeyStroke implements Serializable {
                 false,
                 ADD_USER_FILTER_KEY_STROKE.keyCode));
     }
-    
+
+    public static Event createDragKeyEvent(int keyCode) {
+        return Event.as(Document.get().createKeyDownEvent(false, false, false,false, keyCode));
+    }
+
     public static boolean isAddUserFilterKeyEvent(Event event) {
         return ADD_USER_FILTER_KEY_STROKE.isEvent(event);
     }

@@ -1081,6 +1081,43 @@ public class GwtClientUtils {
         return table;
     }
 
+    /**
+     * Converts table to clipboard string format (inverse of getClipboardTable)
+     */
+    public static String getClipboardTable(List<List<String>> table) {
+        if (table == null || table.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < table.size(); i++) {
+            List<String> row = table.get(i);
+            if (row != null) {
+                for (int j = 0; j < row.size(); j++) {
+                    String cell = row.get(j);
+                    if (cell != null) {
+                        // Escape cell if it contains tab, newline, or quotes
+                        if (cell.contains("\t") || cell.contains("\n") || cell.contains("\"")) {
+                            // Wrap in quotes and escape internal quotes by doubling them
+                            result.append("\"").append(cell.replace("\"", "\"\"")).append("\"");
+                        } else {
+                            result.append(cell);
+                        }
+                    }
+                    // Add tab separator between cells (but not after last cell)
+                    if (j < row.size() - 1) {
+                        result.append("\t");
+                    }
+                }
+            }
+            // Add newline separator between rows (but not after last row)
+            if (i < table.size() - 1) {
+                result.append("\n");
+            }
+        }
+        return result.toString();
+    }
+
     // возвращает новую flexWidth
     private static double reducePrefsToBase(double prevFlexWidth, int column, double[] prefs, double[] flexes, int[] basePrefs) {
         double reduce = prefs[column] - basePrefs[column];

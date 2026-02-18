@@ -469,6 +469,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.sticky = clientPropertyDraw.sticky;
 
         propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
+        propertyDraw.hasSelectProperty = clientPropertyDraw.hasSelectProperty;
 
         propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 
@@ -519,6 +520,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GRowBackgroundReader convertRowBackgroundReader(ClientGroupObject.RowBackgroundReader reader) {
         return reader == null ? null : new GRowBackgroundReader(reader.getID());
+    }
+
+    public GRowSelectReader convertRowSelectReader(ClientGroupObject.RowSelectReader reader) {
+        return reader == null ? null : new GRowSelectReader(reader.getID());
     }
 
     public GRowForegroundReader convertRowForegroundReader(ClientGroupObject.RowForegroundReader reader) {
@@ -631,6 +636,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         }
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
+        groupObject.rowSelectReader = convertRowSelectReader(clientGroupObject.rowSelectReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
         groupObject.customOptionsReader = convertCustomOptionsReader(clientGroupObject.customOptionsReader);
 

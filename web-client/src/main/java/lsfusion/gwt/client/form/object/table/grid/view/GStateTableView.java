@@ -381,7 +381,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         rowBackgroundValues = values;
     }
-    
+
+    @Override
+    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    }
+
     public String getRowBackgroundColor(GGroupObjectValue key) {
         return PValue.getColorStringValue(rowBackgroundValues.get(key));
     }
@@ -598,7 +602,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected long changeGroupObject(GGroupObjectValue value, boolean rendered) {
         setCurrentKey(value, rendered);
-        return form.changeGroupObject(grid.groupObject, value);
+        return form.changeGroupObject(grid.groupObject, value, null, null);
     }
 
     public PValue getValue(GPropertyDraw property, GGroupObjectValue fullKey) {

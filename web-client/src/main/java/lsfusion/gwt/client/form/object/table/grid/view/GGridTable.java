@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
@@ -13,6 +14,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -20,7 +22,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -39,6 +41,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
@@ -62,11 +65,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> readOnlyValues = new NativeSIDMap<>();
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
 
+    protected NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = new NativeHashMap<>();
+
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private NativeSIDMap<GPropertyDraw, Boolean> updatedProperties = new NativeSIDMap<>();
     private NativeSIDMap<GPropertyDraw, ArrayList<GGroupObjectValue>> columnKeys = new NativeSIDMap<>();
 
     private boolean rowsUpdated = false;
+    private boolean selectRowsUpdated = false;
     private boolean dataUpdated = false;
 
     private GGroupObject groupObject;
@@ -106,18 +112,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         setSelectionHandler(new GridTableSelectionHandler(this));
 
-        setRowChangedHandler(() -> {
-            final GridDataRecord selectedRecord = getSelectedRowValue();
-            if (selectedRecord != null)
-                form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
-        });
-
-        setColumnChangedHandler(() -> {
-            GGroupObjectValue columnKey = getSelectedColumnKey();
-            ArrayList<GGroupObject> columnGroupObjects = getColumnPropertyDraw(getSelectedColumn()).columnGroupObjects;
-            if (columnGroupObjects != null)
-                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey));
-        });
+        setRowChangedHandler((row, prevRow, reason, event) -> updateRowColumn(prevRow, -2, reason, event));
+        setColumnChangedHandler((col, prevCol, reason, event) -> updateRowColumn(-2, prevCol, reason, event));
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
@@ -142,12 +138,165 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             @Override
             protected Map<GPropertyDraw, GGroupObjectValue> getColumnKey(int column) {
-                GridColumn gridColumn = getGridColumn(column);
                 HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-                key.put(gridColumn.property, gridColumn.columnKey);
+                key.put(getProperty(column), GGridTable.this.getColumnKey(column));
                 return key;
             }
         };
+    }
+
+    @Nullable
+    private GChangeSelection getChangeSelection(FocusUtils.Reason reason, NativeEvent event) {
+        return reason.changeSelection() ? selectionHandler.isDragSelecting() || (event != null && event.getShiftKey()) ? GChangeSelection.MOVEEND : GChangeSelection.MOVE : null;
+    }
+
+    private void updateRowColumn(int prevRow, int prevCol, FocusUtils.Reason reason, NativeEvent event) {
+        int row = getSelectedRow();
+        if(prevRow == -2)
+            prevRow = row;
+        int col = getSelectedColumn();
+        if(prevCol == -2)
+            prevCol = col;
+
+        GChangeSelection changeSelection = getChangeSelection(reason, event);
+
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = null;
+
+        ArrayList<ColumnSelection> changeSelectionColumns = null;
+
+        if(changeSelection != null) {
+            if(prevRow < 0 || prevCol < 0)
+                changeSelection = GChangeSelection.MOVE;
+
+            changeSelectionRows = updateRowSelection(row, prevRow, changeSelection);
+
+            changeSelectionColumns = updateColumnSelection(col, prevCol, changeSelection);
+        }
+
+        if (row != prevRow || (changeSelectionRows != null && !changeSelectionRows.isEmpty())) {
+            GridDataRecord selectedRecord = getSelectedRowValue();
+            if (selectedRecord != null)
+                form.changeGroupObjectLater(groupObject, selectedRecord.getKey(), changeSelection, changeSelectionRows);
+        }
+
+        if(col != prevCol || (changeSelectionColumns != null && !changeSelectionColumns.isEmpty())) {
+            GPropertyDraw property = col >= 0 ? getProperty(col) : null;
+            GGroupObjectValue columnKey = col >= 0 ? getColumnKey(col) : null;
+            form.updatePropertyActive(property, columnKey, true, changeSelectionColumns);
+
+            ArrayList<GGroupObject> columnGroupObjects;
+            if (col != prevCol && property != null && (columnGroupObjects = property.columnGroupObjects) != null)
+                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
+        }
+    }
+
+
+    public void selectAllCells() {
+        int colCount = getColumnCount();
+        int rowCount = getRowCount();
+        if(colCount <= 0 || rowCount <= 0)
+            return;
+
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
+        for (int i = 0; i < rowCount; i++)
+            changeSelectionRows.put(getRowValue(i).getKey(), PValue.getPValue(true));
+
+        ArrayList<ColumnSelection> changeSelectionColumns = new ArrayList<>();
+            for (int i = 0; i < colCount; i++)
+                addSelectedColumn(i, changeSelectionColumns, true);
+
+        startSelectColumn = 0;
+        endSelectColumn = colCount - 1;
+        selectColumnsChanged();
+
+        form.selectAll(groupObject, changeSelectionRows, changeSelectionColumns);
+    }
+
+    @Nullable
+    private NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, GChangeSelection changeSelection) {
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
+        if (changeSelection == GChangeSelection.MOVE) {
+            NativeHashMap<GGroupObjectValue, PValue> fChangeSelectionRows = changeSelectionRows;
+            rowSelectValues.foreachEntry((key, value) -> { if(GridDataRecord.isRowSelect(value)) fChangeSelectionRows.put(key, GridDataRecord.invertSelect(value)); });
+            rowSelectValues.clear();
+        } else {
+            int dir = row >= prevRow ? 1 : -1;
+            for (int i = prevRow; (dir > 0 ? i <= row : i >= row); i += dir) {
+                GGroupObjectValue rowKey = getRowValue(i).getKey();
+
+                PValue pValue;
+                if (i == row)
+                    pValue = PValue.getPValue((Boolean)null);
+                else
+                    pValue = rowSelectValues.get(getRowValue(i + dir).getKey());
+
+                PValue newSelectValue = GridDataRecord.invertSelect(pValue);
+
+                PValue prevSelectValue = rowSelectValues.put(rowKey, newSelectValue);
+                if(!GwtClientUtils.nullEquals(prevSelectValue, newSelectValue))
+                    changeSelectionRows.put(rowKey, newSelectValue);
+            }
+        }
+
+        if(!changeSelectionRows.isEmpty()) {
+            selectRowsUpdated = true;
+
+            updateModify(false);
+        }
+        return changeSelectionRows;
+    }
+
+    public static class ColumnSelection {
+        public GPropertyDraw property;
+        public GGroupObjectValue columnKey;
+        public boolean set;
+
+        public ColumnSelection(GPropertyDraw property, GGroupObjectValue columnKey, boolean set) {
+            this.property = property;
+            this.columnKey = columnKey;
+            this.set = set;
+        }
+    }
+
+    private ArrayList<ColumnSelection> updateColumnSelection(int newEnd, int prevCol, GChangeSelection changeSelection) {
+        int newStart;
+
+        ArrayList<ColumnSelection> changes = new ArrayList<>();
+        if(startSelectColumn < 0) { // no selection
+            newStart = newEnd;
+            addSelectedColumn(newEnd, changes, true);
+        } else {
+            newStart = changeSelection == GChangeSelection.MOVE ? newEnd : startSelectColumn;
+            if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
+
+            int oldL = Math.min(startSelectColumn, endSelectColumn);
+            int oldR = Math.max(startSelectColumn, endSelectColumn);
+            int newL = Math.min(newStart, newEnd);
+            int newR = Math.max(newStart, newEnd);
+
+            // Removed = old \ new
+            for (int i = oldL; i <= oldR; i++)
+                if (i < newL || i > newR)
+                    addSelectedColumn(i, changes, false);
+
+            // Added = new \ old
+            for (int i = newL; i <= newR; i++)
+                if (i < oldL || i > oldR)
+                    addSelectedColumn(i, changes, true);
+        }
+
+        this.startSelectColumn = newStart;
+        this.endSelectColumn = newEnd;
+
+        selectColumnsChanged();
+
+        return changes;
+    }
+
+    private void addSelectedColumn(int column, ArrayList<ColumnSelection> changeSelectionColumns, boolean set) {
+        GPropertyDraw property = getProperty(column);
+        if(property.hasSelectProperty)
+            changeSelectionColumns.add(new ColumnSelection(property, getColumnKey(column), set));
     }
 
     public void update(Boolean updateState) {
@@ -186,6 +335,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             rowsUpdated = false;
         }
 
+        if(selectRowsUpdated) {
+            updateSelectRows();
+
+            selectRowsChanged();
+
+            selectRowsUpdated = false;
+        }
+
         updateCurrentRow();
     }
 
@@ -222,6 +379,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             record.setRowBackground(rowBackgroundValues.get(rowKey));
             record.setRowForeground(rowForegroundValues.get(rowKey));
+        }
+    }
+
+    private void updateSelectRows() {
+        int newSize = rowKeys.size();
+        for (int i = 0; i < newSize; i++) {
+            GGroupObjectValue rowKey = rowKeys.get(i);
+            GridDataRecord record = rows.get(i);
+
+            record.setRowSelect(rowSelectValues.get(rowKey));
         }
     }
 
@@ -328,7 +495,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
-        return getGridColumn(i).property;
+        return getProperty(i);
     }
 
     public boolean containsProperty(GPropertyDraw property) {
@@ -495,6 +662,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             updatedProperties.clear();
             dataUpdated = false;
         }
+    }
+
+    @Override
+    protected boolean isRowSelect(GridDataRecord row) {
+        return row.isRowSelect();
     }
 
     public GridColumn getGridColumn(int column) {
@@ -768,6 +940,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        if (updateKeys && rowSelectValues != null) {
+            rowSelectValues.putAll(values);
+        } else {
+            NativeHashMap<GGroupObjectValue, PValue> pvalues = new NativeHashMap<>();
+            pvalues.putAll(values);
+            rowSelectValues = pvalues;
+        }
+
+        selectRowsUpdated = true;
+    }
+
+    @Override
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateRowForegroundValues(values);
         rowsUpdated = true;
@@ -823,7 +1008,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             }
             rowKeys.remove(rowKey);
         }
-        setKeys(rowKeys);
+
+        rowsUpdated = true;
+
         if(currentKeyChanged)
             setCurrentKey(currentKey);
 
@@ -965,6 +1152,45 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
+    public void copyDataToClipboard(Cell cell, Element renderElement) {
+        // Check if we have column selection
+        if (!rowSelectValues.isEmpty() && startSelectColumn >= 0) {
+            Element tableElement = getTableDataFocusElement();
+            CopyPasteUtils.addCopyingClass(tableElement);
+
+            int colStart = Math.min(startSelectColumn, endSelectColumn);
+            int colEnd = Math.max(startSelectColumn, endSelectColumn);
+
+            // Collect properties and column keys
+            ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
+            ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
+
+            for (int col = colStart; col <= colEnd && col < getColumnCount(); col++) {
+                GridColumn column = getGridColumn(col);
+                if (column != null) {
+                    propertyList.add(column.property);
+                    columnKeys.add(column.columnKey);
+                }
+            }
+
+            // Make async server call to get the data
+            form.copyExternalTable(propertyList, columnKeys, table -> {
+                // Convert result to clipboard format and copy
+                CopyPasteUtils.copyToClipboard(
+                    GwtClientUtils.getClipboardTable(table),
+                    () -> focus(FocusUtils.Reason.RESTOREFOCUS)
+                );
+                CopyPasteUtils.removeCopyingClassDelayed(tableElement);
+            });
+
+            return;
+        }
+
+        // No column selection, use parent implementation
+        super.copyDataToClipboard(cell, renderElement);
+    }
+
+    @Override
     public void onResize() {
         super.onResize();
 
@@ -998,7 +1224,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    protected void quickSearch(Event editEvent) {
+    protected void quickSearch(NativeEvent editEvent) {
         if (getRowCount() > 0 && getColumnCount() > 0) {
             
 
@@ -1021,7 +1247,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 if (isRowWithinBounds(i)) {
                     String string = PValue.getStringValue(getValueAt(i, searchColumn));
                     if (string != null && string.regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                        selectionHandler.changeRow(i, FocusUtils.Reason.KEYMOVENAVIGATE);
+                        selectionHandler.changeRow(i, FocusUtils.Reason.KEYMOVENAVIGATE, editEvent);
                         break;
                     }
                 }
@@ -1409,20 +1635,27 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
-        public boolean handleKeyEvent(Event event) {
+        public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
 
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            if (keyCode == KeyCodes.KEY_HOME && event.getCtrlKey()) {
-                form.scrollToEnd(groupObject, false);
+            if (keyCode == 65 && event.getCtrlKey()) { // CTRL+A
+                selectAllCells();
                 return true;
-            } else if (keyCode == KeyCodes.KEY_END && event.getCtrlKey()) {
-                form.scrollToEnd(groupObject, true);
+            }
+            Boolean toEnd = null;
+            if (keyCode == KeyCodes.KEY_HOME && event.getCtrlKey())
+                toEnd = false;
+            else if (keyCode == KeyCodes.KEY_END && event.getCtrlKey())
+                toEnd = true;
+
+            if(toEnd != null) {
+                scrollToEnd(toEnd, reason, event);
                 return true;
             }
 
-            return super.handleKeyEvent(event);
+            return super.handleKeyEvent(event, reason);
         }
     }
     
@@ -1444,7 +1677,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    protected void scrollToEnd(boolean toEnd) {
-        form.scrollToEnd(groupObject, toEnd);
+    protected void scrollToEnd(boolean toEnd, FocusUtils.Reason reason, NativeEvent event) {
+        GChangeSelection changeSelection = getChangeSelection(reason, event);
+
+        form.scrollToEnd(groupObject, toEnd, changeSelection);
     }
 }
