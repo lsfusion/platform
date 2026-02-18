@@ -42,7 +42,7 @@
                     String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
                 %>
 
-                <c:if test="${empty sessionScope['2fa_code']}">
+                <c:if test="${empty sessionScope['2fa_user']}">
                     <form id="login-form"
                           name="loginForm"
                           method="POST"
@@ -91,7 +91,7 @@
                         </div>
                     </c:if>
                 </c:if>
-                <c:if test="${not empty sessionScope['2fa_code']}">
+                <c:if test="${not empty sessionScope['2fa_user']}">
                     <form id="submit-2fa-form" method="POST" action="2fa<%=queryString%>">
                         <div class="label-and-field">
                             <label for="code"><%= ServerMessages.getString(request, "two.fa.code") %></label>
@@ -108,12 +108,12 @@
                 </c:if>
             </div>
             <div class="footer">
-                <c:if test="${empty sessionScope['2fa_code']}">
+                <c:if test="${empty sessionScope['2fa_user']}">
                     <div class="desktop-link link">
                         ${jnlpUrls}
                     </div>
                 </c:if>
-                <c:if test="${not empty sessionScope['2fa_code']}">
+                <c:if test="${not empty sessionScope['2fa_user']}">
                     <form id="cancel-2fa-form" method="POST" action="2fa<%=queryString%>">
                         <input type="hidden" name="cancel" value="true"/>
 

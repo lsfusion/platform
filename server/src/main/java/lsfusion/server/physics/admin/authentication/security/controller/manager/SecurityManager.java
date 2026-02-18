@@ -278,15 +278,26 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
         }
 
+        // Integrity check: if the claim is present in the JWT, it must match the token wrapper field.
+        // Absent claim means an older token that was issued before this check was added — accepted as-is.
+        Boolean claimed2FA = body.get(CLAIM_USE_2FA, Boolean.class);
+        if (claimed2FA != null && claimed2FA != token.use2FA)
+            throw new AuthenticationException("Token use2FA claim mismatch");
+
         return body.getSubject();
 //        u.setId(Long.parseLong((String) body.get("userId")));
     }
+
+    public static final String CLAIM_USE_2FA = "2fa";
 
     public AuthenticationToken generateToken(String userLogin, Integer tokenExpiration, boolean use2FA) { //tokenExpiration in minutes
         Claims claims = Jwts.claims().setSubject(userLogin);
 
         claims.setExpiration(new Date(System.currentTimeMillis() +
                 (tokenExpiration != null ? tokenExpiration : Settings.get().getAuthTokenExpiration()) * 1000 * 60));
+
+        if (use2FA)
+            claims.put(CLAIM_USE_2FA, true);
 
         AuthenticationToken token = new AuthenticationToken(Jwts.builder()
                 .setClaims(claims)

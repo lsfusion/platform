@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Random;
 
 public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
@@ -54,25 +53,26 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
             if (lsfAuthentication.use2FA()) {
                 SecurityContextHolder.clearContext();
                 String username = authentication.getName();
-                String code = String.format("%06d", new Random().nextInt(1000000));
 
-                HttpSession session = request.getSession();
-
-                session.setAttribute("2fa_user", authentication);
-                session.setAttribute("2fa_code", code);
-
+                // Ask the app-server to generate, store, and send the 2FA code.
+                // The web-client never sees the plaintext code.
                 JSONArray jsonArray = new JSONArray();
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("username", username);
-                jsonObject.put("code", code);
                 jsonArray.put(jsonObject);
 
-                JSONObject jsonResponse = MainController.sendRequest(logicsProvider, jsonArray, request, "Authentication.send2FACode");
+                HttpSession session = request.getSession();
+                JSONObject jsonResponse = MainController.sendRequest(logicsProvider, jsonArray, request,
+                        "Authentication.send2FACode");
 
-                //todo
-                if (jsonResponse.has("error"))
-                   System.out.println("ERROR: " + jsonResponse.getString("error"));
+                if (jsonResponse.has("error")) {
+                    session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.getString("error"));
+                    response.sendRedirect(MainController.getDirectUrl("/login", request));
+                    return;
+                }
 
+                // Store only the authenticated principal; the code lives on the app-server.
+                session.setAttribute("2fa_user", authentication);
                 response.sendRedirect(MainController.getDirectUrl("/login", request));
                 return;
             }

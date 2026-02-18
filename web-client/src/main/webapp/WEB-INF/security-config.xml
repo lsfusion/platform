@@ -45,7 +45,6 @@
     <http pattern="/forgot-password" security="none"/>
     <http pattern="/change-password" security="none"/>
     <http pattern="/registration" security="none"/>
-    <http pattern="/2fa" security="none"/>
 
     <http pattern="/push-notification" security="none"/>
 
@@ -64,6 +63,8 @@
     <http pattern="/manifest" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
+        <!-- /2fa is handled by TwoFactorAuthenticationFilter; no prior authentication needed -->
+        <intercept-url pattern="/2fa" access="permitAll()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <!--disable X-Frame-Options=DENY for mobile-client-->
@@ -91,6 +92,7 @@
             and at this point oauth2ToLSFTokenFilter will convert OAuth2AuthenticationToken to LSFAuthenticationToken and set authentication.
         -->
         <custom-filter position="LAST" ref="oauth2ToLSFTokenFilter"/>
+        <custom-filter after="FORM_LOGIN_FILTER" ref="twoFactorAuthFilter"/>
     </http>
 
     <!-- Security beans -->
@@ -149,6 +151,10 @@
     </authentication-manager>
 
     <b:bean id="authenticationProvider" class="lsfusion.http.authentication.LSFRemoteAuthenticationProvider">
+        <b:constructor-arg ref="logicsProvider"/>
+    </b:bean>
+
+    <b:bean id="twoFactorAuthFilter" class="lsfusion.http.authentication.TwoFactorAuthenticationFilter">
         <b:constructor-arg ref="logicsProvider"/>
     </b:bean>
 

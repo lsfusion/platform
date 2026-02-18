@@ -30,6 +30,6 @@ public class AuthenticationToken implements Serializable {
     }
 
     public int hashCode() {
-        return string.hashCode();
+        return 31 * string.hashCode() + (use2FA ? 1 : 0);
     }
 }

@@ -152,6 +152,10 @@ clientName(STRING str) = clientName(auth(str));
 
 use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
 
+code2FA = DATA STRING (CustomUser);
+expiry2FA = DATA DATETIME (CustomUser);
+lastInitiated2FA = DATA DATETIME (CustomUser);
+
 webClientSecretKey 'Web-client secret key' = DATA STRING (); 
 
 writeDefaultCredentials() {
@@ -318,18 +322,66 @@ changePassword(JSONFILE input) {
     }
 } @@api @@noauth;
 
+// Code is generated on the server side; no code travels from web-client.
+// Rate-limited to 1 request per minute per user.
 send2FACode(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING username, STRING code DO {
+    LOCAL rateLimited = BOOLEAN();
+    LOCAL code = STRING();
+    IMPORT FROM input FIELDS STRING username DO {
         TRY {
             FOR login(CustomUser cu) == username DO {
-                EMAIL
-                    SUBJECT '$I{2FACodeSubject.html}'
-                    TO email(cu)
-                    BODY '$I{2FACodeBody.html}';
+                IF lastInitiated2FA(cu) AND lastInitiated2FA(cu) >= subtractSeconds(currentDateTime(), 60) THEN {
+                    rateLimited() <- TRUE;
+                } ELSE {
+                    code() <- lpad(TEXT(randInt(1000000)), 6, '0');
+                    APPLY {
+                        code2FA(cu) <- code();
+                        expiry2FA(cu) <- sumSeconds(currentDateTime(), 300);
+                        lastInitiated2FA(cu) <- currentDateTime();
+                    }
+                    EMAIL
+                        SUBJECT '$I{2FACodeSubject.html}'
+                        TO email(cu)
+                        BODY '$I{2FACodeBody.html}';
+                }
             }
-            EXPORT FROM success = 'ok';
+            IF rateLimited() THEN {
+                EXPORT FROM error = '{two.fa.rate.limit}';
+            } ELSE {
+                EXPORT FROM success = 'ok';
+            }
         } CATCH {
             EXPORT FROM error = messageCaughtException();
+        }
+    }
+} @@api @@noauth;
+
+verify2FACode(JSONFILE input) {
+    LOCAL result = STRING();
+    IMPORT FROM input FIELDS STRING username, STRING code DO {
+        FOR login(CustomUser cu) == username DO {
+            IF code2FA(cu) AND expiry2FA(cu) >= currentDateTime() THEN {
+                IF code2FA(cu) == code THEN {
+                    APPLY {
+                        code2FA(cu) <- NULL;
+                        expiry2FA(cu) <- NULL;
+                    }
+                    result() <- 'ok';
+                } ELSE {
+                    result() <- 'invalid';
+                }
+            } ELSE {
+                result() <- 'expired';
+            }
+        }
+        IF result() == 'ok' THEN {
+            EXPORT FROM success = 'ok';
+        } ELSE {
+            IF result() == 'expired' THEN {
+                EXPORT FROM error = 'expired';
+            } ELSE {
+                EXPORT FROM error = 'invalid';
+            }
         }
     }
 } @@api @@noauth;
