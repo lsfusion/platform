@@ -153,28 +153,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     }
 
     @Override
-    protected void finalizeDesignAroundInit() {
-        if(interactive)
-            super.finalizeDesignAroundInit();
-    }
-
-    @Override
-    public void prereadAutoIcons(ConnectionContext context) {
-        if(interactive)
-            super.prereadAutoIcons(context);
-    }
-
-    @Override
-    public LocalizedString getCaption() {
-        if(interactive)
-            return super.getCaption();
-        return LocalizedString.NONAME;
-    }
-
-    @Override
-    public void prereadEventActions() {
-        if(interactive)
-            super.prereadEventActions();
+    protected boolean isInteractive() {
+        return interactive;
     }
 
     @Override

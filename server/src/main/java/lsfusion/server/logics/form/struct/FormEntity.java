@@ -903,9 +903,15 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         if (view != null)
             view.addGroupObject(group, version);
 
-        initDefaultGroupElements(group, version);
+        if(isInteractive()) {
+            initDefaultGroupElements(group, version);
 
-        group.fillGroupProps(version);
+            group.fillGroupProps(version);
+        }
+    }
+
+    protected boolean isInteractive() {
+        return true;
     }
 
     public void moveGroupObject(GroupObjectEntity group, ComplexLocation<GroupObjectEntity> location, Version version) {
@@ -1339,10 +1345,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     protected void finalizeDesignAroundInit() {
+        if(!isInteractive())
+            return;
+
         view.finalizeAroundInit();
     }
 
     public void prereadAutoIcons(ConnectionContext context) {
+        if(!isInteractive())
+            return;
+
         for(PropertyDrawEntity property : getPropertyDrawsIt())
             property.getImage(context);
 
@@ -1544,6 +1556,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public LocalizedString getCaption() {
+        if(!isInteractive())
+            return LocalizedString.NONAME;
+
         return view.mainContainer.getCaption();
     }
 
@@ -1702,6 +1717,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void prereadEventActions() {
+        if(!isInteractive())
+            return;
+
         // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
 //        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
         prereadEventActions((action, property) -> {

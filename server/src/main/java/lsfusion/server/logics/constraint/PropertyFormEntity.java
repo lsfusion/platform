@@ -55,4 +55,9 @@ public class PropertyFormEntity extends AutoFinalFormEntity {
 
         finalizeInit();
     }
+
+    @Override
+    protected boolean isInteractive() {
+        return false;
+    }
 }
