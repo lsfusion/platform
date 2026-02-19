@@ -493,8 +493,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 
                 return applyResult == null;
             } catch (Throwable t) {
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {
-                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                     taskLogId = logExceptionTask(taskCaption, t, stack);
                 } finally {
                     ThreadUtils.setFinallyMode(Thread.currentThread(), false);
@@ -508,8 +508,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
                 }
                 if (taskLogId != null) {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                     try {
-                        ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                         logClientTasks(logMessages, taskLogId, taskCaption, stack);
                     } finally {
                         ThreadUtils.setFinallyMode(Thread.currentThread(), false);

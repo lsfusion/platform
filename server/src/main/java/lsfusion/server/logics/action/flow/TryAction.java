@@ -119,8 +119,8 @@ public class TryAction extends KeepContextAction {
                 throw Throwables.propagate(e);
 
             if(catchAction != null) {
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {
-                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                     ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
                     context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
                     context.getBL().LM.javaStackTraceCaughtException.change(throwableWithStack.getJavaString(), context);

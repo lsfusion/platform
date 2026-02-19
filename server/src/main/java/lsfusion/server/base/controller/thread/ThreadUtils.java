@@ -83,7 +83,7 @@ public class ThreadUtils {
     }
 
     public static void checkThreadInterrupted() {
-        if(Thread.interrupted() && !isFinallyMode(Thread.currentThread())) {
+        if(!isFinallyMode(Thread.currentThread()) && Thread.interrupted()) {
             Thread currentThread = Thread.currentThread();
             currentThread.interrupt();
             throw Throwables.propagate(getThreadInterrupt(interruptThread.remove(currentThread)));
