@@ -1668,13 +1668,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         public SeekOrderObjects add(OrderInstance order, ObjectValue value) {
-            assert !end;
-            return new SeekOrderObjects(values.override(order, value));
+//            assert !end;
+            return new SeekOrderObjects(values.override(order, value), end);
         }
 
         public SeekOrderObjects remove(ObjectInstance object) {
-            assert !end;
-            return new SeekOrderObjects(values.remove(object));
+//            assert !end;
+            return new SeekOrderObjects(values.remove(object), end);
         }
 
         public int compare(SQLSession session, ImOrderMap<OrderInstance, Boolean> orders, SeekOrderObjects object) throws SQLException, SQLHandledException {
