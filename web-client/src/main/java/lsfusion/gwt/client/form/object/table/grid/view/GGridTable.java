@@ -168,7 +168,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             if(prevRow < 0 || prevCol < 0)
                 changeSelection = GChangeSelection.MOVE;
 
-            changeSelectionRows = updateRowSelection(row, prevRow, changeSelection);
+            changeSelectionRows = updateRowSelection(row, prevRow, reason, changeSelection);
 
             changeSelectionColumns = updateColumnSelection(col, prevCol, changeSelection);
         }
@@ -213,7 +213,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Nullable
-    private NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, GChangeSelection changeSelection) {
+    private NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, FocusUtils.Reason reason, GChangeSelection changeSelection) {
         NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
         if (changeSelection == GChangeSelection.MOVE) {
             NativeHashMap<GGroupObjectValue, PValue> fChangeSelectionRows = changeSelectionRows;
@@ -241,7 +241,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if(!changeSelectionRows.isEmpty()) {
             selectRowsUpdated = true;
 
-            updateModify(false);
+            if(reason != FocusUtils.Reason.COLUMNCHANGE) {
+                // assert equals that is called from another updateModify
+                updateModify(false);
+            }
         }
         return changeSelectionRows;
     }
