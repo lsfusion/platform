@@ -24,7 +24,7 @@ public class FormServerScheduler extends FormServerEvent<FormServerScheduler> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FormScheduler that = (FormScheduler) o;
+        FormServerScheduler that = (FormServerScheduler) o;
         return period == that.period && fixed == that.fixed;
     }
 
