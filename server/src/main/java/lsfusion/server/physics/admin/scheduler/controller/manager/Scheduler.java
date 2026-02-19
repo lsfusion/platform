@@ -493,17 +493,28 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 
                 return applyResult == null;
             } catch (Throwable t) {
-                taskLogId = logExceptionTask(taskCaption, t, stack);
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                try {
+                    taskLogId = logExceptionTask(taskCaption, t, stack);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
                 throwable = t;
                 return false;
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if(throwable != null) {
+                if (throwable != null) {
                     ThrowableWithStack throwableWithStack = new ThrowableWithStack(throwable);
                     logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
                 }
-                if(taskLogId != null)
-                    logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                if (taskLogId != null) {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                    try {
+                        logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                    } finally {
+                        ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                    }
+                }
             }
         }
 
