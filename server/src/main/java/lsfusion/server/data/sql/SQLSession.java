@@ -1915,8 +1915,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return e;
     }
 
-    public boolean ignoreThreadInterrupted = false;
-
     // SQLAnalyzeAspect
     @StackMessage("{message.sql.execute}")
     public <H> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
@@ -1983,8 +1981,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 try {
                     this.executingStatement = executingStatement;
 
-                    if (!ignoreThreadInterrupted)
-                        ThreadUtils.checkThreadInterrupted();
+                    ThreadUtils.checkThreadInterrupted();
 
                     command.execute(statement, handler, this);
                 } finally {

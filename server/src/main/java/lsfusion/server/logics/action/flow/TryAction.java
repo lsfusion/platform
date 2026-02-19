@@ -118,12 +118,17 @@ public class TryAction extends KeepContextAction {
             if(catchAction == null && finallyAction != null)
                 throw Throwables.propagate(e);
 
-            ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
             if(catchAction != null) {
-                context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
-                context.getBL().LM.javaStackTraceCaughtException.change(throwableWithStack.getJavaString(), context);
-                context.getBL().LM.lsfStackTraceCaughtException.change(throwableWithStack.getLsfStack(), context);
-                result = catchAction.execute(context);
+                try {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                    ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
+                    context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
+                    context.getBL().LM.javaStackTraceCaughtException.change(throwableWithStack.getJavaString(), context);
+                    context.getBL().LM.lsfStackTraceCaughtException.change(throwableWithStack.getLsfStack(), context);
+                    result = catchAction.execute(context);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
             } else
                 result = FlowResult.FINISH;
         } finally {

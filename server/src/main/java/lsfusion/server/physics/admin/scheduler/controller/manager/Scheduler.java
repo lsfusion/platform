@@ -493,17 +493,28 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 
                 return applyResult == null;
             } catch (Throwable t) {
-                taskLogId = logExceptionTask(taskCaption, t, stack);
+                try {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                    taskLogId = logExceptionTask(taskCaption, t, stack);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
                 throwable = t;
                 return false;
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if(throwable != null) {
+                if (throwable != null) {
                     ThrowableWithStack throwableWithStack = new ThrowableWithStack(throwable);
                     logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
                 }
-                if(taskLogId != null)
-                    logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                if (taskLogId != null) {
+                    try {
+                        ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                        logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                    } finally {
+                        ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                    }
+                }
             }
         }
 
@@ -557,12 +568,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
 
-                try {
-                    session.sql.ignoreThreadInterrupted = true;
-                    session.applyException(BL, stack);
-                } finally {
-                    session.sql.ignoreThreadInterrupted = false;
-                }
+                session.applyException(BL, stack);
 
                 return (long)taskLogObject.object;
             } catch (Exception le) {
