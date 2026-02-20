@@ -171,7 +171,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
                         if (nearObject != null)
                             ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject);
                         else
-                            ((CustomObjectInstance) objectInstance).groupTo.seek(UpdateType.FIRST, context.getFormInstance(true, true), null);
+                            ((CustomObjectInstance) objectInstance).groupTo.seek(UpdateType.FIRST, context.getFormInstance(false, true), null);
                     }
                 } else
                     proceedNullException();
