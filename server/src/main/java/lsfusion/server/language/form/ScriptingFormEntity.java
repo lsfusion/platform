@@ -9,7 +9,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.language.form.object.ScriptingObject;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -149,11 +148,8 @@ public class ScriptingFormEntity {
     }
 
     public void applyGroupObjectOptions(GroupObjectEntity groupObj, ScriptingGroupObject groupObject, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (groupObject.viewType != null) {
+        if (groupObject.viewType != null)
             groupObj.setViewType(groupObject.viewType, form, version);
-            // If groupObject goes to panel, there can't be grid. And if box is not set to a non-zero value, it will not take the full available size
-            groupObj.view.grid.containers.box.setFlex(groupObject.viewType == ClassViewType.PANEL ? 0d : 1d, version);
-        }
         if (groupObject.listViewType != null)
             groupObj.setListViewType(groupObject.listViewType, version);
         if(groupObject.pivotOptions != null)

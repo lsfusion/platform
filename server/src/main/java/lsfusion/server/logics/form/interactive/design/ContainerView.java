@@ -374,8 +374,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     @Override
     protected double getDefaultFlex(FormInstanceContext context) {
         // hack, if groupObject goes into the panel, then there can be no grid, and if box is not set to 0, it will take up the entire size
-        if(groupObjectBox != null && groupObjectBox.isPanel())
-            return 0;
+        if(groupObjectBox != null && !groupObjectBox.isPanel())
+            return 1;
 
         return super.getDefaultFlex(context);
     }

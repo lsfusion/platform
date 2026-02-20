@@ -100,7 +100,6 @@ public class GroupObjectContainerSet {
         set.boxContainer = createContainer(factory, grid.groupObject.entity.getDebugPoint()); // контейнер всей группы
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setName(grid.getPropertyGroupContainerName(), version);
-        set.boxContainer.groupObjectBox = grid.groupObject.entity;
 
         set.filterBoxContainer = createContainer(factory);
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
@@ -133,7 +132,7 @@ public class GroupObjectContainerSet {
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
         set.boxContainer.setAlignment(FlexAlignment.STRETCH, version);
-        set.boxContainer.setFlex(1d, version);
+        set.boxContainer.groupObjectBox = grid.groupObject.entity;
 
         boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
         if (toolbarTopLeft) {
