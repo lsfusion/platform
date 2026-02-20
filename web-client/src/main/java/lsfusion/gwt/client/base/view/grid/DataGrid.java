@@ -476,7 +476,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public T getRowValue(int row) {
-        return getRows().get(row);
+        ArrayList<T> rows = getRows();
+        return row < rows.size() ? rows.get(row) : null;
     }
 
     protected abstract ArrayList<T> getRows();
