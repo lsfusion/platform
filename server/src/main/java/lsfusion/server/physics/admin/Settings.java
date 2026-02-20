@@ -1805,6 +1805,18 @@ public class Settings implements Cloneable {
         this.explainThreshold = explainThreshold;
     }
 
+    // Threshold for running EXPLAIN (VERBOSE, COSTS) before execution; should be larger than explainThreshold.
+    // Pre-explain fires when the command's estimated cost exceeds this value (ms).  0 disables pre-explain.
+    private int explainNoAnalyzeThreshold = 10000;
+
+    public int getExplainNoAnalyzeThreshold() {
+        return explainNoAnalyzeThreshold;
+    }
+
+    public void setExplainNoAnalyzeThreshold(int explainNoAnalyzeThreshold) {
+        this.explainNoAnalyzeThreshold = explainNoAnalyzeThreshold;
+    }
+
     public int getExplainTopThreshold() {
         return explainTopThreshold;
     }
