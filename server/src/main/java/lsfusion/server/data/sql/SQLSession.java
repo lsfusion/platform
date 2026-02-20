@@ -1731,6 +1731,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // Лечится только разнесением в разные таблицы / по разным классам (когда это возможно)
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Provider<String> fullText) throws SQLException {
+        return executeExplain(statement, noAnalyze, dml, fullText, null, null);
+    }
+
+    // When capture is non-null the output lines are stored there instead of being logged immediately.
+    // When compileCapture is non-null the compile debug info lines are stored there instead of being logged immediately.
+    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Provider<String> fullText, List<String> capture, List<String> compileCapture) throws SQLException {
         long l = System.currentTimeMillis();
         int minSpaces = Integer.MAX_VALUE;
         Integer rows = null;
@@ -1806,13 +1812,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     statementInfo += '\n' + "Params debug info: " + BaseUtils.tab('\n' + SQLDebugInfo.getSqlDebugInfo(this));
                     if (Settings.get().isExplainJavaStack())
                         statementInfo += '\n' + "Java stack: " + BaseUtils.tab('\n' + ExceptionUtils.getStackTrace());
-                    explainLogger.info(statementInfo);
-
-                    for (String outRow : out)
-                        explainLogger.info(outRow); // выводим время, чтобы видеть, что идет тот же запрос (когда очень большой запрос)
-
-                    if(Settings.get().isExplainCompile())
-                        SQLDebugInfo.outCompileDebugInfo("Full text : " + fullText.get() + '\n' + statementInfo);
+                    if (capture != null) {
+                        capture.add(statementInfo);
+                        for (String outRow : out)
+                            capture.add(outRow);
+                        if (Settings.get().isExplainCompile())
+                            SQLDebugInfo.outCompileDebugInfo("Full text : " + fullText.get() + '\n' + statementInfo, compileCapture);
+                    } else {
+                        explainLogger.info(statementInfo);
+                        for (String outRow : out)
+                            explainLogger.info(outRow); // output time so you can see which query is running (for very large queries)
+                        if(Settings.get().isExplainCompile())
+                            SQLDebugInfo.outCompileDebugInfo("Full text : " + fullText.get() + '\n' + statementInfo, null);
+                    }
                 } //else {
                 //  explainLogger.info(rtime);
                 //}

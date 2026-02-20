@@ -11,6 +11,7 @@ import lsfusion.server.data.value.Value;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Map;
 
 // этот класс нужен в том числе чтобы debugInfo получать только на запросах превысивших threshold
@@ -34,7 +35,8 @@ public class SQLDebugInfo<K, V> {
         return null;
     }
 
-    public static <K, V> void outCompileDebugInfo(String statementInfo) {
+    // When capture is null the output is logged immediately; when non-null the lines are stored there instead.
+    public static <K, V> void outCompileDebugInfo(String statementInfo, List<String> capture) {
         SQLDebugInfo<K, V> debugInfo = sqlDebugInfoMap.get(Thread.currentThread());
         if (debugInfo != null) {
             IQuery<K, V> query = debugInfo.wQuery.get();
@@ -42,10 +44,15 @@ public class SQLDebugInfo<K, V> {
                 ServerLoggers.assertLog(!debugInfo.compileOptions.needDebugInfo, "NO NEEDDEBUGINFO");
                 if (!debugInfo.alreadyExplained) {
                     CompiledQuery<K, V> compiledQuery = query.compile(debugInfo.compileOptions.debug());
-                    ServerLoggers.explainCompileLogger.info(statementInfo);
-//                    for(String line : compiledQuery.debugInfo.split("\n")) // assert что есть
-//                        ServerLoggers.explainCompileLogger.info(line);
-                    ServerLoggers.explainCompileLogger.info(compiledQuery.debugInfo); // очень большой лог в info может очень долго выводить
+                    if (capture != null) {
+                        capture.add(statementInfo);
+                        capture.add(compiledQuery.debugInfo);
+                    } else {
+                        ServerLoggers.explainCompileLogger.info(statementInfo);
+//                        for(String line : compiledQuery.debugInfo.split("\n")) // assert что есть
+//                            ServerLoggers.explainCompileLogger.info(line);
+                        ServerLoggers.explainCompileLogger.info(compiledQuery.debugInfo); // очень большой лог в info может очень долго выводить
+                    }
                     debugInfo.alreadyExplained = true;
                 }
             } else
