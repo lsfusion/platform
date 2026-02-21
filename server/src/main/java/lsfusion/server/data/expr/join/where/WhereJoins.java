@@ -1177,7 +1177,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return pushCost;
         } else {
             if(debugInfoWriter != null) {
-                PushCost initPC = pushCost != null && pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
+                PushCost initPC = pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
                 PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
                 debugInfoWriter.addLines("PUSH DECISION : PUSH" +
                         " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
