@@ -999,6 +999,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
 //            assert BaseUtils.hashEquals(SetFact.singleton(queryJoin), cost.getJoins());
+            if(debugInfoWriter != null)
+                debugInfoWriter.addLines("PUSH RESULT : NOT PUSHED (join materialized as standalone subquery - cost too high to push into outer iteration)");
             return null;
         }
         assert !pushedKeys.isEmpty();
@@ -1089,8 +1091,19 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
-        if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where + '\n' + "PUSHED LAST OPT : " + hasExprIndexedNoKeys + " " + queryJoins.size() + " " + pushedKeys.size());
+        if(debugInfoWriter != null) {
+            String lateralOptStatus;
+            if(pushJoinWhere == null) {
+                lateralOptStatus = "N/A (not a GROUP context - LATERAL opt not attempted)";
+            } else if(queryJoins.size() != pushedKeys.size()) {
+                lateralOptStatus = "BLOCKED (partial push: " + pushedKeys.size() + "/" + queryJoins.size() + " keys pushed, all keys required)";
+            } else if(hasExprIndexedNoKeys != null) {
+                lateralOptStatus = "BLOCKED (hanging interval key: " + hasExprIndexedNoKeys + " - would cause empty stack during compilation)";
+            } else {
+                lateralOptStatus = "ELIGIBLE (" + pushedKeys.size() + " keys pushed, pushJoinWhere set - LATERAL/LIMIT1 can be applied)";
+            }
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where + '\n' + "LATERAL/LIMIT1 OPT : " + lateralOptStatus);
+        }
         
         return where;
     }
@@ -1156,10 +1169,27 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
 
-        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов) 
+        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) { // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов)
+            if(debugInfoWriter != null) {
+                PushCost initPC = pushCost.getPushCosts().get(pushJoin);
+                PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
+                debugInfoWriter.addLines("PUSH DECISION : NO PUSH" +
+                        " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
+                        " | pushed-tree stat: " + (treePC != null ? treePC.pushStatKeys : "null") +
+                        " | reason: iterating join per outer row is not cost-effective (standalone cost <= pushed-tree cost)");
+            }
             return pushCost;
-        else
+        } else {
+            if(debugInfoWriter != null) {
+                PushCost initPC = pushCost.getPushCosts().get(pushJoin);
+                PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
+                debugInfoWriter.addLines("PUSH DECISION : PUSH" +
+                        " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
+                        " | pushed-tree stat: " + (treePC != null ? treePC.pushStatKeys : "null") +
+                        " | reason: pushing join into outer iteration reduces cost (pushed-tree cost < standalone cost)");
+            }
             return result;
+        }
     }
 
     private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
