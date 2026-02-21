@@ -52,6 +52,7 @@ import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.Settings;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -236,7 +237,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, KeyStat keyStat, StatType type) {
-        return getStatKeys(groups, null, keyStat, type);
+        return getStatKeys(groups, keyStat, type, (Result<CompileInfo>) null, null);
     }
 
     private final static SimpleAddValue<Object, Stat> minStat = new SymmAddValue<Object, Stat>() {
@@ -252,16 +253,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         if(join instanceof UnionJoin)
             return (ImMap<K, BaseExpr>) ((UnionJoin) join).getJoins(true);
         return join.getJoins();
-    }
-
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type) {
-        return getStatKeys(groups, rows, keyStat, type, null, null);
-    }
-
-    // assert что rows >= result
-    // можно rows в StatKeys было закинуть как и Cost, но используется только в одном месте и могут быть проблемы с кэшированием
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<CompileInfo> compileInfo, DebugInfoWriter debugInfoWriter) {
-        return getCostStatKeys(groups, rows, keyStat, type, compileInfo, debugInfoWriter);
     }
 
     private static class JoinCostStat<Z> extends CostStat {
@@ -810,13 +801,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return result.calculate(costStat, joinStats, exprStats);
     }
 
-    public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<CompileInfo> compileInfo, DebugInfoWriter debugInfoWriter) {
+    // assert что rows >= result
+    // можно rows в StatKeys было закинуть как и Cost, но используется только в одном месте и могут быть проблемы с кэшированием
+    public <K extends BaseExpr, Z> StatKeys<K> getStatKeys(final ImSet<K> groups, final KeyStat keyStat, final StatType type, final Result<CompileInfo> compileInfo, DebugInfoWriter debugInfoWriter) {
         // нужно отдельно STAT считать, так как при например 0 - 3, 0 - 100 получит 3 - 100 -> 3, а не 0 - 3 -> 3 и соотвественно статистику 3, а не 0
         //  но пока не принципиально будем брать stat из "плана"
 
         if(isFalse() && groups.isEmpty()) {
-            if(rows != null)
-                rows.set(Stat.ONE);
             if(compileInfo != null)
                 compileInfo.set(CompileInfo.EMPTY);
             return new StatKeys<>(groups, Stat.ONE);
@@ -825,8 +816,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return calculateCost(groups, compileInfo != null, keyStat, type, (costStat, joinStats, exprStats) -> {
             Stat stat = costStat.getStat();
             Cost cost = costStat.getCost();
-            if (rows != null)
-                rows.set(stat);
             if (compileInfo != null)
                 compileInfo.set(costStat.compileInfo);
             return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats, stat)));
@@ -994,13 +983,15 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return set.mapSetValues(WhereJoins::replaceKeyJoinExpr);
     }
 
+    public static <K, V> boolean isPushedAll(ImMap<K, V> map, ImSet<K> set) {
+        return map.size() == set.size();
+    }
+
     private <Z extends Expr> Where getCostPushWhere(CostStat cost, QueryJoin<Z, ?, ?, ?> queryJoin, PushInfo pushInfo, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats, DebugInfoWriter debugInfoWriter) {
         ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
 //            assert BaseUtils.hashEquals(SetFact.singleton(queryJoin), cost.getJoins());
-            if(debugInfoWriter != null)
-                debugInfoWriter.addLines("PUSH RESULT : NOT PUSHED (join materialized as standalone subquery - cost too high to push into outer iteration)");
             return null;
         }
         assert !pushedKeys.isEmpty();
@@ -1062,7 +1053,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
 
         KeyExpr hasExprIndexedNoKeys = null;
-        if(pushJoinWhere != null && queryJoins.size() == pushedKeys.size()) { // последняя проверка - оптимизация
+        if(pushJoinWhere != null && isPushedAll(queryJoins, pushedKeys)) { // we need all the groups to be pushed
             assert queryJoin instanceof GroupJoin;
             assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
             
@@ -1091,19 +1082,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
-        if(debugInfoWriter != null) {
-            String lateralOptStatus;
-            if(pushJoinWhere == null) {
-                lateralOptStatus = "N/A (not a GROUP context - LATERAL opt not attempted)";
-            } else if(queryJoins.size() != pushedKeys.size()) {
-                lateralOptStatus = "BLOCKED (partial push: " + pushedKeys.size() + "/" + queryJoins.size() + " keys pushed, all keys required)";
-            } else if(hasExprIndexedNoKeys != null) {
-                lateralOptStatus = "BLOCKED (hanging interval key: " + hasExprIndexedNoKeys + " - would cause empty stack during compilation)";
-            } else {
-                lateralOptStatus = "ELIGIBLE (" + pushedKeys.size() + " keys pushed, pushJoinWhere set - LATERAL/LIMIT1 can be applied)";
-            }
-            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where + '\n' + "LATERAL/LIMIT1 OPT : " + lateralOptStatus);
-        }
+        if(debugInfoWriter != null)
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where + '\n' + "PUSHED LAST OPT : " + hasExprIndexedNoKeys + " " + queryJoins.size() + " " + pushedKeys.size());
         
         return where;
     }
@@ -1169,27 +1149,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
 
-        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) { // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов)
-            if(debugInfoWriter != null) {
-                PushCost initPC = pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
-                PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
-                debugInfoWriter.addLines("PUSH DECISION : NO PUSH" +
-                        " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
-                        " | pushed-tree stat: " + (treePC != null ? treePC.pushStatKeys : "null") +
-                        " | reason: iterating join per outer row is not cost-effective (standalone cost <= pushed-tree cost)");
-            }
+        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов) 
             return pushCost;
-        } else {
-            if(debugInfoWriter != null) {
-                PushCost initPC = pushCost != null && pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
-                PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
-                debugInfoWriter.addLines("PUSH DECISION : PUSH" +
-                        " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
-                        " | pushed-tree stat: " + (treePC != null ? treePC.pushStatKeys : "null") +
-                        " | reason: pushing join into outer iteration reduces cost (pushed-tree cost < standalone cost)");
-            }
+        else
             return result;
-        }
     }
 
     private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
@@ -1850,10 +1813,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual) {
+        return getStatKeys(groups, keyStat, type, keyEqual, null);
+    }
+
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual, DebugInfoWriter debugInfoWriter) {
         if(!keyEqual.isEmpty()) { // для оптимизации
-            return and(keyEqual.getWhereJoins()).getStatKeys(groups, keyEqual.getKeyStat(keyStat), type);
+            return and(keyEqual.getWhereJoins()).getStatKeys(groups, keyEqual.getKeyStat(keyStat), type, (Result<CompileInfo>)null, debugInfoWriter);
         } else
-            return getStatKeys(groups, keyStat, type);
+            return getStatKeys(groups, keyStat, type, (Result<CompileInfo>)null, debugInfoWriter);
     }
 
     // there is an optimization if nothing was removed return null
@@ -2032,7 +1999,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, Result<Boolean> mOptAdjustLimit, ImSet<KeyExpr> keys, KeyStat keyStat, boolean hasLimit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
         Result<CompileInfo> compileInfo = new Result<>(); 
         StatType statType = StatType.COMPILE;
-        StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);// newNotNull
+        StatKeys<KeyExpr> statKeys = getStatKeys(keys, keyStat, statType, compileInfo, debugInfoWriter);// newNotNull
         usedNotNulls.set(compileInfo.result.usedNotNulls);
         joinOrder.set(compileInfo.result.joinOrder);
 
@@ -2043,35 +2010,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
         // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
         if(hasLimit && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
-            WhereJoins whereJoins = this;
-
-            Cost limitCost = baseCost;
-            Stat limitStat = stat;
-            // следующая часть эвристично определяет наличие индексов по порядкам
-            int i=0,size=orders.size();
-            for(;i<size;i++) {
-                Expr order = orders.get(i);
-                if(order instanceof BaseExpr) {
-                    whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, null, debugInfoWriter != null ? debugInfoWriter.pushPrefix("LIMIT ORDER " + i + " of "  + size +" - " + order) : null);
-
-                    Cost newBaseCost = statKeys.getCost();
-                    Stat newStat = statKeys.getRows();
-                    Stat costReduce = limitCost.rows.div(newBaseCost.rows);
-                    Stat statReduce = limitStat.div(newStat);
-                    // если cost упал на столько же сколько и stat значит явно есть индекс
-                    if(statReduce.lessEquals(costReduce)) { // по идее equals, но на всякий случай
-                        limitCost = newBaseCost;
-                        limitStat = newStat;
-                        continue;
-                    }
-                }
-                break;
-            }
-            if(i>=size) { // если не осталось порядков, значит все просматривать не надо
-                // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается)
-                Cost newBaseCost = baseCost.div(stat).or(compileInfo.result.maxSubQueryCost); // limitCost.div(limitStat) всегда заведомо меньше baseCost.div(stat)
-
+            Cost newBaseCost = getOrderCost(this, keys, baseCost, stat, keyStat, orders, statType, compileInfo.result.maxSubQueryCost, KeyEqual.EMPTY, debugInfoWriter);
+            if(newBaseCost != null) {
                 boolean optAdjLimit = false;
                 if(newBaseCost.less(baseCost.div(new Stat(Settings.get().getUsePessQueryHeurWhenReducedMore())))) // поэтому если уменьшаем на "слишком" много включаем пессимистичный режим
                     optAdjLimit = true;
@@ -2080,8 +2020,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 mOptAdjustLimit.set(optAdjLimit);
 
                 baseCost = newBaseCost;
-            } // else // тут теоретически можно было бы рассмотреть вариант с индексами по части порядков, если предположить, что СУБД может пробежать по индексу первых порядков, а sort сделать "внутри" по последних порядков, но такие планы СУБД вроде строить не умеют   
-              // baseCost = limitCost.or(newBaseCost);
+            }
             stat = Stat.ONE; // предполагаем что limit отбирает мало записей
         }
             
@@ -2091,6 +2030,45 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         if(mRows.result != null)
             stat = stat.or(mRows.result);
         mRows.set(stat);
+    }
+
+    @Nullable
+    public static <K extends BaseExpr> Cost getOrderCost(WhereJoins whereJoins, ImSet<K> keys, Cost baseCost, Stat stat, KeyStat keyStat, ImOrderSet<Expr> orders, StatType statType, Cost maxSubQueryCost, KeyEqual keyEqual, DebugInfoWriter debugInfoWriter) {
+        StatKeys<K> statKeys;
+
+        Cost limitCost = baseCost;
+        Stat limitStat = stat;
+        // следующая часть эвристично определяет наличие индексов по порядкам
+        int i=0,size=orders.size();
+        for(;i<size;i++) {
+            Expr order = orders.get(i);
+            if(order instanceof BaseExpr) {
+                whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
+                statKeys = whereJoins.getStatKeys(keys, keyStat, statType, keyEqual, debugInfoWriter != null ? debugInfoWriter.pushPrefix("LIMIT ORDER " + i + " of "  + size +" - " + order) : null);
+
+                Cost newBaseCost = statKeys.getCost();
+                Stat newStat = statKeys.getRows();
+                Stat costReduce = limitCost.rows.div(newBaseCost.rows);
+                Stat statReduce = limitStat.div(newStat);
+                // если cost упал на столько же сколько и stat значит явно есть индекс
+                if(statReduce.lessEquals(costReduce)) { // по идее equals, но на всякий случай
+                    limitCost = newBaseCost;
+                    limitStat = newStat;
+                    continue;
+                }
+            }
+            break;
+        }
+        Cost newBaseCost;
+        if(i>=size) { // если не осталось порядков, значит все просматривать не надо
+            // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается)
+            newBaseCost = baseCost.div(stat).or(maxSubQueryCost); // limitCost.div(limitStat) всегда заведомо меньше baseCost.div(stat)
+        } else {
+            // тут теоретически можно было бы рассмотреть вариант с индексами по части порядков, если предположить, что СУБД может пробежать по индексу первых порядков, а sort сделать "внутри" по последних порядков, но такие планы СУБД вроде строить не умеют
+            // newBaseCost = limitCost.or(newBaseCost);
+            newBaseCost = null;
+        }
+        return newBaseCost;
     }
 
     public ImSet<ParamExpr> getOuterKeys() {

@@ -1329,14 +1329,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(pushedIn != null) {
                     assert useGroupLastOpt != 3;
                     mapKeys = pushedIn.first;
-                    assert mapKeys.size() == group.size();
+                    assert WhereJoins.isPushedAll(mapKeys, group.valuesSet());
                     pushedInWhere = pushedIn.second;
                 } else {
-                    if(useGroupLastOpt == 1) { // если не все ключи сразу выходим
-                        if(debugInfoWriter != null)
-                            debugInfoWriter.addLines("LATERAL/LIMIT1 : SKIP (mode=strict, no pushed WHERE condition available - push failed)");
+                    if(useGroupLastOpt == 1) // если не все ключи сразу выходим
                         return null;
-                    }
                     mapKeys = KeyExpr.getMapKeys(group.valuesSet());
                 }
 
@@ -1353,20 +1350,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Where topWhere = pushedInWhere != null ? pushedInWhere : pushedOutWhere;
 
-                if(topWhere == null && debugInfoWriter != null)
-                    debugInfoWriter.addLines("LATERAL/LIMIT1 : SKIP (no iteration WHERE condition - push produced no usable WHERE)");
-
                 SQLQuery lastTopQuery = null;
                 if(topWhere != null) {
                     lastTopQuery  = getLastTopQuery(topWhere, mapKeys, level, rLastBaseCosts.result, rVirtParams.result, propertySelect, groupWhere, baseExecCost, debugInfoWriter);
                     if(pushedInWhere != null && baseExecCost.lessEquals(lastTopQuery.baseCost)) { // для pushedOutWhere проверка идет в самом алгоритме
-                        if(debugInfoWriter != null)
-                            debugInfoWriter.addLines("LATERAL/LIMIT1 : SKIP (LATERAL cost " + lastTopQuery.baseCost + " not better than GROUP cost " + baseExecCost + ")");
                         lastTopQuery = null;
                     }
                 }
-                if(lastTopQuery != null && debugInfoWriter != null)
-                    debugInfoWriter.addLines("LATERAL/LIMIT1 : APPLIED (cost: " + lastTopQuery.baseCost + ")");
                 return lastTopQuery;
             }
 
@@ -1384,8 +1374,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     if (isLastOpt) {
                         useGroupLastOpt = Settings.get().getUseGroupLastOpt();
                         assert useGroupLastOpt != 0;
-                    } else if(debugInfoWriter != null) {
-                        debugInfoWriter.addLines("LATERAL/LIMIT1 : DISABLED (not all GROUP expressions support LAST optimization)");
                     }
                 }
                 Result<Pair<ImRevMap<Expr, KeyExpr>, Where>> pushGroupWhere = null;
@@ -1420,8 +1408,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                                 lastSQLQuery.pessQuery = result;
                             return lastSQLQuery;
                         }
-                        if(debugInfoWriter != null)
-                            debugInfoWriter.addLines("LATERAL/LIMIT1 : NOT APPLIED - using regular GROUP BY aggregate (cost: " + result.baseCost + ")");
                     }
 
                     return result;
