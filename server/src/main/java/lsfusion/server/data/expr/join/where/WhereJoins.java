@@ -1171,7 +1171,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) { // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов)
             if(debugInfoWriter != null) {
-                PushCost initPC = pushCost.getPushCosts().get(pushJoin);
+                PushCost initPC = pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
                 PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
                 debugInfoWriter.addLines("PUSH DECISION : NO PUSH" +
                         " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
@@ -1181,7 +1181,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return pushCost;
         } else {
             if(debugInfoWriter != null) {
-                PushCost initPC = pushCost.getPushCosts().get(pushJoin);
+                PushCost initPC = pushCost.getPushCosts() != null ? pushCost.getPushCosts().get(pushJoin) : null;
                 PushCost treePC = result.getPushCosts() != null ? result.getPushCosts().get(pushJoin) : null;
                 debugInfoWriter.addLines("PUSH DECISION : PUSH" +
                         " | standalone stat: " + (initPC != null ? initPC.pushStatKeys : "null") +
