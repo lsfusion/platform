@@ -1292,7 +1292,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(pushedIn != null) {
                     assert useGroupLastOpt != 3;
                     mapKeys = pushedIn.first;
-                    assert mapKeys.size() == group.size();
+                    assert WhereJoins.isPushedAll(mapKeys, group.valuesSet());
                     pushedInWhere = pushedIn.second;
                 } else {
                     if(useGroupLastOpt == 1) // если не все ключи сразу выходим
