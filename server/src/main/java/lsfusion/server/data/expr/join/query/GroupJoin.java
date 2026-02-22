@@ -101,6 +101,6 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
             if(keyType == null) // при висячих ключах бывает
                 return Stat.ALOT;
             return keyType.getTypeStat(forJoin);
-        }, type, pushStatKeys, group.keys(), query.orders);
+        }, type, pushStatKeys, group.keys());
     }
 }
