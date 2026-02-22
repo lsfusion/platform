@@ -1318,6 +1318,16 @@ public class Settings implements Cloneable {
         this.flushAsyncValuesCaches = flushAsyncValuesCaches;
     }
 
+    private int schedulerLogFlushInterval = 5;
+
+    public int getSchedulerLogFlushInterval() {
+        return schedulerLogFlushInterval;
+    }
+
+    public void setSchedulerLogFlushInterval(int schedulerLogFlushInterval) {
+        this.schedulerLogFlushInterval = schedulerLogFlushInterval;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 
