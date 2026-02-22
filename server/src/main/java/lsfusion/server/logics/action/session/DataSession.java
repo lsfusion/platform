@@ -1963,13 +1963,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         clearDataHints(getOwner()); // важно, что после updateSourceChanges, потому как updateSourceChanges тоже может хинты создать (соответственно нарушится checkSessionCount -> Unique violation)
 
-        if(applyMessage != null)
-            ThreadLocalContext.pushLogMessage();
+        AbstractContext.ListLogMessageProcessor logProcessor = applyMessage != null ? new AbstractContext.ListLogMessageProcessor() : null;
+        if(logProcessor != null)
+            ThreadLocalContext.pushLogMessage(logProcessor);
         try {
             return transactApply(BL, stack, forceSerializable || BL.getDbManager().serializable, interaction, new HashMap<>(), 0, applyActions, keepProps, false, Settings.get().getTrueSerializableAttempts() > 0, System.currentTimeMillis());
         } finally {
-            if(applyMessage != null)
-                applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage(), false));
+            if(logProcessor != null) {
+                ThreadLocalContext.popLogMessage();
+                applyMessage.set(getLogMessage(ListFact.fromJavaList(logProcessor.messages), false));
+            }
         }
     }
 

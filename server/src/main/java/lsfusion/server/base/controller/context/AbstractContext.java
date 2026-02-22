@@ -1,6 +1,5 @@
 package lsfusion.server.base.controller.context;
 
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -66,42 +65,55 @@ public abstract class AbstractContext implements Context {
         }
     }
 
-    public static class MessageLogger {
-        private final List<LogMessage> messages = new ArrayList<>();
-        private final Stack<Integer> startIndexes = new Stack<>();
-        
-        public void add(String message, MessageClientType type) {
-            messages.add(new LogMessage(message, type));
-        }
-        
-        public void addAll(ImList<LogMessage> addMessages) {
-            ListFact.addJavaAll(addMessages, messages);
-        }
+    public interface LogMessageProcessor {
+        void add(LogMessage message);
+    }
 
-        public void push() {
-            startIndexes.push(messages.size());
-        }
+    public static class ListLogMessageProcessor implements LogMessageProcessor {
+        public final List<LogMessage> messages = new ArrayList<>();
 
-        public ImList<LogMessage> pop() {
-            int index = startIndexes.pop();
-            return ListFact.fromJavaList(messages.subList(index, messages.size()));
-        }
-        
-        public boolean isEmpty() {
-            return startIndexes.isEmpty();
+        @Override
+        public void add(LogMessage message) {
+            messages.add(message);
         }
     }
 
-    private ThreadLocal<MessageLogger> logMessage = new ThreadLocal<>();
+    public static class MessageLogger {
+        private final Stack<LogMessageProcessor> processors = new Stack<>();
+        
+        public void add(LogMessage logMessage) {
+            for (LogMessageProcessor processor : processors)
+                processor.add(logMessage);
+        }
+        
+        public void addAll(ImList<LogMessage> addMessages) {
+            for (LogMessage message : addMessages)
+                add(message);
+        }
+
+        public void push(LogMessageProcessor processor) {
+            processors.push(processor);
+        }
+
+        public LogMessageProcessor pop() {
+            return processors.pop();
+        }
+        
+        public boolean isEmpty() {
+            return processors.isEmpty();
+        }
+    }
+
+    private final ThreadLocal<MessageLogger> logMessage = new ThreadLocal<>();
 
     @Override
-    public void pushLogMessage() {
+    public void pushLogMessage(LogMessageProcessor processor) {
         MessageLogger logMessages = logMessage.get();
         if(logMessages == null) {
             logMessages = new MessageLogger();
             logMessage.set(logMessages);
         }
-        logMessages.push();
+        logMessages.push(processor);
     }
 
     public MessageLogger getLogMessage() {
@@ -109,12 +121,11 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public ImList<LogMessage> popLogMessage() {
+    public void popLogMessage() {
         MessageLogger logMessages = logMessage.get();
-        ImList<LogMessage> result = logMessages.pop();
+        logMessages.pop();
         if(logMessages.isEmpty())
             logMessage.remove();
-        return result;
     }
 
     public static String getMessage(ClientAction action) {
@@ -181,7 +192,7 @@ public abstract class AbstractContext implements Context {
         if(message != null) {
             MessageLogger messageLogger = logMessage.get();
             if(messageLogger != null)
-                messageLogger.add(message, action instanceof MessageClientAction ? ((MessageClientAction) action).type : null);
+                messageLogger.add(new LogMessage(message, action instanceof MessageClientAction ? ((MessageClientAction) action).type : null));
             return message;
         }
         return null;
