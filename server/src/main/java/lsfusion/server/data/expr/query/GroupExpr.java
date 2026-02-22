@@ -675,9 +675,17 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                     and(query.getOrderWhere()); // тут особенность в том что в SQL даже если order null, он (в отличии от expr) может повлиять на результат, поэтому важно чтобы условия совпадали (конечно есть небольшой вопрос с and'ом getBaseWhere(), но эта ветка все равно пока не используется)
         }
 
-//        ImOrderMap<Expr, Boolean> limitOrders = hasLimitOffset ? query.orders : MapFact.EMPTYORDER();
-        // we don't need order in the join since we are using lateral exprs, not joins
-        ImOrderMap<Expr, Boolean> limitOrders = MapFact.EMPTYORDER();
+//        ImOrderMap<Expr, Boolean> limitOrders = hasLimitOffset ? query.orders : MapFact.EMPTYORDER(); // we don't need order in the join since we are using lateral exprs, not joins
+        ImOrderSet<Expr> limitOrders = SetFact.EMPTYORDER();
+        if (hasLimitOffset || query.type.isLastOpt(true, query.exprs, query.orders)) {
+            limitOrders = query.orders.keyOrderSet();
+            if (!hasLimitOffset && query.type.isMaxMin()) {
+                assert limitOrders.isEmpty();
+                limitOrders = SetFact.singletonOrder(query.getMainExpr());
+            }
+
+            // probably getOrderCost check should be done here (i.e. if there are no indexes on order keep limitOrders EMPTY, and merge more group joins)
+        }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
                 getInner().getInnerFollows(), groupWhere, groupWhereJoins, group, limitOrders);
