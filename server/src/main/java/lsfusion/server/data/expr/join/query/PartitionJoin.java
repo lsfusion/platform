@@ -78,7 +78,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
             filterFullKeys(usedKeys, usedPartitions, useWhere, true);
 
             GroupExprWhereJoins<Expr> groupWhereJoins = getGroupWhereJoins(type, usedPartitions.result); // так как в partitions expr'ы, а нужны baseExpr'ы
-            return groupWhereJoins.getPartitionStatKeys(query.where, type, pushStatKeys, useWhere.result, keys, query.orders);
+            return groupWhereJoins.getPartitionStatKeys(query.where, type, pushStatKeys, useWhere.result, keys);
         } else
             return getStatKeys(query.where, keys, type, pushStatKeys); // maybe makes sense to make where.getOuterKeys in the getStatKey
 
