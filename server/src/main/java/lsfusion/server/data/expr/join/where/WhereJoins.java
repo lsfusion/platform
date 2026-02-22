@@ -1977,8 +1977,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
         // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
         if(hasLimit && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
-            Cost newBaseCost = getOrderCost(this, keys, statKeys, keyStat, orders, statType, compileInfo.result.maxSubQueryCost, debugInfoWriter);
+            Cost newBaseCost = getOrderCost(this, keys, statKeys, keyStat, orders, statType, debugInfoWriter);
             if(newBaseCost != null) {
+                newBaseCost = newBaseCost.or(compileInfo.result.maxSubQueryCost);
+
                 boolean optAdjLimit = false;
                 if(newBaseCost.less(baseCost.div(new Stat(Settings.get().getUsePessQueryHeurWhenReducedMore())))) // поэтому если уменьшаем на "слишком" много включаем пессимистичный режим
                     optAdjLimit = true;
@@ -2000,7 +2002,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     @Nullable
-    public static <K extends BaseExpr> Cost getOrderCost(WhereJoins whereJoins, ImSet<K> keys, StatKeys<K> statKeys, KeyStat keyStat, ImOrderSet<Expr> orders, StatType statType, Cost minCost, DebugInfoWriter debugInfoWriter) {
+    public static <K extends BaseExpr> Cost getOrderCost(WhereJoins whereJoins, ImSet<K> keys, StatKeys<K> statKeys, KeyStat keyStat, ImOrderSet<Expr> orders, StatType statType, DebugInfoWriter debugInfoWriter) {
         Cost baseCost = statKeys.getCost();
         Stat stat = statKeys.getRows();
 
@@ -2030,7 +2032,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Cost newBaseCost;
         if(i>=size) { // если не осталось порядков, значит все просматривать не надо
             // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается)
-            newBaseCost = baseCost.div(stat).or(minCost); // limitCost.div(limitStat) всегда заведомо меньше baseCost.div(stat)
+            newBaseCost = baseCost.div(stat); // limitCost.div(limitStat) всегда заведомо меньше baseCost.div(stat)
         } else {
             // тут теоретически можно было бы рассмотреть вариант с индексами по части порядков, если предположить, что СУБД может пробежать по индексу первых порядков, а sort сделать "внутри" по последних порядков, но такие планы СУБД вроде строить не умеют
             // newBaseCost = limitCost.or(newBaseCost);

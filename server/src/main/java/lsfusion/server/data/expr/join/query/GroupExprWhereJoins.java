@@ -50,7 +50,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
             if (!orders.isEmpty()) {
                 ImSet<KeyExpr> partitionKeys = SetFact.filter(group, allKeys);
                 if (partitionKeys.size() == allKeys.size() && WhereJoins.isPushedAll(BaseUtils.immutableCast(mapExprs), statKeys.getKeys())) {
-                    Cost newCost = WhereJoins.getOrderCost(adjJoins, partitionKeys, result, keyStat, orders.keyOrderSet(), type, new Cost(result.getRows()), null);
+                    Cost newCost = WhereJoins.getOrderCost(adjJoins, partitionKeys, result, keyStat, orders.keyOrderSet(), type, null);
                     if (newCost != null)
                         result = result.replaceCost(newCost);
                 }
@@ -79,7 +79,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
             StatKeys<BaseExpr> result = adjJoins.getStatKeys(group, keyStat, type);
 
             if(statKeys != StatKeys.<K>NOPUSH() && !orders.isEmpty() && WhereJoins.isPushedAll(mapExprs, statKeys.getKeys())) {
-                Cost newCost = WhereJoins.getOrderCost(adjJoins, group, result, keyStat, orders, type, new Cost(result.getRows()), null);
+                Cost newCost = WhereJoins.getOrderCost(adjJoins, group, result, keyStat, orders, type, null);
                 if (newCost != null)
                     result = result.replaceCost(newCost);
             }
