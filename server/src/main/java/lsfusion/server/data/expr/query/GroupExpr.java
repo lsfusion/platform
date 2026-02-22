@@ -676,14 +676,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
 //        ImOrderMap<Expr, Boolean> limitOrders = hasLimitOffset ? query.orders : MapFact.EMPTYORDER(); // we don't need order in the join since we are using lateral exprs, not joins
-        ImOrderMap<Expr, Boolean> limitOrders = MapFact.EMPTYORDER();
-        // the same probably should be done for PartitionJoin
-        if (query.type.isLastOpt(true, query.exprs, query.orders)) { // actually some optimization that orders / or mainexpr is indexed would help here, to keep group joins more wide
-            limitOrders = query.orders;
-            if (query.type.isMaxMin()) {
+        ImOrderSet<Expr> limitOrders = SetFact.EMPTYORDER();
+        if (hasLimitOffset || query.type.isLastOpt(true, query.exprs, query.orders)) {
+            limitOrders = query.orders.keyOrderSet();
+            if (!hasLimitOffset && query.type.isMaxMin()) {
                 assert limitOrders.isEmpty();
-                limitOrders = MapFact.singletonOrder(query.getMainExpr(), query.type == GroupType.MIN); // MAX - ASC, MIN - DESC
+                limitOrders = SetFact.singletonOrder(query.getMainExpr());
             }
+
+            // probably getOrderCost check should be done here (i.e. if there are no indexes on order keep limitOrders EMPTY, and merge more group joins)
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
