@@ -50,6 +50,9 @@ public class SQLAnalyzeAspect {
             return thisJoinPoint.proceed();
 
         final boolean explain = sql.explainAnalyze();
+        if(!explain)
+            return thisJoinPoint.proceed();
+
         final boolean noAnalyze = sql.explainNoAnalyze();
         final int thresholdMs = Settings.get().getExplainThreshold();
         final int noAnalyzeThresholdMs = Settings.get().getExplainNoAnalyzeThreshold();
@@ -57,7 +60,7 @@ public class SQLAnalyzeAspect {
         // Run EXPLAIN (VERBOSE, COSTS) before execution if the estimated cost exceeds the noAnalyze threshold.
         // Covers both noAnalyze and SQLDML-analyze paths so the plan is available even if the query hangs.
         SQLNoAnalyze noAnalyzeCommand;
-        if (explain && command.baseCost.getDefaultTimeout() > noAnalyzeThresholdMs) {
+        if (command.baseCost.getDefaultTimeout() > noAnalyzeThresholdMs) {
             noAnalyzeCommand = new SQLNoAnalyze(command);
             thisJoinPoint.proceed(new Object[]{sql, noAnalyzeCommand, queryExecEnv.forAnalyze(), owner, paramObjects, SQLDML.Handler.VOID});
         } else
@@ -73,10 +76,14 @@ public class SQLAnalyzeAspect {
         final long started = System.currentTimeMillis();
 
         // Execute the actual command, wrapping DML with EXPLAIN ANALYZE when needed.
-        final boolean ranExplain = command instanceof SQLDML && explain && !noAnalyze;
-        final Object result = ranExplain
-                ? thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, false), queryExecEnv, owner, paramObjects, handler})
+        final boolean ranExplain = command instanceof SQLDML && !noAnalyze;
+        final Object result = ranExplain || noAnalyzeCommand != null // proceed with new args overrides old params
+                ? thisJoinPoint.proceed(new Object[]{sql, ranExplain ? new SQLAnalyze(command, false) : command, queryExecEnv, owner, paramObjects, handler})
                 : thisJoinPoint.proceed();
+
+        boolean scheduledLogNotExecutedYet = false;
+        if(noAnalyzeCommand != null)
+            scheduledLogNotExecutedYet = scheduledLog.cancel(false);
 
         final long elapsedMs = System.currentTimeMillis() - started;
 
@@ -84,9 +91,9 @@ public class SQLAnalyzeAspect {
             // cancel(false) returns true only if the task had not yet started (query finished
             // before the scheduled delay).  In that case log if the query was still slow.
             // If cancel returns false the scheduled task already ran and logged the plan.
-            if (scheduledLog.cancel(false) && elapsedMs >= thresholdMs)
+            if (scheduledLogNotExecutedYet && elapsedMs >= thresholdMs)
                 logNoAnalyze(noAnalyzeCommand);
-        } else if (!ranExplain && explain && elapsedMs >= thresholdMs) {
+        } else if (!ranExplain && elapsedMs >= thresholdMs) {
             // No pre-explain and no inline EXPLAIN ANALYZE: fallback to post-explain for slow queries.
             DynamicExecEnvSnapshot analyzeEnv = queryExecEnv.forAnalyze();
             assert !analyzeEnv.hasRepeatCommand();
