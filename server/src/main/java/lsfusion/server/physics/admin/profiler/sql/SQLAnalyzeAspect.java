@@ -55,12 +55,12 @@ public class SQLAnalyzeAspect {
 
         final boolean noAnalyze = sql.explainNoAnalyze();
         final int thresholdMs = Settings.get().getExplainThreshold();
-        final int noAnalyzeThresholdMs = Settings.get().getExplainNoAnalyzeThreshold();
 
         // Run EXPLAIN (VERBOSE, COSTS) before execution if the estimated cost exceeds the noAnalyze threshold.
         // Covers both noAnalyze and SQLDML-analyze paths so the plan is available even if the query hangs.
         SQLNoAnalyze noAnalyzeCommand;
-        if (command.baseCost.getDefaultTimeout() > noAnalyzeThresholdMs) {
+        long defaultTimeout = command.baseCost.getDefaultTimeout();
+        if (defaultTimeout > Settings.get().getExplainNoAnalyzeThreshold()) {
             noAnalyzeCommand = new SQLNoAnalyze(command);
             thisJoinPoint.proceed(new Object[]{sql, noAnalyzeCommand, queryExecEnv.forAnalyze(), owner, paramObjects, SQLDML.Handler.VOID});
         } else
@@ -71,7 +71,7 @@ public class SQLAnalyzeAspect {
         if (noAnalyzeCommand != null)
             scheduledLog = scheduler.schedule(
                     () -> logNoAnalyze(noAnalyzeCommand),
-                    noAnalyzeThresholdMs, TimeUnit.MILLISECONDS);
+                    defaultTimeout * Settings.get().getLastStepCoeff(), TimeUnit.MILLISECONDS);
 
         final long started = System.currentTimeMillis();
 
