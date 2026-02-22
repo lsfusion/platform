@@ -64,8 +64,6 @@ public interface MapTranslate extends MapObject {
 
     ImList<Expr> translate(ImList<Expr> list);
 
-    ImOrderSet<Expr> translate(ImOrderSet<Expr> list);
-
     ImSet<Expr> translate(ImSet<Expr> set);
 
     <K extends Expr> ClassWhere<K> translate(ClassWhere<K> classes);

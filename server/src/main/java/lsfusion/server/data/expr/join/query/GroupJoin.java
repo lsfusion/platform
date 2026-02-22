@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -22,7 +21,7 @@ import lsfusion.server.data.where.Where;
 
 public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
 
-    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group, ImOrderSet<Expr> limitOrders) {
+    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group, ImOrderMap<Expr, Boolean> limitOrders) {
         super(keys,values,new Query(innerFollows, where, keyTypes, groupJoins, limitOrders),group);
     }
 
@@ -46,11 +45,11 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     public static class Query extends QueryJoin.Query<Expr, Query> {
         private final Where where;
-        private final ImOrderSet<Expr> orders;
+        private final ImOrderMap<Expr, Boolean> orders;
         private final ImMap<KeyExpr, Type> keyTypes;
         private final GroupExprWhereJoins<Expr> joins;// чтобы не сливало группировки со всем разными join'ами
 
-        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins, ImOrderSet<Expr> limitOrders) {
+        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins, ImOrderMap<Expr, Boolean> limitOrders) {
             super(follows);
             this.where = where;
             this.orders = limitOrders;
@@ -83,7 +82,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return super.calculateOuterDepends().merge(keyTypes.keys()).merge(where).merge(joins).merge(orders.getSet());
+            return super.calculateOuterDepends().merge(keyTypes.keys()).merge(where).merge(joins).merge(orders.keys());
         }
     }
 

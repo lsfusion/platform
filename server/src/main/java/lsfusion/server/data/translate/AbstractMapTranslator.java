@@ -105,10 +105,6 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return list.mapListValues(this.<Expr>TRANS());
     }
 
-    public ImOrderSet<Expr> translate(ImOrderSet<Expr> list) {
-        return list.mapOrderSetValues(this.<Expr>TRANS());
-    }
-
     public ImSet<Expr> translate(ImSet<Expr> set) {
         return set.mapSetValues(this.<Expr>TRANS());
     }
