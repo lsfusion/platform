@@ -3,7 +3,6 @@ package lsfusion.server.base.controller.thread;
 import com.google.common.base.Throwables;
 import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -251,11 +250,11 @@ public class ThreadLocalContext {
         return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
-    public static void pushLogMessage() {
-        get().pushLogMessage();
+    public static void pushLogMessage(AbstractContext.LogMessageProcessor processor) {
+        get().pushLogMessage(processor);
     }
-    public static ImList<AbstractContext.LogMessage> popLogMessage() {
-        return get().popLogMessage();
+    public static void popLogMessage() {
+        get().popLogMessage();
     }
 
     public static void delayUserInteraction(ClientAction action) {

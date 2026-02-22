@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.scheduler.controller.manager;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.MessageClientType;
@@ -451,11 +452,11 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
 
             Long taskLogId = null;
-            Throwable throwable = null;
 
             String taskCaption = detail.getCaption();
             
-            ThreadLocalContext.pushLogMessage();
+            AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
+            ThreadLocalContext.pushLogMessage(logProcessor);
             try {
                 logStartTask(taskCaption, stack);
 
@@ -493,24 +494,22 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 
                 return applyResult == null;
             } catch (Throwable t) {
+                ThrowableWithStack throwableWithStack = new ThrowableWithStack(t);
+                logProcessor.add(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
+
                 ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {
                     taskLogId = logExceptionTask(taskCaption, t, stack);
                 } finally {
                     ThreadUtils.setFinallyMode(Thread.currentThread(), false);
                 }
-                throwable = t;
                 return false;
             } finally {
-                ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if (throwable != null) {
-                    ThrowableWithStack throwableWithStack = new ThrowableWithStack(throwable);
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
-                }
+                ThreadLocalContext.popLogMessage();
                 if (taskLogId != null) {
                     ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                     try {
-                        logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                        logClientTasks(ListFact.fromJavaList(logProcessor.messages), taskLogId, taskCaption, stack);
                     } finally {
                         ThreadUtils.setFinallyMode(Thread.currentThread(), false);
                     }

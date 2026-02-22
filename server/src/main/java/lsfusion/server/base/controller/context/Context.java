@@ -1,6 +1,5 @@
 package lsfusion.server.base.controller.context;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -48,8 +47,8 @@ public interface Context {
     void unlockInputContext();
     InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
 
-    void pushLogMessage();
-    ImList<AbstractContext.LogMessage> popLogMessage();
+    void pushLogMessage(AbstractContext.LogMessageProcessor processor);
+    void popLogMessage();
     AbstractContext.MessageLogger getLogMessage(); // for multithreading
 
     void updateUserLastActivity();

@@ -1097,7 +1097,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
                 ImMap<ObjectInstance, ObjectValue> currentObjects = mCurrentObjects.immutable();
 
-                ThreadLocalContext.pushLogMessage();
+                AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
+                ThreadLocalContext.pushLogMessage(logProcessor);
                 try {
                     modifyKeys = modify.keys();
                     while (modifyKeys.hasNext()) {
@@ -1116,9 +1117,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                             changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack, context);
                     }
                 } finally {
-                    ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
+                    ThreadLocalContext.popLogMessage();
                     if(form.dataChanged) // just for optimization purposes (otherwise just any change property / exec action would do)
-                        form.BL.LM.getLogMessage().change(DataSession.getLogMessage(logMessages, true), form);
+                        form.BL.LM.getLogMessage().change(DataSession.getLogMessage(ListFact.fromJavaList(logProcessor.messages), true), form);
                 }
 
                 return new Pair<>(requestIndex, getFormChangesExternal(stack, context).toString());
