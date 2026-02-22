@@ -35,6 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -454,12 +455,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             Long taskLogId = null;
 
             String taskCaption = detail.getCaption();
-            
-            AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
-            ThreadLocalContext.pushLogMessage(logProcessor);
-            try {
-                logStartTask(taskCaption, stack);
 
+            taskLogId = logStartTask(taskCaption, stack);
+
+            FlushingLogClientMessageProcessor logClientProcessor = new FlushingLogClientMessageProcessor(taskLogId, taskCaption);
+            ThreadLocalContext.pushLogMessage(logClientProcessor);
+            try {
                 String applyResult = ExecutorFactory.executeWithTimeout(BL, () -> {
                     try (DataSession mainSession = createSession()) {
                         if (detail.script != null) // if LA is evalScript
@@ -490,29 +491,65 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     }
                 }, detail.timeout, () -> ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this));
 
-                taskLogId = logFinishTask(taskCaption, stack, applyResult);
-                
+                logFinishTask(taskCaption, stack, applyResult);
+
                 return applyResult == null;
             } catch (Throwable t) {
                 ThrowableWithStack throwableWithStack = new ThrowableWithStack(t);
-                logProcessor.add(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
+                logClientProcessor.add(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
 
                 ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {
-                    taskLogId = logExceptionTask(taskCaption, t, stack);
+                    logExceptionTask(taskCaption, t, stack);
                 } finally {
                     ThreadUtils.setFinallyMode(Thread.currentThread(), false);
                 }
                 return false;
             } finally {
                 ThreadLocalContext.popLogMessage();
-                if (taskLogId != null) {
-                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
-                    try {
-                        logClientTasks(ListFact.fromJavaList(logProcessor.messages), taskLogId, taskCaption, stack);
-                    } finally {
-                        ThreadUtils.setFinallyMode(Thread.currentThread(), false);
-                    }
+
+                logClientProcessor.stop();
+
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                try {
+                    logClientProcessor.flush(stack);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
+            }
+        }
+
+        private class FlushingLogClientMessageProcessor implements AbstractContext.LogMessageProcessor {
+            private final long taskLogId;
+            private final String taskCaption;
+
+            private final List<AbstractContext.LogMessage> messages = new ArrayList<>();
+
+            private ScheduledFuture<?> flusherTask;
+
+            public FlushingLogClientMessageProcessor(long taskLogId, String taskCaption) {
+                this.taskLogId = taskLogId;
+                this.taskCaption = taskCaption;
+
+                int flushInterval = Settings.get().getSchedulerLogFlushInterval();
+                flusherTask = daemonTasksExecutor.scheduleAtFixedRate(() -> flush(getStack()), flushInterval, flushInterval, TimeUnit.SECONDS);
+            }
+
+            public void stop() {
+                if (flusherTask != null) {
+                    flusherTask.cancel(false);
+                }
+            }
+
+            @Override
+            public synchronized void add(AbstractContext.LogMessage message) {
+                messages.add(message);
+            }
+
+            public synchronized void flush(ExecutionStack stack) {
+                if (!messages.isEmpty()) {
+                    logClientTasks(ListFact.fromJavaList(messages), taskLogId, taskCaption, stack);
+                    messages.clear();
                 }
             }
         }
@@ -531,8 +568,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             schedulerLogger.info("Task " + taskCaption + " before apply");
         }
 
-        private void logStartTask(String taskCaption, ExecutionStack stack) {
-            logTask(taskCaption, ServerResourceBundle.getString("scheduler.started"), "start", stack, null);
+        private Long logStartTask(String taskCaption, ExecutionStack stack) {
+            return logTask(taskCaption, ServerResourceBundle.getString("scheduler.started"), "start", stack, null);
         }
 
         private void logAlreadyExecutingTask(String taskCaption, ExecutionStack stack) {
