@@ -23,10 +23,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     private static void renderText(Element element, boolean multiLine) {
         GwtClientUtils.addClassName(element, "text-based-prop-value");
+        if (!multiLine)
+            GwtClientUtils.addClassName(element, "text-based-prop-value-no-multiline");
     }
 
     private static void clearRenderText(Element element, boolean multiLine) {
         GwtClientUtils.removeClassName(element, "text-based-prop-value");
+        if (!multiLine)
+            GwtClientUtils.removeClassName(element, "text-based-prop-value-no-multiline");
     }
 
     public static void setTextPadding(Element element) {

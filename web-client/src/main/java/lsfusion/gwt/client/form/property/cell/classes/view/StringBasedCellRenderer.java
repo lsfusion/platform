@@ -27,6 +27,9 @@ public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
         if (!isVarString)
             string = GwtSharedUtils.rtrim(string);
 
+        if (string != null && !isMultiLine())
+            string = string.replace("\n", " ");
+
         return string;
     }
 }
