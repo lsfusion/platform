@@ -146,7 +146,6 @@ DESIGN options {
             caption = '{geo.form.options.caption.navigation}';
             MOVE BOX(m) {
                 fill = 0;
-                GRID(m) { autoSize = TRUE; }
             }
             MOVE PROPERTY(googleAutocompleteCountry());
             MOVE PROPERTY(autoSynchronizeCoordinates());

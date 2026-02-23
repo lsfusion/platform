@@ -285,11 +285,11 @@ DESIGN scheduledTask {
                     }
                 }
                 MOVE PROPERTY(script(td)) {
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                     fill = 0.5;
                 }
                 MOVE PROPERTY(json(std)) {
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                     fill = 1;
                 }
             }

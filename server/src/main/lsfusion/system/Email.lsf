@@ -533,7 +533,7 @@ DESIGN mail {
     
     attachments {
         MOVE PROPERTY (lastError(ae)){
-            panelCaptionVertical = TRUE;
+            captionVertical = TRUE;
             fill = 0.3;
         }
     }

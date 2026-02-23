@@ -428,7 +428,7 @@ DESIGN fullChat {
                         MOVE PROPERTY(message()) {
                             caption = '';
                             fill = 1; 
-                            panelCaptionVertical = TRUE;
+                            captionVertical = TRUE;
                         }   
                         NEW inputAttachments {
                             align = STRETCH;
@@ -528,7 +528,7 @@ DESIGN shortChat {
                 fill = 0.7;
             }
             MOVE PROPERTY(message()) {
-                panelCaptionVertical = TRUE;   
+                captionVertical = TRUE;   
                 fill = 0.3;
             }
             NEW buttons {
@@ -684,7 +684,6 @@ DESIGN fullChat {
     chatMessage {
         MOVE PROPERTY(jsonInputMessage()) FIRST {
             alignment = STRETCH; 
-            autoSize = TRUE; 
             width = 0; 
             caption = ''; 
             fill = 1; 
@@ -714,7 +713,6 @@ DESIGN shortChat {
             alignment = STRETCH; 
             MOVE PROPERTY(jsonInputMessage()) {
                 alignment = STRETCH; 
-                autoSize = TRUE; 
                 width = 0; 
                 caption = ''; 
                 fill = 1; 

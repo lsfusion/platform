@@ -107,7 +107,7 @@ DESIGN backup {
                 fill = 1;
                 MOVE PROPERTY(log(b)) {
                     fill = 1;
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                 }
                 MOVE BOX(t2) {
                     caption = '{backup.form.backup.caption.copied.tables}';

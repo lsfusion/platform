@@ -106,7 +106,7 @@ DESIGN messengers {
         MOVE BOX(m);
     }
     MOVE PROPERTY(newMessage(c)) {
-        panelCaptionVertical = TRUE;
+        captionVertical = TRUE;
     }
     NEW sendMessage {
         MOVE PROPERTY(sendMessage(c));

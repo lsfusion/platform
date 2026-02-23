@@ -92,8 +92,6 @@ resourcePaths = DATA LOCAL STRING (STRING);
 readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
 readResourcePaths (STRING pattern) { readResourcePaths(pattern, NULL); }
 
-resourceFile '{utils.resource.file}' = resource() @@deprecated('6.1');
-
 properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
 
@@ -202,9 +200,6 @@ encodeBase64Unchunked (NAMEDFILE f) = encodeBase64Unchunked(RAWFILE(f));
 
 encodeBytes = FORMULA TEXT 'encode(($1),($2))';
 encodeBytesBase64(bytes) = encodeBytes(bytes, 'base64');
-
-encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))' @@deprecated('6.1');
-decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')' @@deprecated('6.1');
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64Action' (TEXT);
@@ -352,7 +347,7 @@ numNode(TSQUERY search) = FORMULA INTEGER PG 'numnode($1)';
 
 // ---------------------------------- JSON functions  ---------------------------------- //
 
-// depreceated
+// deprecated
 jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar';
 jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
 jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
@@ -415,16 +410,6 @@ CLASS YesNo '{utils.yes.no}' {
 }
 TABLE yesNo(YesNo);
 
-META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
-    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,
-        object1, object1Identity, object2, object2Identity, 7, group);
-END
-
-META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,
-        object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
-END
-
 // --------------------------------------------- Dialogs --------------------------------- //
 FORM dialogString '{utils.form.dialog.string}'
     OBJECTS s = STRING[200] PANEL
@@ -438,7 +423,7 @@ DESIGN dialogString {
             fill = 1;
             caption = '{utils.caption.enter.string}';
             font = 'bold 64';
-            panelCaptionVertical = TRUE;
+            captionVertical = TRUE;
         }
     }
 }
@@ -455,10 +440,9 @@ DESIGN dialogDate {
             fill = 1;
             caption = '{utils.caption.enter.date}';
             font = 'bold 64';
-            panelCaptionVertical = TRUE;
+            captionVertical = TRUE;
         }
     }
-
 }
 
 FORM dialogInteger '{utils.form.dialog.integer}'
@@ -470,7 +454,7 @@ DESIGN dialogInteger {
     PROPERTY (objValue) {
         caption = '{utils.caption.enter.integer}';
         font = 'bold 64';
-        panelCaptionVertical = TRUE;
+        captionVertical = TRUE;
     }
 }
 
@@ -483,7 +467,7 @@ DESIGN dialogNumeric {
     PROPERTY (objValue) {
         caption = '{utils.caption.enter.numeric}';
         font = 'bold 64';
-        panelCaptionVertical = TRUE;
+        captionVertical = TRUE;
     }
 }
 

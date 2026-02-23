@@ -35,7 +35,7 @@ DESIGN exception {
             fill = 1;
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
-                panelCaptionVertical = TRUE;
+                captionVertical = TRUE;
                 caption = '{eval.script.form.exception.caption.value.message}';
             }
             NEW stacks {
@@ -276,12 +276,12 @@ DESIGN interpreter {
             REMOVE TOOLBARSYSTEM(st);
             
             MOVE PROPERTY(text(s)) {
-                panelCaptionVertical = TRUE;    
+                captionVertical = TRUE;    
                 fill = 1;
             }
             
             MOVE PROPERTY(json(s)) {
-                panelCaptionVertical = TRUE;    
+                captionVertical = TRUE;    
                 fill = 1;
             }            
         }

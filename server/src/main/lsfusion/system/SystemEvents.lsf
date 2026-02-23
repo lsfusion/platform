@@ -230,7 +230,6 @@ DESIGN design {
     MOVE PROPERTY(userFiltersManualApplyMode(de));
     MOVE PROPERTY(needReloadText()) {
         class = 'alert alert-secondary';
-        autoSize = TRUE;
     }
     REMOVE PROPERTY(formApply());
     REMOVE PROPERTY(formCancel());
@@ -858,17 +857,17 @@ DESIGN exceptions {
                 MOVE PROPERTY(javaStackTrace(e)) {
                     alignment = START;
                     valueHeight = -1;
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
                     alignment = START;
                     valueHeight = -1;
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                 }
                 MOVE PROPERTY(asyncStackTrace(e)) {
                     alignment = START;
                     valueHeight = -1;
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                 }
             }
             MOVE TOOLBARBOX;
@@ -911,7 +910,7 @@ DESIGN changes {
                 MOVE PROPERTY(pChanges) {
                     fill = 0.5;
                     valueSize = ( -1, 200);
-                    panelCaptionVertical = TRUE;
+                    captionVertical = TRUE;
                 }
             }
             MOVE TOOLBARBOX;
@@ -1110,19 +1109,19 @@ DESIGN customizeForm {
             fill = 1;
             horizontal = TRUE;
             MOVE PROPERTY(code) {
-                panelCaptionVertical = TRUE;
+                captionVertical = TRUE;
                 charHeight = 30;
                 charWidth = 50;
             }
             MOVE PROPERTY(extendCodeAll) {
                 defaultValue = defaultExtendCode(form(sid));
-                panelCaptionVertical = TRUE;
+                captionVertical = TRUE;
                 charHeight = 30;
                 charWidth = 50;
             }
             MOVE PROPERTY(extendCodeCurrentUser) {
                 defaultValue = defaultExtendCode(form(sid));
-                panelCaptionVertical = TRUE;
+                captionVertical = TRUE;
                 charHeight = 30;
                 charWidth = 50;
             }
