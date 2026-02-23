@@ -72,6 +72,7 @@ import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
@@ -1135,6 +1136,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             ddl += (ddl.isEmpty() ? "" : ",") + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env);
         }
         executeDDL("ALTER TABLE " + table + " " + ddl);
+    }
+
+    public boolean columnExists(StoredTable table, Field field) throws SQLException, SQLHandledException {
+        return (Integer) executeSelect("SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name ILIKE '" + table.getName(syntax) + "' AND column_name ILIKE '" + field.getName(syntax) + "') THEN 1 ELSE 0 END AS cnt", OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0,
+                MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance),
+                MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue() == 1;
     }
 
     public void packTable(StoredTable table, OperationOwner owner, TableOwner tableOwner) throws SQLException {

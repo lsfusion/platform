@@ -1754,18 +1754,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private static void moveColumns(SQLSession sql, OldDBStructure oldDBStructure, List<MoveDBProperty> movedProperties) throws Exception {
-        for(MoveDBProperty move : movedProperties) {
+        for (MoveDBProperty move : movedProperties) {
             DBStoredProperty newProperty = move.newProperty;
             DBStoredProperty oldProperty = move.oldProperty;
 
             ImplementTable newTable = newProperty.getTable();
             DBTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
-            sql.addColumn(newTable, newProperty.property.field, Settings.get().isStartServerAnyWay());
-            runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
-                    localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field.toString(), newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
-
-            sql.dropColumn(oldProperty.getTableName(sql.syntax), oldProperty.getDBName(), Settings.get().isStartServerAnyWay());
+            boolean startServerAnyWay = Settings.get().isStartServerAnyWay();
+            if (!startServerAnyWay || !sql.columnExists(newTable, newProperty.property.field)) {
+                sql.addColumn(newTable, newProperty.property.field, startServerAnyWay);
+                runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
+                        localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field.toString(), newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+            }
+            sql.dropColumn(oldProperty.getTableName(sql.syntax), oldProperty.getDBName(), startServerAnyWay);
         }
     }
 
