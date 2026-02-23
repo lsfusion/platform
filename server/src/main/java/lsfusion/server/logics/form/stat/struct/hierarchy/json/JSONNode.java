@@ -7,7 +7,9 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.struct.hierarchy.GroupObjectParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
+import lsfusion.server.logics.form.stat.struct.hierarchy.PropertyGroupParseNode;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,7 +38,7 @@ public class JSONNode implements Node<JSONNode> {
     }
 
     @Override
-    public JSONNode getNode(String key) {
+    public JSONNode getNode(String key, PropertyGroupParseNode parseNode) {
         try {
             Object childElement = element.opt(key);
             if(childElement == null)
@@ -75,7 +77,7 @@ public class JSONNode implements Node<JSONNode> {
     }
 
     @Override
-    public Iterable<Pair<Object, JSONNode>> getMap(String key, boolean isIndex) {
+    public Iterable<Pair<Object, JSONNode>> getMap(String key, GroupObjectParseNode parseNode, boolean isIndex) {
         try {
             MList<Pair<Object, JSONNode>> mResult = ListFact.mList();
             Object child = element.opt(key);

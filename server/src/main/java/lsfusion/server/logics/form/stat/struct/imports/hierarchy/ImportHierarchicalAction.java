@@ -8,6 +8,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
+import lsfusion.server.logics.form.stat.struct.hierarchy.FormParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.imports.FormImportData;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -22,7 +23,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
     private final PropertyInterface rootInterface;
     protected final PropertyInterface whereInterface;
 
-    public abstract T getRootNode(RawFileData fileData, String root);
+    public abstract T getRootNode(RawFileData fileData, String root, FormParseNode formParseNode);
 
     public ImportHierarchicalAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
         super(paramsCount, formEntity, charset);
@@ -46,8 +47,9 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
         if(file != null && file.getLength() > 0) {
-            T rootNode = getRootNode(file, root);
-            hierarchy.getIntegrationHierarchy().importNode(rootNode, MapFact.EMPTY(), importData, iterator);
+            FormParseNode formParseNode = hierarchy.getIntegrationHierarchy();
+            T rootNode = getRootNode(file, root, formParseNode);
+            formParseNode.importNode(rootNode, MapFact.EMPTY(), importData, iterator);
         }
         // filling properties that were not imported (to drop their changes too)
         for(ImOrderSet<PropertyDrawEntity> properties : hierarchy.getAllProperties())

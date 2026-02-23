@@ -8,12 +8,16 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.form.stat.struct.hierarchy.GroupObjectParseNode;
+import lsfusion.server.logics.form.stat.struct.hierarchy.GroupParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
+import lsfusion.server.logics.form.stat.struct.hierarchy.PropertyGroupParseNode;
 import org.apache.commons.io.IOUtils;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -23,26 +27,59 @@ import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
     public final Element element; // addContent, getChildren
+    private final Element namespaceElement; // null during export; parallel element built from form EXTIDs during import
     private final String tag;
 
-    public XMLNode(Element element) {
-        this(element, null);
+    public XMLNode(Element element, String tag) { // only in export
+        this(element, null, tag);
     }
 
-    public XMLNode(Element element, String tag) {
+    public XMLNode(Element element, GroupParseNode parseNode) { // only in import
+        this(element, parseNode.namespaceElement, null);
+    }
+
+    public XMLNode(Element element, Element namespaceElement, String tag) {
         this.element = element;
+        this.namespaceElement = namespaceElement;
         this.tag = tag;
     }
 
     @Override
-    public XMLNode getNode(String key) {
+    public XMLNode getNode(String key, PropertyGroupParseNode parseNode) {
         Element childElement = getXMLChild(key);
         if(childElement == null)
             return null;
-        return new XMLNode(childElement);
+        // only in import
+        return new XMLNode(childElement, parseNode);
     }
 
-    private static String parseXMLNamespace(String fullName, Result<String> uri, Result<String> shortName) {
+    private static String parseXMLNamespace(String fullNameAndNamespaces, Result<String> uri, Result<String> shortName, Result<List<Namespace>> extraNamespaces) {
+        // Split main part and extra namespaces
+        int firstSemicolon = fullNameAndNamespaces.indexOf(";");
+        String fullName = firstSemicolon >= 0
+                ? fullNameAndNamespaces.substring(0, firstSemicolon)
+                : fullNameAndNamespaces;
+
+        // Parse extra namespaces
+        if (extraNamespaces != null) {
+            List<Namespace> extras = new ArrayList<>();
+
+            if (firstSemicolon >= 0) {
+                String[] parts = fullNameAndNamespaces.substring(firstSemicolon + 1).split(";");
+
+                for (String part : parts) {
+                    int eqIndex = part.indexOf("=");
+                    if (eqIndex > 0) {
+                        String nsName = part.substring(0, eqIndex);
+                        String nsUrl = part.substring(eqIndex + 1);
+                        extras.add(Namespace.getNamespace(nsName, nsUrl));
+                    }
+                }
+            }
+
+            extraNamespaces.set(extras);
+        }
+
         int nsIndex = fullName.lastIndexOf(":");
         if(nsIndex < 0) {
             shortName.set(fullName);
@@ -57,33 +94,40 @@ public class XMLNode implements Node<XMLNode> {
         uri.set(fullName.substring(uriIndex + 1, nsIndex));
         return fullName.substring(0, uriIndex);
     }
-    
-    private static Namespace getXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
+
+    private static Namespace getXMLNamespace(Element element, Element namespaceElement, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace) {
         Result<String> uri = new Result<>();
-        String nsName = parseXMLNamespace(fullName, uri, shortName);
-        
+        String nsName = parseXMLNamespace(fullName, uri, shortName, extraNamespaces);
+
         if(nsName == null) {
-            shortName.set(fullName);
-            
             Namespace defaultNamespace;
-            if(inheritNamespace && (defaultNamespace = element.getNamespace("")) != null)
-                return defaultNamespace;
-            
+            if (inheritNamespace) {
+                if(namespaceElement != null && (defaultNamespace = namespaceElement.getNamespace("")) != null)
+                    return defaultNamespace;
+
+                if ((defaultNamespace = element.getNamespace("")) != null)
+                    return defaultNamespace;
+            }
+
             return Namespace.NO_NAMESPACE;
         }
 
         if(uri.result != null)
             return Namespace.getNamespace(nsName, uri.result);
-        
-        Namespace namespace = element != null ? element.getNamespace(nsName) : null;
-        if(namespace == null) {
-            if(nsName.equals("xmlns")) {
-                return null; //it's namespace declaration
-            } else {
-                return Namespace.getNamespace(nsName, "http://www.w3.org/" + nsName);
-            }
-        }
-        return namespace;
+
+        Namespace namespace;
+        // Form structure (virtual element) takes priority over the incoming document element
+        if(namespaceElement != null && (namespace = namespaceElement.getNamespace(nsName)) != null)
+            return namespace;
+
+        // fallback to the imported element (backward compatibility)
+        if(element != null && (namespace = element.getNamespace(nsName)) != null)
+            return namespace;
+
+        if(nsName.equals("xmlns"))
+            return null; //it's namespace declaration
+
+        return Namespace.getNamespace(nsName, "http://www.w3.org/" + nsName);
     }
 
     @Override
@@ -92,11 +136,33 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     private Namespace getXMLNamespace(String fullName, Result<String> shortName, boolean inheritNamespace) {
-        return getXMLNamespace(element, fullName, shortName, inheritNamespace);
+        return getXMLNamespace(element, namespaceElement, fullName, shortName, null, inheritNamespace);
     }
 
-    public static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
-        return getXMLNamespace(element, fullName, shortName, inheritNamespace);
+    public static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace) {
+        return getXMLNamespace(element, null, fullName, shortName, extraNamespaces, inheritNamespace);
+    }
+
+    public static Element createRootElement(String key) {
+        return addElement(null, key);
+    }
+
+    public static Element addElement(Element parentElement, String key) {
+        Element childElement = createElement();
+        addElement(parentElement, childElement, key);
+        return childElement;
+    }
+
+    public static void addElement(Element parentElement, Element childElement, String key) {
+        Result<String> shortKey = new Result<>();
+        Result<List<Namespace>> extraNamespaces = new Result<>();
+        Namespace namespace = addXMLNamespace(parentElement, key, shortKey, extraNamespaces, parentElement != null);
+        childElement.setName(shortKey.result);
+        childElement.setNamespace(namespace);
+        for(Namespace extraNamespace : extraNamespaces.result)
+            childElement.addNamespaceDeclaration(extraNamespace);
+        if(parentElement != null)
+            parentElement.addContent(childElement);
     }
 
     public String getXMLAttributeValue(String key) {
@@ -159,23 +225,30 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     @Override
-    public Iterable<Pair<Object, XMLNode>> getMap(String key, boolean isIndex) {
+    public Iterable<Pair<Object, XMLNode>> getMap(String key, GroupObjectParseNode parseNode, boolean isIndex) {
         MList<Pair<Object, XMLNode>> mResult = ListFact.mList();
         if(isIndex) {
             List children = key.equals("value") || key.equals("value:full") ? element.getChildren() : getXMLChildren(key);
+            // only in import
             for (int i = 0; i < children.size(); i++)
-                mResult.add(new Pair<>(i, new XMLNode((Element) children.get(i))));
+                mResult.add(new Pair<>(i, new XMLNode((Element) children.get(i), parseNode)));
         } else {
             Element child = getXMLChild(key);
             if(child != null)
+                // only in import
                 for(Object value : child.getChildren())
-                    mResult.add(new Pair<>(((Element) value).getName(), new XMLNode((Element) value)));
+                    mResult.add(new Pair<>(((Element) value).getName(), new XMLNode((Element) value, parseNode)));
         }
         return mResult.immutableList();
     }
 
     public XMLNode createNode() {
-        return new XMLNode(new Element("dumb"));
+        return new XMLNode(createElement(), (String)null);
+    }
+
+    @NotNull
+    private static Element createElement() {
+        return new Element("dumb");
     }
 
     public void addXMLAttributeValue(Element element, String key, String stringValue) {
@@ -189,7 +262,7 @@ public class XMLNode implements Node<XMLNode> {
             element.addNamespaceDeclaration(namespace);
         } else {
             Result<String> shortKey = new Result<>();
-            Namespace namespace = addXMLNamespace(element, key, shortKey, false);
+            Namespace namespace = addXMLNamespace(element, key, shortKey, null, false);
             element.setAttribute(shortKey.result, stringValue, namespace);
         }
     }
@@ -198,11 +271,7 @@ public class XMLNode implements Node<XMLNode> {
         if(key.equals("value") || key.equals("value:full")) {
             element.addContent(content);
         } else {
-            Result<String> shortKey = new Result<>();
-            Namespace namespace = addXMLNamespace(element, key, shortKey, true);
-            Element addElement = new Element(shortKey.result, namespace);
-            addElement.addContent(content);
-            element.addContent(addElement);
+            addElement(element, key).addContent(content);
         }
     }
 
@@ -221,11 +290,7 @@ public class XMLNode implements Node<XMLNode> {
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 
     private static void addXMLChild(Element element, String key, Element childElement) {
-        Result<String> shortKey = new Result<>();
-        Namespace namespace = addXMLNamespace(element, key, shortKey, true);
-        childElement.setName(shortKey.result);
-        childElement.setNamespace(namespace);
-        element.addContent(childElement);
+        addElement(element, childElement, key);
     }
 
     public void addNode(XMLNode node, String key, XMLNode childNode) {

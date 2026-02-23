@@ -8,11 +8,11 @@ import lsfusion.server.logics.classes.data.ParseException;
 // there are two strategies working with hierarchy : JSON - edge-based, и XML - node-based, we'll use edge-based approach, because in xml attr and maps are also more edge-based then node-based  
 public interface Node<T extends Node<T>> {
     // import
-    T getNode(String key); // group
+    T getNode(String key, PropertyGroupParseNode parseNode); // group
     
     Object getValue(String key, boolean attr, Type type) throws ParseException; // property
         
-    Iterable<Pair<Object, T>> getMap(String key, boolean isIndex); // group object
+    Iterable<Pair<Object, T>> getMap(String key, GroupObjectParseNode parseNode, boolean isIndex); // group object
     
     // export
     T createNode(); 

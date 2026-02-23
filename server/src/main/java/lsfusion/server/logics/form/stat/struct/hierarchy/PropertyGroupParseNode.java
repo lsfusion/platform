@@ -24,7 +24,7 @@ public class PropertyGroupParseNode extends GroupParseNode implements ChildParse
 
     @Override
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
-        T childNode = node.getNode(getKey());
+        T childNode = node.getNode(getKey(), this);
         if(childNode != null)
             importChildrenNodes(childNode, upValues, importData, iterator);
     }

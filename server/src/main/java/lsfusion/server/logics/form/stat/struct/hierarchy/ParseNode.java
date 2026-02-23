@@ -22,11 +22,7 @@ import java.util.Map;
 
 public interface ParseNode {
 
-    static ParseNode getIntegrationHierarchy(StaticDataGenerator.Hierarchy hierarchy) {
-        return getGroupIntegrationHierarchy(hierarchy.getRoot(), hierarchy);
-    }
-
-    static ParseNode getGroupIntegrationHierarchy(GroupObjectEntity currentGroup, StaticDataGenerator.Hierarchy hierarchy) {
+    static GroupParseNode getGroupIntegrationHierarchy(GroupObjectEntity currentGroup, StaticDataGenerator.Hierarchy hierarchy) {
 
         // generating used property groups hierarchy
         Map<Group, MOrderExclSet<PGNode>> childGroupNodes = new HashMap<>(); // not MMap because we need null keys in this case
@@ -75,7 +71,7 @@ public interface ParseNode {
         }
     }
 
-    static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
+    static GroupParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
         MOrderExclSet<PGNode> childGroups = childGroupNodes.get(currentPropertyGroup);
         ImOrderSet<ChildParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(value -> value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex()));
         if(currentPropertyGroup == null) {

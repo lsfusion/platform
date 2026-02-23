@@ -2,6 +2,10 @@ package lsfusion.server.logics.form.stat.struct.imports.hierarchy.xml;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.logics.form.stat.struct.export.hierarchy.xml.ExportXMLAction;
+import lsfusion.server.logics.form.stat.struct.hierarchy.ChildParseNode;
+import lsfusion.server.logics.form.stat.struct.hierarchy.FormParseNode;
+import lsfusion.server.logics.form.stat.struct.hierarchy.GroupParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalAction;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -20,10 +24,22 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
         super(paramsCount, formEntity, charset, hasRoot, hasWhere);
     }
 
+    private void fillNamespaceElements(Element element, GroupParseNode groupParseNode) {
+        groupParseNode.namespaceElement = element;
+        for(ChildParseNode child : groupParseNode.children)
+            if(child instanceof GroupParseNode)
+                fillNamespaceElements(XMLNode.addElement(element, child.getKey()), (GroupParseNode) child);
+    }
+
     @Override
-    public XMLNode getRootNode(RawFileData fileData, String root) {
+    public XMLNode getRootNode(RawFileData fileData, String root, FormParseNode formParseNode) {
         try {
-            return new XMLNode(findRootNode(fileData, root));
+            if(formParseNode.namespaceElement == null)
+                synchronized (formParseNode) {
+                    if(formParseNode.namespaceElement == null) // double check
+                        fillNamespaceElements(ExportXMLAction.createRootElement(root, formEntity), formParseNode);
+                }
+            return new XMLNode(findRootNode(fileData, root), formParseNode);
         } catch (JDOMException | IOException e) {
             throw Throwables.propagate(e);
         }

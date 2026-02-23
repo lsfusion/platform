@@ -122,7 +122,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         StaticDataGenerator.Hierarchy staticHierarchy = staticForm.first.getStaticHierarchy(false, valueGroups, null);
 
-        ParseNode parseNode = staticHierarchy.getIntegrationHierarchy();
+        FormParseNode parseNode = staticHierarchy.getIntegrationHierarchy();
 
         FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())), selectTop);
 

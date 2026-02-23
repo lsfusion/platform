@@ -48,7 +48,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
         boolean isIndex = isIndex();
         ObjectEntity object = getSingleObject();
 
-        for (Pair<Object, T> data : node.getMap(getKey(), isIndex)) {
+        for (Pair<Object, T> data : node.getMap(getKey(), this, isIndex)) {
             if(iterator == null || !iterator.ignoreRow(children, data.second)) {
                 // getting object value
                 Object objectValue;

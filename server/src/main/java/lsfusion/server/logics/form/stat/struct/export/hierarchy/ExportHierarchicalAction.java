@@ -19,6 +19,7 @@ import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
+import lsfusion.server.logics.form.stat.struct.hierarchy.FormParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -71,7 +72,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
     }
 
     public void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException {
-        ParseNode parseNode = hierarchy.getIntegrationHierarchy();
+        FormParseNode parseNode = hierarchy.getIntegrationHierarchy();
         String root = rootInterface == null ? null : (String) context.getKeyObject(rootInterface);
         String tag = tagInterface == null ? null : (String) context.getKeyObject(tagInterface);
         T rootNode = createRootNode(root, tag);

@@ -7,14 +7,15 @@ import lsfusion.server.data.expr.formula.JSONBuildFormulaImpl;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import org.jdom.Element;
 
 public abstract class GroupParseNode implements ParseNode {
     public final ImOrderSet<ChildParseNode> children;
+
+    public Element namespaceElement; // filled synchronized only for IMPORT XML
 
     public GroupParseNode(ImOrderSet<ChildParseNode> children) {
         this.children = children;

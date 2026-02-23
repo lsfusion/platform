@@ -25,12 +25,12 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.form.stat.struct.hierarchy.FormParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -79,8 +79,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         }
         
         @IdentityInstanceLazy
-        public ParseNode getIntegrationHierarchy() {
-            return ParseNode.getIntegrationHierarchy(this);
+        public FormParseNode getIntegrationHierarchy() {
+            return (FormParseNode)ParseNode.getGroupIntegrationHierarchy(getRoot(), this);
         }
         
         public GroupObjectEntity getParentGroup(GroupObjectEntity group) {
