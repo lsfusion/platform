@@ -88,8 +88,14 @@ public class XMLNode implements Node<XMLNode> {
 
         shortName.set(fullName.substring(nsIndex + 1));
         int uriIndex = fullName.indexOf("=");
-        if(uriIndex < 0)
-            return fullName.substring(0, nsIndex);
+        if(uriIndex < 0) {
+            String prefix = fullName.substring(0, nsIndex);
+            if (Verifier.checkNamespacePrefix(prefix) != null) {
+                uri.set(prefix);
+                return "";
+            }
+            return prefix;
+        }
         
         uri.set(fullName.substring(uriIndex + 1, nsIndex));
         return fullName.substring(0, uriIndex);
