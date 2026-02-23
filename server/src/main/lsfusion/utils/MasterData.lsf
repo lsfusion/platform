@@ -46,13 +46,13 @@ META defineNamedObject(id, caption)
 
 END
 
-META defineStaticObject(id, caption)
-    CLASS ###id caption;
+META defineStaticObject(id, capt)
+    CLASS ###id capt;
     TABLE id (###id);
     
-    name '{master.data.name}' (###id o) = staticCaption(o) IF o IS ###id CHARWIDTH 15;
+    name '{master.data.name}' (###id o) = caption(o) IF o IS ###id CHARWIDTH 15;
     
-    FORM dialog###id##s caption
+    FORM dialog###id##s capt
         OBJECTS o = ###id
         PROPERTIES(o) READONLY name
         
