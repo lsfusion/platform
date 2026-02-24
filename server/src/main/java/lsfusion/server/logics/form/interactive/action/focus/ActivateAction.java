@@ -31,8 +31,10 @@ public class ActivateAction extends SystemExplicitAction {
                 context.delayUserInteraction(new ActivateFormClientAction(requestedForm.getCanonicalName()));
             } else {
                 //activate tab
-                FormInstance formInstance = context.getFormInstance(false, true);
-                formInstance.activateTab(formInstance.instanceFactory.getExInstance(requestedTab).entity);
+                FormInstance activeFormInstance = context.getFormInstance(false, true);
+                FormEntity activeForm = activeFormInstance == null ? null : activeFormInstance.entity;
+                if(activeForm != null && activeForm.equals(requestedForm))
+                    activeFormInstance.activateTab(activeFormInstance.instanceFactory.getExInstance(requestedTab).entity);
             }
         }
 
