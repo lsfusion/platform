@@ -236,10 +236,12 @@ public class ServerLoggers {
 
     public static <E1 extends Exception, E2 extends Exception> long runWithLog(E2Runnable<E1, E2> run, String message, Logger logger) throws E1, E2 {
         long start = System.currentTimeMillis();
-        logger.info(message + " started");
+        if(logger != null)
+            logger.info(message + " started");
         run.run();
         long time = System.currentTimeMillis() - start;
-        logger.info(message + " finished, " + time + "ms");
+        if(logger != null)
+            logger.info(message + " finished, " + time + "ms");
         return time;
     }
 }

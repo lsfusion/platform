@@ -1522,14 +1522,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public final ConcreteCustomClass customClass;
         public final String sID;
+        public final String name;
         public final String caption;
         public final String image;
         public final int order;
 
-        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption, String image, int order) {
+        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String name, String caption, String image, int order) {
             this.object = object;
             this.customClass = customClass;
             this.sID = sID;
+            this.name = name;
             this.caption = caption;
             this.image = image;
             this.order = order;
@@ -1557,9 +1559,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final Map<DataObject, String> modifiedImages = new HashMap<>();
         public final Map<DataObject, Integer> modifiedOrders = new HashMap<>();
 
-        public void apply(DataSession session, BaseLogicsModule LM, boolean isFirstStart) throws SQLException, SQLHandledException {
+        public ImSet<Property> apply(DataSession session, BaseLogicsModule LM, boolean isFirstStart) throws SQLException, SQLHandledException {
             LM.fillingIDs.change(true, session); // need this to avoid constraint on staticName changing
 
+            MExclSet<Property> mResult = SetFact.mExclSet(added.size());
             for (IDAdd addedObject : added) {
                 if(!isFirstStart)
                     startLog("Adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", name " + addedObject.caption + ", image " + addedObject.image);
@@ -1569,6 +1572,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 LM.staticCaption.change(addedObject.caption, session, classObject);
                 LM.staticImage.change(addedObject.image, session, classObject);
                 LM.staticOrder.change(addedObject.order, session, classObject);
+
+                mResult.exclAdd(addedObject.customClass.getProperty(addedObject.name));
             }
 
             for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
@@ -1594,6 +1599,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (Map.Entry<DataObject, Integer> modifiedOrder : modifiedOrders.entrySet()) {
                 LM.staticOrder.change(modifiedOrder.getValue(), session, modifiedOrder.getKey());
             }
+
+            return mResult.immutable();
         }
     }
 
@@ -1762,15 +1769,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 new TaskRunner(getBusinessLogics()).runTask(initTask);
 
                 try (DataSession session = createSession(sql, OperationOwner.unknown)) { // apply in transaction
-                    startLog("Writing static objects changes");
-                    idChanges.apply(session, LM, isFirstStart);
-                    apply(session);
+                    if(isFirstStart) {
+                        createProperties.clear();
+                        assert moveProperties.isEmpty();
+                    }startLog("Writing static objects changes");
+                    ImSet<Property> addedObjects =idChanges.apply(session, LM, isFirstStart);
+                    apply(session);// when object A.b is added no incremental logics works, so we need to reclaculate materialiations manually
+                    for(DBStoredProperty property : newDBStructure.storedProperties)
+                        if(Property.depends(property.property, addedObjects) && !createProperties.contains(property))
+                            createProperties.add(property);
 
                     startLog("Migrating reflection properties and actions");
                     migrateReflectionProperties(session, oldDBStructure);
                     apply(session);
 
-                    if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
+
                         startLog("Recalculating materializations");
                         List<AggregateProperty> recalculateProperties = new ArrayList<>();
                         for (DBStoredProperty property : createProperties) {
@@ -1778,7 +1791,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                 recalculateProperties.add((AggregateProperty) property.property);
                             }
                         }
-                        recalculateMaterializations(session, sql, recalculateProperties, false, ServerLoggers.startLogger);
+                        recalculateMaterializations(session, sql, recalculateProperties, false, isFirstStart ? null :ServerLoggers.startLogger);
                         apply(session);
 
                         List<Pair<Property, Boolean>> updateStatProperties = new ArrayList<>();
@@ -1786,9 +1799,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             updateStatProperties.add(new Pair<>(property.property, property.property instanceof StoredDataProperty)); // we don't want to update DATA stats (it is always zero)
                         for (MoveDBProperty move : moveProperties)
                             updateStatProperties.add(new Pair<>(move.newProperty.property, false));
-                        updateMaterializationStats(session, updateStatProperties);
+                        updateMaterializationStats(session, updateStatProperties, isFirstStart ? null : ServerLoggers.startLogger);
                         apply(session);
-                    }
+
 
                     writeDroppedColumns(session, dropDataProperties);
                     apply(session);
@@ -2150,7 +2163,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         serverComputer = (long) getComputer(SystemUtils.getLocalHostName(), session, getStack()).object;
     }
 
-    private void updateMaterializationStats(DataSession session, List<Pair<Property, Boolean>> recalculateProperties) throws SQLException, SQLHandledException {
+    private void updateMaterializationStats(DataSession session, List<Pair<Property, Boolean>> recalculateProperties, Logger logger) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<Pair<Property, Boolean>>> propertiesMap;
         if (Settings.get().isGroupByTables()) {
             propertiesMap = new HashMap<>();
@@ -2160,21 +2173,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
             int count = 1;
             int total = propertiesMap.size();
             for(Map.Entry<ImplementTable, List<Pair<Property, Boolean>>> entry : propertiesMap.entrySet())
-                recalculateAndUpdateStat(session, entry.getKey(), entry.getValue(), count++, total);
+                recalculateAndUpdateStat(session, entry.getKey(), entry.getValue(), count++, total, logger);
         }
     }
 
-    public void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties, int count, int total) throws SQLException, SQLHandledException {
+    public void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties, int count, int total, Logger logger) throws SQLException, SQLHandledException {
         ImSet<Pair<Property, Boolean>> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
         ImMap<PropertyField, String> fields = propertySet.mapKeyValues(property -> property.first.field, property -> property.first.getCanonicalName());
         ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property.second).mapSetValues(property -> property.first.field);
 
         Result<ImMap<String, Pair<Long, Long>>> propsStat = new Result<>();
-        runWithStartLog((E2Runnable<SQLException, SQLHandledException>) () -> {
+        runWithLog((E2Runnable<SQLException, SQLHandledException>) () -> {
             propsStat.result = table.recalculateStat(reflectionLM, session, fields, new HashSet<>(), skipRecalculateFields);
             apply(session);
-        }, String.format("Updating materialization stats %s of %s: %s", count, total, table));
-            
+        }, String.format("Updating materialization stats %s of %s: %s", count, total, table), logger);
+
         table.updateStat(propsStat.result, fields.keys(), false);
     }
 

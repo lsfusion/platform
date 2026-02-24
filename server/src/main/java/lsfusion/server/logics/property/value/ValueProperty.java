@@ -22,8 +22,8 @@ public class ValueProperty extends StaticValueProperty {
         StaticValueExpr.checkLocalizedString(value, staticClass);
     } 
 
-    public ValueProperty(LocalizedString caption, Object value, StaticClass staticClass) {
-        super(caption);
+    public ValueProperty(Object value, StaticClass staticClass) {
+        super(LocalizedString.NONAME);
         this.value = value;
         this.staticClass = staticClass;
 

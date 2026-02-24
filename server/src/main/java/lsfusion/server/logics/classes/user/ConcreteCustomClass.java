@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -32,6 +33,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
@@ -292,7 +294,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 info.id = oldObject.ID;
             } else {
                 Long id = idGen.call();
-                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption, staticObjectImage, i));
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, info.name, staticObjectCaption, staticObjectImage, i));
                 info.id = id;
             }
 
@@ -310,6 +312,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     @Override
     public Expr getStaticExpr(Object value) {
         return new StaticValueExpr(value, this, true);
+    }
+
+    @IdentityStrongLazy
+    public ValueProperty getProperty(Object value) {
+        return new ValueProperty(value, this);
     }
 
     public DataObject getDataObject(String name) {
