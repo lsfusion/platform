@@ -136,7 +136,7 @@ To access design components, you can use their names or address property compone
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
 |`captionFont`|The font to be used for displaying caption of the component|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[Expression](Expression.md)(string value)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`class`|todo|Expression (string value)|NULL|todo|
+|`class`|CSS classes of the component (separated by spaces)|Expression (string value)|NULL|`some-class-one some-class-two`|
 |`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
 |`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|The color to be used for the component background|Expression ([COLOR](Literals.md#colorliteral) value)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
@@ -193,7 +193,7 @@ To access design components, you can use their names or address property compone
 |`captionHeight`|Height of the property caption in pixels|Integer literal|`-1`|`100`|
 |`captionCharHeight`|Height of the property caption in chars|Integer literal|`-1`|`5`|
 |`captionWidth`|Width of the property caption in pixels|Integer literal|`-1`|`100`|
-|`charHeight`|Height of the property value cell in characters (rows).|Integer literal|depends on the property|`2`|
+|`charHeight`|Height of the property value cell in characters (rows)|Integer literal|depends on the property|`2`|
 |`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
 |`valueFlex` |todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|Expression (string value)|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
