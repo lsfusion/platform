@@ -11,16 +11,10 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.integral.LongClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -106,8 +100,8 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                 "isDisabledNestLoopProcess[STRING[10]]", "queryTimeoutProcess[STRING[10]]", "debugInfoSQLProcess[STRING[10]]",
                 "threadNameSQLProcess[STRING[10]]", "threadStackTraceSQLProcess[STRING[10]]"));
 
-        LP.change(context, propsJava, javaProcesses, StringClass.get(10), (key, value, lp) -> getJavaMapValue(lp, value, key));
-        LP.change(context, propsSQL, sqlProcesses, StringClass.get(10), (key, value, lp) -> getSQLMapValue(lp, value, key));
+        LP.change(context, propsJava, javaProcesses, (key, value, lp) -> getJavaMapValue(lp, value, key));
+        LP.change(context, propsSQL, sqlProcesses, (key, value, lp) -> getSQLMapValue(lp, value, key));
     }
 
     private Object getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {

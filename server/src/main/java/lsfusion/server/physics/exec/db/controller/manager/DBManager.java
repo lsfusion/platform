@@ -142,6 +142,7 @@ import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1563,17 +1564,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LM.fillingIDs.change(true, session); // need this to avoid constraint on staticName changing
 
             MExclSet<Property> mResult = SetFact.mExclSet(added.size());
-            for (IDAdd addedObject : added) {
-                if(!isFirstStart)
-                    startLog("Adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", name " + addedObject.caption + ", image " + addedObject.image);
-                DataObject classObject = new DataObject(addedObject.object, LM.baseClass.unknown);
-                session.changeClass(classObject, addedObject.customClass);
-                LM.staticName.change(addedObject.sID, session, classObject);
-                LM.staticCaption.change(addedObject.caption, session, classObject);
-                LM.staticImage.change(addedObject.image, session, classObject);
-                LM.staticOrder.change(addedObject.order, session, classObject);
+            if (!added.isEmpty()) {
+                for (IDAdd addedObject : added) {
+                    mResult.exclAdd(addedObject.customClass.getProperty(addedObject.name));
+                    if (!isFirstStart)
+                        startLog("Adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", name " + addedObject.caption + ", image " + addedObject.image);
+                }
 
-                mResult.exclAdd(addedObject.customClass.getProperty(addedObject.name));
+                ImRevMap<Long, IDAdd> data = SetFact.fromJavaSet(added).mapRevKeys((IDAdd a) -> a.object);
+                ImOrderSet<LP> props = SetFact.toOrderExclSet(LM.staticName, LM.staticCaption, LM.staticImage, LM.staticOrder);
+                ImMap<LP, Function<IDAdd, Object>> propValues = props.mapList(ListFact.toList(addedObject -> addedObject.sID, addedObject -> addedObject.caption, addedObject -> addedObject.image, addedObject -> addedObject.order));
+                LP.changeWithClass(session, session, props, data, LM.baseClass,
+                        (id, addedObject, lp) -> propValues.get(lp).apply(addedObject),
+                        (id, addedObject) -> addedObject.customClass);
             }
 
             for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
