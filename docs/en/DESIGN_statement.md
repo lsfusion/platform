@@ -268,8 +268,9 @@ To access design components, you can use their names or address property compone
 |`boxed`|Drawing a frame (box) around a component|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`tabVertical`|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`quickSearch`|Specifying that the table will support quick element search|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`headerHeight`|Header height in pixels|Integer literal|NULL|`60`|
+|`headerHeight`|Header height in pixels**deprecated since version 6, use `captionHeight`**|Integer literal|NULL|`60`|
 |`captionHeight`|Header height in pixels|Integer literal|NULL|`60`|
+|`captionCharHeight`|Header height in chars|Integer literal|NULL|`5`|
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Integer literal|NULL|`60`|
 |`lineHeight`|todo|Integer literal|NULL|`60`|
