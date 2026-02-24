@@ -38,11 +38,11 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        return new XMLNode(createRootElement(root, getForm()), tag);
+        return new XMLNode(createRootElement(root, getForm(), false), tag);
     }
 
-    public static Element createRootElement(String root, FormEntity formEntity) {
-        return XMLNode.createRootElement(nvl(root != null ? root : formEntity.getIntegrationSID(), "export"));
+    public static Element createRootElement(String root, FormEntity formEntity, boolean importResolving) {
+        return XMLNode.createRootElement(nvl(root != null ? root : formEntity.getIntegrationSID(), "export"), importResolving);
     }
 
     @Override

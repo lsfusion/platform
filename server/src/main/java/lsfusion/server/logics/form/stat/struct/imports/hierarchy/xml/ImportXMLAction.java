@@ -28,7 +28,7 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
         groupParseNode.namespaceElement = element;
         for(ChildParseNode child : groupParseNode.children)
             if(child instanceof GroupParseNode)
-                fillNamespaceElements(XMLNode.addElement(element, child.getKey()), (GroupParseNode) child);
+                fillNamespaceElements(XMLNode.addElement(element, child.getKey(), true), (GroupParseNode) child);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
             if(formParseNode.namespaceElement == null)
                 synchronized (formParseNode) {
                     if(formParseNode.namespaceElement == null) // double check
-                        fillNamespaceElements(ExportXMLAction.createRootElement(root, formEntity), formParseNode);
+                        fillNamespaceElements(ExportXMLAction.createRootElement(root, formEntity, true), formParseNode);
                 }
             return new XMLNode(findRootNode(fileData, root), formParseNode);
         } catch (JDOMException | IOException e) {

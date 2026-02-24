@@ -101,7 +101,7 @@ public class XMLNode implements Node<XMLNode> {
         return fullName.substring(0, uriIndex);
     }
 
-    private static Namespace getXMLNamespace(Element element, Element namespaceElement, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace) {
+    private static Namespace getXMLNamespace(Element element, Element namespaceElement, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace, boolean importResolving) {
         Result<String> uri = new Result<>();
         String nsName = parseXMLNamespace(fullName, uri, shortName, extraNamespaces);
 
@@ -133,6 +133,9 @@ public class XMLNode implements Node<XMLNode> {
         if(nsName.equals("xmlns"))
             return null; //it's namespace declaration
 
+        if(importResolving)
+            return null;
+
         return Namespace.getNamespace(nsName, "http://www.w3.org/" + nsName);
     }
 
@@ -141,30 +144,33 @@ public class XMLNode implements Node<XMLNode> {
         return true; // we need this to resolve namespaces in element.getNamespace
     }
 
+    // IMPORT
     private Namespace getXMLNamespace(String fullName, Result<String> shortName, boolean inheritNamespace) {
-        return getXMLNamespace(element, namespaceElement, fullName, shortName, null, inheritNamespace);
+        return getXMLNamespace(element, namespaceElement, fullName, shortName, null, inheritNamespace, false);
     }
 
-    public static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace) {
-        return getXMLNamespace(element, null, fullName, shortName, extraNamespaces, inheritNamespace);
+    // EXPORT + IMPORT RESOLVING
+    public static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, Result<List<Namespace>> extraNamespaces, boolean inheritNamespace, boolean importResolving) {
+        return getXMLNamespace(element, null, fullName, shortName, extraNamespaces, inheritNamespace, importResolving);
     }
 
-    public static Element createRootElement(String key) {
-        return addElement(null, key);
+    public static Element createRootElement(String key, boolean importResolving) {
+        return addElement(null, key, importResolving);
     }
 
-    public static Element addElement(Element parentElement, String key) {
+    public static Element addElement(Element parentElement, String key, boolean importResolving) {
         Element childElement = createElement();
-        addElement(parentElement, childElement, key);
+        addElement(parentElement, childElement, key, importResolving);
         return childElement;
     }
 
-    public static void addElement(Element parentElement, Element childElement, String key) {
+    public static void addElement(Element parentElement, Element childElement, String key, boolean importResolving) {
         Result<String> shortKey = new Result<>();
         Result<List<Namespace>> extraNamespaces = new Result<>();
-        Namespace namespace = addXMLNamespace(parentElement, key, shortKey, extraNamespaces, parentElement != null);
+        Namespace namespace = addXMLNamespace(parentElement, key, shortKey, extraNamespaces, parentElement != null, importResolving);
         childElement.setName(shortKey.result);
-        childElement.setNamespace(namespace);
+        if(!(importResolving && namespace == null))
+            childElement.setNamespace(namespace);
         for(Namespace extraNamespace : extraNamespaces.result)
             childElement.addNamespaceDeclaration(extraNamespace);
         if(parentElement != null)
@@ -268,7 +274,7 @@ public class XMLNode implements Node<XMLNode> {
             element.addNamespaceDeclaration(namespace);
         } else {
             Result<String> shortKey = new Result<>();
-            Namespace namespace = addXMLNamespace(element, key, shortKey, null, false);
+            Namespace namespace = addXMLNamespace(element, key, shortKey, null, false, false);
             element.setAttribute(shortKey.result, stringValue, namespace);
         }
     }
@@ -277,7 +283,7 @@ public class XMLNode implements Node<XMLNode> {
         if(key.equals("value") || key.equals("value:full")) {
             element.addContent(content);
         } else {
-            addElement(element, key).addContent(content);
+            addElement(element, key, false).addContent(content);
         }
     }
 
@@ -296,7 +302,7 @@ public class XMLNode implements Node<XMLNode> {
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 
     private static void addXMLChild(Element element, String key, Element childElement) {
-        addElement(element, childElement, key);
+        addElement(element, childElement, key, false);
     }
 
     public void addNode(XMLNode node, String key, XMLNode childNode) {
