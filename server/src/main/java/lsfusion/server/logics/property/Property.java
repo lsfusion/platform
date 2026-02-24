@@ -1771,7 +1771,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(notNull) {
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
-                StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
+                DataClass objectClass = (DataClass) ((DataObject) defaultValue).objectClass;
                 return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(StaticValueExpr.getStaticValue(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;

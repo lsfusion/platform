@@ -404,7 +404,7 @@ public class PropertyFact {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
-        return new PropertyMapImplement<>(new ValueProperty(LocalizedString.NONAME, value, valueClass), MapFact.EMPTYREV());
+        return new PropertyMapImplement<>(valueClass.getProperty(value), MapFact.EMPTYREV());
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createNull() {

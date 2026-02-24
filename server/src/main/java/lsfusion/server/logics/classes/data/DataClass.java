@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
@@ -38,6 +39,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 
@@ -189,6 +191,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public Expr getStaticExpr(Object value) {
         return new StaticValueExpr(value, this);
+    }
+
+    @IdentityStrongLazy
+    public ValueProperty getProperty(Object value) {
+        return new ValueProperty(value, this);
     }
 
     protected abstract Class getReportJavaClass();
