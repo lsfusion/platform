@@ -1845,15 +1845,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         ImSet<Action> actions = getRecalculateFollows();
         for (int i = 0; i < actions.size(); i++) {
             final Action<?> action = actions.get(i);
+            Object logInfo = nvl(action.getDebugInfo(), action.caption);
             long time = runWithServiceLog((E2Runnable<SQLException, SQLHandledException>) () -> {
                 try {
                     DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
                 } catch (ApplyCanceledException e) { // suppress because it's known error
                     serviceLogger.info(e.getMessage());
                 }
-            }, String.format("Recalculate Follows %s of %s: %s", i + 1, actions.size(), action.getDebugInfo()));
+            }, String.format("Recalculate Follows %s of %s: %s", i + 1, actions.size(), logInfo));
             if (time > maxRecalculateTime)
-                messageList.add(String.format("Recalculate Follows: %s, %sms", action.getDebugInfo(), time));
+                messageList.add(String.format("Recalculate Follows: %s, %sms", logInfo, time));
         }
         return formatMessageList(messageList);
     }
