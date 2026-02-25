@@ -2466,7 +2466,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try {
                 String address = server.host.split(":")[0] + "/" + snmpPort;
 
-                CommunityTarget<UdpAddress> target = new CommunityTarget<>();
+                CommunityTarget target = new CommunityTarget();
                 target.setCommunity(new OctetString("public"));
                 target.setAddress(new UdpAddress(address));
                 target.setRetries(2);
@@ -2482,7 +2482,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 }
                 pdu.setType(PDU.GET);
 
-                ResponseEvent<?> response = snmp.send(pdu, target);
+                ResponseEvent response = snmp.send(pdu, target);
                 CpuTime cpuTime = null;
                 if (response != null && response.getResponse() != null) {
                     long[] vals = new long[OIDS.size()];
