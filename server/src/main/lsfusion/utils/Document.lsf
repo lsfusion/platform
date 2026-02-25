@@ -504,17 +504,13 @@ END
 // Actions
 META defineDocumentDetailActionsCustom (object, detailClass)
     delete##detailClass '{document.delete.detail.class.object}'(###object o)  { 
-        //FOR object##detailClass (d) == o DO {
         DELETE detailClass d WHERE object (d) == o;
-        //}
     } IN documentPrm TOOLBAR CONFIRM;
 END
 
 META defineDocumentDetailActions (object, detailClass)
-    delete##detailClass '{document.delete.detail.class.object}'(###object o)  { 
-        //FOR object##detailClass (d) == o DO {
+    delete##detailClass '{document.delete.detail.class.object}'(###object o)  {
         DELETE detailClass d WHERE object (d) == o;
-        //}
     } IN documentPrm TOOLBAR CONFIRM;
 END
 
