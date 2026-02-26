@@ -2607,7 +2607,7 @@ objectPropertyDefinition returns [LPWithParams property]
 		$property = self.addScriptedValueObjectProp($gobj.sid);
 	}
 }
-	:	'VALUE'
+	:	('VALUE' | 'ACTIVE')
 		gobj=formObjectID
 	;
 
@@ -4103,7 +4103,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, ActionStatementCont
 		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
+	:	('SEEK' | 'ACTIVATE') ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, actions, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, actions, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)
