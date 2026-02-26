@@ -1187,3 +1187,14 @@ push(Connection connection, INTEGER id) { push(connection, NULL, action(id)); }
 notify(JSON notification, INTEGER id) { notify(notification, action(id)); }
 notify(STRING title, INTEGER id) { notify(notification(title), id); }
 pushNotify(Connection connection, STRING title, INTEGER notificationId) { pushNotify(connection, notification(title), action(notificationId)); }
+
+//on started for reflection module, added in 6.2
+inGridMigrated = DATA BOOLEAN();
+onStarted() + {
+    IF NOT inGridMigrated() THEN {
+        inGrid(PropertyDraw p) <- TRUE WHERE hasUserPreferences(groupObject(p));
+        inGrid(PropertyDraw p, CustomUser u) <- TRUE WHERE hasUserPreferences(groupObject(p), u);
+        inGridMigrated() <- TRUE;
+    }
+}
+
