@@ -3378,7 +3378,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
-		                                     objectsContext, contextFilters, context, formId);
+		                                     objectsContext, contextFilters, $onInit.action, context, formId);
 	}
 }
 	:	'SHOW' (formIdVal = stringLiteral { formId = $formIdVal.val; } '=' )? mf=mappedForm[context, null, dynamic]
@@ -3398,6 +3398,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
+		(onInit=onInitBody[context, dynamic])?
 	;
 
 dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
@@ -3459,6 +3460,10 @@ doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext] re
         // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionDefinitionBody to get right DelegationType
     :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $action = $dDB.action; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseAction = $eDB.action; } )?)
 	|	';'
+;
+
+onInitBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+    :	'ON' 'INIT' onInitDB=keepContextFlowActionDefinitionBody[context, dynamic] { $action = $onInitDB.action; }
 ;
 
 syncTypeLiteral returns [boolean val]

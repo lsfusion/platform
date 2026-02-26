@@ -1,12 +1,14 @@
 package lsfusion.server.logics.form.open.interactive;
 
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -23,6 +25,7 @@ import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormSelectTop;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -89,6 +92,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private final boolean checkOnOk;
 
     private final String formId;
+
+    private final LA<?> onInitAction;
     
     public <C extends PropertyInterface> FormInteractiveAction(LocalizedString caption,
                                                                FormSelector<O> form,
@@ -103,7 +108,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly,
-                                                               String formID) {
+                                                               String formID,
+                                                               LA<?> onInitAction) {
         super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext, FormSelectTop.NULL());
 
         this.inputObjects = inputObjects;
@@ -123,6 +129,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.checkOnOk = checkOnOk;
 
         this.formId = formID;
+
+        this.onInitAction = onInitAction;
     }
     
     private boolean isShowDrop() {
@@ -165,6 +173,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             context.executeSessionEvents();
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
+        executeOnInitAction(newFormInstance, context);
         context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
 
         if (syncType) {
@@ -183,6 +192,15 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                 result = mResult.immutableList();
             }
             context.writeRequested(result);
+        }
+    }
+
+    private void executeOnInitAction(FormInstance newFormInstance, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        if (onInitAction != null) {
+            ActionObjectEntity<?> actionEntity = (ActionObjectEntity<?>) onInitAction.createObjectEntity(SetFact.EMPTYORDER());
+            newFormInstance.instanceFactory.getInstance(actionEntity)
+                    .getValueImplement(newFormInstance)
+                    .execute(newFormInstance, context.stack);
         }
     }
 

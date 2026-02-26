@@ -3876,7 +3876,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                                                          Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
-                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext,
+                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters,
+                                                                         LAWithParams onInitAction, List<TypedParameter> oldContext,
                                                                          String formId) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
@@ -3901,7 +3902,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,
-                readonly, formId);
+                readonly, formId, onInitAction != null ? onInitAction.getLP() : null);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
