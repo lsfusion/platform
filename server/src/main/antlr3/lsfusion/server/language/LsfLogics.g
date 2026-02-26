@@ -3463,7 +3463,7 @@ doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext] re
 ;
 
 onInitBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-    :	'ON' 'INIT' onInitDB=keepContextFlowActionDefinitionBody[context, dynamic] { $action = $onInitDB.action; }
+    :	onInitDB=listActionDefinitionBody[context, dynamic] { $action = $onInitDB.action; }
 ;
 
 syncTypeLiteral returns [boolean val]
