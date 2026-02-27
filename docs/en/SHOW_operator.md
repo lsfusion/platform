@@ -10,6 +10,7 @@ The `SHOW` operator creates an [action](Actions.md) that [opens a form](In_an_in
 SHOW name 
 [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
 [formActionOptions] 
+[{initActionOperator}] 
 ```
 
 When opening the list/edit form, the syntax is slightly different:
@@ -18,6 +19,7 @@ When opening the list/edit form, the syntax is slightly different:
 SHOW classFormType className
 = expr [NULL]
 [formActionOptions] 
+[{initActionOperator}]
 ```
 
 `formActionOptions` is the options for this action. They can be added one by one in any order:
@@ -64,6 +66,10 @@ The `SHOW` operator creates an action that opens the specified form. When openin
 
     Specifies that the values passed may be `NULL`.
 
+- `initActionOperator`
+
+  A [context-dependent action operator](Action_operators.md#contextdependent) that is executed on form opening, after [EVENTS ON INIT](Event_block.md) form actions.
+
 ### Options
 
 - `syncType`
@@ -109,7 +115,7 @@ FORM showForm
 ;
 
 testShow ()  {
-    SHOW showForm OBJECTS dateFrom = 2010_01_01, dateTo = 2010_12_31;
+    SHOW showForm OBJECTS dateFrom = 2010_01_01, dateTo = 2010_12_31 { MESSAGE 'On init'; };
 
     NEWSESSION {
         NEW s = Sku {

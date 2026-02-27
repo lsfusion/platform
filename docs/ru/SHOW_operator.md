@@ -9,7 +9,8 @@ title: 'Оператор SHOW'
 ```
 SHOW name 
 [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
-[formActionOptions] 
+[formActionOptions]
+[{initActionOperator}] 
 ```
 
 При открытии формы выбора / редактирования синтаксис немного отличается:
@@ -17,7 +18,8 @@ SHOW name
 ```
 SHOW classFormType className
 = expr [NULL]
-[formActionOptions] 
+[formActionOptions]
+[{initActionOperator}] 
 ```
 
 `formActionOptions` - это опции этого действия. Они могут указываться друг за другом в произвольном порядке:
@@ -64,6 +66,11 @@ READONLY
 
     Указывает, что передаваемые значения могут быть `NULL`.
 
+- `initActionOperator`
+
+  [Контекстно-зависимый оператор-действие](Action_operators.md), выполняется при открытии формы, после действий, указанных в [EVENTS ON INIT](Event_block.md) формы.
+
+
 ### Опции оператора SHOW
 
 - `syncType`
@@ -109,7 +116,7 @@ FORM showForm
 ;
 
 testShow ()  {
-    SHOW showForm OBJECTS dateFrom = 2010_01_01, dateTo = 2010_12_31;
+    SHOW showForm OBJECTS dateFrom = 2010_01_01, dateTo = 2010_12_31 { MESSAGE 'On init'; };
 
     NEWSESSION {
         NEW s = Sku {

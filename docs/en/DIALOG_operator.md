@@ -10,6 +10,7 @@ The `DIALOG` operator creates an [action](Actions.md) that [opens a form](In_an_
 DIALOG name
 [OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
 [formActionOptions]
+[{initActionOperator}]
 [DO actionOperator [ELSE elseActionOperator]]
 ```
 
@@ -19,6 +20,7 @@ When opening the list/edit form, the syntax is slightly different:
 DIALOG classFormType className
 [= expr] [NULL] [inputOptions]
 [formActionOptions]
+[{initActionOperator}]
 [DO actionOperator [ELSE elseActionOperator]]
 ```
 
@@ -98,13 +100,18 @@ The `DIALOG` operator creates an action that opens the specified form. When open
 
     A keyword that determines whether the user can select `NULL` as the return value (using the special "Drop" action – `System.formDrop`). If not used, will be enabled if and only if the `CHANGE` option is specified.
 
+- `initActionOperator`
+
+    A [context-dependent action operator](Action_operators.md#contextdependent) that is executed on form opening, after [EVENTS ON INIT](Event_block.md) form actions.
+
+
 - `actionOperator`
 
-    A [context-dependent action operator](Action_operators.md#contextdependent) that is executed if the input was completed successfully.
+    A context-dependent action operator that is executed if the input was completed successfully.
 
 - `elseActionOperator`
 
-    A [context-dependent action operator](Action_operators.md#contextdependent) that is executed if the input was cancelled. Parameters added to the input block `INPUT` cannot be used as parameters.
+    A context-dependent action operator that is executed if the input was cancelled. Parameters added to the input block `INPUT` cannot be used as parameters.
 
 ### Additional options
 
@@ -140,7 +147,9 @@ FORM selectSku
 ;
 
 testDialog  {
-    DIALOG selectSku OBJECTS s INPUT DO {
+    DIALOG selectSku OBJECTS s INPUT {
+        MESSAGE 'On Init';
+    } DO {
         MESSAGE 'Selected sku : ' + id(s);
     }
 }
