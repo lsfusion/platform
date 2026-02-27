@@ -3,9 +3,9 @@ package lsfusion.server.logics.form.interactive.action;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.util.HashSet;
@@ -23,10 +23,12 @@ public class FormOptions {
     public boolean showDrop;
     public boolean checkOnOk;
     public String formId;
+    public ActionValueImplement<?> initAction;
 
     public FormOptions(Boolean noCancel, ManageSessionType manageSession, ShowFormType type,
                        ImSet<ObjectEntity> inputObjects, ImSet<ContextFilterInstance> contextFilters,
-                       boolean showReadonly, boolean forbidDuplicate, boolean syncType, boolean showDrop, boolean checkOnOk, String formId) {
+                       boolean showReadonly, boolean forbidDuplicate, boolean syncType, boolean showDrop, boolean checkOnOk, String formId,
+                       ActionValueImplement<?> initAction) {
         this.noCancel = noCancel;
         this.manageSession = manageSession;
         this.type = type;
@@ -38,6 +40,7 @@ public class FormOptions {
         this.showDrop = showDrop;
         this.checkOnOk = checkOnOk;
         this.formId = formId;
+        this.initAction = initAction;
     }
 
     public WindowFormType getWindowFormType() {

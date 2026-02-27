@@ -3492,7 +3492,7 @@ formActionDefinitionBody[List<TypedParameter> context, ActionStatementContext ac
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
-		                                     objectsContext, contextFilters, context, formId);
+		                                     $ia.action, objectsContext, contextFilters, context, formId);
 	}
 }
 	:	'SHOW' (formIdVal = stringLiteral { formId = $formIdVal.val; } '=' )? mf=mappedForm[context, null, actions, dynamic]
@@ -3512,6 +3512,7 @@ formActionDefinitionBody[List<TypedParameter> context, ActionStatementContext ac
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
+		(ia=listActionDefinitionBody[context, dynamic])?
 	;
 
 dialogActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions] returns [LAWithParams action]
@@ -3533,7 +3534,7 @@ dialogActionDefinitionBody[List<TypedParameter> context, ActionStatementContext 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.action, $dDB.elseAction, objectsContext, contextFilters, context, newContext);
+		$action = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $ia.action, $dDB.action, $dDB.elseAction, objectsContext, contextFilters, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, actions, false]
@@ -3550,6 +3551,7 @@ dialogActionDefinitionBody[List<TypedParameter> context, ActionStatementContext 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
+		(ia=listActionDefinitionBody[context, false])?
 		dDB=doInputBody[context, newContext]
 	;
 
