@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.open.interactive;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -12,6 +13,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.FormOptions;
@@ -90,7 +92,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private final boolean checkOnOk;
 
     private final String formId;
-    
+
+    private final ActionMapImplement<?, ClassPropertyInterface> initAction;
+
     public <C extends PropertyInterface> FormInteractiveAction(LocalizedString caption,
                                                                FormSelector<O> form,
                                                                final ImList<O> objectsToSet, final ImList<Boolean> nulls,
@@ -104,7 +108,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly,
-                                                               String formID) {
+                                                               String formID,
+                                                               Result<ActionMapImplement<?, ClassPropertyInterface>> mappedInitAction) {
         super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext, FormSelectTop.NULL());
 
         this.inputObjects = inputObjects;
@@ -124,6 +129,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.checkOnOk = checkOnOk;
 
         this.formId = formID;
+        this.initAction = mappedInitAction != null ? mappedInitAction.result : null;
     }
     
     private boolean isShowDrop() {
@@ -164,7 +170,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             context.executeSessionEvents();
 
         FormInstance newFormInstance = context.createAndRequestFormInstance(form, mapObjectValues,
-                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, forbidDuplicate, syncType, isShowDrop(), checkOnOk, formId));
+                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, forbidDuplicate,
+                        syncType, isShowDrop(), checkOnOk, formId,
+                        initAction != null ? initAction.getValueImplement(context.getKeys(), null, null) : null));
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
 

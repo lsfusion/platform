@@ -2866,6 +2866,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.INIT, stack);
+        if(options.initAction != null)
+            options.initAction.execute(this, stack);
     }
 
     public void fireOnBeforeApply(ExecutionStack stack) throws SQLException, SQLHandledException {

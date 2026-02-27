@@ -3972,7 +3972,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                                                          Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
-                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext,
+                                                                         LAWithParams initAction, List<TypedParameter> objectsContext,
+                                                                         List<LPWithParams> contextFilters, List<TypedParameter> oldContext,
                                                                          String formId) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
@@ -3990,14 +3991,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             assert !objectProp.out && !objectProp.constraintFilter;
         }
 
-        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
+        CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), initAction);
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,
-                readonly, formId);
+                readonly, formId, contextEntities.initAction);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4062,14 +4063,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final ImSet<ContextFilterSelector<PropertyInterface, O>> filters;
         public final InputPropertyListEntity<?, PropertyInterface> list;
         public final ImList<InputContextAction<?, PropertyInterface>> contextActions;
+        public final ActionMapImplement<?, PropertyInterface> initAction;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputPropertyListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputPropertyListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions, ActionMapImplement<?, PropertyInterface> initAction) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
             this.filters = filters;
             this.list = list;
             this.contextActions = contextActions;
+            this.initAction = initAction;
         }
     }
     private LPWithParams remap(LPWithParams property, int fromParam, int toParam) {
@@ -4104,15 +4107,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return result.apply(lp.getActionOrProperty(), mMapValues.immutableRev(), mMapObjects.immutableRev());
     }
-    
-    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters) {
-        return getContextFilterAndListEntities(contextSize, objectsContext, contextFilters, null, ListFact.EMPTY());
+
+    private <P extends PropertyInterface> ActionMapImplement<P, PropertyInterface> getInitActionImplement(LAWithParams initAction, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
+        LA<P> la = (LA<P>) initAction.getLP();
+        return new ActionMapImplement<>(la.action, la.listInterfaces.mapSet(
+                SetFact.fromJavaOrderSet(initAction.usedParams).mapOrder(usedInterfaces)
+        ));
     }
-    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterAndListEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LPWithParams list, ImList<CCCF<O>> cccfs) {
-        return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, list, cccfs, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters) {
+        return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, null, ListFact.EMPTY(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null);
+    }
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LAWithParams initAction) {
+        return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, null, ListFact.EMPTY(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), initAction);
+    }
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterAndListEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LPWithParams list, ImList<CCCF<O>> cccfs, LAWithParams initAction) {
+        return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, list, cccfs, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), initAction);
     }
     private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterAndListAndActionsEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LPWithParams list, ImList<CCCF<O>> cccfs,
                                                                                                                                                   List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
+        return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, list, cccfs, actionImages, keyStrokes, quickAccesses, actions, null);
+    }
+    private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterAndListAndActionsEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters, LPWithParams list, ImList<CCCF<O>> cccfs,
+                                                                                                                                                  List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
+                                                                                                                                                  LAWithParams initAction) {
         List<LAPWithParams> props = new ArrayList<>();
         ListFact.addJavaAll(contextFilters, props);
         ListFact.addJavaAll(cccfs.mapListValues((CCCF<O> cccf) -> cccf.change), props);
@@ -4120,6 +4138,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(list != null)
             props.add(list);
         props.addAll(actions);
+        if(initAction != null)
+            props.add(initAction);
 
         // actually action input param has different type (list type in theory), but it doesn't matter actually
         ImOrderSet<Integer> usedContextParams = SetFact.fromJavaOrderSet(getResultInterfaces(contextSize, mergeAllParams(props)));
@@ -4133,13 +4153,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
             })).toOrderExclSet().getSet(),
             list != null ? (InputPropertyListEntity<?, PropertyInterface>) getInputListEntity(contextSize, list, usedInterfaces) : null,
-            getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces));
+            getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces),
+                initAction != null ? getInitActionImplement(initAction, usedInterfaces) : null);
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedDialogFAProp(
             MappedForm<O> mapped, List<FormActionProps> allObjectProps,
             WindowFormType windowType, ManageSessionType manageSession, FormSessionScope scope,
-            boolean checkOnOk, Boolean noCancel, boolean readonly, LAWithParams doAction, LAWithParams elseAction,
+            boolean checkOnOk, Boolean noCancel, boolean readonly, LAWithParams initAction, LAWithParams doAction, LAWithParams elseAction,
             List<TypedParameter> objectsContext, List<LPWithParams> contextFilters,
             List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -4204,7 +4225,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = mChangeProps.immutableList();
 
-        CFEWithParams<O> contextEntities = getContextFilterAndListEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), list, mConstraintContextFilters.immutableList());
+        CFEWithParams<O> contextEntities = getContextFilterAndListEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), list, mConstraintContextFilters.immutableList(), initAction);
 
         boolean syncType = doAction != null || elseAction != null; // optimization
 
@@ -4213,7 +4234,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
                                  contextEntities.contextActions, syncType, windowType, checkOnOk,
-                                 readonly, null, false);
+                                 readonly, null, false, contextEntities.initAction);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
