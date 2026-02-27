@@ -4108,13 +4108,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result.apply(lp.getActionOrProperty(), mMapValues.immutableRev(), mMapObjects.immutableRev());
     }
 
-    private <P extends PropertyInterface> ActionMapImplement<P, PropertyInterface> getInitActionImplement(LAWithParams initAction, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
-        LA<P> la = (LA<P>) initAction.getLP();
-        return new ActionMapImplement<>(la.action, la.listInterfaces.mapSet(
-                SetFact.fromJavaOrderSet(initAction.usedParams).mapOrder(usedInterfaces)
-        ));
-    }
-
     private <O extends ObjectSelector, T extends PropertyInterface, X extends PropertyInterface> CFEWithParams<O> getContextFilterEntities(int contextSize, ImOrderSet<O> objectsContext, ImList<LPWithParams> contextFilters) {
         return getContextFilterAndListAndActionsEntities(contextSize, objectsContext, contextFilters, null, ListFact.EMPTY(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null);
     }
@@ -4154,7 +4147,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             })).toOrderExclSet().getSet(),
             list != null ? (InputPropertyListEntity<?, PropertyInterface>) getInputListEntity(contextSize, list, usedInterfaces) : null,
             getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces),
-                initAction != null ? getInitActionImplement(initAction, usedInterfaces) : null);
+                initAction != null ? initAction.getLP().getImplement(SetFact.fromJavaOrderSet(initAction.usedParams).mapOrder(usedInterfaces)) : null);
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedDialogFAProp(
