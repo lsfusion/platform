@@ -77,6 +77,7 @@ unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (STRING[100]);
 makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileAction' ();
 
 resource '{utils.resource.file}' = DATA LOCAL FILE ();
+resourceFile '{utils.resource.file}' = resource() @@deprecated('6.1');
 resourcePath '{utils.resource.file.path}' = DATA LOCAL STRING ();
 readResource '{utils.read.resource}' (STRING path, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction';
 readResource(STRING path) { readResource(path, NULL); }
