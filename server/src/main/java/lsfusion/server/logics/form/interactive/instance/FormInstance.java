@@ -221,8 +221,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     
     private final Locale locale;
 
-    private boolean interactive = true; // важно для assertion'а в endApply
-
     private ImSet<ObjectInstance> objects;
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
@@ -350,26 +348,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i = 0, size = fixedOrders.size(); i < size; i++)
             fixedOrders.getKey(i).fixedOrders = fixedOrders.getValue(i);
 
-        MExclMap<ObjectEntity, ObjectValue> mSeekCachedObjects = MapFact.mExclMap();
-        for (GroupObjectInstance groupObject : groupObjects) {
-            UpdateType updateType = groupObject.getUpdateType();
-            if (updateType != UpdateType.PREV) {
-                groupObject.seek(updateType, this, null);
-            } else {
-                for (ObjectInstance object : groupObject.objects) {
-                    // ставим на объекты из cache'а
-                    if (object.getBaseClass() instanceof CustomClass && classListener != null) {
-                        CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                        Long objectID = classListener.getObject(cacheClass, entity, groupObject.entity);
-                        mSeekCachedObjects.exclAdd(object.entity, session.getObjectValue(cacheClass, objectID));
-                    }
-                }
-            }
-        }
-        mapObjects = MapFact.override(mSeekCachedObjects.immutable(), DataObject.filterDataObjects(mapObjects));
-        for (int i = 0, size = mapObjects.size(); i < size; i++)
-            seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i), stack);
-
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
             int defaultInd = filterGroup.entity.getDefaultFilterIndex();
@@ -437,7 +415,25 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         processComponent(entity.view.getMainContainer());
 
-        this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
+        MExclMap<ObjectEntity, ObjectValue> mSeekCachedObjects = MapFact.mExclMap();
+        for (GroupObjectInstance groupObject : groupObjects) {
+            UpdateType updateType = groupObject.getUpdateType();
+            if (updateType != UpdateType.PREV) {
+                groupObject.seek(updateType, this, null);
+            } else {
+                for (ObjectInstance object : groupObject.objects) {
+                    // ставим на объекты из cache'а
+                    if (object.getBaseClass() instanceof CustomClass && classListener != null) {
+                        CustomClass cacheClass = (CustomClass) object.getBaseClass();
+                        Long objectID = classListener.getObject(cacheClass, entity, groupObject.entity);
+                        mSeekCachedObjects.exclAdd(object.entity, session.getObjectValue(cacheClass, objectID));
+                    }
+                }
+            }
+        }
+        mapObjects = MapFact.override(mSeekCachedObjects.immutable(), DataObject.filterDataObjects(mapObjects));
+        for (int i = 0, size = mapObjects.size(); i < size; i++)
+            seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i), stack);
 
         fireOnInit(stack);
 
