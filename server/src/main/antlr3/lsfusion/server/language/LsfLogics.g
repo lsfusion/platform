@@ -553,21 +553,26 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 formFormsList
 @init {
     boolean extend = false;
-    String form = null;
+}
+	:	('EXTEND' { extend = true; } )?
+	    'FORMS'
+		formFormsListItem[extend]
+		(',' formFormsListItem[extend])*
+	;
+
+formFormsListItem[boolean extend]
+@init {
     Map<String, String> objectsMapping = null;
     Map<String, String> propertiesMapping = null;
     Map<String, String> filterGroupsMapping = null;
     Map<String, String> componentsMapping = null;
 }
 @after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptingForm(extend, form, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, self.getVersion());
-	}
+    if (inMainParseState()) {
+        $formStatement::form.addScriptingForm(extend, $formName.sid, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, self.getVersion());
+    }
 }
-	:	('EXTEND' { extend = true; } )?
-	    'FORM'
-		formName=compoundID { form = $formName.sid; }
-
+    :   formName=compoundID
 		('('
 		    (
 		        obj = formMappingObjects { objectsMapping = obj; }
@@ -576,7 +581,7 @@ formFormsList
 		    |   components = formMappingComponents { componentsMapping = components; }
 		    )*
 		 ')')?
-	;
+    ;
 
 formMappingObjects returns [Map<String, String> mapping = new OrderedMap<String, String>()]
 @after {
