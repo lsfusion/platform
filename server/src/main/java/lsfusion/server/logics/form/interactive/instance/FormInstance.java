@@ -1832,6 +1832,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
+    @Deprecated
+    public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
+        seekObject(object, value, ThreadLocalContext.getStack());
+    }
+
     public void seekObject(ObjectInstance object, ObjectValue value, ExecutionStack stack) throws SQLException, SQLHandledException {
         changeValue(object, value, stack);
 
