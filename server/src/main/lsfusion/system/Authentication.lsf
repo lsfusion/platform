@@ -151,6 +151,9 @@ auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
 use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
+twoFaRateLimitSeconds = DATA INTEGER() LAZY;
+twoFaExpirySeconds = DATA INTEGER() LAZY;
+twoFaMaxAttempts = DATA INTEGER() LAZY;
 
 code2FA = DATA STRING (CustomUser);
 expiry2FA = DATA DATETIME (CustomUser);
@@ -325,30 +328,24 @@ changePassword(JSONFILE input) {
 // Code is generated on the server side; no code travels from web-client.
 // Rate-limited to 1 request per minute per user.
 send2FACode(JSONFILE input) {
-    LOCAL rateLimited = BOOLEAN();
-    LOCAL code = STRING();
     IMPORT FROM input FIELDS STRING username DO {
         TRY {
             FOR login(CustomUser cu) == username DO {
-                IF lastInitiated2FA(cu) AND lastInitiated2FA(cu) >= subtractSeconds(currentDateTime(), 60) THEN {
-                    rateLimited() <- TRUE;
+                IF lastInitiated2FA(cu) AND lastInitiated2FA(cu) >= subtractSeconds(currentDateTime(), OVERRIDE twoFaRateLimitSeconds(), 60) THEN {
+                    EXPORT FROM error = '{two.fa.rate.limit}';
                 } ELSE {
-                    code() <- lpad(TEXT(randInt(1000000)), 6, '0');
                     APPLY {
-                        code2FA(cu) <- code();
-                        expiry2FA(cu) <- sumSeconds(currentDateTime(), 300);
+                        code2FA(cu) <- lpad(TEXT(randInt(1000000)), 6, '0');
+                        expiry2FA(cu) <- sumSeconds(currentDateTime(), OVERRIDE twoFaExpirySeconds(), 300);
                         lastInitiated2FA(cu) <- currentDateTime();
                     }
                     EMAIL
                         SUBJECT '$I{2FACodeSubject.html}'
                         TO email(cu)
                         BODY '$I{2FACodeBody.html}';
+                    
+                    EXPORT FROM success = 'ok';
                 }
-            }
-            IF rateLimited() THEN {
-                EXPORT FROM error = '{two.fa.rate.limit}';
-            } ELSE {
-                EXPORT FROM success = 'ok';
             }
         } CATCH {
             EXPORT FROM error = messageCaughtException();
@@ -366,21 +363,12 @@ verify2FACode(JSONFILE input) {
                         code2FA(cu) <- NULL;
                         expiry2FA(cu) <- NULL;
                     }
-                    result() <- 'ok';
+                    EXPORT FROM success = 'ok';
                 } ELSE {
-                    result() <- 'invalid';
+                    EXPORT FROM error = 'invalid';
                 }
             } ELSE {
-                result() <- 'expired';
-            }
-        }
-        IF result() == 'ok' THEN {
-            EXPORT FROM success = 'ok';
-        } ELSE {
-            IF result() == 'expired' THEN {
                 EXPORT FROM error = 'expired';
-            } ELSE {
-                EXPORT FROM error = 'invalid';
             }
         }
     }
@@ -622,7 +610,7 @@ FORM customUsers '{authentication.users}'
                       userInfoUri,
                       userNameAttributeName,
                       clientName
-    PROPERTIES() use2FA
+    PROPERTIES() use2FA, twoFaRateLimitSeconds, twoFaExpirySeconds, twoFaMaxAttempts
     PROPERTIES () webClientSecretKey
 ;
 
@@ -675,6 +663,9 @@ DESIGN customUsers {
             NEW twoFactorAuth {
                 caption = '2FA';
                 MOVE PROPERTY(use2FA());
+                MOVE PROPERTY(twoFaRateLimitSeconds());
+                MOVE PROPERTY(twoFaExpirySeconds());
+                MOVE PROPERTY(twoFaMaxAttempts());
             }
             NEW WEBAUTH {
                 caption = 'WEB-AUTH';

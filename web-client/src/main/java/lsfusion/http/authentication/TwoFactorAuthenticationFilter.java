@@ -3,6 +3,7 @@ package lsfusion.http.authentication;
 import lsfusion.base.ServerMessages;
 import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.interop.logics.ServerSettings;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,8 +28,6 @@ import java.io.IOException;
  * the web-client never holds the plaintext code.
  */
 public class TwoFactorAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-
-    private static final int MAX_ATTEMPTS = 5;
 
     private final LogicsProvider logicsProvider;
 
@@ -65,7 +64,9 @@ public class TwoFactorAuthenticationFilter extends AbstractAuthenticationProcess
         Integer attempts = (Integer) session.getAttribute("2fa_attempts");
         attempts = (attempts == null ? 0 : attempts) + 1;
         session.setAttribute("2fa_attempts", attempts);
-        if (attempts > MAX_ATTEMPTS) {
+        ServerSettings serverSettings = logicsProvider.getServerSettings(request, false);
+        int maxAttempts = serverSettings != null && serverSettings.twoFaMaxAttempts != null ? serverSettings.twoFaMaxAttempts : 3;
+        if (attempts > maxAttempts) {
             clearSession(session);
             throw new TwoFactorLockedException();
         }
