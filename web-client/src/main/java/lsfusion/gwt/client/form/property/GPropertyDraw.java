@@ -526,7 +526,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         GType changeType = getChangeType();
         if (isCharModifyKeyEvent(editEvent, changeType == null ? null : changeType.getEditEventFilter()) ||
                 isDropEvent(editEvent) || isChangeAppendKeyEvent(editEvent))
-            return GEditBindingMap.changeOrGroupChange();
+            return GEditBindingMap.changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
 
         return null;
     }
