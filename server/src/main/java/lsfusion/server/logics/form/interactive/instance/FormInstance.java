@@ -913,9 +913,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void changeValue(ObjectInstance object, ObjectValue changeValue, ExecutionStack stack) throws SQLException, SQLHandledException {
-        object.changeValue(changeValue);
+        if(object.changeValue(changeValue)) {
+            if (object instanceof CustomObjectInstance)
+                ((CustomObjectInstance) object).updateCurrentClass(session, this);
+            object.updateValueProperty(this);
 
-        onObjectChanged(object, stack);
+            fireObjectChanged(object, stack);
+        }
     }
 
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException, SQLHandledException {
@@ -2827,16 +2831,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public Object read(PropertyObjectInstance<?> property) throws SQLException, SQLHandledException {
         return property.read(this);
-    }
-
-    public void onObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if ((object.updated & UPDATED_OBJECT) != 0) {
-            if (object instanceof CustomObjectInstance)
-                ((CustomObjectInstance) object).updateCurrentClass(session, this);
-            object.updateValueProperty(this);
-
-            fireObjectChanged(object, stack);
-        }
     }
 
     // ---------------------------------------- Events ----------------------------------------

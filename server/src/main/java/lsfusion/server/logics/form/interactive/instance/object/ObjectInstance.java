@@ -79,13 +79,15 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
 
     protected ObjectValue value = NullValue.instance;
 
-    public void changeValue(ObjectValue changeValue) throws SQLException, SQLHandledException {
-        if(BaseUtils.nullEquals(value, changeValue)) return;
+    public boolean changeValue(ObjectValue changeValue) throws SQLException, SQLHandledException {
+        if(BaseUtils.nullEquals(value, changeValue)) return false;
 
         value = changeValue;
 
         updated = updated | ObjectInstance.UPDATED_OBJECT;
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
+
+        return true;
     }
 
     public abstract boolean classChanged(ChangedData changedProps);
