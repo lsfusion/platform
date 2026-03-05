@@ -27,8 +27,22 @@ import java.sql.SQLException;
 
 public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
 
+    private final boolean staticValueExpr;
+
     public SingleKeyPropertyUsage(String debugInfo, final Type keyType, Type propertyType) {
+        this(debugInfo, keyType, propertyType, false);
+    }
+
+    // for classes tables it's better to use static exprs for the IsClassExpr checkEquals optimization (important for cases like objectClass(ob) = objectClass(b))
+    public SingleKeyPropertyUsage(String debugInfo, final Type keyType, Type propertyType, boolean staticValueExpr) {
         super(debugInfo, SetFact.singletonOrder("key"), key -> keyType, propertyType);
+
+        this.staticValueExpr = staticValueExpr;
+    }
+
+    @Override
+    protected boolean isStaticValueExpr() {
+        return staticValueExpr;
     }
 
     public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {

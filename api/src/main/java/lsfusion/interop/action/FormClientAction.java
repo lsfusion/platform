@@ -14,13 +14,15 @@ public class FormClientAction extends ExecuteClientAction {
 
     public ShowFormType showFormType;
     public boolean forbidDuplicate;
+    public boolean syncType;
     public String formId;
 
-    public FormClientAction(boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, ShowFormType showFormType, String formId) {
+    public FormClientAction(boolean forbidDuplicate, boolean syncType, RemoteFormInterface remoteForm, FormClientData clientData, ShowFormType showFormType, String formId) {
         this.clientData = clientData;
         this.remoteForm = remoteForm;
         this.showFormType = showFormType;
         this.forbidDuplicate = forbidDuplicate;
+        this.syncType = syncType;
         this.formId = formId;
     }
 

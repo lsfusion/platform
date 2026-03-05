@@ -112,7 +112,7 @@ public class InputAction extends SystemExplicitAction {
     }
 
     private ImList<AsyncMapInputListAction<ClassPropertyInterface>> getActions() {
-        return contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i));
+        return contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, value.check, i));
     }
 
     private boolean isStrict() {

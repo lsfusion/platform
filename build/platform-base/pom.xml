@@ -4,7 +4,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>base</artifactId>
-        <version>6.1-SNAPSHOT</version>
+        <version>6.2-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
         <!-- don't forget to merge jasperreports_extension.properties file when updating jasperreports -->
-        <jasper.version>6.20.6</jasper.version>
+        <jasper.version>6.21.3</jasper.version>
         <jasper.htmlcomponent.version>6.20.5</jasper.htmlcomponent.version>
         <castor.core.version>1.4.1</castor.core.version>
         <ecj.version>3.17.0</ecj.version>
@@ -58,8 +58,8 @@
         <jna.version>5.4.0</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
-        <imageio-jpeg.version>3.9.4</imageio-jpeg.version>
-        <imageio-webp.version>3.9.4</imageio-webp.version>
+        <twelvemonkeys.imageio.version>3.12.0</twelvemonkeys.imageio.version>
+        <sejda.imageio.version>0.1.6</sejda.imageio.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>8.0.30</mysql.version>
@@ -76,10 +76,13 @@
 
         <validation.api.version>1.0.0.GA</validation.api.version>
         <json.version>20240303</json.version>
+        <java-json-canonicalization.version>1.1</java-json-canonicalization.version>
+        <java-json-canonicalization.version>1.1</java-json-canonicalization.version>
         <junrar.version>0.7</junrar.version>
         <ph.css.version>6.2.2</ph.css.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.5</commons.fileupload.version>
+        <com.ibm.icu.icu4j.version>77.1</com.ibm.icu.icu4j.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
         <scrimage.version>4.0.42</scrimage.version>
         <httpcomponents.client5.httpclient5.version>5.3.1</httpcomponents.client5.httpclient5.version>
@@ -361,12 +364,17 @@
             <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-jpeg</artifactId>
-                <version>${imageio-jpeg.version}</version>
+                <version>${twelvemonkeys.imageio.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-webp</artifactId>
-                <version>${imageio-webp.version}</version>
+                <version>${twelvemonkeys.imageio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.sejda.imageio</groupId>
+                <artifactId>webp-imageio</artifactId>
+                <version>${sejda.imageio.version}</version>
             </dependency>
 
             <dependency>
@@ -491,6 +499,11 @@
                 <version>${json.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.github.erdtman</groupId>
+                <artifactId>java-json-canonicalization</artifactId>
+                <version>${java-json-canonicalization.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
                 <version>${junrar.version}</version>
@@ -509,6 +522,11 @@
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
                 <version>${commons.fileupload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.icu</groupId>
+                <artifactId>icu4j</artifactId>
+                <version>${com.ibm.icu.icu4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.tuckey</groupId>

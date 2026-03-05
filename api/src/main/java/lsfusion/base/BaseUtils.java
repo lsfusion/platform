@@ -1,6 +1,7 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import com.ibm.icu.text.UnicodeSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -50,6 +51,7 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -59,11 +61,11 @@ public class BaseUtils {
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
-    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго 
+    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 343;
+        return 372;
     }
 
     public static String getPlatformVersion() {
@@ -1549,6 +1551,76 @@ public class BaseUtils {
         return extension != null && !extension.isEmpty() ? (name + "." + extension) : name;
     }
 
+    /**
+     * Converts a technical identifier (camelCase, PascalCase, snake_case, kebab-case)
+     * into a human-readable caption in sentence case.
+     * <p>
+     * Rules:
+     * <ul>
+     *   <li>Splits on camel/pascal boundaries, underscores, and dashes.</li>
+     *   <li>First word is capitalized (Sentence case); subsequent words are lowercased.</li>
+     *   <li>All-caps acronyms (length ≥ 2, letters/digits) are preserved as-is (e.g., "URL", "ID").</li>
+     * </ul>
+     * Examples:
+     * <pre>
+     *   documentHeader   -> "Document header"
+     *   userIDNumber     -> "User ID number"
+     *   URLValue         -> "URL value"
+     *   http_status-code2XX -> "HTTP status code 2XX"
+     * </pre>
+     */
+    public static String humanize(String input) {
+        if (input == null || input.isEmpty()) return input;
+
+        // 1) Normalize separators (underscores/dashes) to spaces.
+        String s = input.trim().replaceAll("[-_]+", " ");
+
+        // 2) Insert spaces at camel/pascal/number boundaries.
+        //    - Between lower->upper (documentHeader -> document Header)
+        //    - Between acronym->capitalized word (URLValue -> URL Value)
+        //    - Between letters<->digits (Version2 -> Version 2, 2FA -> 2 FA)
+        s = s.replaceAll(
+                "(?<=[A-Z])(?=[A-Z][a-z])"   // URL|Value
+                        + "|(?<=[a-z])(?=[A-Z])"       // document|Header
+                        + "|(?<=[A-Za-z])(?=\\d)"      // Version|2
+                        + "|(?<=\\d)(?=[A-Za-z])",     // 2|FA
+                " "
+        );
+
+        // 3) Collapse multiple spaces to single spaces.
+        s = s.replaceAll("\\s+", " ").trim();
+        if (s.isEmpty()) return s;
+
+        // 4) Build sentence case while preserving acronyms.
+        String[] parts = s.split(" ");
+        StringBuilder out = new StringBuilder(s.length());
+        for (int i = 0; i < parts.length; i++) {
+            String w = parts[i];
+
+            // Detect acronym: length ≥ 2, all uppercase letters/digits, and contains at least one letter.
+            boolean isAcronym = w.length() >= 2
+                    && w.replaceAll("[A-Za-z0-9]", "").isEmpty()
+                    && w.equals(w.toUpperCase(Locale.ROOT))
+                    && w.matches(".*[A-Za-z].*");
+
+            String normalized;
+            if (isAcronym) {
+                normalized = w; // keep as-is
+            } else if (i == 0) {
+                // Sentence case for the first word.
+                String lower = w.toLowerCase(Locale.ROOT);
+                normalized = Character.toUpperCase(lower.charAt(0)) + (lower.length() > 1 ? lower.substring(1) : "");
+            } else {
+                // Lowercase for subsequent words.
+                normalized = w.toLowerCase(Locale.ROOT);
+            }
+
+            if (i > 0) out.append(' ');
+            out.append(normalized);
+        }
+        return out.toString();
+    }
+
     public static String firstWord(String string, String separator) {
         int first = string.indexOf(separator);
         if (first >= 0)
@@ -2304,5 +2376,24 @@ public class BaseUtils {
 
     public static int roundToDegree(int base, int value) {
         return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
+    }
+
+    //[:L:] — all Unicode letters, including Latin, Cyrillic, Greek, Chinese, etc.
+    // /[:N:] — All digits (Arabic, Indian and others)
+    // /[:P:] — punctuation marks
+    // /[:Zs:] — whitespace characters (normal space, unbroken space, etc.)
+    private static final UnicodeSet ALLOWED_CHARACTERS = new UnicodeSet("[[:L:][:N:][:P:][:Zs:]]").freeze();
+    public static boolean isVisiblyValid(String s) {
+        if (s != null) {
+            for (int i = 0; i < s.length(); i++) {
+                if (!ALLOWED_CHARACTERS.contains(s.codePointAt(i)))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public static List<String> splitTrim(String value) {
+        return value == null ? new ArrayList<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }

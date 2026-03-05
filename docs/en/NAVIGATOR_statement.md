@@ -22,6 +22,7 @@ Each `navigatorStatement` describes a single navigator statement, and at the end
 NEW elementDescription [options] [{ ... }];
 MOVE name [caption] [options] [{ ... }];
 name [caption] [options] [{ ... }];
+SCHEDULE PERIOD intPeriod [FIXED] action;
 ```
 
 where `elementDescription` in the `NEW` statement describes the type of element to be created, and can be in one of three types:
@@ -80,6 +81,10 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
     The form name or action ID for which the navigator element will be created. The platform will first attempt to find a form with that name, and if that fails, it will search for an action with that ID. The action must not take any parameters.
 
+- `SCHEDULE PERIOD intPeriod [FIXED] action`
+
+    Creates a scheduler that executes `action` every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+
 ### Options
 
 - `WINDOW windowName [PARENT]`
@@ -123,19 +128,19 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `imageSetting`
 
-    Configuring the display of the navigator element's icon. By default, the icon or its absence is controlled by the [parameters](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold`, `settings.defaultNavigatorImage` and others. This option allows you to manually configure the icon display. It can have one of two forms:
+    Icon settings for the navigator element. This option allows you to configure the icon manually. It can have one of the following forms:
  
-    - `IMAGE [fileExpr]`
+    - `IMAGE [imageExpr]`
 
-        Specifying the relative path to the image file that will be displayed as the navigator element's icon. If `fileExpr` is not specified, the default icon display mode is activated.
+        [Manual icon specification](Icons.md#manual) for the navigator element. If `imageExpr` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
 
-        - `fileExpr`
+        - `imageExpr`
 
-            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+            [Expression](Expression.md) whose string value defines the icon.
 
-      - `NOIMAGE`
+    - `NOIMAGE`
 
-          Keyword indicating that the navigator element should have no icon.
+        Keyword indicating that the navigator element should have no icon.
 
 - `CLASS cssClassExpr`
 

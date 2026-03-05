@@ -63,7 +63,7 @@ import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 
-public class PropertyDrawView extends BaseComponentView {
+public class PropertyDrawView extends BaseComponentView implements PropertyDrawViewOrPivotColumn {
 
     public PropertyDrawEntity<?> entity;
 
@@ -90,6 +90,7 @@ public class PropertyDrawView extends BaseComponentView {
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
+    public String footerElementClass;
 
     public Boolean panelCustom;
 
@@ -473,9 +474,10 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public LocalizedString getCaption() {
-        return caption != null
-                ? caption
-                : entity.getCaption();
+        if (caption != null)
+            return caption;
+
+        return entity.getCaption();
     }
 
     public AppServerImage.AutoName getAutoName() {
@@ -625,23 +627,39 @@ public class PropertyDrawView extends BaseComponentView {
         return aClass != null && aClass.contains(check);
     }
 
-    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
-        if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
+    private OrderedMap<String, ContextMenuInfo> filterContextMenuItems(OrderedMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings, FormInstanceContext context) {
+        if (contextMenuBindings == null || contextMenuBindings.isEmpty()) {
             return null;
         }
 
-        OrderedMap<String, LocalizedString> contextMenuItems = new OrderedMap<>();
+        OrderedMap<String, ContextMenuInfo> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
-            ActionOrProperty.ContextMenuBinding contextMenuBinding = contextMenuBindings.getValue(i);
-            if(contextMenuBinding.show(this, context)) {
+            ActionOrProperty.ContextMenuBinding binding = contextMenuBindings.getValue(i);
+            if(binding.show(this, context)) {
                 ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
                 if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
-                    contextMenuItems.put(actionSID, contextMenuBinding.caption);
+                    contextMenuItems.put(actionSID, binding.action != null ?
+                            new ContextMenuInfo(binding.caption, binding.action.getActionOrProperty().getSID(), binding.action.getCreationPath(), binding.action.getPath())
+                            : new ContextMenuInfo(binding.caption, actionSID, eventAction.getCreationPath(), eventAction.getPath()));
                 }
             }
         }
         return contextMenuItems;
+    }
+
+    private static class ContextMenuInfo {
+        private LocalizedString caption;
+        private String sid;
+        private String creationPath;
+        private String path;
+
+        public ContextMenuInfo(LocalizedString caption, String sid, String creationPath, String path) {
+            this.caption = caption;
+            this.sid = sid;
+            this.creationPath = creationPath;
+            this.path = path;
+        }
     }
 
     private LocalizedString getPattern(FormInstanceContext context) {
@@ -928,6 +946,9 @@ public class PropertyDrawView extends BaseComponentView {
         if(inputType != null)
             return inputType;
 
+        if(echoSymbols != null && echoSymbols)
+            return "password";
+
         if(isProperty(context)) {
             Type type = getAssertCellType(context);
             if(type != null)
@@ -1067,6 +1088,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, getInputType(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
+        pool.writeString(outStream, getFooterElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
         pool.writeBoolean(outStream, hasToolbarActions(pool.context));
 
@@ -1194,17 +1216,27 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
 
-        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
+        OrderedMap<String, ContextMenuInfo> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
-                pool.writeString(outStream, contextMenuBindings.getKey(i));
-                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
+                String actionSID = contextMenuBindings.getKey(i);
+                ContextMenuInfo info = contextMenuBindings.getValue(i);
+                pool.writeString(outStream, actionSID);
+                pool.writeString(outStream, ThreadLocalContext.localize(info.caption));
+                boolean hasDebugInfo = info.sid != null;
+                pool.writeBoolean(outStream, hasDebugInfo);
+                if(hasDebugInfo) {
+                    pool.writeString(outStream, info.sid);
+                    pool.writeString(outStream, info.creationPath);
+                    pool.writeString(outStream, info.path);
+                }
             }
         }
 
         outStream.writeBoolean(isNotNull());
         outStream.writeBoolean(isSticky(pool.context));
+        outStream.writeBoolean(entity.hasActiveProperty());
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 
@@ -1222,6 +1254,12 @@ public class PropertyDrawView extends BaseComponentView {
                 return "text-secondary";
         }
 
+        return null;
+    }
+
+    public String getFooterElementClass(FormInstanceContext context) {
+        if (footerElementClass != null)
+            return footerElementClass;
         return null;
     }
 

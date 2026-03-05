@@ -36,7 +36,8 @@ public class ReportViewer extends JRViewer {
                 return null;
             }
         } catch (InterruptedException | IOException e) {
-            throw new RuntimeException(e);
+            ClientLoggers.clientLogger.error("Failed to get default printer name", e);
+            return null;
         }
     }
 

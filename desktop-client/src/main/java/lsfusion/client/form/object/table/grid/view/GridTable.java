@@ -3,11 +3,11 @@ package lsfusion.client.form.object.table.grid.view;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
@@ -46,8 +46,6 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -146,11 +144,20 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         stopCellEditing();
         if (!properties.isEmpty()) {
             int selectedColumn = getSelectedColumn();
-            if (selectedColumn != -1) {
+            if (selectedColumn != -1 && model.getColumnCount() > selectedColumn) {
                 List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
                 ClientGroupObjectValue columnKey = getSelectedColumnKey();
                 columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
+                form.setPropertyActive(getSelectedProperty(), true);
             }
+        }
+    }
+
+    @Override
+    public void focusChanged(FocusEvent e, boolean focused) {
+        super.focusChanged(e, focused);
+        if (focused && groupObject != null) {
+            ClientForm.lastActiveGroupObject = groupObject;
         }
     }
 
@@ -225,25 +232,17 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             TableHeaderUI ui = getTableHeader().getUI();
             if (ui instanceof BasicTableHeaderUI) {
                 // change default CellRendererPane to draw corner triangles
-                JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
-                CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
-                header.remove(oldRendererPane);
-                GridCellRendererPane newRendererPane = new GridCellRendererPane();
-                ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
-                header.add(newRendererPane);
+                getTableHeader().setUI(new BasicTableHeaderUI() {
+                    @Override
+                    public void installUI(JComponent c) {
+                        super.installUI(c);
+                        rendererPane = new GridCellRendererPane();
+                    }
+                });
             }
 
             tableHeader.addMouseListener(sortableHeaderManager);
         }
-
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (groupObject != null) {
-                    ClientForm.lastActiveGroupObject = groupObject;
-                }
-            }
-        });
 
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
@@ -1028,9 +1027,14 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return model.isCellFocusable(row, col);
     }
 
+    public boolean mousePressed = false;
+
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        if (!supressDragging && (isInternalNavigating || isCellFocusable(rowIndex, columnIndex))) {
+        boolean cellFocusable = isCellFocusable(rowIndex, columnIndex);
+        if (mousePressed && !cellFocusable)
+            columnIndex = getSelectedColumn();
+        if (!supressDragging && (isInternalNavigating || mousePressed || cellFocusable)) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 if (rowIndex >= getRowCount()) {
                     changeSelection(getRowCount() - 1, columnIndex, toggle, extend);
@@ -1052,32 +1056,19 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         boolean result = false;
 
         try {
-            Method getInputMapMethod = JComponent.class.getDeclaredMethod("getInputMap", int.class, boolean.class);
-            Object inputMap = null;
-            if (getInputMapMethod != null) {
-                getInputMapMethod.setAccessible(true);
-                inputMap = getInputMapMethod.invoke(this, condition, false);
-            }
-
-            Method getActionMapMethod = JComponent.class.getDeclaredMethod("getActionMap", boolean.class);
-            Object actionMap = null;
-            if (getActionMapMethod != null) {
-                getActionMapMethod.setAccessible(true);
-                actionMap = getActionMapMethod.invoke(this, false);
-            }
+            InputMap inputMap = getInputMap(condition);
+            ActionMap actionMap = getActionMap();
             if(inputMap != null && actionMap != null && isEnabled()) {
-                Object binding = ((InputMap) inputMap).get(ks);
-                Action action = (binding == null) ? null : ((ActionMap) actionMap).get(binding);
+                Object binding = inputMap.get(ks);
+                Action action = (binding == null) ? null : actionMap.get(binding);
 
-                Class uiActionClass = ReflectionUtils.classForName("sun.swing.UIAction");
+                Class uiActionClass = MainController.classForName("sun.swing.UIAction");
                 if (uiActionClass != null && uiActionClass.isInstance(action)) {
                     threadLocalUIAction.set(action);
                 }
             }
 
             result = super.processKeyBinding(ks, e, condition, pressed);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            Throwables.propagate(ex);
         } finally {
             threadLocalUIAction.set(null);
         }
@@ -1782,6 +1773,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
+    }
+
+    public void setInGrid(ClientPropertyDraw property, Boolean inGrid) {
+        currentGridPreferences.setInGrid(property, inGrid);
     }
 
     public Comparator<ClientPropertyDraw> getUserSortComparator() {

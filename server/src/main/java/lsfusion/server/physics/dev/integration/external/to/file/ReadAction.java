@@ -29,13 +29,15 @@ public class ReadAction extends SystemAction {
     private final LP<?> targetProp;
     private final boolean clientAction;
     private final boolean dialog;
+    private final LP<?> dialogPathProp;
 
-    public ReadAction(LP<?> targetProp, boolean clientAction, boolean dialog) {
+    public ReadAction(LP<?> targetProp, boolean clientAction, boolean dialog, LP<?> dialogPathProp) {
         super(LocalizedString.create("Read"), SetFact.singletonOrder(new PropertyInterface()));
         this.extraReadProcessor = new ExtraReadProcessor();
         this.targetProp = targetProp;
         this.clientAction = clientAction;
         this.dialog = dialog;
+        this.dialogPathProp = dialogPathProp;
     }
 
     @Override
@@ -51,17 +53,17 @@ public class ReadAction extends SystemAction {
             String sourcePath = (String) ((DataObject) sourceProp).object;
 
             try {
-
                 boolean isDynamicFormatFileClass = targetProp.property.getType() instanceof DynamicFormatFileClass;
                 boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
                 ReadUtils.ReadResult readResult;
                 if (clientAction) {
                     readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
+                    if(dialog)
+                        dialogPathProp.change(readResult != null ? readResult.dialogPath : null, context);
                 } else {
                     readResult = ReadUtils.readFile(sourcePath, isBlockingFileRead, false, extraReadProcessor);
                 }
-                if (readResult != null)
-                    writeResult(targetProp, readResult.fileData.getRawFile(), readResult.fileData.getExtension(), context, ExternalUtils.resultCharset.toString());
+                writeResult(targetProp, readResult != null ? readResult.fileData : null, context, ExternalUtils.resultCharset.toString());
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }

@@ -59,8 +59,7 @@ public abstract class ImportAction extends SystemAction {
 
     // in IMPORT operator adjustImportFormatFromFileType and addAutoImportFAProp are used, so we know the type / extension, and importFileType is in fact calculated in the adjustImportFormatFromFileType
     protected static RawFileData readRawFile(ObjectValue value, String charset) {
-        FileData fileData = readFile(value, null, charset);
-        return fileData != null ? fileData.getRawFile() : null;
+        return readRawFile(value, null, charset);
     }
 
     protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException;
@@ -94,11 +93,7 @@ public abstract class ImportAction extends SystemAction {
         writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
-        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
-            public ImSet<ObjectEntity> group(PropertyObjectEntity key) {
-                return ((PropertyObjectEntity<?>)key).getObjectInstances();
-            }
-        });
+        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = SetFact.fromJavaSet(result.keySet()).group(key -> ((PropertyObjectEntity<?>)key).getObjectInstances());
 
         for(int i=0,size=groupedProps.size();i<size;i++) {            
             // group by rows, convert to DataObject / ObjectValue, fill map with null values (needed for writeRows)

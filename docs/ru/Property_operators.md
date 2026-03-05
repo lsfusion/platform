@@ -13,6 +13,7 @@ title: 'Операторы-свойства'
 -   [Арифметические операторы](Arithmetic_operators.md)
 -   [Оператор `[]`](Brackets_operator.md)
 -   [Оператор `ACTIVE TAB`](ACTIVE_TAB_operator.md)
+-   [Оператор `ACTIVE PROPERTY`](ACTIVE_TAB_operator.md)
 -   [Оператор `AGGR`](AGGR_operator.md)
 -   [Оператор `CASE`](CASE_operator.md)
 -   [Оператор `CONCAT`](CONCAT_operator.md)

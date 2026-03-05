@@ -2,15 +2,11 @@ package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
-import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Map;
 
 public abstract class ClientGridProperty extends ClientComponent {
 
@@ -29,20 +25,9 @@ public abstract class ClientGridProperty extends ClientComponent {
     public ClientGridProperty() {
     }
 
-    public final ClientPropertyReader valueElementClassReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-        }
-
+    public final ClientPropertyReader valueElementClassReader = new ExtraReader(PropertyReadType.GRID_VALUECLASS) {
         public int getID() {
             return ClientGridProperty.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.GRID_VALUECLASS;
         }
     };
 

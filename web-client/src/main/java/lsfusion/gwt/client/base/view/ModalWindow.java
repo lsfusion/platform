@@ -21,22 +21,22 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final Widget title;
 
-    protected final DivWidget modalBackDrop;
-
     private final boolean resizable;
 
-    public ModalWindow(boolean resizable, ModalWindowSize size) {
+    public ModalWindow(boolean resizable, boolean syncType, ModalWindowSize size) {
         super();
 
         this.resizable = resizable;
 
-       GwtClientUtils.addClassName(this, "modal-form");
+        if (syncType) {
+            GwtClientUtils.addClassName(this, "modal-form");
 
-        modalBackDrop = new DivWidget();
-        GwtClientUtils.addClassName(modalBackDrop, "modal-backdrop");
-        GwtClientUtils.addClassName(modalBackDrop, "fade");
-        GwtClientUtils.addClassName(modalBackDrop, "show");
-        add(modalBackDrop);
+            DivWidget modalBackDrop = new DivWidget();
+            GwtClientUtils.addClassName(modalBackDrop, "modal-backdrop");
+            GwtClientUtils.addClassName(modalBackDrop, "fade");
+            GwtClientUtils.addClassName(modalBackDrop, "show");
+            add(modalBackDrop);
+        }
 
         modal = new SimplePanel();
         GwtClientUtils.addClassName(modal, "modal");

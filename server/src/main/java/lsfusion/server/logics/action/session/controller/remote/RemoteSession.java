@@ -130,6 +130,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     public void clean() {
         try {
+            authException = null; // we need to clean authException before getting to the pool
             dataSession.cancelSession(SetFact.EMPTY());
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);

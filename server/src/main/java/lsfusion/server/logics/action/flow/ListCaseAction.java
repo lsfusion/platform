@@ -5,6 +5,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.action.Action;
@@ -155,6 +157,16 @@ public abstract class ListCaseAction extends KeepContextAction {
     
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
+        if(isAbstract())
+            return aspectAbstractChangeExtProps(recursiveAbstracts);
+
+        return super.aspectChangeExtProps(recursiveAbstracts);
+    }
+
+    // actuall needed temporary to check when isRecursive is incorrectly set
+    @StackMessage("{logics.property.actions.flow.calc.where}")
+    @ThisMessage
+    protected ImMap<Property, Boolean> aspectAbstractChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
         if (isRecursive) {
             if (recursiveAbstracts.contains(this)) return MapFact.EMPTY();
             recursiveAbstracts = recursiveAbstracts.addExcl(this);

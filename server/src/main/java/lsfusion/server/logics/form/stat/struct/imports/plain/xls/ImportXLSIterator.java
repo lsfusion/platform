@@ -27,6 +27,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     private File wbFile;
     private FormulaEvaluator formulaEvaluator;
     private Integer lastSheet;
+    private boolean sheetAll;
     
     public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, boolean xlsx, String wheres, boolean noHeader, Integer singleSheetIndex) throws IOException {
         super(fieldTypes, wheres, noHeader);
@@ -57,6 +58,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         } else {
             currentSheet = 0;
             lastSheet = wb.getNumberOfSheets() - 1; //zero based
+            sheetAll = true;
         }            
         
         finalizeInit();
@@ -83,8 +85,12 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     protected boolean nextRow(boolean checkWhere) {
         while(true) {
             if (sheet == null || !rowIterator.hasNext()) {
+                //skip header row on all sheets except first if HEADER SHEET ALL options selected
+                boolean skipHeader = !noHeader && sheet != null && sheetAll;
                 if (!nextSheet()) return false;
                 rowIterator = sheet.rowIterator();
+                if(skipHeader)
+                    rowIterator.next();
 
                 if (useStreamingReader) firstRow = true;
 

@@ -1,6 +1,5 @@
 package lsfusion.server.base.controller.context;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -42,14 +41,14 @@ public interface Context {
     FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException;
     RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack);
 
-    void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException;
+    void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, ExecutionStack stack) throws SQLException, SQLHandledException;
 
     InputContext lockInputContext();
     void unlockInputContext();
     InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
 
-    void pushLogMessage();
-    ImList<AbstractContext.LogMessage> popLogMessage();
+    void pushLogMessage(AbstractContext.LogMessageProcessor processor);
+    void popLogMessage();
     AbstractContext.MessageLogger getLogMessage(); // for multithreading
 
     void updateUserLastActivity();
@@ -59,7 +58,6 @@ public interface Context {
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
     boolean userInteractionCanBeProcessedInTransaction();
-    Object[] requestUserInteraction(ClientAction... actions);
 
     // для создания форм
     FocusListener getFocusListener();

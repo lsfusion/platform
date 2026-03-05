@@ -110,7 +110,7 @@ public class GFormController implements EditManager {
     private final FormContainer formContainer;
 
     public final GForm form;
-    public final GFormLayout formLayout;
+    public GFormLayout formLayout;
 
     private final boolean isDialog;
 
@@ -331,19 +331,14 @@ public class GFormController implements EditManager {
             }
         }
 
-        filterBox.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
-            }
-        });
+        filterBox.addChangeHandler(event -> setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - (filterGroup.noNull ? 0 : 1)));
 
         GwtClientUtils.addClassName(filterBox, "filter-group-select");
         GwtClientUtils.addClassName(filterBox, "form-select");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
-            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + (filterGroup.noNull ? 0 : 1));
         }
     }
 
@@ -507,11 +502,11 @@ public class GFormController implements EditManager {
         return form.getDefaultOrders(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns(GGroupObject groupObject) {
         return form.getPivotColumns(groupObject);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows(GGroupObject groupObject) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows(GGroupObject groupObject) {
         return form.getPivotRows(groupObject);
     }
 
@@ -857,12 +852,12 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
         FormDockable contextFormDockable = getFormDockableContainer(showFormType.isDockedModal());
         if (contextFormDockable != null)
             contextFormDockable.block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, syncType, editEvent, editContext, this, () -> {
             if(contextFormDockable != null) {
                 contextFormDockable.unblock();
 
@@ -1246,8 +1241,8 @@ public class GFormController implements EditManager {
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
-    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
+    public void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ContinueInvocation(requestIndex, actionResult, continueIndex), callback, true);
     }
 
     public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1473,6 +1468,14 @@ public class GFormController implements EditManager {
 
         formLayout.updatePanels(); // maybe it's not needed, but we want to make it symmetrical to the container collapsed call
     }
+
+    private GPropertyDraw prevPropertyActive;
+    public void setPropertyActive(GPropertyDraw property, boolean focused) {
+        if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || property != null && property.hasActiveProperty) {
+            asyncResponseDispatch(new SetPropertyActive(property != null ? property.ID : -1, focused));
+        }
+        prevPropertyActive = property;
+    }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
@@ -1651,11 +1654,7 @@ public class GFormController implements EditManager {
     }
 
     public void executeVoidAction() {
-        syncDispatch(new VoidFormAction(), new SimpleRequestCallback<VoidResult>() {
-            @Override
-            public void onSuccess(VoidResult result) {
-            }
-        });
+        syncResponseDispatch(new VoidFormAction());
     }
 
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final AsyncCallback<ServerResponseResult> callback) {

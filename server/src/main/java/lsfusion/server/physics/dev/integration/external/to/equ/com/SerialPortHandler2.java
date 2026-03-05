@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
+//todo: Replace all usages to lsfusion.base.com.SerialPortHandler2 (available since 6.1)
+
 public class SerialPortHandler2 {
 
     protected static final Logger logger = ServerLoggers.systemLogger;

@@ -32,7 +32,9 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
@@ -44,7 +46,9 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -65,10 +69,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -76,7 +77,7 @@ import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements PropertyDrawEntityOrPivotColumn, Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
@@ -163,6 +164,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean lastAggrDesc;
 
     public PropertyDrawEntity quickFilterProperty;
+
+    private Property<?> activeProperty;
+
+    public Property<?> getActiveProperty() {
+        if (activeProperty == null) {
+            activeProperty = PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance);
+        }
+        return activeProperty;
+    }
+
+    public boolean hasActiveProperty() {
+        return activeProperty != null;
+    }
+
+    public void updateActiveProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        if(activeProperty != null)
+            activeProperty.change(session, value);
+    }
 
     @IdentityStrongLazy
     public ImSet<PropertyReaderEntity> getQueryProps() {
@@ -340,7 +359,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    private ActionObjectSelector getExplicitEventAction(String actionId) {
+    public ActionObjectSelector getExplicitEventAction(String actionId) {
         if (eventActions != null)
             return eventActions.get(actionId);
         return null;
@@ -547,8 +566,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // interactive
+    @Override
     public GroupObjectEntity getToDraw(FormEntity form) {
         return toDraw==null? getApplyObject(form, SetFact.EMPTY(), true) :toDraw;
+    }
+
+    @Override
+    public PropertyDrawViewOrPivotColumn getPropertyDrawViewOrPivotColumn(FormView formView) {
+        return formView.get(this);
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {
@@ -566,9 +591,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, GRIDELEMENTCLASS, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS,
-                FONT, BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER, PATTERN,
-                REGEXP, REGEXPMESSAGE, TOOLTIP, VALUETOOLTIP, PROPERTY_CUSTOM_OPTIONS, CHANGEKEY, CHANGEMOUSE};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, GRIDELEMENTCLASS, VALUEELEMENTCLASS,
+                CAPTIONELEMENTCLASS, FOOTERELEMENTCLASS, FONT, BACKGROUND, FOREGROUND, IMAGE, READONLYIF,
+                COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER, PATTERN, REGEXP, REGEXPMESSAGE, TOOLTIP, VALUETOOLTIP,
+                PROPERTY_CUSTOM_OPTIONS, CHANGEKEY, CHANGEMOUSE};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {
@@ -830,7 +856,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
 
-            PropertyObjectEntity.Select select;
+            Property.MapSelect<?> mapSelect;
             boolean changeValue = false;
             ActionObjectEntity<?> explicitChange = getExplicitEventActionEntity(CHANGE, context);
             if(explicitChange != null) {
@@ -840,10 +866,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     return null;
 
                 changeValue = true;
-                select = explicitChange.getSelectProperty(context, forceSelect, forceFilter, property);
+                mapSelect = explicitChange.getSelectProperty(forceSelect, property);
             } else
-                select = property.getSelectProperty(context, forceSelect, forceFilter);
+                mapSelect = property.getSelectProperty(forceSelect);
 
+            PropertyObjectEntity.Select select = ActionOrPropertyObjectEntity.getSelectProperty(context, forceFilter, mapSelect);
             if(select != null) {
                 String selectType = null;
                 if (select.type == PropertyObjectEntity.Select.Type.MULTI) {

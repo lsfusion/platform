@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
@@ -117,6 +118,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
                 return form.getProperty(readerId).captionElementClassReader;
+            case GPropertyReadType.FOOTERELEMENTCLASS:
+                return form.getProperty(readerId).footerElementClassReader;
             case GPropertyReadType.CELL_FONT:
                 return form.getProperty(readerId).fontReader;
             case GPropertyReadType.CELL_BACKGROUND:
@@ -173,6 +176,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).changeKeyReader;
             case GPropertyReadType.CHANGEMOUSE:
                 return form.getProperty(readerId).changeMouseReader;
+            case GPropertyReadType.TREE_HIERARCHICALCAPTION:
+                return ((GTreeGroup)form.findComponentByID(readerId)).hierarchicalCaptionReader;
             default:
                 return null;
         }
@@ -222,5 +227,7 @@ public class GFormChanges {
         public final static byte PROPERTY_CUSTOM_OPTIONS = 32;
         public final static byte CHANGEKEY = 33;
         public final static byte CHANGEMOUSE = 34;
+        public final static byte TREE_HIERARCHICALCAPTION = 35;
+        public final static byte FOOTERELEMENTCLASS = 36;
     }
 }

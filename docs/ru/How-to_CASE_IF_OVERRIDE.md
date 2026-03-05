@@ -133,8 +133,8 @@ number 'Номер' = DATA INTEGER (Book);
 ```lsf
 freeNumber1 () = (GROUP MAX number(Book b)) (+) 1;
 
-// Эквивалентно :
-freeNumber2() = (OVERRIDE 0, (GROUP MAX number(Book b))) + 1;
+// Эквивалентно:
+freeNumber2() = (OVERRIDE (GROUP MAX number(Book b)), 0) + 1;
 ```
 
 Оператор `(+)` используется вместо обычного оператора `+`, так как если не будет ни одной книги, то обычное сложение с единицей вернет `NULL`.

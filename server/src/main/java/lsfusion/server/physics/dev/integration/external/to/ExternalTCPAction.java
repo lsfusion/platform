@@ -3,13 +3,14 @@ package lsfusion.server.physics.dev.integration.external.to;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.session.TcpClientAction;
+import lsfusion.base.net.TcpClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import org.olap4j.impl.Base64;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -27,7 +28,11 @@ public class ExternalTCPAction extends ExternalSocketAction {
         Integer timeout = (Integer) context.getBL().LM.timeoutTcp.read(context);
         byte[] response;
         if (clientAction) {
-            response = (byte[]) context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
+            Object result = context.requestUserInteraction(new TcpClientAction(fileBytes, host, port, timeout, externalTCPWaitForByteMinusOne));
+            if(result instanceof byte[])
+                response = (byte[]) result;
+            else
+                response = Base64.decode((String) result);
         } else {
             Socket socket = null;
             ConnectionService connectionService = context.getConnectionService();

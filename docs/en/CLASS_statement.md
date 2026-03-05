@@ -46,15 +46,15 @@ The `NATIVE` keyword is used in some system modules. It is used to declare indiv
 
 - `imageSetting1, ..., imageSettingM`
 
-    Settings for displaying icons in the captions of static objects of this class. By default, the presence or absence of an icon is controlled by the [parameters](Working_parameters.md) `settings.defaultImagePathRankingThreshold` and `settings.defaultAutoImageRankingThreshold`. The `HTML` class value used for displaying the icon is stored in the system property `System.image[StaticObject]`. This option allows you to manually configure the icon display. It can have one of two forms:
+    Icon settings for the captions of the static objects of this class. The `HTML` class value used to display the icon is stored in the system property `System.image[StaticObject]`. This option allows you to configure the icon manually. It can have one of the following forms:
 
-    - `IMAGE [fileExpr]`
+    - `IMAGE [imageLiteral]`
 
-        Specifying the relative path to the image file that will be displayed as the icon in the caption of the static object. If `fileExpr` is not specified, the default icon display mode is activated.
+        [Manual icon specification](Icons.md#manual) for the static object's caption. If `imageLiteral` is not provided, the [automatic assignment](Icons.md#auto) mode is enabled.
 
-        - `fileExpr`
+        - `imageLiteral`
 
-            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+            String literal whose value defines the icon.
 
     - `NOIMAGE`
 

@@ -56,7 +56,7 @@ public class ClassChange extends ImmutableObject {
     }
 
     public ClassChange(KeyExpr key, Where where, ConcreteObjectClass cls) {
-        this(key, where, cls.getClassObject().getExpr());
+        this(key, where, cls.getClassObject().getStaticExpr());
     }
     
     // delete constructor
@@ -90,7 +90,7 @@ public class ClassChange extends ImmutableObject {
     @IdentityLazy
     public Query<String, String> getQuery() {
         if(keyValue != null)
-            return new Query<>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE(), MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getExpr()));
+            return new Query<>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE(), MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getStaticExpr()));
         else
             return new Query<>(MapFact.singletonRev("key", key), expr, "value", where);
     }
@@ -115,7 +115,7 @@ public class ClassChange extends ImmutableObject {
     }
 
     public SingleKeyPropertyUsage materialize(String debugInfo, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance);
+        SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance, true);
         changedClasses.writeRows(sql, getQuery(), baseClass, env, SessionTable.matLocalQuery);
         return changedClasses;
     }

@@ -106,7 +106,8 @@ public abstract class FormContainer {
         if(!async)
             onSyncBlur(remove);
 
-        assert MainFrame.getAssertCurrentForm() == this;
+        //When switching tabs, it is expected that currentForm is DOCKED, but it may be FLOAT NOWAIT
+        //assert MainFrame.getAssertCurrentForm() == this;
         MainFrame.setCurrentForm(null);
     }
 
@@ -173,9 +174,8 @@ public abstract class FormContainer {
         image.addClickHandler(clickEvent -> {
             if(contextForm != null) {
                 contextForm.executeVoidAction();
-            } else {
-                formsController.executeVoidAction(requestIndex);
             }
+            formsController.executeVoidAction(requestIndex);
         });
 
         topPanel.add(image);

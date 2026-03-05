@@ -15,11 +15,12 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
 
 - The `compose.yaml` setting (optional):
     - If you want to change the startup settings (e.g., use a different container version or customize environment variables), edit the `compose.yaml` file according to the [Docker documentation](https://docs.docker.com/get-started/overview/).
-    - Application server startup parameters can also be set using the container's environment variables - in the environment attribute. For example, to change the server locale to Russian, write:
+    - Application server startup parameters can also be set using the container's environment variables - in the environment attribute. For example, to change the server locale to Russian and set custom Xmx value, write:
       ```yml
       environment:
         - USER_SETLANGUAGE=ru
-        - USER_SETCOUNTRY=RU
+        - USER_SETCOUNTRY=RU 
+        - JAVA_OPTS=-Xmx10g
       ```
       When searching for startup parameters in environment variables, Spring automatically converts them to uppercase and replaces dots with underscores. In the example above, the values of the environment variables will be substituted into the appropriate parameters: `user.setLanguage` and `user.setCountry`.
     - Available lsFusion container images:
@@ -30,7 +31,7 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
 
   Navigate to the `$FUSION_DIR$` folder and run the command:
   ```bash
-  docker-compose up
+  docker-compose up -d
   ```
   Once the launch is complete, the web client will be available at ``http://localhost:8080/``.
 
@@ -39,6 +40,8 @@ To work with Docker containers, you need to install [Docker](https://docs.docker
         - `docker-client-conf` - client configuration.
         - `docker-db` - database data.
         - `docker-server` - server files.
+
+        These directories are bind-mounted into their respective containers.
     - In the `docker-server` folder put the lsFusion language modules (`.lsf` files or folders with them), as well as additional resources (reports, Java files, images, CSS, JS, etc.). The server logs and the `settings.properties` file are also in the same folder.
 
 ---
@@ -52,7 +55,7 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
 - Building the image:
 
   Building a Docker image is tied to Maven phases and is activated by the `docker` profile.
-    - In the `install` phase, the image is built and loaded into the local registry.
+    - In the `install` phase, the image is built and loaded into the local storage.
     - In the `deploy` phase, the image is uploaded to a public registry (e.g. Docker Hub).
 
   To build the image, run the command in the project folder:
@@ -63,6 +66,10 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
   ```bash
   mvn install -P assemble,embed-server,docker
   ```
+  By default, an image specific to the architecture and operating system of the Docker daemon. To build a multi-architecture image (linux/amd64 and linux/arm64), you need to add the `multiarch` profile. This only works during the `deploy` phase:
+  ```bash
+  mvn deploy -P assemble,docker,multiarch
+  ``` 
 
 - Uploading the image to the public registry:
 
@@ -99,4 +106,3 @@ If your project inherits the Maven module of the lsFusion platform `logics`, you
 
   Startup and configuration are similar to the steps described in [Launching the lsFusion platform](#docker-platform) with some specifics:
     - The Docker Compose project name defaults to `artifactId` tag value. To generate a different project name, override the Maven property `docker.compose.projectName`.
-    - If you do not use the `embedded-server` profile, the `docker-server` folder is not created when you start the application server container. The data will be stored in a Docker volume managed by the Docker Engine.

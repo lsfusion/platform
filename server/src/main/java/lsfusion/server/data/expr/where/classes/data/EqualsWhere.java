@@ -7,6 +7,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.join.select.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.select.ExprStatJoin;
 import lsfusion.server.data.expr.join.where.KeyEquals;
@@ -27,7 +28,10 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         if(checkEquals(operator1,operator2))
             return operator1.getWhere();
         if(checkStaticClass(operator1, operator2) && checkStaticNotEquals(operator1, operator2))
-                return Where.FALSE();
+            return Where.FALSE();
+        Where check = IsClassExpr.checkEquals(operator1, operator2);
+        if(check != null)
+            return check;
         return create(operator1, operator2, new EqualsWhere(operator1, operator2));
     }
 

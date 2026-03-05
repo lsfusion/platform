@@ -43,6 +43,10 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updateChangeKeyValues(this, values);
         } else if (readerType == CHANGEMOUSE) {
             controller.updateChangeMouseValues(this, values);
+        } else if(readerType == CAPTIONELEMENTCLASS) {
+            controller.updateCellCaptionElementClasses(this, values);
+        } else if(readerType == FOOTERELEMENTCLASS) {
+            controller.updateCellFooterElementClasses(this, values);
         }
     }
 
@@ -71,6 +75,10 @@ public class GExtraPropReader extends GExtraPropertyReader {
             return "CHANGEKEY";
         } else if (readerType == CHANGEMOUSE) {
             return "CHANGEMOUSE";
+        } else if (readerType == CAPTIONELEMENTCLASS) {
+            return "CAPTIONELEMENTCLASS";
+        } else if (readerType == FOOTERELEMENTCLASS) {
+            return "FOOTERELEMENTCLASS";
         }
         return null;
     }

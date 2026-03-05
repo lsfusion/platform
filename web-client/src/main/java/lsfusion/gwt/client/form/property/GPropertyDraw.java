@@ -40,7 +40,7 @@ import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
+public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
     public int ID;
     public String nativeSID;
     public String sID;
@@ -48,6 +48,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String caption;
     public String captionElementClass;
+    public String footerElementClass;
     public AppStaticImage appImage;
 
     public String canonicalName;
@@ -78,6 +79,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String creationPath;
     public String path;
     public String formPath;
+
+    public Map<String, ContextMenuDebugInfo> contextMenuDebugInfoMap;
 
     public GGroupObject groupObject;
     public String columnsName;
@@ -376,7 +379,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GGridElementClassReader gridElementClassReader;
     public GValueElementClassReader valueElementClassReader;
 
-    public GCaptionElementClassReader captionElementClassReader;
+    public GExtraPropReader captionElementClassReader;
+    public GExtraPropReader footerElementClassReader;
     public GExtraPropReader fontReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
@@ -445,6 +449,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String tooltip;
     public String valueTooltip;
 
+    public String eventID;
     public Boolean changeOnSingleClick;
 
     public boolean hide;
@@ -456,6 +461,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean notNull;
 
     public boolean sticky;
+
+    public boolean hasActiveProperty;
 
     public boolean hasFooter;
 
@@ -1070,5 +1077,49 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isPredefinedImage() {
         String sid = integrationSID;
         return sid != null && sid.equals("image");
+    }
+
+    @Override
+    public boolean equalsGroupObject(GGroupObject group) {
+        return GwtSharedUtils.nullEquals(groupObject, group);
+    }
+
+    @Override
+    public String getCaption(Map<GPropertyDraw, String> columnCaptionMap) {
+        return columnCaptionMap.get(this);
+    }
+
+    public static class ContextMenuDebugInfo implements Serializable {
+        public String sid;
+        public String creationPath;
+        public String path;
+
+        @SuppressWarnings("unused")
+        public ContextMenuDebugInfo() {
+        }
+
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
+            this.creationPath = creationPath;
+            this.path = path;
+        }
+
+        public String getTooltip(String sid, String caption) {
+            if (!MainFrame.showDetailedInfo) {
+                return caption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, caption);
+            } else {
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(), caption, sid, nvl(creationPath, ""));
+            }
+        }
+
+        public static final String TOOL_TIP_FORMAT =
+                "<html><b>%s</b>";
+
+        public static String getDetailedActionToolTipFormat() {
+            return createTooltipHorizontalSeparator() +
+                    "<b>sID:</b> %s<br>" +
+                    "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
+                    "</html>";
+        }
     }
 }

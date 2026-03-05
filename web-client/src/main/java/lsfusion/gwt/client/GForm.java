@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyDrawOrPivotColumn;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -37,8 +38,8 @@ public class GForm implements Serializable {
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
     public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<>();
 
-    public ArrayList<ArrayList<GPropertyDraw>> pivotColumns = new ArrayList<>();
-    public ArrayList<ArrayList<GPropertyDraw>> pivotRows = new ArrayList<>();
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = new ArrayList<>();
     public ArrayList<GPropertyDraw> pivotMeasures = new ArrayList<>();
 
     // caches for faster form changes transformation
@@ -144,21 +145,21 @@ public class GForm implements Serializable {
         return result;
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotColumns(GGroupObject group) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns(GGroupObject group) {
         return getPivotProperties(group, pivotColumns);
     }
 
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotRows(GGroupObject group) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotRows(GGroupObject group) {
         return getPivotProperties(group, pivotRows);
     }
 
     // copy of GroupObjectEntity method
-    public ArrayList<ArrayList<GPropertyDraw>> getPivotProperties(GGroupObject group, ArrayList<ArrayList<GPropertyDraw>> properties) {
-        ArrayList<ArrayList<GPropertyDraw>> result = new ArrayList<>();
-        for (ArrayList<GPropertyDraw> propertyEntry : properties) {
-            ArrayList<GPropertyDraw> resultEntry = new ArrayList<>();
-            for(GPropertyDraw property : propertyEntry) {
-                if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
+    public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotProperties(GGroupObject group, ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> properties) {
+        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> result = new ArrayList<>();
+        for (ArrayList<GPropertyDrawOrPivotColumn> propertyEntry : properties) {
+            ArrayList<GPropertyDrawOrPivotColumn> resultEntry = new ArrayList<>();
+            for(GPropertyDrawOrPivotColumn property : propertyEntry) {
+                if (property.equalsGroupObject(group)) {
                     resultEntry.add(property);
                 }
             }
@@ -170,7 +171,7 @@ public class GForm implements Serializable {
     public ArrayList<GPropertyDraw> getPivotMeasures(GGroupObject group) {
         ArrayList<GPropertyDraw> result = new ArrayList<>();
         for (GPropertyDraw property : pivotMeasures) {
-            if (GwtSharedUtils.nullEquals(property.groupObject, group)) {
+            if (property.equalsGroupObject(group)) {
                 result.add(property);
             }
         }

@@ -1,8 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.*;
+import com.google.gwt.json.client.*;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -12,6 +11,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.action.com.GWriteToComPortAction;
+import lsfusion.gwt.client.action.file.*;
+import lsfusion.gwt.client.action.net.*;
+import lsfusion.gwt.client.action.printer.GGetAvailablePrintersAction;
+import lsfusion.gwt.client.action.printer.GPrintFileAction;
+import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -28,20 +33,24 @@ import lsfusion.gwt.client.controller.remote.action.navigator.LogClientException
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
 
     protected ServerResponseResult currentResponse = null;
-    Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
     private Runnable currentOnDispatchFinished = null;
@@ -92,44 +101,42 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         assert !dispatchingPaused;
         onServerInvocationResponse(response);
 
-        dispatchResponse(response, continueIndex, onDispatchFinished, onRequestFinished);
+        dispatchResponse(response, null, null, continueIndex, onDispatchFinished, onRequestFinished);
     }
-    public void continueDispatchResponse() {
+    public void continueDispatchResponse(Object actionResult, Throwable actionThrowable) {
         assert dispatchingPaused;
-        dispatchResponse(null, -1, null, null);
+        dispatchResponse(null, actionResult, actionThrowable, -1, null, null);
     }
-    public void dispatchResponse(ServerResponseResult response, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
-        Object[] actionResults;
-        Throwable actionThrowable = null;
-        int beginIndex;
+
+    // only the last action can be paused / continued with the result (and only it can return the result)
+    public void dispatchResponse(ServerResponseResult response, Object actionResult, Throwable actionThrowable, int continueIndex, Runnable onDispatchFinished, Runnable onRequestFinished) {
+        int beginIndex = 0;
         if (dispatchingPaused) { // continueDispatching
             beginIndex = currentActionIndex + 1;
-            actionResults = currentActionResults;
             continueIndex = currentContinueIndex;
             response = currentResponse;
             onDispatchFinished = currentOnDispatchFinished;
             onRequestFinished = currentOnRequestFinished;
 
+            assert beginIndex == response.actions.length;
+
             currentActionIndex = -1;
             currentContinueIndex = -1;
-            currentActionResults = null;
             currentResponse = null;
             currentOnDispatchFinished = null;
             currentOnRequestFinished = null;
             dispatchingPaused = false;
-        } else {
-            beginIndex = 0;
-            actionResults = new Object[response.actions.length];
         }
 
         for (int i = beginIndex; i < response.actions.length; i++) {
+            assert actionResult == null;
+
             GAction action = response.actions[i];
-            Object dispatchResult;
             try {
                 dispatchingIndex = response.requestIndex;
                 try {
                     //for unsupported actions null is send to preserve number of actions and thus the order of responses
-                    dispatchResult = action == null ? null : action.dispatch(this);
+                    actionResult = action == null ? null : action.dispatch(this);
                 } finally {
                     dispatchingIndex = -1;
                 }
@@ -138,17 +145,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 break;
             }
 
+            // actionResult can be not null only if not dispatchingPaused and it's the last action
+            assert actionResult == null || (!dispatchingPaused && i == response.actions.length - 1);
+
             if (dispatchingPaused) {
+                assert i == response.actions.length - 1;
                 currentResponse = response;
-                currentActionResults = actionResults;
                 currentActionIndex = i;
                 currentContinueIndex = continueIndex;
                 currentOnDispatchFinished = onDispatchFinished;
                 currentOnRequestFinished = onRequestFinished;
                 return;
             }
-
-            actionResults[i] = dispatchResult;
         }
 
         if(onDispatchFinished != null)
@@ -172,7 +180,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                         }
                     };
             if (actionThrowable == null) {
-                continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
+                continueServerInvocation(response.requestIndex, actionResult, continueIndex, continueRequestCallback);
             } else {
                 throwInServerInvocation(response.requestIndex, LogClientExceptionAction.fromWebClientToWebServer(actionThrowable), continueIndex, continueRequestCallback);
             }
@@ -200,16 +208,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
-    protected abstract void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
+    protected abstract void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
     // synchronization is guaranteed pretty tricky
     // in RemoteDispatchAsync there is a linked list q of all executing actions, where all responses are queued, and all continue invoications are put into it's beginning
     protected final void pauseDispatching() {
         dispatchingPaused = true;
-    }
-
-    public void continueDispatching() {
-        continueDispatching(null, null);
     }
 
     protected long dispatchingIndex = -1;
@@ -220,18 +224,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return currentResponse.requestIndex;
     }
 
-    public void continueDispatching(Object currentActionResult, Result<Object> result) {
+    public <T> void continueDispatching(T actionResult, Throwable actionThrowable, Result<T> result) {
         assert dispatchingPaused;
         if (currentResponse == null) { // means that we continueDispatching before exiting to dispatchResponse cycle (for example LogicalCellRenderer commits editing immediately)
             // in this case we have to return result as no pauseDispatching happened
+            // however scheduleDeferred might be used
             dispatchingPaused = false;
+
+            if(actionThrowable != null)
+                throw GExceptionManager.propagate(actionThrowable);
+
             if(result != null)
-                result.set(currentActionResult);
+                result.set(actionResult);
         } else {
-            if (currentActionResults != null && currentActionIndex >= 0) {
-                currentActionResults[currentActionIndex] = currentActionResult;
-            }
-            continueDispatchResponse();
+            continueDispatchResponse(actionResult, actionThrowable);
         }
     }
 
@@ -286,11 +292,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         String message = PValue.getStringValue(PValue.convertFileValue(action.message));
         if(!log && !info) {
-            if (action.syncType)
-                pauseDispatching();
-            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
-                if (action.syncType)
-                    continueDispatching();
+            executeAsyncNoResult(action.syncType, onResult -> {
+                DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> onResult.accept(null));
             });
 
             ifNotFocused = true;
@@ -307,13 +310,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public Object execute(GConfirmAction action) {
-        pauseDispatching();
-
-        Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
-                chosenOption -> continueDispatching(chosenOption.asInteger(), result));
-        return result.result;
+    public Integer execute(GConfirmAction action) {
+        return executeAsyncResult(onResult -> {
+            DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
+                    chosenOption -> onResult.accept(chosenOption.asInteger(), null));
+        });
     }
 
     @Override
@@ -326,10 +327,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GProcessFormChangesAction action) {
-    }
-
-    @Override
-    public void execute(GProcessNavigatorChangesAction action) {
     }
 
     @Override
@@ -370,8 +367,202 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public GReadResult execute(GReadAction action) {
+        return executeAsyncResultFlutter("readFile", new String[] {action.sourcePath}, res -> {
+            String errorValue = getJSONError(res);
+            return errorValue != null ?
+                    new GReadResult(errorValue, null, null, null) :
+                    new GReadResult(null, getJSONStringResult(res), getFileName(action.sourcePath), getFileExtension(action.sourcePath));
+        });
+    }
+
+    @Override
+    public String execute(GDeleteFileAction action) {
+        return executeAsyncResultFlutter("deleteFile", new String[] {action.source}, this::getJSONStringResult);
+    }
+
+    protected <T> T executeAsyncResult(Consumer<BiConsumer<T, Throwable>> run) {
+        pauseDispatching();
+
+        Result<T> result = new Result<>();
+        BiConsumer<T, Throwable> onResult = (res, actionThrowable) -> continueDispatching(res, actionThrowable, result);
+        try {
+            run.accept(onResult);
+        }  catch (Throwable e) {
+            onResult.accept(null, e);
+            throw e;
+        }
+
+        return result.result;
+    }
+
+    protected void executeAsyncNoResult(boolean sync, Consumer<Consumer<Throwable>> run) {
+        if(sync) {
+            Object result = executeAsyncResult(onResult -> run.accept(throwable -> onResult.accept(null, throwable)));
+            assert result == null;
+        } else
+            run.accept(throwable -> {});
+    }
+
+    private <T> T executeAsyncResultFlutter(String command, Object[] arguments, Function<JavaScriptObject, T> getResult) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> onResult.accept(getResult.apply(res), null)));
+        } else {
+            throw new UnsupportedOperationException(command + " is supported only in flutter client");
+        }
+    }
+
+    private static void executeNoResultFlutter(String command, Object[] arguments, Runnable noFlutter) {
+        JavaScriptObject flutter = getFlutterObject();
+        if (flutter != null) {
+            executeFlutter(flutter, command, arguments, res -> {});
+        } else {
+            if(noFlutter == null)
+                throw new UnsupportedOperationException(command + " is supported only in flutter client");
+
+            noFlutter.run();
+        }
+    }
+
+    @Override
+    public boolean execute(GFileExistsAction action) {
+        return executeAsyncResultFlutter("fileExists", new String[]{action.source}, this::getJSONBooleanResult);
+    }
+
+    @Override
+    public String execute(GMkDirAction action) {
+        return executeAsyncResultFlutter("makeDir", new String[] {action.source}, this::getJSONStringResult);
+    }
+
+    @Override
+    public String execute(GMoveFileAction action) {
+        return executeAsyncResultFlutter("moveFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
+    }
+
+    @Override
+    public String execute(GCopyFileAction action) {
+        return executeAsyncResultFlutter("copyFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
+    }
+
+    @Override
+    public GListFilesResult execute(GListFilesAction action) {
+        return executeAsyncResultFlutter("listFiles", new Object[] {action.source, action.recursive}, res -> getListFilesResult(new JSONObject(res).get("result")));
+    }
+
+    private GListFilesResult getListFilesResult(JSONValue res) {
+        try {
+            JSONArray result =res.isArray();
+            String[] namesArray = new String[result.size()];
+            Boolean[] dirsArray = new Boolean[result.size()];
+            GDateTimeDTO[] modifiedArray = new GDateTimeDTO[result.size()];
+            Long[] sizesArray = new Long[result.size()];
+
+            for (int i = 0; i < result.size(); i++) {
+                JSONObject entry = result.get(i).isObject();
+                namesArray[i] = entry.get("path").isString().stringValue();
+                dirsArray[i] = entry.get("isDirectory").isBoolean().booleanValue() ? true : null;
+                modifiedArray[i] = GDateTimeDTO.fromJsDate(JsDate.create(entry.get("modifiedDateTime").isString().stringValue()));
+                sizesArray[i] = (long) entry.get("fileSize").isNumber().doubleValue();
+            }
+            return new GListFilesResult(null, namesArray, dirsArray, modifiedArray, sizesArray);
+        } catch (Exception e) {
+            return new GListFilesResult(e.getMessage(), null, null, null, null);
+        }
+    }
+
+    @Override
     public void execute(GWriteAction action) {
-        GwtClientUtils.downloadFile(action.fileUrl);
+        if (action.fileUrl != null) {
+            String downloadURL = getAppDownloadURL(action.fileUrl);
+            //todo: status 401 from RestAuthenticationEntryPoint
+            executeNoResultFlutter("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath}, () -> fileDownload(downloadURL));
+        }
+    }
+
+    @Override
+    public GRunCommandActionResult execute(GRunCommandAction action) {
+        return executeAsyncResultFlutter("runCommand", new String[]{action.command}, res -> new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
+    }
+
+    @Override
+    public String execute(GGetAvailablePrintersAction action) {
+        return executeAsyncResultFlutter("getAvailablePrinters", new String[] {}, this::getJSONStringResult);
+    }
+
+    @Override
+    public String execute(GPrintFileAction action) {
+        return executeAsyncResultFlutter("print", new String[] {action.fileData, action.filePath, null, action.printerName}, this::getJSONStringResult);
+    }
+
+    @Override
+    public String execute(GWriteToPrinterAction action) {
+        return executeAsyncResultFlutter("print", new String[] {null, null, action.text, action.printerName}, this::getJSONStringResult);
+    }
+
+    @Override
+    public String execute(GTcpAction action) {
+        return executeAsyncResultFlutter("sendTCP", new Object[] {action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)}, this::getJSONStringResult);
+    }
+
+    @Override
+    public void execute(GUdpAction action) {
+        executeNoResultFlutter("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, null);
+    }
+
+    @Override
+    public void execute(GWriteToSocketAction action) {
+        executeNoResultFlutter("writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, null);
+    }
+
+    @Override
+    public String execute(GPingAction action) {
+        return executeAsyncResultFlutter("ping", new String[] {action.host}, this::getJSONStringResult);
+    }
+
+    private boolean getJSONBooleanResult(JavaScriptObject res) {
+        Boolean exists = getJSONBoolean(res, "result");
+        return exists != null && exists;
+    }
+
+    private String getJSONStringResult(JavaScriptObject res) {
+        return getJSONString(res, "result");
+    }
+
+    private String getJSONError(JavaScriptObject res) {
+        return getJSONString(res, "error");
+    }
+
+    private String getJSONString(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isString().stringValue();
+        } else {
+            return null;
+        }
+    }
+
+    private int getJSONInt(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? 0 : (int) json.isNumber().doubleValue();
+        } else {
+            return 0;
+        }
+    }
+
+    private Boolean getJSONBoolean(JavaScriptObject res, String key) {
+        JSONValue json = new JSONObject(res).get(key);
+        if(json != null) {
+            return json.isNull() != null ? null : json.isBoolean().booleanValue();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String execute(GWriteToComPortAction action) {
+        return executeAsyncResultFlutter("writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, this::getJSONStringResult);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
@@ -429,19 +620,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
+        private final List<BiConsumer<Object, Throwable>> actionOnResults = new ArrayList<>();
 
         public Object addAction(GClientWebAction action) {
-            actions.add(action);
+            Consumer<BiConsumer<Object, Throwable>> run = onResult -> {
+                actions.add(action);
+                actionOnResults.add(onResult);
 
-            boolean syncType = action.syncType;
-            if (syncType)
-                pauseDispatching();
+                flush();
+            };
 
-            flush();
+            if(action.syncType)
+                return executeAsyncResult(run);
 
-            if(syncType)
-                return action.execResult;
-
+            run.accept((actionResult, throwable) -> {});
             return null;
         }
 
@@ -514,6 +706,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
                 scr.onload = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
+                //temp fix: continueDispatching if .js not found
+                scr.onerror = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
             } else if (extension === 'css') {
                 var link = document.createElement("link");
                 link.href = resourcePath;
@@ -534,18 +728,15 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }-*/;
 
         private void onFileExecuted(GClientWebAction action) {
-            onActionExecuted(action, null);
+            onActionExecuted(action, null, null);
         }
 
-        private void onActionExecuted(GClientWebAction action, Object currentActionResult) {
+        private void onActionExecuted(GClientWebAction action, Object actionResult, Throwable actionThrowable) {
             isExecuting = false;
-            actions.remove(action);
-
-            if (action.syncType) {
-                Result<Object> result = new Result<>();
-                continueDispatching(currentActionResult, result);
-                action.execResult = result.result;
-            }
+            GClientWebAction remove = actions.remove(0);
+            assert remove == action;
+            BiConsumer<Object, Throwable> onResult = actionOnResults.remove(0);
+            onResult.accept(actionResult, actionThrowable);
 
             flush();
         }
@@ -557,11 +748,21 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }-*/;
 
+        private native JavaScriptObject getOnException(GClientWebAction action) /*-{
+            var thisObj = this;
+            return function (value) {
+                return thisObj.@JSExecutor::onJSFunctionException(*)(action, value);
+            }
+        }-*/;
+
         private JavaScriptObject getController() {
             return GwtActionDispatcher.this.getController();
         }
         private void onJSFunctionExecuted(GClientWebAction action, JavaScriptObject result) {
-            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)));
+            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)), null);
+        }
+        private void onJSFunctionException(GClientWebAction action, String message) {
+            onActionExecuted(action, null, new RuntimeException(message));
         }
 
         private void executeJSFunction(GClientWebAction action) {
@@ -582,6 +783,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 if(fncParams > arguments.length()) { // takes onResult
                     async = true;
                     arguments.push(getOnResult(action));
+                    if(fncParams > arguments.length()) // takes onException
+                        arguments.push(getOnException(action));
                 }
 
                 result = GwtClientUtils.call(fnc, arguments);
@@ -602,25 +805,24 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public Object execute(GHttpClientAction action) {
-        pauseDispatching();
-        XMLHttpRequest request = XMLHttpRequest.create();
-        request.open(action.method.name(), action.connectionString);
-        request.setResponseType("arraybuffer");
-        for(Map.Entry<String, String> header : action.headers.entrySet()) {
-            request.setRequestHeader(header.getKey(), header.getValue());
-        }
-        sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
-
-        Result<Object> result = new Result<>();
-        request.setOnReadyStateChange(xhr -> {
-            if(xhr.getReadyState() == XMLHttpRequest.DONE) {
-                ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
-                byte[] bytes = arrayBufferToBytes(arrayBuffer);
-                Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
-                continueDispatching(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()), result);
+        return executeAsyncResult(onResult -> {
+            XMLHttpRequest request = XMLHttpRequest.create();
+            request.open(action.method.name(), action.connectionString);
+            request.setResponseType("arraybuffer");
+            for (Map.Entry<String, String> header : action.headers.entrySet()) {
+                request.setRequestHeader(header.getKey(), header.getValue());
             }
+            sendRequest(request, action.body != null ? bytesToArrayBuffer(action.body) : null);
+
+            request.setOnReadyStateChange(xhr -> {
+                if (xhr.getReadyState() == XMLHttpRequest.DONE) {
+                    ArrayBuffer arrayBuffer = xhr.getResponseArrayBuffer();
+                    byte[] bytes = arrayBufferToBytes(arrayBuffer);
+                    Map<String, List<String>> responseHeaders = getResponseHeaders(xhr.getAllResponseHeaders());
+                    onResult.accept(new GExternalHttpResponse(xhr.getResponseHeader("Content-Type"), bytes, responseHeaders, xhr.getStatus(), xhr.getStatusText()), null);
+                }
+            });
         });
-        return result.result;
     }
 
     private native void sendRequest(XMLHttpRequest request, ArrayBuffer body) /*-{

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct.property;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -14,9 +13,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -26,7 +23,6 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 
@@ -100,8 +96,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
             this.html = html;
         }
     }
-    public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
-        return getSelectProperty(context, forceFilterSelected, property.getSelectProperty(ListFact.EMPTY(), forceSelect), mapping);
+    public Property.MapSelect<P> getSelectProperty(boolean forceSelect) { // false - filter selected,
+        return Property.createMapSelect(property.getSelectProperty(ListFact.EMPTY(), forceSelect), mapping);
     }
 
     public boolean isValueUnique(GroupObjectEntity grid, Property.ValueUniqueType uniqueType) {

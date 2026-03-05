@@ -4,6 +4,10 @@ import lsfusion.server.physics.admin.Settings;
 
 public class Stat {
 
+    public enum Mode {
+        ADD, REMOVE, CHANGE;
+    }
+
     public final static Stat MAX = new Stat(1000000, true);
     public final static Stat ONE = new Stat(1);
     public final static Stat ONESTAT = new Stat(1, true);
@@ -118,5 +122,16 @@ public class Stat {
     
     public Stat avg(Stat add) {
         return new Stat((deg + add.deg) / 2, true);
+    }
+
+    public boolean majorStatChanged(Stat changedStat, Mode mode) {
+        Stat coeff = new Stat(Settings.get().getMajorStatChangeDegree(), true);
+        if (mode == Mode.ADD) { // changed >= st
+            return mult(coeff).lessEquals(changedStat);
+        } else if (mode == Mode.REMOVE) {
+            return lessEquals(changedStat);
+        } else {
+            return mult(coeff).lessEquals(changedStat) || changedStat.mult(coeff).lessEquals(this);
+        }
     }
 }

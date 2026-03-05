@@ -42,8 +42,8 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
-    public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
-        return form.requestUserInteraction(actions);
+    public Object aspectRequestUserInteraction(ClientAction action, String message) {
+        return form.requestUserInteraction(action);
     }
 
     @Override

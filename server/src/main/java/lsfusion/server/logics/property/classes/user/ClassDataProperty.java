@@ -19,7 +19,6 @@ import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.PropertyField;
-import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -69,7 +68,7 @@ public class ClassDataProperty extends AbstractDataProperty implements ObjectCla
     
     public void dropInconsistentClasses(SQLSession session, BaseClass baseClass, KeyExpr key, Where where, OperationOwner owner) throws SQLException, SQLHandledException {
         DBTable table = baseClass.getInconsistentTable(mapTable.table);
-        session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL()), where), owner, TableOwner.global));
+        session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL()), where), owner));
     }
 
     public Expr getStoredExpr(Expr expr) {

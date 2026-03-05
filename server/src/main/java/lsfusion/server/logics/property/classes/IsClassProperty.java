@@ -63,7 +63,6 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return interfaces.mapValues((ClassPropertyInterface value) -> value.interfaceClass);
     }
 
-    // по аналогии с SessionDataProperty
     public final static MAddExclMap<ImMap<ValueClass, Integer>, PropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
     @ManualLazy
     @NFStaticLazy

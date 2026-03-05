@@ -55,6 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Set;
 import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -631,6 +632,17 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return BaseUtils.immutableCast(getUpClassFields(true));
     }
 
+    public ImSet<ObjectValueClassSet> getObjectValueClassSets(Set<String> disableTableSet) {
+        MSet objectValueClassSets = SetFact.mSet();
+        ImMap<ObjectClassField, ObjectValueClassSet> upObjectClassFields = getUpObjectClassFields();
+        for (ObjectClassField key : upObjectClassFields.keys()) {
+            if (!disableTableSet.contains(key.getTable().getName())) {
+                objectValueClassSets.add(upObjectClassFields.get(key));
+            }
+        }
+        return objectValueClassSets.immutable();
+    }
+
     // в отличии от getMapTables, для того чтобы ходить "вверх" было удобно
     private IsClassField isClassField;
 
@@ -651,7 +663,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
         return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
     }
-
 
     public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields, ObjectValueClassSet baseClassSet) {
         // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere
@@ -709,5 +720,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         return result;
+    }
+
+    protected boolean hasStaticObjects() {
+        return false;
+    }
+
+    public boolean hasConcreteStaticObjects() {
+        if (hasStaticObjects())
+            return true;
+
+        for (CustomClass child : getChildrenIt()) {
+            if (child.hasConcreteStaticObjects())
+                return true;
+        }
+
+        return false;
     }
 }

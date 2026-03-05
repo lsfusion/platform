@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TextAreaElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.InputBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -134,7 +133,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         }
         //title is shown as an embedded tooltip on mouseover
         element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
-
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
@@ -145,7 +143,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
                     GwtClientUtils.removeClassName(inputElement, "is-invalid");
                 }
             }
-            updateInputContent(inputElement.cast(), innerText, value, rendererType);
+            InputBasedCellEditor.setInputValue(inputElement.cast(), innerText);
             if (placeholder != null)
                 inputElement.setAttribute("placeholder", placeholder);
             else
@@ -156,10 +154,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
         GwtClientUtils.setDataHtmlOrText(element, isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText, false);
         return true;
-    }
-
-    protected void updateInputContent(InputElement inputElement, String innerText, PValue value, RendererType rendererType) {
-        TextBasedCellEditor.setTextInputValue(inputElement, innerText);
     }
 
     public static class ExtraValue {

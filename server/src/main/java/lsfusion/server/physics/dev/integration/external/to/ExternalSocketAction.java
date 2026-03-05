@@ -34,14 +34,14 @@ public abstract class ExternalSocketAction extends CallAction {
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         try {
             PropertyInterface paramInterface = paramInterfaces.single();
-            FileData file = readFile(context.getKeyValue(paramInterface), paramTypes.get(paramInterface), ExternalUtils.resultCharset.toString());
+            RawFileData file = readRawFile(context.getKeyValue(paramInterface), paramTypes.get(paramInterface), ExternalUtils.resultCharset.toString());
             if (file != null) {
                 String connectionString = getTransformedText(context, queryInterface);
                 if (connectionString != null) {
                     Pattern pattern = Pattern.compile("(.*):(\\d+)");
                     Matcher matcher = pattern.matcher(connectionString);
                     if (matcher.matches()) {
-                        byte[] fileBytes = file.getRawFile().getBytes();
+                        byte[] fileBytes = file.getBytes();
                         String host = matcher.group(1);
                         Integer port = Integer.parseInt(matcher.group(2));
                         send(context, host, port, fileBytes);

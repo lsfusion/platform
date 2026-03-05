@@ -14,7 +14,7 @@ Operator options `options` can be listed one after another in any order. The fol
 
 ```
 syncType
-LOG
+messageType
 ```
 
 ### Description
@@ -35,9 +35,21 @@ The `MESSAGE` operator creates an action that shows a message to the user either
 
     - `NOWAIT` - right after the information is ready for sending to the user (the message text is read). If several `MESSAGE` `NOWAIT` actions are called during the execution of some continuous action, they do not create separate messages but are concatenated with the previous messages of the same type. A single concatenated message will be shown to the user at the end of the continuous action as a result.
 
-- `LOG`
+- `messageType`
 
-    A keyword that, when specified, shows the message in the `System.log` window.
+    Message type. Specifies how the message will be displayed on the screen. Specified by one of the keywords:
+
+    - `LOG` - message in the `System.log` window.
+  
+    - `INFO` - information message.
+	
+	- `SUCCESS` - success message.
+	
+	- `WARN` - warning message.
+	
+	- `ERROR` - error message.
+
+	- `DEFAULT` - plain message. This value is used by default.	
 
 ### Examples
 

@@ -2,6 +2,7 @@ package lsfusion.base.file;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.jfree.ui.ExtensionFileFilter;
 
 import javax.swing.*;
@@ -11,14 +12,15 @@ import java.util.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
+@Deprecated //deprecated since 6.2, removed in 7.0
 public class FileDialogUtils {
 
     public static String showSaveFileDialog(String path, RawFileData file) {
         Map<String, RawFileData> chosenFiles = showSaveFileDialog(Collections.singletonMap(path, file));
-        return chosenFiles.isEmpty() ? null : BaseUtils.singleKey(chosenFiles);
+        return chosenFiles.isEmpty() ? null : FilenameUtils.removeExtension(BaseUtils.singleKey(chosenFiles));
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 6.2, removed in 7.0
     public static Map<String, RawFileData> showSaveFileDialog(Map<String, RawFileData> files) {
         Map<String, RawFileData> resultMap = new HashMap<>();
         JFileChooser fileChooser = new JFileChooser();

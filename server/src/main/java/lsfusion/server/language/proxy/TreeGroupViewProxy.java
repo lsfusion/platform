@@ -1,6 +1,8 @@
 package lsfusion.server.language.proxy;
 
 import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
     public TreeGroupViewProxy(TreeGroupView target) {
@@ -20,6 +22,7 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
         target.boxed = boxed;
     }
 
+    @Deprecated //deprecated since 6.2; removed in 7.0
     @SuppressWarnings("unused")
     public void setExpandOnClick(boolean expandOnClick) {
         target.expandOnClick = expandOnClick;
@@ -28,6 +31,14 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
     @SuppressWarnings("unused")
     public void setHierarchicalWidth(int hierarchicalWidth) {
         target.hierarchicalWidth = hierarchicalWidth;
+    }
+
+    @SuppressWarnings("unused")
+    public void setHierarchicalCaption(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.hierarchicalCaption = ((LocalizedString) caption).getSourceString();
+        else
+            target.propertyHierarchicalCaption = (PropertyObjectEntity<?>) caption;
     }
 
     @Deprecated

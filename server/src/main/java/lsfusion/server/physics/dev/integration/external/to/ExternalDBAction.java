@@ -43,6 +43,7 @@ public class ExternalDBAction extends CallDBAction {
             if (connectionService != null)
                 connectionService.putSQLConnection(connectionString, conn);
         }
+        conn.setReadOnly(false);
 
         try {
             readJDBC(context, conn, syntax, OperationOwner.unknown);

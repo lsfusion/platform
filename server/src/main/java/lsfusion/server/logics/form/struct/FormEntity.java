@@ -26,11 +26,11 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
@@ -62,9 +62,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -74,6 +72,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -225,23 +224,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return fixedOrders.getListMap();
     }
 
-    private NFOrderSet<ImList<PropertyDrawEntity>> pivotColumns = NFFact.orderSet();
-    private NFOrderSet<ImList<PropertyDrawEntity>> pivotRows = NFFact.orderSet();
+    private NFOrderSet<ImList<PropertyDrawEntityOrPivotColumn>> pivotColumns = NFFact.orderSet();
+    private NFOrderSet<ImList<PropertyDrawEntityOrPivotColumn>> pivotRows = NFFact.orderSet();
     private NFOrderSet<PropertyDrawEntity> pivotMeasures = NFFact.orderSet();
 
-    public Iterable<ImList<PropertyDrawEntity>> getNFPivotColumnsListIt(Version version) {
+    public Iterable<ImList<PropertyDrawEntityOrPivotColumn>> getNFPivotColumnsListIt(Version version) {
         return pivotColumns.getNFListIt(version);
     }
 
-    public ImList<ImList<PropertyDrawEntity>> getPivotColumnsList() {
+    public ImList<ImList<PropertyDrawEntityOrPivotColumn>> getPivotColumnsList() {
         return pivotColumns.getList();
     }
 
-    public Iterable<ImList<PropertyDrawEntity>> getNFPivotRowsListIt(Version version) {
+    public Iterable<ImList<PropertyDrawEntityOrPivotColumn>> getNFPivotRowsListIt(Version version) {
         return pivotRows.getNFListIt(version);
     }
 
-    public ImList<ImList<PropertyDrawEntity>> getPivotRowsList() {
+    public ImList<ImList<PropertyDrawEntityOrPivotColumn>> getPivotRowsList() {
         return pivotRows.getList();
     }
 
@@ -256,10 +255,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImSet<PropertyDrawEntity>> getPivotGroupProps() {
         MSet<PropertyDrawEntity> mGroupProps = SetFact.mSet();
-        for(ImList<PropertyDrawEntity> pivotRow : getPivotRowsList())
-            mGroupProps.addAll(pivotRow.toOrderSet().getSet());
-        for(ImList<PropertyDrawEntity> pivotColumn : getPivotColumnsList())
-            mGroupProps.addAll(pivotColumn.toOrderSet().getSet());
+        for (ImList<PropertyDrawEntityOrPivotColumn> pivotRow : getPivotRowsList()) {
+            for (PropertyDrawEntityOrPivotColumn entry : pivotRow) {
+                if (entry instanceof PropertyDrawEntity) {
+                    mGroupProps.add((PropertyDrawEntity) entry);
+                }
+            }
+        }
+        for (ImList<PropertyDrawEntityOrPivotColumn> pivotColumn : getPivotColumnsList()) {
+            for (PropertyDrawEntityOrPivotColumn entry : pivotColumn) {
+                if (entry instanceof PropertyDrawEntity) {
+                    mGroupProps.add((PropertyDrawEntity) entry);
+                }
+            }
+        }
         return mGroupProps.immutable().group(key -> key.getToDraw(this));
     }
     @IdentityLazy
@@ -1175,6 +1184,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getField(entity, "dateFrom", "dateTimeFrom") != null;
     }
 
+    @IdentityLazy
+    public boolean isCalendarCompletePeriod(GroupObjectEntity entity) {
+        return getField(entity, "dateTo", "dateTimeTo") != null;
+    }
+
     public PropertyDrawEntity getField(GroupObjectEntity entity, String... fields) {
         List<String> fieldsList = Arrays.asList(fields);
         Iterable<PropertyDrawEntity> propertyDrawsIt = getPropertyDrawsIt();
@@ -1227,8 +1241,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
 
         for(GroupObjectEntity group : getGroupsIt()) {
-            if(group.listViewType.isCalendar() && !isCalendarDate(group) && !isCalendarDateTime(group)) {
-                throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
+            if(group.listViewType.isCalendar()) {
+                if (!isCalendarDate(group) && !isCalendarDateTime(group))
+                    throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
+                if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
+                    throw new RuntimeException(getCreationPath() + " none of required CALENDAR period propertyDraws found (dateTo or dateTimeTo)");
             }
         }
 
@@ -1249,11 +1266,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(RegularFilterGroupEntity regularFilterGroup : getRegularFilterGroupsIt())
             regularFilterGroup.finalizeAroundInit();
 
-        try {
-            getRichDesign().finalizeAroundInit();
-        } catch (ScriptParsingException e) {
-            throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
-        }
+        finalizeDesignAroundInit();
+    }
+
+    protected void finalizeDesignAroundInit() {
+        getRichDesign().finalizeAroundInit();
     }
 
     public void prereadAutoIcons(ConnectionContext context) {
@@ -1518,25 +1535,25 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void addPivotColumn(PropertyDrawEntity column, Version version) {
+    public void addPivotColumn(PropertyDrawEntityOrPivotColumn column, Version version) {
         pivotColumns.add(ListFact.singleton(column), version);
     }
 
-    public void addPivotColumns(List<List<PropertyDrawEntity>> columns, Version version) {
-        for(List<PropertyDrawEntity> column : columns) {
-            ImList<PropertyDrawEntity> columnList = ListFact.fromJavaList(column);
+    public void addPivotColumns(List<List<PropertyDrawEntityOrPivotColumn>> columns, Version version) {
+        for(List<PropertyDrawEntityOrPivotColumn> column : columns) {
+            ImList<PropertyDrawEntityOrPivotColumn> columnList = ListFact.fromJavaList(column);
             pivotColumns.add(columnList, version);
             addPivotColumnView(columnList, version);
         }
     }
 
-    public void addPivotRow(PropertyDrawEntity row, Version version) {
+    public void addPivotRow(PropertyDrawEntityOrPivotColumn row, Version version) {
         pivotRows.add(ListFact.singleton(row), version);
     }
 
-    public void addPivotRows(List<List<PropertyDrawEntity>> rows, Version version) {
-        for(List<PropertyDrawEntity> row : rows) {
-            ImList<PropertyDrawEntity> rowList = ListFact.fromJavaList(row);
+    public void addPivotRows(List<List<PropertyDrawEntityOrPivotColumn>> rows, Version version) {
+        for(List<PropertyDrawEntityOrPivotColumn> row : rows) {
+            ImList<PropertyDrawEntityOrPivotColumn> rowList = ListFact.fromJavaList(row);
             pivotRows.add(rowList, version);
             addPivotRowView(rowList, version);
         }
@@ -1553,12 +1570,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    private void addPivotColumnView(ImList<PropertyDrawEntity> column, Version version) {
+    private void addPivotColumnView(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addPivotColumn(column, version);
     }
-    private void addPivotRowView(ImList<PropertyDrawEntity> column, Version version) {
+    private void addPivotRowView(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addPivotRow(column, version);
@@ -1695,5 +1712,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return this;
         
         return null;
+    }
+
+    public boolean showNewEdit(SecurityPolicy policy) {
+        for (PropertyDrawEntity propertyDraw : getPropertyDrawsList()) {
+            ActionOrProperty action = propertyDraw.actionOrProperty.property;
+            if (action instanceof Action && ((Action<?>) action).isNewEdit && policy.checkPropertyChangePermission(action, (Action) action))
+                return true;
+        }
+        return false;
     }
 }

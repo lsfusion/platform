@@ -15,7 +15,9 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPivotColumn;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDrawOrPivotColumn;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormEventClose;
@@ -301,6 +303,12 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.path = clientPropertyDraw.path;
         propertyDraw.formPath = clientPropertyDraw.formPath;
 
+        propertyDraw.contextMenuDebugInfoMap = new HashMap<>();
+        for(Map.Entry<String, ClientPropertyDraw.ContextMenuDebugInfo> contextMenuEntry : clientPropertyDraw.contextMenuDebugInfoMap.entrySet()) {
+            ClientPropertyDraw.ContextMenuDebugInfo info = contextMenuEntry.getValue();
+            propertyDraw.contextMenuDebugInfoMap.put(contextMenuEntry.getKey(), new GPropertyDraw.ContextMenuDebugInfo(info.sid, info.creationPath, info.path));
+        }
+
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
         if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
             propertyDraw.columnsName = clientPropertyDraw.columnsName;
@@ -320,6 +328,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
+        propertyDraw.footerElementClass = clientPropertyDraw.footerElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
         propertyDraw.toolbarActions = clientPropertyDraw.toolbarActions;
 
@@ -375,7 +384,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.gridElementClassReader = convertGridElementClassReader(clientPropertyDraw.gridElementClassReader);
         propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
-        propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
+        propertyDraw.captionElementClassReader = convertExtraPropReader(clientPropertyDraw.captionElementClassReader);
+        propertyDraw.footerElementClassReader = convertExtraPropReader(clientPropertyDraw.footerElementClassReader);
         propertyDraw.fontReader = convertExtraPropReader(clientPropertyDraw.fontReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
@@ -448,6 +458,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.tooltip = clientPropertyDraw.tooltip;
         propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
 
+        propertyDraw.eventID = clientPropertyDraw.eventID;
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
         propertyDraw.hide = clientPropertyDraw.hide;
@@ -456,6 +467,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.notNull = clientPropertyDraw.notNull;
 
         propertyDraw.sticky = clientPropertyDraw.sticky;
+
+        propertyDraw.hasActiveProperty = clientPropertyDraw.hasActiveProperty;
 
         propertyDraw.hasFooter = clientPropertyDraw.hasFooter;
 
@@ -490,10 +503,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {
         return reader == null ? null : new GValueElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GCaptionElementClassReader convertCaptionElementClassReader(ClientPropertyDraw.CaptionElementClassReader reader) {
-        return reader == null ? null : new GCaptionElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {
@@ -554,6 +563,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
         treeGroup.hierarchicalWidth = clientTreeGroup.hierarchicalWidth;
+        treeGroup.hierarchicalCaption = clientTreeGroup.hierarchicalCaption;
 
         treeGroup.resizeOverflow = clientTreeGroup.resizeOverflow;
 
@@ -702,16 +712,21 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         return form;
     }
 
-    private ArrayList<ArrayList<GPropertyDraw>> convertPivotPropertiesList(List<List<ClientPropertyDraw>> pivotPropertiesList) {
-        ArrayList<ArrayList<GPropertyDraw>> gPivotPropertiesList = new ArrayList<>();
-        for (List<ClientPropertyDraw> pivotPropertiesEntry : pivotPropertiesList) {
-            ArrayList<GPropertyDraw> gPivotPropertiesEntry = new ArrayList<>();
-            for(ClientPropertyDraw property : pivotPropertiesEntry) {
+    private ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> convertPivotPropertiesList(List<List<ClientPropertyDrawOrPivotColumn>> pivotPropertiesList) {
+        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> gPivotPropertiesList = new ArrayList<>();
+        for (List<ClientPropertyDrawOrPivotColumn> pivotPropertiesEntry : pivotPropertiesList) {
+            ArrayList<GPropertyDrawOrPivotColumn> gPivotPropertiesEntry = new ArrayList<>();
+            for(ClientPropertyDrawOrPivotColumn property : pivotPropertiesEntry) {
                 gPivotPropertiesEntry.add(convertOrCast(property));
             }
             gPivotPropertiesList.add(gPivotPropertiesEntry);
         }
         return gPivotPropertiesList;
+    }
+
+    @Converter(from = ClientPivotColumn.class)
+    public GPivotColumn convertAction(ClientPivotColumn pivotColumn) {
+        return new GPivotColumn(pivotColumn.groupObject);
     }
 
     @Converter(from = FormScheduler.class)

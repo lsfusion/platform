@@ -69,7 +69,12 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                         throw new UnsupportedOperationException();
                 }
             } else
-                return ModalityShowFormType.DOCKED;
+                switch ((ModalityWindowFormType) windowType) {
+                    case FLOAT:
+                        return inputObjects.isEmpty() ? ModalityShowFormType.MODAL : ModalityShowFormType.DIALOG_MODAL;
+                    default:
+                        return ModalityShowFormType.DOCKED;
+                }
         }
     }
 
@@ -160,7 +165,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             context.executeSessionEvents();
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, formId);
+        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, syncType, formId);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
@@ -202,6 +207,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         if(type == ChangeFlowType.INTERACTIVEWAIT || type == ChangeFlowType.INTERACTIVEAPI)
             return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
+            return true;
+        if(type == ChangeFlowType.NOGROUPCHANGE)
             return true;
         return super.hasFlow(type, recursiveAbstracts);
     }

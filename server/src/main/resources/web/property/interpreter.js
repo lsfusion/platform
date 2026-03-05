@@ -16,12 +16,6 @@ function interpreter() {
             element.aceEditor = aceEditor;
 
             aceEditor.container.addEventListener('keydown', function (e) {
-
-                //when autocomplete popup shown, it is appended to the body and stays in the DOM when the editor is closed.
-                let completer = aceEditor.completer;
-                if (completer && completer.popup && completer.popup.container && !element.contains(completer.popup.container))
-                    element.appendChild(completer.popup.container);
-
                 // disable propagation enter key
                 if (e.keyCode === 13 || e.which === 13)
                     e.stopPropagation();
@@ -57,7 +51,23 @@ function interpreter() {
                 e.preventDefault();
             });
 
+            // ctrl+z continues to work even if the textInput field has lost focus
+            // The input field lost focus, for example, a modal window opened, and when the focus is on the modal window,
+            // user presses Ctrl+Z (no other key combinations cause this behavior),
+            // the interpreter catches this action and starts to undo the changes, and after that keyboard input goes to the interpreter.
+
+            // It seems that this is a Chrome bug related to historyUndo event type and <textarea> field. To resolve this, we will not process historyUndo
+            aceEditor.textInput.getElement().addEventListener("beforeinput", function(e) {
+                if (e.inputType === "historyUndo")
+                    e.preventDefault();
+            });
+
             aceEditor.onBlur = function (e) {
+                // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
+                let completer = aceEditor.completer;
+                if (completer && completer.activated)
+                    completer.destroy();
+
                 //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
                 aceEditor.$isFocused = false;
                 //disable text caret cursor blinking

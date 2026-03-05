@@ -50,8 +50,13 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     }
     private void finishInvocation(long requestIndex, RemotePausableInvocation invocation) {
         currentInvocations.remove(requestIndex);
-
-        if(requestLock != null)
+        if (requestLock == null) {
+            // in unsynchronized mode clearRecentResults skips ongoing invocations' entries; clean them up now
+            if (requestIndex < minReceivedRequestIndex) {
+                recentResults.remove(requestIndex);
+                requestsContinueIndices.remove(requestIndex);
+            }
+        } else
             requestLock.releaseRequestLock(invocation.getSID(), requestIndex, this);
     }
 
@@ -158,16 +163,22 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         // however it is < (and not <=) because the same requestIndex is used for continueServerInvocation (so it would be possible to clear result that might be needed for retryable request)
         // the cleaner solution is to lookahead if there will be continueServerInvocation and don't set lastReceivedRequestIndex in RmiQueue in that case, but now using < is a lot easier
         for (long i = minReceivedRequestIndex; i < lastReceivedRequestIndex; ++i) {
-            recentResults.remove(i);
-            requestsContinueIndices.remove(i);
+            // in unsynchronized mode lastReceivedRequestIndex can advance past ongoing paused invocations;
+            // preserve their recentResults and requestsContinueIndices entries until they complete (see finishInvocation)
+            if (requestLock != null || !currentInvocations.containsKey(i)) {
+                recentResults.remove(i);
+                requestsContinueIndices.remove(i);
+            }
         }
         minReceivedRequestIndex = lastReceivedRequestIndex;
     }
 
     public void waitRecentResults(long waitRequestIndex) {
         try {
-            while (!recentResults.containsKey(waitRequestIndex)) {
-                Thread.sleep(100);
+            if(waitRequestIndex != -1) { //see FormsController.executeNotificationAction
+                while (!recentResults.containsKey(waitRequestIndex)) {
+                    Thread.sleep(100);
+                }
             }
         } catch (InterruptedException e) {
             throw Throwables.propagate(e);
@@ -240,8 +251,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return invocationSID;
     }
 
-    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws RemoteException {
-        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, currentInvocation -> currentInvocation.resumeAfterUserInteraction(actionResults));
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object actionResult) throws RemoteException {
+        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, currentInvocation -> currentInvocation.resumeAfterUserInteraction(actionResult));
     }
 
     public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Throwable clientThrowable) throws RemoteException {
@@ -278,8 +289,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         RemotePausableInvocation.runUserInteraction(currentInvocation -> { currentInvocation.delayUserInteraction(action); return null;});
     }
 
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(actions));
+    public Object requestUserInteraction(ClientAction action) {
+        return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(action));
     }
 
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
@@ -337,8 +348,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object actionResult) throws Throwable {
             return syncExecute(object.syncContinueServerInvocationMap, requestIndex, joinPoint);
         }
         @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")

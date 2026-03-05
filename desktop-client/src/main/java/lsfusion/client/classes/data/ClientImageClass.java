@@ -16,7 +16,7 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {"jpg", "jpeg", "bmp", "png"};
+        return new String[] {"jpg", "jpeg", "bmp", "png", "webp"};
     }
 
     @Override

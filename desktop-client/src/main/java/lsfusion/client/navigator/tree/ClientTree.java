@@ -185,7 +185,7 @@ public class ClientTree extends JTree {
             for (int i = 0; i < cnt; i++) {
                 Object oNode = path.getPathComponent(i);
                 if (oNode instanceof ClientTreeNode) {
-                    ClientTreeNode<?, ?> pathNode = (ClientTreeNode) oNode;
+                    ClientTreeNode<?> pathNode = (ClientTreeNode) oNode;
 
                     result.addAll(pathNode.subTreeActions);
 
@@ -222,7 +222,7 @@ public class ClientTree extends JTree {
             }
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-            return node instanceof ClientTreeNode && ((ClientTreeNode) node).canImport(info);
+            return node instanceof ClientTreeNode && ((ClientTreeNode) node).canImport();
         }
 
         @Override
@@ -233,7 +233,7 @@ public class ClientTree extends JTree {
                 if (path != null) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
                     if (node instanceof ClientTreeNode) {
-                        return ((ClientTreeNode) node).importData(ClientTree.this, info);
+                        return ((ClientTreeNode) node).importData();
                     }
                 }
             }
@@ -258,7 +258,7 @@ public class ClientTree extends JTree {
         @Override
         public void exportDone(JComponent component, Transferable trans, int action) {
             if (trans instanceof NodeTransfer) {
-                ((NodeTransfer) trans).node.exportDone(ClientTree.this, component, trans, action);
+                ((NodeTransfer) trans).node.exportDone();
             }
         }
     }

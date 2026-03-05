@@ -8,10 +8,11 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-import net.coobird.thumbnailator.Thumbnails;
 
-import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -37,10 +38,8 @@ public class ResizeImageScaleAction extends InternalAction {
         if (inputFile != null && scale != null) {
             double doubleScale = scale.doubleValue();
             if(doubleScale != 0) {
-                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / doubleScale).toOutputStream(os);
-                    result = new RawFileData(os);
-                }
+                BufferedImage image = ImageIO.read(inputFile.getInputStream());
+                result = FileUtils.createThumbnails(inputFile, image, (double) 1 / doubleScale);
             }
         }
         return result;

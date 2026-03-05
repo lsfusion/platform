@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -89,13 +90,13 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public FileData writePropNotNull(RawFileData value, String extension, String charset) {
-        return new FileData(value, extension);
+    public FileData writePropNotNull(NamedFileData value, String charset) {
+        return value.getFileData();
     }
 
     @Override
-    public FileData readPropNotNull(FileData value, String charset) {
-        return value;
+    public NamedFileData readPropNotNull(FileData value, String charset) {
+        return new NamedFileData(value);
     }
 
     @Override

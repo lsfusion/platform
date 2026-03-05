@@ -10,7 +10,9 @@ title: 'Активность (ACTIVE)'
 
 ### Язык
 
-Для создания свойства, определяющего активность закладки, используется [оператор `ACTIVE TAB`](ACTIVE_TAB_operator.md). Определение активности формы реализуется путем создания действия с использованием [оператора `ACTIVE FORM`](ACTIVE_FORM_operator.md).
+Для создания свойства, определяющего активность закладки, используется [оператор `ACTIVE TAB`](ACTIVE_TAB_operator.md). 
+Для создания свойства, определяющего активность свойства, используется [оператор `ACTIVE PROPERTY`](ACTIVE_PROPERTY_operator.md). 
+Определение активности формы реализуется путем создания действия с использованием [оператора `ACTIVE FORM`](ACTIVE_FORM_operator.md).
 
 ### Примеры
 
@@ -42,6 +44,15 @@ DESIGN tabbedForm {
 recentActive() = ACTIVE TAB tabbedForm.recent;
 ```
 
+```lsf
+FORM users
+OBJECTS c = CustomUser
+PROPERTIES(c) name, login;
+
+activeLogin = ACTIVE PROPERTY users.login(c);
+EXTEND FORM users
+PROPERTIES() activeLogin;
+```
 
 ```lsf
 FORM exampleForm;

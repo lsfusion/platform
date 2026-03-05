@@ -5,7 +5,7 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.file.client.MoveFileClientAction;
+import lsfusion.base.file.MoveFileClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
@@ -33,7 +33,7 @@ public class MoveAction extends InternalAction {
                 if (isClient) {
                     String result = (String) context.requestUserInteraction(new MoveFileClientAction(sourcePath, destinationPath));
                     if (result != null) {
-                        throw new RuntimeException(String.format("Failed to move file from %s to %s", sourcePath, destinationPath));
+                        throw new RuntimeException(String.format("Failed to move file from %s to %s: %s", sourcePath, destinationPath, result));
                     }
                 } else {
                     FileUtils.moveFile(sourcePath, destinationPath);

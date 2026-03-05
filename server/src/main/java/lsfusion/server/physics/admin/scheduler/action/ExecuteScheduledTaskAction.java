@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.scheduler.action;
 
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

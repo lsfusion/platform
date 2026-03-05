@@ -131,7 +131,8 @@ public interface SQLSyntax {
     String getEpoch();
     String getDateTime();
 
-    String getPrefixSearchQuery();
+    String getPrefixSearchQuery(boolean exact);
+    String getPrefixSearchLikeQuery();
 
     String getInsensitiveLike();
 

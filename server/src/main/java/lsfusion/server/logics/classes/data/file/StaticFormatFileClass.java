@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -86,13 +87,13 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    protected RawFileData writePropNotNull(RawFileData value, String extension, String charset) {
-        return value;
+    protected RawFileData writePropNotNull(NamedFileData value, String charset) {
+        return value.getRawFile();
     }
 
     @Override
-    public FileData readPropNotNull(RawFileData value, String charset) {
-        return new FileData(value, getExtension(value));
+    public NamedFileData readPropNotNull(RawFileData value, String charset) {
+        return new NamedFileData(new FileData(value, getExtension(value)));
     }
 
     @Override

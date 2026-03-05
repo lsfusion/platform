@@ -24,9 +24,10 @@ public abstract class GIntegralType extends GFormatType {
     }
 
     protected abstract int getPrecision();
+    protected abstract int getScale();
 
     public String getStep() {
-        return GwtClientUtils.getStep(getPrecision());
+        return GwtClientUtils.getStep(getScale());
     }
 
     @Override
@@ -83,8 +84,12 @@ public abstract class GIntegralType extends GFormatType {
         return super.getValueInputType();
     }
 
-    public PValue parseISOString(String value) throws ParseException {
-        return value.isEmpty() ? null : fromDoubleValue(Double.valueOf(value));
+    public PValue parseISOString(String value) {
+        try {
+            return value.isEmpty() ? null : fromDoubleValue(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String formatISOString(PValue value) {

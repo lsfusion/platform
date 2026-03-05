@@ -32,8 +32,20 @@ public class KeyStrokeConverter extends AbstractConverter {
         if(value != null) {
             ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(value);
             if (!isRedundantString(kso.keyStroke))
-                return new InputBindingEvent(mouse ? new MouseInputEvent(kso.keyStroke, kso.bindingModesMap) : new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap), kso.priority);
+                return new InputBindingEvent(mouse ? new MouseInputEvent(kso.keyStroke, kso.bindingModesMap) : new KeyInputEvent(getKeyStroke(kso.keyStroke), kso.bindingModesMap), kso.priority);
         }
         return null;
+    }
+
+    public static KeyStroke getKeyStroke(String keyPress) {
+        if (keyPress != null) {
+            if (keyPress.equalsIgnoreCase("ctrl"))
+                keyPress = "ctrl CONTROL";
+            else if (keyPress.equalsIgnoreCase("alt"))
+                keyPress = "alt ALT";
+            if (keyPress.equalsIgnoreCase("shift"))
+                keyPress = "shift SHIFT";
+        }
+        return KeyStroke.getKeyStroke(keyPress);
     }
 }

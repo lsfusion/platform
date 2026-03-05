@@ -76,6 +76,7 @@
 }
 
 .modal-header {
+    display: flex;
     padding: 0.5em;
     border-bottom: 1px solid var(--dialog-outer-border-color);
 }

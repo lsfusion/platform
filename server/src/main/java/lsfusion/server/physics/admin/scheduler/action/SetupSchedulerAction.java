@@ -1,7 +1,6 @@
 package lsfusion.server.physics.admin.scheduler.action;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

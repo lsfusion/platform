@@ -196,4 +196,10 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected String getGridInfo() {
         return form.form.sID + " " + groupObject.sID;
     }
+
+    @Override
+    public void selectedColumnChanged() {
+        super.selectedColumnChanged();
+        form.setPropertyActive(getSelectedProperty(), true);
+    }
 }

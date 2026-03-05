@@ -37,7 +37,7 @@ public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
             writeObject = new JSONArray(objects).toString();
         }
         Charset jsonCharset = ExternalUtils.jsonCharset;
-        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : null, "json", context, jsonCharset.toString());
+        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : RawFileData.EMPTY, "json", context, jsonCharset.toString());
     }
 
     public abstract List<JSONObject> createJSON(T items);

@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -33,7 +32,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BusinessLogics;
@@ -116,19 +114,8 @@ public class ClassChanges {
         return false;
     }
 
-    public final static KeyField classField = new KeyField("key0", ObjectType.instance);
     public static Where isStaticValueClass(Expr expr, ObjectValueClassSet classSet) {
-        Where result;
-        ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();
-        if(concreteChildren.size() > Settings.get().getSessionRowsToTable()) {
-            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(value -> MapFact.singleton(classField, value.getClassObject())).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
-            return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
-        } else {
-            result = Where.FALSE();
-            for (ConcreteCustomClass customUsedClass : concreteChildren)
-                result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
-        }
-        return result;
+        return expr.compareStatic(classSet.getSetConcreteChildren().mapSetValues(ConcreteCustomClass::getClassObject));
     }
 
     // читаем текущие классы в сессии
@@ -272,7 +259,7 @@ public class ClassChanges {
     }
     
     public static SingleKeyPropertyUsage createChangeTable(String debugInfo) {
-        return new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance);
+        return new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance, true);
     }
 
     public ImMap<Property, UpdateResult> changeClass(MaterializableClassChange matChange, SQLSession sql, BaseClass baseClass, QueryEnvironment env, ChangedClasses changedClasses) throws SQLException, SQLHandledException {
@@ -424,7 +411,7 @@ public class ClassChanges {
 
     // просто lazy кэш для getCurrentClass
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap();
-    
+
     public ClassChanges() { // mutable конструктор
         news = MapFact.mAddRemoveMap();
         changedClasses = MapFact.mAddRemoveMap();
@@ -706,14 +693,15 @@ public class ClassChanges {
                     KeyField key = mapFields.getKey(i);
                     sql.statusMessage = new StatusMessage("delete", key, i, size);
                     ValueClass value = mapFields.getValue(i);
-                    if (value instanceof CustomClass && remove.contains((CustomClass) value))
+                    if (value instanceof CustomClass && remove.contains((CustomClass) value)) {
                         removeWhere = removeWhere.or(value.getProperty().getDroppedWhere(mapExprs.get(key), classModifier));
+                    }
                 } finally {
                     sql.statusMessage = null;
                 }
             }
             query.and(table.join(mapExprs).getWhere().and(removeWhere));
-            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv, TableOwner.global));
+            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), queryEnv));
         }
         return remove;
     }

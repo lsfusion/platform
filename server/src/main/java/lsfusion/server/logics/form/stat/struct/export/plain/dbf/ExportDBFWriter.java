@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.google.common.base.Throwables;
-import com.hexiong.jdbf.DBFWriter;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;

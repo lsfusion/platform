@@ -1,7 +1,6 @@
 package lsfusion.client.controller.remote.proxy;
 
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 
 import java.rmi.RemoteException;
@@ -13,9 +12,9 @@ public abstract class RemoteRequestObjectProxy<T extends RemoteRequestInterface>
     }
 
     @Override
-    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object actionResult) throws RemoteException {
         logRemoteMethodStartCall("continueServerInvocation");
-        ServerResponse result = target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+        ServerResponse result = target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult);
         logRemoteMethodEndCall("continueServerInvocation", result);
         return result;
     }

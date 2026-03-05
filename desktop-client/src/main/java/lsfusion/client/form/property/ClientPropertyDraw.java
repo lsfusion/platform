@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.*;
 import java.util.List;
 import java.util.*;
@@ -47,13 +48,14 @@ import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable, ClientPropertyDrawOrPivotColumn {
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
     public GridElementClassReader gridElementClassReader = new GridElementClassReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
-    public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
+    public ExtraPropReader captionElementClassReader = new ExtraPropReader(CAPTIONELEMENTCLASS);
+    public ExtraPropReader footerElementClassReader = new ExtraPropReader(FOOTERELEMENTCLASS);
     public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
@@ -103,6 +105,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
+    public String footerElementClass;
     public boolean toolbar;
     public boolean toolbarActions;
 
@@ -221,10 +224,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String creationPath;
     public String path;
     public String formPath;
-    
+
+    public Map<String, ContextMenuDebugInfo> contextMenuDebugInfoMap = new HashMap<>();
+
     public boolean notNull;
 
     public boolean sticky;
+
+    public boolean hasActiveProperty;
 
     public boolean hasFooter;
 
@@ -612,6 +619,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         inputType = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
+        footerElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
         toolbarActions = pool.readBoolean(inStream);
 
@@ -732,12 +740,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String actionSID = pool.readString(inStream);
                 String caption = pool.readString(inStream);
                 editBindingMap.setContextMenuAction(actionSID, caption);
+                if(pool.readBoolean(inStream)) {
+                    contextMenuDebugInfoMap.put(actionSID, new ContextMenuDebugInfo(pool.readString(inStream),
+                            pool.readString(inStream), pool.readString(inStream)));
+                }
             }
         }
         
         notNull = inStream.readBoolean();
 
         sticky = inStream.readBoolean();
+
+        hasActiveProperty = inStream.readBoolean();
 
         hasFooter = inStream.readBoolean();
     }
@@ -1049,6 +1063,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
+    public class FooterElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.FOOTERELEMENTCLASS;
+        }
+    }
+
     public class BackgroundReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
@@ -1123,6 +1154,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return type;
+        }
+    }
+
+    public static class ContextMenuDebugInfo implements Serializable {
+        public String sid;
+        public String creationPath;
+        public String path;
+
+        public ContextMenuDebugInfo(String sid, String creationPath, String path) {
+            this.sid = sid;
+            this.creationPath = creationPath;
+            this.path = path;
         }
     }
 }

@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-assemble</artifactId>
-        <version>6.1-SNAPSHOT</version>
+        <version>6.2-SNAPSHOT</version>
         <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 
@@ -188,14 +188,6 @@
             <artifactId>commons-daemon</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.java-native</groupId>
-            <artifactId>jssc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fazecast</groupId>
-            <artifactId>jSerialComm</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr</artifactId>
         </dependency>
@@ -248,6 +240,10 @@
             <artifactId>json</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.github.erdtman</groupId>
+            <artifactId>java-json-canonicalization</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.junrar</groupId>
             <artifactId>junrar</artifactId>
         </dependency>
@@ -268,6 +264,10 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.sejda.imageio</groupId>
+            <artifactId>webp-imageio</artifactId>
         </dependency>
 
         <dependency>
@@ -320,7 +320,7 @@
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>5.16.0</version>
+            <version>5.26.0</version>
         </dependency>
         <!--websocket-->
         <dependency>

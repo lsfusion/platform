@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.ProgressStackItem;
@@ -289,7 +290,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public ActionMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
+    @IdentityStrongLazy
+    public ActionMapImplement<?, I> compileExtend(ImSet<Action<?>> recursiveAbstracts) { // проталкивание FOR'ов
 
         if(recursive)
             return null;
@@ -371,8 +373,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         ImSet<Property>[] listChangeProps = new ImSet[list.size()];
         ImSet<Property>[] listUsedProps = new ImSet[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            listChangeProps[i] = list.get(i).action.getChangeProps();
-            listUsedProps[i] = list.get(i).action.getUsedProps();
+            listChangeProps[i] = list.get(i).action.getChangeProps(recursiveAbstracts);
+            listUsedProps[i] = list.get(i).action.getUsedProps(recursiveAbstracts);
         }
 
         // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)

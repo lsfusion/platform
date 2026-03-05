@@ -5,6 +5,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
@@ -24,6 +25,8 @@ public class StopSchedulerAction extends InternalAction {
         try {
             findProperty("isStartedScheduler[]").change((Boolean) null, context);
             findProperty("onlySystemTasks[]").change((Boolean) null, context);
+            String currentUser = (String) findProperty("currentUserLogin[]").read(context);
+            ServerLoggers.schedulerLogger.warn("Scheduler is stopped by " + currentUser);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

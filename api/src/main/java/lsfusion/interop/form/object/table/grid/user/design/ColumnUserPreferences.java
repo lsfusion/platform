@@ -13,13 +13,14 @@ public class ColumnUserPreferences implements Serializable {
     public Integer userOrder;
     public Integer userSort;
     public Boolean userAscendingSort;
+    public Boolean inGrid; //only client->server
     
     public ColumnUserPreferences(ColumnUserPreferences prefs) {
-        this(prefs.userHide, prefs.userCaption, prefs.userPattern, prefs.userWidth, prefs.userFlex, prefs.userOrder, prefs.userSort, prefs.userAscendingSort);
+        this(prefs.userHide, prefs.userCaption, prefs.userPattern, prefs.userWidth, prefs.userFlex, prefs.userOrder, prefs.userSort, prefs.userAscendingSort, prefs.inGrid);
     }
 
     public ColumnUserPreferences(Boolean userHide, String userCaption, String userPattern, Integer width, Double flex, Integer userOrder,
-                                 Integer userSort, Boolean userAscendingSort) {
+                                 Integer userSort, Boolean userAscendingSort, Boolean inGrid) {
         this.userHide = userHide;
         this.userCaption = userCaption;
         this.userPattern = userPattern;
@@ -28,5 +29,6 @@ public class ColumnUserPreferences implements Serializable {
         this.userOrder = userOrder;
         this.userSort = userSort;
         this.userAscendingSort = userAscendingSort;
+        this.inGrid = inGrid;
     }
 }

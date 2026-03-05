@@ -306,7 +306,7 @@ DESIGN chat {
         NEW chat {
             fill = 1; 
             MOVE GRID(msg) {
-                headerHeight = 0;
+                captionHeight = 0;
                 PROPERTY(json(msg)) {
                     autoSize = TRUE;
                 }

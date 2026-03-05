@@ -104,9 +104,8 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         this.returnString = returnString;
     }
 
-    @Override
-    protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toExValue(returnString ? JSONTextClass.instance : JSONClass.instance);
+    protected ValueClass getLazyValueClass() {
+        return returnString ? JSONTextClass.instance : JSONClass.instance;
     }
 
     @Override

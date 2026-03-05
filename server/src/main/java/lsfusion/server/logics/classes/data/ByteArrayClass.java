@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
@@ -13,6 +14,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;
+import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,12 +74,14 @@ public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBTyp
     public RawFileData read(Object value) {
         if(value instanceof byte[])
             return new RawFileData((byte[]) value);
-/*        if(value instanceof BlobImpl)
+        if(value instanceof Blob) {
             try {
-                return ((BlobImpl)value).getBytes(1, (int) ((BlobImpl)value).length());
+                Blob blob = (Blob) value;
+                return new RawFileData(blob.getBytes(1, (int) blob.length()));
             } catch (SQLException e) {
                 throw Throwables.propagate(e);
-            }*/
+            }
+        }
         return (RawFileData) value;
     }
 

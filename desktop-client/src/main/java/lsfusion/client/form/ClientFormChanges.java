@@ -6,6 +6,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.grid.ClientGridProperty;
+import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -152,6 +153,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CAPTIONELEMENTCLASS:
                 return clientForm.getProperty(inStream.readInt()).captionElementClassReader;
+            case PropertyReadType.FOOTERELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).footerElementClassReader;
             case PropertyReadType.CELL_FONT:
                 return clientForm.getProperty(inStream.readInt()).fontReader;
             case PropertyReadType.CELL_BACKGROUND:
@@ -208,6 +211,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).changeKeyReader;
             case PropertyReadType.CHANGEMOUSE:
                 return clientForm.getProperty(inStream.readInt()).changeMouseReader;
+            case PropertyReadType.TREE_HIERARCHICALCAPTION:
+                return ((ClientTreeGroup)clientForm.findComponentByID(inStream.readInt())).hierarchicalCaptionClassReader;
             default:
                 throw new IOException();
         }

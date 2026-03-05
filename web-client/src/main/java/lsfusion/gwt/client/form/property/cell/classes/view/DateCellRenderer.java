@@ -1,28 +1,17 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.JsDate;
-import com.google.gwt.dom.client.InputElement;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.classes.data.GADateType;
+import lsfusion.gwt.client.classes.GFullInputType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 public class DateCellRenderer extends FormatCellRenderer<Object> {
-    private final GADateType type;
 
-    public DateCellRenderer(GPropertyDraw property, GADateType type) {
+    public DateCellRenderer(GPropertyDraw property) {
         super(property);
-
-        this.type = type;
     }
 
     @Override
-    public String format(PValue value, RendererType rendererType, String pattern) {
-        if(rendererType == RendererType.CELL && isTagInput() && getInputType(rendererType).inputType.hasNativePopup()) {
-            return type.formatISOString(value);
-        }
-        return super.format(value, rendererType, pattern);
+    protected boolean isNative(GFullInputType fullInputType) {
+        return fullInputType.inputType.hasNativePopup();
     }
 
     // valueAsDate doesn't work for datetime + hours

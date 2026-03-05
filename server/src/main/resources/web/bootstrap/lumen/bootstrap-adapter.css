@@ -11,3 +11,7 @@
 .btn-check+.btn.btn-outline-secondary:hover {
     color: var(--bs-tertiary-color);
 }
+
+.navbar.navbar-horz, .navbar.navbar-vert {
+    border-bottom-width: 1px;
+}

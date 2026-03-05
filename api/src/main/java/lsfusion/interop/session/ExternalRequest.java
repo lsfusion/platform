@@ -16,12 +16,12 @@ public class ExternalRequest implements Serializable {
     public final static String SINGLEBODYPARAMNAME = "body";
     public final String returnMultiType;
     public ExternalRequest(Param[] params) {
-        this(params, null, null, null, null, null, null, null, null, null, null);
+        this(params, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
-    public ExternalRequest(Param[] params, String scheme, String method, String webHost,
-                           Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
-                           String contentType, String sessionId) {
-        this(new String[0], params, new String[0], new String[0], null, null, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false, false);
+    public ExternalRequest(Param[] params, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
+                           String scheme, String method, String webHost, Integer webPort, String contextPath, String servletPath,
+                           String pathInfo, String query, String contentType, String sessionId) {
+        this(new String[0], params, headerNames, headerValues, cookieNames, cookieValues, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false, false);
     }
     public ExternalRequest(String[] returnNames, Param[] params,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
@@ -63,12 +63,28 @@ public class ExternalRequest implements Serializable {
         return new Param(value, true, charsetName, name);
     }
 
-    public static Param getBodyParam(Object value, String charsetName, String name, String fileName) {
+    public static Param getBodyParam(FileData value, String charsetName, String name, String fileName) {
         return new Param(value, false, charsetName, name, fileName);
     }
 
     public static NamedFileData getNamedFile(FileData fileData, String fileName) {
         return new NamedFileData(fileData, BaseUtils.getFileName(fileName != null ? fileName : "file"));
+    }
+
+    public String getOrigin() {
+        return scheme + "://" + webHost + ":" + webPort;
+    }
+
+    public String getWebPath() {
+        return getOrigin() + contextPath;
+    }
+
+    public String getURL() {
+        return getWebPath() + servletPath + pathInfo;
+    }
+
+    public String getRequestQuery() {
+        return getURL() + (query != null && !query.isEmpty() ?  "?" + query : "");
     }
 
     public Param[] params;

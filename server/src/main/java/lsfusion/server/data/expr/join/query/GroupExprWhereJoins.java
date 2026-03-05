@@ -3,10 +3,7 @@ package lsfusion.server.data.expr.join.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -18,9 +15,7 @@ import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.stat.KeyStat;
-import lsfusion.server.data.stat.StatKeys;
-import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 
@@ -37,15 +32,34 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
             this.joins = joins;
         }
 
-        public StatKeys<KeyExpr> getPartitionStatKeys(KeyStat keyStat, StatType type, StatKeys<KeyExpr> statKeys, ImSet<KeyExpr> allKeys, boolean useWhere) {
+        public StatKeys<KeyExpr> getPartitionStatKeys(KeyStat keyStat, StatType type, StatKeys<KeyExpr> statKeys, ImSet<KeyExpr> allKeys, boolean useWhere, ImOrderMap<Expr, Boolean> orders) {
 //            keyStat = keyEqual.getKeyStat(keyStat); // по идее и так оборачивается внутри
 
             ImSet<BaseExpr> group = mapExprs.values().toSet();
             StatKeys<BaseExpr> partitionStats = (useWhere ? joins : WhereJoins.EMPTY).pushStatKeys(statKeys).getStatKeys(group, keyStat, type, keyEqual); // joins
-            return joins.pushStatKeys(partitionStats).getStatKeys(allKeys, keyStat, type, keyEqual);
+
+            WhereJoins adjJoins = joins.pushStatKeys(partitionStats);
+
+            if(!keyEqual.isEmpty()) {
+                adjJoins = adjJoins.and(keyEqual.getWhereJoins());
+                keyStat = keyEqual.getKeyStat(keyStat);
+            }
+
+            StatKeys<KeyExpr> result = adjJoins.getStatKeys(allKeys, keyStat, type);
+
+            if (!orders.isEmpty()) {
+                ImSet<KeyExpr> partitionKeys = SetFact.filter(group, allKeys);
+                if (partitionKeys.size() == allKeys.size() && WhereJoins.isPushedAll(BaseUtils.immutableCast(mapExprs), statKeys.getKeys())) {
+                    Cost newCost = WhereJoins.getOrderCost(adjJoins, partitionKeys, result, keyStat, orders.keyOrderSet(), type, new Cost(result.getRows()), null);
+                    if (newCost != null)
+                        result = result.replaceCost(newCost);
+                }
+            }
+
+            return result;
         }
 
-        public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, StatKeys<K> statKeys) {
+        public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, StatKeys<K> statKeys, ImOrderSet<Expr> orders) {
 //            keyStat = keyEqual.getKeyStat(keyStat);
 
             WhereJoins adjJoins = joins;
@@ -54,7 +68,23 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
                 StatKeys<K> revStatKeys = statKeys.toRevMap(mapExprs.filterIncl(statKeys.getKeys()), revMap);
                 adjJoins = adjJoins.pushStatKeys(revStatKeys.mapBack(revMap.result.reverse()));
             }
-            return adjJoins.getStatKeys(mapExprs.values().toSet(), keyStat, type, keyEqual).mapBack(mapExprs);
+
+            ImSet<BaseExpr> group = mapExprs.values().toSet();
+
+            if(!keyEqual.isEmpty()) {
+                adjJoins = adjJoins.and(keyEqual.getWhereJoins());
+                keyStat = keyEqual.getKeyStat(keyStat);
+            }
+
+            StatKeys<BaseExpr> result = adjJoins.getStatKeys(group, keyStat, type);
+
+            if(statKeys != StatKeys.<K>NOPUSH() && !orders.isEmpty() && WhereJoins.isPushedAll(mapExprs, statKeys.getKeys())) {
+                Cost newCost = WhereJoins.getOrderCost(adjJoins, group, result, keyStat, orders, type, new Cost(result.getRows()), null);
+                if (newCost != null)
+                    result = result.replaceCost(newCost);
+            }
+
+            return result.mapBack(mapExprs);
         }
 
         protected ImSet<OuterContext> calculateOuterDepends() {
@@ -84,12 +114,12 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
         mResult.addAll(nodes);
     }
 
-    public StatKeys<KeyExpr> getPartitionStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<KeyExpr> statKeys, final boolean useWhere, final ImSet<KeyExpr> allKeys) {
-        return StatKeys.or(nodes, value -> value.getPartitionStatKeys(keyStat, type, statKeys, allKeys, useWhere), allKeys);
+    public StatKeys<KeyExpr> getPartitionStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<KeyExpr> statKeys, final boolean useWhere, final ImSet<KeyExpr> allKeys, ImOrderMap<Expr, Boolean> orders) {
+        return StatKeys.or(nodes, value -> value.getPartitionStatKeys(keyStat, type, statKeys, allKeys, useWhere, orders), allKeys);
     }
 
-    public StatKeys<K> getStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<K> statKeys, ImSet<K> allKeys) {
-        return StatKeys.or(nodes, value -> value.getStatKeys(keyStat, type, statKeys), allKeys);
+    public StatKeys<K> getStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<K> statKeys, ImSet<K> allKeys, ImOrderSet<Expr> orders) {
+        return StatKeys.or(nodes, value -> value.getStatKeys(keyStat, type, statKeys, orders), allKeys);
     }
 
     // GroupJoinsWhere может и всегда приходит без Where

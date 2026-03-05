@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -78,8 +77,10 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
             return new ActionObjectEntity<>((Action<I>) property, map, creationScript, creationPath, path);
     }
 
-    protected static <P extends PropertyInterface> PropertyObjectEntity.Select getSelectProperty(FormInstanceContext context, Boolean forceFilterSelected, Property.Select<P> select, ImRevMap<P, ObjectEntity> mapping) {
-        if(select != null) {
+    public static <P extends PropertyInterface> PropertyObjectEntity.Select getSelectProperty(FormInstanceContext context, Boolean forceFilterSelected, Property.MapSelect<P> mapSelect) {
+        if(mapSelect != null) {
+            Property.Select<P> select = mapSelect.select;
+
             Pair<Integer, Integer> stats = select.stat;
             boolean actualStats = false;
             if(select.values != null && context.dbManager != null) {
@@ -90,7 +91,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
-            return new PropertyObjectEntity.Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? PropertyObjectEntity.Select.Type.MULTI : (select.notNull ? PropertyObjectEntity.Select.Type.NOTNULL : PropertyObjectEntity.Select.Type.NULL), select.html);
+            return new PropertyObjectEntity.Select(selectProperty.mapEntityObjects(mapSelect.mapping), stats.first, stats.second, actualStats, multi ? PropertyObjectEntity.Select.Type.MULTI : (select.notNull ? PropertyObjectEntity.Select.Type.NOTNULL : PropertyObjectEntity.Select.Type.NULL), select.html);
         }
         return null;
     }

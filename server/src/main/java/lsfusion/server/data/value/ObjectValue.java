@@ -36,6 +36,9 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
 
     public abstract Expr getExpr();
     public abstract Expr getStaticExpr();
+    public Expr getStaticExpr(boolean staticExpr) {
+        return staticExpr ? getStaticExpr() : getExpr();
+    }
 
     public abstract Object getValue();
 

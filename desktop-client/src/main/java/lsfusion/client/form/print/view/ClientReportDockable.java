@@ -3,9 +3,11 @@ package lsfusion.client.form.print.view;
 import bibliothek.gui.dock.common.event.CKeyboardListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.FormsController;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -22,12 +24,21 @@ import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
     public Integer pageCount;
+    public boolean canceled;
+
     public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String formCaption, String printerName,
                                 boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         super(null, formsController);
 
         try {
-            final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
+            ReportGenerator reportGenerator = new ReportGenerator(generationData);
+            final JasperPrint print = reportGenerator.createReport(FormPrintType.PRINT, MainController.remoteLogics);
+
+            if(!reportGenerator.checkSubreportsOrientation() && SwingUtils.showConfirmDialog(MainFrame.instance,
+                    "One of subreports has different orientation from root report. Do you want to continue?",
+                        "Subreport orientation", JOptionPane.WARNING_MESSAGE, false) == SwingUtils.NO_BUTTON)
+                    canceled = true;
+
             print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, useDefaultPrinterInPrintIfNotSpecified, editInvoker);

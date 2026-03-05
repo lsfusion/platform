@@ -38,7 +38,7 @@ public class SQLTemporaryPool {
     private int counter = 0;
 
     public SQLTemporaryPool() {
-        log = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000));
+        log = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(Settings.get().getExplainTemporaryTablesLogSize()));
         allLogs.add(log);
     }
     public final Buffer log;

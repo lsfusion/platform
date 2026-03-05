@@ -5,8 +5,7 @@ REQUIRE System, Security, SystemEvents;
 NAMESPACE Service;
 
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
-//todo: remove after onFinallyStarted migration
-checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
+checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' () @@deprecated('6.2','use checkMaterializationsAction instead');
 checkMaterializationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
 checkIndicesAction '{service.check.indexes.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckIndexesAction' ();
@@ -18,11 +17,12 @@ recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion
 overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsAction' ();
 maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER ();
 
+updateStats '{service.update.stats.action}' INTERNAL 'lsfusion.server.physics.admin.service.action.UpdateStatsAction' ();
+
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -32,8 +32,7 @@ recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  I
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsMultiThreadAction' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkClassesMultiThreadAction (NULL, propertyTimeout); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { recalculateClassesMultiThreadAction (NULL, propertyTimeout); }
@@ -44,8 +43,7 @@ overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.
 
 threadCountMultiThread '{service.thread.count.multi.thread}' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.thread.count}'  { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
-//todo: remove after onFinallyStarted migration
-checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); } @@deprecated('6.2','use checkMaterializationsMultiThreadAction instead');
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.thread.count}'  { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.thread.count}'  { recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL); }
@@ -198,8 +196,8 @@ onStarted() + {
 } 
 
 runGarbageCollector '{service.run.garbage.collector}'  INTERNAL  'lsfusion.server.physics.admin.service.action.GarbageCollectorAction' ();
-dropLRUPercent '{service.drop.lru.percent}' = DATA DOUBLE ();
-randomDropLRU '{service.random.drop.lru}' = DATA BOOLEAN ();
+dropLRUPercent '{service.drop.lru.percent}' = DATA LOCAL DOUBLE ();
+randomDropLRU '{service.random.drop.lru}' = DATA LOCAL BOOLEAN ();
 dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.physics.admin.service.action.DropLRUAction' (DOUBLE, BOOLEAN);
 dropLRU '{service.drop.lru}' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
 makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admin.service.action.MakeHeapDumpAction' ();
@@ -214,7 +212,7 @@ FORM maintenance '{service.form.maintenance}'
                  clearApplicationLog, 
                  serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
                  checkClassesAction, checkMaterializationsAction, checkIndicesAction, checkTablesAction,
-                 recalculateStatsAction, overCalculateStatsAction,
+                 recalculateStatsAction, overCalculateStatsAction, updateStats,
                  packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
                  recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkMaterializationsMultiThreadAction,      
@@ -260,6 +258,7 @@ DESIGN maintenance {
                     MOVE PROPERTY(recalculateStatsAction());
                     MOVE PROPERTY(overCalculateStatsAction());             
                     MOVE PROPERTY(maxQuantityOverCalculate());
+                    MOVE PROPERTY(updateStats());
                 }
                 NEW checkOneThread {
                     caption = '{service.form.maintenance.caption.check.one.thread}';
@@ -501,8 +500,9 @@ getServerSettings() + WHEN TRUE THEN {
             noAuthResourcesOrder(actualUrl) <- order;
         }
     }
-    
-    generateJnlpUrls();
+
+    IF NOT valueSettingBoolean('hideDesktopClientLink') THEN
+        generateJnlpUrls();
     EXPORT JSON FROM logicsName(), displayName(), logicsLogo = encodeBytesBase64(FILE(logicsLogo())), logicsIcon = encodeBytesBase64(FILE(logicsIcon())),
     PWAIcon = encodeBytesBase64(FILE(PWAIcon())), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
@@ -762,6 +762,10 @@ loadChain '{service.chain.load}' () { INPUT=chain() CHANGE; }
 openChain '{service.chain.open}' () { open(chain()); }
 resetChain '{service.chain.reset}' () { chain() <- NULL; }
 
+textFieldPropertyEditorScannerSleep = DATA LONG (Computer);
+computerSettings (Computer c) = JSON FROM textFieldPropertyEditorScannerSleep(c);
+computerSettings = computerSettings(currentComputer());
+
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
     PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
@@ -785,6 +789,9 @@ EXTEND FORM settings
     PROPERTIES() useKeystore
     PROPERTIES() SHOWIF useKeystore() keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
     PROPERTIES() SHOWIF NOT useKeystore() loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
+
+    OBJECTS c = Computer
+    PROPERTIES(c) hostname, textFieldPropertyEditorScannerSleep
 ;
 
 DESIGN settings {
@@ -852,6 +859,10 @@ DESIGN settings {
                 MOVE PROPERTY (resetChain());
                 MOVE PROPERTY (privateKeyPassword());
             }
+        }
+        NEW computer {
+            caption = '{authentication.computer}';
+            MOVE BOX(c);
         }
     }
 }
@@ -985,7 +996,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
         cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel'),
-        useClusterizeInPivot = valueSetting('useClusterizeInPivot');
+        useClusterizeInPivot = valueSetting('useClusterizeInPivot'),
+        computerSettings = computerSettings();
 }
 
 getClientSettings() {

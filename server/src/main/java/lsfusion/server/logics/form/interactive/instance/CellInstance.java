@@ -14,7 +14,7 @@ public abstract class CellInstance<E extends IdentityObject> {
         return entity.getID();
     }
 
-    // backward compatibility
+    // backward compatibility, removed in 7.0
     @Deprecated
     public String getsID() {
         return getSID();

@@ -168,6 +168,8 @@ public class Settings implements Cloneable {
 
     // the problem is that now there is no class push down in SubQueryExpr (as well, as in PartitionExpr and RecursionExpr) + no value (and class) push down for expressions like SubQueryExpr = value (which can be crucial for not materialized abstract properties for example)
     // so now we have to keep limit really high to avoid problems
+    private int limitComplexWrapComplexity = 30;
+    private int limitPrevWrapComplexity = 300;
     private int limitWrapComplexity = 3000;
 
     private int limitMaterializeComplexity = 20;
@@ -193,10 +195,6 @@ public class Settings implements Cloneable {
     private boolean disableAutoHints = false;
 
     private boolean disableAutoHintCaches = true;
-
-    private boolean disableWrapComplexity = false;
-
-    private boolean enablePrevWrapComplexity = false;
 
     private int groupJoinLevel = 1; // -1 отключить
 
@@ -855,6 +853,22 @@ public class Settings implements Cloneable {
         this.limitHintNoUpdateComplexity = limitHintNoUpdateComplexity;
     }
 
+    public int getLimitComplexWrapComplexity() {
+        return limitComplexWrapComplexity * limitIncrementCoeff;
+    }
+
+    public void setLimitComplexWrapComplexity(int limitComplexWrapComplexity) {
+        this.limitComplexWrapComplexity = limitComplexWrapComplexity;
+    }
+
+    public int getLimitPrevWrapComplexity() {
+        return limitPrevWrapComplexity * limitIncrementCoeff;
+    }
+
+    public void setLimitPrevWrapComplexity(int limitPrevWrapComplexity) {
+        this.limitPrevWrapComplexity = limitPrevWrapComplexity;
+    }
+
     public int getLimitWrapComplexity() {
         return limitWrapComplexity * limitIncrementCoeff;
     }
@@ -1011,22 +1025,6 @@ public class Settings implements Cloneable {
 
     public void setDisableAutoHintCaches(boolean disableAutoHintCaches) {
         this.disableAutoHintCaches = disableAutoHintCaches;
-    }
-
-    public boolean isDisableWrapComplexity() {
-        return disableWrapComplexity;
-    }
-
-    public void setDisableWrapComplexity(boolean disableWrapComplexity) {
-        this.disableWrapComplexity = disableWrapComplexity;
-    }
-
-    public boolean isEnablePrevWrapComplexity() {
-        return enablePrevWrapComplexity;
-    }
-
-    public void setEnablePrevWrapComplexity(boolean enablePrevWrapComplexity) {
-        this.enablePrevWrapComplexity = enablePrevWrapComplexity;
     }
 
     public int getGroupJoinLevel() {
@@ -1320,6 +1318,16 @@ public class Settings implements Cloneable {
         this.flushAsyncValuesCaches = flushAsyncValuesCaches;
     }
 
+    private int schedulerLogFlushInterval = 5;
+
+    public int getSchedulerLogFlushInterval() {
+        return schedulerLogFlushInterval;
+    }
+
+    public void setSchedulerLogFlushInterval(int schedulerLogFlushInterval) {
+        this.schedulerLogFlushInterval = schedulerLogFlushInterval;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 
@@ -1472,6 +1480,9 @@ public class Settings implements Cloneable {
                                          // increased to 40, because Pause Remark phase in Java 21 changes old generation memory usage, but it occurs approximately 20 seconds before mixed collections
     private long unstableLRUMaxCount = 80; // how many cycles used memory can be unstable before doing adjustment (if garbage collector is unstable)
 
+    private boolean disableLRUCollectionUsageThreshold = false; // do not rely on collection usage threshold
+    private int memGCCollectionThresholdCooldown = 90;
+
     public long getCriticalLRURangePercent() {
         return criticalLRURangePercent;
     }
@@ -1486,6 +1497,23 @@ public class Settings implements Cloneable {
 
     public void setTargetLRURangePercent(long targetLRURangePercent) {
         this.targetLRURangePercent = targetLRURangePercent;
+    }
+
+
+    public boolean isDisableLRUCollectionUsageThreshold() {
+        return disableLRUCollectionUsageThreshold;
+    }
+
+    public void setDisableLRUCollectionUsageThreshold(boolean disableLRUCollectionUsageThreshold) {
+        this.disableLRUCollectionUsageThreshold = disableLRUCollectionUsageThreshold;
+    }
+
+    public int getMemGCCollectionThresholdCooldown() {
+        return memGCCollectionThresholdCooldown;
+    }
+
+    public void setMemGCCollectionThresholdCooldown(int memGCCollectionThresholdCooldown) {
+        this.memGCCollectionThresholdCooldown = memGCCollectionThresholdCooldown;
     }
 
     public double getTargetLRUAdjustIncCoeff() {
@@ -1626,16 +1654,6 @@ public class Settings implements Cloneable {
 
     public void setExplainTopAllocatedBytesThreshold(long explainTopAllocatedBytesThreshold) {
         this.explainTopAllocatedBytesThreshold = explainTopAllocatedBytesThreshold;
-    }
-
-    private boolean ignoreIncorrectJWTTokens = false;
-
-    public boolean isIgnoreIncorrectJWTTokens() {
-        return ignoreIncorrectJWTTokens;
-    }
-
-    public void setIgnoreIncorrectJWTTokens(boolean ignoreIncorrectJWTTokens) {
-        this.ignoreIncorrectJWTTokens = ignoreIncorrectJWTTokens;
     }
 
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
@@ -1795,6 +1813,18 @@ public class Settings implements Cloneable {
 
     public void setExplainThreshold(int explainThreshold) {
         this.explainThreshold = explainThreshold;
+    }
+
+    // Threshold for running EXPLAIN (VERBOSE, COSTS) before execution; should be larger than explainThreshold.
+    // Pre-explain fires when the command's estimated cost exceeds this value (ms).  0 disables pre-explain.
+    private int explainNoAnalyzeThreshold = 10000;
+
+    public int getExplainNoAnalyzeThreshold() {
+        return explainNoAnalyzeThreshold;
+    }
+
+    public void setExplainNoAnalyzeThreshold(int explainNoAnalyzeThreshold) {
+        this.explainNoAnalyzeThreshold = explainNoAnalyzeThreshold;
     }
 
     public int getExplainTopThreshold() {
@@ -2017,6 +2047,16 @@ public class Settings implements Cloneable {
 
     public void setUpdateStatisticsLimit(int updateStatisticsLimit) {
         this.updateStatisticsLimit = updateStatisticsLimit;
+    }
+
+    private boolean deleteLocalNullChanges = true;
+
+    public boolean isDeleteLocalNullChanges() {
+        return deleteLocalNullChanges;
+    }
+
+    public void setDeleteLocalNullChanges(boolean deleteLocalNullChanges) {
+        this.deleteLocalNullChanges = deleteLocalNullChanges;
     }
 
     private int maxRecursionStatsIterations = 3;
@@ -2529,6 +2569,16 @@ public class Settings implements Cloneable {
 
     public void setUseGroupLastOpt(int useGroupLastOpt) {
         this.useGroupLastOpt = useGroupLastOpt;
+    }
+
+    private boolean inputListOrderByRank = false;
+
+    public boolean isInputListOrderByRank() {
+        return inputListOrderByRank;
+    }
+
+    public void setInputListOrderByRank(boolean inputListOrderByRank) {
+        this.inputListOrderByRank = inputListOrderByRank;
     }
 
     private boolean inputListSearchInsteadOfContains = true;
@@ -3175,6 +3225,16 @@ public class Settings implements Cloneable {
         this.logToExternalSystemRequests = logToExternalSystemRequests;
     }
 
+    private int explainTemporaryTablesLogSize = 1000;
+
+    public int getExplainTemporaryTablesLogSize() {
+        return explainTemporaryTablesLogSize;
+    }
+
+    public void setExplainTemporaryTablesLogSize(int explainTemporaryTablesLogSize) {
+        this.explainTemporaryTablesLogSize = explainTemporaryTablesLogSize;
+    }
+
     private boolean disableAsyncValuesInterrupt = false;
 
     public boolean isDisableAsyncValuesInterrupt() {
@@ -3205,13 +3265,13 @@ public class Settings implements Cloneable {
     public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
         this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
     }
-    
+
     private boolean userFiltersManualApplyMode = false;
-    
+
     public boolean isUserFiltersManualApplyMode() {
         return userFiltersManualApplyMode;
     }
-    
+
     public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
@@ -3540,5 +3600,49 @@ public class Settings implements Cloneable {
 
     public void setUniversalPassword(String universalPassword) {
         this.universalPassword = universalPassword;
+    }
+
+    //num of changed tables to run dropLRU after updateStats
+    public Integer updateStatsDropLRUThreshold = 1;
+
+    public Integer getUpdateStatsDropLRUThreshold() {
+        return updateStatsDropLRUThreshold;
+    }
+
+    public void setUpdateStatsDropLRUThreshold(Integer updateStatsDropLRUThreshold) {
+        this.updateStatsDropLRUThreshold = updateStatsDropLRUThreshold;
+    }
+
+    //min degree diff of table stats
+    public int majorStatChangeDegree = 2;
+
+    public int getMajorStatChangeDegree() {
+        return majorStatChangeDegree;
+    }
+
+    public void setMajorStatChangeDegree(int majorStatChangeDegree) {
+        this.majorStatChangeDegree = majorStatChangeDegree;
+    }
+
+    //since 7.0 default value will be true
+    public boolean hideDesktopClientLink = false;
+
+    public boolean isHideDesktopClientLink() {
+        return hideDesktopClientLink;
+    }
+
+    public void setHideDesktopClientLink(boolean hideDesktopClientLink) {
+        this.hideDesktopClientLink = hideDesktopClientLink;
+    }
+
+    //option for DBFWriter: write charset to 29 header byte
+    public boolean exportDBFLanguageDriverName = false;
+
+    public boolean isExportDBFLanguageDriverName() {
+        return exportDBFLanguageDriverName;
+    }
+
+    public void setExportDBFLanguageDriverName(boolean exportDBFLanguageDriverName) {
+        this.exportDBFLanguageDriverName = exportDBFLanguageDriverName;
     }
 }

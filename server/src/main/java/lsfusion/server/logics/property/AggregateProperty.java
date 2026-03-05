@@ -25,7 +25,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
@@ -37,7 +36,6 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
-import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -218,7 +216,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
                     serializable = true;
                 }
 
-                ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, recalculateQuery.map(mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), opOwner, TableOwner.global);
+                ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, recalculateQuery.map(mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), opOwner);
                 DBManager.run(sql, runInTransaction, serializable, session -> session.modifyRecords(modifyQuery));
             } finally {
                 if (table != null)

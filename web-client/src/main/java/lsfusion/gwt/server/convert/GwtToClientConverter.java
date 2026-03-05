@@ -1,6 +1,10 @@
 package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.ReadUtils;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
@@ -8,7 +12,11 @@ import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
-import lsfusion.gwt.client.action.GExternalHttpResponse;
+import lsfusion.gwt.client.GNavigatorScheduler;
+import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.action.file.GListFilesResult;
+import lsfusion.gwt.client.action.file.GReadResult;
+import lsfusion.gwt.client.action.net.GTcpResult;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
@@ -26,6 +34,7 @@ import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.action.RunCommandActionResult;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventClose;
@@ -39,7 +48,9 @@ import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.property.cell.UserInputResult;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.session.ExternalHttpResponse;
+import org.olap4j.impl.Base64;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -51,10 +62,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static lsfusion.base.BaseUtils.serializeObject;
 
 @SuppressWarnings("UnusedDeclaration")
 public class GwtToClientConverter extends ObjectConverter {
@@ -97,7 +107,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GNumericDTO.class)
     public BigDecimal convertBigDecimal(GNumericDTO dto) {
-        return new BigDecimal(dto.value);
+        return BigDecimal.valueOf(dto.value);
     }
 
     @Converter(from = GIntervalValue.class)
@@ -228,7 +238,7 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GColumnUserPreferences.class)
     public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
-        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userFlex, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
+        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userFlex, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort, gprefs.inGrid);
     }
 
     @Converter(from = GFormScheduler.class)
@@ -239,5 +249,42 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GFormEventClose.class)
     public FormEventClose convertFormScheduler(GFormEventClose formEventClose) {
         return new FormEventClose(formEventClose.ok);
+    }
+
+    @Converter(from = GNavigatorScheduler.class)
+    public NavigatorScheduler convertNavigatorScheduler(GNavigatorScheduler navigatorScheduler) {
+        return new NavigatorScheduler(navigatorScheduler.period, navigatorScheduler.fixed);
+    }
+
+    @Converter(from = GReadResult.class)
+    public ReadUtils.ReadResult convertReadResult(GReadResult readResult) {
+        if(readResult.error != null)
+            throw new RuntimeException(readResult.error);
+        RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
+        return new ReadUtils.ReadResult(new NamedFileData(new FileData(file, readResult.extension), readResult.name), "file", null);
+    }
+
+    @Converter(from = GListFilesResult.class)
+    public Object convertListFilesResult(GListFilesResult readResult) {
+        if(readResult.error == null) {
+            LocalDateTime[] modifiedDateTime = new LocalDateTime[readResult.modifiedDateTime.length];
+            for(int i = 0; i < readResult.modifiedDateTime.length; ++i) {
+                modifiedDateTime[i] = convertDateTime(readResult.modifiedDateTime[i]);
+            }
+
+            return Arrays.asList(readResult.names, readResult.isDirectory, modifiedDateTime, readResult.fileSize);
+        } else {
+            return readResult.error;
+        }
+    }
+
+    @Converter(from = GRunCommandActionResult.class)
+    public RunCommandActionResult convertReadResult(GRunCommandActionResult runCommandActionResult) {
+        return new RunCommandActionResult(runCommandActionResult.cmdOut, runCommandActionResult.cmdErr, runCommandActionResult.exitValue);
+    }
+
+    @Converter(from = GTcpResult.class)
+    public byte[] convertReadResult(GTcpResult tcpResult) {
+        return tcpResult.response;
     }
 }

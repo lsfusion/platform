@@ -29,7 +29,6 @@ public class ReceiveEmailAction extends InternalAction {
         super(LM);
         this.emailLM = LM;
 
-        drawOptions.setAskConfirm(true);
         SendEmailAction.setDrawOptions(this);
     }
 

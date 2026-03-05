@@ -74,6 +74,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP servletPathConnection;
     public LP pathInfoConnection;
     public LP queryConnection;
+    public LP headersConnection;
+    public LP cookiesConnection;
+    public LP paramsConnection;
     public LP schemeConnection;
     public LP userConnection;
     public LP userLoginConnection;
@@ -197,6 +200,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         servletPathConnection = findProperty("servletPath[Connection]");
         pathInfoConnection = findProperty("pathInfo[Connection]");
         queryConnection = findProperty("query[Connection]");
+        headersConnection = findProperty("headers[Connection,TEXT]");
+        cookiesConnection = findProperty("cookies[Connection,TEXT]");
+        paramsConnection = findProperty("params[Connection,TEXT,INTEGER]");
         schemeConnection = findProperty("scheme[Connection]");
         userConnection = findProperty("user[Connection]");
         userLoginConnection = findProperty("userLogin[Connection]");

@@ -33,6 +33,16 @@ public class NestedThreadException extends RuntimeException {
         return asyncStacks.toString();
     }
 
+    public String getAsyncLSFStacks() {
+        StringBuilder asyncStacks = new StringBuilder();
+        for(ThrowableWithStack cause : causes) {
+            if(asyncStacks.length() > 0)
+                asyncStacks.append("\n");
+            asyncStacks.append(cause.getLsfStack());
+        }
+        return asyncStacks.toString();
+    }
+
     private static class WrapPrintStream extends WriterOrPrintStream {
         private final PrintStream printStream;
 

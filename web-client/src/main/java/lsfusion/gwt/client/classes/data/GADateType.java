@@ -15,7 +15,7 @@ public abstract class GADateType extends GFormatType {
 
     @Override
     public DateCellRenderer createCellRenderer(GPropertyDraw property) {
-        return new DateCellRenderer(property, this);
+        return new DateCellRenderer(property);
     }
 
     @Override

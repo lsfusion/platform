@@ -33,6 +33,11 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
+    protected int getScale() {
+        return 0;
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeLongCaption();
     }

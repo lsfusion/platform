@@ -42,6 +42,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -139,16 +140,19 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     protected ImMap<Property, Boolean> getChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
         if(compile!=null)
             return compile.action.getChangeExtProps(recursiveAbstracts);
 
         return aspectChangeExtProps(recursiveAbstracts);
     }
 
-    // убирает Set и Drop, так как с depends будет использоваться
     public ImSet<Property> getChangeProps() {
-        ImMap<Property, Boolean> changeExtProps = getChangeExtProps();
+        return getChangeProps(SetFact.<Action<?>>EMPTY());
+    }
+    // убирает Set и Drop, так как с depends будет использоваться
+    public ImSet<Property> getChangeProps(ImSet<Action<?>> recursiveAbstracts) {
+        ImMap<Property, Boolean> changeExtProps = getChangeExtProps(recursiveAbstracts);
         int size = changeExtProps.size();
         MSet<Property> mResult = SetFact.mSetMax(size);
         for(int i=0;i<size;i++) {
@@ -185,7 +189,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
     
     protected ImMap<Property, Boolean> getUsedExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        ActionMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false, recursiveAbstracts);
         if(compile!=null)
             return compile.action.getUsedExtProps(recursiveAbstracts);
 
@@ -208,7 +212,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getUsedProps(SetFact.EMPTY());
     }
     
-    protected ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
+    public ImSet<Property> getUsedProps(ImSet<Action<?>> recursiveAbstracts) {
         return getUsedExtProps(recursiveAbstracts).keys();
     }
 
@@ -504,7 +508,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
                 return beforeResult;
         }
 
-        ActionMapImplement<?, P> compile = callCompile(true);
+        ActionMapImplement<?, P> compile = callCompile(true, SetFact.EMPTY());
         if (compile != null)
             return compile.execute(context);
 
@@ -519,7 +523,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        callCompile(true);
+        callCompile(true, SetFact.EMPTY());
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -713,6 +717,37 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return new ActionClassImplement<>(this, classes, mapping);
     }
 
+    private static <X extends PropertyInterface, Z extends PropertyInterface, Y extends PropertyInterface> Property.Select<X> getSelectProperty(boolean forceSelect, ImSet<X> mapping, AsyncMapInput<X> input, PropertyInterfaceImplement<X> value, boolean drawnValue) { // false - filter selected,
+        InputContextPropertyListEntity<Z, X> list = (InputContextPropertyListEntity<Z, X>) input.list;
+        return Property.getSelectProperty(forceSelect, mapping, list.getSelectViewEntity(), list.getSelectFilterEntity(), list.getSelectOrderEntities(), value, drawnValue);
+    }
+
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
+    public <X extends PropertyInterface> Property.MapSelect<?> getSelectProperty(boolean forceSelect, ImRevMap<P, ObjectEntity> mapping, PropertyObjectEntity<X> drawProperty) { // false - filter selected,
+        AsyncMapEventExec<P> asyncExec = getAsyncEventExec(true);
+        if(asyncExec instanceof AsyncMapInput) {
+            AsyncMapInput<P> asyncMapInput = (AsyncMapInput<P>) asyncExec;
+
+            if(asyncMapInput.list instanceof InputContextPropertyListEntity && asyncMapInput.strict) {
+                // setting oldValue
+                PropertyInterfaceImplement<P> oldValue = asyncMapInput.oldValue;
+                boolean drawnValue = false;
+                if (oldValue == null) {
+                    drawnValue = true;
+                    ImSet<ObjectEntity> allObjects = mapping.valuesSet().merge(drawProperty.mapping.valuesSet());
+                    if (allObjects.size() > mapping.size()) { // optimization, when we don't have extra objects, just use existing
+                        ImRevMap<ObjectEntity, PropertyInterface> objectInterfaces = allObjects.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
+                        return Property.createMapSelect(getSelectProperty(forceSelect, objectInterfaces.valuesSet(), asyncMapInput.map(mapping.join(objectInterfaces)), drawProperty.getImplement(objectInterfaces), drawnValue), objectInterfaces.reverse());
+                    } else
+                        oldValue = drawProperty.property.getIdentityImplement(drawProperty.mapping.crossValuesRev(mapping));
+                }
+
+                return Property.createMapSelect(getSelectProperty(forceSelect, mapping.keys(), asyncMapInput, oldValue, drawnValue), mapping);
+            }
+        }
+        return null;
+    }
+
     @IdentityStrongLazy // STRONG because of using in security policy
     public <G extends PropertyInterface> ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, ImRevMap<P, ObjectEntity> mapping, PropertyObjectEntity<G> readOnly) {
         ImSet<ObjectEntity> entityObjects = entity.getObjects();
@@ -785,21 +820,21 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionCalcDepends(false).filterFn(element -> element instanceof ChangedProperty);
     }
 
-    private ActionMapImplement<?, P> callCompile(boolean forExecution) {
+    private ActionMapImplement<?, P> callCompile(boolean forExecution, ImSet<Action<?>> recursiveAbstracts) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
-            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(SetFact.EMPTY()), getChangePropsLocations())) {
+            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(recursiveAbstracts), getChangePropsLocations())) {
                 return null;
             }
         }
-        return compile();
+        return compile(recursiveAbstracts);
     }
     
     protected boolean forceCompile() {
         return false;
     }
 
-    public ActionMapImplement<?, P> compile() {
+    public ActionMapImplement<?, P> compile(ImSet<Action<?>> recursiveAbstracts) {
         return null;
     }
     
@@ -860,6 +895,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public boolean ignoreChangeSecurityPolicy;
+    public boolean isNewEdit;
 
     @Override
     public ApplyGlobalEvent getApplyEvent() {

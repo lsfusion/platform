@@ -106,7 +106,7 @@ public abstract class FormReportManager extends FormDataManager {
         return getReportData(printType, FormSelectTop.NULL());
     }
 
-    // backward compatibility
+    // backward compatibility, removed in 7.0
     @Deprecated
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences preferences) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException();

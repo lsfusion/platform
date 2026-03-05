@@ -1,7 +1,6 @@
 package lsfusion.client.form.property.panel.view;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
@@ -12,7 +11,6 @@ import lsfusion.client.form.property.cell.view.ClientSingleCellRenderer;
 import lsfusion.client.form.property.panel.SingleCellTableModel;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
 
-import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -185,8 +183,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     @Override
     public void setBounds(int x, int y, int width, int height) {
         rowHeight = height;
-        // after switching color theme UI changes rowHeight to LaF default if isRowHeightSet is not set 
-        ReflectionUtils.setPrivateFieldValue(JTable.class, this, "isRowHeightSet", true);
+        // after switching color theme UI changes rowHeight to LaF default if isRowHeightSet is not set
+        setRowHeight(rowHeight);
         super.setBounds(x, y, width, height);
     }
 

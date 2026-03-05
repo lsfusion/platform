@@ -1,14 +1,11 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
-import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -36,7 +33,7 @@ public class RecalculateTableStatsAction extends InternalAction {
         boolean disableStats = context.getBL().reflectionLM.disableStatsTable.read(context, tableObject) != null;
         if (!disableStats) {
             context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
-                    disableStatsTableColumnSet, context.getSession());
+                    disableStatsTableColumnSet, context.getSession(), null);
             context.apply();
             context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}"));
         }

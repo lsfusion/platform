@@ -2,10 +2,11 @@ package lsfusion.interop.form.property.cell;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class IntervalValue implements Serializable {
-    public long from;
-    public long to;
+    public final long from;
+    public final long to;
 
     public IntervalValue(long from, long to) {
         this.from = from;
@@ -31,5 +32,18 @@ public class IntervalValue implements Serializable {
     @Override
     public String toString() {
         return from + "." + to;
+    }
+
+    //needs equals and hashCode because this class is used inside the Map key in ClientPropertyData.getFieldValue fieldData.get(...)
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        IntervalValue that = (IntervalValue) o;
+        return from == that.from && to == that.to;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from, to);
     }
 }

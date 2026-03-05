@@ -551,17 +551,17 @@ public class ExecutorFactory {
             public void aspectBeforeRun(Pair<Context, AbstractContext.MessageLogger> submit) {
                 ThreadLocalContext.aspectBeforeContext(submit.first, context, type);
                 if(submit.second != null)
-                    ThreadLocalContext.pushLogMessage();
+                    ThreadLocalContext.pushLogMessage((message) -> {
+                        synchronized (submit.second) { // such synchronization is not very clean solution, since if the main thread will modify MessageLogger it will be not thread-safe, however for example delayUserInteraction is also not synchronized, so we'll assume that main thread should not do it
+                            submit.second.add(message);
+                        }
+                    });
             }
 
             @Override
             public void aspectAfterRun(Pair<Context, AbstractContext.MessageLogger> submit) {
-                if(submit.second != null) {
-                    ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                    synchronized (submit.second) { // such synchronization is not very clean solution, since if the main thread will modify MessageLogger it will be not thread-safe, however for example delayUserInteraction is also not synchronized, so we'll assume that main thread should not do it
-                        submit.second.addAll(logMessages);
-                    }
-                }
+                if(submit.second != null)
+                    ThreadLocalContext.popLogMessage();
                 ThreadLocalContext.aspectAfterContext();
             }
         };

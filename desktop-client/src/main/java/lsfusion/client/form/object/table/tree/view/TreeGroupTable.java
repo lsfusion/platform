@@ -134,7 +134,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         contextMenuHandler.install();
         setAutoCreateColumnsFromModel(false);
 
-        setTreeTableModel(model = new GroupTreeTableModel(form, plainTreeMode));
+        setTreeTableModel(model = new GroupTreeTableModel(plainTreeMode, treeGroup.getCaption()));
         
         addColumn(createColumn(0)); // одна колонка для дерева. создаём вручную, чтобы подставить renderer
         
@@ -1284,7 +1284,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                     }
 
                     if (!BaseUtils.isRedundantString(formattedValue)) {
-                        return SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont());
+                        return SwingUtils.toMultilineHtml(e.getComponent(), formattedValue, createToolTip().getFont());
                     }
                 }
             }

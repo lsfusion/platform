@@ -9,10 +9,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -21,8 +18,31 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class ZipUtils {
+
+    public static File makeZipFile(File[] files) throws IOException {
+        File zipFile = File.createTempFile("zip", ".zip");
+        try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
+            if (files != null) {
+                for (File f : files) {
+                    if (f.isFile()) {
+                        String fileName = f.getName();
+                        InputStream bis = Files.newInputStream(f.toPath());
+                        zos.putNextEntry(new ZipEntry(fileName));
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = bis.read(buf)) > 0) {
+                            zos.write(buf, 0, len);
+                        }
+                        bis.close();
+                    }
+                }
+            }
+        }
+        return zipFile;
+    }
 
     public static Map<String, FileData> unpackFile(RawFileData file, String extension, boolean throwUnsupported) {
         Map<String, FileData> result;

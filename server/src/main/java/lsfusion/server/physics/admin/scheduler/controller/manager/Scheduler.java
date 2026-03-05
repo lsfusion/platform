@@ -1,18 +1,15 @@
 package lsfusion.server.physics.admin.scheduler.controller.manager;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;
-import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.base.controller.stack.StackMessage;
-import lsfusion.server.base.controller.stack.StackNewThread;
-import lsfusion.server.base.controller.stack.ThisMessage;
+import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -38,7 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,11 +52,11 @@ import java.util.stream.Collectors;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.base.DateConverter.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.schedulerLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.schedulerSystemLogger;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
-    public static final Logger schedulerLogger = ServerLoggers.schedulerLogger;
-
     public ScheduledExecutorService daemonTasksExecutor;
 
     private LogicsInstance logicsInstance;
@@ -275,6 +272,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 LA LA = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
                 if(LA != null)
                     propertySIDMap.put(orderProperty, new ScheduledTaskDetail(LA, script, ignoreExceptions, timeout, params));
+            } else {
+                schedulerLogger.warn("Ignored empty scheduled task detail for " + nameScheduledTask);
             }
         }
         return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo,
@@ -317,13 +316,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, LocalDateTime startDate, Integer period, boolean fixedDelay) {
             this.task = () -> {
+                Logger schedulerLogger = getSchedulerLogger();
                 schedulerLogger.info("Started running scheduler task - " + name);
                 try {
                     task.run(getStack());
                     schedulerLogger.info("Finished running scheduler task - " + name);
                 } catch (Throwable e) {
                     schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
-                    throw Throwables.propagate(e);
+//                    throw Throwables.propagate(e);
                 }
             };
             this.scheduledTaskId = scheduledTaskId;
@@ -373,6 +373,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 }
             }
             return scheduledFutureList;
+        }
+
+        private Logger getSchedulerLogger() {
+            return this instanceof SystemSchedulerTask ? schedulerSystemLogger : schedulerLogger;
         }
     }
 
@@ -449,14 +453,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
 
             Long taskLogId = null;
-            Throwable throwable = null;
 
             String taskCaption = detail.getCaption();
-            
-            ThreadLocalContext.pushLogMessage();
-            try {
-                logStartTask(taskCaption, stack);
 
+            taskLogId = logStartTask(taskCaption, stack);
+
+            FlushingLogClientMessageProcessor logClientProcessor = new FlushingLogClientMessageProcessor(taskLogId, taskCaption);
+            ThreadLocalContext.pushLogMessage(logClientProcessor);
+            try {
                 String applyResult = ExecutorFactory.executeWithTimeout(BL, () -> {
                     try (DataSession mainSession = createSession()) {
                         if (detail.script != null) // if LA is evalScript
@@ -487,19 +491,66 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     }
                 }, detail.timeout, () -> ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this));
 
-                taskLogId = logFinishTask(taskCaption, stack, applyResult);
-                
+                logFinishTask(taskCaption, stack, applyResult);
+
                 return applyResult == null;
             } catch (Throwable t) {
-                taskLogId = logExceptionTask(taskCaption, t, stack);
-                throwable = t;
+                ThrowableWithStack throwableWithStack = new ThrowableWithStack(t);
+                logClientProcessor.add(new AbstractContext.LogMessage(throwableWithStack.getJavaString(), MessageClientType.ERROR, throwableWithStack.getLsfStack()));
+
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                try {
+                    logExceptionTask(taskCaption, t, stack);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
                 return false;
             } finally {
-                ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if(throwable != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(throwable), true, ExecutionStackAspect.getExceptionStackTrace()));
-                if(taskLogId != null)
-                    logClientTasks(logMessages, taskLogId, taskCaption, stack);
+                ThreadLocalContext.popLogMessage();
+
+                logClientProcessor.stop();
+
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                try {
+                    logClientProcessor.flush(stack);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
+            }
+        }
+
+        private class FlushingLogClientMessageProcessor implements AbstractContext.LogMessageProcessor {
+            private final long taskLogId;
+            private final String taskCaption;
+
+            private final List<AbstractContext.LogMessage> messages = new ArrayList<>();
+
+            private ScheduledFuture<?> flusherTask;
+
+            public FlushingLogClientMessageProcessor(long taskLogId, String taskCaption) {
+                this.taskLogId = taskLogId;
+                this.taskCaption = taskCaption;
+
+                int flushInterval = Settings.get().getSchedulerLogFlushInterval();
+                flusherTask = daemonTasksExecutor.scheduleAtFixedRate(() -> flush(getStack()), flushInterval, flushInterval, TimeUnit.SECONDS);
+            }
+
+            public void stop() {
+                if (flusherTask != null) {
+                    flusherTask.cancel(false);
+                }
+            }
+
+            @Override
+            public synchronized void add(AbstractContext.LogMessage message) {
+                messages.add(message);
+            }
+
+            public synchronized void flush(ExecutionStack stack) {
+                if (!messages.isEmpty()) {
+                    logClientTasks(ListFact.fromJavaList(messages), taskLogId, taskCaption, stack);
+                    messages.clear();
+                }
             }
         }
 
@@ -517,8 +568,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             schedulerLogger.info("Task " + taskCaption + " before apply");
         }
 
-        private void logStartTask(String taskCaption, ExecutionStack stack) {
-            logTask(taskCaption, ServerResourceBundle.getString("scheduler.started"), "start", stack, null);
+        private Long logStartTask(String taskCaption, ExecutionStack stack) {
+            return logTask(taskCaption, ServerResourceBundle.getString("scheduler.started"), "start", stack, null);
         }
 
         private void logAlreadyExecutingTask(String taskCaption, ExecutionStack stack) {
@@ -576,7 +627,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private void logClientTask(DataSession session, DataObject taskLog, AbstractContext.LogMessage logMessage) throws SQLException, SQLHandledException {            
-            ServerLoggers.schedulerLogger.info(logMessage.message);
+            schedulerLogger.info(logMessage.message);
             
             DataObject clientTaskLog = session.addObject(BL.schedulerLM.scheduledClientTaskLog);
             BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
@@ -585,10 +636,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             String lsfStack = logMessage.lsfStackTrace;
             if(lsfStack != null)
                 BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
-            if(logMessage.failed)
+            if(failed(logMessage.type))
                 BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
             BL.schedulerLM.dateScheduledClientTaskLog.change(sqlTimestampToLocalDateTime(new Timestamp(logMessage.time)), session, clientTaskLog);
         }
+    }
+
+    private boolean failed(MessageClientType type) {
+        return type == MessageClientType.ERROR || type == MessageClientType.WARN;
     }
 
     private class ScheduledTaskDetail {

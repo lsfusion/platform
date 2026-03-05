@@ -2,6 +2,7 @@ package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.table.SQLTemporaryPool;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -25,7 +26,10 @@ public class SetExplainTemporaryTablesEnabledUserAction extends InternalAction {
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        SQLSession.setExplainTemporaryTablesEnabled((Long) params.get(1), (Boolean) params.get(0));
+        Boolean set = (Boolean) params.get(0);
+        SQLSession.setExplainTemporaryTablesEnabled((Long) params.get(1), set);
+        if(set == null || !set)
+            SQLTemporaryPool.removeAllLogs();
     }
 
     @Override

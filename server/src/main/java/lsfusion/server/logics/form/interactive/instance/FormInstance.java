@@ -39,6 +39,7 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
@@ -102,12 +103,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
-import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.GridPropertyViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.*;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
@@ -660,7 +659,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             Integer order = (Integer) values.get(prefix + "Order");
             Integer sort = (Integer) values.get(prefix + "Sort");
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
-            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null), null);
 
             Integer pageSize = (Integer) values.get(prefix + "PageSize");
             Integer headerHeight = (Integer) values.get(prefix + "HeaderHeight");
@@ -736,6 +735,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
+                        BL.reflectionLM.inGridPropertyDraw.change(columnPreferences.inGrid, dataSession, propertyDrawObject);
                     } else if (!completeOverride) {
                         changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
@@ -774,7 +774,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.reflectionLM.columnFlexPropertyDrawCustomUser.change(columnPreferences.userFlex, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
-        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    
+        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.inGridPropertyDrawCustomUser.change(columnPreferences.inGrid, dataSession, propertyDrawObject, user);
     }
     
     private void changeUserGOPreferences(GroupObjectUserPreferences preferences, DataSession dataSession, DataObject groupObject, DataObject user) throws SQLException, SQLHandledException {
@@ -1279,7 +1280,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Where listWhere;
         ImRevMap<Q, KeyExpr> groupListKeys;
         boolean needObjects = asyncMode.isObjects();
-        boolean readObjects = needObjects || !orderExprs.isEmpty();
+        boolean readObjects = needObjects || !AbstractOuterContext.getOuterColKeys(orderExprs.keys()).isEmpty(); // because we use value order exprs to enforce ranking ordering
         if(readObjects) {
             groupListKeys = (ImRevMap<Q, KeyExpr>) baseKeys;
             countExpr = ValueExpr.COUNT;
@@ -1303,15 +1304,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap();
         mProps.exclAdd("highlight", value.isEmpty() || !highlight ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
 
-        for(int i = 0, size = orderExprs.size(); i < size; i++) {
-            mProps.exclAdd("order" + i, orderExprs.getKey(i));
-            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
-        }
-
         mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
         mOrders.exclAdd("rank", true);
         mProps.exclAdd("count", countExpr);
         mOrders.exclAdd("count", true);
+
+        for(int i = 0, size = orderExprs.size(); i < size; i++) {
+            mProps.exclAdd("order" + i, orderExprs.getKey(i));
+            mOrders.exclAdd("order" + i, orderExprs.getValue(i));
+        }
 
         if(readObjects)
             mProps.exclAdd("raw", listExpr);
@@ -1768,7 +1769,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    @Deprecated
+    @Deprecated //removed in 7.0
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
         seekObject(object, value);
     }
@@ -1813,7 +1814,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // programmatic activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
         if (!(view instanceof ContainerView && ((ContainerView) view).getChildrenList().isEmpty())) {
-            setTabVisible(view.getContainer(), view);
+            setTabActive(view.getContainer(), view);
             userActivateTabs = userActivateTabs.addList(view);
         }
     }
@@ -1926,11 +1927,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ComponentView container = userHidableContainer.getHiddenContainer();
         if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
-            ComponentView visible = visibleTabs.get((ContainerView)container);
+            ComponentView active = activeTabs.get((ContainerView)container);
             ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
-            if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
-                visible = siblings.get(0);
-            if (!userHidableContainer.equals(visible))
+            if (active == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+                active = siblings.get(0);
+            if (!userHidableContainer.equals(active))
                 return true;
         } else {
             assert ((ContainerView) userHidableContainer).isCollapsible();
@@ -1941,13 +1942,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isUserHidden(userHidableContainer.getHiddenContainer());
     }
 
-    protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
+    protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
+    protected PropertyDrawEntity activeProperty = null;
     protected Set<ContainerView> collapsedContainers = new HashSet<>();
 
-    public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
+    public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbed();
         updateActiveTabProperty(page);
-        visibleTabs.put(view, page);
+        activeTabs.put(view, page);
+    }
+
+    public void setPropertyActive(PropertyDrawEntity property, boolean focused) throws SQLException, SQLHandledException {
+        updateActiveProperty(property, focused);
+        activeProperty = property;
     }
     
     public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
@@ -1959,11 +1966,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
-        ComponentView prevActiveTab = visibleTabs.get(page.getLayoutParamContainer());
+        ComponentView prevActiveTab = activeTabs.get(page.getLayoutParamContainer());
         if(prevActiveTab != null) {
             prevActiveTab.updateActiveTabProperty(session, null);
         }
         page.updateActiveTabProperty(session, true);
+    }
+
+    private void updateActiveProperty(PropertyDrawEntity newActiveProperty, boolean focused) throws SQLException, SQLHandledException {
+        if(activeProperty != null)
+            activeProperty.updateActiveProperty(session, null);
+        if(newActiveProperty != null)
+            newActiveProperty.updateActiveProperty(session, focused ? true : null);
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
@@ -2541,6 +2555,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.footerElementClassReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.gridElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
@@ -2597,9 +2612,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 componentInstance = containerInstance;
             } else {
                 componentInstance = instanceFactory.getInstance(component);
-                if(component instanceof GridPropertyView) {
+                if (component instanceof GridPropertyView) {
                     GridPropertyViewInstance gridInstance = (GridPropertyViewInstance) componentInstance;
                     fillChangedReader(gridInstance.valueClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                    if (component instanceof TreeGroupView) {
+                        TreeGroupViewInstance treeInstance = (TreeGroupViewInstance) componentInstance;
+                        fillChangedReader(treeInstance.hierarchicalCaptionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                    }
                 }
             }
 
@@ -2986,8 +3005,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
 
         //reset all activeTab properties
-        for(ComponentView visibleTab : visibleTabs.values()) {
-                visibleTab.updateActiveTabProperty(session, null);
+        for(ComponentView activeTab : activeTabs.values()) {
+                activeTab.updateActiveTabProperty(session, null);
         }
 
         context.delayUserInteraction(new HideFormClientAction());

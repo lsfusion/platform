@@ -53,6 +53,7 @@ ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
 EXTID extID
 IN propertyGroup
+imageSetting
 ```
 
 ### Description
@@ -309,6 +310,26 @@ In the current platform implementation, if the name and caption are not specifie
     
         The property group name. [Composite ID](IDs.md#cid).
 
+
+- `imageSetting`
+
+    Icon settings for the property (action) on the form. This option allows you to configure the icon manually. It can have one of the following forms:
+
+    - `IMAGE imageLiteral`
+
+        [Manual icon specification](Icons.md#manual) for the property (action) on the form.
+
+        - `imageLiteral`
+
+            String literal whose value defines the icon.
+      
+    - `IMAGE [AUTO]`
+  
+        Indicates that the [automatic assignment](Icons.md#auto) mode will be used. The `AUTO` keyword is optional and can be used for disambiguation.
+
+    - `NOIMAGE`
+
+        Keyword indicating that the property (action) should have no icon on the form.
 
 ### Examples
 

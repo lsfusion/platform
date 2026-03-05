@@ -90,7 +90,7 @@ public class GGridUserPreferences {
     private GColumnUserPreferences ensureColumnPreferences(GPropertyDraw property) {
         GColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new GColumnUserPreferences(null, null, null, null, null, null, null, null);
+            prefs = new GColumnUserPreferences(null, null, null, null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -128,12 +128,12 @@ public class GGridUserPreferences {
         ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
     }
 
-    public void setUserOrder(GPropertyDraw property, Boolean userAscendingSort) {
-        ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
+    public void setInGrid(GPropertyDraw property, Boolean inGrid) {
+        ensureColumnPreferences(property).inGrid = inGrid;
     }
 
     public void resetPreferences(GPropertyDraw property) {
-        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null));
+        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null, null));
     }
 
     public void resetPreferences() {
@@ -142,7 +142,7 @@ public class GGridUserPreferences {
         headerHeight = null;
         hasUserPreferences = false;
         for (GPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null));
+            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null, null));
         }
     }
 

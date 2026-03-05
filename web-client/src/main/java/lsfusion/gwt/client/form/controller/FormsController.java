@@ -42,6 +42,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
@@ -81,6 +82,10 @@ public abstract class FormsController {
     private boolean fullScreenMode = false;
     
     private GToolbarButton mobileMenuButton;
+
+    public WindowsController getWindowsController() {
+        return windowsController;
+    }
 
     public static class Panel extends FlexTabbedPanel {
         public Panel(Widget extraTabWidget, boolean end) {
@@ -177,6 +182,14 @@ public abstract class FormsController {
         GwtClientUtils.addClassName(container, "forms-container-window");
 
         initEditModeTimer();
+    }
+
+    private GNavigatorController navigatorController;
+    public GNavigatorController getNavigatorController() {
+        return navigatorController;
+    }
+    public void setNavigatorController(GNavigatorController navigatorController) {
+        this.navigatorController = navigatorController;
     }
 
     private final ArrayList<GBindingEvent> bindingEvents = new ArrayList<>();
@@ -434,7 +447,7 @@ public abstract class FormsController {
         return container;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
 
@@ -455,7 +468,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, false, -1, form.canonicalName, editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, false, syncType, -1, form.canonicalName, editEvent, editContext, formController);
         }
 
         int dispatchPriority = (formController != null ? formController.getDispatchPriority() : 0);
@@ -477,12 +490,12 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
+    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, boolean syncType, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
             formContainer = new ContainerForm(this, formController, async, editEvent, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, formController, async, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
+            formContainer =  new ModalForm(this, formController, async, syncType, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
         } else if(windowType.isDocked()) {
             formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
@@ -503,7 +516,7 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
+                FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
 
                 Widget captionWidget = formContainer.getCaptionWidget();
                 if(captionWidget != null)
@@ -707,13 +720,14 @@ public abstract class FormsController {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
         GFormController form = currentForm != null ? currentForm.getForm() : null;
         String notification = id + (result != null ? ";" + result : ""); // should match RemoteNavigator.runNotification
-        if (form != null)
+        if (form != null) {
             try {
                 form.executeNotificationAction(notification);
             } catch (IOException e) {
                 GWT.log(e.getMessage());
             }
-        else
+            executeVoidAction(-1);
+        } else
             executeNavigatorAction(notification, false, true, 2, null);
     }
     public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
@@ -734,7 +748,7 @@ public abstract class FormsController {
     }
 
     public void executeVoidAction(long waitRequestIndex) {
-        executeSystemAction(new VoidNavigatorAction(waitRequestIndex));
+        syncDispatch(new VoidNavigatorAction(waitRequestIndex), new ServerResponseCallback(false));
     }
     public void executeSystemAction(NavigatorRequestCountingAction<VoidResult> systemAction) {
         syncDispatch(systemAction, new SimpleRequestCallback<VoidResult>() {

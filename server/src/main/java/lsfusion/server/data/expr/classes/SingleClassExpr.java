@@ -11,7 +11,6 @@ import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.classes.user.set.OrClassSet;
 
 public abstract class SingleClassExpr extends VariableClassExpr {
 
@@ -30,23 +29,6 @@ public abstract class SingleClassExpr extends VariableClassExpr {
             return singleClass.getClassObject().getStaticExpr().and(getWhere());*/
 
         return IsClassExpr.create(this, classes, type);
-    }
-
-    private OrClassSet getOrSet() {
-        assert !isTrueWhere();
-        OrClassSet result = null;
-        for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
-            AndClassSet andClassSet = getAndClassSet(where);
-            if (andClassSet != null) {
-                OrClassSet classSet = andClassSet.getOr();
-                if (result == null)
-                    result = classSet;
-                else
-                    result = result.or(classSet);
-            }
-        }
-        assert result!=null;
-        return result;
     }
 
     private boolean intersect(AndClassSet set) {
@@ -70,9 +52,11 @@ public abstract class SingleClassExpr extends VariableClassExpr {
             // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
             if(!intersect(set)) // если не пересекается то false
                 return Where.FALSE();
-            if(!isTrueWhere())
-                if(set.getOr().containsAll(getOrSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
+            if(!isTrueWhere()) {
+                AndClassSet andClassSet = getWhere().getClassWhere().getAndClassSet(this);
+                if(andClassSet != null && set.containsAll(andClassSet, true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
                     return getWhere();
+            }
         }
         return IsClassWhere.create(this, set, type);
     }

@@ -442,13 +442,14 @@ public class RmiQueue implements DispatcherListener {
             rmiFutures.forEach(future -> {
                 if(future.isDone() && future.preProceeded != null && !future.preProceeded) {
                     try {
+                        future.preProceeded = true; // it's important to be before execCallBack, because it can be recursive execCallBack: continueInvocation -> directRequest -> flush
+
                         dispatchingStarted();
                         try {
                             future.execCallback();
                         } finally {
                             dispatchingEnded();
                         }
-                        future.preProceeded = true;
                     } catch (Throwable t) {
                         ClientExceptionManager.handle(t, false);
                     }
@@ -503,6 +504,8 @@ public class RmiQueue implements DispatcherListener {
         
         try {
             if(future.preProceeded == null || !future.preProceeded) {
+                future.preProceeded = true; // just in case
+
                 future.execCallback();
             }
         } finally {

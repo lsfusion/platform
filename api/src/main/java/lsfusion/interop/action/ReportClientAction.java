@@ -10,6 +10,7 @@ public class ReportClientAction implements ClientAction {
 
     // ALL
     public boolean autoPrint;
+    public String formCaption;
 
     // WEB
     public Integer autoPrintTimeout;
@@ -20,7 +21,6 @@ public class ReportClientAction implements ClientAction {
     public FormPrintType printType;
     public List<String> reportPathList;
     public String formSID;
-    public String formCaption;
     public boolean isModal;
     public boolean inDevMode;
     public String printerName;
@@ -29,19 +29,20 @@ public class ReportClientAction implements ClientAction {
     public String sheetName;
     public boolean jasperReportsIgnorePageMargins;
 
-    public ReportClientAction(boolean autoPrint, Integer autoPrintTimeout, FileData fileData) {
+    public ReportClientAction(boolean autoPrint, String formCaption, Integer autoPrintTimeout, FileData fileData) {
         this.autoPrint = autoPrint;
+        this.formCaption = formCaption;
 
         this.autoPrintTimeout = autoPrintTimeout;
         this.fileData = fileData;
     }
 
-    public ReportClientAction(List<String> reportPathList, String formCaption, String formSID, boolean autoPrint, boolean isModal, ReportGenerationData generationData,
+    public ReportClientAction(boolean autoPrint, String formCaption, List<String> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
         this.autoPrint = autoPrint;
+        this.formCaption = formCaption;
 
         this.reportPathList = reportPathList;
-        this.formCaption = formCaption;
         this.formSID = formSID;
         this.isModal = isModal;
         this.generationData = generationData;

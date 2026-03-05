@@ -126,7 +126,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return mapKeys;
     }
     @Override
-    @IdentityStrongLazy
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
     public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
@@ -145,7 +145,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
             PropertyMapImplement<ClassPropertyInterface, I> selectProp = ForAction.createForDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null, null);
 
             // now Object.noClasses doesn't work for interactive forms (so we can return innerClasses to null if it will be fixed)
-            LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false);
+            LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false, true);
             LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, false);
             ActionMapImplement<?, Interface<I>> selectFormAction = la.getImplement(selectForm.getOrderInterfaces(groupMap));
 

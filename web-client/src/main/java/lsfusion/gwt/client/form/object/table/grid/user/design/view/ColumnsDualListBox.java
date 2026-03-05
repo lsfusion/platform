@@ -132,6 +132,13 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
 
     public abstract void setColumnPatternBoxText(String text);
 
+    public void filterChanged(String filter) {
+        for (Widget label : getVisibleWidgets())
+            label.setVisible(((PropertyLabel) label).getText().contains(filter));
+        for (Widget label : getInvisibleWidgets())
+            label.setVisible(((PropertyLabel) label).getText().contains(filter));
+    }
+
     public void columnCaptionBoxTextChanged(String columnCaption) {
         PropertyLabel propertyLabel = getSelectedWidget(visibleList);
         if (propertyLabel == null) {

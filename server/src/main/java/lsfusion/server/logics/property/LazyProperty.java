@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -7,14 +8,13 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.classes.infer.ExClassSet;
-import lsfusion.server.logics.property.classes.infer.InferType;
-import lsfusion.server.logics.property.classes.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -32,6 +32,37 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
     @Override
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return property.mapExpr(joinImplement, calcType, propChanges, changedWhere);
+    }
+
+    @Override
+    public boolean isOrDependsComplex() {
+        if(!finalized) // used in the WrapComplexityAspect
+            return false;
+
+        return super.isOrDependsComplex();
+    }
+
+    @Override
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        if(!finalized) // can come here when JSON is materialized
+            return true;
+
+        return super.isClassVirtualized(calcType);
+    }
+
+    @Override
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+        if(!finalized) // can come here when JSON is materialized
+            return new ClassWhere<>(MapFact.addExcl(IsClassProperty.getMapClasses(interfaces), "value", getLazyValueClass()), true);
+
+        return super.calcClassValueWhere(calcType);
+    }
+
+    protected abstract ValueClass getLazyValueClass();
+
+    @Override
+    protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.toExValue(getLazyValueClass());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package lsfusion.http.authentication;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.ListFact;
 import lsfusion.http.controller.LogicsRequestHandler;
 import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.logics.LogicsProvider;
@@ -69,7 +70,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         String authSecret = servletContext.getInitParameter(OAuth2ToLSFTokenFilter.AUTH_SECRET_KEY);
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
-        JSONArray jsonArray = new JSONArray(MainController.sendRequest(request, new ExternalRequest.Param[]{ExternalRequest.getSystemParam(authSecret)}, sessionObject, "Authentication.getClientCredentials"));
+        JSONArray jsonArray = new JSONArray(MainController.sendRequest(request, ListFact.singleton(ExternalRequest.getSystemParam(authSecret)), sessionObject, "Authentication.getClientCredentials"));
 
         int jsonArrayLength = jsonArray.length();
         if (jsonArrayLength == 1 && jsonArray.getJSONObject(0).has("error")){

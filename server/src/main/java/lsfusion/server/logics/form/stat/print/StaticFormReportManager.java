@@ -29,6 +29,6 @@ public class StaticFormReportManager extends FormReportManager {
         if(propertyCaption != null)
             return BaseUtils.nullToString(reportInterface.read(propertyCaption));
 
-        return ThreadLocalContext.localize(richDesign.mainContainer.caption);
+        return ThreadLocalContext.localize(form.getCaption());
     }
 }

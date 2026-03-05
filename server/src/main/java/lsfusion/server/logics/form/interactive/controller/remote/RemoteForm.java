@@ -57,6 +57,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
@@ -217,8 +218,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public void voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {});
+    public ServerResponse voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {});
     }
 
     public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
@@ -711,12 +712,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
-                logger.debug("setTabVisible Action");
+                logger.debug("setTabActive Action");
             }
 
             ComponentView tab = richDesign.findById(childId);
-            form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), tab);
+            form.setTabActive((ContainerView) richDesign.findById(tabPaneID), tab);
             form.fireEvent(stack, new FormContainerEvent(tab.getSID(), false), null);
+        });
+    }
+
+    public ServerResponse setPropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, boolean focused) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("setPropertyActive Action");
+            }
+
+            ComponentView property = richDesign.findById(propertyID);
+            form.setPropertyActive(property != null ? ((PropertyDrawView) property).entity : null, focused);
         });
     }
 
@@ -998,22 +1011,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         delayUserInteraction(action);
     }
 
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        if(currentInvocationExternal) { // temporary for formCancel
-            Object[] result = new Object[actions.length];
-            for (int i = 0; i < actions.length; i++) {
-                ClientAction action = actions[i];
-                if (action instanceof ConfirmClientAction)
-                    result[i] = JOptionPane.YES_OPTION;
-                else {
-                    result = null;
-                    break;
-                }
-            }
-            if(result != null)
-                return result;
-        }
-        return super.requestUserInteraction(actions);
+    public Object requestUserInteraction(ClientAction action) {
+        if (currentInvocationExternal && action instanceof ConfirmClientAction) // temporary for formCancel
+            return JOptionPane.YES_OPTION;
+        return super.requestUserInteraction(action);
     }
 
     public FormClientData initClientData(ExecutionStack stack) {
@@ -1096,7 +1097,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
                 ImMap<ObjectInstance, ObjectValue> currentObjects = mCurrentObjects.immutable();
 
-                ThreadLocalContext.pushLogMessage();
+                AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
+                ThreadLocalContext.pushLogMessage(logProcessor);
                 try {
                     modifyKeys = modify.keys();
                     while (modifyKeys.hasNext()) {
@@ -1115,9 +1117,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                             changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack, context);
                     }
                 } finally {
-                    ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
+                    ThreadLocalContext.popLogMessage();
                     if(form.dataChanged) // just for optimization purposes (otherwise just any change property / exec action would do)
-                        form.BL.LM.getLogMessage().change(DataSession.getLogMessage(logMessages, true), form);
+                        form.BL.LM.getLogMessage().change(DataSession.getLogMessage(ListFact.fromJavaList(logProcessor.messages), true), form);
                 }
 
                 return new Pair<>(requestIndex, getFormChangesExternal(stack, context).toString());

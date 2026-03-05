@@ -88,7 +88,7 @@ public class GridUserPreferences {
     private ColumnUserPreferences ensureColumnPreferences(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new ColumnUserPreferences(null, null, null, null, null, null, null, null);
+            prefs = new ColumnUserPreferences(null, null, null, null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -121,6 +121,10 @@ public class GridUserPreferences {
     public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
         ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
     }
+
+    public void setInGrid(ClientPropertyDraw property, Boolean inGrid) {
+        ensureColumnPreferences(property).inGrid = inGrid;
+    }
     
     public void resetPreferences() {
         fontInfo = new FontInfo(null, -1, false, false);
@@ -128,7 +132,7 @@ public class GridUserPreferences {
         headerHeight = null;
         hasUserPreferences = false;
         for (ClientPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null, null, null));
+            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null, null, null, null));
         }
     }
 

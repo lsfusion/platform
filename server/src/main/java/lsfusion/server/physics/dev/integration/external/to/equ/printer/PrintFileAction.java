@@ -1,12 +1,13 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.PrintUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.printer.PrintFileClientAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.equ.printer.client.PrintFileClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;

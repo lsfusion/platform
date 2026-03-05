@@ -10,6 +10,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.version.ComplexLocation;
 
+import lsfusion.server.language.property.oraction.ActionOrPropertySettings;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -279,21 +280,34 @@ public class FormPropertyOptions {
     }
 
     public void addEventAction(String actionSID, ActionObjectEntity action) {
-        addEventAction(actionSID, null, action);
+        addEventAction(action, actionSID, null, null, null);
     }
 
-    public void addEventAction(String actionSID, Boolean before, ActionObjectEntity action) {
+    public void addEventAction(ActionObjectEntity action, String actionType, Boolean before, LocalizedString contextMenuCaption, String keyPress) {
+        addEventAction(new ActionOrPropertySettings.EditEvent(action, actionType, before, contextMenuCaption, keyPress));
+    }
+
+    public void addEventAction(ActionOrPropertySettings.EditEvent editEvent) {
+        ActionObjectEntity action = (ActionObjectEntity) editEvent.action;
         if (action != null) {
-            if(before != null) {
+            if (editEvent.isContextMenu()) {
+                Action property = (Action) action.property;
+                addEventAction(property.getSID(), action);
+                addContextMenuBinding(property.getSID(), getContextMenuCaption(editEvent.contextMenuCaption, property));
+            } else if (editEvent.isKeyPress()) {
+                String propertySID = action.property.getSID();
+                addEventAction(propertySID, action);
+                addKeyBinding(editEvent.keyPress, propertySID);
+            } else if(editEvent.before != null) {
                 if(formChangeEventActions == null) {
                     formChangeEventActions = new ArrayList<>();
                 }
-                formChangeEventActions.add(Pair.create(action, before));
+                formChangeEventActions.add(Pair.create(action, editEvent.before));
             } else {
                 if (eventActions == null) {
                     eventActions = new HashMap<>();
                 }
-                eventActions.put(actionSID, action);
+                eventActions.put(editEvent.actionType, action);
             }
         }
     }
@@ -303,15 +317,6 @@ public class FormPropertyOptions {
             contextMenuBindings = new OrderedMap<>();
         }
         contextMenuBindings.put(actionSID, caption);
-    }
-
-    public void addContextMenuAction(LocalizedString caption, ActionObjectEntity action) {
-        if (action != null) {
-            Action property = (Action) action.property;
-
-            addEventAction(property.getSID(), action);
-            addContextMenuBinding(property.getSID(), getContextMenuCaption(caption, property));
-        }
     }
 
     public static LocalizedString getContextMenuCaption(LocalizedString caption, Action property) {
@@ -330,14 +335,6 @@ public class FormPropertyOptions {
 
     public void setContextMenuBindings(OrderedMap<String, LocalizedString> contextMenuBindings) {
         this.contextMenuBindings = contextMenuBindings;
-    }
-    
-    public void addKeyPressAction(String key, ActionObjectEntity action) {
-        if (action != null) {
-            String propertySID = action.property.getSID();
-            addEventAction(propertySID, action);
-            addKeyBinding(KeyStroke.getKeyStroke(key), propertySID);
-        }
     }
 
     public void addKeyBinding(KeyStroke key, String actionSID) {

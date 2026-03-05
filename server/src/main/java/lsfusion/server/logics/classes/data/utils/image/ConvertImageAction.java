@@ -11,11 +11,14 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 public class ConvertImageAction extends InternalAction {
     public ConvertImageAction(ScriptingLogicsModule LM, ValueClass... valueClasses) {
@@ -37,26 +40,43 @@ public class ConvertImageAction extends InternalAction {
     private RawFileData convertImage(RawFileData inputFile, String extension) throws IOException {
         RawFileData result = null;
         if (inputFile != null && extension != null) {
-            BufferedImage bi = ImageIO.read(inputFile.getInputStream());
-            if (bi != null) {
-                if (bi.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
-                    //ImageIO.write doesn't support TYPE_4BYTE_ABGR
-                    BufferedImage newBi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
-                    bi = newBi;
-                }
-
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                if (ImageIO.write(bi, extension, os)) {
-                    result = new RawFileData(os);
-                } else {
-                    throw new RuntimeException("Convert Image failed");
-                }
+            String sourceExtension = getExtension(inputFile);
+            if (extension.equalsIgnoreCase(sourceExtension)) {
+                result = inputFile;
             } else {
-                throw new RuntimeException("Failed to read image");
+                BufferedImage bi = ImageIO.read(inputFile.getInputStream());
+                if (bi != null) {
+                    if (bi.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+                        //ImageIO.write doesn't support TYPE_4BYTE_ABGR
+                        BufferedImage newBi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                        newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
+                        bi = newBi;
+                    }
+
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    if (ImageIO.write(bi, extension, os)) {
+                        result = new RawFileData(os);
+                    } else {
+                        throw new RuntimeException("Convert Image failed");
+                    }
+                } else {
+                    throw new RuntimeException("Failed to read image");
+                }
             }
         }
         return result;
+    }
+
+    private String getExtension(RawFileData inputFile) throws IOException {
+        try (ImageInputStream inputStream = ImageIO.createImageInputStream(inputFile.getInputStream())) {
+            if (inputStream != null) {
+                Iterator<ImageReader> readers = ImageIO.getImageReaders(inputStream);
+                if (readers.hasNext()) {
+                    return readers.next().getFormatName();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

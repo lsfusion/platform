@@ -129,6 +129,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 String headerName = headerNames[i];
                 if (headerName.equals("Content-Type")) {
                     hasContentType = true;
+                    response.setCharacterEncoding(null);
                     response.setContentType(headerValues[i]);
                 } else {
                     response.addHeader(headerName, headerValues[i]);

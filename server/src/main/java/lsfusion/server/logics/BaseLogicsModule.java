@@ -14,6 +14,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -82,7 +83,6 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -110,9 +110,7 @@ import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.google.common.collect.Iterables.size;
@@ -227,6 +225,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP objectClassName;
     public LP staticName;
     public LP staticCaption;
+    public LP staticOrder;
 
     public LP staticImage;
     public LP statCustomObjectClass;
@@ -241,6 +240,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP exportFile;
     public LP importFile;
     public LP readFile;
+    public LP readDialogPath;
 
     public LP showResult;
     public LP eventSource;
@@ -612,6 +612,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
         readFile = findProperty("readFile[]");
+        readDialogPath = findProperty("readDialogPath[]");
 
         eventSource = findProperty("eventSource[]");
         showResult = findProperty("showResult[]");
@@ -636,6 +637,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         staticName = findProperty("staticName[StaticObject]");
         staticCaption = findProperty("staticCaption[StaticObject]");
+        staticOrder = findProperty("order[StaticObject]");
         staticImage = findProperty("image[StaticObject]");
 
         sessionOwners = findProperty("sessionOwners[]");
@@ -760,9 +762,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return idGenerator.idShift();
     }
 
-    public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) {
+    public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean interactive) {
         try {
-            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where);
+            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where, interactive);
             addAutoFormEntityFinalized(integrationForm.form);
             return integrationForm;
         } catch (FormEntity.AlreadyDefined e) {
@@ -772,7 +774,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
         LP jsonFormProp = addJSONFormProp(caption, integrationForm, SelectTop.NULL(), false);
-//        jsonFormProp.property.finalizeInit();
+        jsonFormProp.property.finalizeInit();
         ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
         return jsonFormProp;
     }
@@ -797,6 +799,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public NavigatorElement application;
     public NavigatorElement logs;
     public NavigatorElement system;
+
+    public Map<NavigatorScheduler, LA> navigatorSchedulers = new HashMap<>();
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 

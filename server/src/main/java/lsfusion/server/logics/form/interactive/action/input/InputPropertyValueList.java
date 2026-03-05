@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
@@ -60,16 +61,15 @@ public class InputPropertyValueList<P extends PropertyInterface> extends InputVa
     }
 
     private ImOrderMap<Expr, Boolean> getOrderExprs(Modifier modifier, ImMap<P, Expr> innerExprs, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        if(asyncMode == null)
+        // the check is that when we have too much rows, we remove the order for the optimization purposes
+        if(asyncMode == null || isTooMayRows())
             return MapFact.EMPTYORDER();
 
-        // the check is that when we have too much rows, we remove the order for the optimization purposes
-        if (!orders.isEmpty()) {
-            if (isTooMayRows())
-                return MapFact.EMPTYORDER();
-        } else {
-            if (asyncMode.isObjects() && !isTooMayRows()) // maybe OBJECTVALUES also can be used
+        if (orders.isEmpty()) {
+            if (asyncMode.isObjects()) // maybe OBJECTVALUES also can be used
                 return MapFact.singletonOrder(innerExprs.get(singleInterface()), false);
+            if (Settings.get().isInputListOrderByRank())
+                return MapFact.singletonOrder(ValueExpr.TRUE, false);
         }
 
         return orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<P>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(innerExprs, modifier));

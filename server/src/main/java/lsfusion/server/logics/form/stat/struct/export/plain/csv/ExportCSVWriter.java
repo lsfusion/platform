@@ -21,6 +21,15 @@ public class ExportCSVWriter extends ExportMatrixWriter {
         super(fieldTypes, noHeader);
         this.csvEscaper = new CsvEscaper(noEscape, separator);
         this.separator = separator;
+
+        //pseudo charset utf-8-bom to write BOM bytes
+        if (charset.equals("UTF-8-BOM")) {
+            outputStream.write(239);
+            outputStream.write(187);
+            outputStream.write(191);
+            charset = "UTF-8";
+        }
+
         writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset))) {
             @Override
             public void println() {

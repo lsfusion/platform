@@ -23,6 +23,7 @@ import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.stack.*;
@@ -70,10 +71,7 @@ import lsfusion.server.logics.action.session.change.increment.IncrementTableProp
 import lsfusion.server.logics.action.session.change.modifier.*;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
-import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.action.session.classes.change.MaterializableClassChange;
-import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.*;
 import lsfusion.server.logics.action.session.classes.changed.ChangedClasses;
 import lsfusion.server.logics.action.session.classes.changed.ChangedDataClasses;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
@@ -434,6 +432,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static boolean reCalculateAggr = false;
 
     public final UserController user;
+    public final NavigatorRefreshController navigator;
     public final ChangesController changes;
 
     public DataObject applyObject = null;
@@ -459,7 +458,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql, null);
     }
     public DataSession createSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException {
-        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
+        return new DataSession(sql, user, navigator, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
     }
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
@@ -821,7 +820,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     };
     private ImSet<FormEntity> allActiveForms = null;
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
+    public DataSession(SQLSession sql, final UserController user, final NavigatorRefreshController navigator,
+                       final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
                        IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession,
                        SessionEvents sessionEvents, OperationOwner upOwner, ImSet<FormEntity> fixedForms) {
         this.sql = sql;
@@ -831,6 +831,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.currentSession = currentSession;
 
         this.user = user;
+        this.navigator = navigator;
         this.changes = changes;
 
         this.sessionEvents = sessionEvents;
@@ -1550,7 +1551,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //        if(reupdateWhere != null)
 //            modifyQuery.and(reupdateWhere.not());
         
-        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
+        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1630,7 +1631,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(AbstractContext.LogMessage message : messages) {
             if (logBuilder.length() > 0) 
                 logBuilder.append('\n');
-            if(addFailed && message.failed)
+            if(addFailed && message.type == MessageClientType.ERROR)
                 logBuilder.append("(failed) ");
             logBuilder.append(message.message);
         }
@@ -1724,7 +1725,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
         mChangedPropKeys = SetFact.mSet();
-        mRemovedClasses = SetFact.mSet();        
+        mRemovedClasses = SetFact.mSet();
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -1743,7 +1744,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 rollbackApply();
             } catch (Throwable rs) {
-                ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + ExceptionUtils.toString(rs) + '\n' + ExecutionStackAspect.getExceptionStackTrace());
+                new ThrowableWithStack(rs).log("ROLLBACK EXCEPTION", ServerLoggers.sqlHandLogger);
                 // in theory all rollbacks are inside finally blocks, so the transaction should be rollbacked anyway
                 // but it seems in some extremely rare cases (like deadlocks with VACUUM ANALYZE) the transaction is not properly rollbacked, what can lead to some extremely bad problems
                 throw ExceptionUtils.propagate(rs, SQLException.class, SQLHandledException.class);
@@ -1963,13 +1964,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         clearDataHints(getOwner()); // важно, что после updateSourceChanges, потому как updateSourceChanges тоже может хинты создать (соответственно нарушится checkSessionCount -> Unique violation)
 
-        if(applyMessage != null)
-            ThreadLocalContext.pushLogMessage();
+        AbstractContext.ListLogMessageProcessor logProcessor = applyMessage != null ? new AbstractContext.ListLogMessageProcessor() : null;
+        if(logProcessor != null)
+            ThreadLocalContext.pushLogMessage(logProcessor);
         try {
             return transactApply(BL, stack, forceSerializable || BL.getDbManager().serializable, interaction, new HashMap<>(), 0, applyActions, keepProps, false, Settings.get().getTrueSerializableAttempts() > 0, System.currentTimeMillis());
         } finally {
-            if(applyMessage != null)
-                applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage(), false));
+            if(logProcessor != null) {
+                ThreadLocalContext.popLogMessage();
+                applyMessage.set(getLogMessage(ListFact.fromJavaList(logProcessor.messages), false));
+            }
         }
     }
 
@@ -2100,7 +2104,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.statusMessage = null;
                 }
             }
-    
+
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
 
@@ -2351,8 +2355,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange = property.createChangeTable("achpr");
             data.put(property, dataChange);
         }
-        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner(), SessionTable.matGlobalQuery);
-        if(dataChange.isEmpty()) // только для первого заполнения (потом удалений нет, проверка не имеет особого смысла)
+
+        QueryEnvironment env = getQueryEnv();
+        OperationOwner owner = getOwner();
+        boolean updateClasses = SessionTable.matGlobalQuery;
+
+        ModifyResult result;
+        if(property instanceof SessionDataProperty && Settings.get().isDeleteLocalNullChanges() && (dataChange == null || !dataChange.used(change.getQuery()))) {
+            Pair<PropertyChange<ClassPropertyInterface>, PropertyChange<ClassPropertyInterface>> split = change.splitNull();
+            PropertyChange<ClassPropertyInterface> changeNull = split.first;
+            PropertyChange<ClassPropertyInterface> changeNotNull = split.second;
+            result = null;
+            if(!changeNull.isEmpty())
+                result = changeNull.modifyRows(dataChange, sql, baseClass, Modify.DELETE, env, owner, updateClasses);
+            if(!changeNotNull.isEmpty()) {
+                ModifyResult resultNotNull = changeNotNull.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+                if(result == null)
+                    result = resultNotNull;
+                else
+                    result = result.or(resultNotNull);
+            }
+            assert result != null;
+        } else
+            result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, env, owner, updateClasses);
+
+        if(dataChange.isEmpty())
             data.remove(property);
         return result;
     }

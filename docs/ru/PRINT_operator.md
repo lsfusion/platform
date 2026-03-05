@@ -7,8 +7,10 @@ title: 'Оператор PRINT'
 ### Синтаксис
 
 ```
-PRINT name 
+PRINT name
+[CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
+FILTERS ...
 [formActionOptions] 
 ```
 
@@ -17,7 +19,7 @@ PRINT name
 ```
 printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
 [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-MESSAGE [syncType]
+MESSAGE [syncType] [messageType]
 [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
 [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
 ```
@@ -32,6 +34,10 @@ MESSAGE [syncType]
 
     Имя формы. [Составной идентификатор](IDs.md#cid).
 
+- `CLIENT` | `SERVER`
+
+  Ключевые слова. Определяют, выполнять действие на клиенте (`CLIENT`) или на сервере (`SERVER`). По умолчанию действие выполняется на клиенте.
+
 - `objName1 ... objNameN`
 
     Имена объектов формы, для которых задаются дополнительные фильтры. [Простые идентификаторы](IDs.md#id).
@@ -39,6 +45,10 @@ MESSAGE [syncType]
 - `expr1 ... exprN`
 
     [Выражения](Expression.md), значения которых определяют фильтруемые (фиксированные) значения для объектов формы.
+
+- `FILTERS ...`
+
+  Добавляет фиксированные фильтры на форму. [Синтаксис блока фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters).
 
 #### Дополнительные опции
 
@@ -86,6 +96,22 @@ MESSAGE [syncType]
 
     - `WAIT` - после завершения действия клиентом (закрытия формы предпросмотра / сообщения). Используется по умолчанию.
     - `NOWAIT` -  после подготовки информации для передачи клиенту (чтения данных формы).
+
+  - `messageType`
+
+    Тип сообщения. Определяет, как сообщение будет показываться на экране. Задается одним из ключевых слов:
+
+    - `LOG` - сообщение в окне сообщений `System.log`.
+
+    - `INFO` - информационное сообщение.
+
+    - `SUCCESS` - сообщение об успешном выполнении.
+
+    - `WARN` - сообщение с предупреждением.
+
+    - `ERROR` - сообщение об ошибке.
+
+    - `DEFAULT` - простое сообщение. Используется по умолчанию.
 
 - `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
 

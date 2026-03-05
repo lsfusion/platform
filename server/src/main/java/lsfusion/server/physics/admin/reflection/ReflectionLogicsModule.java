@@ -124,6 +124,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP columnSortPropertyDraw;
     public LP columnAscendingSortPropertyDrawCustomUser;
     public LP columnAscendingSortPropertyDraw;
+    public LP inGridPropertyDrawCustomUser;
+    public LP inGridPropertyDraw;
     public LP hasUserPreferencesGroupObject;
     public LP hasUserPreferencesGroupObjectCustomUser;
     public LP hasUserPreferencesOverrideGroupObjectCustomUser;
@@ -151,6 +153,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP tableSID;
     public LP rowsTable;
     public LP tableTableKey;
+    public LP sidTableTableKey;
     public LP sidTableKey;
     public LP tableKeySID;
     public LP classTableKey;
@@ -162,6 +165,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP tableTableColumn;
     public LP propertyTableColumn;
     public LP sidTableColumn;
+    public LP sidTableTableColumn;
     public LP longSIDTableColumn;
     public LP tableColumnLongSID;
     public LP tableColumnSID;
@@ -231,7 +235,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentForm = addProperty(null, new LP<>(new CurrentFormProperty(form)));
+        currentForm = addProperty(null, new LP<>(new CurrentFormProperty(formCanonicalNameClass)));
         makePropertyPublic(currentForm, "currentForm", new ArrayList<>());
 
         super.initMainLogic();
@@ -346,6 +350,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         columnAscendingSortPropertyDrawCustomUser = findProperty("columnAscendingSort[PropertyDraw,CustomUser]");
         columnAscendingSortPropertyDraw = findProperty("columnAscendingSort[PropertyDraw]");
 
+        inGridPropertyDraw = findProperty("inGrid[PropertyDraw]");
+        inGridPropertyDrawCustomUser = findProperty("inGrid[PropertyDraw,CustomUser]");
+
         hasUserPreferencesGroupObjectCustomUser = findProperty("hasUserPreferences[GroupObject,CustomUser]");
         hasUserPreferencesGroupObject = findProperty("hasUserPreferences[GroupObject]");
         hasUserPreferencesOverrideGroupObjectCustomUser = findProperty("hasUserPreferencesOverride[GroupObject,CustomUser]");
@@ -384,6 +391,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Ключи таблиц
         tableTableKey = findProperty("table[TableKey]");
+        sidTableTableKey = findProperty("sidTable[TableKey]");
 
         sidTableKey = findProperty("sid[TableKey]");
         tableKeySID = findProperty("tableKey[ISTRING[100]]");
@@ -401,6 +409,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertyTableColumn = findProperty("property[TableColumn]");
 
         sidTableColumn = findProperty("sid[TableColumn]");
+        sidTableTableColumn = findProperty("sidTable[TableColumn]");
         longSIDTableColumn = findProperty("longSID[TableColumn]");
         tableColumnLongSID = findProperty("tableColumnLong[ISTRING[100]]");
         tableColumnSID = findProperty("tableColumnSID[ISTRING[100]]");
@@ -419,7 +428,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         disableClassesTableSID = findProperty("disableClasses[ISTRING[100]]");
         disableStatsTableSID = findProperty("disableStatsTable[ISTRING[100]]");
-        disableMaterializationsTableColumnSID = findProperty("disableAggregations[ISTRING[100]]");
+        disableMaterializationsTableColumnSID = findProperty("disableMaterializations[ISTRING[100]]");
         disableStatsTableColumnSID = findProperty("disableStatsTableColumn[ISTRING[100]]");
 
         // Удаленные колонки

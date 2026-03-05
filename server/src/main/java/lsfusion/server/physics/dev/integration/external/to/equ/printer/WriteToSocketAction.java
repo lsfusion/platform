@@ -1,9 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.interop.action.ExecuteClientAction;
-import lsfusion.interop.action.MessageClientAction;
+import lsfusion.base.net.WriteToSocketClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -13,7 +11,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
@@ -53,17 +50,7 @@ public class WriteToSocketAction extends InternalAction {
                 ServerLoggers.printerLogger.info(String.format("Write to socket started for ip %s port %s", ip, port));
 
                 if (isClient) {
-                    context.delayUserInteraction(new ExecuteClientAction() {
-                        @Override
-                        public void execute(ClientActionDispatcher dispatcher) {
-                            try (OutputStream os = new Socket(ip, port).getOutputStream()) {
-                                os.write(text.getBytes(charset));
-                            } catch (IOException e) {
-                                throw Throwables.propagate(e);
-                            }
-                        }
-
-                    });
+                    context.delayUserInteraction(new WriteToSocketClientAction(text, charset, ip, port));
                 } else {
                     try (OutputStream os = new Socket(ip, port).getOutputStream()) {
                         os.write(text.getBytes(charset));

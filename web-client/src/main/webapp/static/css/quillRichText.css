@@ -22,8 +22,9 @@
     height: unset;
 }
 
+/*changed visible to auto, need for scroll in richtext like in text*/
 .ql-editor[contenteditable="false"], .ql-editor[contenteditable="true"].auto-sized-y {
-    overflow-y: visible;
+    overflow-y: auto;
 }
 
 .ql-editor {

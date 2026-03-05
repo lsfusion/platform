@@ -39,6 +39,9 @@ The event block allows to define handlers for [form events](Form_events.md) that
     - `CHANGE objName` – specifies that the action will be executed when the object `objName` is changed.
     - `QUERYOK`
     - `QUERYCANCEL`
+    - `EXPAND componentSelector` - specifies that the action will be executed after the `componentSelector` container is expanded.
+    - `COLLAPSE componentSelector` - specifies that the action will be executed after the `componentSelector` container is collapsed.
+    - `TAB componentSelector` - specifies that the action will be executed after the `componentSelector` tab becomes active.
     - `SCHEDULE PERIOD intPeriod [FIXED]` - creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
 
 - `eventActionId`

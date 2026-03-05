@@ -62,6 +62,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean firefox;
     public static boolean chrome;
+    public static boolean safari;
 
     // settings    
     public static boolean devMode;
@@ -104,7 +105,7 @@ public class MainFrame implements EntryPoint {
     public static boolean disableActionsIfReadonly;
     public static boolean enableShowingRecentlyLogMessages;
     public static String pushNotificationPublicKey;
-    
+
     public static double maxStickyLeft;
 
     public static boolean jasperReportsIgnorePageMargins;
@@ -148,8 +149,11 @@ public class MainFrame implements EntryPoint {
 
         firefox = GwtClientUtils.isFirefoxUserAgent();
         chrome = GwtClientUtils.isChromeUserAgent();
+        safari = GwtClientUtils.isSafariUserAgent();
         if (chrome)
             GwtClientUtils.setGlobalClassName(true, "is-chrome");
+        if (safari)
+            GwtClientUtils.setGlobalClassName(true, "is-safari");
 
         hackForGwtDnd();
 
@@ -386,6 +390,7 @@ public class MainFrame implements EntryPoint {
             }
         };
         navigatorControllerLink.link = navigatorController;
+        formsController.setNavigatorController(navigatorController);
 
         actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController, navigatorController);
 
@@ -597,6 +602,8 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.requestPushNotificationPermissions();
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+
+        navigatorController.initializeNavigatorSchedulers(result.navigatorSchedulers);
     }
 
     private void addBindings(FormsController formsController, GNavigatorElement element) {

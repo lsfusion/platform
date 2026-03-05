@@ -34,6 +34,11 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
+    protected int getScale() {
+        return 5;
+    }
+
+    @Override
     public PValue fromDoubleValue(double doubleValue) {
         return PValue.getPValue(doubleValue);
     }

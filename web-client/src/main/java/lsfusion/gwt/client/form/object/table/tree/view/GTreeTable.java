@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
@@ -73,7 +75,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false, null);
+        String hierarchicalCaption = nvl(treeGroup.hierarchicalCaption, messages.formTree());
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, hierarchicalCaption, null, null, null, false, null);
         insertColumn(getColumnCount(), column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -120,7 +123,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         return node != null && node.isExpandable();
                     },
                     event -> {
-                        fireExpandSelectedNode(null);
+                        if (!hasTreeNode(event)) {
+                            fireExpandSelectedNode(null);
+                        }
                     }, getWidget(), groupObject);
     }
 
@@ -161,7 +166,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 //                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
 //                String tooltip = property.getTooltip(propertyCaption);
                 GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, property, gridColumn);
-                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky(), form);
+                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, null, property, null, null, gridColumn.isSticky(), form);
 
                 insertColumn(index, gridColumn, header, footer);
 
@@ -361,20 +366,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return null;
         }
 
+        EventTarget prevDownEventTarget = null;
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
             Event event = handler.event;
-            boolean changeEvent = GMouseStroke.isChangeEvent(event);
-            if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
-                String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
-                if (attrID != null) {
-                    boolean consumed = false;
-                    if(changeEvent)
-                        consumed = changeTreeState(editCell);
-                    if(consumed)
-                        handler.consume();
+            if (GMouseStroke.isDownEvent(event) && hasTreeNode(event) && !ignoreDoubleDown(event)) {
+                if (changeTreeState(editCell)) {
+                    prevDownEventTarget = event.getEventTarget();
+                    handler.consume();
                 }
             }
+        }
+
+        private boolean ignoreDoubleDown(Event event) {
+            return GMouseStroke.isDblDownEvent(event) && event.getEventTarget().equals(prevDownEventTarget);
         }
 
         private boolean changeTreeState(Cell cell) {
@@ -1252,5 +1257,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     protected void scrollToEnd(boolean toEnd) {
         selectionHandler.changeRow(toEnd ? (getRowCount() - 1) : 0, FocusUtils.Reason.KEYMOVENAVIGATE);
+    }
+
+    public void updateHierarchicalCaption(String caption) {
+        if (!noHeaders) {
+            ((GGridPropertyTableHeader) getHeader(0)).updateCaption(caption);
+            headersChanged();
+        }
+    }
+
+    private boolean hasTreeNode(Event event) {
+        return JSNIHelper.hasAttribute(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
     }
 }

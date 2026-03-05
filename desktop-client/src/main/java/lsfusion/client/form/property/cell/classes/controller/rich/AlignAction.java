@@ -1,6 +1,5 @@
 package lsfusion.client.form.property.cell.classes.controller.rich;
 
-import lsfusion.base.ReflectionUtils;
 import net.atlanticbb.tantlinger.i18n.I18n;
 import net.atlanticbb.tantlinger.ui.UIUtils;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;

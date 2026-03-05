@@ -24,6 +24,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.property.PropertyEditType;
     import lsfusion.interop.form.property.PropertyGroupType;
     import lsfusion.interop.form.print.FormPrintType;
+    import lsfusion.interop.navigator.NavigatorScheduler;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.base.AppServerImage;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -83,6 +84,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
     import lsfusion.server.logics.form.struct.object.ObjectEntity;
     import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+    import lsfusion.server.logics.form.struct.property.PropertyDrawEntityOrPivotColumn;
+    import lsfusion.server.logics.form.struct.property.PivotColumn;
     import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -859,9 +862,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $et.before, $prop.action); }
-		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
-		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
+		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($prop.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
@@ -1221,7 +1222,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
 		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
-		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
+		| 	schedule = scheduleEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -1254,7 +1255,7 @@ formContainerEventDeclaration returns [String sid, boolean collapse = false]
         )
     ;
 
-scheduleFormEventDeclaration returns [int period, boolean fixed]
+scheduleEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 
@@ -1415,8 +1416,8 @@ orderLiteral returns [boolean descending = false]
 formPivotOptionsDeclaration
 @init {
 	List<Pair<String, PivotOptions>> pivotOptions = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotColumns = new ArrayList<>();
-	List<List<PropertyDrawEntity>> pivotRows = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotColumns = new ArrayList<>();
+	List<List<PropertyDrawEntityOrPivotColumn>> pivotRows = new ArrayList<>();
 	List<PropertyDrawEntity> pivotMeasures = new ArrayList<>();
 }
 @after {
@@ -1446,10 +1447,14 @@ pivotOptions returns [PivotOptions options = new PivotOptions()]
     )*
     ;
 
-pivotPropertyDrawList returns [List<PropertyDrawEntity> props = new ArrayList<>()]
-	:	prop=formPropertyDraw { props.add($prop.property); }
-	|   '(' prop=formPropertyDraw { props.add($prop.property); } (',' prop=formPropertyDraw { props.add($prop.property); } )* ')'
+pivotPropertyDrawList returns [List<PropertyDrawEntityOrPivotColumn> props = new ArrayList<>()]
+	:	prop=pivotFormPropertyDraw { props.add($prop.property); }
+	|   '(' prop=pivotFormPropertyDraw { props.add($prop.property); } (',' prop=pivotFormPropertyDraw { props.add($prop.property); } )* ')'
 	;
+
+pivotFormPropertyDraw returns [PropertyDrawEntityOrPivotColumn property]
+    :   p=formPropertyDraw {property = $p.property; } | 'MEASURES' '(' group=ID { property = new PivotColumn($group.text); } ')'
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// PROPERTY STATEMENT ////////////////////////////
@@ -1485,7 +1490,7 @@ scope {
         EQ
         pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
         { if (inMainParseState() && property != null) { property = self.checkPropertyIsNew(property); }}
-        ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
+        ((popt=propertyOptions[propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
 	;
 
 actionStatement
@@ -1518,11 +1523,11 @@ scope {
 		}
         (
             (   ciADB=contextIndependentActionDB[context] { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
-                ((aopt=actionOptions[action, actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
+                ((aopt=actionOptions[actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
             )
         |
             (   aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inMainParseState()) { action = $aDB.action.getLP(); signature = self.getClassesFromTypedParams(context); }}
-                (aopt=actionOptions[action, actionName, caption, context, signature]  { as = $aopt.as; } )?
+                (aopt=actionOptions[actionName, caption, context, signature]  { as = $aopt.as; } )?
             )
         )
 	;
@@ -1867,7 +1872,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
-	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
+	|	activeDef=activePropertyDefinition[context, dynamic] { $property = $activeDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty[context, dynamic] { $property = $constDef.property; $ci = $constDef.ci; }
 	|	oProp=objectPropertyDefinition { $property = $oProp.property; }
@@ -2380,13 +2385,13 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'ISCLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
-activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+activePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedActiveTabProp($fc.component);
+		$property = self.addScriptedActiveProp($fc.component, $fp.propertyDraw);
 	}
 }
-	: 	'ACTIVE' 'TAB' fc = formComponentID
+	: 	'ACTIVE' ('TAB' fc = formComponentID | 'PROPERTY' fp = formPropertyID)
 	;
 
 roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2483,7 +2488,7 @@ objectPropertyDefinition returns [LPWithParams property]
 		$property = self.addScriptedValueObjectProp($gobj.sid);
 	}
 }
-	:	'VALUE'
+	:	('VALUE' | 'ACTIVE')
 		gobj=formObjectID
 	;
 
@@ -2867,81 +2872,161 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
-	:	recursivePropertyOptions[property, propertyName, caption, $ps, context]
+propertyOptions[String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
+	:	recursivePropertyOptions[propertyName, caption, $ps, context]
 	;
 
-recursivePropertyOptions[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-	:	semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context])
-	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
+recursivePropertyOptions[String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+	:	semiPropertyOption[ps] (';' | recursivePropertyOptions[propertyName, caption, ps, context])
+	|	nonSemiPropertyOption[ps, context] recursivePropertyOptions[propertyName, caption, ps, context]?
 	;
 
-actionOptions[LA action, String actionName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings as = new ActionSettings()]
-	:	recursiveActionOptions[action, actionName, caption, $as, context]
+actionOptions[String actionName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings as = new ActionSettings()]
+	:	recursiveActionOptions[actionName, caption, $as, context]
 	;
 
-recursiveActionOptions[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
-	:	semiActionOption[action, actionName, caption, as, context] (';' | recursiveActionOptions[action, actionName, caption, as, context])
-	|	nonSemiActionOption[action, actionName, caption, as, context] recursiveActionOptions[action, actionName, caption, as, context]?
+recursiveActionOptions[String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
+	:	semiActionOption[actionName, caption, as] (';' | recursiveActionOptions[actionName, caption, as, context])
+	|	nonSemiActionOption[as, context] recursiveActionOptions[actionName, caption, as, context]?
 	;
 
-semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
+semiActionOrPropertyOption[ActionOrPropertySettings ps]
     :	inSetting [ps]
-	|	viewTypeSetting [property]
-	|	customViewSetting [property]
-	|	flexCharWidthSetting [property]
-	|	charWidthSetting [property]
-	|	changeKeySetting [property]
-	|	changeMouseSetting [property]
-	|	stickySetting [property]
-	|	syncSetting [property]
-	|   imageSetting [property]
-	|   '@@' ann = ID { ps.addAnnotation($ann.text); }
+	|	viewTypeSetting [ps]
+	|	customViewSetting [ps]
+	|	flexCharWidthSetting [ps]
+	|	charWidthSetting [ps]
+	|	changeKeySetting [ps]
+	|	changeMouseSetting [ps]
+	|	stickySetting [ps]
+	|	syncSetting [ps]
+	|   imageSetting [ps]
+	|   extIdSetting[ps]
+	|   annotationSetting[ps]
     ;
 
-semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-    :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
+semiPropertyOption[PropertySettings ps]
+    :	semiActionOrPropertyOption[ps]
     |   materializedSetting [ps]
     |	indexedSetting [ps]
 	|	complexSetting [ps]
 	|	prereadSetting [ps]
 	|	hintSettings [ps]
 	|	tableSetting [ps]
-	|   defaultCompareSetting [property]
-	|	autosetSetting [property]
-	|	patternSetting [property]
-	|	regexpSetting [property]
-	|	echoSymbolsSetting [property]
+	|   defaultCompareSetting [ps]
+	|	autosetSetting [ps]
+	|	patternSetting [ps]
+	|	regexpSetting [ps]
+	|	echoSymbolsSetting [ps]
 	|	setNotNullSetting [ps]
-	|	aggrSetting [property]
-	|	eventIdSetting [property]
-	|   lazySetting [property]
+	|	aggrSetting [ps]
+	|	eventIdSetting [ps]
+	|   lazySetting [ps]
     ;
 
-semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-    :	semiActionOrPropertyOption[action, actionName, caption, ps, context]
-	|	shortcutSetting [action, caption != null ? caption : LocalizedString.create(actionName)]
-	|	asonEventActionSetting [action]
-	|	confirmSetting [action]
+semiActionOption[String actionName, LocalizedString caption, ActionSettings as]
+    :	semiActionOrPropertyOption[as]
+	|	asonEventActionSetting [as]
+	|	confirmSetting [as]
     ;
 
-nonSemiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
-    :	onEditEventSetting [property, context]
-    |	onContextMenuEventSetting [property, context]
-    |	onKeyPressEventSetting [property, context]
+nonSemiActionOrPropertyOption[ActionOrPropertySettings ps, List<TypedParameter> context]
+    :	onEditEventSetting [ps, context]
     ;
 
-nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-    :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
+nonSemiPropertyOption[PropertySettings ps, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[ps, context]
     ;
 
-nonSemiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
-    :   nonSemiActionOrPropertyOption[action, actionName, caption, as, context]
+nonSemiActionOption[ActionSettings as, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[as, context]
     ;
 
 inSetting [ActionOrPropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
+
+viewTypeSetting [ActionOrPropertySettings ps]
+	:	viewType=propertyClassViewType { ps.viewType = $viewType.type; }
+	;
+
+customViewSetting [ActionOrPropertySettings ps]
+	:	customView=propertyCustomView { ps.customRenderFunction = $customView.customRenderFunction; ps.customEditorFunction = $customView.customEditorFunction; }
+	;
+
+flexCharWidthSetting [ActionOrPropertySettings ps]
+@init {
+	Boolean flex = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setFlexCharWidth(ps, $width.val, flex);
+	}
+}
+	:	'CHARWIDTH' width = intLiteral
+	    (	('FLEX' { flex = true; })
+        |	('NOFLEX' { flex = false; })
+        )
+	;
+
+charWidthSetting [ActionOrPropertySettings ps]
+	:	'CHARWIDTH' width = intLiteral {ps.charWidth = $width.val;}
+	;
+
+changeKeySetting [ActionOrPropertySettings ps]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setChangeKey(ps, $key.val, show);
+	}
+}
+	:	'CHANGEKEY' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
+	;
+
+changeMouseSetting [ActionOrPropertySettings ps]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inMainParseState()) {
+		self.setChangeMouse(ps, $key.val, show);
+	}
+}
+	:	'CHANGEMOUSE' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
+	;
+
+stickySetting [ActionOrPropertySettings ps]
+    :   st = stickyOption { ps.sticky = $st.sticky;}
+    ;
+
+stickyOption returns[boolean sticky = false]
+	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
+	;
+
+syncSetting [ActionOrPropertySettings ps]
+    :
+        s = syncTypeLiteral { ps.sync = $s.val; }
+    ;
+
+imageSetting [ActionOrPropertySettings ps]
+	:   img=imageOption { ps.image = $img.image; }
+	;
+
+extIdSetting [ActionOrPropertySettings ps]
+    :	'EXTID' id = stringLiteral { ps.extId = $id.val; }
+    ;
+
+annotationSetting [ActionOrPropertySettings ps]
+    :   '@@' ann = ID { ps.addAnnotation($ann.text); } ('(' stringLiteral (',' stringLiteral)?  ')')?
+    ;
 
 materializedSetting [PropertySettings ps]
 	:	'MATERIALIZED' (name=stringLiteral)? { ps.isMaterialized = true; ps.field = $name.val; }
@@ -2968,15 +3053,26 @@ tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
 	;
 
-aggrSetting [LP property]
-@after {
-	if (inMainParseState()) {
-		self.setAggr(property);
-	}
-}
-    :
-        'AGGR'
-    ;
+defaultCompareSetting [PropertySettings ps]
+	:	'DEFAULTCOMPARE' defaultCompare = stringLiteral { ps.defaultCompare = $defaultCompare.val; }
+	;
+
+autosetSetting [PropertySettings ps]
+	:	'AUTOSET' { ps.autoset = true; }
+	;
+
+patternSetting [PropertySettings ps]
+	:	'PATTERN' exp = localizedStringLiteral { ps.pattern = $exp.val; }
+	;
+
+regexpSetting [PropertySettings ps]
+	:	'REGEXP' exp = localizedStringLiteral { ps.regexp = $exp.val; }
+		(mess = localizedStringLiteral { ps.regexpMessage = $mess.val; } )?
+	;
+
+echoSymbolsSetting [PropertySettings ps]
+	:	'ECHO' { ps.echoSymbols = true; }
+	;
 
 setNotNullSetting [PropertySettings ps]
     :   s=notNullSetting {
@@ -2996,170 +3092,33 @@ notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve 
 	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); $resolveEvent = $dt.event; })?
 	;
 
+aggrSetting [PropertySettings ps]
+    :   'AGGR' { ps.aggr = true; }
+    ;
 
-shortcutSetting [LA property, LocalizedString caption]
-@after {
-	if (inMainParseState()) {
-		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
-	}
-}
-	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? usage = actionOrPropertyUsage
+eventIdSetting [PropertySettings ps]
+	:	'EVENTID' id=stringLiteral { ps.eventId = $id.val; }
 	;
 
-asonEventActionSetting [LA property]
+lazySetting [PropertySettings ps]
 @init {
-	String eventActionSID = null;
+	Lazy lazy = Lazy.WEAK;
+	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		self.setAsEventActionFor(property, $et.type, $et.before, $usage.propUsage);
+		self.setLazy(ps, lazy, debugPoint);
 	}
 }
-	:	'ASON' et=formEventType usage=actionOrPropertyUsage
+	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
 	;
 
-viewTypeSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setViewType(property, $viewType.type);
-	}
-}
-	:	viewType=propertyClassViewType
+asonEventActionSetting [ActionSettings as]
+	:	'ASON' et=formEventType usage=actionOrPropertyUsage { as.addActionEditEvent($usage.propUsage, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 	;
 
-customViewSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setCustomRenderFunction(property, $customView.customRenderFunction);
-		self.setCustomEditorFunction(property, $customView.customEditorFunction);
-	}
-}
-	:	customView=propertyCustomView
-	;
-
-flexCharWidthSetting [LAP property]
-@init {
-	Boolean flex = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setFlexCharWidth(property, $width.val, flex);
-	}
-}
-	:	'CHARWIDTH' width = intLiteral
-	    (	('FLEX' { flex = true; })
-        |	('NOFLEX' { flex = false; })
-        )
-	;
-
-charWidthSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setCharWidth(property, $width.val);
-	}
-}
-	:	'CHARWIDTH' width = intLiteral
-	;
-
-imageSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setImage(property, $img.image);
-	}
-}
-	:   img=imageOption
-	;
-
-defaultCompareSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setDefaultCompare(property, $defaultCompare.val);
-	}
-}
-	:	'DEFAULTCOMPARE' defaultCompare = stringLiteral
-	;
-
-
-changeKeySetting [LAP property]
-@init {
-	Boolean show = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setChangeKey(property, $key.val, show);
-	}
-}
-	:	'CHANGEKEY' key = stringLiteral
-		(	('SHOW' { show = true; })
-		|	('HIDE' { show = false; })
-		)?
-	;
-
-changeMouseSetting [LAP property]
-@init {
-	Boolean show = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setChangeMouse(property, $key.val, show);
-	}
-}
-	:	'CHANGEMOUSE' key = stringLiteral
-		(	('SHOW' { show = true; })
-		|	('HIDE' { show = false; })
-		)?
-	;
-
-autosetSetting [LP property]
-@init {
-	boolean autoset = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setAutoset(property, autoset);
-	}
-}
-	:	'AUTOSET' { autoset = true; }
-	;
-
-confirmSetting [LAP property]
-@init {
-	boolean askConfirm = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setAskConfirm(property, askConfirm);
-	}
-}
-	:	'CONFIRM' { askConfirm = true; }
-	;
-
-patternSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setPattern(property, $exp.val);
-	}
-}
-	:	'PATTERN' exp = localizedStringLiteral
-	;
-
-regexpSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setRegexp(property, $exp.val, $mess.val);
-	}
-}
-	:	'REGEXP' exp = localizedStringLiteral
-		(mess = localizedStringLiteral)?
-	;
-
-echoSymbolsSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setEchoSymbols(property);
-	}
-}
-	:	'ECHO'
+confirmSetting [ActionSettings as]
+	:	'CONFIRM' { as.askConfirm = true; }
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
@@ -3170,94 +3129,19 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
         et=baseEventNotPE { $event = $et.event; }
 	;
 
-onEditEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedEventAction(property, $et.type, $et.before, $aDB.action);
-	}
-}
-	:	'ON' et=formEventType
-		aDB=listTopContextDependentActionDefinitionBody[context, false, false]
+onEditEventSetting [ActionOrPropertySettings ps, List<TypedParameter> context]
+	:	'ON' et=formEventType aDB=listTopContextDependentActionDefinitionBody[context, false, false]  {
+		    ps.addEditEvent($aDB.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 	;
 
-formEventType returns [String type, Boolean before]
+formEventType returns [String type, Boolean before, LocalizedString contextMenuCaption, String keyPress]
 	:	'CHANGE' { $type = ServerResponse.CHANGE; } ('BEFORE' { $before = true; } | 'AFTER' { $before = false; })?
 	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
+	|   'CONTEXTMENU' { $type = ServerResponse.CONTEXTMENU; } (c=localizedStringLiteralNoID { $contextMenuCaption = $c.val; })?
+	|   'KEYPRESS' { $type = ServerResponse.KEYPRESS; } key=stringLiteral { $keyPress = $key.val; }
 	;
-
-onContextMenuEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedContextMenuAction(property, $c.val, $action.action);
-	}
-}
-	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)?
-		action=listTopContextDependentActionDefinitionBody[context, false, false]
-	;
-
-onKeyPressEventSetting [LAP property, List<TypedParameter> context]
-@after {
-	if (inMainParseState()) {
-		self.setScriptedKeyPressAction(property, $key.val, $action.action);
-	}
-}
-	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false]
-	;
-
-eventIdSetting [LAP property]
-@after {
-	if (inMainParseState()) {
-		self.setEventId(property, $id.val);
-	}
-}
-	:	'EVENTID' id=stringLiteral
-	;
-
-lazySetting [LP property]
-@init {
-	Lazy lazy = Lazy.WEAK;
-	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
-}
-@after {
-	if (inMainParseState()) {
-		self.setLazy(property, lazy, debugPoint);
-	}
-}
-	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
-	;
-
-
-stickySetting [LAP property]
-@init {
-	boolean sticky = false;
-}
-@after {
-	if (inMainParseState()) {
-		self.setSticky(property, sticky);
-	}
-}
-    :
-        st = stickyOption { sticky = $st.sticky; }
-    ;
-
-stickyOption returns[boolean sticky = false]
-	:	'STICKY' { sticky = true; } | 'NOSTICKY' { sticky = false; }
-	;
-
-syncSetting [LAP property]
-@init {
-	Boolean sync = null;
-}
-@after {
-	if (inMainParseState()) {
-		self.setSync(property, sync);
-	}
-}
-    :
-        s = syncTypeLiteral { sync = $s.val; }
-    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
@@ -4090,7 +3974,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
+	:	('SEEK' | 'ACTIVATE') ('FIRST' { type = UpdateType.FIRST; } | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)
@@ -5150,6 +5034,7 @@ orientation returns [Orientation val]
 
 navigatorStatement
 	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.root]
+
 	;
 
 navigatorElementStatementBody[NavigatorElement parentElement]
@@ -5158,6 +5043,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 			|	newNavigatorElementStatement[parentElement]
 			|	editNavigatorElementStatement[parentElement]
 			|	emptyStatement
+			|   navigatorSchedulerStatement
 			)*
 		'}'
 	|	emptyStatement
@@ -5266,7 +5152,15 @@ navigatorElementSelector returns [NavigatorElement element]
 		}
 	;
 
-
+navigatorSchedulerStatement
+@after {
+	if (inMainParseState()) {
+	    self.addNavigatorScheduler($action.action.getLP(), new NavigatorScheduler($schedule.period, $schedule.fixed));
+	}
+}
+	:
+		schedule = scheduleEventDeclaration action=keepContextFlowActionDefinitionBody[new ArrayList<>(), false]
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// DESIGN STATEMENT ////////////////////////////

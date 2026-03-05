@@ -9,7 +9,8 @@ autoSynchronizeCoordinates '{geo.auto.synchronize.coordinates}' = DATA BOOLEAN (
 
 CLASS MapProvider '{geo.map.provider}' {
     google '{geo.map.provider.google}',
-    yandex '{geo.map.provider.yandex}'
+    yandex '{geo.map.provider.yandex}',
+    twoGis '{geo.map.provider.twoGis}'
 }
 
 showUserMapProvider = DATA MapProvider ();

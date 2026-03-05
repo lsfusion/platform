@@ -37,7 +37,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 import org.jdesktop.swingx.plaf.basic.core.LazyActionMap;
-import sun.awt.AppContext;
 import sun.swing.DefaultLookup;
 import sun.swing.UIAction;
 
@@ -208,19 +207,6 @@ public class BasicComboBoxUI extends ComboBoxUI {
      * @since 1.7
      */
     protected Insets padding;
-
-    // Used for calculating the default size.
-    private static ListCellRenderer getDefaultListCellRenderer() {
-        ListCellRenderer renderer = (ListCellRenderer)AppContext.
-                         getAppContext().get(COMBO_UI_LIST_CELL_RENDERER_KEY);
-
-        if (renderer == null) {
-            renderer = new DefaultListCellRenderer();
-            AppContext.getAppContext().put(COMBO_UI_LIST_CELL_RENDERER_KEY,
-                                           new DefaultListCellRenderer());
-        }
-        return renderer;
-    }
 
     /**
      * Populates ComboBox's actions.
@@ -1317,10 +1303,10 @@ public class BasicComboBoxUI extends ComboBoxUI {
      * @return the size of an empty display area
      * @see #getDisplaySize
      */
+    private static final ListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
     protected Dimension getDefaultSize() {
         // Calculates the height and width using the default text renderer
-        Dimension d = getSizeForComponent(getDefaultListCellRenderer().getListCellRendererComponent(listBox, " ", -1, false, false));
-
+        Dimension d = getSizeForComponent(defaultListCellRenderer.getListCellRendererComponent(listBox, " ", -1, false, false));
         return new Dimension(d.width, d.height);
     }
 
@@ -1450,7 +1436,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
      * supplied.  Add more actions as you need them.
      */
     protected void installKeyboardActions() {
-        InputMap km = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMap km = getInputMap();
         SwingUtilities.replaceUIInputMap(comboBox, JComponent.
                              WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, km);
 
@@ -1459,12 +1445,8 @@ public class BasicComboBoxUI extends ComboBoxUI {
                                            "ComboBox.actionMap");
     }
 
-    InputMap getInputMap(int condition) {
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
-            return (InputMap)DefaultLookup.get(comboBox, this,
-                                               "ComboBox.ancestorInputMap");
-        }
-        return null;
+    InputMap getInputMap() {
+        return (InputMap) UIManager.get("ComboBox.ancestorInputMap", comboBox.getLocale());
     }
 
     boolean isTableCellEditor() {

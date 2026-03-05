@@ -100,7 +100,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 } else {
                     optionsToAdd.add(columnKey);
                 }
-                newRenderedColumnKeys.put(columnKey, i);
+                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
             }
         }
 
@@ -114,7 +114,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public void update() {
         if (columnsUpdated) {
             boolean hide = property.hide;
-            if (!hide || property.hasKeyBinding()) {
+            if (!hide || property.hasKeyBinding() || property.hasMouseBinding()) {
 
                 Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
                 List<GGroupObjectValue> optionsToAdd = pair.first;

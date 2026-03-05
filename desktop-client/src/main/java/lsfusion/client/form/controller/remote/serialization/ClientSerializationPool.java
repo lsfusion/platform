@@ -14,6 +14,7 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPivotColumn;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.remote.serialization.SerializationPool;
 
@@ -47,5 +48,6 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientPropertyDraw.class);
         addMapping(ClientRegularFilter.class);
         addMapping(ClientRegularFilterGroup.class);
+        addMapping(ClientPivotColumn.class);
     }
 }

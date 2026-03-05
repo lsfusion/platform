@@ -66,6 +66,8 @@ public class ServerLoggers {
 
     public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
 
+    public static final Logger schedulerSystemLogger = Logger.getLogger("SchedulerSystemLogger");
+
     public static final Logger httpServerLogger = Logger.getLogger("HttpServerLogger");
 
     public static final Logger httpFromExternalSystemRequestsLogger = Logger.getLogger("HttpFromExternalSystemRequestsLogger");
@@ -224,10 +226,22 @@ public class ServerLoggers {
         startLogger.info(message);
     }
 
-    public static <E1 extends Exception, E2 extends Exception> void runWithStartLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+    public static <E1 extends Exception, E2 extends Exception> long runWithStartLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+        return runWithLog(run, message, startLogger);
+    }
+
+    public static <E1 extends Exception, E2 extends Exception> long runWithServiceLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+        return runWithLog(run, message, serviceLogger);
+    }
+
+    public static <E1 extends Exception, E2 extends Exception> long runWithLog(E2Runnable<E1, E2> run, String message, Logger logger) throws E1, E2 {
         long start = System.currentTimeMillis();
-        startLogger.info(message + " started");
+        if(logger != null)
+            logger.info(message + " started");
         run.run();
-        startLogger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
+        long time = System.currentTimeMillis() - start;
+        if(logger != null)
+            logger.info(message + " finished, " + time + "ms");
+        return time;
     }
 }

@@ -33,6 +33,7 @@ import lsfusion.server.data.expr.key.NullableKeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
@@ -103,6 +104,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -1769,8 +1771,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(notNull) {
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
-                StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
+                DataClass objectClass = (DataClass) ((DataObject) defaultValue).objectClass;
+                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createStatic(StaticValueExpr.getStaticValue(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;
         } else
@@ -1856,6 +1858,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         PropertyMapImplement<?, T> get(boolean filterSelected);
     }
 
+    public static class MapSelect<T extends PropertyInterface> {
+        public final Select<T> select;
+        public final ImRevMap<T, ObjectEntity> mapping;
+
+        public MapSelect(Select<T> select, ImRevMap<T, ObjectEntity> mapping) {
+            this.select = select;
+            this.mapping = mapping;
+        }
+    }
+    public static <T extends PropertyInterface> MapSelect<T> createMapSelect(Select<T> select, ImRevMap<T, ObjectEntity> mapping) {
+        if(select != null)
+            return new MapSelect<>(select, mapping);
+        return null;
+    }
     public static class Select<T extends PropertyInterface> {
         public final SelectProperty<T> property;
 
@@ -1877,7 +1893,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
-    @IdentityStrongLazy
+    @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
     public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         if(!forceSelect && !canBeChanged(false)) // optimization
             return null; // ? because sometimes can be used to display one of the option
@@ -1986,11 +2002,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         Type nameType = name.property.getType();
-        return new Select<>(filterSelected -> {
-            if(filterSelected && !fallbackToFilterSelected)
-                return null;
+        return new Select<>(new SelectProperty<T>() {
+            @Override
+            public PropertyMapImplement<?, T> get(boolean filterSelected) {
+                if (filterSelected && !fallbackToFilterSelected)
+                    return null;
 
-            return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
+                return getSelect(filterSelected);
+            }
+
+            @IdentityStrongLazy // STRONG because we need caching for the getSelectProperty (to avoid IntegrationFormEntity bloating)
+            private PropertyMapImplement<?, T> getSelect(boolean filterSelected) {
+                return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
+            }
         }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readContextEntity != null ? ListFact.singleton(readContextEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
     }
 
@@ -2001,14 +2025,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             where = (PropertyMapImplement<W, I>) PropertyFact.createUnion(innerInterfaces, PropertyFact.createNotNull(where), selected); // assert that selected is boolean (but maybe createUnionNotNull should be used)
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
-        LogicsModule.IntegrationForm<I> integrationForm = getSelectForm(baseLM, innerInterfaces, null, innerMapInterfaces, name, selected, where, orders, true);
+        LogicsModule.IntegrationForm<I> integrationForm = getSelectForm(baseLM, innerInterfaces, null, innerMapInterfaces, name, selected, where, orders, true, false);
 
         LP<?> jsonProp = baseLM.addFinalJSONFormProp(LocalizedString.NONAME, integrationForm);
 
         return jsonProp.getImplement(integrationForm.getOrderInterfaces(mapPropertyInterfaces));
     }
 
-    public static <I extends PropertyInterface, W extends PropertyInterface> LogicsModule.IntegrationForm<I> getSelectForm(BaseLogicsModule baseLM, ImSet<I> innerInterfaces, ImMap<I, ValueClass> innerClasses, ImSet<I> innerMapInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean needObjects) {
+    public static <I extends PropertyInterface, W extends PropertyInterface> LogicsModule.IntegrationForm<I> getSelectForm(BaseLogicsModule baseLM, ImSet<I> innerInterfaces, ImMap<I, ValueClass> innerClasses, ImSet<I> innerMapInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean needObjects, boolean interactive) {
         ImOrderSet<I> orderMapInterfaces = innerMapInterfaces.toOrderSet(); // getOrderInterfaces().mapOrder(mapPropertyInterfaces);
         // CLASSES
 //            ImList<ValueClass> classes = null; //getInterfaceClasses(ClassType.tryEditPolicy) + customClass;
@@ -2048,7 +2072,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImList<ValueClass> orderClasses = null;
         if(innerClasses != null)
             orderClasses = orderInterfaces.mapList(innerClasses);
-        return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where);
+        return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where, interactive);
     }
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
@@ -2592,7 +2616,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, incorrectWhere);
 
-        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global);
+        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query);
         DBManager.run(sql, runInTransaction, DBManager.RECALC_CLASSES_TIL, sql1 -> sql1.updateRecords(modifyQuery));
     }
 
@@ -2703,22 +2727,22 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if (path.contains(this)) {
             throw new ScriptParsingException("Property " + this + " is recursive. One of the paths: " + findCycle(path));
         }
-        
+
         if (localMarks.contains(this) || marks.contains(this)) return;
-        
+
         path.add(this);
         localMarks.add(this);
-        
+
         calculateCheckRecursions(path, localMarks, marks, usePrev);
-        
+
         path.remove(this);
         marks.add(this);
     }
-    
+
     private List<Property<?>> findCycle(Set<Property<?>> path) {
         List<Property<?>> cycle = new ArrayList<>();
         boolean found = false;
-        
+
         for (Property<?> property : path) {
             if (property.equals(this)) {
                 found = true;
@@ -2727,11 +2751,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 cycle.add(property);
             }
         }
-        
+
         cycle.add(this);
         return cycle;
     }
-    
+
     public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
     }
 

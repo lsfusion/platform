@@ -71,6 +71,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new VoidNavigatorActionHandler(this));
         registry.addHandler(new VoidFormActionHandler(this));
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
+        registry.addHandler(new ExecuteNavigatorSchedulerActionHandler(this));
         registry.addHandler(new InitializeNavigatorHandler(this));
         registry.addHandler(new NavitatorShownHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
@@ -111,6 +112,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new ScrollToEndHandler(this));
         registry.addHandler(new SetRegularFilterHandler(this));
         registry.addHandler(new SetTabActiveHandler(this));
+        registry.addHandler(new SetPropertyActiveHandler(this));
         registry.addHandler(new SetContainerCollapsedHandler(this));
         registry.addHandler(new SetUserFiltersHandler(this));
         registry.addHandler(new ThrowInInvocationHandler(this));

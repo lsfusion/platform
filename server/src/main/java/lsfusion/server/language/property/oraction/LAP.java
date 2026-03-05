@@ -62,61 +62,12 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         return listInterfaces.mapOrderRevValues(i -> list.get(mapping[i] - 1));
     }
 
-    /*
-    public <L extends PropertyInterface> void follows(LAP<L> lp, int... mapping) {
-        Map<L, T> mapInterfaces = new HashMap<L, T>();
-        for(int i=0;i<lp.listInterfaces.size();i++)
-            mapInterfaces.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
-        property.addFollows(new PropertyMapImplement<L, T>(lp.property, mapInterfaces));
-    }
-
-    public void followed(LAP... lps) {
-        int[] mapping = new int[listInterfaces.size()];
-        for(int i=0;i<mapping.length;i++)
-            mapping[i] = i+1;
-        for(LAP lp : lps)
-            lp.follows(this, mapping);
-    }
-    */
-    
-    public void setCharWidth(int charWidth) {
-        getActionOrProperty().drawOptions.setCharWidth(charWidth);
-    }
-
-    public void setFlexCharWidth(int charWidth, Boolean flex) {
-        getActionOrProperty().drawOptions.setFlexCharWidth(charWidth, flex);
-    }
-
-    public void setDefaultCompare(String defaultCompare) {
-        getActionOrProperty().drawOptions.setDefaultCompare(defaultCompare);
-    }
-
-    public void setPattern(LocalizedString pattern) {
-        getActionOrProperty().drawOptions.setPattern(pattern);
-    }
-
-    public void setRegexp(LocalizedString regexp) {
-        getActionOrProperty().drawOptions.setRegexp(regexp);
-    }
-
-    public void setRegexpMessage(LocalizedString regexpMessage) {
-        getActionOrProperty().drawOptions.setRegexpMessage(regexpMessage);
-    }
-
-    public void setEchoSymbols(boolean echoSymbols) {
-        getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
-    }
-
     public void setCustomEditorFunction(String customEditorFunction) {
         getActionOrProperty().drawOptions.setCustomEditorFunction(customEditorFunction);
     }
 
     public void setPivotOptions(PivotOptions pivotOptions) {
         getActionOrProperty().drawOptions.setPivotOptions(pivotOptions);
-    }
-
-    public void setAskConfirm(boolean askConfirm) {
-        getActionOrProperty().drawOptions.setAskConfirm(askConfirm);
     }
 
     public String getCreationScript() {

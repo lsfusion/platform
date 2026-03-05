@@ -6,8 +6,8 @@ import lsfusion.gwt.client.form.view.ModalForm;
 
 public class ResizableModalWindow extends ModalWindow {
 
-    public ResizableModalWindow() {
-        super(true, ModalWindowSize.FIT_CONTENT);
+    public ResizableModalWindow(boolean syncType) {
+        super(true, syncType, ModalWindowSize.FIT_CONTENT);
     }
 
     //This scheme is necessary when one modal window is started before the second one, but is displayed later due to delays.

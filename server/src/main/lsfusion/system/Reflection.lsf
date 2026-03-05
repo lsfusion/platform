@@ -201,8 +201,11 @@ columnSort '{reflection.column.sort.property.draw}' = DATA INTEGER (PropertyDraw
 columnAscendingSort '{reflection.column.ascending.sort.property.draw.custom.user}' = DATA BOOLEAN (PropertyDraw, CustomUser);
 columnAscendingSort '{reflection.column.ascending.sort.property.draw}' = DATA BOOLEAN (PropertyDraw);
 
+inGrid = DATA BOOLEAN (PropertyDraw, CustomUser);
+inGrid = DATA BOOLEAN (PropertyDraw);
+
 hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'= DATA BOOLEAN (GroupObject, CustomUser);
-countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
+countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show AND inGrid(property, u) BY groupObject(property);
 countUserPreferences '{authentication.users.number}' (GroupObject g) = GROUP SUM 1 IF hasUserPreferences(g, CustomUser u);
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
 //reset user preferences if all shown properties were removed from form
@@ -212,7 +215,7 @@ WHEN DROPPED(PropertyDraw p IS PropertyDraw) AND hasUserPreferences(PREV(groupOb
 }
 
 hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
-countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
+countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show AND inGrid(property) BY groupObject(property);
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
 hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
 //reset user preferences if all shown properties were removed from form
@@ -270,6 +273,7 @@ TABLE tableColumn (TableColumn);
 table '{reflection.table.table.column}' = DATA Table(TableColumn) NONULL DELETE;
 sid '{reflection.sid.table.column}' = DATA ISTRING[100] (TableColumn);
 tableSID (sid) = GROUP MAX Table table BY sid(table);
+sidTable(TableColumn tableColumn) = sid(table(tableColumn));
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
 tableColumnLong '{reflection.table.column}' (sID) = GROUP AGGR TableColumn tableColumn WHERE tableColumn IS TableColumn BY longSID(tableColumn); 
@@ -291,21 +295,16 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-//todo: remove after onFinallyStarted migration
-notRecalculate '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
+notRecalculate '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn) @@deprecated('6.2','use notRecalculateMaterializations instead');
 notRecalculateMaterializations '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
 
-//todo: remove after onFinallyStarted migration
-recalculateAggregation '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
+recalculateAggregation '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn) @@deprecated('6.2','use recalculateMaterializations instead');
 recalculateMaterializations '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
-//todo: remove after onFinallyStarted migration
-recalculateAggregationWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
+recalculateAggregationWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn) @@deprecated('6.2','use recalculateMaterializationsWithDependencies instead');
 recalculateMaterializationsWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
-//todo: remove after onFinallyStarted migration
-recalculateAggregationWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
+recalculateAggregationWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn) @@deprecated('6.2','use recalculateMaterializationsWithDependents instead');
 recalculateMaterializationsWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
-//todo: remove after onFinallyStarted migration
-checkAggregation '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
+checkAggregation '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn) @@deprecated('6.2','use checkMaterializations instead');
 checkMaterializations '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
 checkAggregation(ISTRING[100] string)  { checkMaterializations(tableColumnSID(string)); }
 checkMaterializations(ISTRING[100] string)  { checkMaterializations(tableColumnSID(string)); }
@@ -315,12 +314,11 @@ drop '{reflection.drop.drop.column}' (DropColumn cl)  {
     DELETE cl;
 }
 
-//todo: remove after onFinallyStarted migration
 recalculateColumnsAggregations '{reflection.recalculate.columns.materializations}' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateMaterializations(tableColumn);    
     }
-}
+} @@deprecated('6.2','use recalculateColumnsMaterializations instead');
 recalculateColumnsMaterializations '{reflection.recalculate.columns.materializations}' (Table table)  {
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateMaterializations(tableColumn);
@@ -336,16 +334,14 @@ pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service
 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (Table);
 disableStatsTable '{reflection.disable.stats}' (Table t) = notRecalculateStats(t);
-//todo: remove after onFinallyStarted migration
-disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc);
+disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc) @@deprecated('6.2','use disableMaterializations instead');
 disableMaterializations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc); 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
 disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn);
 
 disableClasses '{reflection.disable.classes}' (ISTRING[100] sid) = disableClasses(tableSID(sid));
 disableStatsTable '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTable(tableSID(sid));
-//todo: remove after onFinallyStarted migration
-disableAggregations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
+disableAggregations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid)) @@deprecated('6.2','use disableMaterializations instead');
 disableMaterializations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
 disableStatsTableColumn '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 
@@ -414,8 +410,8 @@ FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
     PROPERTIES(t) GRID disableClasses, checkClasses, recalculateClasses,
-                       disableStatsTable, notRecalculateStats, recalculateStats, 
-                       recalculateColumnsAggregations, pack, skipVacuum
+                       disableStatsTable, recalculateStats, 
+                       recalculateColumnsMaterializations, pack, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity CHANGEABLE, quantityTop
@@ -487,7 +483,7 @@ FORM forms '{reflection.form.forms}'
     // global
     OBJECTS p = PropertyDraw
     PROPERTIES(p) READONLY canonicalNameActionOrProperty, sid, caption 
-    PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     ORDERS captionShow(p), columnOrder(p)
     FILTERS groupObject(p) = g
 
@@ -500,13 +496,13 @@ FORM forms '{reflection.form.forms}'
 
     OBJECTS pu = PropertyDraw
     PROPERTIES(pu) READONLY canonicalNameActionOrProperty, sid, caption
-    PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     ORDERS captionShow(pu, u), columnOrder(pu, u)
     FILTERS groupObject(pu) = g
     
     OBJECTS up = CustomUser
     PROPERTIES(up) READONLY firstName, lastName, login
-    PROPERTIES(pu, up) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort
+    PROPERTIES(pu, up) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort, inGrid READONLY
     FILTERGROUP userShow
         FILTER '{reflection.show.property.draw.custom.user}' show(pu, up) = PropertyDrawShowStatus.Show DEFAULT
 

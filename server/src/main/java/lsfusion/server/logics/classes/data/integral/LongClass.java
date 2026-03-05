@@ -110,7 +110,8 @@ public class LongClass extends IntClass<Long> implements DBType {
 
     public Long parseString(String s) throws ParseException {
         try {
-            return isEmptyString(s) ? null : Long.parseLong(s);
+            String preparsed = preparse(s, false);
+            return preparsed == null ? null : Long.parseLong(preparsed);
         } catch (Exception e) {
             throw ParseException.propagateWithMessage("Error parsing long: " + s, e);
         }

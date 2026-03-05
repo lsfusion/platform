@@ -19,9 +19,9 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +48,13 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     
     public boolean expandOnClick = true;
     public int hierarchicalWidth;
+    public String hierarchicalCaption;
+    public PropertyObjectEntity propertyHierarchicalCaption;
+
+    @Override
+    protected boolean hasPropertyComponent() {
+        return super.hasPropertyComponent() || propertyHierarchicalCaption != null;
+    }
 
     IDGenerator idGenerator;
 
@@ -131,6 +138,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         
         outStream.writeBoolean(expandOnClick);
         outStream.writeInt(hierarchicalWidth);
+        pool.writeString(outStream, hierarchicalCaption);
     }
 
     @Override

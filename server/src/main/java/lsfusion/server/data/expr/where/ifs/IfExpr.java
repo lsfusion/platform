@@ -130,24 +130,31 @@ public class IfExpr extends Expr {
 
     public ConcreteClass getStaticClass() {
         ConcreteClass trueClass = trueExpr.getStaticClass();
-        if(trueClass==null)
-            return null;
         ConcreteClass falseClass = falseExpr.getStaticClass();
-        if(falseClass==null)
-            return null;
-        if(BaseUtils.hashEquals(trueClass, falseClass))
+
+        if(trueClass instanceof DataClass || falseClass instanceof DataClass) {
+            if(falseClass == null)
+                return trueClass;
+            if(trueClass == null)
+                return falseClass;
+            return ((DataClass)trueClass).getCompatible((DataClass)falseClass, true);
+        }
+
+        if (trueClass != null && falseClass != null && BaseUtils.hashEquals(trueClass, falseClass))
             return trueClass;
         return null;
     }
 
     public Type getType(KeyType keyType) { // порядок высот
         Type trueType = trueExpr.getType(keyType);
-        if (trueType instanceof DataClass) {
-            Type falseType = falseExpr.getType(keyType);
-            return falseType != null ? trueType.getCompatible(falseType) : trueType;
-        } else {
+        Type falseType = falseExpr.getType(keyType);
+
+        if(trueType == null)
+            return falseType;
+        if(falseType == null)
             return trueType;
-        }
+
+        return trueType.getCompatible(falseType);
     }
     public Stat getTypeStat(Where fullWhere, boolean forJoin) {
         return trueExpr.getTypeStat(fullWhere.and(ifWhere), forJoin);

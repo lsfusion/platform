@@ -22,11 +22,9 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 import java.util.function.*;
 
-import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
-import static lsfusion.gwt.client.view.MainFrame.v5;
+import static lsfusion.gwt.client.view.MainFrame.*;
 
 public class GwtClientUtils {
 
@@ -119,6 +117,14 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.base.GwtClientUtils::isTDorTH(*)(element);
             }
         }
+
+        var isFlutter = $wnd.Flutter !== undefined;
+        var isWindowsFlutter = $wnd.chrome !== undefined && $wnd.chrome.webview !== undefined && $wnd.chrome.webview.postMessage !== undefined;
+        if(isFlutter || isWindowsFlutter) {
+            $wnd.flutterCallback = function (command, data, id) {
+                @lsfusion.gwt.client.base.GwtClientUtils::onFlutterCallback(*)(data, id);
+            };
+        }
     }-*/;
 
     public static InputElement createInputElement(String type) {
@@ -127,10 +133,17 @@ public class GwtClientUtils {
             input = createFocusElement("textarea");
         } else {
             input = createFocusElement("input");
-            input.setAttribute("type", type);
+            //change to type="text" to disable validation of entered values at the mobile browser level
+            // for example, a separator that does not match the device locale causes errors
+            if (mobile && type.equals("number")) {
+                input.setAttribute("type", "text");
+                input.setAttribute("inputmode", "decimal");
+            } else {
+                input.setAttribute("type", type);
+            }
         }
         return (InputElement) input;
-    };
+    }
 
     public static InputElement createImageElement(String type) {
         Element element = Document.get().createElement(type);
@@ -169,10 +182,62 @@ public class GwtClientUtils {
         }
     }
 
-    public static void downloadFile(String fileUrl) {
-        if (fileUrl != null)
-            fileDownload(getAppDownloadURL(fileUrl));
+    /*--- flutter methods ---*/
+
+    public static native JavaScriptObject getFlutterObject() /*-{
+        if ($wnd.chrome !== undefined && $wnd.chrome.webview !== undefined)
+            return $wnd.chrome.webview; //windows
+        else if ($wnd.Flutter !== undefined)
+            return $wnd.Flutter; //android, macos, ios
+        return null;
+    }-*/;
+
+    public static void onFlutterCallback(JavaScriptObject data, String id) {
+        AsyncCallback<JavaScriptObject> callback = flutterCallbacks.remove(id);
+        if (callback != null) {
+            callback.done(data);
+        }
     }
+
+    private static final Map<String, AsyncCallback<JavaScriptObject>> flutterCallbacks = new HashMap<>();
+
+    public interface AsyncCallback<T> {
+        void done(T result);
+    }
+
+    public static void executeFlutter(JavaScriptObject flutter, String command, Object[] arguments, AsyncCallback<JavaScriptObject> callback) {
+        String id = String.valueOf(System.currentTimeMillis());
+        flutterCallbacks.put(id, callback);
+        executeFlutterNative(flutter, command, arguments, id);
+    }
+
+    private static native void executeFlutterNative(JavaScriptObject flutter, String command, Object[] arguments, String id) /*-{
+        var convertedArgs = [];
+
+        for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments[i];
+            if (typeof arg === 'object' && arg !== null) {
+                if (arg.toString && !isNaN(Number(arg.toString()))) {
+                    convertedArgs.push(Number(arg.toString()));
+                }
+                else if (Array.isArray(arg)) {
+                    convertedArgs.push(arg);
+                }
+                else {
+                    convertedArgs.push(arg);
+                }
+            } else {
+                convertedArgs.push(arg);
+            }
+        }
+        flutter.postMessage(JSON.stringify({command: command, arguments: convertedArgs, id: id}));
+    }-*/;
+
+    public static native String getFullUrl(String url) /*-{
+        return window.location.origin + url;
+    }-*/;
+
+    /*--- flutter methods end ---*/
 
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
@@ -475,6 +540,12 @@ public class GwtClientUtils {
         String userAgent = getUserAgent();
         //chrome, opera, edge contains "chrome"; opera contains "opr" edge contains "edg"
         return userAgent.contains("chrome") && !userAgent.contains("opr") && !userAgent.contains("edg");
+    }
+
+    public static boolean isSafariUserAgent() {
+        String userAgent = getUserAgent();
+        return userAgent.contains("safari") && !userAgent.contains("chrome") && !userAgent.contains("chromium")
+                && !userAgent.contains("crios") && !userAgent.contains("opr") && !userAgent.contains("edg");
     }
 
     public static boolean isShowing(Widget widget) {
@@ -1402,10 +1473,10 @@ public class GwtClientUtils {
         return epochFrom <= epochTo ? PValue.getPValue(epochFrom, epochTo) : null;
     }
 
-    public static String getStep(int precision) {
-        if(precision == 0)
+    public static String getStep(int scale) {
+        if(scale == 0)
             return "1";
-        return "0." + replicate('0', precision <= 5 ? precision - 1 : 4) + "1";
+        return "0." + replicate('0', scale <= 5 ? scale - 1 : 4) + "1";
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
@@ -1575,6 +1646,17 @@ public class GwtClientUtils {
         return name != null ? prototype[name]() : name;
     }-*/;
 
+    public static String getFileName(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+
+        int slashIndex = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        String fileName = (slashIndex == -1) ? path : path.substring(slashIndex + 1);
+
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+    }
     public static String getFileExtension(String filename) {
         int index = filename.lastIndexOf(".");
         return (index == -1) ? "" : filename.substring(index + 1);
@@ -1844,9 +1926,12 @@ public class GwtClientUtils {
 
     public static String escapeSeparator(String value, GCompare compare) {
         if (value != null) {
+            boolean isContainsOrMatch = (compare == GCompare.CONTAINS || compare == GCompare.MATCH);
+            if (isContainsOrMatch)
+                value = value.replace("\\", "\\\\");
             if (compare.escapeSeparator())
                 value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
-            if (compare == GCompare.CONTAINS)
+            if (isContainsOrMatch)
                 value = value.replace("%", "\\%").replace("_", "\\_");
         }
         return value;
@@ -1945,6 +2030,60 @@ public class GwtClientUtils {
 
     public static native void addShowCollapsedContainerEvent(Element parent, String toggleElementSelector, String containerElementSelector, String collapsibleClass) /*-{
         $wnd.addShowCollapsedContainerEvent(parent, toggleElementSelector, containerElementSelector, collapsibleClass);
+    }-*/;
+
+    public static native void addGroupSeparatorEventListener(Element input)/*-{
+        var preventDefaultMode = false; //alt+digit switches tab in browser in linux; F12 opens console - need to prevent it
+        input.sequence = [];
+        //F8 = 119; F12 = 123; CTRL + ] = 17 + 221;
+        // Alt down + 0 [+ 0] + 2 + 9 + Alt up = 18 + 96 [+ 96] + 98 + 105 + 10018
+        var targets = [[119], [123], [17, 221], [18, 96, 98, 105, 10018], [18, 96, 96, 98, 105, 10018]];
+        input.addEventListener('keydown', function (e) {
+            input.sequence.push(e.keyCode);
+            checkSequence();
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = true;
+            if(preventDefaultMode)
+                e.preventDefault();
+        });
+        input.addEventListener('keyup', function (e) {
+            if(e.keyCode === 18 || e.keyCode === 123)
+                preventDefaultMode = false;
+            if(e.keyCode === 18) { //alt
+                input.sequence.push(10000 + e.keyCode);
+                checkSequence();
+            }
+        });
+
+        function checkSequence() {
+            if (input.sequence.length > 6) //max target length
+                input.sequence.shift();
+
+            for (var i = 0; i < targets.length; i++) {
+                var target = targets[i];
+                if(compareFromEnd(input.sequence, target)) {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    // paste U+001D (Group Separator)
+                    var val = input.value;
+                    input.value = val.slice(0, start) + '\u001D' + val.slice(end);
+                    // move cursor
+                    input.selectionStart = input.selectionEnd = start + 1;
+                }
+            }
+        }
+
+        function compareFromEnd(arr1, arr2) {
+            var len1 = arr1.length;
+            var len2 = arr2.length;
+            if (len1 < len2) return false;
+            for (var i = 0; i < len2; i++) {
+                if (arr1[len1 - len2 + i] !== arr2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }-*/;
 
 }

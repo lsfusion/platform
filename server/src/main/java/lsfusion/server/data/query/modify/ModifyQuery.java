@@ -27,6 +27,7 @@ import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
+import lsfusion.server.physics.exec.db.table.DBTable;
 
 public class ModifyQuery {
     public final StoredTable table;
@@ -38,6 +39,18 @@ public class ModifyQuery {
         return env.getOpOwner();
     }
 
+    public ModifyQuery(DBTable table, IQuery<KeyField, PropertyField> change) {
+        this(table, change, OperationOwner.unknown);
+    }
+
+    public ModifyQuery(DBTable table, IQuery<KeyField, PropertyField> change, OperationOwner owner) {
+        this(table, change, DataSession.emptyEnv(owner));
+    }
+
+    public ModifyQuery(DBTable table, IQuery<KeyField, PropertyField> change, QueryEnvironment env) {
+        this(table, change, env, TableOwner.global);
+    }
+
     public ModifyQuery(StoredTable table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
         this(table, change, DataSession.emptyEnv(owner), tableOwner);
     }
@@ -47,6 +60,8 @@ public class ModifyQuery {
         this.change = change;
         this.env = env;
         this.owner = owner;
+
+        assert !(table instanceof DBTable) || owner == TableOwner.global;
     }
 
     public SQLExecute getUpdate(final SQLSyntax syntax, SQLSessionContextProvider userProvider) {

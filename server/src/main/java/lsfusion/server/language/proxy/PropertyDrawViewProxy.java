@@ -95,8 +95,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeKey, PropertyDrawExtraType.CHANGEKEY, getVersion());
         }
     }
-
-    //deprecated
+    @Deprecated //removed in 7.0
     public void setChangeKeyPriority(int priority) {
         if(target.changeKey != null)
             target.changeKey.priority = priority;
@@ -118,7 +117,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //deprecated
+    @Deprecated //removed in 7.0
     public void setChangeMousePriority(int priority) {
         if(target.changeMouse != null)
         target.changeMouse.priority = priority;
@@ -160,6 +159,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.CAPTIONELEMENTCLASS, getVersion());
     }
 
+    public void setFooterClass(Object valueClass) {
+        if(valueClass instanceof LocalizedString)
+            target.footerElementClass = ((LocalizedString) valueClass).getSourceString();
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.FOOTERELEMENTCLASS, getVersion());
+    }
+
     public void setCaption(Object caption) {
         if(caption instanceof LocalizedString)
             target.caption = (LocalizedString) caption;
@@ -175,6 +181,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.inputType = inputType.getSourceString();
     }
 
+    @Deprecated //since 6.2
     public void setImagePath(LocalizedString image) {
         setImage(image);
     }
@@ -298,7 +305,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //deprecated
+    @Deprecated
     public void setValueAlignment(FlexAlignment valueAlignment) {
         setValueAlignmentHorz(valueAlignment);
     }
@@ -415,7 +422,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.notNull = notNull;
     }
 
-    public void setSelect(String select) {
-        target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
+    public void setSelect(Object select) {
+        if(select instanceof LocalizedString) {
+            target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
+        } else if(select instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) select).property.isExplicitNull()) {
+            target.entity.customRenderFunction = PropertyDrawEntity.NOSELECT;
+        } else {
+            throw new UnsupportedOperationException("Unsupported value: " + select);
+        }
     }
 }

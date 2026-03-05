@@ -8,12 +8,11 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-import net.coobird.thumbnailator.Thumbnails;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -43,10 +42,7 @@ public class ResizeImageMaxSizeAction extends InternalAction {
                 int imageHeight = image.getHeight();
                 double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
                 if (scale != 0) {
-                    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                        Thumbnails.of(inputFile.getInputStream()).scale(scale, scale).toOutputStream(os);
-                        result = new RawFileData(os);
-                    }
+                    result = FileUtils.createThumbnails(inputFile, image, scale);
                 }
             } else {
                 throw new RuntimeException("Failed to read image");

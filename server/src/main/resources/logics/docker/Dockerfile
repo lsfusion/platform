@@ -6,4 +6,7 @@ WORKDIR /logics
 
 COPY ${FILENAME} ./lsfusion.jar
 
-ENTRYPOINT ["sh", "-c", "cp -r /logics/* /lsfusion/ && tail -f /dev/null"]
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

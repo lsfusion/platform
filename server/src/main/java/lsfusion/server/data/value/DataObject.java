@@ -45,8 +45,6 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.integration.service.*;
 
 import java.sql.SQLException;
@@ -152,8 +150,7 @@ public class DataObject extends ObjectValue<DataObject> implements ImportKeyInte
     }
 
     public Expr getStaticExpr() {
-        assert !(objectClass instanceof StringClass);
-        return new StaticValueExpr(object, (StaticClass) objectClass);
+        return new StaticValueExpr(StaticValueExpr.getStaticValue(object, (StaticClass) objectClass), (StaticClass) objectClass);
     }
 
     public Object getValue() {

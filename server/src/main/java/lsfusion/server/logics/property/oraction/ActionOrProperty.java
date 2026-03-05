@@ -26,8 +26,10 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
@@ -73,6 +75,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     private int ID = 0;
     protected String canonicalName;
+    protected String extId;
     public ImSet<String> annotations;
     public ImRevMap<T, String> paramNames;
 
@@ -230,10 +233,14 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
 
-        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), PropertyDrawView::hasUserChangeAction));
+        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), this::showGroupChange));
         setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
+    }
+
+    private boolean showGroupChange(PropertyDrawView property, FormInstanceContext context) {
+        return property.hasUserChangeAction(context) && !property.hasFlow(context, ChangeFlowType.NOGROUPCHANGE);
     }
 
     public final ImSet<T> interfaces;
@@ -301,16 +308,30 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         setExplicitClasses(signatureOrder, signature);
     }
 
+    public String getExtId() {
+        return extId;
+    }
+
+    public void setExtId(String extId) {
+        this.extId = extId;
+    }
+
     final public boolean isNamed() {
         return canonicalName != null;
     }
 
     public static class ContextMenuBinding {
         public final LocalizedString caption;
+        public final LA action;
         public final BiPredicate<PropertyDrawView, FormInstanceContext> show;
 
         public ContextMenuBinding(LocalizedString caption, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
+            this(caption, null, show);
+        }
+
+        public ContextMenuBinding(LocalizedString caption, LA action, BiPredicate<PropertyDrawView, FormInstanceContext> show) {
             this.caption = caption;
+            this.action = action;
             this.show = show;
         }
 
@@ -349,7 +370,11 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public void setContextMenuAction(String actionSID, LocalizedString caption) {
-        setContextMenuAction(actionSID, new ContextMenuBinding(caption, null));
+        setContextMenuAction(actionSID, null, caption);
+    }
+
+    public void setContextMenuAction(String actionSID, LA contextMenuAction, LocalizedString caption) {
+        setContextMenuAction(actionSID, new ContextMenuBinding(caption, contextMenuAction, null));
     }
 
     @NFLazy
@@ -689,6 +714,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean sticky;
         private Boolean sync;
 
+        private String extId;
+
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
@@ -788,7 +815,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setSticky(options.sticky);
             if(sync == null)
                 setSync(options.sync);
-            
+            if(extId == null)
+                setExtId(options.extId);
+
             processors = options.processors.addList(processors);
         }
 
@@ -796,11 +825,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void addProcessor(DefaultProcessor processor) {
             processors = processors.addList(processor);
-        }
-
-        public void setFlexCharWidth(int charWidth, Boolean flex) {
-            setCharWidth(charWidth);
-            setValueFlex(flex);
         }
 
         public Compare getDefaultCompare() {
@@ -885,6 +909,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setSync(Boolean sync) {
             this.sync = sync;
+        }
+
+        public void setExtId(String extId) {
+            this.extId = extId;
         }
     }
 

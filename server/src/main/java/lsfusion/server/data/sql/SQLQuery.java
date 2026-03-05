@@ -392,7 +392,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         String table = session.getTemporaryTable(keyOrder, propOrder.getSet(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException, SQLHandledException {
                 SQLDML dml = getInsertDML(name, keyOrder, propOrder, false, keys, properties, session.syntax);
-                SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
+                SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.registerSession(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, () -> outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, true, owner));
             }
         }, null, actual, tableOwner, owner);

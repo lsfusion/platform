@@ -4,7 +4,6 @@ import com.sun.net.httpserver.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.Result;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
@@ -54,13 +53,13 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static lsfusion.server.physics.admin.log.ServerLoggers.exInfoLogger;
-
 public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
     private RemoteLogics remoteLogics;
     private final Map<InetSocketAddress, String> hostMap = new HashMap<>();
+
+    private static String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
 
     @Override
     public String getEventName() {
@@ -323,9 +322,6 @@ public class ExternalHttpServer extends MonitorServer {
             if (authHeader != null) {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
-                    if (!token.isAnonymous() && !token.string.contains(".")) {
-                        exInfoLogger.error("Bearer jwt token without dot: " + token.string);
-                    }
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
                     String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
                     if (credentials.length == 2)
@@ -360,18 +356,10 @@ public class ExternalHttpServer extends MonitorServer {
             return contentType;
         }
 
-        private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
-            String[] headerValuesArray = new String[headerNames.length];
-            for (int i = 0; i < headerNames.length; i++) {
-                headerValuesArray[i] = StringUtils.join(headers.get(headerNames[i]).iterator(), ",");
-            }
-            return headerValuesArray;
-        }
-
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
             request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
-            request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
+            request.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             byte[] responseBytes = response.getBytes(bodyCharset);
             request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
             OutputStream os = request.getResponseBody();
@@ -396,35 +384,40 @@ public class ExternalHttpServer extends MonitorServer {
             String[] cookieValues = responseHttpEntity.cookieValues;
             int statusHttp = responseHttpEntity.statusHttp;
 
+            Headers responseHeaders = response.getResponseHeaders();
+
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
-            if(headerNames != null) {
+            boolean hasAccessControlAllowOrigin = false;
+            if (headerNames != null) {
                 for (int i = 0; i < headerNames.length; i++) {
                     String headerName = headerNames[i];
                     if (headerName.equals("Content-Type")) {
                         hasContentType = true;
-                        response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                        responseHeaders.add("Content-Type", headerValues[i]);
                     } else
-                        response.getResponseHeaders().add(headerName, headerValues[i]);
+                        responseHeaders.add(headerName, headerValues[i]);
                     hasContentDisposition = hasContentDisposition || headerName.equals(ExternalUtils.CONTENT_DISPOSITION_HEADER);
+                    hasAccessControlAllowOrigin = hasAccessControlAllowOrigin || headerName.equals(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
                 }
             }
 
-            if(cookieNames != null) {
+            if (cookieNames != null) {
                 String cookie = "";
                 for (int i = 0; i < cookieNames.length; i++) {
                     String cookieName = cookieNames[i];
                     String cookieValue = cookieValues[i];
                     cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
                 }
-                response.getResponseHeaders().add("Cookie", cookie);
+                responseHeaders.add("Cookie", cookie);
             }
 
             if (contentType != null && !hasContentType)
-                response.getResponseHeaders().add("Content-Type", contentType);
-            if(contentDisposition != null && !hasContentDisposition)
-                response.getResponseHeaders().add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
-            response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
+                responseHeaders.add("Content-Type", contentType);
+            if (contentDisposition != null && !hasContentDisposition)
+                responseHeaders.add(ExternalUtils.CONTENT_DISPOSITION_HEADER, contentDisposition);
+            if (!hasAccessControlAllowOrigin)
+                responseHeaders.add("Access-Control-Allow-Origin", "*");
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }

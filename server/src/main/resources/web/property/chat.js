@@ -77,44 +77,46 @@ function chatMessageRender() {
             element.appendChild(message);
         },
         update: function (element, controller, value) {
-            element.author.innerHTML = value.author || '';
+            if (value !== null) {
+                element.author.innerHTML = value.author || '';
 
-            element.replyAction.onclick = function(event) {
-                controller.change({ action : 'reply' });
-                $(this).closest("div[lsfusion-container='chat']").find(".ql-editor").focus(); // works only in firefox
-            }
-
-            element.replyAuthor.innerHTML = value.replyAuthor || '';
-            element.replyText.innerHTML = value.replyText || '';
-            element.replyContent.onmousedown = function(event) {
-                controller.change({ action : 'goToReply' });
-            }
-
-            element.text.innerHTML = value.text || '';
-            element.time.innerHTML = value.time || '';
-            element.status.innerHTML = value.status || '';
-
-            while (element.attachments.lastElementChild) {
-                element.attachments.removeChild(element.attachments.lastElementChild);
-            }
-            if (value.attachment) {
-                var attachmentA = document.createElement("a");
-                attachmentA.classList.add("chat-message-attachment");
-
-                attachmentA.onclick = function(event) {
-                    controller.change({ action : 'open', id : value.id });
+                element.replyAction.onclick = function (event) {
+                    controller.change({action: 'reply'});
+                    $(this).closest("div[lsfusion-container='chat']").find(".ql-editor").focus(); // works only in firefox
                 }
 
-                var attachmentCaption = document.createTextNode(value.attachment);
-                attachmentA.appendChild(attachmentCaption);
+                element.replyAuthor.innerHTML = value.replyAuthor || '';
+                element.replyText.innerHTML = value.replyText || '';
+                element.replyContent.onmousedown = function (event) {
+                    controller.change({action: 'goToReply'});
+                }
 
-                element.attachments.appendChild(attachmentA);
+                element.text.innerHTML = value.text || '';
+                element.time.innerHTML = value.time || '';
+                element.status.innerHTML = value.status || '';
+
+                while (element.attachments.lastElementChild) {
+                    element.attachments.removeChild(element.attachments.lastElementChild);
+                }
+                if (value.attachment) {
+                    var attachmentA = document.createElement("a");
+                    attachmentA.classList.add("chat-message-attachment");
+
+                    attachmentA.onclick = function (event) {
+                        controller.change({action: 'open', id: value.id});
+                    }
+
+                    var attachmentCaption = document.createTextNode(value.attachment);
+                    attachmentA.appendChild(attachmentCaption);
+
+                    element.attachments.appendChild(attachmentA);
+                }
+
+                if (value.own) {
+                    element.message.classList.add('chat-message-own');
+                } else
+                    element.message.classList.remove('chat-message-own');
             }
-
-            if (value.own) {
-                element.message.classList.add('chat-message-own');
-            } else
-                element.message.classList.remove('chat-message-own');
         }
     }
 }
