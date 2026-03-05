@@ -151,9 +151,9 @@ auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
 use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
-twoFaRateLimitSeconds = DATA INTEGER() LAZY;
-twoFaExpirySeconds = DATA INTEGER() LAZY;
-twoFaMaxAttempts = DATA INTEGER() LAZY;
+twoFaRateLimitSeconds '{authentication.2fa.rate.limit}' = DATA INTEGER() LAZY;
+twoFaExpirySeconds '{authentication.2fa.expiry}' = DATA INTEGER() LAZY;
+twoFaMaxAttempts '{authentication.2fa.max.attempts}' = DATA INTEGER() LAZY;
 
 code2FA = DATA STRING (CustomUser);
 expiry2FA = DATA DATETIME (CustomUser);
