@@ -48,7 +48,11 @@ public class LSFAuthenticationToken extends UsernamePasswordAuthenticationToken 
         this.appServerToken = appServerToken;
         this.locale = locale;
     }
-    
+
+    public boolean use2FA() {
+        return appServerToken.use2FA;
+    }
+
     public boolean isAnonymous() {
         return appServerToken == AuthenticationToken.ANONYMOUS;
     }

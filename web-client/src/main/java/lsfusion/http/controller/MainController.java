@@ -181,7 +181,7 @@ public class MainController {
         jsonObject.put("email", email);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.registerUser");
+        JSONObject jsonResponse = sendRequest(logicsProvider, user, request, "Authentication.registerUser");
         if (jsonResponse.has("success")) {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
@@ -220,7 +220,7 @@ public class MainController {
         jsonObject.put("userNameOrEmail", usernameOrEmail);
         jsonArray.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(jsonArray, request, "Authentication.resetPassword");
+        JSONObject jsonResponse = sendRequest(logicsProvider, jsonArray, request, "Authentication.resetPassword");
         if (jsonResponse.has("success")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
                     + " " + jsonResponse.optString("email"));
@@ -247,7 +247,7 @@ public class MainController {
         jsonObject.put("token", token);
         user.put(jsonObject);
 
-        JSONObject jsonResponse = sendRequest(user, request, "Authentication.changePassword");
+        JSONObject jsonResponse = sendRequest(logicsProvider, user, request, "Authentication.changePassword");
         if (jsonResponse.has("success")) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
@@ -318,7 +318,7 @@ public class MainController {
         return versionedResources;
     }
 
-    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method) {
+    public static JSONObject sendRequest(LogicsProvider logicsProvider, JSONArray jsonArray, HttpServletRequest request, String method) {
         try {
             return logicsProvider.runRequest(request,
                     (sessionObject, retry) -> new JSONObject(sendRequest(request, ListFact.singleton(ExternalRequest.getSystemParam(jsonArray.toString())), sessionObject, method + "[JSONFILE]")));
