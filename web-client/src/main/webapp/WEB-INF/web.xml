@@ -108,6 +108,7 @@
     <servlet-mapping>
         <servlet-name>LSFWeb</servlet-name>
         <url-pattern>/login</url-pattern>
+        <url-pattern>/2fa</url-pattern>
         <url-pattern>/manifest</url-pattern>
         <url-pattern>/main</url-pattern>
         <url-pattern>/registration</url-pattern>
@@ -160,6 +161,7 @@
         <url-pattern>/uploadFile</url-pattern>
         <url-pattern>/file/*</url-pattern>
         <url-pattern>/login</url-pattern>
+        <url-pattern>/2fa</url-pattern>
         <url-pattern>/login_check</url-pattern>
         <url-pattern>/main</url-pattern>
         <url-pattern>/registration</url-pattern>

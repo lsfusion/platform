@@ -464,7 +464,8 @@ getServerSettings() + WHEN TRUE THEN {
     disableRegistration=disableRole('selfRegister'),
     lsfParams = (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
     noAuthResourcesBeforeSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) < 0 ORDER noAuthResourcesOrder(s)),
-    noAuthResourcesAfterSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) >= 0 ORDER noAuthResourcesOrder(s));
+    noAuthResourcesAfterSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) >= 0 ORDER noAuthResourcesOrder(s)),
+    twoFaMaxAttempts = twoFaMaxAttempts();
 };
 
 // logging for user
