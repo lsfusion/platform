@@ -3397,18 +3397,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(locked) {
                 try {
                     Connection prevConnection = privateConnection.sql;
-                    if (!alreadyLocked && DataAdapter.getServer(newConnection).equals(DataAdapter.getServer(prevConnection)))
-                        return false;
+                    if (alreadyLocked || !DataAdapter.getServer(newConnection).equals(DataAdapter.getServer(prevConnection))) {
+                        EConsumer<Connection, SQLException> cleaner = restartConnection(newConnection);
 
-                    EConsumer<Connection, SQLException> cleaner = restartConnection(newConnection);
-
-                    connectionPool.returnBalanceConnection(prevConnection, cleaner);
+                        connectionPool.returnBalanceConnection(prevConnection, cleaner);
+                        return true;
+                    }
                 } finally {
                     if(!alreadyLocked)
                         unlockWrite(true);
                 }
             }
-            return false;
+            connectionPool.returnBalanceConnection(newConnection, cn -> {});
         }
         return false;
     }
