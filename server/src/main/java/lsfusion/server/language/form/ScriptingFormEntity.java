@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.language.form.object.ScriptingObject;
+import lsfusion.server.language.form.object.ScriptingTreeGroup;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
@@ -100,50 +101,35 @@ public class ScriptingFormEntity {
 
 
     @NotNull
-    public ObjectEntity addScriptingObject(boolean extend, String objectName, String className, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity object;
-        if(extend) {
-            object = form.getNFObject(objectName, version);
-            if(object == null)
-                LM.getErrLog().emitGroupObjectNotFoundError(LM.getParser(), objectName);
-        } else {
-            ValueClass cls = LM.findClass(className);
-            object = new ObjectEntity(form.genID, objectName, cls, false);
-            form.addObject(object, version);
-        }
+    public ObjectEntity addScriptingObject(String objectName, String className, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass cls = LM.findClass(className);
+        ObjectEntity object = new ObjectEntity(form.genID, objectName, cls, false);
+        form.addObject(object, version);
         return object;
     }
 
-    public GroupObjectEntity addScriptingGroupObject(boolean extend, String groupName, List<ObjectEntity> lobjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        int size = lobjects.size();
+    public GroupObjectEntity addScriptingGroupObject(String groupName, List<ObjectEntity> lobjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (groupName == null) {
             groupName = "";
-            for (int j = 0; j < size; j++) {
-                groupName = (groupName.isEmpty() ? "" : groupName + ".") + lobjects.get(j).getSID();
+            for (ObjectEntity obj : lobjects) {
+                groupName = (groupName.isEmpty() ? "" : groupName + ".") + obj.getSID();
             }
         }
 
-        GroupObjectEntity groupObj;
-        if(extend) {
-            groupObj = form.getNFGroupObject(groupName, version);
-            if(groupObj == null) {
-                if(size == 1) { // looking for object
-                    ObjectEntity object = form.getNFObject(groupName, version);
-                    if(object != null)
-                        groupObj = object.groupTo;
-                }
-                if(groupObj == null)
-                    LM.getErrLog().emitGroupObjectNotFoundError(LM.getParser(), groupName);
-            }
-        } else {
-            ImOrderSet<ObjectEntity> objects = SetFact.fromJavaOrderSet(lobjects);
+        ImOrderSet<ObjectEntity> objects = SetFact.fromJavaOrderSet(lobjects);
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM, debugPoint);
+        form.addGroupObject(groupObj, version);
+        checkAlreadyDefined(groupObj, version);
+        return groupObj;
+    }
 
-            groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM, debugPoint);
-            form.addGroupObject(groupObj, version);
-
-            checkAlreadyDefined(groupObj, version);
-        }
-
+    public GroupObjectEntity findScriptingGroupOrSingleObject(String id, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity object = form.getNFObject(id, version);
+        if(object != null)
+            return object.groupTo;
+        GroupObjectEntity groupObj = form.getNFGroupObject(id, version);
+        if(groupObj == null)
+            LM.getErrLog().emitGroupObjectNotFoundError(LM.getParser(), id);
         return groupObj;
     }
 
@@ -197,7 +183,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyObjectOptions(ObjectEntity obj, ScriptingObject object, Version version) {
+    public void applyObjectOptions(ObjectEntity obj, ScriptingObject object, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (object.event != null) {
             form.addActionsOnEvent(new ObjectEventObject(obj.getSID()), version, object.event);
         }
@@ -206,7 +192,21 @@ public class ScriptingFormEntity {
             obj.setIntegrationSID(object.integrationSID, version);
         }
 
-        obj.setCaption(object.caption, version);
+        if (object.caption != null)
+            obj.setCaption(object.caption, version);
+
+        if (object.parentProperty != null) {
+            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(object.parentMapping);
+            checkPropertyParameters(object.parentProperty, mappingObjects);
+            obj.setParent(form.addPropertyObject(object.parentProperty, mappingObjects), version);
+        }
+    }
+
+    public void applyGroupObjectSingleObjectOptions(GroupObjectEntity groupObj, ScriptingObject object, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if (groupObj == null) return;
+        ImOrderSet<ObjectEntity> objects = groupObj.getOrderObjects();
+        if (objects.size() == 1)
+            applyObjectOptions(objects.single(), object, version);
     }
 
     private static final List<String> supportedMapTileProviders = Arrays.asList("openStreetMap", "google", "yandex", "twoGis");
@@ -216,58 +216,24 @@ public class ScriptingFormEntity {
         }
     }
 
-    public TreeGroupEntity addScriptingTreeGroupObject(boolean extend, String treeSID, List<GroupObjectEntity> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        TreeGroupEntity treeGroup = null;
-
-        if(extend) {
-            if(treeSID != null) {
-                treeGroup = form.getNFTreeGroupObject(treeSID, version, null);
-            }
-            if(treeGroup == null) {
-                LM.getErrLog().emitTreeGroupObjectNotFoundError(LM.getParser(), treeSID);
-            }
-        } else {
-            treeGroup = new TreeGroupEntity(form.genID, treeSID, SetFact.fromJavaOrderSet(groupObjects), debugPoint);
-            form.addTreeGroupObject(treeGroup, version);
-
-            checkAlreadyDefined(treeGroup, version);
-        }
-
+    public TreeGroupEntity addScriptingTreeGroupObject(String treeSID, List<GroupObjectEntity> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID, treeSID, SetFact.fromJavaOrderSet(groupObjects), debugPoint);
+        form.addTreeGroupObject(treeGroup, version);
+        checkAlreadyDefined(treeGroup, version);
         return treeGroup;
     }
 
-    public void applyTreeGroupObjectOptions(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, List<List<LP>> parentProperties, List<List<ImOrderSet<String>>> propertyMappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        ImOrderSet<GroupObjectEntity> groups = treeGroup.getGroups();
-        for (int j = 0; j < groups.size(); j++) {
-            GroupObjectEntity groupObj = groups.get(j);
+    public TreeGroupEntity findScriptingTreeGroupObject(String treeSID, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        TreeGroupEntity treeGroup = treeSID != null ? form.getNFTreeGroupObject(treeSID, version, null) : null;
+        if(treeGroup == null)
+            LM.getErrLog().emitTreeGroupObjectNotFoundError(LM.getParser(), treeSID);
+        return treeGroup;
+    }
 
-            List<LP> properties = parentProperties.get(j);
-            List<ImOrderSet<String>> propertyMapping = propertyMappings.get(j);
-
-            if (properties != null && groupObj.getObjects().size() != properties.size()) {
-                LM.getErrLog().emitDifferentObjsNPropsQuantityError(LM.getParser(), groupObj.getObjects().size());
-            }
-            if (properties != null) {
-
-                List<PropertyObjectEntity> propertyObjects = new ArrayList<>();
-                for (int i = 0; i < properties.size(); i++) {
-                    LP property = properties.get(i);
-                    if (propertyMapping != null && property.property.getName() != null) {
-                        ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(propertyMapping.get(i));
-                        checkPropertyParameters(property, mappingObjects);
-                        propertyObjects.add(form.addPropertyObject(property, mappingObjects));
-                    }
-                }
-
-                if (!propertyObjects.isEmpty())
-                    groupObj.setIsParents(version, propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
-            }
-        }
-
-        if(location != null) {
-            form.moveTreeGroupObject(treeGroup, location, version);
-
-            checkNeighbour(location);
+    public void applyTreeGroupObjectOptions(TreeGroupEntity treeGroup, ScriptingTreeGroup treeGroupOptions, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if(treeGroupOptions.location != null) {
+            form.moveTreeGroupObject(treeGroup, treeGroupOptions.location, version);
+            checkNeighbour(treeGroupOptions.location);
         }
     }
 

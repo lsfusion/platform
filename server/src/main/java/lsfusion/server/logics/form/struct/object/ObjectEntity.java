@@ -33,6 +33,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.IdentityEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -44,6 +45,16 @@ import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity> implements OrderEntity<PropertyObjectInterfaceInstance, ObjectEntity>, ObjectSelector {
 
     public GroupObjectEntity groupTo;
+
+    private final NFProperty<PropertyObjectEntity> parent = NFFact.property();
+
+    public void setParent(PropertyObjectEntity parent, Version version) {
+        this.parent.set(parent, version);
+    }
+
+    public PropertyObjectEntity getParent() {
+        return parent.get();
+    }
 
     private final NFProperty<LocalizedString> caption = NFFact.property();
 
@@ -210,6 +221,7 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
 
         mapping.sets(caption, src.caption);
         mapping.sets(integrationSID, src.integrationSID);
+        mapping.set(parent, src.parent);
     }
 
 //    @Override

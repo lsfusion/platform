@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -59,7 +60,6 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -295,8 +295,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return instanceFactory.getInstance(this);
     }
 
-    private final NFProperty<ImMap<ObjectEntity, PropertyObjectEntity>> isParent = NFFact.property();
-
     public UpdateType getUpdateType() {
         return updateType.get();
     }
@@ -399,11 +397,8 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     }
 
     public ImMap<ObjectEntity, PropertyObjectEntity> getIsParent() {
-        return isParent.get();
-    }
-
-    public void setIsParents(Version version, final PropertyObjectEntity... properties) {
-        isParent.set(getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity>) i -> properties[i]), version);
+        ImMap<ObjectEntity, PropertyObjectEntity> parentObjects = getObjects().mapValues(ObjectEntity::getParent);
+        return parentObjects.containsNull() ? null : parentObjects;
     }
 
     public void setViewTypePanel(FormEntity form, Version version) {
@@ -659,7 +654,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         mapping.set(propertyCustomOptions, src.propertyCustomOptions);
         mapping.set(propertyBackground, src.propertyBackground);
         mapping.set(propertyForeground, src.propertyForeground);
-        mapping.setm(isParent, src.isParent);
 
         mapping.set(reportPathProp, src.reportPathProp);
     }
