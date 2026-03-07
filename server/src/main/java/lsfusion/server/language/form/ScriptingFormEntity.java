@@ -329,7 +329,7 @@ public class ScriptingFormEntity {
         return null; 
     }
 
-    public PropertyDrawEntity addScriptingPropertyDraw(boolean extend, String alias, ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage, FormPropertyOptions commonOptions, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawEntity addScriptingPropertyDraw(String alias, ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage, FormPropertyOptions commonOptions, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
         LAP<?, ?> property;
         ImOrderSet<ObjectEntity> objects;
@@ -381,9 +381,8 @@ public class ScriptingFormEntity {
         ActionOrPropertyObjectEntity actionOrPropertyEntity = property.createObjectEntity(objects);
 
         PropertyDrawEntity propertyDraw = form.addPropertyDraw(actionOrPropertyEntity, property.listInterfaces, inherited.result,
-                extend, version, debugPoint, alias); // with location it is sort of optimization not to add and then move
-        if(!extend)
-            checkAlreadyDefined(propertyDraw, version);
+                version, debugPoint, alias); // with location it is sort of optimization not to add and then move
+        checkAlreadyDefined(propertyDraw, version);
         return propertyDraw;
     }
 

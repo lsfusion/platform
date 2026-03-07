@@ -985,10 +985,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     // auto form constructors + initDefault elements
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement, Pair<ActionOrProperty, List<String>> inherited,
                                                                                                                ImOrderSet<P> interfaces, Version version) {
-        return addPropertyDraw(propertyImplement, interfaces, inherited, false, version, null, null);
+        return addPropertyDraw(propertyImplement, interfaces, inherited, version, null, null);
     }
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P, ?> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?, ?> propertyImplement,
-                                                                                                               ImOrderSet<P> interfaces, Pair<ActionOrProperty, List<String>> inherited, boolean extend, Version version, DebugInfo.DebugPoint debugPoint, String alias) {
+                                                                                                               ImOrderSet<P> interfaces, Pair<ActionOrProperty, List<String>> inherited, Version version, DebugInfo.DebugPoint debugPoint, String alias) {
 
         ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
@@ -1001,17 +1001,12 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             propertySID = "propertyDraw" + version.getOrder() + propertyDraws.size(version);
         }
 
-        PropertyDrawEntity<P, ?> propertyDraw;
-        if(extend)
-            return (PropertyDrawEntity<P, ?>) getNFPropertyDraw(propertySID, version);
-        else {
-            propertyDraw = new PropertyDrawEntity<>(genID, propertySID, propertyImplement, inheritedProperty, debugPoint);
-            propertyDraws.add(propertyDraw, ComplexLocation.DEFAULT(), version);
-            if (view != null)
-                view.addPropertyDraw(propertyDraw, version);
+        PropertyDrawEntity<P, ?> propertyDraw = new PropertyDrawEntity<>(genID, propertySID, propertyImplement, inheritedProperty, debugPoint);
+        propertyDraws.add(propertyDraw, ComplexLocation.DEFAULT(), version);
+        if (view != null)
+            view.addPropertyDraw(propertyDraw, version);
 
-            propertyDraw.proceedDefaultDraw(this, version);
-        }
+        propertyDraw.proceedDefaultDraw(this, version);
 
         return propertyDraw;
     }

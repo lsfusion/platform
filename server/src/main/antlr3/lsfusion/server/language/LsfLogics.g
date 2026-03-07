@@ -441,6 +441,7 @@ scope {
 		|	formExtendTreeGroupObjectList
 		|	formFiltersList
 		|	formPropertiesList
+		|	formExtendPropertiesList
 		|	formHintsList
 		|	formEventsList
 		|	filterGroupDeclaration
@@ -633,8 +634,10 @@ formExtendGroupObjectsList
 formExtendGroupObjectDeclaration
 @init {
 	GroupObjectEntity groupObject = null;
+	LocalizedString caption = null;
 }
-	:	id=ID
+	:	(c=localizedStringLiteral { caption = $c.val; } EQ)?
+		id=ID
 		{
 			if (inMainParseState()) {
 				groupObject = $formStatement::form.findScriptingGroupOrSingleObject($id.text, self.getVersion(), getCurrentDebugPoint(true));
@@ -643,6 +646,7 @@ formExtendGroupObjectDeclaration
 		objOpts=formObjectOptions
 		{
 			if (inMainParseState()) {
+				$objOpts.object.caption = caption;
 				$formStatement::form.applyGroupObjectSingleObjectOptions(groupObject, $objOpts.object, self.getVersion());
 			}
 		}
@@ -936,7 +940,6 @@ formObjectDeclaration[boolean single] returns [ObjectEntity object, GroupObjectE
 	
 formPropertiesList
 @init {
-	boolean extend = false;
 	List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
 	List<FormPropertyOptions> options = new ArrayList<>();
 }
@@ -945,18 +948,59 @@ formPropertiesList
 		$formStatement::form.applyPropertyOptions(propertyDraws, $opts.options, options, self.getVersion());
 	}
 }
-	:	('EXTEND' { extend = true; } )?
-	    ('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[extend, $objects.ids, $opts.options]
+	:	('PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids, $opts.options]
 		{
 			propertyDraws = $list.propertyDraws;
 			options = $list.options;
 		}
-	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList[extend, $opts.options]
+	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList[$opts.options]
 		{
 			propertyDraws = $mappedList.propertyDraws;
 			options = $mappedList.options;
 		})
-	;	
+	;
+
+formExtendPropertiesList
+@init {
+	List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
+	List<FormPropertyOptions> options = new ArrayList<>();
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.applyPropertyOptions(propertyDraws, $opts.options, options, self.getVersion());
+	}
+}
+	:	'EXTEND' 'PROPERTIES'
+		opts=formPropertyOptionsList
+		first=formExtendMappedPropertyListItem[$opts.options]
+		{
+			propertyDraws.add($first.propertyDraw);
+			options.add($first.itemOpts);
+		}
+		(',' next=formExtendMappedPropertyListItem[$opts.options]
+		{
+			propertyDraws.add($next.propertyDraw);
+			options.add($next.itemOpts);
+		})*
+	;
+
+formExtendMappedPropertyListItem[FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions itemOpts]
+@init {
+	LocalizedString caption = null;
+}
+	:	(c=localizedStringLiteral { caption = $c.val; } EQ)?
+		prop=formPropertyDraw
+		{
+			$propertyDraw = $prop.property;
+		}
+		itemOptions=formPropertyOptionsList
+		{
+			$itemOpts = $itemOptions.options;
+			if (inMainParseState()) {
+				$formStatement::form.applyPropertyOptions($propertyDraw, commonOptions, $itemOpts, caption, self.getVersion());
+			}
+		}
+	;
 
 // потенциально две проблемы с убиранием =pE -> (a=)?pe | pe решается простым lookahead, два pe подряд SHOWIF pe pe, факторится с ? так чтобы formPropertyOptionsList заканчивался на pe а дальше formMappedProperty | pe после чего formMappedProperty lookahead'ся 
 formPropertyOptionsList returns [FormPropertyOptions options]
@@ -1009,24 +1053,24 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList[boolean extend, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
+formMappedPropertiesList[FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
 	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
 }
-	:	first=formMappedPropertyListItem[extend, commonOptions]
+	:	first=formMappedPropertyListItem[commonOptions]
 		{
 			$propertyDraws.add($first.propertyDraw);
 			$options.add($first.opts);
 		}
-		(',' next=formMappedPropertyListItem[extend, commonOptions]
+		(',' next=formMappedPropertyListItem[commonOptions]
 		{
 			$propertyDraws.add($next.propertyDraw);
 			$options.add($next.opts);
 		})*
 	;
 
-formMappedPropertyListItem[boolean extend, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+formMappedPropertyListItem[FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
 @init {
 	String alias = null;
 	LocalizedString caption = null;
@@ -1062,7 +1106,7 @@ formMappedPropertyListItem[boolean extend, FormPropertyOptions commonOptions] re
 			)
 		{
 		    if (inMainParseState()) {
-		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, lpUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(alias, lpUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
             }
 		}
 		options=formPropertyOptionsList
@@ -1174,24 +1218,24 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
+formPropertyUList[List<String> mapping, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
 @init {
 	$propertyDraws = new ArrayList<>();
 	$options = new ArrayList<>();
 }
-	:	first=formPropertyUListItem[extend, mapping, commonOptions]
+	:	first=formPropertyUListItem[mapping, commonOptions]
 		{
 			$propertyDraws.add($first.propertyDraw);
 			$options.add($first.opts);
 		}
-		(',' next=formPropertyUListItem[extend, mapping, commonOptions]
+		(',' next=formPropertyUListItem[mapping, commonOptions]
 		{
 			$propertyDraws.add($next.propertyDraw);
 			$options.add($next.opts);
 		})*
 	;
 
-formPropertyUListItem[boolean extend, List<String> mapping, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
+formPropertyUListItem[List<String> mapping, FormPropertyOptions commonOptions] returns [PropertyDrawEntity propertyDraw, FormPropertyOptions opts]
 @init {
 	String alias = null;
 	LocalizedString caption = null;
@@ -1200,7 +1244,7 @@ formPropertyUListItem[boolean extend, List<String> mapping, FormPropertyOptions 
 		pu=formPropertyUsage[mapping]
 		{
 		    if (inMainParseState()) {
-		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(extend, alias, $pu.propUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
+		        $propertyDraw = $formStatement::form.addScriptingPropertyDraw(alias, $pu.propUsage, commonOptions, self.getVersion(), getCurrentDebugPoint(true));
             }
 		}
 		options=formPropertyOptionsList
