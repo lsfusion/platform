@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.interactive;
 
 import lsfusion.server.logics.form.ObjectMapping;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class ServerIdentityObject<This extends ServerIdentityObject<This, AddParent>, AddParent extends ServerIdentityObject<AddParent, ?>> implements MappingInterface<This> {
 
@@ -24,5 +23,7 @@ public abstract class ServerIdentityObject<This extends ServerIdentityObject<Thi
     public void extend(This src, ObjectMapping mapping) {
     }
     public void add(This src, ObjectMapping mapping) {
+    }
+    public void rename(This src, ObjectMapping mapping) {
     }
 }

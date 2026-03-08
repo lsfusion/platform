@@ -69,4 +69,11 @@ public abstract class IdentityEntity<This extends IdentityEntity<This, AddParent
     public This getAddChild(AddParent addParent, ObjectMapping mapping) {
         return null;
     }
+
+    @Override
+    public void rename(This src, ObjectMapping mapping) {
+        String rename = mapping.renameObjects.get(src);
+        if(rename != null)
+            setSID(rename);
+    }
 }

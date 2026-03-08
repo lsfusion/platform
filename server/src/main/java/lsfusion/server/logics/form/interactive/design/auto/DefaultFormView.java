@@ -472,7 +472,10 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
         addToObjectsContainer(mainContainer, version);
 
         // maybe later should be moved to resolving
-        String formName = src.entity.getName();
+        String formName = mapping.renameForm;
+        if(formName == null)
+            formName = src.entity.getName();
+
         updateContainerSID(mainContainer, formName);
         if(src instanceof DefaultFormView) {
             for(ContainerView container : ((DefaultFormView) src).getContainers().getContainers())

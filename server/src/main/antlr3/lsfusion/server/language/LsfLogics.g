@@ -573,10 +573,12 @@ formFormsListItem[boolean extend]
 }
 @after {
     if (inMainParseState()) {
-        $formStatement::form.addScriptingForm(extend, $formName.sid, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, self.getVersion());
+        $formStatement::form.addScriptingForm(extend, $formName.sid, $alias.text, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping, self.getVersion());
     }
 }
-    :   formName=compoundID
+    :
+        ( alias=ID EQ )?
+        formName=compoundID
 		('('
 		    (
 		        obj = formMappingObjects { objectsMapping = obj; }

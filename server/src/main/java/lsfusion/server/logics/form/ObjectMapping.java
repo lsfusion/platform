@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -36,52 +37,68 @@ public class ObjectMapping {
     private Version version; // form map version
 
     public final boolean extend;
+
     public final FormEntity addForm; // old
     public final ImRevMap<ServerIdentityObject, ServerIdentityObject> addObjects; // new -> old, entities (groups (and maybe objects), property, regular filters) + containers without parent
 
+    public final String renameForm; // new
+    public final ImRevMap<ServerIdentityObject, String> renameObjects; // new -> name, entities (groups (and maybe objects), property, regular filters) + containers without parent
+
     private final Set<ServerIdentityObject> copied = new HashSet<>();
 
-    public static ImRevMap<ServerIdentityObject, ServerIdentityObject> getImplicitAdd(boolean extend, Version version, FormEntity addForm, FormEntity form,
-                                                                                      Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
-                                                                                      Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping) {
+    public static Pair<ImRevMap<ServerIdentityObject, ServerIdentityObject>, ImRevMap<ServerIdentityObject, String>> getImplicitAddAndRename(boolean extend, Version version, FormEntity addForm, FormEntity form,
+                                                                                                                                             Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
+                                                                                                                                             Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping) {
         MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd = MapFact.mRevMap();
+        MRevMap<ServerIdentityObject, String> mRename = MapFact.mRevMap();
 
         if(objectsMapping !=null) {
             for (Map.Entry<String, String> mappingEntry : objectsMapping.entrySet()) {
-                ObjectEntity addFormObject = addForm.getNFObject(mappingEntry.getKey(), version);
-                ObjectEntity formObject = form.getNFObject(mappingEntry.getValue(), version);
-                mImplicitAdd.revAdd(addFormObject, formObject);
+                ObjectEntity addFormObject = addForm.getNFObject(mappingEntry.getValue(), version);
+                ObjectEntity formObject = form.getNFObject(mappingEntry.getKey(), version);
+                if(formObject != null)
+                    mImplicitAdd.revAdd(addFormObject, formObject);
+                else
+                    mRename.revAdd(addFormObject, mappingEntry.getKey());
             }
         }
 
         if(propertiesMapping !=null) {
             for (Map.Entry<String, String> mappingEntry : propertiesMapping.entrySet()) {
-                PropertyDrawEntity addFormProperty = addForm.getNFPropertyDraw(mappingEntry.getKey(), version);
-                PropertyDrawEntity formProperty = form.getNFPropertyDraw(mappingEntry.getValue(), version);
-                mImplicitAdd.revAdd(addFormProperty, formProperty);
+                PropertyDrawEntity addFormProperty = addForm.getNFPropertyDraw(mappingEntry.getValue(), version);
+                PropertyDrawEntity formProperty = form.getNFPropertyDraw(mappingEntry.getKey(), version);
+                if(formProperty != null)
+                    mImplicitAdd.revAdd(addFormProperty, formProperty);
+                else
+                    mRename.revAdd(addFormProperty, mappingEntry.getKey());
             }
         }
 
         if(filterGroupsMapping !=null) {
             for (Map.Entry<String, String> mappingEntry : filterGroupsMapping.entrySet()) {
-                RegularFilterGroupEntity addFormFilterGroup = addForm.getNFRegularFilterGroup(mappingEntry.getKey(), version);
-                RegularFilterGroupEntity formFilterGroup = form.getNFRegularFilterGroup(mappingEntry.getValue(), version);
-                mImplicitAdd.revAdd(addFormFilterGroup, formFilterGroup);
+                RegularFilterGroupEntity addFormFilterGroup = addForm.getNFRegularFilterGroup(mappingEntry.getValue(), version);
+                RegularFilterGroupEntity formFilterGroup = form.getNFRegularFilterGroup(mappingEntry.getKey(), version);
+                if(formFilterGroup != null)
+                    mImplicitAdd.revAdd(addFormFilterGroup, formFilterGroup);
+                else
+                    mRename.revAdd(addFormFilterGroup, mappingEntry.getKey());
             }
         }
 
         if(componentsMapping !=null) {
             for (Map.Entry<String, String> mappingEntry : componentsMapping.entrySet()) {
-                ComponentView formComponent = form.view.getComponentBySID(mappingEntry.getValue(), version);
-                ComponentView addFormComponent = addForm.view.getComponentBySID(mappingEntry.getKey(), version);
-                mImplicitAdd.revAdd(addFormComponent, formComponent);
+                ComponentView addFormComponent = addForm.view.getComponentBySID(mappingEntry.getValue(), version);
+                ComponentView formComponent = form.view.getComponentBySID(mappingEntry.getKey(), version);
+                if(formComponent != null)
+                    mImplicitAdd.revAdd(addFormComponent, formComponent);
+                else
+                    mRename.revAdd(addFormComponent, mappingEntry.getKey());
             }
         }
 
         if (extend) {
             if (objectsMapping == null)
                 fillImplicitObjects(addForm, form, (fm, allowRead) -> fm.getNFObjectsIt(version, allowRead), IdentityEntity::getSID, mImplicitAdd);
-
             if (propertiesMapping == null)
                 fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(fm.getNFPropertyDrawsIt(version, allowRead), (SFunctionSet<PropertyDrawEntity>) pd -> pd.addParent == null), IdentityEntity::getSID, mImplicitAdd);
             if (filterGroupsMapping == null)
@@ -90,7 +107,7 @@ public class ObjectMapping {
                 fillImplicitObjects(addForm, form, (fm, allowRead) -> BaseUtils.filterIterable(((FormView<?>) fm.view).getNFComponentsIt(version, allowRead), (SFunctionSet<ComponentView>) element -> element instanceof ContainerView && ((ContainerView<?>) element).addParent == null), ComponentView::getSID, mImplicitAdd);
         }
 
-        return mImplicitAdd.immutableRev();
+        return new Pair<>(mImplicitAdd.immutableRev(), mRename.immutableRev());
     }
 
     private static <T extends ServerIdentityObject> void fillImplicitObjects(FormEntity addForm, FormEntity form, BiFunction<FormEntity, Boolean, Iterable<T>> iterable, Function<T, String> getSID, MRevMap<ServerIdentityObject, ServerIdentityObject> mImplicitAdd) {
@@ -133,15 +150,18 @@ public class ObjectMapping {
         return null;
     }
 
-    public ObjectMapping(FormEntity addForm, FormEntity form, Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
+    public ObjectMapping(FormEntity addForm, FormEntity form, String renameForm, Map<String, String> objectsMapping, Map<String, String> propertiesMapping,
                          Map<String, String> filterGroupsMapping, Map<String, String> componentsMapping, boolean extend, Version version) {
         this.extend = extend;
-        this.addForm = addForm;
 
         this.version = version;
 
-        this.addObjects = getImplicitAdd(extend, version, form, addForm, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping);
+        Pair<ImRevMap<ServerIdentityObject, ServerIdentityObject>, ImRevMap<ServerIdentityObject, String>> implicitAddAndRename = getImplicitAddAndRename(extend, version, form, addForm, objectsMapping, propertiesMapping, filterGroupsMapping, componentsMapping);
+        this.addForm = addForm;
+        this.addObjects = implicitAddAndRename.first;
 
+        this.renameForm = renameForm;
+        this.renameObjects = implicitAddAndRename.second;
     }
 
     public int id() {
@@ -187,8 +207,11 @@ public class ObjectMapping {
             }
 
             boolean copy = result == null;
-            if (copy)
+            if (copy) {
                 result = object.copy(this);
+
+                result.rename(object, this);
+            }
 
             if(extend || copy) { // we don't want formApply, etc. to be moved to other forms
                 // have to be here not in constructor to have all NF fields initialized

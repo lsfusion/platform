@@ -742,4 +742,12 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         mapping.set(showIf, src.showIf);
     }
     // no add
+
+
+    @Override
+    public void rename(This src, ObjectMapping mapping) {
+        String rename = mapping.renameObjects.get(src);
+        if(rename != null)
+            setSID(rename);
+    }
 }
