@@ -32,14 +32,15 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
             if(sid != null && sid.contains("..")) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("Illegal characters in sid parameter: '..'");
-            } else {
-                // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
-                for (FileItem item : items) {
-                    if (!item.isFormField())
-                        FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, sid + "_" + item.getName(), fos -> {
-                            fos.write(item.get());
-                        });
-                }
+                return;
+            }
+
+            // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
+            for (FileItem item : items) {
+                if (!item.isFormField())
+                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, sid + "_" + item.getName(), fos -> {
+                        fos.write(item.get());
+                    });
             }
         } catch (Exception e) {
             Throwable cause = e.getCause();
