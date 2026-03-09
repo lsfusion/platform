@@ -125,6 +125,11 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
     tab-index: 0;
 }
 
+.fc .fc-calendar-date-prop {
+    height: 22px;
+    vertical-align: middle;
+}
+
 .fc .fc-button .fc-icon {
     vertical-align: initial;
     font-size: inherit;
