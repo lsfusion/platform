@@ -14,6 +14,7 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -38,9 +39,8 @@ public class ClientGroupObject extends ClientIdentityObject {
     public boolean enableManualUpdate;
 
     public boolean isMap;
-    public boolean isCalendarDate;
-    public boolean isCalendarDateTime;
-    public boolean isCalendarPeriod;
+    public List<ClientPropertyDraw> calendarDateProps = new ArrayList<>();
+    public List<ClientPropertyDraw> calendarDateTimeProps = new ArrayList<>();
 
     public boolean hasHeaders;
     public boolean hasFooters;
@@ -158,9 +158,8 @@ public class ClientGroupObject extends ClientIdentityObject {
 
         isRecursive = inStream.readBoolean();
         isMap = inStream.readBoolean();
-        isCalendarDate = inStream.readBoolean();
-        isCalendarDateTime = inStream.readBoolean();
-        isCalendarPeriod= inStream.readBoolean();
+        pool.deserializeCollection(calendarDateProps, inStream);
+        pool.deserializeCollection(calendarDateTimeProps, inStream);
 
         hasHeaders = inStream.readBoolean();
         hasFooters = inStream.readBoolean();

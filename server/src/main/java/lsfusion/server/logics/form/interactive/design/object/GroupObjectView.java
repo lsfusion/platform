@@ -8,12 +8,16 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEntity> {
 
@@ -73,9 +77,8 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
 
         outStream.writeBoolean(entity.getIsParent() != null);
         outStream.writeBoolean(pool.context.entity.isMap(entity));
-        outStream.writeBoolean(pool.context.entity.isCalendarDate(entity));
-        outStream.writeBoolean(pool.context.entity.isCalendarDateTime(entity));
-        outStream.writeBoolean(pool.context.entity.isCalendarPeriod(entity));
+        pool.serializeCollection(outStream, getCalendarDateProps(pool, false));
+        pool.serializeCollection(outStream, getCalendarDateProps(pool, true));
 
         outStream.writeBoolean(pool.context.entity.hasHeaders(entity));
         outStream.writeBoolean(pool.context.entity.hasFooters(entity));
@@ -91,6 +94,14 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         outStream.writeBoolean(needVScroll);
         outStream.writeBoolean(entity.isEnableManualUpdate());
         outStream.writeUTF(getSID());
+    }
+
+    private List<PropertyDrawView> getCalendarDateProps(ServerSerializationPool pool, boolean dateTime) {
+        List<PropertyDrawView> result = new ArrayList<>();
+        for (PropertyDrawEntity property : pool.context.entity.getCalendarDateProps(entity, dateTime)) {
+            result.add(pool.context.view.get(property));
+        }
+        return result;
     }
 
     public void finalizeAroundInit() {

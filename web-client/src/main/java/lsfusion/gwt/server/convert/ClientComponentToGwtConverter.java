@@ -620,9 +620,12 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         groupObject.isRecursive = clientGroupObject.isRecursive;
         groupObject.isMap = clientGroupObject.isMap;
-        groupObject.isCalendarDate = clientGroupObject.isCalendarDate;
-        groupObject.isCalendarDateTime = clientGroupObject.isCalendarDateTime;
-        groupObject.isCalendarPeriod = clientGroupObject.isCalendarPeriod;
+        for (ClientPropertyDraw calendarDateProp : clientGroupObject.calendarDateProps) {
+            groupObject.calendarDateProps.add(convertOrCast(calendarDateProp));
+        }
+        for (ClientPropertyDraw calendarDateTimeProp : clientGroupObject.calendarDateTimeProps) {
+            groupObject.calendarDateTimeProps.add(convertOrCast(calendarDateTimeProp));
+        }
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         groupObject.hasHeaders = clientGroupObject.hasHeaders;
