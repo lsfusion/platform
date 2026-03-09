@@ -1,0 +1,227 @@
+SYSTEM PROMPT - lsFusion DOCUMENTATION TASK RULES
+
+SCOPE: describing, editing, restructuring, and clarifying
+lsFusion documentation only.
+
+These rules apply only to documentation tasks.
+
+----------------------------------------------------------------
+
+DOCUMENTATION STRUCTURE
+
+Documentation is divided into parts.
+
+These parts define:
+1) the order in which documentation should be written
+2) the order in which language capabilities should be understood
+
+The required order is:
+1) Language
+2) Paradigm
+3) Guide
+4) How-to
+
+The assistant MUST first look at Language,
+then try to understand the abstractions,
+then try to compose Guide and How-to.
+
+### 1. Language
+
+Language documentation is organized by syntax constructions.
+
+It MUST contain:
+- the language syntax itself
+- a description of the syntax
+- a basic explanation
+  assuming that the reader already more or less understands
+  the paradigm
+
+Language file naming convention:
+- file names usually contain the syntax token in uppercase
+
+### 2. Paradigm
+
+Paradigm documentation is organized by language elements
+and functional blocks.
+
+It MUST:
+- describe language elements
+- describe platform abstractions
+- assume that the reader knows nothing about the language
+  or the language / platform abstractions
+- not contain syntax-specific language details
+
+### 3. Guide
+
+Guide documentation is organized by elements
+and functional blocks.
+
+It MUST contain general recommendations:
+- what should be done
+- what is better not to do
+
+That means recommendations, not errors.
+Errors should be described in Language / Paradigm.
+
+Guide documentation includes both:
+- recommendations for syntax usage
+- recommendations for using abstractions
+
+Guide file naming convention:
+- file names contain `Guide`
+- most often `Guide` is a prefix
+
+Guide structure SHOULD correspond to the Paradigm structure
+whenever possible,
+although several different `.md` files
+may be combined into one.
+
+### 4. How-to
+
+How-to documentation describes usage variants
+in how-to mode:
+- how to do something
+- the code that does it
+
+How-to file naming convention:
+- file names contain `How-to`
+- most often `How-to` is a prefix
+
+----------------------------------------------------------------
+
+GENERAL GUIDE
+
+There is also a general guide: `brief.md`.
+
+It is assumed to exist.
+It should contain important / key information
+from all documentation parts,
+and this information should always be available
+in the context for the AI assistant.
+
+----------------------------------------------------------------
+
+RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
+
+1. SOURCE PRIORITY
+   The assistant MUST try to inspect functionality
+   and implementation details in both:
+   - the platform project
+   - the plugin project
+
+   The platform implementation has higher priority.
+
+2. REQUIRED UNDERSTANDING ORDER
+   The assistant MUST first try to understand
+   which syntax constructions are needed.
+
+   After that it MUST:
+   - inspect the platform / plugin source code
+   - inspect examples in existing lsFusion code
+
+3. PLATFORM SOURCE REVIEW
+   In the platform project, the preferred direction is:
+   `LsfLogics.g` ->
+   `ScriptingLogicsModule` ->
+   `LogicsModule` ->
+   the classes they use and the semantics of those classes
+
+   In this repository the corresponding paths are:
+   - `platform/server/src/main/antlr3/lsfusion/server/language/LsfLogics.g`
+   - `platform/server/src/main/java/lsfusion/server/language/ScriptingLogicsModule.java`
+   - `platform/server/src/main/java/lsfusion/server/logics/LogicsModule.java`
+
+4. PLUGIN SOURCE REVIEW
+   In the plugin project, the preferred direction is:
+   `LSF.bnf` ->
+   mixin / implements classes ->
+   methods in `LSFPsiImplUtil` ->
+   the classes they use and the semantics of those classes
+
+   In this repository the corresponding paths are:
+   - `plugin-idea/src/com/lsfusion/lang/LSF.bnf`
+   - `plugin-idea/src/com/lsfusion/lang/psi/LSFPsiImplUtil.java`
+
+5. EXAMPLES IN EXISTING LSF CODE
+   The assistant MUST search for examples
+   in existing lsFusion code in order to understand:
+   - how it is used
+   - how it can be used
+
+6. ATTENTION TO IMPLEMENTATION DETAILS
+   The assistant MUST inspect the source code
+   as carefully as possible
+   so as not to miss non-obvious behavior.
+
+7. GUIDE / HOW-TO UNDERSTANDING
+   To understand Guide / How-to,
+   the assistant MUST also use examples
+   from existing code.
+
+----------------------------------------------------------------
+
+RULES FOR DOCUMENTING LSFUSION
+
+This documentation will be used by a human
+and by an AI assistant
+to write code, explain code, and similar tasks.
+
+The documentation MUST be written so that
+the reader can understand exactly:
+- how the written code will work
+- what can / should be done
+- what cannot / should not be done
+
+If there is a potential question such as:
+- how does this work
+- what will happen in this case
+- can this be done this way
+
+then it SHOULD be described / explained in the documentation.
+
+At the same time,
+the description should be concise,
+but also complete.
+
+The assistant SHOULD try to describe
+all significant details of the language
+and usage variants.
+
+The assistant SHOULD try to preserve
+the existing style, size, and level of detail.
+
+If a section becomes too large
+and can be split into logically complete blocks,
+the assistant SHOULD do that
+or suggest doing that.
+
+----------------------------------------------------------------
+
+RULES FOR ERRORS, PROHIBITIONS, AND RECOMMENDATIONS
+
+When describing or implementing restrictions,
+the assistant MUST reason in the following order,
+from the strictest level to the least strict level:
+
+1. plugin errors / warnings
+2. platform (application server) errors / warnings at startup
+3. prohibition / recommendation in the general guide
+4. prohibition / recommendation in the guide
+   for the corresponding element
+5. warning in the Language or Paradigm documentation
+   for the corresponding element
+
+The assistant SHOULD try to add support
+at all applicable levels.
+
+The assistant SHOULD try to add the restriction
+at the strictest level possible.
+
+If that is not possible,
+the assistant SHOULD explicitly propose doing so
+in the response to the requester.
+
+To check or assess the available error level
+in the platform and plugin,
+the assistant MUST inspect the source code
+according to the source-review rules above.
