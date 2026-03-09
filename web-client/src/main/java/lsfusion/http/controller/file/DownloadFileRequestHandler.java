@@ -41,25 +41,26 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String displayName = BaseUtils.getFileName(fileName);
 
         String version = request.getParameter("version");
-        if(version != null && version.contains("..")) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Illegal characters in version parameter: '..'");
-        } else {
-            if (version != null)
-                fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
-
-            Charset charset = ExternalUtils.downloadCharset;
-            response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
-            //inline = open in browser, attachment = download
-            response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, ExternalUtils.getContentDisposition(displayName, extension, charset));
-            // expiration will be set in urlRewrite.xml /file (just to have it at one place)
-
-            // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
-
-            // it seems that the browser might resend the request (for concurrent reading or whatever)
-            FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, true, inStream -> {
-                ByteStreams.copy(inStream, response.getOutputStream());
-            });
+        if (version != null) {
+            if (version.contains("..")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Illegal characters in version parameter: '..'");
+                return;
+            }
+            fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
         }
+
+        Charset charset = ExternalUtils.downloadCharset;
+        response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
+        //inline = open in browser, attachment = download
+        response.addHeader(ExternalUtils.CONTENT_DISPOSITION_HEADER, ExternalUtils.getContentDisposition(displayName, extension, charset));
+        // expiration will be set in urlRewrite.xml /file (just to have it at one place)
+
+        // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
+
+        // it seems that the browser might resend the request (for concurrent reading or whatever)
+        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, true, inStream -> {
+            ByteStreams.copy(inStream, response.getOutputStream());
+        });
     }
 }
