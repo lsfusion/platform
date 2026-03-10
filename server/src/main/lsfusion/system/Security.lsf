@@ -330,7 +330,7 @@ DESIGN securityPolicy {
             NEW roleHeader {
                 fill = 1;
                 MOVE BOX(ur) {
-                    GRID(ur) { headerHeight = 60; }
+                    GRID(ur) { captionHeight = 60; }
                 }
             }
 
@@ -354,7 +354,7 @@ DESIGN securityPolicy {
                 
                 MOVE BOX(u) {
                     caption = '{authentication.users}';
-                    GRID(u) { headerHeight = 60; }
+                    GRID(u) { captionHeight = 60; }
                 }
                 
                 NEW roleApplicationPane {

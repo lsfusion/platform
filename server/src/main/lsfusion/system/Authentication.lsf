@@ -645,7 +645,7 @@ DESIGN customUsers {
                     MOVE PROPERTY(serverTimeFormat());
                 }
                 MOVE BOX(lu) {
-                    GRID(lu) { headerHeight = 50; }
+                    GRID(lu) { captionHeight = 50; }
                 }
             }
             NEW LDAP {
@@ -669,7 +669,7 @@ DESIGN customUsers {
                 caption = 'OAUTH2';
                 MOVE BOX (auth){
                     GRID (auth){
-                    headerHeight = 50;
+                        captionHeight = 50;
                     }
                 }
             }
