@@ -118,8 +118,10 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    After that it MUST:
    - inspect the platform / plugin source code
    - inspect examples in existing lsFusion code
-   - try to find relevant community information
-     (tutorials, articles, discussions)
+   - try to find relevant community and history information
+     (tutorials, articles, discussions,
+     GitHub issues, commits, and GitHub issues
+     referenced from those commits)
      using the available tools or in
      `rag-fill/src/main/resources/docs`
 
@@ -157,15 +159,17 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    as carefully as possible
    so as not to miss non-obvious behavior.
 
-7. GUIDE / HOW-TO UNDERSTANDING
-   To understand Guide / How-to,
+7. GUIDE / HOW-TO WRITING
+   When writing Guide / How-to,
    the assistant MUST also use examples
    from existing code.
 
 8. COMMUNITY SOURCES
    The assistant SHOULD also look for
-   relevant community materials
-   (tutorials, articles, discussions)
+   relevant community and history materials
+   (tutorials, articles, discussions,
+   GitHub issues, commits, and GitHub issues
+   referenced from those commits)
    using the available tools.
 
    In this repository it SHOULD also inspect:
