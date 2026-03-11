@@ -58,6 +58,22 @@ RETURN convert_from(file,'UTF-8')::json;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
+--xml
+
+CREATE OR REPLACE FUNCTION cast_xml_to_static_file(param xml) RETURNS bytea AS
+$$
+BEGIN
+RETURN convert_to(param::text,'UTF-8');
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION cast_static_file_to_xml(file bytea) RETURNS xml AS
+$$
+BEGIN
+RETURN convert_from(file,'UTF-8')::xml;
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION cast_file_to_string(file bytea) RETURNS VARCHAR AS
 $$
 BEGIN

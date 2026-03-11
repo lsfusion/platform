@@ -86,6 +86,7 @@ public class TypeSerializer {
         if (type == DataType.COLOR) return ColorClass.instance;
         if (type == DataType.JSON) return JSONClass.instance;
         if (type == DataType.JSONTEXT) return JSONTextClass.instance;
+        if (type == DataType.XML) return XMLClass.instance;
         if (type == DataType.TSVECTOR) return TSVectorClass.instance;
         if (type == DataType.TSQUERY) return TSQueryClass.instance;
         if (type == DataType.HTMLSTRING) return HTMLStringClass.instance;
@@ -120,7 +121,7 @@ public class TypeSerializer {
         if (type == DataType.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.JSONFILE) return JSONFileClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == DataType.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.XMLFILE) return XMLFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CUSTOMSTATICFORMATFILE) {
             boolean multiple = inStream.readBoolean();

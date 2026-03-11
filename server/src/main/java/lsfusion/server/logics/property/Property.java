@@ -84,6 +84,7 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
+import lsfusion.server.logics.classes.data.file.XMLClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -1819,7 +1820,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         //to avoid edit on dblclick
         ValueClass viewValueClass = property.getValueClass(ClassType.editValuePolicy);
-        if(viewValueClass instanceof TextClass || viewValueClass instanceof AJSONClass)
+        if(Property.isTextJsonOrXml(viewValueClass))
             return false;
 
         if(!Settings.get().isOnlyUniqueObjectEvents())
@@ -2147,8 +2148,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(!lowCost)
             return true;
 
-        Type type = getType();
-        return (type instanceof TextClass || type instanceof AJSONClass);
+        return Property.isTextJsonOrXml(getType());
     }
 
     private <X extends PropertyInterface> void setResetAsync(ActionMapImplement<X, T> action) {
@@ -2971,5 +2971,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
     private static boolean hasAlotKeys(Stat stat) {
         return ALOT_THRESHOLD.lessEquals(stat);
+    }
+
+    public static boolean isTextJsonOrXml(Object type) {
+        return type instanceof TextClass || type instanceof AJSONClass || type instanceof XMLClass;
     }
 }

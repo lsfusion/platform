@@ -12,10 +12,12 @@ import lsfusion.server.data.expr.join.select.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.select.ExprStatJoin;
 import lsfusion.server.data.expr.join.where.KeyEquals;
 import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.file.XMLClass;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -41,6 +43,23 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     protected String getCompareSource(CompileSource compile) {
         return "=";
+    }
+
+    @Override
+    protected String getBaseSource(CompileSource compile) {
+        if (isPostgresXMLComparison(compile)) {
+            String op1Source = operator1.getSource(compile);
+            String op2Source = operator2.getSource(compile);
+            return "(" + op1Source + ")::text=(" + op2Source + ")::text";
+        }
+        return super.getBaseSource(compile);
+    }
+
+    //hack: there is no "=" comparison for xml type
+    private boolean isPostgresXMLComparison(CompileSource compile) {
+        return compile.syntax.getSyntaxType() == SQLSyntaxType.POSTGRES
+                && operator1.getType(compile.keyType) instanceof XMLClass
+                && operator2.getType(compile.keyType) instanceof XMLClass;
     }
 
     @Override

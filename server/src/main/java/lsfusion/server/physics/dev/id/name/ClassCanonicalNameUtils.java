@@ -1,7 +1,6 @@
 package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
@@ -16,9 +15,7 @@ import lsfusion.server.logics.classes.user.set.ResolveConcatenateClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public final class ClassCanonicalNameUtils {
@@ -103,6 +100,7 @@ public final class ClassCanonicalNameUtils {
         put("COLOR", ColorClass.instance);
         put("JSON", JSONClass.instance);
         put("JSONTEXT", JSONTextClass.instance);
+        put("XML", XMLClass.instance);
         put("RAWLINK", defaultRawLinkClassObj);
         put("RAWFILE", defaultRawFileClassObj);
         put("STRING", defaultStringClassObj);
@@ -177,7 +175,7 @@ public final class ClassCanonicalNameUtils {
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
         put("JSONFILE", JSONFileClass.get());
-        put("XMLFILE", XMLClass.get());
+        put("XMLFILE", XMLFileClass.get());
         put("TABLEFILE", TableClass.get());
         put("NAMEDFILE", NamedFileClass.instance);
         put("WORDLINK", WordLinkClass.get(false));
@@ -197,6 +195,7 @@ public final class ClassCanonicalNameUtils {
         put("COLOR", ColorClass.instance);
         put("JSON", JSONClass.instance);
         put("JSONTEXT", JSONTextClass.instance);
+        put("XML", XMLClass.instance);
         put("TEXT", TextClass.instance);
         put("RICHTEXT", RichTextClass.instance);
         put("HTMLTEXT", HTMLTextClass.instance);

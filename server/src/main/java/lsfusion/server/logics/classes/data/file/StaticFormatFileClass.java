@@ -67,6 +67,9 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         } else if (typeFrom instanceof AJSONClass) {
             if(rExtension != null) rExtension.set("json");
             return ((AJSONClass) typeFrom).getCastToStatic(value);
+        } else if (typeFrom instanceof XMLClass) {
+            if(rExtension != null) rExtension.set("xml");
+            return "cast_xml_to_static_file(" + value + ")";
         } else if (typeFrom instanceof StaticFormatFileClass) {
             if(rExtension != null) rExtension.set(((StaticFormatFileClass) typeFrom).getExtension());
             return value;

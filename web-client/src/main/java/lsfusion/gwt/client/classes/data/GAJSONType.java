@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -8,7 +9,7 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.JSONCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -24,7 +25,7 @@ public abstract class GAJSONType extends GDataType {
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new TextCellRenderer(property);
+        return new JSONCellRenderer(property);
     }
 
     @Override
@@ -40,5 +41,16 @@ public abstract class GAJSONType extends GDataType {
     @Override
     public String formatString(PValue value, String pattern) {
         return PValue.getStringValue(value);
+    }
+
+    @Override
+    public int getDefaultCharHeight() {
+        return 4;
+    }
+
+    private static final GInputType inputType = new GInputType("textarea");
+    @Override
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

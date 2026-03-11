@@ -2,12 +2,14 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.AStringClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
 
@@ -117,5 +119,15 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
     @Override
     public boolean isFlex() {
         return true;
+    }
+
+    @Override
+    public String getInputType(FormInstanceContext context) {
+        return "textarea";
+    }
+
+    @Override
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.START;
     }
 }

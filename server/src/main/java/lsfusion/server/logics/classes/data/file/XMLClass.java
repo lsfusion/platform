@@ -1,51 +1,161 @@
 package lsfusion.server.logics.classes.data.file;
 
-import lsfusion.base.file.RawFileData;
+import com.google.common.base.Throwables;
+import lsfusion.base.Result;
+import lsfusion.base.file.FileData;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.session.ExternalUtils;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.postgresql.jdbc.PgSQLXML;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.nio.charset.Charset;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class XMLClass extends HumanReadableFileClass {
+public class XMLClass extends FileBasedClass<String> implements DBType {
 
-    protected String getFileSID() {
-        return "XMLFILE";
+    public final static XMLClass instance = new XMLClass();
+
+    public XMLClass() {
+        super(LocalizedString.create("{classes.xml}"));
     }
 
-    private static Collection<XMLClass> instances = new ArrayList<>();
-
-    public static XMLClass get() {
-        return get(false, false);
+    @Override
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+        statement.setString(num, (String) value);
     }
-    
-    public static XMLClass get(boolean multiple, boolean storeName) {
-        for (XMLClass instance : instances)
-            if (instance.multiple == multiple && instance.storeName == storeName)
-                return instance;
 
-        XMLClass instance = new XMLClass(multiple, storeName);
-        instances.add(instance);
+    static {
         DataClass.storeClass(instance);
-        return instance;
     }
 
-    private XMLClass(boolean multiple, boolean storeName) {
-        super(multiple, storeName);
+    @Override
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return syntax.getXML();
     }
 
+    @Override
+    public String getSID() {
+        return "XML";
+    }
+
+    @Override
+    public DataClass getCompatible(DataClass compClass, boolean or) {
+        return compClass instanceof XMLClass ? this : null;
+    }
+
+    @Override
     public byte getTypeID() {
         return DataType.XML;
     }
 
     @Override
-    public String getExtension() {
-        return "xml";
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if (typeFrom instanceof FileClass)
+            return "cast_static_file_to_xml(" + value + ")";
+
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     @Override
-    public FormIntegrationType getIntegrationType() {
-        return FormIntegrationType.XML;
+    protected int getBaseDotNetSize() {
+        return 400;
+    }
+
+    @Override
+    public DBType getDBType() {
+        return this;
+    }
+
+    @Override
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlString";
+    }
+
+    @Override
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadString()";
+    }
+
+    @Override
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
+    @Override
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getTextSQL();
+    }
+
+    @Override
+    public boolean isSafeString(Object value) {
+        return AStringClass.isDBSafeString(value);
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        return AStringClass.getDBString(value);
+    }
+
+    @Override
+    public boolean isSafeType() {
+        return false;
+    }
+
+    @Override
+    public String parseString(String s) {
+        return s;
+    }
+
+    @Override
+    protected String parseHTTPNotNull(FileData o, String charsetName, String fileName) {
+        return ExternalUtils.encodeFileData(o, charsetName);
+    }
+
+    @Override
+    protected FileData formatHTTPNotNull(String value, Charset charset, Result<String> fileName) {
+        return ExternalUtils.decodeFileData(value, charset.name(), "xml");
+    }
+
+    @Override
+    public String read(Object value) {
+        try {
+            return value instanceof PgSQLXML ? ((PgSQLXML) value).getString() : value instanceof String ? (String) value : null;
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public Class getReportJavaClass() {
+        return String.class;
+    }
+
+    @Override
+    public boolean isFlex() {
+        return true;
+    }
+
+    @Override
+    public String getInputType(FormInstanceContext context) {
+        return "textarea";
+    }
+
+    @Override
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.START;
     }
 }

@@ -196,6 +196,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "json";
     }
 
+    public String getXML() {
+        return "xml";
+    }
+
     public String getTSVector() {
         return "tsvector";
     }
