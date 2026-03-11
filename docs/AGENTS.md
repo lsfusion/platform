@@ -91,7 +91,7 @@ How-to file naming convention:
 
 GENERAL GUIDE
 
-There is also a general guide: `brief.md`.
+There is also a general guide: `mcp/brief.md`.
 
 It is assumed to exist.
 It should contain important / key information
@@ -118,6 +118,10 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    After that it MUST:
    - inspect the platform / plugin source code
    - inspect examples in existing lsFusion code
+   - try to find relevant community information
+     (tutorials, articles, discussions)
+     using the available tools or in
+     `rag-fill/src/main/resources/docs`
 
 3. PLATFORM SOURCE REVIEW
    In the platform project, the preferred direction is:
@@ -158,6 +162,15 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    the assistant MUST also use examples
    from existing code.
 
+8. COMMUNITY SOURCES
+   The assistant SHOULD also look for
+   relevant community materials
+   (tutorials, articles, discussions)
+   using the available tools.
+
+   In this repository it SHOULD also inspect:
+   - `rag-fill/src/main/resources/docs`
+
 ----------------------------------------------------------------
 
 RULES FOR DOCUMENTING LSFUSION
@@ -189,6 +202,26 @@ and usage variants.
 
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
+
+When adding code examples,
+the assistant MUST validate them in the IDE
+if such access or tools are available,
+for example by creating the corresponding code fragment.
+If IDE validation is not available,
+the assistant MUST use a syntax-checking tool,
+if such a tool exists.
+
+If a new block or section is created,
+the assistant SHOULD make sure that
+the parent or higher-level section
+contains:
+- a link to that new section
+- a brief description of what that section covers
+
+The documentation SHOULD preserve
+clear links between sections
+so that its hierarchy and navigation
+remain explicit.
 
 If a section becomes too large
 and can be split into logically complete blocks,
