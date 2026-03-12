@@ -83,8 +83,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
-import lsfusion.server.logics.classes.data.file.AJSONClass;
-import lsfusion.server.logics.classes.data.file.XMLClass;
+import lsfusion.server.logics.classes.data.file.StringFileBasedClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -2974,6 +2973,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public static boolean isTextJsonOrXml(Object type) {
-        return type instanceof TextClass || type instanceof AJSONClass || type instanceof XMLClass;
+        return type instanceof TextClass || type instanceof StringFileBasedClass;
     }
 }
