@@ -845,7 +845,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity, OrderEntity>) PropertyDrawEntity::getOrder, value -> value).mergeOrder(getFixedOrdersList()).groupOrder(key -> {
+        ImOrderMap<OrderEntity, Boolean> defaultOrders = getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity, OrderEntity>) PropertyDrawEntity::getOrder, value -> value);
+        return BaseUtils.immutableCast(getFixedOrdersList().mergeOrder(defaultOrders).groupOrder(key -> {
             GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
             if(groupObject == null)
                 return GroupObjectEntity.NULL;
@@ -1587,6 +1588,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         if(view != null)
             view.addDefaultOrderFirst(property, descending, version);
+    }
+
+    public void addFixedOrderFirst(OrderEntity order, boolean descending, Version version) {
+        fixedOrders.addFirst(order, descending, version);
     }
 
     public void addPivotColumn(PropertyDrawEntityOrPivotColumn column, Version version) {

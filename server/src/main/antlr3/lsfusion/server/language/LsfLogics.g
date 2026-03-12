@@ -1039,7 +1039,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
-		|   po=orderLiteral { $options.setDescending($po.descending); }
+		|   po=formPropertyOptionOrderLiteral { $options.setDescending($po.descending); }
 		|   'FILTER' { $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
@@ -1317,15 +1317,33 @@ formFiltersList
 @init {
 	List<LP> properties = new ArrayList<>();
 	List<ImOrderSet<String>> propertyMappings = new ArrayList<>();
+	List<Boolean> fixedFilters = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFilters(properties, propertyMappings, self.getVersion());
+		$formStatement::form.addScriptedFilters(properties, propertyMappings, fixedFilters, self.getVersion());
 	}
 }
 	:	'FILTERS'
-		decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
-	    (',' decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
+		decl=formExprDeclarationWithOptions
+		{
+			properties.add($decl.property);
+			propertyMappings.add($decl.mapping);
+			fixedFilters.add($decl.fixed);
+		}
+	    (','
+	    	decl=formExprDeclarationWithOptions
+	    	{
+	    		properties.add($decl.property);
+	    		propertyMappings.add($decl.mapping);
+	    		fixedFilters.add($decl.fixed);
+	    	}
+	    )*
+	;
+
+formExprDeclarationWithOptions returns [LP property, ImOrderSet<String> mapping, boolean fixed = true]
+	:	decl=formExprDeclaration { $property = $decl.property; $mapping = $decl.mapping; }
+		(('USER' { $fixed = false; } | 'FIXED' { $fixed = true; }))*
 	;
 
 formHintsList
@@ -1538,27 +1556,68 @@ userFiltersDeclaration
 
 formOrderByList
 @init {
-	List<PropertyDrawEntity> properties = new ArrayList<>();
+	List<TypedParameter> context = new ArrayList<>();
+	List<LPWithParams> properties = new ArrayList<>();
+	List<LPTrivialLA> trivialLAs = new ArrayList<>();
+	List<LPCompoundID> compoundIDs = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
+	List<Boolean> fixedOrders = new ArrayList<>();
 	boolean addFirst = false;
+	if (inMainParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(properties, orders, addFirst, self.getVersion());
+		$formStatement::form.addScriptedDefaultOrder(context, properties, trivialLAs, compoundIDs, orders, fixedOrders, addFirst, self.getVersion());
 	}
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
-	    orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); }
-		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); } )*
+	    orderedProp=formPropertyDrawWithOrder[context]
+		{
+			properties.add($orderedProp.property);
+			trivialLAs.add($orderedProp.la);
+			compoundIDs.add($orderedProp.id);
+			orders.add($orderedProp.descending);
+			fixedOrders.add($orderedProp.fixed);
+		}
+		(',' orderedProp=formPropertyDrawWithOrder[context]
+		{
+			properties.add($orderedProp.property);
+			trivialLAs.add($orderedProp.la);
+			compoundIDs.add($orderedProp.id);
+			orders.add($orderedProp.descending);
+			fixedOrders.add($orderedProp.fixed);
+		} )*
 	;
-	
-formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean descending = false]
-	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $descending = true; })?
+
+formPropertyDrawWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, boolean fixed = false]
+	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
+		{
+			if (inMainParseState()) {
+				if($expr.property != null)
+					$property = self.checkSingleParam($expr.property);
+				$la = $expr.la;
+				$id = $expr.id;
+			}
+		}
+		(
+			('DESC' { $descending = true; })
+			|
+			('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })
+		)*
 	;
 
 orderLiteral returns [boolean descending = false]
     :   'ORDER' ('DESC' { $descending = true; })?
+    ;
+
+formPropertyOptionOrderLiteral returns [boolean descending = false, boolean fixed = false]
+    :   'ORDER'
+        (   'DESC' { $descending = true; }
+        |   ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })
+        )*
     ;
 
 formPivotOptionsDeclaration
@@ -1756,6 +1815,20 @@ propertyExpressionOrLiteral[List<TypedParameter> context, ActionStatementContext
 propertyExpressionOrCompoundID[List<TypedParameter> context, ActionStatementContext actions] returns [LPWithParams property, LPCompoundID id]
     :   exprOrNotExpr=propertyExpressionOrNot[context, actions, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrTrivialLAOrCompoundID[List<TypedParameter> context, ActionStatementContext actions] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, actions, false] { $property = $exprOrNotExpr.property;  }
+        {
+            if(inMainParseState()) {
+                if($exprOrNotExpr.ci instanceof LPTrivialLA)
+                    $la = (LPTrivialLA) $exprOrNotExpr.ci;
+                else if($exprOrNotExpr.ci instanceof LPCompoundID)
+                    $id = (LPCompoundID) $exprOrNotExpr.ci;
+                else
+                    self.checkNotExprInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci);
+            }
+        }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
