@@ -298,7 +298,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
             if(type instanceof FormChangeFlowType && !form.hasNoChange((FormChangeFlowType) type))
                 return true;
-            if(type == ChangeFlowType.ANYEFFECT)
+            if(type == ChangeFlowType.READONLYCHANGE || type == ChangeFlowType.HASSESSIONUSAGES)
                 return true;
             return super.hasFlow(type, recursiveAbstracts);
         }
@@ -317,4 +317,3 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         return new ActionMapImplement<>(changeAction, changeAction.mapObjects.crossJoin(mappedObjects));
     }
 }
-
