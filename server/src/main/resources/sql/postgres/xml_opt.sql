@@ -149,3 +149,39 @@ CREATE OPERATOR CLASS xml_ops
    OPERATOR        4       >= ,
    OPERATOR        5       > ,
    FUNCTION        1       xml_cmp(xml, xml);
+
+--compare xml-text and text-xml
+
+CREATE OR REPLACE FUNCTION xml_equals_text(xml, text)
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+STRICT
+AS $function$
+SELECT $1::text = $2;
+$function$;
+
+CREATE OR REPLACE FUNCTION text_equals_xml(text, xml)
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+STRICT
+AS $function$
+SELECT $1 = $2::text;
+$function$;
+
+DROP OPERATOR IF EXISTS = (xml, text);
+CREATE OPERATOR = (
+  PROCEDURE  = xml_equals_text,
+  LEFTARG    = xml,
+  RIGHTARG   = text,
+  COMMUTATOR = =
+);
+
+DROP OPERATOR IF EXISTS = (text, xml);
+CREATE OPERATOR = (
+  PROCEDURE  = text_equals_xml,
+  LEFTARG    = text,
+  RIGHTARG   = xml,
+  COMMUTATOR = =
+);
