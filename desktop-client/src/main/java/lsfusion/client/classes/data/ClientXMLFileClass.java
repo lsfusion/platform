@@ -1,0 +1,44 @@
+package lsfusion.client.classes.data;
+
+import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.FilePropertyRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.interop.classes.DataType;
+
+public class ClientXMLFileClass extends ClientStaticFormatFileClass {
+
+    public final static ClientXMLFileClass instance = new ClientXMLFileClass(false, false);
+
+    public ClientXMLFileClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
+    }
+
+    @Override
+    public String[] getExtensions() {
+        return new String[] {"xml"};
+    }
+
+    @Override
+    public String getDescription() {
+        return ClientResourceBundle.getString("logics.classes.xml");
+    }
+
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
+        return new FilePropertyRenderer(property, "xml");
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        return "XML";
+    }
+
+    public byte getTypeId() {
+        return DataType.XMLFILE;
+    }
+
+    @Override
+    public String toString() {
+        return ClientResourceBundle.getString("logics.classes.xml.file");
+    }
+}

@@ -1,51 +1,69 @@
 package lsfusion.server.logics.classes.data.file;
 
-import lsfusion.base.file.RawFileData;
+import com.google.common.base.Throwables;
 import lsfusion.interop.classes.DataType;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.postgresql.jdbc.PgSQLXML;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class XMLClass extends HumanReadableFileClass {
+public class XMLClass extends StringFileBasedClass {
 
-    protected String getFileSID() {
-        return "XMLFILE";
+    public final static XMLClass instance = new XMLClass();
+
+    public XMLClass() {
+        super(LocalizedString.create("{classes.xml}"), "xml");
     }
 
-    private static Collection<XMLClass> instances = new ArrayList<>();
-
-    public static XMLClass get() {
-        return get(false, false);
+    @Override
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+        statement.setString(num, (String) value);
     }
-    
-    public static XMLClass get(boolean multiple, boolean storeName) {
-        for (XMLClass instance : instances)
-            if (instance.multiple == multiple && instance.storeName == storeName)
-                return instance;
 
-        XMLClass instance = new XMLClass(multiple, storeName);
-        instances.add(instance);
+    static {
         DataClass.storeClass(instance);
-        return instance;
     }
 
-    private XMLClass(boolean multiple, boolean storeName) {
-        super(multiple, storeName);
+    @Override
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return syntax.getXML();
     }
 
+    @Override
+    public String getSID() {
+        return "XML";
+    }
+
+    @Override
+    public DataClass getCompatible(DataClass compClass, boolean or) {
+        return compClass instanceof XMLClass ? this : null;
+    }
+
+    @Override
     public byte getTypeID() {
         return DataType.XML;
     }
 
     @Override
-    public String getExtension() {
-        return "xml";
+    public String getCastFromStatic(String value) {
+        return "cast_static_file_to_xml(" + value + ")";
     }
 
     @Override
-    public FormIntegrationType getIntegrationType() {
-        return FormIntegrationType.XML;
+    public String getCastToStatic(String value) {
+        return "cast_xml_to_static_file(" + value + ")";
+    }
+
+    @Override
+    public String read(Object value) {
+        try {
+            return value instanceof PgSQLXML ? ((PgSQLXML) value).getString() : value instanceof String ? (String) value : null;
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

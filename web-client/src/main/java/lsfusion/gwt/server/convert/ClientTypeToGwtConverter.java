@@ -162,9 +162,9 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return initializeFileClass(jsonClass, new GJSONFileType());
     }
 
-    @Converter(from = ClientXMLClass.class)
-    public GXMLType convertXMLClass(ClientXMLClass xmlClass) {
-        return initializeFileClass(xmlClass, new GXMLType());
+    @Converter(from = ClientXMLFileClass.class)
+    public GXMLFileType convertXMLClass(ClientXMLFileClass xmlClass) {
+        return initializeFileClass(xmlClass, new GXMLFileType());
     }
 
     @Converter(from = ClientTableClass.class)
@@ -304,6 +304,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientJSONTextClass.class)
     public GJSONTextType convertJSONTextClass(ClientJSONTextClass clientJSONTextClass) {
         return GJSONTextType.instance;
+    }
+
+    @Converter(from = ClientXMLClass.class)
+    public GXMLType convertXMLTextClass(ClientXMLClass clientXMLClass) {
+        return GXMLType.instance;
     }
 
     @Converter(from = ClientTSVectorClass.class)

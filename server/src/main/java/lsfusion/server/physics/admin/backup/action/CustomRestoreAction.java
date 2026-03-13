@@ -254,8 +254,8 @@ public class CustomRestoreAction extends InternalAction {
                                         return new DataObject(new RawFileData((byte[]) object), TXTClass.get());
                                     } else if (classValue instanceof CSVClass) {
                                         return new DataObject(new RawFileData((byte[]) object), CSVClass.get());
-                                    } else if (classValue instanceof XMLClass) {
-                                        return new DataObject(new RawFileData((byte[]) object), XMLClass.get());
+                                    } else if (classValue instanceof XMLFileClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), XMLFileClass.get());
                                     } else if (classValue instanceof JSONFileClass) {
                                         return new DataObject(new RawFileData((byte[]) object), JSONFileClass.get());
                                     } else if (object instanceof String)

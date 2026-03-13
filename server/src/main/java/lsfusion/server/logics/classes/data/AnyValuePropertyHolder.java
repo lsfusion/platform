@@ -56,6 +56,7 @@ public class AnyValuePropertyHolder {
     private final LP jsonProperty;
     private final LP htmlStringProperty;
     private final LP jsonTextProperty;
+    private final LP xmlProperty;
     private final LP wordFileProperty;
     private final LP imageFileProperty;
     private final LP pdfFileProperty;
@@ -90,7 +91,8 @@ public class AnyValuePropertyHolder {
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
                                   LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
-                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> htmlStringProperty, LP<?> jsonTextProperty,
+                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> htmlStringProperty,
+                                  LP<?> jsonTextProperty, LP<?> xmlProperty,
                                   LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> videoFileProperty, LP<?> dbfFileProperty,
                                   LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
                                   LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
@@ -122,6 +124,7 @@ public class AnyValuePropertyHolder {
                 && jsonProperty.property.getType() == JSONClass.instance
                 && htmlStringProperty.property.getType() == HTMLStringClass.instance
                 && jsonTextProperty.property.getType() == JSONTextClass.instance
+                && xmlProperty.property.getType() == XMLClass.instance
                 && wordFileProperty.property.getType() == WordClass.get()
                 && imageFileProperty.property.getType() == ImageClass.get()
                 && pdfFileProperty.property.getType() == PDFClass.get()
@@ -134,7 +137,7 @@ public class AnyValuePropertyHolder {
                 && csvFileProperty.property.getType() == CSVClass.get()
                 && htmlFileProperty.property.getType() == HTMLClass.get()
                 && jsonFileProperty.property.getType() == JSONFileClass.get()
-                && xmlFileProperty.property.getType() == XMLClass.get()
+                && xmlFileProperty.property.getType() == XMLFileClass.get()
                 && tableFileProperty.property.getType() == TableClass.get()
                 && namedFileProperty.property.getType() == NamedFileClass.instance
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
@@ -179,6 +182,7 @@ public class AnyValuePropertyHolder {
         this.jsonProperty = jsonProperty;
         this.htmlStringProperty = htmlStringProperty;
         this.jsonTextProperty = jsonTextProperty;
+        this.xmlProperty = xmlProperty;
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
         this.pdfFileProperty = pdfFileProperty;
@@ -259,6 +263,8 @@ public class AnyValuePropertyHolder {
             return htmlStringProperty;
         } else if (valueType instanceof JSONTextClass) {
             return jsonTextProperty;
+        } else if (valueType instanceof XMLClass) {
+            return xmlProperty;
         } else if (valueType instanceof WordClass) {
             return wordFileProperty;
         } else if (valueType instanceof ImageClass) {
@@ -285,7 +291,7 @@ public class AnyValuePropertyHolder {
             return htmlFileProperty;
         } else if (valueType instanceof JSONFileClass) {
             return jsonFileProperty;
-        } else if (valueType instanceof XMLClass) {
+        } else if (valueType instanceof XMLFileClass) {
             return xmlFileProperty;
         } else if (valueType instanceof TableClass) {
             return tableFileProperty;
@@ -345,7 +351,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, videoLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, objectProperty, tsVectorProperty
+                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, xmlProperty, objectProperty, tsVectorProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 

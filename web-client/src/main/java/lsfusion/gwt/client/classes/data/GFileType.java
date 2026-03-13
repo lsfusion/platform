@@ -19,7 +19,7 @@ import java.util.List;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.EQUALS;
 
-public abstract class GFileType extends GDataType {
+public abstract class GFileType extends GFileBasedType {
     public boolean multiple;
     public boolean storeName;
     public String description;

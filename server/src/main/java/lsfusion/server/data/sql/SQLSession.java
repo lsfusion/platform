@@ -72,7 +72,7 @@ import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
-import lsfusion.server.logics.classes.data.file.AJSONClass;
+import lsfusion.server.logics.classes.data.file.StringFileBasedClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.stat.LimitOffset;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
@@ -973,8 +973,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
     private void checkIndexFieldTypes(ImOrderMap<Field, Boolean> fields) {
         for(Field field : fields.keys()) {
-            if(field.type instanceof AJSONClass) {
-                throw new UnsupportedOperationException("Indexes for JSON / JSONTEXT properties are not supported");
+            if(field.type instanceof StringFileBasedClass) {
+                throw new UnsupportedOperationException("Indexes for JSON / JSONTEXT / XML properties are not supported");
             }
         }
     }

@@ -24,6 +24,7 @@ title: 'Встроенные классы'
 |`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием||
 |`COLOR`              |Цвет|`#00ссff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`JSON`               |JSON|`{"a":["x","y","z"]}`|
+|`XML`                |XML|`<tag>value</tag>`|
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
 |`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
@@ -152,5 +153,5 @@ ELSE
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
 |`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`|
+|`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`, `XML`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`, `exportXML`|
 |[Пользовательские классы](User_classes.md)|`exportObject`|

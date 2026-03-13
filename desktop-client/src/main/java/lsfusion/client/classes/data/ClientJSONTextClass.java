@@ -12,6 +12,6 @@ public class ClientJSONTextClass extends ClientAJSONClass {
     public final static ClientJSONTextClass instance = new ClientJSONTextClass();
 
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.json.string");
+        return ClientResourceBundle.getString("logics.classes.json.text");
     }
 }

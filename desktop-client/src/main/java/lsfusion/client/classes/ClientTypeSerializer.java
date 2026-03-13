@@ -76,6 +76,7 @@ public class ClientTypeSerializer {
         if (type == DataType.COLOR) return ClientColorClass.instance;
         if (type == DataType.JSON) return ClientJSONClass.instance;
         if (type == DataType.JSONTEXT) return ClientJSONTextClass.instance;
+        if (type == DataType.XML) return ClientXMLClass.instance;
         if (type == DataType.TSVECTOR) return ClientTSVectorClass.instance;
         if (type == DataType.HTMLSTRING) return ClientHTMLStringClass.instance;
 
@@ -89,7 +90,7 @@ public class ClientTypeSerializer {
         if (type == DataType.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.JSONFILE) return new ClientJSONFileClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == DataType.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.XMLFILE) return new ClientXMLFileClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return new ClientTableClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.NAMEDFILE) {
             inStream.readBoolean(); //multiple
