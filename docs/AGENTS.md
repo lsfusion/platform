@@ -15,6 +15,12 @@ These parts define:
 1) the order in which documentation should be written
 2) the order in which language capabilities should be understood
 
+The documentation structure / hierarchy
+for navigation is defined in `docusaurus/sidebars.js`.
+The assistant MUST treat that file
+as the source of truth for section placement
+and parent-child relationships in the docs.
+
 The required order is:
 1) Language
 2) Paradigm
@@ -221,6 +227,12 @@ the parent or higher-level section
 contains:
 - a link to that new section
 - a brief description of what that section covers
+
+In that case, the assistant SHOULD also
+update `docusaurus/sidebars.js`
+so that the new block or section
+is included in the documentation hierarchy
+and navigation.
 
 The documentation SHOULD preserve
 clear links between sections
