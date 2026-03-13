@@ -299,10 +299,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = gridController.getPivotRows();
         ArrayList<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
 
-        if(pivotColumns.isEmpty() && pivotRows.isEmpty() && pivotMeasures.isEmpty() && selectedProperty != null) {
-            ArrayList<GPropertyDrawOrPivotColumn> list = new ArrayList<>();
-            list.add(selectedProperty);
-            pivotRows.add(list);
+        if(isDefaultPivot(pivotColumns) && isDefaultPivot(pivotRows) && pivotMeasures.isEmpty() && selectedProperty != null) {
+            pivotRows.add(new ArrayList<>(Collections.singletonList(selectedProperty)));
         }
 
         Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns);
@@ -342,6 +340,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
+    }
+
+    private boolean isDefaultPivot(ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotList) {
+        for (ArrayList<GPropertyDrawOrPivotColumn> pivot : pivotList) {
+            for (GPropertyDrawOrPivotColumn entry : pivot) {
+                if (entry instanceof GPropertyDraw)
+                    return false;
+            }
+        }
+        return true;
     }
 
     private Object[] getPivotCaptions(Map<GPropertyDraw, String> columnCaptionMap, ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> propertiesList) {
