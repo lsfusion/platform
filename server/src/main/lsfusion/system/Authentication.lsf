@@ -131,6 +131,8 @@ serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
 portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
 userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
+allowOnlyBaseDNUsers '{authentication.allow.only.base.dn.users}' = DATA BOOLEAN ();
+allowOnlyGroupUsers '{authentication.allow.only.group.users}' = DATA STRING[200] ();
 
 useDefaultAuthentication '{authentication.use.default.authentication}' = DATA BOOLEAN() LAZY;
 useServiceUser '{authentication.use.service.user}' = DATA BOOLEAN();
@@ -600,7 +602,7 @@ FORM customUsers '{authentication.users}'
     PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart, defaultUserDateFormat, defaultUserTimeFormat
     PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart, serverDateFormat, serverTimeFormat
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, useDefaultAuthentication, useServiceUser, serviceUser , serviceUserPassword
+    PROPERTIES() useLDAP, allowOnlyBaseDNUsers, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, allowOnlyGroupUsers, useDefaultAuthentication, useServiceUser, serviceUser , serviceUserPassword
     
     OBJECTS auth = OAuth2 
     PROPERTIES(auth)  NEW, DELETE,
@@ -652,6 +654,9 @@ DESIGN customUsers {
             NEW LDAP {
                 caption = 'LDAP';
                 MOVE PROPERTY(useLDAP());
+                MOVE PROPERTY(allowOnlyBaseDNUsers()) {
+                    tooltip = 'If enabled, only users found inside the configured Base DN can authenticate via LDAP';
+                };
                 MOVE PROPERTY(useDefaultAuthentication()) {
                     tooltip = 'If the LDAP server is unavailable, allow default authentication';
                 };
@@ -659,6 +664,9 @@ DESIGN customUsers {
                 MOVE PROPERTY(portLDAP());
                 MOVE PROPERTY(baseDNLDAP());
                 MOVE PROPERTY(userDNSuffixLDAP());
+                MOVE PROPERTY(allowOnlyGroupUsers()) {
+                    tooltip = 'Only users who are members of this LDAP group can authenticate. Examples: "cn=groupName" or full group DN';
+                };
                 MOVE PROPERTY(useServiceUser());
                 MOVE PROPERTY(serviceUser()) {
                     tooltip = 'String that looks like "CN=LDAP Reader,OU=ServiceAccounts,dc=foo,dc=bar" where "LDAP Reader" is the user name.

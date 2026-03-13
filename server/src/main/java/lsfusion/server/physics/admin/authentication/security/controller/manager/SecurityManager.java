@@ -345,13 +345,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
+                    String allowOnlyGroupUsers = (String) authenticationLM.allowOnlyGroupUsers.read(session);
                     boolean useServiceUser = authenticationLM.useServiceUser.read(session) != null;
+                    boolean allowOnlyBaseDNUsers = authenticationLM.allowOnlyBaseDNUsers.read(session) != null;
                     useDefaultAuthentication = authenticationLM.useDefaultAuthentication.read(session) != null;
                     try {
                         if (useServiceUser && !krbProps)
                             setKrbProps(server, LDAPAuthenticationService.getRealm(baseDN));
 
-                        Subject subject = getSubject(session, userName, password, server, baseDN, useServiceUser);
+                        Subject subject = getSubject(session, userName, password, server, baseDN, useServiceUser, allowOnlyBaseDNUsers, allowOnlyGroupUsers);
                         Map<String, Object> userPrincipals = subject.getPrincipals(LDAPAuthenticationService.UserPrincipal.class).stream()
                                 .collect(Collectors.toMap(LDAPAuthenticationService.UserPrincipal::getName, LDAPAuthenticationService.UserPrincipal::getValue));
 
@@ -413,7 +415,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         krbProps = true;
     }
 
-    private Subject getSubject(DataSession session, String userName, String password, String server, String baseDN, boolean useServiceUser) throws javax.security.auth.login.LoginException, SQLException, SQLHandledException {
+    private Subject getSubject(DataSession session, String userName, String password, String server, String baseDN, boolean useServiceUser, boolean allowOnlyBaseDNUsers, String allowOnlyGroupUsers) throws javax.security.auth.login.LoginException, SQLException, SQLHandledException {
         Integer port = (Integer) authenticationLM.portLDAP.read(session);
         String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
         String serviceUser = (String) authenticationLM.serviceUser.read(session);
@@ -428,6 +430,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 opts.put("userDNSuffix", userDNSuffix != null ? userDNSuffix.toUpperCase() : null);
                 opts.put("baseDN", baseDN);
                 opts.put("useServiceUser", useServiceUser);
+                opts.put("allowOnlyBaseDNUsers", allowOnlyBaseDNUsers);
+                opts.put("allowOnlyGroupUsers", allowOnlyGroupUsers);
                 opts.put("serviceUser", serviceUser);
                 opts.put("serviceUserPassword", serviceUserPassword);
                 return new AppConfigurationEntry[]{
