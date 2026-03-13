@@ -34,6 +34,11 @@ public class LDAPAuthenticationService implements LoginModule {
         return value instanceof String ? (String) value : defaultValue;
     }
 
+    private boolean getOptionAsBoolean(String key) {
+        Object value = options.get(key);
+        return value instanceof Boolean ? (Boolean) value : false;
+    }
+
     public static class UserPrincipal implements Principal {
         private final String name;
         private final Object value;
@@ -89,6 +94,8 @@ public class LDAPAuthenticationService implements LoginModule {
             callbackHandler.handle(new Callback[]{nameCb, passCb});
 
             String baseDN = getOptionAsString("baseDN", null);
+            boolean allowOnlyBaseDNUsers = getOptionAsBoolean("allowOnlyBaseDNUsers");
+            String allowOnlyGroupUsers = getOptionAsString("allowOnlyGroupUsers", null);
             String principal = nameCb.getName() + getOptionAsString("userDNSuffix", "");
             String password = new String(passCb.getPassword());
             String server = getOptionAsString("server", "localhost");
@@ -96,7 +103,7 @@ public class LDAPAuthenticationService implements LoginModule {
 
             InitialDirContext authContext = null;
             try {
-                if ((Boolean) options.get("useServiceUser")) {
+                if (getOptionAsBoolean("useServiceUser")) {
                     Configuration jaasConfig = new Configuration() {
                         @Override
                         public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
@@ -130,13 +137,11 @@ public class LDAPAuthenticationService implements LoginModule {
 
                     authContext = new InitialDirContext(getEnv(getOptionAsString("serviceUser", null),
                             getOptionAsString("serviceUserPassword", null), providerURL));
-                    readAttributes(authContext, baseDN, principal);
+                    readAttributes(authContext, baseDN, principal, allowOnlyBaseDNUsers, allowOnlyGroupUsers);
 
                 } else {
-                    if (baseDN != null) {
-                        authContext = new InitialDirContext(getEnv(principal, password, providerURL));
-                        readAttributes(authContext, baseDN, principal);
-                    }
+                    authContext = new InitialDirContext(getEnv(principal, password, providerURL));
+                    readAttributes(authContext, baseDN, principal, allowOnlyBaseDNUsers, allowOnlyGroupUsers);
                 }
             } finally {
                 if (authContext != null)
@@ -172,15 +177,76 @@ public class LDAPAuthenticationService implements LoginModule {
         return env;
     }
 
-    private void readAttributes(DirContext authContext, String DN, String principal) throws NamingException {
+    private boolean isRequiredGroupMember(String memberOfValue, String requiredGroup) {
+        if (!BaseUtils.isRedundantString(memberOfValue) && !BaseUtils.isRedundantString(requiredGroup)) {
+            String normalizedMemberOf = memberOfValue.trim().toLowerCase();
+            String normalizedRequiredGroup = requiredGroup.trim().toLowerCase();
+
+            if (normalizedMemberOf.equals(normalizedRequiredGroup) || normalizedMemberOf.startsWith(normalizedRequiredGroup + ","))
+                return true;
+
+            for (String member : memberOfValue.split(",")) {
+                if (member.trim().toLowerCase().equals(normalizedRequiredGroup))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private String getDomainSearchBase(String principal, String baseDN) {
+        String dn = !BaseUtils.isRedundantString(baseDN) ? baseDN : principal;
+        if (BaseUtils.isRedundantString(dn))
+            return null;
+
+        StringBuilder searchBase = new StringBuilder();
+        if (dn.contains("@")) {
+            int suffixIndex = dn.indexOf('@');
+            if (suffixIndex >= 0 && suffixIndex < dn.length() - 1) {
+                String[] domainParts = dn.substring(suffixIndex + 1).split("\\.");
+                for (String domainPart : domainParts) {
+                    if (!domainPart.isEmpty()) {
+                        if (searchBase.length() > 0)
+                            searchBase.append(',');
+                        searchBase.append("DC=").append(domainPart);
+                    }
+                }
+            }
+        } else {
+            for (String part : dn.split(",")) {
+                String trimmedPart = part.trim();
+                if (trimmedPart.toUpperCase().startsWith("DC=")) {
+                    if (searchBase.length() > 0)
+                        searchBase.append(',');
+                    searchBase.append(trimmedPart);
+                }
+            }
+        }
+
+        return searchBase.length() > 0 ? searchBase.toString() : null;
+    }
+
+    private void readAttributes(DirContext authContext, String baseDN, String principal, boolean allowOnlyBaseDNUsers, String allowOnlyGroupUsers) throws NamingException, FailedLoginException {
         NamingEnumeration<SearchResult> personResults = null;
         try {
+            boolean userFound = false;
+            boolean requiredGroupFound = false;
             List<String> groupNames = new ArrayList<>();
+
+            String searchBase = allowOnlyBaseDNUsers ? baseDN : getDomainSearchBase(principal, baseDN);
+            if (BaseUtils.isRedundantString(searchBase)) {
+                if (allowOnlyBaseDNUsers)
+                    throw new FailedLoginException("User not found in configured Base DN");
+                if (!BaseUtils.isRedundantString(allowOnlyGroupUsers))
+                    throw new FailedLoginException("User is not a member of the required LDAP group");
+                return;
+            }
+
             SearchControls controls = new SearchControls();
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            personResults =
-                    authContext.search(DN, "(userPrincipalName=" + principal + ")", controls);
+            personResults = authContext.search(searchBase, "(userPrincipalName=" + principal + ")", controls);
+
             while (personResults.hasMore()) {
+                userFound = true;
                 SearchResult searchResult = personResults.next();
 
                 Attribute givenName = searchResult.getAttributes().get("givenName");
@@ -205,6 +271,10 @@ public class LDAPAuthenticationService implements LoginModule {
                     NamingEnumeration<?> memberOfAll = memberOf.getAll();
                     while (memberOfAll.hasMore()) {
                         String memberString = (String) memberOfAll.next();
+
+                        if (isRequiredGroupMember(memberString, allowOnlyGroupUsers))
+                            requiredGroupFound = true;
+
                         String[] members = memberString.split(",");
                         for (String member : members) {
                             if (member.startsWith("CN="))
@@ -220,6 +290,15 @@ public class LDAPAuthenticationService implements LoginModule {
                         principals.add(new UserAttributePrincipal(attribute.getID(), value));
                 }
             }
+
+            if (allowOnlyBaseDNUsers && !userFound)
+                throw new FailedLoginException("User not found in configured Base DN");
+
+            if (BaseUtils.isRedundantString(allowOnlyGroupUsers))
+                return;
+
+            if (!userFound || !requiredGroupFound)
+                throw new FailedLoginException("User is not a member of the required LDAP group");
         } catch (PartialResultException e) {
             //do nothing. not critical for AD
         } finally {

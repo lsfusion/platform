@@ -58,6 +58,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP useLDAP;
     public LP useDefaultAuthentication;
+    public LP allowOnlyBaseDNUsers;
     public LP useServiceUser;
     public LP serviceUser;
     public LP serviceUserPassword;
@@ -65,6 +66,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP portLDAP;
     public LP baseDNLDAP;
     public LP userDNSuffixLDAP;
+    public LP allowOnlyGroupUsers;
 
     public LP webClientSecret;
 
@@ -175,6 +177,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         useLDAP = findProperty("useLDAP[]");
         useDefaultAuthentication = findProperty("useDefaultAuthentication[]");
+        allowOnlyBaseDNUsers = findProperty("allowOnlyBaseDNUsers[]");
         useServiceUser = findProperty("useServiceUser[]");
         serviceUser = findProperty("serviceUser[]");
         serviceUserPassword = findProperty("serviceUserPassword[]");
@@ -182,6 +185,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         portLDAP = findProperty("portLDAP[]");
         baseDNLDAP = findProperty("baseDNLDAP[]");
         userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
+        allowOnlyGroupUsers = findProperty("allowOnlyGroupUsers[]");
 
         webClientSecret = findProperty("webClientSecretKey[]");
 
