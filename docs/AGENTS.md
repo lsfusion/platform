@@ -190,6 +190,30 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
 
 ----------------------------------------------------------------
 
+RULES FOR COMPLETING LANGUAGE SYNTAX ARTICLES
+
+When the request is to complete or extend
+an article for a language syntax construction,
+the assistant MUST:
+- inspect and describe the ENTIRE grammar
+  of that syntax construction
+  in both the platform and plugin sources,
+  including all related grammar rules,
+  variants, and clauses,
+  even if the request mentions
+  only individual clauses;
+  if some of those parts are not covered
+  in the target article,
+  the assistant MUST explicitly propose
+  describing them as well
+- inspect the related Paradigm articles
+  and abstractions for that syntax construction,
+  and if something important is missing there,
+  complete those articles as well
+  or explicitly propose completing them
+
+----------------------------------------------------------------
+
 RULES FOR DOCUMENTING LSFUSION
 
 This documentation will be used by a human
