@@ -45,6 +45,13 @@ It MUST contain:
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
 
+Language syntax notation convention:
+- the assistant MUST preserve
+  the current syntax-description style
+  used in the documentation
+  (for example, optional fragments
+  are written in square brackets `[...]`)
+
 ### 2. Paradigm
 
 Paradigm documentation is organized by language elements
