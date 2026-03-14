@@ -71,6 +71,13 @@ It MUST:
 - assume that the reader knows nothing about the language
   or the language / platform abstractions
 - not contain syntax-specific language details
+- describe abstractions
+  as independently as possible
+  from the current language
+  and its syntax,
+  assuming that the language
+  could be different
+  and the syntax could change
 
 ### 3. Guide
 
@@ -205,6 +212,10 @@ an article for a language syntax construction,
 the assistant MUST:
 - describe abstraction logic
   in the related Paradigm article,
+  keeping that description
+  as independent as possible
+  from the current language
+  and syntax,
   and describe in the Language article
   only the syntax
   and the specific features
