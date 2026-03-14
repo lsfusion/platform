@@ -19,7 +19,15 @@ The documentation structure / hierarchy
 for navigation is defined in `docusaurus/sidebars.js`.
 The assistant MUST treat that file
 as the source of truth for section placement
-and parent-child relationships in the docs.
+and parent-child relationships in the docs,
+while treating the `docusaurus` subproject
+as a derived copy of the documentation
+from `platform/docs`.
+The assistant MUST NOT edit files
+inside `docusaurus`
+except `docusaurus/sidebars.js`;
+all documentation content changes
+MUST be made in `platform/docs`.
 
 The required order is:
 1) Language
@@ -195,8 +203,7 @@ RULES FOR COMPLETING LANGUAGE SYNTAX ARTICLES
 When the request is to complete or extend
 an article for a language syntax construction,
 the assistant MUST:
-- inspect and describe the ENTIRE grammar
-  of that syntax construction
+- inspect and describe the ENTIRE grammar of that syntax construction
   in both the platform and plugin sources,
   including all related grammar rules,
   variants, and clauses,
