@@ -423,7 +423,7 @@ requestedHtmlLink = DATA LOCAL NESTED HTMLLINK ();
 requestedJsonLink = DATA LOCAL NESTED JSONLINK ();    
 requestedXmlLink = DATA LOCAL NESTED XMLLINK ();    
 requestedTableLink = DATA LOCAL NESTED TABLELINK ();
-requestedTSVectorLink = DATA LOCAL TSVECTOR ();    
+requestedTSVectorLink = DATA LOCAL NESTED TSVECTOR ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

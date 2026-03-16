@@ -737,7 +737,7 @@ public class PropertyFact {
     }
 
     public static SessionDataProperty createInputDataProp(ValueClass valueClass) {
-        return SessionDataProperty.createChange(LocalizedString.NONAME, valueClass, LocalNestedType.INPUT);
+        return SessionDataProperty.createChange(LocalizedString.NONAME, valueClass, LocalNestedType.REQUESTED);
     }
 
     public static SessionDataProperty createImportDataProp(ValueClass valueClass, ImList<ValueClass> paramClasses) {

@@ -10,7 +10,7 @@ public enum LocalNestedType {
     public static final LocalNestedType RETURN = LocalNestedType.ALL;
 
     // all this props are immediately read after write (so we don't need to nest them)
-    public static final LocalNestedType INPUT = null;
+    public static final LocalNestedType REQUESTED = LocalNestedType.ALL; // should correspond requested* properties, and they are nested apparently for
     public static final LocalNestedType IMPORT = null;
     public static final LocalNestedType FOR = null;
 
