@@ -31,6 +31,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -845,8 +846,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        ImOrderMap<OrderEntity, Boolean> defaultOrders = getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity, OrderEntity>) PropertyDrawEntity::getOrder, value -> value);
-        return BaseUtils.immutableCast(getFixedOrdersList().mergeOrder(defaultOrders).groupOrder(key -> {
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity, OrderEntity>) PropertyDrawEntity::getOrder, value -> value).mergeOrder(getFixedOrdersList()).groupOrder(key -> {
             GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
             if(groupObject == null)
                 return GroupObjectEntity.NULL;
@@ -1576,6 +1576,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             richDesign.addFilter(property, version);
     }
 
+    public void addUserOrder(PropertyDrawEntity propertyDraw, Boolean order, boolean first, Version version) {
+        if (first) {
+            addDefaultOrderFirst(propertyDraw, order, version);
+        } else {
+            addDefaultOrder(propertyDraw, order, version);
+        }
+    }
+
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.add(property, descending, version);
 
@@ -1588,6 +1596,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         if(view != null)
             view.addDefaultOrderFirst(property, descending, version);
+    }
+
+    public void addFixedOrder(OrderEntity order, Boolean descending, boolean first, Version version) {
+        if (first) {
+            addFixedOrderFirst(order, descending, version);
+        } else {
+            addFixedOrder(order, descending, version);
+        }
     }
 
     public void addFixedOrderFirst(OrderEntity order, boolean descending, Version version) {

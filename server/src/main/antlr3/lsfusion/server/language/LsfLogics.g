@@ -1341,7 +1341,7 @@ formFiltersList
 	    )*
 	;
 
-formExprDeclarationWithOptions returns [LP property, ImOrderSet<String> mapping, boolean fixed = true]
+formExprDeclarationWithOptions returns [LP property, ImOrderSet<String> mapping, Boolean fixed]
 	:	decl=formExprDeclaration { $property = $decl.property; $mapping = $decl.mapping; }
 		(('USER' { $fixed = false; } | 'FIXED' { $fixed = true; }))*
 	;
@@ -1592,7 +1592,7 @@ formOrderByList
 		} )*
 	;
 
-formPropertyDrawWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, boolean fixed = false]
+formPropertyDrawWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, Boolean fixed]
 	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
 		{
 			if (inMainParseState()) {

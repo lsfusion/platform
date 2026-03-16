@@ -414,7 +414,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private ImOrderMap<OrderInstance,Boolean> setOrders = null;
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
         if(setOrders==null)
-            setOrders = fixedOrders.mergeOrder(userOrders).mergeOrder(getOrderObjects().toOrderMap(false));
+            setOrders = userOrders.mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
 
         return setOrders;
     }
