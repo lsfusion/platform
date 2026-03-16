@@ -593,11 +593,10 @@ public abstract class LogicsModule {
     }
 
     protected LP addSDProp(Group group, boolean persistent, LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
-        SessionDataProperty prop = new SessionDataProperty(caption, params, value);
+        SessionDataProperty prop = SessionDataProperty.createChange(caption, params, value, false, nestedType);
         if (isLocalScope) {
             prop.setLocal(true);
         }
-        prop.nestedType = nestedType;
         return addProperty(group, new LP<>(prop));
     }
 

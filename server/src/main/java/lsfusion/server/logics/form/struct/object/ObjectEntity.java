@@ -117,7 +117,7 @@ public class ObjectEntity extends IdentityEntity<ObjectEntity, GroupObjectEntity
         this.baseClass = baseClass;
         this.noClasses = noClasses;
 
-        valueProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("VALUE", this, baseClass));
+        valueProperty = new FormEntity.ExProperty(() -> PropertyFact.createChangeDataPropRev("VALUE", this, baseClass));
     }
 
     public ObjectInstance getInstance(InstanceFactory instanceFactory) {

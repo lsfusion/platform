@@ -91,6 +91,7 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
@@ -107,13 +108,18 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public static Boolean DEFAULT_NOCANCEL = null;
 
     public static final IsDevProperty isDev = IsDevProperty.instance;
-    public static final SessionDataProperty isDocked = new SessionDataProperty(LocalizedString.create("Is docked"), LogicalClass.instance);
-    public static final SessionDataProperty isEditing = new SessionDataProperty(LocalizedString.create("Is embedded"), LogicalClass.instance);
-    public static final SessionDataProperty showOk = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
-    public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
-    public static final SessionDataProperty isManageSession = new SessionDataProperty(LocalizedString.create("Is manage session"), LogicalClass.instance);
-    public static final SessionDataProperty isExternal = new SessionDataProperty(LocalizedString.create("Is external"), LogicalClass.instance);
-    public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
+    public static final SessionDataProperty isDocked = createEnvProperty("Is docked");
+    public static final SessionDataProperty isEditing = createEnvProperty("Is embedded");
+    public static final SessionDataProperty showOk = createEnvProperty("Is modal");
+    public static final SessionDataProperty isAdd = createEnvProperty("Is add");
+    public static final SessionDataProperty isManageSession = createEnvProperty("Is manage session");
+    public static final SessionDataProperty isExternal = createEnvProperty("Is external");
+    public static final SessionDataProperty showDrop = createEnvProperty("Show drop");
+
+    @NotNull
+    private static SessionDataProperty createEnvProperty(String caption) {
+        return SessionDataProperty.createModifier(LocalizedString.create(caption), LogicalClass.instance);
+    }
 
     public PropertyDrawEntity editActionPropertyDraw;
     public PropertyDrawEntity dropActionPropertyDraw;

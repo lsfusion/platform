@@ -124,7 +124,7 @@ import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
-    public static final SessionDataProperty isDataChanged = new SessionDataProperty(LocalizedString.create("Is data changed"), LogicalClass.instance);
+    public static final SessionDataProperty isDataChanged = SessionDataProperty.createChange(LocalizedString.create("Is data changed"), LogicalClass.instance, LocalNestedType.DATACHANGED);
     {
         isDataChanged.noNestingInNestedSession = true;
     }

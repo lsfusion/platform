@@ -40,7 +40,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
-import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -400,8 +399,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
 
-        this.activeProperty = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance));
-        this.props = MapFact.toMap(ColumnProp.values(), type -> new GroupObjectEntity.ExGroupProperty(() -> PropertyFact.createDataPropRev(type.toString(), this, getPropColumnObjects(Version.current()), LogicalClass.instance, null)));
+        this.activeProperty = new FormEntity.ExProperty(() -> PropertyFact.createChangeDataPropRev("ACTIVE PROPERTY", this, LogicalClass.instance));
+        this.props = MapFact.toMap(ColumnProp.values(), type -> new GroupObjectEntity.ExGroupProperty(() -> PropertyFact.createChangeDataPropRev(type.toString(), this, getPropColumnObjects(Version.current()), LogicalClass.instance)));
     }
 
     public ImOrderSet<ObjectEntity> getPropColumnObjects(Version version) {

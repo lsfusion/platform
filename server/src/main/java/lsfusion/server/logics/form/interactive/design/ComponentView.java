@@ -288,7 +288,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     }
 
     public ComponentView() {
-        activeTab = new FormEntity.ExProperty(() -> PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance));
+        activeTab = new FormEntity.ExProperty(() -> PropertyFact.createChangeDataPropRev("ACTIVE TAB", this, LogicalClass.instance));
     }
 
     public void setSize(Dimension size, Version version) {

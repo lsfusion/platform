@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -450,9 +449,11 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
 
         ConcreteCustomClass listViewType = LM.listViewType;
         stateProps = MapFact.toMap(GroupObjectStateProp.values(), type -> new FormEntity.ExProperty(
-                () -> PropertyFact.createDataPropRev(type.getSID(), this, type.getValueClass(listViewType))));
+                () -> PropertyFact.createChangeDataPropRev(type.getSID(), this, type.getValueClass(listViewType))));
         props = MapFact.toMap(GroupObjectRowProp.values(), type -> new ExGroupProperty( // assert finalizedObjects
-                () -> PropertyFact.createDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass(), null)));
+                () -> type == GroupObjectRowProp.VIEW
+                        ? PropertyFact.createChangeDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass())
+                        : PropertyFact.createModifierDataPropRev(type.toString(), this, getOrderObjects(), type.getValueClass())));
 
         this.objects = objects;
         for(ObjectEntity object : objects)

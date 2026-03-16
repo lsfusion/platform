@@ -709,8 +709,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random");
 
-        SessionDataProperty requestCanceledProp = new SessionDataProperty(LocalizedString.NONAME, LogicalClass.instance);
-        requestCanceledProp.nestedType = LocalNestedType.ALL;
+        SessionDataProperty requestCanceledProp = SessionDataProperty.createChange(LocalizedString.NONAME, LogicalClass.instance, LocalNestedType.REQUESTCANCELED);
         requestCanceled = addProperty(null, new LP<>(requestCanceledProp));
         makePropertyPublic(requestCanceled, "requestCanceled");
 

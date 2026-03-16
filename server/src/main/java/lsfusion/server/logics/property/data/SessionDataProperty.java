@@ -23,22 +23,34 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class SessionDataProperty extends DataProperty {
 
-    public SessionDataProperty(LocalizedString caption, ValueClass value) {
-        this(caption, new ValueClass[0], value);
+    private static final ValueClass[] NO_CLASSES = new ValueClass[0];
+
+    public static SessionDataProperty createChange(LocalizedString caption, ValueClass value, LocalNestedType nestedType) {
+        return createChange(caption, NO_CLASSES, value, false, nestedType);
     }
 
-    public LocalNestedType nestedType;
+    public static SessionDataProperty createChange(LocalizedString caption, ValueClass[] classes, ValueClass value, boolean noClasses, LocalNestedType nestedType) {
+        return new SessionDataProperty(caption, classes, value, noClasses, nestedType);
+    }
+
+    public static SessionDataProperty createModifier(LocalizedString caption, ValueClass value) {
+        return createModifier(caption, NO_CLASSES, value, false);
+    }
+
+    public static SessionDataProperty createModifier(LocalizedString caption, ValueClass[] classes, ValueClass value, boolean noClasses) {
+        return new SessionDataProperty(caption, classes, value, noClasses, null);
+    }
+
+    public final LocalNestedType nestedType;
     public final static SFunctionSet<SessionDataProperty> NONESTING = element -> element.noNestingInNestedSession;
 
-    public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
-        this(caption, classes, value, false);
-    }
-
     private final boolean noClasses;
-    public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value, boolean noClasses) {
+
+    private SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value, boolean noClasses, LocalNestedType nestedType) {
         super(caption, classes, value);
 
         this.noClasses = noClasses;
+        this.nestedType = nestedType;
         
         finalizeInit();
     }
