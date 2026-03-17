@@ -333,7 +333,25 @@ public class ReportDesignGenerator {
         }
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setKey(reportField.columnGroupName);
-        layout.add(reportField, captionField, dataField);
+
+        JRDesignTextField footerField = null;
+        if (reportField.hasExtraType(ReportFieldExtraType.FOOTER)) {
+            JRDesignExpression footerExpr = ReportUtils.createExpression(
+                    ReportUtils.createFieldString(reportField.sID + footerSuffix),
+                    reportField.getExtraTypeClass(ReportFieldExtraType.FOOTER)
+            );
+            footerField = ReportUtils.createTextField(style, footerExpr, toStretch);
+            footerField.setHorizontalTextAlign(reportField.alignment);
+            footerField.setBlankWhenNull(true);
+            footerField.setPositionType(PositionTypeEnum.FLOAT);
+            footerField.setKey(reportField.columnGroupName);
+            if (reportField.markupHtml) {
+                footerField.setMarkup(JRCommonText.MARKUP_HTML);
+            }
+            setPattern(footerField, reportField);
+        }
+
+        layout.add(reportField, captionField, dataField, footerField);
     }
 
     private boolean isImageField(ReportDrawField reportField) {

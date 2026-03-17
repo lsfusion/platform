@@ -13,10 +13,12 @@ public abstract class ReportLayout {
     public static class ReportFieldJasperElement { 
         public JRDesignTextField caption;
         public JRDesignElement designField;
+        public JRDesignTextField footer;
         
-        public ReportFieldJasperElement(JRDesignTextField caption, JRDesignElement designField) {
+        public ReportFieldJasperElement(JRDesignTextField caption, JRDesignElement designField, JRDesignTextField footer) {
             this.caption = caption;
             this.designField = designField;
+            this.footer = footer;
         }
     }
     
@@ -29,9 +31,9 @@ public abstract class ReportLayout {
     protected List<ReportDrawField> reportFields = new ArrayList<>();
     protected Map<ReportDrawField, ReportFieldJasperElement> designFields = new HashMap<>();
 
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text, JRDesignTextField footer) {
         reportFields.add(reportField);
-        designFields.put(reportField, new ReportFieldJasperElement(caption, text));
+        designFields.put(reportField, new ReportFieldJasperElement(caption, text, footer));
     }
 
     public int doLayout(int pageWidth) {
@@ -47,6 +49,13 @@ public abstract class ReportLayout {
             designFields.get(reportField).designField.setY(reportField.row * rowHeight);
             designFields.get(reportField).designField.setWidth(reportField.width);
             designFields.get(reportField).designField.setHeight(rowHeight);
+
+            if (designFields.get(reportField).footer != null) {
+                designFields.get(reportField).footer.setX(reportField.left);
+                designFields.get(reportField).footer.setY(reportField.row * rowHeight);
+                designFields.get(reportField).footer.setWidth(reportField.width);
+                designFields.get(reportField).footer.setHeight(rowHeight);
+            }
         }
 
         return rowCount;
@@ -69,6 +78,8 @@ class ReportDetailLayout extends ReportLayout {
 
     private JRDesignBand pageHeadBand;
     private JRDesignBand detailBand;
+    private JRDesignBand columnFooterBand;
+    private boolean hasFooter;
 
     public ReportDetailLayout(JasperDesign design, int rowHeight) {
         super(rowHeight);
@@ -80,14 +91,21 @@ class ReportDetailLayout extends ReportLayout {
         detailBand = new JRDesignBand();
 
         ((JRDesignSection)design.getDetailSection()).addBand(detailBand);
+
+        columnFooterBand = new JRDesignBand();
+        design.setColumnFooter(columnFooterBand);
     }
 
     @Override
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
-        super.add(reportField, caption, text);
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text, JRDesignTextField footer) {
+        super.add(reportField, caption, text, footer);
 
         pageHeadBand.addElement(caption);
         detailBand.addElement(text);
+        if (footer != null) {
+            hasFooter = true;
+            columnFooterBand.addElement(footer);
+        }
     }
 
     @Override
@@ -96,6 +114,7 @@ class ReportDetailLayout extends ReportLayout {
 
         pageHeadBand.setHeight(rowCount * rowHeight);
         detailBand.setHeight(rowCount * rowHeight);
+        columnFooterBand.setHeight(hasFooter ? rowCount * rowHeight : 0);
 
         return rowCount;
     }
@@ -120,8 +139,8 @@ class ReportGroupRowLayout extends ReportGroupLayout {
     }
 
     @Override
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
-        super.add(reportField, caption, text);
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text, JRDesignTextField footer) {
+        super.add(reportField, caption, text, footer);
 
         groupBand.addElement(caption);
         groupBand.addElement(text);
@@ -205,8 +224,8 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
     }
 
     @Override
-    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text) {
-        super.add(reportField, caption, text);
+    public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignElement text, JRDesignTextField footer) {
+        super.add(reportField, caption, text, footer);
 
         captionGroupBand.addElement(caption);
         textGroupBand.addElement(text);
