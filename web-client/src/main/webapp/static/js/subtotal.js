@@ -1136,8 +1136,13 @@
         return setTimeout(function() {
           if ((finish + 1) < rowAttrHeaders.length) {
             return fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, finish + 1);
-          } else if (callbacks) {
-            return callbacks.finishFillData(clusterizedRowsDiv);
+          } else {
+            if (callbacks) {
+              callbacks.finishFillData(clusterizedRowsDiv);
+            }
+            if (opts.postProcess) {
+              return opts.postProcess($(scrollDiv).closest(".subtotalouterdiv"), opts);
+            }
           }
         }, 0);
       };
@@ -1862,16 +1867,32 @@
         return SubtotalRenderer(pvtData, opts, clusterize);
       },
       "TABLE_BARCHART": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).barchart();
+        return SubtotalRenderer(pvtData, $.extend(true, {}, opts, {
+          postProcess: function(table, rendererOpts) {
+            return table.barchart(rendererOpts);
+          }
+        }));
       },
-      "TABLE_HEATMAP": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
+      "TABLE_HEATMAP": function(pvtData, opts, clusterize) {
+        return SubtotalRenderer(pvtData, $.extend(true, {}, opts, {
+          postProcess: function(table, rendererOpts) {
+            return table.heatmap("heatmap", rendererOpts);
+          }
+        }), clusterize);
       },
-      "TABLE_ROW_HEATMAP": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
+      "TABLE_ROW_HEATMAP": function(pvtData, opts, clusterize) {
+        return SubtotalRenderer(pvtData, $.extend(true, {}, opts, {
+          postProcess: function(table, rendererOpts) {
+            return table.heatmap("rowheatmap", rendererOpts);
+          }
+        }), clusterize);
       },
-      "TABLE_COL_HEATMAP": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
+      "TABLE_COL_HEATMAP": function(pvtData, opts, clusterize) {
+        return SubtotalRenderer(pvtData, $.extend(true, {}, opts, {
+          postProcess: function(table, rendererOpts) {
+            return table.heatmap("colheatmap", rendererOpts);
+          }
+        }), clusterize);
       }
     };
     
