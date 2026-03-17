@@ -2259,6 +2259,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         MSet<PropertyDrawInstance> mChangedDrawProps = SetFact.mSet();
 
+        updateComponentShowIfs(mChangedProps.result, result); //must be before fillChangedObjects
+
         fillChangedObjects(result, stack, queryEnv, mChangedProps, mChangedDrawProps);
 
         updateData(mChangedProps, stack, forceLocalEvents, resultActions); // повторная проверка для VIEW свойств
@@ -2344,12 +2346,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
-
-        updateContainersShowIfs(changedProps);
-
-        updateBaseComponentsShowIfs(result);
-
         return updatePropertiesShowIfs(changedProps, result);
+    }
+
+    private void updateComponentShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
+        updateContainersShowIfs(changedProps);
+        updateBaseComponentsShowIfs(result);
     }
 
     private Set<PropertyDrawInstance> updatePropertiesShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
