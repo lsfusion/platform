@@ -1315,35 +1315,37 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 
 formFiltersList
 @init {
-	List<LP> properties = new ArrayList<>();
-	List<ImOrderSet<String>> propertyMappings = new ArrayList<>();
-	List<Boolean> fixedFilters = new ArrayList<>();
+	List<TypedParameter> context = new ArrayList<>();
+	List<LPWithParams> properties = new ArrayList<>();
+	List<LPTrivialLA> trivialLAs = new ArrayList<>();
+	List<LPCompoundID> compoundIDs = new ArrayList<>();
+	List<Boolean> fixed = new ArrayList<>();
+	if (inMainParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFilters(properties, propertyMappings, fixedFilters, self.getVersion());
+		$formStatement::form.addScriptedFilters(context, properties, trivialLAs, compoundIDs, fixed, self.getVersion());
 	}
 }
 	:	'FILTERS'
-		decl=formExprDeclarationWithOptions
+	    decl=propertyDrawOrPropertyExpr[context]
 		{
 			properties.add($decl.property);
-			propertyMappings.add($decl.mapping);
-			fixedFilters.add($decl.fixed);
+			trivialLAs.add($decl.la);
+			compoundIDs.add($decl.id);
+			fixed.add($decl.fixed);
 		}
 	    (','
-	    	decl=formExprDeclarationWithOptions
+	    	decl=propertyDrawOrPropertyExpr[context]
 	    	{
 	    		properties.add($decl.property);
-	    		propertyMappings.add($decl.mapping);
-	    		fixedFilters.add($decl.fixed);
+	    		trivialLAs.add($decl.la);
+	    		compoundIDs.add($decl.id);
+	    		fixed.add($decl.fixed);
 	    	}
 	    )*
-	;
-
-formExprDeclarationWithOptions returns [LP property, ImOrderSet<String> mapping, Boolean fixed]
-	:	decl=formExprDeclaration { $property = $decl.property; $mapping = $decl.mapping; }
-		(('USER' { $fixed = false; } | 'FIXED' { $fixed = true; }))*
 	;
 
 formHintsList
@@ -1560,8 +1562,8 @@ formOrderByList
 	List<LPWithParams> properties = new ArrayList<>();
 	List<LPTrivialLA> trivialLAs = new ArrayList<>();
 	List<LPCompoundID> compoundIDs = new ArrayList<>();
+	List<Boolean> fixed = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
-	List<Boolean> fixedOrders = new ArrayList<>();
 	boolean addFirst = false;
 	if (inMainParseState()) {
 		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
@@ -1574,39 +1576,39 @@ formOrderByList
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
-	    orderedProp=formPropertyDrawWithOrder[context]
+	    orderedProp=propertyDrawOrPropertyExprWithOrder[context]
 		{
 			properties.add($orderedProp.property);
 			trivialLAs.add($orderedProp.la);
 			compoundIDs.add($orderedProp.id);
+			fixed.add($orderedProp.fixed);
 			orders.add($orderedProp.descending);
-			fixedOrders.add($orderedProp.fixed);
 		}
-		(',' orderedProp=formPropertyDrawWithOrder[context]
+		(',' orderedProp=propertyDrawOrPropertyExprWithOrder[context]
 		{
 			properties.add($orderedProp.property);
 			trivialLAs.add($orderedProp.la);
 			compoundIDs.add($orderedProp.id);
+			fixed.add($orderedProp.fixed);
 			orders.add($orderedProp.descending);
-			fixedOrders.add($orderedProp.fixed);
 		} )*
 	;
 
-formPropertyDrawWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, Boolean fixed]
+propertyDrawOrPropertyExprWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, Boolean fixed]
+	:	decl=propertyDrawOrPropertyExpr[context] { $property = $decl.property; $la = $decl.la; $id = $decl.id; $fixed = $decl.fixed; }
+		('DESC' { $descending = true; })?
+	;
+
+propertyDrawOrPropertyExpr[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, Boolean fixed]
 	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
 		{
 			if (inMainParseState()) {
-				if($expr.property != null)
-					$property = self.checkSingleParam($expr.property);
+				$property = $expr.property;
 				$la = $expr.la;
 				$id = $expr.id;
 			}
 		}
-		(
-			('DESC' { $descending = true; })
-			|
-			('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })
-		)*
+		('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })?
 	;
 
 orderLiteral returns [boolean descending = false]

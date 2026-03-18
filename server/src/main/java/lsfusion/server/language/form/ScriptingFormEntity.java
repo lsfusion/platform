@@ -745,19 +745,25 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LP> properties, List<ImOrderSet<String>> mappings, List<Boolean> fixedFilters, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        assert properties.size() == mappings.size();
+    public void addScriptedFilters(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.LPWithParams> properties,
+                                   List<ScriptingLogicsModule.LPTrivialLA> trivialLAs, List<ScriptingLogicsModule.LPCompoundID> compoundIDs,
+                                   List<Boolean> fixedFilters, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        assert properties.size() == trivialLAs.size();
+        assert properties.size() == compoundIDs.size();
         assert properties.size() == fixedFilters.size();
         for (int i = 0; i < properties.size(); i++) {
-            LP property = properties.get(i);
-            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mappings.get(i));
-            checkPropertyParameters(property, mappingObjects);
-
+            ScriptingLogicsModule.LPWithParams property = properties.get(i);
             Boolean fixed = nvl(fixedFilters.get(i), true);
             if (fixed) {
-                form.addFixedFilter(new FilterEntity(form.addPropertyObject(property, mappingObjects), true), version);
+                if (property != null) {
+                    ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.usedParams));
+                    checkPropertyParameters(property.getLP(), mappingObjects);
+                    form.addFixedFilter(new FilterEntity(form.addPropertyObject(property.getLP(), mappingObjects), true), version);
+                } else {
+                    throw new IllegalStateException("Unable to resolve fixed filter property");
+                }
             } else {
-                PropertyDrawEntity propertyDraw = form.getNFPropertyDraw(property.getActionOrProperty().getName(), mappings.get(i).toJavaList(), version);
+                PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLAs.get(i), compoundIDs.get(i), version);
                 if (propertyDraw != null) {
                     form.addUserFilter(propertyDraw, version);
                 } else {
@@ -884,7 +890,7 @@ public class ScriptingFormEntity {
             if (fixed) {
                 addFixedOrder(context, property, order, first, version);
             } else {
-                PropertyDrawEntity propertyDraw = getOrderPropertyDraw(context, property, trivialLA, compoundID, version);
+                PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLA, compoundID, version);
                 if (propertyDraw != null) {
                     form.addUserOrder(propertyDraw, order, first, version);
                 } else {
@@ -892,7 +898,7 @@ public class ScriptingFormEntity {
                 }
             }
         } else {
-            PropertyDrawEntity propertyDraw = getOrderPropertyDraw(context, property, trivialLA, compoundID, version);
+            PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLA, compoundID, version);
             if (propertyDraw != null) {
                 form.addUserOrder(propertyDraw, order, first, version);
             } else {
@@ -910,17 +916,17 @@ public class ScriptingFormEntity {
         }
     }
 
-    private PropertyDrawEntity getOrderPropertyDraw(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property,
-                                                    ScriptingLogicsModule.LPTrivialLA trivialLA, ScriptingLogicsModule.LPCompoundID compoundID,
-                                                    Version version) {
-        if (property != null && property.getLP().getActionOrProperty().getName() != null) {
-            return form.getNFPropertyDraw(property.getLP().getActionOrProperty().getName(), ScriptingLogicsModule.getUsedNames(context, property.usedParams).toJavaList(), version);
-        }
+    private PropertyDrawEntity getUserPropertyDraw(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property,
+                                                   ScriptingLogicsModule.LPTrivialLA trivialLA, ScriptingLogicsModule.LPCompoundID compoundID,
+                                                   Version version) {
         if (trivialLA != null) {
             return form.getNFPropertyDraw(trivialLA.action.usage.property.name, trivialLA.action.mapping, version);
         }
         if (compoundID != null) {
             return form.getNFPropertyDraw(compoundID.name, version);
+        }
+        if (property != null && property.getLP() != null && property.getLP().getActionOrProperty().getName() != null) {
+            return form.getNFPropertyDraw(property.getLP().getActionOrProperty().getName(), ScriptingLogicsModule.getUsedNames(context, property.usedParams).toJavaList(), version);
         }
         return null;
     }
