@@ -871,7 +871,7 @@ public class ScriptingFormEntity {
 
     public void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.LPWithParams> properties,
                                         List<ScriptingLogicsModule.LPTrivialLA> trivialLAs, List<ScriptingLogicsModule.LPCompoundID> compoundIDs,
-                                        List<Boolean> orders, List<Boolean> fixedOrders, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+                                        List<Boolean> fixedOrders, List<Boolean> orders, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (first) {
             for (int i = properties.size() - 1; i >= 0; --i) {
                 addScriptedDefaultOrder(context, properties.get(i), trivialLAs.get(i), compoundIDs.get(i), orders.get(i), true, fixedOrders.get(i), version);

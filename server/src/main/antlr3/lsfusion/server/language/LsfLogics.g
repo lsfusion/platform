@@ -1571,7 +1571,7 @@ formOrderByList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(context, properties, trivialLAs, compoundIDs, orders, fixedOrders, addFirst, self.getVersion());
+		$formStatement::form.addScriptedDefaultOrder(context, properties, trivialLAs, compoundIDs, fixed, orders, addFirst, self.getVersion());
 	}
 }
 	:	'ORDERS'
