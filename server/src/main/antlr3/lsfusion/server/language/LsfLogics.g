@@ -241,6 +241,16 @@ grammar LsfLogics;
 		return self.new TypedParameter((ValueClass)null, paramName);
 	}
 
+	public FormEntity getCurrentForm(FormEntity form) {
+		if (form != null) {
+			return form;
+		}
+		if ($formStatement::form != null) {
+			return $formStatement::form.getForm();
+		}
+		return null;
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || inPreParseState()) { 
@@ -1051,8 +1061,23 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	id=ID              	{ if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($id.text, self.getVersion()); }
-	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
+	:	prop=formPropertyDrawSelector[null] { $property = $prop.property; }
+	;
+
+formPropertyDrawSelector[FormEntity form] returns [PropertyDrawEntity property]
+	:	id=ID
+		{
+			if (inMainParseState()) {
+				FormEntity currentForm = getCurrentForm(form);
+				$property = currentForm == null ? null : ScriptingFormEntity.getPropertyDraw(self, currentForm, $id.text, self.getVersion());
+			}
+		}
+	|	prop=mappedPropertyDraw
+		{
+			if (inMainParseState()) {
+				$property = ScriptingFormEntity.getPropertyDraw(self, getCurrentForm(form), $prop.name, $prop.mapping, self.getVersion());
+			}
+		}
 	;
 
 formMappedPropertiesList[FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
@@ -1198,21 +1223,6 @@ mappedPropertyObjectUsage returns [NamedPropertyUsage propUsage, List<String> ma
 		')'
 	;
 
-formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw = null]
-	:	pname=ID
-		{
-			if (inMainParseState()) {
-				$propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
-			}
-		}
-	|	mappedProp=mappedPropertyDraw	
-		{
-			if (inMainParseState()) {
-				$propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
-			}
-		}
-	;
-
 mappedPropertyDraw returns [String name, List<String> mapping]
 	:	pDrawName=ID { $name = $pDrawName.text; }
 		'('
@@ -1316,34 +1326,25 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 formFiltersList
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	List<LPWithParams> properties = new ArrayList<>();
-	List<LPTrivialLA> trivialLAs = new ArrayList<>();
-	List<LPCompoundID> compoundIDs = new ArrayList<>();
-	List<Boolean> fixed = new ArrayList<>();
+	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
 	if (inMainParseState()) {
 		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFilters(context, properties, trivialLAs, compoundIDs, fixed, self.getVersion());
+		$formStatement::form.addScriptedFilters(context, properties, self.getVersion());
 	}
 }
 	:	'FILTERS'
 	    decl=propertyDrawOrPropertyExpr[context]
 		{
-			properties.add($decl.property);
-			trivialLAs.add($decl.la);
-			compoundIDs.add($decl.id);
-			fixed.add($decl.fixed);
+			properties.add($decl.result);
 		}
 	    (','
 	    	decl=propertyDrawOrPropertyExpr[context]
 	    	{
-	    		properties.add($decl.property);
-	    		trivialLAs.add($decl.la);
-	    		compoundIDs.add($decl.id);
-	    		fixed.add($decl.fixed);
+	    		properties.add($decl.result);
 	    	}
 	    )*
 	;
@@ -1559,10 +1560,7 @@ userFiltersDeclaration
 formOrderByList
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	List<LPWithParams> properties = new ArrayList<>();
-	List<LPTrivialLA> trivialLAs = new ArrayList<>();
-	List<LPCompoundID> compoundIDs = new ArrayList<>();
-	List<Boolean> fixed = new ArrayList<>();
+	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
 	boolean addFirst = false;
 	if (inMainParseState()) {
@@ -1571,44 +1569,37 @@ formOrderByList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(context, properties, trivialLAs, compoundIDs, fixed, orders, addFirst, self.getVersion());
+		$formStatement::form.addScriptedDefaultOrder(context, properties, orders, addFirst, self.getVersion());
 	}
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
 	    orderedProp=propertyDrawOrPropertyExprWithOrder[context]
 		{
-			properties.add($orderedProp.property);
-			trivialLAs.add($orderedProp.la);
-			compoundIDs.add($orderedProp.id);
-			fixed.add($orderedProp.fixed);
+			properties.add($orderedProp.result);
 			orders.add($orderedProp.descending);
 		}
 		(',' orderedProp=propertyDrawOrPropertyExprWithOrder[context]
 		{
-			properties.add($orderedProp.property);
-			trivialLAs.add($orderedProp.la);
-			compoundIDs.add($orderedProp.id);
-			fixed.add($orderedProp.fixed);
+			properties.add($orderedProp.result);
 			orders.add($orderedProp.descending);
 		} )*
 	;
 
-propertyDrawOrPropertyExprWithOrder[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, boolean descending = false, Boolean fixed]
-	:	decl=propertyDrawOrPropertyExpr[context] { $property = $decl.property; $la = $decl.la; $id = $decl.id; $fixed = $decl.fixed; }
+propertyDrawOrPropertyExprWithOrder[List<TypedParameter> context] returns [PropertyDrawOrPropertyExpr result, boolean descending = false]
+	:	decl=propertyDrawOrPropertyExpr[context] { $result = $decl.result; }
 		('DESC' { $descending = true; })?
 	;
 
-propertyDrawOrPropertyExpr[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id, Boolean fixed]
+propertyDrawOrPropertyExpr[List<TypedParameter> context] returns [PropertyDrawOrPropertyExpr result = new PropertyDrawOrPropertyExpr()]
 	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
 		{
 			if (inMainParseState()) {
-				$property = $expr.property;
-				$la = $expr.la;
-				$id = $expr.id;
+				$result.propertyDraw = $formStatement::form.getUserPropertyDraw(context, $expr.property, $expr.la, $expr.id, self.getVersion());
+				$result.propertyExpr = $expr.property;
 			}
 		}
-		('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })?
+		('USER' { $result.fixed = false; } | 'FIXED' { $result.fixed = true; })?
 	;
 
 orderLiteral returns [boolean descending = false]
@@ -6029,9 +6020,9 @@ formPropertyID returns [PropertyDrawEntity propertyDraw]
                 form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text);
             }
         }
-        prop=formPropertySelector[form]
+        prop=formPropertyDrawSelector[form]
         {
-            $propertyDraw = $prop.propertyDraw;
+            $propertyDraw = $prop.property;
         }
     ;
 

@@ -745,27 +745,20 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.LPWithParams> properties,
-                                   List<ScriptingLogicsModule.LPTrivialLA> trivialLAs, List<ScriptingLogicsModule.LPCompoundID> compoundIDs,
-                                   List<Boolean> fixedFilters, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        assert properties.size() == trivialLAs.size();
-        assert properties.size() == compoundIDs.size();
-        assert properties.size() == fixedFilters.size();
-        for (int i = 0; i < properties.size(); i++) {
-            ScriptingLogicsModule.LPWithParams property = properties.get(i);
-            Boolean fixed = nvl(fixedFilters.get(i), true);
-            if (fixed) {
-                if (property != null) {
-                    ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.usedParams));
-                    checkPropertyParameters(property.getLP(), mappingObjects);
-                    form.addFixedFilter(new FilterEntity(form.addPropertyObject(property.getLP(), mappingObjects), true), version);
+    public void addScriptedFilters(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties,
+                                   Version version) throws ScriptingErrorLog.SemanticErrorException {
+        for (ScriptingLogicsModule.PropertyDrawOrPropertyExpr property : properties) {
+            if (nvl(property.fixed, true)) {
+                if (property.propertyExpr != null) {
+                    ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.propertyExpr.usedParams));
+                    checkPropertyParameters(property.propertyExpr.getLP(), mappingObjects);
+                    form.addFixedFilter(new FilterEntity(form.addPropertyObject(property.propertyExpr.getLP(), mappingObjects), true), version);
                 } else {
                     throw new IllegalStateException("Unable to resolve fixed filter property");
                 }
             } else {
-                PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLAs.get(i), compoundIDs.get(i), version);
-                if (propertyDraw != null) {
-                    form.addUserFilter(propertyDraw, version);
+                if (property.propertyDraw != null) {
+                    form.addUserFilter(property.propertyDraw, version);
                 } else {
                     throw new IllegalStateException("Unable to resolve user filter property");
                 }
@@ -869,56 +862,40 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.LPWithParams> properties,
-                                        List<ScriptingLogicsModule.LPTrivialLA> trivialLAs, List<ScriptingLogicsModule.LPCompoundID> compoundIDs,
-                                        List<Boolean> fixedOrders, List<Boolean> orders, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties,
+                                        List<Boolean> orders, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (first) {
             for (int i = properties.size() - 1; i >= 0; --i) {
-                addScriptedDefaultOrder(context, properties.get(i), trivialLAs.get(i), compoundIDs.get(i), orders.get(i), true, fixedOrders.get(i), version);
+                addScriptedDefaultOrder(context, properties.get(i), orders.get(i), true, version);
             }
         } else {
             for (int i = 0; i < properties.size(); ++i) {
-                addScriptedDefaultOrder(context, properties.get(i), trivialLAs.get(i), compoundIDs.get(i), orders.get(i), false, fixedOrders.get(i), version);
+                addScriptedDefaultOrder(context, properties.get(i), orders.get(i), false, version);
             }
         }
     }
 
-    private void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property,
-                                         ScriptingLogicsModule.LPTrivialLA trivialLA, ScriptingLogicsModule.LPCompoundID compoundID,
-                                         Boolean order, boolean first, Boolean fixed, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (fixed != null) {
-            if (fixed) {
-                addFixedOrder(context, property, order, first, version);
+    private void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.PropertyDrawOrPropertyExpr property,
+                                         Boolean order, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        boolean explicitFixed = property.fixed != null && property.fixed;
+        PropertyDrawEntity propertyDraw = explicitFixed ? null : property.propertyDraw;
+        if (explicitFixed || (property.fixed == null && propertyDraw == null)) {
+            if (property.propertyExpr != null) {
+                PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.propertyExpr.usedParams)));
+                form.addFixedOrder(fixedOrderProperty, order, first, version);
             } else {
-                PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLA, compoundID, version);
-                if (propertyDraw != null) {
-                    form.addUserOrder(propertyDraw, order, first, version);
-                } else {
-                    throw new IllegalStateException("Unable to resolve user order property");
-                }
+                throw new IllegalStateException("Unable to resolve fixed order property");
             }
+        } else if (propertyDraw != null) {
+            form.addUserOrder(propertyDraw, order, first, version);
         } else {
-            PropertyDrawEntity propertyDraw = getUserPropertyDraw(context, property, trivialLA, compoundID, version);
-            if (propertyDraw != null) {
-                form.addUserOrder(propertyDraw, order, first, version);
-            } else {
-                addFixedOrder(context, property, order, first, version);
-            }
+            throw new IllegalStateException("Unable to resolve user order property");
         }
     }
 
-    private void addFixedOrder(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property, Boolean order, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (property != null) {
-            PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.getLP(), getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.usedParams)));
-            form.addFixedOrder(fixedOrderProperty, order, first, version);
-        } else {
-            throw new IllegalStateException("Unable to resolve fixed order property");
-        }
-    }
+    public PropertyDrawEntity getUserPropertyDraw(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property, ScriptingLogicsModule.LPTrivialLA trivialLA,
+                                                  ScriptingLogicsModule.LPCompoundID compoundID, Version version) throws ScriptingErrorLog.SemanticErrorException {
 
-    private PropertyDrawEntity getUserPropertyDraw(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property,
-                                                   ScriptingLogicsModule.LPTrivialLA trivialLA, ScriptingLogicsModule.LPCompoundID compoundID,
-                                                   Version version) {
         if (trivialLA != null) {
             return form.getNFPropertyDraw(trivialLA.action.usage.property.name, trivialLA.action.mapping, version);
         }

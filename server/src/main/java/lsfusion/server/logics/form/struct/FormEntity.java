@@ -92,6 +92,7 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
@@ -993,12 +994,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
-        String propertySID;
-        if(alias != null) {
-            propertySID = alias;
-        } else if (inheritedProperty.isNamed() && interfaces != null) {
-            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inherited != null ? inherited.second : PropertyDrawEntity.getMapping(propertyImplement, interfaces));
-        } else {
+        String propertySID = getPropertySID(alias, inheritedProperty, inherited != null ? inherited.second : interfaces != null ? PropertyDrawEntity.getMapping(propertyImplement, interfaces) : null);
+        if (propertySID == null) {
             propertySID = "propertyDraw" + version.getOrder() + propertyDraws.size(version);
         }
 
@@ -1010,6 +1007,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         propertyDraw.proceedDefaultDraw(this, version);
 
         return propertyDraw;
+    }
+
+    public String getPropertySID(String alias, ActionOrProperty inheritedProperty, List<String> mapping) {
+        if (alias != null) {
+            return alias;
+        }
+        if (inheritedProperty != null && inheritedProperty.isNamed() && mapping != null) {
+            return PropertyDrawEntity.createSID(inheritedProperty.getName(), mapping);
+        }
+        return null;
     }
 
     public void movePropertyDraw(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawEntity> location, Version version) {

@@ -1180,6 +1180,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public static class PropertyDrawOrPropertyExpr {
+        public PropertyDrawEntity propertyDraw;
+        public LPWithParams propertyExpr;
+        public Boolean fixed;
+    }
+
     public List<String> getParamNamesFromTypedParams(List<String> paramNames, List<TypedParameter> params, boolean innerPD) {
         List<String> defaultParamNames = !innerPD ? getParamNamesFromTypedParams(params) : null;
         if(paramNames == null)
