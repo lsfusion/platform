@@ -1445,7 +1445,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         if (isProperty(context)) {
             Type type = getAssertCellType(context);
-            if (type instanceof StringClass)
+            if (type instanceof TextClass)
                 return true;
 
             return context.contentWordWrap;

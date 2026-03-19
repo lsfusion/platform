@@ -28,8 +28,15 @@ public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
             string = GwtSharedUtils.rtrim(string);
 
         if (string != null && !isMultiLine())
-            string = string.replace("\n", " ");
+            string = normalizeLineSeparators(string);
 
         return string;
+    }
+
+    private static String normalizeLineSeparators(String string) {
+        if (string.indexOf('\r') < 0 && string.indexOf('\n') < 0)
+            return string;
+
+        return string.replaceAll("\\r\\n|\\r|\\n", " ");
     }
 }
