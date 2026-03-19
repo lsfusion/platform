@@ -188,21 +188,20 @@ EXTEND FORM onStock
 
 ```
 ORDERS [FIRST]
-    formPropertyName1 [orderOptions1]
+    formPropertyName1 [orderType1] [DESC]
     ...
-    formPropertyNameN [orderOptionsN]
+    formPropertyNameN [orderTypeN] [DESC]
 ```
 
-Options `orderOptions` must be specified in the following order: first `USER | FIXED`, then `DESC`. The following set of options is supported:
+Options `orderType` can be listed after each expression. The following set of options is supported:
 
 ```
 USER | FIXED
-DESC
 ```
 
 ### Description
 
-An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence. These properties must be added to the form in advance.
+An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence.
 
 ### Parameters
 
@@ -225,7 +224,7 @@ An order block adds orderings to the form that will be automatically applied whe
 - `USER | FIXED`
 
     Keywords that define the sort type:
-    `USER` is a user sort (default) that can be overridden from the UI;
+    `USER` is a user sort (default) that can be overridden from the UI. Property must be added to the form in advance.
     `FIXED` is a fixed sort defined only in form code.
 
 ### Examples
