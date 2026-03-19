@@ -502,7 +502,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
                     return GEditBindingMap.changeOrGroupChange();
 
                 if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))
-                    return GEditBindingMap.changeOrGroupChange();
+                    return GEditBindingMap.changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
             }
 
             if (!updateContext.isNavigateInput() && GKeyStroke.isKeyDownEvent(editEvent))
