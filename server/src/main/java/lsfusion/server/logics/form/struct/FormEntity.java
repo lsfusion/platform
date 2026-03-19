@@ -49,6 +49,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.ZDateTimeClass;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
@@ -1251,7 +1252,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         for (PropertyDrawEntity property : getProperties(entity)) {
             if (property.isProperty(context) && property.isList(this)) {
                 Type type = property.getStaticType();
-                if (dateTime ? type instanceof DateTimeClass : type instanceof DateClass) {
+                if (dateTime ? type instanceof DateTimeClass || type instanceof ZDateTimeClass : type instanceof DateClass) {
                     if (property.getIntegrationSID() != null) {
                         result.add(property);
                     }
