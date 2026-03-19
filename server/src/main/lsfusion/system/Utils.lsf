@@ -189,6 +189,7 @@ encodeBase64Unchunked (RAWFILE f) = replace(encode(f, 'base64'), '\n', '');
 decodeBase64 (STRING s) = decode(s, 'base64');
 
 encode (STRING f, STRING encoding) = encode(RAWFILE(f), encoding);
+encodeText (STRING f, STRING encoding) = encode(f, encoding) @@deprecated('6.1');
 encode (FILE f, STRING encoding) = encode(RAWFILE(f), encoding); 
 encode (NAMEDFILE f, STRING encoding) = encode(RAWFILE(f), encoding);
 
