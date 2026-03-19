@@ -121,7 +121,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             updateEvents(currentList);
         }
         if (calendar != null) {
-            applyDateIntervalViewFilter(calendar, controller, calendarDateProp.integrationSID);
+            applyDateIntervalViewFilter(calendar, controller, calendarDateProp.integrationSID, isDateTimeCalendarDateProp());
         }
     }
 
@@ -245,9 +245,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         }
     }-*/;
 
-    protected native void applyDateIntervalViewFilter(JavaScriptObject calendar, JavaScriptObject controller, String calendarDateProp)/*-{
+    protected native void applyDateIntervalViewFilter(JavaScriptObject calendar, JavaScriptObject controller, String calendarDateProp, boolean isDateTimeFilter)/*-{
         controller.setDateIntervalViewFilter(calendarDateProp, @GCalendar::getEndEventFieldName(*)(calendarDateProp), 1000,
-            calendar.view.activeStart, calendar.view.activeEnd, calendarDateProp.toLowerCase().indexOf('time') >= 0);
+            calendar.view.activeStart, calendar.view.activeEnd, isDateTimeFilter);
     }-*/;
 
     private static String getEndEventFieldName(String calendarDateProp) {
