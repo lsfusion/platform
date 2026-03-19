@@ -761,7 +761,9 @@ callWithJQuery ($) ->
             setTimeout ->
                 if (finish + 1) < rowAttrHeaders.length
                     fillData(scrollDiv, tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, c, clusterizedRowsDiv, opts, finish + 1)
-                else if callbacks then callbacks.finishFillData(clusterizedRowsDiv)
+                else
+                    callbacks.finishFillData(clusterizedRowsDiv) if callbacks
+                    opts.postProcess $(scrollDiv).closest(".subtotalouterdiv"), opts if opts.postProcess
             , 0
 
         buildColTotalsHeader = (rowHeadersColumns, colAttrs) ->
@@ -1230,10 +1232,10 @@ callWithJQuery ($) ->
 
     $.pivotUtilities.subtotal_renderers =
         "TABLE"             : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, opts, clusterize
-        "TABLE_BARCHART"    : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
-        "TABLE_HEATMAP"     : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
-        "TABLE_ROW_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
-        "TABLE_COL_HEATMAP" : (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
+        "TABLE_BARCHART"    : (pvtData, opts) -> SubtotalRenderer pvtData, $.extend(true, {}, opts, postProcess: (table, rendererOpts) -> table.barchart(rendererOpts))
+        "TABLE_HEATMAP"     : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, $.extend(true, {}, opts, postProcess: (table, rendererOpts) -> table.heatmap("heatmap", rendererOpts)), clusterize
+        "TABLE_ROW_HEATMAP" : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, $.extend(true, {}, opts, postProcess: (table, rendererOpts) -> table.heatmap("rowheatmap", rendererOpts)), clusterize
+        "TABLE_COL_HEATMAP" : (pvtData, opts, clusterize) -> SubtotalRenderer pvtData, $.extend(true, {}, opts, postProcess: (table, rendererOpts) -> table.heatmap("colheatmap", rendererOpts)), clusterize
             
     # 
     # Aggregators
