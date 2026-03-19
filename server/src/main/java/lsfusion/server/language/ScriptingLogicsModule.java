@@ -5202,7 +5202,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         properties = checkSingleParams(properties);
         ImList<PropertyMapImplement<?, T>> mapImplements = (ImList<PropertyMapImplement<?, T>>) (ImList<?>) readCalcImplements(property.listInterfaces, getParamsPlainList(properties).toArray());
-        addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, this, debugPoint);
+        addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, this, debugPoint, debugPoint);
     }
 
     private PrevScope prevScope = null;

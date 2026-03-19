@@ -2241,22 +2241,28 @@ public abstract class LogicsModule {
     public static class ConstraintData {
         public final LP<?> message;
         public final DebugInfo.DebugPoint debugPoint;
+        public final DebugInfo.DebugPoint logDebugPoint;
 
         public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint) {
+            this(message, debugPoint, debugPoint);
+        }
+
+        public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint logDebugPoint) {
             this.message = message;
             this.debugPoint = debugPoint;
+            this.logDebugPoint = logDebugPoint;
         }
 
         public ConstraintData noUseDebugPoint() {
-            return new ConstraintData(message, null);
+            return new ConstraintData(message, null, logDebugPoint);
         }
     }
 
     public void addConstraint(Property<?> property, ConstraintData data, boolean checkChange) {
-        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.debugPoint);
+        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.debugPoint, data.logDebugPoint);
     }
 
-    protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
+    protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint logDebugPoint) {
 //      will not check for constraint prev value (i.e. do not let the user set any value if constraint was already broken)
         Property<?> property = lp.property;
         Property<?> messageProperty = messageLP.property;
@@ -2266,7 +2272,7 @@ public abstract class LogicsModule {
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
-        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", property.caption);
+        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", LocalizedString.create(logDebugPoint.toString()));
 
         Action<?> resolveAction = null;
         if(!property.noDB()) { // wrapping in SET
