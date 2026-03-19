@@ -1887,37 +1887,13 @@
           heatmapper(".pvtVal");
           break;
         case "rowheatmap":
-          if (this.find(".pvtVal[data-rownode]").length) {
-            this.find(".pvtVal[data-rownode]").map(function() {
-              return $(this).attr("data-rownode");
-            }).get().filter(function(value, index, array) {
-              return value != null && array.indexOf(value) === index;
-            }).forEach((rowNode) => {
-              heatmapper(this.find(`.pvtVal[data-rownode="${rowNode}"]`).not(".colTotal"));
-            });
-          } else {
-            this.find("tbody tr").each(function() {
-              var rowValues;
-              rowValues = $(this).find(".pvtVal").not(".colTotal");
-              if (rowValues.length) {
-                return heatmapper(rowValues);
-              }
-            });
+          for (i = l = 0, ref1 = numRows; (0 <= ref1 ? l < ref1 : l > ref1); i = 0 <= ref1 ? ++l : --l) {
+            heatmapper(`.pvtVal.row${i}`);
           }
           break;
         case "colheatmap":
-          if (this.find(".pvtVal[data-colnode]").length) {
-            this.find(".pvtVal[data-colnode]").map(function() {
-              return $(this).attr("data-colnode");
-            }).get().filter(function(value, index, array) {
-              return value != null && array.indexOf(value) === index;
-            }).forEach((colNode) => {
-              heatmapper(this.find(`.pvtVal[data-colnode="${colNode}"]`).not(".rowTotal"));
-            });
-          } else {
-            for (j = n = 0, ref2 = numCols; (0 <= ref2 ? n < ref2 : n > ref2); j = 0 <= ref2 ? ++n : --n) {
-              heatmapper(`.pvtVal.col${j}`);
-            }
+          for (j = n = 0, ref2 = numCols; (0 <= ref2 ? n < ref2 : n > ref2); j = 0 <= ref2 ? ++n : --n) {
+            heatmapper(`.pvtVal.col${j}`);
           }
       }
       heatmapper(".pvtTotal.rowTotal");
