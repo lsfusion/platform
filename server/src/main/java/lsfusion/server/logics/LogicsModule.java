@@ -2241,25 +2241,29 @@ public abstract class LogicsModule {
     public static class ConstraintData {
         public final LP<?> message;
         public final DebugInfo.DebugPoint debugPoint;
-        public final DebugInfo.DebugPoint logDebugPoint;
+        public boolean noUseDebugPoint;
 
         public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint) {
-            this(message, debugPoint, debugPoint);
-        }
-
-        public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint logDebugPoint) {
             this.message = message;
             this.debugPoint = debugPoint;
-            this.logDebugPoint = logDebugPoint;
+        }
+
+        public DebugInfo.DebugPoint getDebugPoint() {
+            return noUseDebugPoint ? null : debugPoint;
+        }
+
+        public DebugInfo.DebugPoint getLogDebugPoint() {
+            return debugPoint;
         }
 
         public ConstraintData noUseDebugPoint() {
-            return new ConstraintData(message, null, logDebugPoint);
+            this.noUseDebugPoint = true;
+            return this;
         }
     }
 
     public void addConstraint(Property<?> property, ConstraintData data, boolean checkChange) {
-        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.debugPoint, data.logDebugPoint);
+        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.getDebugPoint(), data.getLogDebugPoint());
     }
 
     protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint logDebugPoint) {
@@ -2272,7 +2276,7 @@ public abstract class LogicsModule {
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
-        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", LocalizedString.create(logDebugPoint.toString()));
+        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", LocalizedString.create(logDebugPoint != null ? logDebugPoint.toString() : ""));
 
         Action<?> resolveAction = null;
         if(!property.noDB()) { // wrapping in SET
