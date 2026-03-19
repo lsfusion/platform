@@ -193,11 +193,11 @@ ORDERS [FIRST]
     formPropertyNameN [orderOptionsN]
 ```
 
-Options `orderOptions` can be listed one after another in any order. The following set of options is supported:
+Options `orderOptions` must be specified in the following order: first `USER | FIXED`, then `DESC`. The following set of options is supported:
 
 ```
-DESC
 USER | FIXED
+DESC
 ```
 
 ### Description
