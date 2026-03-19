@@ -865,7 +865,8 @@ public class GFormController implements EditManager {
 
     public FormDockable getFormDockableContainer(boolean isDockedModal) {
         if (isDockedModal) {
-            return (FormDockable) getContextContainer();
+            FormContainer contextContainer = getContextContainer();
+            return contextContainer instanceof FormDockable ? (FormDockable) contextContainer : null;
         } else {
             return null;
         }
