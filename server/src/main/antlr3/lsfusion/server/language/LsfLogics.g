@@ -1314,11 +1314,7 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 
 formFiltersList
 @init {
-	List<TypedParameter> context = new ArrayList<>();
 	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
-	if (inMainParseState()) {
-		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
-	}
 }
 @after {
 	if (inMainParseState()) {
@@ -1326,12 +1322,12 @@ formFiltersList
 	}
 }
 	:	'FILTERS'
-	    decl=propertyDrawOrPropertyExpr[context]
+	    decl=propertyDrawOrPropertyExpr
 		{
 			properties.add($decl.result);
 		}
 	    (','
-	    	decl=propertyDrawOrPropertyExpr[context]
+	    	decl=propertyDrawOrPropertyExpr
 	    	{
 	    		properties.add($decl.result);
 	    	}
@@ -1548,13 +1544,9 @@ userFiltersDeclaration
 
 formOrderByList
 @init {
-	List<TypedParameter> context = new ArrayList<>();
 	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
 	boolean addFirst = false;
-	if (inMainParseState()) {
-		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
-	}
 }
 @after {
 	if (inMainParseState()) {
@@ -1563,24 +1555,30 @@ formOrderByList
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
-	    orderedProp=propertyDrawOrPropertyExprWithOrder[context]
+	    orderedProp=propertyDrawOrPropertyExprWithOrder
 		{
 			properties.add($orderedProp.result);
 			orders.add($orderedProp.descending);
 		}
-		(',' orderedProp=propertyDrawOrPropertyExprWithOrder[context]
+		(',' orderedProp=propertyDrawOrPropertyExprWithOrder
 		{
 			properties.add($orderedProp.result);
 			orders.add($orderedProp.descending);
 		} )*
 	;
 
-propertyDrawOrPropertyExprWithOrder[List<TypedParameter> context] returns [PropertyDrawOrPropertyExpr result, boolean descending = false]
-	:	decl=propertyDrawOrPropertyExpr[context] { $result = $decl.result; }
+propertyDrawOrPropertyExprWithOrder returns [PropertyDrawOrPropertyExpr result, boolean descending = false]
+	:	decl=propertyDrawOrPropertyExpr { $result = $decl.result; }
 		('DESC' { $descending = true; })?
 	;
 
-propertyDrawOrPropertyExpr[List<TypedParameter> context] returns [PropertyDrawOrPropertyExpr result = new PropertyDrawOrPropertyExpr()]
+propertyDrawOrPropertyExpr returns [PropertyDrawOrPropertyExpr result = new PropertyDrawOrPropertyExpr()]
+@init {
+	List<TypedParameter> context = new ArrayList<>();
+	if (inMainParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
+}
 	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
 		{
 			if (inMainParseState()) {
