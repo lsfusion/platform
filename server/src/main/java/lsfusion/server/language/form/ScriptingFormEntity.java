@@ -653,8 +653,13 @@ public class ScriptingFormEntity {
             property.setExtNull(extNull, version);
 
         Boolean descending = options.getDescending();
-        if(descending != null)
-            form.addDefaultOrder(property, descending, version);
+        if(descending != null) {
+            if (nvl(options.getFixedOrder(), false)) {
+                form.addFixedOrder(property.getOrder(), descending, version);
+            } else {
+                form.addDefaultOrder(property, descending, version);
+            }
+        }
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)
@@ -678,8 +683,13 @@ public class ScriptingFormEntity {
             property.setPropertyExtra(propertyCustomOptions, PropertyDrawExtraType.PROPERTY_CUSTOM_OPTIONS, version);
 
         Boolean filter = options.getFilter();
-        if(filter != null && filter)
-            form.addUserFilter(property, version);
+        if(filter != null && filter) {
+            if (nvl(options.getFixedFilter(), false)) {
+                form.addFixedFilter(new FilterEntity<>(property.getAssertStaticProperty(), true), version);
+            } else {
+                form.addUserFilter(property, version);
+            }
+        }
 
         ComplexLocation<PropertyDrawEntity> location = options.getLocation();
     }
@@ -745,22 +755,23 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties,
-                                   Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties, Version version) throws ScriptingErrorLog.SemanticErrorException {
         for (ScriptingLogicsModule.PropertyDrawOrPropertyExpr property : properties) {
             if (nvl(property.fixed, true)) {
-                if (property.propertyExpr != null) {
-                    ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.propertyExpr.usedParams));
+                if (property.propertyDraw != null) {
+                    form.addFixedFilter(new FilterEntity<>(property.propertyDraw.getAssertStaticProperty(), true), version);
+                } else if (property.propertyExpr != null) {
+                    ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(property.mapping);
                     checkPropertyParameters(property.propertyExpr.getLP(), mappingObjects);
                     form.addFixedFilter(new FilterEntity(form.addPropertyObject(property.propertyExpr.getLP(), mappingObjects), true), version);
                 } else {
-                    throw new IllegalStateException("Unable to resolve fixed filter property");
+                    LM.getErrLog().emitUnableToResolveFixedFilterPropertyError(LM.getParser());
                 }
             } else {
                 if (property.propertyDraw != null) {
                     form.addUserFilter(property.propertyDraw, version);
                 } else {
-                    throw new IllegalStateException("Unable to resolve user filter property");
+                    LM.getErrLog().emitUnableToResolveUserFilterPropertyError(LM.getParser());
                 }
             }
         }
@@ -862,38 +873,40 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties,
-                                        List<Boolean> orders, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedDefaultOrder(List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties, List<Boolean> orders,
+                                        boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (first) {
             for (int i = properties.size() - 1; i >= 0; --i) {
-                addScriptedDefaultOrder(context, properties.get(i), orders.get(i), true, version);
+                addScriptedDefaultOrder(properties.get(i), orders.get(i), true, version);
             }
         } else {
             for (int i = 0; i < properties.size(); ++i) {
-                addScriptedDefaultOrder(context, properties.get(i), orders.get(i), false, version);
+                addScriptedDefaultOrder(properties.get(i), orders.get(i), false, version);
             }
         }
     }
 
-    private void addScriptedDefaultOrder(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.PropertyDrawOrPropertyExpr property,
-                                         Boolean order, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void addScriptedDefaultOrder(ScriptingLogicsModule.PropertyDrawOrPropertyExpr property, Boolean order, boolean first,
+                                         Version version) throws ScriptingErrorLog.SemanticErrorException {
         boolean explicitFixed = property.fixed != null && property.fixed;
         PropertyDrawEntity propertyDraw = explicitFixed ? null : property.propertyDraw;
         if (explicitFixed || (property.fixed == null && propertyDraw == null)) {
-            if (property.propertyExpr != null) {
-                PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(ScriptingLogicsModule.getUsedNames(context, property.propertyExpr.usedParams)));
+            if (property.propertyDraw != null) {
+                form.addFixedOrder(property.propertyDraw.getOrder(), order, first, version);
+            } else if (property.propertyExpr != null) {
+                PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(property.mapping));
                 form.addFixedOrder(fixedOrderProperty, order, first, version);
             } else {
-                throw new IllegalStateException("Unable to resolve fixed order property");
+                LM.getErrLog().emitUnableToResolveFixedOrderPropertyError(LM.getParser());
             }
         } else if (propertyDraw != null) {
             form.addUserOrder(propertyDraw, order, first, version);
         } else {
-            throw new IllegalStateException("Unable to resolve user order property");
+            LM.getErrLog().emitUnableToResolveUserOrderPropertyError(LM.getParser());
         }
     }
 
-    public PropertyDrawEntity getUserPropertyDraw(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams property, ScriptingLogicsModule.LPTrivialLA trivialLA,
+    public PropertyDrawEntity getUserPropertyDraw(ImOrderSet<String> mapping, ScriptingLogicsModule.LPWithParams property, ScriptingLogicsModule.LPTrivialLA trivialLA,
                                                   ScriptingLogicsModule.LPCompoundID compoundID, Version version) throws ScriptingErrorLog.SemanticErrorException {
 
         if (trivialLA != null) {
@@ -903,7 +916,7 @@ public class ScriptingFormEntity {
             return form.getNFPropertyDraw(compoundID.name, version);
         }
         if (property != null && property.getLP() != null && property.getLP().getActionOrProperty().getName() != null) {
-            return form.getNFPropertyDraw(property.getLP().getActionOrProperty().getName(), ScriptingLogicsModule.getUsedNames(context, property.usedParams).toJavaList(), version);
+            return form.getNFPropertyDraw(property.getLP().getActionOrProperty().getName(), mapping.toJavaList(), version);
         }
         return null;
     }

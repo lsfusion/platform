@@ -241,16 +241,6 @@ grammar LsfLogics;
 		return self.new TypedParameter((ValueClass)null, paramName);
 	}
 
-	public FormEntity getCurrentForm(FormEntity form) {
-		if (form != null) {
-			return form;
-		}
-		if ($formStatement::form != null) {
-			return $formStatement::form.getForm();
-		}
-		return null;
-	}
-
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || inPreParseState()) { 
@@ -1049,8 +1039,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
-		|   po=formPropertyOptionOrderLiteral { $options.setDescending($po.descending); }
-		|   'FILTER' { $options.setFilter(true); }
+		|   ol=formPropertyOptionOrderLiteral { $options.setFixedOrder($ol.fixed); $options.setDescending($ol.descending); }
+		|   fl=formPropertyOptionFilterLiteral { $options.setFixedFilter($fl.fixed); $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
@@ -1061,21 +1051,20 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	prop=formPropertyDrawSelector[null] { $property = $prop.property; }
+	:	prop=formPropertyDrawSelector[$formStatement::form == null ? null : $formStatement::form.getForm()] { $property = $prop.property; }
 	;
 
 formPropertyDrawSelector[FormEntity form] returns [PropertyDrawEntity property]
 	:	id=ID
 		{
 			if (inMainParseState()) {
-				FormEntity currentForm = getCurrentForm(form);
-				$property = currentForm == null ? null : ScriptingFormEntity.getPropertyDraw(self, currentForm, $id.text, self.getVersion());
+				$property = ScriptingFormEntity.getPropertyDraw(self, form, $id.text, self.getVersion());
 			}
 		}
 	|	prop=mappedPropertyDraw
 		{
 			if (inMainParseState()) {
-				$property = ScriptingFormEntity.getPropertyDraw(self, getCurrentForm(form), $prop.name, $prop.mapping, self.getVersion());
+				$property = ScriptingFormEntity.getPropertyDraw(self, form, $prop.name, $prop.mapping, self.getVersion());
 			}
 		}
 	;
@@ -1333,7 +1322,7 @@ formFiltersList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFilters(context, properties, self.getVersion());
+		$formStatement::form.addScriptedFilters(properties, self.getVersion());
 	}
 }
 	:	'FILTERS'
@@ -1569,7 +1558,7 @@ formOrderByList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(context, properties, orders, addFirst, self.getVersion());
+		$formStatement::form.addScriptedDefaultOrder(properties, orders, addFirst, self.getVersion());
 	}
 }
 	:	'ORDERS'
@@ -1595,7 +1584,9 @@ propertyDrawOrPropertyExpr[List<TypedParameter> context] returns [PropertyDrawOr
 	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
 		{
 			if (inMainParseState()) {
-				$result.propertyDraw = $formStatement::form.getUserPropertyDraw(context, $expr.property, $expr.la, $expr.id, self.getVersion());
+				if ($expr.property.getLP() != null)
+					$result.mapping = self.getUsedNames(context, $expr.property.usedParams);
+				$result.propertyDraw = $formStatement::form.getUserPropertyDraw($result.mapping, $expr.property, $expr.la, $expr.id, self.getVersion());
 				$result.propertyExpr = $expr.property;
 			}
 		}
@@ -1606,11 +1597,12 @@ orderLiteral returns [boolean descending = false]
     :   'ORDER' ('DESC' { $descending = true; })?
     ;
 
-formPropertyOptionOrderLiteral returns [boolean descending = false, boolean fixed = false]
-    :   'ORDER'
-        (   'DESC' { $descending = true; }
-        |   ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })
-        )*
+formPropertyOptionOrderLiteral returns [Boolean fixed = null, boolean descending = false]
+    :   'ORDER' ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })? ('DESC' { $descending = true; })?
+    ;
+
+formPropertyOptionFilterLiteral returns [Boolean fixed = null]
+    :   'FILTER' ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })?
     ;
 
 formPivotOptionsDeclaration

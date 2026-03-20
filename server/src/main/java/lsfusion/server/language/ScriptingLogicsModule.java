@@ -1183,6 +1183,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static class PropertyDrawOrPropertyExpr {
         public PropertyDrawEntity propertyDraw;
         public LPWithParams propertyExpr;
+        public ImOrderSet<String> mapping;
         public Boolean fixed;
     }
 
