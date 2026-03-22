@@ -88,8 +88,7 @@ public class GNumericType extends GDoubleType {
     private void checkParse(String s) throws ParseException {
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
 
-        if (!precision.isUnlimited() && ((scale.value == 0 && s.contains(decimalSeparator)) ||
-                (s.contains(decimalSeparator) && s.length() - s.indexOf(decimalSeparator) > scale.value + 1))) {
+        if (!precision.isUnlimited() && scale.value == 0 && s.contains(decimalSeparator)) {
             throwParseException(s);
         }
 
