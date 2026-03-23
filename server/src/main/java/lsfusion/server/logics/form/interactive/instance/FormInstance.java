@@ -155,6 +155,7 @@ import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.GROUP_CHANGE;
 import static lsfusion.interop.action.ServerResponse.INPUT;
 import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
@@ -1053,7 +1054,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return groupObject.getOrderGroupObjectValue(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, this);
     }
 
-    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
+    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, boolean forceGroupChange, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
         ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = getOrderGroupObjectValue(groupObject).executeOrders(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size(), true, this).keyOrderSet();
 
@@ -1072,7 +1073,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 mvPasteRows.mapValue(j, new Pair<>(value, rawValues.get(j).get(i)));
             }
 
-            executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder(), stack, context);
+            executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder(), forceGroupChange, stack, context);
         }
     }
 
@@ -1147,12 +1148,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> cellsValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
         for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> e : cellsValues.entrySet()) { // бежим по ячейкам
             PropertyDrawInstance property = e.getKey();
-            executePasteAction(property, null, e.getValue(), stack, context);
+            executePasteAction(property, null, e.getValue(), false, stack, context);
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> pasteRows, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> pasteRows, boolean forceGroupChange, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
+            String actionSID = forceGroupChange ? GROUP_CHANGE : CHANGE;
             for (int i = 0, size = pasteRows.size(); i < size; i++) {
                 ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
                 Pair<Object, String> value = pasteRows.getValue(i);
@@ -1160,7 +1162,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     key = key.addExcl(columnKey);
                 }
                 Type propType = property.isProperty(context) ? property.entity.getPasteType(context) : null;
-                executeExternalEventAction(property, key, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
+                executeEventAction(property, actionSID, key, EventSource.PASTE, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
                         new PushAsyncInput(new InputResult(ObjectValue.getValue(value.first, ((AsyncInput) asyncEventExec).changeType), null)) :
                         new PushExternalInput(type -> {
                             if(propType != null && type.getCompatible(propType) != null)
@@ -1173,7 +1175,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             } catch (ParseException e) {
                                 return null;
                             }
-                        }), stack, context, EventSource.PASTE);
+                        }), stack, context);
             }
         }
     }
@@ -2369,18 +2371,27 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     @StackMessage("{message.getting.changed.objects}")
-    public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> mChangedProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
+    public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> changeProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
+        updateContainersShowIfs(GroupObjectEntity.NULL, changeProps.result);
+
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
             try {
-                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, mChangedProps, this, getObjectEvents(stack, group));
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, changeProps, this, getObjectEvents(stack, group));
                 if (selectObjects != null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
                 if (group.getDownTreeGroups().isEmpty() && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(result, this, updateGroupObject.value, stack);
+                    GroupObjectInstance updatedGroup = updateGroupObject.group;
+                    updatedGroup.update(result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
+
+                    if (updatedGroup != group)
+                        updateContainersShowIfs(updatedGroup.entity, changeProps.result);
                 }
+
+                if (updateGroupObject == null || updateGroupObject.group != group)
+                    updateContainersShowIfs(group.entity, changeProps.result);
             } catch (EmptyStackException e) {
                 systemLogger.error("OBJECTS : " + group + " FORM " + entity.toString());
                 throw Throwables.propagate(e);
@@ -2416,9 +2427,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
-
-        updateContainersShowIfs(changedProps);
-
         updateBaseComponentsShowIfs(result);
 
         return updatePropertiesShowIfs(changedProps, result);
@@ -2537,9 +2545,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return true;
     }
 
-    private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
-        ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
-                key -> key.getShowIf() != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false)));
+    private void updateContainersShowIfs(GroupObjectEntity updatedGroup, ChangedData changedProps) throws SQLException, SQLHandledException {
+        ImSet<ComponentView> components = entity.getPropertyComponentShowIfs().get(updatedGroup);
+        if(components == null)
+            components = SetFact.EMPTY();
+
+        ImSet<ComponentView> changed = components.<SQLException, SQLHandledException>filterFnEx(
+                key -> refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false));
 
         if(changed.isEmpty()) // optimization
             return;
