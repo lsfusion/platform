@@ -1157,7 +1157,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void copyDataToClipboard(Cell cell, Element renderElement) {
         // Check if we have column selection
-        if (!rowSelectValues.isEmpty() && startSelectColumn >= 0) {
+        if (hasSelection()) {
             Element tableElement = getTableDataFocusElement();
             CopyPasteUtils.addCopyingClass(tableElement);
 
@@ -1191,6 +1191,25 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         // No column selection, use parent implementation
         super.copyDataToClipboard(cell, renderElement);
+    }
+
+    protected boolean hasSelection() {
+        return !rowSelectValues.isEmpty() && startSelectColumn >= 0;
+    }
+
+    @Override
+    protected List<Integer> getSelectedPasteColumns(Cell cell) {
+        if (!hasSelection()) {
+            return null;
+        }
+
+        ArrayList<Integer> selectedColumns = new ArrayList<>();
+        int colStart = Math.min(startSelectColumn, endSelectColumn);
+        int colEnd = Math.max(startSelectColumn, endSelectColumn);
+
+        for (int col = colStart; col <= colEnd; col++)
+            selectedColumns.add(col);
+        return selectedColumns;
     }
 
     @Override

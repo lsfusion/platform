@@ -424,7 +424,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final ArrayList<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final ArrayList<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, boolean forceGroupChange) throws RemoteException {
         return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
@@ -444,7 +444,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            form.pasteExternalTable(properties, keys, values, rawValues, stack, context);
+            form.pasteExternalTable(properties, keys, values, rawValues, forceGroupChange, stack, context);
         });
     }
 

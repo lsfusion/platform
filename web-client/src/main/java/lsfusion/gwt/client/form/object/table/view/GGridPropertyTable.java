@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -24,7 +25,6 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
-import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
@@ -37,6 +37,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
@@ -834,10 +835,26 @@ protected Double getUserFlex(int i) {
             pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line)));
     }
 
+    protected List<Integer> getSelectedPasteColumns(Cell cell) {
+        return null;
+    }
+
     @Override
     public void pasteData(Cell cell, Element renderElement, List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
-            form.pasteValue(getEditContext(cell, renderElement), table.get(0).get(0));
+            int currentColumn = cell.getColumnIndex();
+
+            List<Integer> selectedColumns = getSelectedPasteColumns(cell);
+            boolean forceGroupChange = selectedColumns != null;
+            for (int selectedColumn : forceGroupChange ? selectedColumns : Collections.singletonList(cell.getColumnIndex())) {
+                Cell pasteCell = cell;
+                Element pasteRenderElement = renderElement;
+                if (selectedColumn != currentColumn) {
+                    pasteCell = new Cell(cell.getRowIndex(), selectedColumn, getColumn(selectedColumn), (RowIndexHolder) cell.getRow());
+                    pasteRenderElement = getRenderElement(pasteCell, getElement(pasteCell));
+                }
+                form.pasteValue(getEditContext(pasteCell, pasteRenderElement), table.get(0).get(0), forceGroupChange);
+            }
         }
     }
 
@@ -981,7 +998,7 @@ protected Double getUserFlex(int i) {
 
             @Override
             public void changeProperty(PValue changeValue, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
-                form.changeProperty(getEditContext(cell, renderElement), changeValue, GEventSource.CUSTOM, renderValueSupplier);
+                form.changeProperty(getEditContext(cell, renderElement), changeValue, renderValueSupplier);
             }
 
             @Override

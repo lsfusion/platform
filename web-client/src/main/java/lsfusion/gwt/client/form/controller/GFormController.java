@@ -926,6 +926,10 @@ public class GFormController implements EditManager {
     }
 
     public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns) {
+        pasteExternalTable(propertyList, columnKeys, table, patterns, false);
+    }
+
+    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns, boolean forceGroupChange) {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
 
@@ -955,7 +959,7 @@ public class GFormController implements EditManager {
             propertyIdList.add(propertyDraw.ID);
         }
 
-        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues));
+        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues, forceGroupChange));
     }
 
     public void copyExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, Consumer<List<List<String>>> callback) {
@@ -998,12 +1002,12 @@ public class GFormController implements EditManager {
         });
     }
 
-    public void pasteValue(ExecuteEditContext editContext, String sValue) {
+    public void pasteValue(ExecuteEditContext editContext, String sValue, boolean forceGroupChange) {
         GPropertyDraw property = editContext.getProperty();
         GType externalType = property.getExternalChangeType();
         String pattern = editContext.getUpdateContext().getPattern();
         if(externalType != null) {
-            changeProperty(editContext, property.parsePaste(sValue, externalType, pattern), GEventSource.PASTE, null);
+            changeProperty(editContext, property.parsePaste(sValue, externalType, pattern), forceGroupChange, GEventSource.PASTE, null);
         } else {
             ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
             propertyList.add(property);
@@ -1018,7 +1022,7 @@ public class GFormController implements EditManager {
             List<List<String>> tablePattern = new ArrayList<>();
             tablePattern.add(rowPattern);
 
-            pasteExternalTable(propertyList, columnKeys, table, tablePattern);
+            pasteExternalTable(propertyList, columnKeys, table, tablePattern, forceGroupChange);
         }
     }
 
@@ -1349,13 +1353,17 @@ public class GFormController implements EditManager {
         return fullCurrentKey.toGroupObjectValue();
     }
 
+    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
+        changeProperty(editContext, changeValue, false, GEventSource.CUSTOM, renderValueSupplier);
+    }
+
     // for custom renderer, paste
-    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, GEventSource eventSource, ChangedRenderValueSupplier renderValueSupplier) {
+    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, boolean forceGroupChange, GEventSource eventSource, ChangedRenderValueSupplier renderValueSupplier) {
         ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, changeValue, renderValueSupplier) : null;
         // noGroupChange is needed for custom renderers that use onBlur to change values:
         // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
         // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
-        String actionSID = GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
+        String actionSID = forceGroupChange ? GEditBindingMap.GROUP_CHANGE : GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
         executePropertyEventAction(null, editContext, actionSID, eventSource, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
             setRemoteValue(editContext, changedRenderValue, requestIndex);
         });

@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
@@ -150,7 +149,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public void pasteValue(String stringValue) {
-        form.pasteValue(this, stringValue);
+        form.pasteValue(this, stringValue, false);
     }
 
     @Override
@@ -160,7 +159,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
-        form.changeProperty(this, result, GEventSource.CUSTOM, renderValueSupplier);
+        form.changeProperty(this, result, renderValueSupplier);
     }
 
     @Override

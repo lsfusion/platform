@@ -1274,6 +1274,10 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table) throws IOException {
+        pasteExternalTable(propertyList, columnKeys, table, false);
+    }
+
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table, boolean forceGroupChange) throws IOException {
         int propertyColumns = propertyList.size();
 
         List<List<byte[]>> values = new ArrayList<>();
@@ -1304,7 +1308,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("pasteExternalTable") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIdList, serializedColumnKeys, values, rawValues);
+                return remoteForm.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIdList, serializedColumnKeys, values, rawValues, forceGroupChange);
             }
         });
     }
