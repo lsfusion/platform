@@ -211,8 +211,10 @@ public abstract class LogicsModule {
     }
 
     // AGGR (recheck)
-    protected ConstraintData getConstraintData(String message, ValueClass aggClass, LP<?> whereLP, DebugInfo.DebugPoint debugPoint) {
-        return getConstraintData(message, debugInfoFormatter -> getConstraintObject(aggClass, whereLP, debugInfoFormatter), debugPoint);
+    protected ConstraintData getConstraintData(String message, ValueClass aggClass, LP<?> whereLP, DebugInfo.DebugPoint debugPoint, boolean noEventDebugPoint) {
+        ConstraintData data = getConstraintData(message, debugInfoFormatter -> getConstraintObject(aggClass, whereLP, debugInfoFormatter), debugPoint);
+        data.noEventDebugPoint = noEventDebugPoint;
+        return data;
     }
 
     // =>
@@ -2241,32 +2243,19 @@ public abstract class LogicsModule {
     public static class ConstraintData {
         public final LP<?> message;
         public final DebugInfo.DebugPoint debugPoint;
-        public boolean noUseDebugPoint;
+        public boolean noEventDebugPoint;
 
         public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint) {
             this.message = message;
             this.debugPoint = debugPoint;
         }
-
-        public DebugInfo.DebugPoint getDebugPoint() {
-            return noUseDebugPoint ? null : debugPoint;
-        }
-
-        public DebugInfo.DebugPoint getLogDebugPoint() {
-            return debugPoint;
-        }
-
-        public ConstraintData noUseDebugPoint() {
-            this.noUseDebugPoint = true;
-            return this;
-        }
     }
 
     public void addConstraint(Property<?> property, ConstraintData data, boolean checkChange) {
-        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.getDebugPoint(), data.getLogDebugPoint());
+        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, data.debugPoint, data.noEventDebugPoint);
     }
 
-    protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint logDebugPoint) {
+    protected <P extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, DebugInfo.DebugPoint debugPoint, boolean noEventDebugPoint) {
 //      will not check for constraint prev value (i.e. do not let the user set any value if constraint was already broken)
         Property<?> property = lp.property;
         Property<?> messageProperty = messageLP.property;
@@ -2276,7 +2265,7 @@ public abstract class LogicsModule {
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
-        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", LocalizedString.create(logDebugPoint != null ? logDebugPoint.toString() : ""));
+        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", LocalizedString.create(debugPoint != null ? debugPoint.toString() : ""));
 
         Action<?> resolveAction = null;
         if(!property.noDB()) { // wrapping in SET
@@ -2287,7 +2276,7 @@ public abstract class LogicsModule {
 
         Action<?> eventAction = createConstraintAction(property, properties, messageProperty, true, debugCaption);
 
-        addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
+        addSimpleEvent(eventAction, resolveAction, event, noEventDebugPoint ? null : debugPoint, debugCaption);
     }
 
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
