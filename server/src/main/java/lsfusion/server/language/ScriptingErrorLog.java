@@ -662,4 +662,20 @@ public class ScriptingErrorLog {
     public void emitNotPrimitiveTypeInListError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "The action in LIST can only be used for built-in types");
     }
+
+    public void emitUnableToResolveFixedFilterPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Unable to resolve fixed filter property");
+    }
+
+    public void emitUnableToResolveUserFilterPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Unable to resolve user filter property");
+    }
+
+    public void emitUnableToResolveFixedOrderPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Unable to resolve fixed order property");
+    }
+
+    public void emitUnableToResolveUserOrderPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Unable to resolve user order property");
+    }
 }

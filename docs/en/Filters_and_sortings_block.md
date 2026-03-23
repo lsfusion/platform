@@ -9,7 +9,13 @@ The filter and order blocks of the [`FORM` statement](FORM_statement.md) – add
 ### Syntax
 
 ```
-FILTERS expression1, ..., expressionN
+FILTERS expression1 [filterType1], ..., expressionN [filterTypeN]
+```
+
+Options `filterType` can be listed after each expression. The following set of options is supported:
+
+```
+USER | FIXED
 ```
 
 ### Description
@@ -23,6 +29,16 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 - `expression1, ..., expressionN`
 
     List of filter expressions.
+
+- `filterType1, ..., filterTypeN`
+
+    Optional filter types for corresponding expressions.
+
+- `USER | FIXED`
+
+    Keywords defining the filter type:
+    `FIXED` is a fixed filter (default);
+    `USER` is a user filter.
 
 ### Examples
 
@@ -69,6 +85,7 @@ USERFILTERS formProperty1, ..., formPropertyN
 
 ### Description
 
+**deprecated since version 7**, use `FILTERS` with `USER` option.
 The user filters block adds custom filters to the form. These are similar to those that the user can add themselves by pressing `F3`, however they cannot be removed.
 
 Each filter is specified by a [property on a form](Properties_and_actions_block.md#name), which must already have been added to the form previously.
@@ -88,7 +105,7 @@ name = DATA ISTRING[100] (Stock);
 FORM stocks 'Stocks'
     OBJECTS st = Stock // add the 'Stock' object group
     PROPERTIES name(st) // add the 'name' property 
-    USERFILTERS name(st) // add a user filter for the 'name' property
+    FILTERS name(st) USER // add a user filter for the 'name' property
 ;
 ```
 
@@ -171,14 +188,20 @@ EXTEND FORM onStock
 
 ```
 ORDERS [FIRST]
-    formPropertyName1 [DESC] 
+    formPropertyName1 [orderType1] [DESC]
     ...
-    formPropertyNameN [DESC]
+    formPropertyNameN [orderTypeN] [DESC]
+```
+
+Options `orderType` can be listed after each expression. The following set of options is supported:
+
+```
+USER | FIXED
 ```
 
 ### Description
 
-An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence. These properties must be added to the form in advance.
+An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence.
 
 ### Parameters
 
@@ -190,9 +213,19 @@ An order block adds orderings to the form that will be automatically applied whe
 
     Names of properties or form actions specifying the order.
 
+- `orderOptions1, ..., orderOptionsN`
+
+    Sort options for the corresponding property.
+
 - `DESC`
 
     Keyword. Specifies reverse order. By default, ascending order is used.
+
+- `USER | FIXED`
+
+    Keywords that define the sort type:
+    `USER` is a user sort (default) that can be overridden from the UI. Property must be added to the form in advance.
+    `FIXED` is a fixed sort defined only in form code.
 
 ### Examples
 
@@ -203,5 +236,6 @@ EXTEND FORM onStock // extending the previously created form with balances
                                           // in descending order of the balance in the warehouse
                                           // it should be noted that the property is the property name on the 
                                           // form groupName, not just the property name nameGroupSku
+    ORDERS name(s) FIXED // fixed sort that is not replaced by user sorting
 ;
 ```

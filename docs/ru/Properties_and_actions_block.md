@@ -48,6 +48,8 @@ viewType
 NEWSESSION | NESTEDSESSION
 DRAW groupObjectName 
 insertPosition
+ORDER [USER | FIXED] [DESC]
+FILTER [USER | FIXED]
 QUICKFILTER formPropertyName
 ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
@@ -242,6 +244,34 @@ PROPERTIES(o) d=date, Order.number;
     - `DEFAULT`
 
         Ключевое слово, указывающее на то, что свойство или действие добавляется в порядке объявления. Является значением по умолчанию.
+
+- `ORDER [USER | FIXED] [DESC]`
+
+    Указание опции порядка для добавляемого свойства.
+
+    - `USER`
+
+        Свойство добавляется как пользовательская сортировка. Это поведение по умолчанию.
+
+    - `FIXED`
+
+        Свойство добавляется как фиксированная сортировка.
+
+    - `DESC`
+
+        Используется сортировка по убыванию. Если не указано, используется сортировка по возрастанию.
+
+- `FILTER [USER | FIXED]`
+
+    Указание опции фильтра для добавляемого свойства.
+
+    - `USER`
+
+        Свойство добавляется как пользовательский фильтр. Это поведение по умолчанию.
+
+    - `FIXED`
+
+        Свойство добавляется как фиксированный фильтр.
 
 - `QUICKFILTER formPropertyName`
 

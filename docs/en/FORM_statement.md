@@ -98,6 +98,7 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 - `USERFILTERS ...`
 
+    **deprecated since version 7**, use `FILTERS` with `USER` option.
     Adds [user-defined filters](Interactive_view.md#userfilters) to a form. [Syntax of the user filters block](Filters_and_sortings_block.md#userfilters).
 
 - `ORDER ...`

@@ -48,6 +48,8 @@ viewType
 NEWSESSION | NESTEDSESSION
 DRAW groupObjectName 
 insertPosition 
+ORDER [USER | FIXED] [DESC]
+FILTER [USER | FIXED]
 QUICKFILTER formPropertyName
 ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
@@ -242,6 +244,34 @@ In the current platform implementation, if the name and caption are not specifie
     - `DEFAULT`
 
         Keyword indicating that the property (action) is added in the order of declaration. This is the default value.
+
+- `ORDER [USER | FIXED] [DESC]`
+
+    Specifies the ordering option for the added property.
+
+    - `USER`
+
+        The property is added as a user order. This is the default behavior.
+
+    - `FIXED`
+
+        The property is added as a fixed order.
+
+    - `DESC`
+
+        Uses descending order. If not specified, ascending order is used.
+
+- `FILTER [USER | FIXED]`
+
+    Specifies the filtering option for the added property.
+
+    - `USER`
+
+        The property is added as a user filter. This is the default behavior.
+
+    - `FIXED`
+
+        The property is added as a fixed filter.
 
 - `QUICKFILTER formPropertyName`
 

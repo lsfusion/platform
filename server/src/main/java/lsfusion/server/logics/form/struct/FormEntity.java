@@ -31,6 +31,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -998,12 +999,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
-        String propertySID;
-        if(alias != null) {
-            propertySID = alias;
-        } else if (inheritedProperty.isNamed() && interfaces != null) {
-            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inherited != null ? inherited.second : PropertyDrawEntity.getMapping(propertyImplement, interfaces));
-        } else {
+        String propertySID = getPropertySID(alias, inheritedProperty, inherited != null ? inherited.second : interfaces != null ? PropertyDrawEntity.getMapping(propertyImplement, interfaces) : null);
+        if (propertySID == null) {
             propertySID = "propertyDraw" + version.getOrder() + propertyDraws.size(version);
         }
 
@@ -1015,6 +1012,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         propertyDraw.proceedDefaultDraw(this, version);
 
         return propertyDraw;
+    }
+
+    public String getPropertySID(String alias, ActionOrProperty inheritedProperty, List<String> mapping) {
+        if (alias != null) {
+            return alias;
+        }
+        if (inheritedProperty != null && inheritedProperty.isNamed() && mapping != null) {
+            return PropertyDrawEntity.createSID(inheritedProperty.getName(), mapping);
+        }
+        return null;
     }
 
     public void movePropertyDraw(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawEntity> location, Version version) {
@@ -1581,6 +1588,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             richDesign.addFilter(property, version);
     }
 
+    public void addUserOrder(PropertyDrawEntity propertyDraw, Boolean order, boolean first, Version version) {
+        if (first) {
+            addDefaultOrderFirst(propertyDraw, order, version);
+        } else {
+            addDefaultOrder(propertyDraw, order, version);
+        }
+    }
+
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.add(property, descending, version);
 
@@ -1593,6 +1608,18 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         if(view != null)
             view.addDefaultOrderFirst(property, descending, version);
+    }
+
+    public void addFixedOrder(OrderEntity order, Boolean descending, boolean first, Version version) {
+        if (first) {
+            addFixedOrderFirst(order, descending, version);
+        } else {
+            addFixedOrder(order, descending, version);
+        }
+    }
+
+    public void addFixedOrderFirst(OrderEntity order, boolean descending, Version version) {
+        fixedOrders.addFirst(order, descending, version);
     }
 
     public void addPivotColumn(PropertyDrawEntityOrPivotColumn column, Version version) {

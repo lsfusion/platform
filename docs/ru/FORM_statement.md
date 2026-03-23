@@ -99,6 +99,7 @@ LIST className OBJECT objectName
 
 - `USERFILTERS ...`
 
+    **deprecated since version 7**, используйте `FILTERS` с опцией `USER`.
     Добавляет [пользовательские фильтры](Interactive_view.md#userfilters) на форму. [Синтаксис блока пользовательских фильтров](Filters_and_sortings_block.md#userfilters).
 
 - `ORDERS ...`

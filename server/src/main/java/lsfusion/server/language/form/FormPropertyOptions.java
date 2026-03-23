@@ -51,7 +51,9 @@ public class FormPropertyOptions {
     private List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions;
     private String eventId;
     private String integrationSID;
+    private Boolean fixedOrder;
     private Boolean descending;
+    private Boolean fixedFilter;
     private Boolean filter;
     private Boolean pivotColumn;
     private Boolean pivotRow;
@@ -430,12 +432,28 @@ public class FormPropertyOptions {
     }
 
 
+    public Boolean getFixedOrder() {
+        return fixedOrder;
+    }
+
+    public void setFixedOrder(Boolean fixedOrder) {
+        this.fixedOrder = fixedOrder;
+    }
+
     public Boolean getDescending() {
         return descending;
     }
 
     public void setDescending(Boolean descending) {
         this.descending = descending;
+    }
+
+    public Boolean getFixedFilter() {
+        return fixedFilter;
+    }
+
+    public void setFixedFilter(Boolean fixedFilter) {
+        this.fixedFilter = fixedFilter;
     }
 
     public Boolean getFilter() {
@@ -537,7 +555,9 @@ public class FormPropertyOptions {
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
         merged.setExtNull(nvl(overrides.getExtNull(), extNull));
 
+        merged.setFixedOrder(nvl(overrides.getFixedOrder(), fixedOrder));
         merged.setDescending(nvl(overrides.getDescending(), descending));
+        merged.setFixedFilter(nvl(overrides.getFixedFilter(), fixedFilter));
         merged.setFilter(nvl(overrides.getFilter(), filter));
 
         merged.setPivotColumn(nvl(overrides.getPivotColumn(), pivotColumn));

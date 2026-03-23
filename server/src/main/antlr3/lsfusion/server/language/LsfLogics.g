@@ -1039,8 +1039,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
-		|   po=orderLiteral { $options.setDescending($po.descending); }
-		|   'FILTER' { $options.setFilter(true); }
+		|   ol=formPropertyOptionOrderLiteral { $options.setFixedOrder($ol.fixed); $options.setDescending($ol.descending); }
+		|   fl=formPropertyOptionFilterLiteral { $options.setFixedFilter($fl.fixed); $options.setFilter(true); }
 		|   'COLUMN' { $options.setPivotColumn(true); }
 		|   'ROW' { $options.setPivotRow(true); }
 		|   'MEASURE' { $options.setPivotMeasure(true); }
@@ -1051,8 +1051,22 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	id=ID              	{ if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($id.text, self.getVersion()); }
-	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
+	:	prop=formPropertyDrawSelector[$formStatement::form == null ? null : $formStatement::form.getForm()] { $property = $prop.property; }
+	;
+
+formPropertyDrawSelector[FormEntity form] returns [PropertyDrawEntity property]
+	:	id=ID
+		{
+			if (inMainParseState()) {
+				$property = ScriptingFormEntity.getPropertyDraw(self, form, $id.text, self.getVersion());
+			}
+		}
+	|	prop=mappedPropertyDraw
+		{
+			if (inMainParseState()) {
+				$property = ScriptingFormEntity.getPropertyDraw(self, form, $prop.name, $prop.mapping, self.getVersion());
+			}
+		}
 	;
 
 formMappedPropertiesList[FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
@@ -1198,21 +1212,6 @@ mappedPropertyObjectUsage returns [NamedPropertyUsage propUsage, List<String> ma
 		')'
 	;
 
-formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw = null]
-	:	pname=ID
-		{
-			if (inMainParseState()) {
-				$propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
-			}
-		}
-	|	mappedProp=mappedPropertyDraw	
-		{
-			if (inMainParseState()) {
-				$propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
-			}
-		}
-	;
-
 mappedPropertyDraw returns [String name, List<String> mapping]
 	:	pDrawName=ID { $name = $pDrawName.text; }
 		'('
@@ -1315,17 +1314,24 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 
 formFiltersList
 @init {
-	List<LP> properties = new ArrayList<>();
-	List<ImOrderSet<String>> propertyMappings = new ArrayList<>();
+	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedFilters(properties, propertyMappings, self.getVersion());
+		$formStatement::form.addScriptedFilters(properties, self.getVersion());
 	}
 }
 	:	'FILTERS'
-		decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
-	    (',' decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
+	    decl=propertyDrawOrPropertyExpr
+		{
+			properties.add($decl.result);
+		}
+	    (','
+	    	decl=propertyDrawOrPropertyExpr
+	    	{
+	    		properties.add($decl.result);
+	    	}
+	    )*
 	;
 
 formHintsList
@@ -1538,7 +1544,7 @@ userFiltersDeclaration
 
 formOrderByList
 @init {
-	List<PropertyDrawEntity> properties = new ArrayList<>();
+	List<PropertyDrawOrPropertyExpr> properties = new ArrayList<>();
 	List<Boolean> orders = new ArrayList<>();
 	boolean addFirst = false;
 }
@@ -1549,16 +1555,52 @@ formOrderByList
 }
 	:	'ORDERS'
 	    ('FIRST' { addFirst = true; })?
-	    orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); }
-		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.descending); } )*
+	    orderedProp=propertyDrawOrPropertyExprWithOrder
+		{
+			properties.add($orderedProp.result);
+			orders.add($orderedProp.descending);
+		}
+		(',' orderedProp=propertyDrawOrPropertyExprWithOrder
+		{
+			properties.add($orderedProp.result);
+			orders.add($orderedProp.descending);
+		} )*
 	;
-	
-formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean descending = false]
-	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $descending = true; })?
+
+propertyDrawOrPropertyExprWithOrder returns [PropertyDrawOrPropertyExpr result, boolean descending = false]
+	:	decl=propertyDrawOrPropertyExpr { $result = $decl.result; }
+		('DESC' { $descending = true; })?
+	;
+
+propertyDrawOrPropertyExpr returns [PropertyDrawOrPropertyExpr result = new PropertyDrawOrPropertyExpr()]
+@init {
+	List<TypedParameter> context = new ArrayList<>();
+	if (inMainParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
+}
+	:	expr=propertyExpressionOrTrivialLAOrCompoundID[context, null]
+		{
+			if (inMainParseState()) {
+				if ($expr.property.getLP() != null)
+					$result.mapping = self.getUsedNames(context, $expr.property.usedParams);
+				$result.propertyDraw = $formStatement::form.getUserPropertyDraw($result.mapping, $expr.property, $expr.la, $expr.id, self.getVersion());
+				$result.propertyExpr = $expr.property;
+			}
+		}
+		('USER' { $result.fixed = false; } | 'FIXED' { $result.fixed = true; })?
 	;
 
 orderLiteral returns [boolean descending = false]
     :   'ORDER' ('DESC' { $descending = true; })?
+    ;
+
+formPropertyOptionOrderLiteral returns [Boolean fixed = null, boolean descending = false]
+    :   'ORDER' ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })? ('DESC' { $descending = true; })?
+    ;
+
+formPropertyOptionFilterLiteral returns [Boolean fixed = null]
+    :   'FILTER' ('USER' { $fixed = false; } | 'FIXED' { $fixed = true; })?
     ;
 
 formPivotOptionsDeclaration
@@ -1756,6 +1798,20 @@ propertyExpressionOrLiteral[List<TypedParameter> context, ActionStatementContext
 propertyExpressionOrCompoundID[List<TypedParameter> context, ActionStatementContext actions] returns [LPWithParams property, LPCompoundID id]
     :   exprOrNotExpr=propertyExpressionOrNot[context, actions, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $id = self.checkCompoundIDInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrTrivialLAOrCompoundID[List<TypedParameter> context, ActionStatementContext actions] returns [LPWithParams property, LPTrivialLA la, LPCompoundID id]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, actions, false] { $property = $exprOrNotExpr.property;  }
+        {
+            if(inMainParseState()) {
+                if($exprOrNotExpr.ci instanceof LPTrivialLA)
+                    $la = (LPTrivialLA) $exprOrNotExpr.ci;
+                else if($exprOrNotExpr.ci instanceof LPCompoundID)
+                    $id = (LPCompoundID) $exprOrNotExpr.ci;
+                else
+                    self.checkNotExprInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci);
+            }
+        }
 ;
 
 propertyExpressionOrNot[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
@@ -5954,9 +6010,9 @@ formPropertyID returns [PropertyDrawEntity propertyDraw]
                 form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text);
             }
         }
-        prop=formPropertySelector[form]
+        prop=formPropertyDrawSelector[form]
         {
-            $propertyDraw = $prop.propertyDraw;
+            $propertyDraw = $prop.property;
         }
     ;
 
