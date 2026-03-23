@@ -1993,9 +1993,6 @@ public class GwtClientUtils {
         return $doc.getElementsByClassName(className);
     }-*/;
 
-    public static native boolean containsLineBreak(String value) /*-{
-        return $wnd.containsLineBreak(value);
-    }-*/;
     public static native boolean containsHtmlTag(String value) /*-{
         return $wnd.containsHtmlTag(value) != null;
     }-*/;

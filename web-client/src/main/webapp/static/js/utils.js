@@ -178,9 +178,6 @@ function jsDateEquals(date1, date2) {
     return date1.getTime() === date2.getTime();
 }
 
-function containsLineBreak(value) {
-    return value.indexOf("\n") >= 0;
-}
 function containsHtmlTag(value) {
     return value != null && value.match(".*\\<[^>]+\\>(.|\n|\r)*");
 }
@@ -256,7 +253,7 @@ function setCaptionNodeText(node, value) {
     setNodeText(node, fixHyphens(node.parentElement, value));
 }
 function setDataHtmlOrText(element, value, html) {
-    setHtmlOrText(element, value, html)
+    setHtmlOrText(element, value, html);
 }
 
 function initHtmlOrText(element, renderer) {
@@ -264,8 +261,6 @@ function initHtmlOrText(element, renderer) {
 }
 function clearHtmlOrText(element, renderer) {
     renderer(element, false);
-
-    element.classList.remove("html-or-text-no-multi-line");
 
     element.classList.remove("html-or-text-is-html");
 }
@@ -281,7 +276,7 @@ function hasLongStringWithoutSpacesAndHTMLTags(text, limit = 1100000) {
             return false;
 
         let c = text[i];
-        if (c === " " || c === "\n" || c === "\t") {
+        if (c === " " || c === "\n" || c === "\r" || c === "\t") {
             current = 0;
         } else {
             current++;
@@ -297,11 +292,6 @@ function setHtmlOrText(element, value, html) {
         element.classList.add("force-break");
     else
         element.classList.remove("force-break");
-
-    if(!html && (value == null || value.indexOf("\n") === -1)) // optimization
-        element.classList.add("html-or-text-no-multi-line");
-    else
-        element.classList.remove("html-or-text-no-multi-line");
 
     if(html)
         element.classList.add("html-or-text-is-html");

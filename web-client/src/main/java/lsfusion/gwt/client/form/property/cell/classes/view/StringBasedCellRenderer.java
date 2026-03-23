@@ -23,10 +23,18 @@ public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
         if (property.echoSymbols)
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
 
-        String string = PValue.getStringValue(value);
-        if (!isVarString)
-            string = GwtSharedUtils.rtrim(string);
+        String text = PValue.getStringValue(value);
 
-        return string;
+        if (text != null && !isMultiLine() && !property.collapse)
+            text = replaceLineBreaks(text);
+
+        if (!isVarString)
+            text = GwtSharedUtils.rtrim(text);
+
+        return text;
+    }
+
+    private static String replaceLineBreaks(String text) {
+        return text.replace("\r\n", " ").replace('\r', ' ').replace('\n', ' ');
     }
 }

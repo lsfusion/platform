@@ -21,11 +21,11 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         super(property);
     }
 
-    private static void renderText(Element element, boolean multiLine) {
+    private static void renderText(Element element) {
         GwtClientUtils.addClassName(element, "text-based-prop-value");
     }
 
-    private static void clearRenderText(Element element, boolean multiLine) {
+    private static void clearRenderText(Element element) {
         GwtClientUtils.removeClassName(element, "text-based-prop-value");
     }
 
@@ -81,7 +81,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             GwtClientUtils.addClassName(element, "text-based-value-required");
 
         if(getInputElement(element) == null)
-            renderText(element, isMultiLine());
+            renderText(element);
 
         return renderedAlignment;
     }
@@ -106,7 +106,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         }
 
         if(inputElement == null) // !isTagInput()
-            clearRenderText(element, isMultiLine());
+            clearRenderText(element);
 
         GwtClientUtils.clearDataHtmlOrText(getMainElement(element), property.getDataHtmlOrTextType());
 

@@ -1472,7 +1472,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
             return collapseValue;
 
         if (isProperty(context)) {
-            if (Property.isTextJsonOrXml(getAssertCellType(context)))
+            Type type = getAssertCellType(context);
+            if (Property.isTextJsonOrXml(type))
+                return false;
+
+            if(type instanceof StringClass)
                 return false;
         }
 
