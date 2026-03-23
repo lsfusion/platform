@@ -2369,18 +2369,27 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     @StackMessage("{message.getting.changed.objects}")
-    public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> mChangedProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
+    public void fillChangedObjects(MFormChanges result, ExecutionStack stack, QueryEnvironment queryEnv, Result<ChangedData> changeProps, MSet<PropertyDrawInstance> mChangedDrawProps) throws SQLException, SQLHandledException {
+        updateContainersShowIfs(GroupObjectEntity.NULL, changeProps.result);
+
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
             try {
-                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, mChangedProps, this, getObjectEvents(stack, group));
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, changeProps, this, getObjectEvents(stack, group));
                 if (selectObjects != null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
                 if (group.getDownTreeGroups().isEmpty() && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(result, this, updateGroupObject.value, stack);
+                    GroupObjectInstance updatedGroup = updateGroupObject.group;
+                    updatedGroup.update(result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
+
+                    if (updatedGroup != group)
+                        updateContainersShowIfs(updatedGroup.entity, changeProps.result);
                 }
+
+                if (updateGroupObject == null || updateGroupObject.group != group)
+                    updateContainersShowIfs(group.entity, changeProps.result);
             } catch (EmptyStackException e) {
                 systemLogger.error("OBJECTS : " + group + " FORM " + entity.toString());
                 throw Throwables.propagate(e);
@@ -2416,9 +2425,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
-
-        updateContainersShowIfs(changedProps);
-
         updateBaseComponentsShowIfs(result);
 
         return updatePropertiesShowIfs(changedProps, result);
@@ -2537,9 +2543,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return true;
     }
 
-    private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
-        ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
-                key -> key.getShowIf() != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false)));
+    private void updateContainersShowIfs(GroupObjectEntity updatedGroup, ChangedData changedProps) throws SQLException, SQLHandledException {
+        ImSet<ComponentView> components = entity.getPropertyComponentShowIfs().get(updatedGroup);
+        if(components == null)
+            components = SetFact.EMPTY();
+
+        ImSet<ComponentView> changed = components.<SQLException, SQLHandledException>filterFnEx(
+                key -> refresh || propertyUpdated(instanceFactory.getInstance(key.getShowIf()), SetFact.EMPTY(), changedProps, false));
 
         if(changed.isEmpty()) // optimization
             return;

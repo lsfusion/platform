@@ -1550,6 +1550,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<ComponentView>> getPropertyComponentShowIfs() {
+        return getPropertyComponents().filterFn(component -> component.getShowIf() != null).group(key -> {
+            GroupObjectEntity applyObject = key.getShowIf().getApplyObject(FormEntity.this, SetFact.EMPTY());
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
+    }
+
+    @IdentityLazy
     public ImSet<ComponentView> getBaseComponents() {
         MExclSet<ComponentView> mContainers = SetFact.mExclSet();
         view.mainContainer.fillBaseComponents(mContainers, false);
