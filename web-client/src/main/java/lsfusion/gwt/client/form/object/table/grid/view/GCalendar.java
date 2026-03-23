@@ -28,14 +28,14 @@ import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
 
     private final List<GPropertyDraw> calendarDateProps;
-    private GPropertyDraw calendarDateProp;
+    private GPropertyDraw currentDateProp;
     private JavaScriptObject calendar;
     private JsArray<JavaScriptObject> currentList;
 
     public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, List<GPropertyDraw> calendarDateProps) {
         super(form, grid, tableContainer);
         this.calendarDateProps = calendarDateProps;
-        this.calendarDateProp = calendarDateProps.get(0);
+        this.currentDateProp = calendarDateProps.get(0);
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -56,7 +56,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, getCalendarDateProps(calendarDateProps), calendarDateProp.integrationSID, getCalendarDatePropCaptions(calendarDateProps), locale);
+            calendar = createCalendar(element, controller, getCalendarDateProps(calendarDateProps), currentDateProp.integrationSID, getCalendarDatePropCaptions(calendarDateProps), locale);
         }
         updateEvents(list);
     }
@@ -100,20 +100,20 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return null;
     }
 
-    private String getCalendarDatePropSID() {
-        return calendarDateProp.integrationSID;
+    private String getCurrentDatePropSID() {
+        return currentDateProp.integrationSID;
+    }
+
+    private void setCurrentDateProp(String currentDatePropSID) {
+        currentDateProp = getCalendarDateProp(currentDatePropSID);
+    }
+
+    private boolean isDateTimeCurrentDateProp() {
+        return isDateTimeProp(currentDateProp);
     }
 
     private boolean isDateTimeProp(GPropertyDraw calendarDateProp) {
         return calendarDateProp != null && calendarDateProp.getValueType() instanceof GDateTimeType;
-    }
-
-    private void setCalendarDateProp(String calendarDatePropSID) {
-        calendarDateProp = getCalendarDateProp(calendarDatePropSID);
-    }
-
-    private boolean isDateTimeCalendarDateProp() {
-        return isDateTimeProp(calendarDateProp);
     }
 
     private void onCalendarDatePropChanged() {
@@ -121,7 +121,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             updateEvents(currentList);
         }
         if (calendar != null) {
-            applyDateIntervalViewFilter(calendar, controller, calendarDateProp.integrationSID, isDateTimeCalendarDateProp());
+            applyDateIntervalViewFilter(calendar, controller, getCurrentDatePropSID(), isDateTimeCurrentDateProp());
         }
     }
 
@@ -131,7 +131,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             return {
                 left: 'prev,next today',
                 center: 'title',
-                right: thisObj.@GCalendar::isDateTimeCalendarDateProp()() ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
+                right: thisObj.@GCalendar::isDateTimeCurrentDateProp()() ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
             };
         };
         var calendar = new $wnd.FullCalendar.Calendar(element, {
@@ -157,16 +157,16 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 };
             },
             datesSet: function () {
-                var currentCalendarDateProp = thisObj.@GCalendar::getCalendarDatePropSID(*)();
+                var currentCalendarDateProp = thisObj.@GCalendar::getCurrentDatePropSID(*)();
                 controller.setDateIntervalViewFilter(currentCalendarDateProp, @GCalendar::getEndEventFieldName(*)(currentCalendarDateProp), 1000,
-                    calendar.view.activeStart, calendar.view.activeEnd, thisObj.@GCalendar::isDateTimeCalendarDateProp()());
+                    calendar.view.activeStart, calendar.view.activeEnd, thisObj.@GCalendar::isDateTimeCurrentDateProp()());
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
             }
         });
 
-        thisObj.@GCalendar::setCalendarDateProp(Ljava/lang/String;)(calendarDateProp);
+        thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(calendarDateProp);
         calendar.render();
         setupDatePropSelector();
 
@@ -230,13 +230,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 option.text = (calendarDatePropCaptions && calendarDatePropCaptions.length > i && calendarDatePropCaptions[i]) ? calendarDatePropCaptions[i] : calendarDateProps[i];
                 datePropSelect.appendChild(option);
             }
-            datePropSelect.value = thisObj.@GCalendar::getCalendarDatePropSID(*)();
+            datePropSelect.value = thisObj.@GCalendar::getCurrentDatePropSID(*)();
             datePropSelect.addEventListener('change', function() {
                 var newCalendarDateProp = datePropSelect.value;
-                thisObj.@GCalendar::setCalendarDateProp(Ljava/lang/String;)(newCalendarDateProp);
+                thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(newCalendarDateProp);
                 calendar.setOption('headerToolbar', getHeaderToolbar());
                 setupDatePropSelector();
-                if (!thisObj.@GCalendar::isDateTimeCalendarDateProp()() && calendar.view.type === 'timeGridDay') {
+                if (!thisObj.@GCalendar::isDateTimeCurrentDateProp()() && calendar.view.type === 'timeGridDay') {
                     calendar.changeView('dayGridMonth');
                 }
                 thisObj.@GCalendar::onCalendarDatePropChanged(*)();
@@ -274,14 +274,14 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public final String foregroundColor;
 
         public Event(JavaScriptObject object, int index) {
-            String calendarDatePropSID = calendarDateProp.integrationSID;
+            String calendarDatePropSID = getCurrentDatePropSID();
             String endEventFieldName = calendarDatePropSID != null ? getEndEventFieldName(calendarDatePropSID) : null;
 
             title = getTitle(object);
             caption = getCaption(object, GCalendar.this::getTitle);
             image = getImage(object, () -> null);
             start = getStart(object, calendarDatePropSID);
-            allDay = !isDateTimeProp(calendarDateProp);
+            allDay = !isDateTimeCurrentDateProp();
             end = endEventFieldName != null ? getEnd(object, endEventFieldName, allDay): null;
             editable = isEditable(object, controller, calendarDatePropSID, endEventFieldName);
             durationEditable = isDurationEditable(object, controller, endEventFieldName);

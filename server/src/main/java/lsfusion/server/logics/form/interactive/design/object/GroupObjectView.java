@@ -77,8 +77,7 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
 
         outStream.writeBoolean(entity.getIsParent() != null);
         outStream.writeBoolean(pool.context.entity.isMap(entity));
-        pool.serializeCollection(outStream, getCalendarDateProps(pool, false));
-        pool.serializeCollection(outStream, getCalendarDateProps(pool, true));
+        pool.serializeCollection(outStream, getCalendarDateProps(pool));
 
         outStream.writeBoolean(pool.context.entity.hasHeaders(entity));
         outStream.writeBoolean(pool.context.entity.hasFooters(entity));
@@ -96,9 +95,9 @@ public class GroupObjectView extends IdentityView<GroupObjectView, GroupObjectEn
         outStream.writeUTF(getSID());
     }
 
-    private List<PropertyDrawView> getCalendarDateProps(ServerSerializationPool pool, boolean dateTime) {
+    private List<PropertyDrawView> getCalendarDateProps(ServerSerializationPool pool) {
         List<PropertyDrawView> result = new ArrayList<>();
-        for (PropertyDrawEntity property : pool.context.entity.getCalendarDateProps(entity, dateTime)) {
+        for (PropertyDrawEntity property : pool.context.entity.getCalendarDateProps(entity)) {
             result.add(pool.context.view.get(property));
         }
         return result;

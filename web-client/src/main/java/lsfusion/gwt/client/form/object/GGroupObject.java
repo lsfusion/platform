@@ -47,7 +47,6 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public boolean isMap;
     public List<GPropertyDraw> calendarDateProps = new ArrayList<>();
-    public List<GPropertyDraw> calendarDateTimeProps = new ArrayList<>();
 
     public boolean hasHeaders;
     public boolean hasFooters;

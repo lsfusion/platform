@@ -1247,12 +1247,12 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     @IdentityLazy
-    public List<PropertyDrawEntity> getCalendarDateProps(GroupObjectEntity entity, boolean dateTime) {
+    public List<PropertyDrawEntity> getCalendarDateProps(GroupObjectEntity entity) {
         List<PropertyDrawEntity> result = new ArrayList<>();
         for (PropertyDrawEntity property : getProperties(entity)) {
             if (property.isProperty(context) && property.isList(this)) {
                 Type type = property.getStaticType();
-                if (dateTime ? type instanceof DateTimeClass || type instanceof ZDateTimeClass : type instanceof DateClass) {
+                if (type instanceof DateClass || type instanceof DateTimeClass || type instanceof ZDateTimeClass) {
                     if (property.getIntegrationSID() != null) {
                         result.add(property);
                     }
@@ -1325,7 +1325,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         for(GroupObjectEntity group : getGroupsIt()) {
             if(group.getListViewTypeValue().isCalendar()) {
-                if (getCalendarDateProps(group, false).isEmpty() && getCalendarDateProps(group, true).isEmpty())
+                if (getCalendarDateProps(group).isEmpty())
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
                 if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR period propertyDraws found (dateTo or dateTimeTo)");

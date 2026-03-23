@@ -40,7 +40,6 @@ public class ClientGroupObject extends ClientIdentityObject {
 
     public boolean isMap;
     public List<ClientPropertyDraw> calendarDateProps = new ArrayList<>();
-    public List<ClientPropertyDraw> calendarDateTimeProps = new ArrayList<>();
 
     public boolean hasHeaders;
     public boolean hasFooters;
@@ -159,7 +158,6 @@ public class ClientGroupObject extends ClientIdentityObject {
         isRecursive = inStream.readBoolean();
         isMap = inStream.readBoolean();
         pool.deserializeCollection(calendarDateProps, inStream);
-        pool.deserializeCollection(calendarDateTimeProps, inStream);
 
         hasHeaders = inStream.readBoolean();
         hasFooters = inStream.readBoolean();

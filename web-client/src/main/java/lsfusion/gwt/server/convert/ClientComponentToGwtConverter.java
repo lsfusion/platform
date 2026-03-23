@@ -623,9 +623,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         for (ClientPropertyDraw calendarDateProp : clientGroupObject.calendarDateProps) {
             groupObject.calendarDateProps.add(convertOrCast(calendarDateProp));
         }
-        for (ClientPropertyDraw calendarDateTimeProp : clientGroupObject.calendarDateTimeProps) {
-            groupObject.calendarDateTimeProps.add(convertOrCast(calendarDateTimeProp));
-        }
         groupObject.parent = convertOrCast(clientGroupObject.parent);
 
         groupObject.hasHeaders = clientGroupObject.hasHeaders;

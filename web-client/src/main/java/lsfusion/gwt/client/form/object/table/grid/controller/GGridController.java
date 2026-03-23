@@ -140,14 +140,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private List<GPropertyDraw> getCalendarDateProps() {
-        List<GPropertyDraw> calendarDateProps = new ArrayList<>();
-        if (groupObject.calendarDateProps != null) {
-            calendarDateProps.addAll(groupObject.calendarDateProps);
-        }
-        if (groupObject.calendarDateTimeProps != null) {
-            calendarDateProps.addAll(groupObject.calendarDateTimeProps);
-        }
-        return calendarDateProps;
+        return groupObject.calendarDateProps != null ? groupObject.calendarDateProps : new ArrayList<>();
     }
 
     private void setCalendarTableView() {
