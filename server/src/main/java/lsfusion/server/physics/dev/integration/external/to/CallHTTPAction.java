@@ -58,8 +58,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static lsfusion.base.BaseUtils.getNotNullStringArray;
-import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.interop.session.ExternalUtils.getMultipartContentType;
 
 public abstract class CallHTTPAction extends CallAction {
@@ -117,7 +116,7 @@ public abstract class CallHTTPAction extends CallAction {
             return null;
 
         String transformedText = getTransformedText(context, param);
-        if(transformedText != null && !noEncode) {
+        if(!isRedundantString(transformedText) && !noEncode) {
             try {
                 transformedText = URIUtil.encodeQuery(normalizeHost ? normalizeIdnHost(transformedText) : transformedText, charset.toString());
             } catch (URIException | URISyntaxException | MalformedURLException e) {
