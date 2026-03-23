@@ -20,6 +20,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
@@ -1160,6 +1161,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public Expr aspectGetExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert joinImplement.size() == interfaces.size();
+
+        ThreadUtils.checkThreadInterrupted();
 
         ModifyChange<T> modify = propChanges.getModify(this);
         if(modify!=null) {
