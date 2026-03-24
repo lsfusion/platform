@@ -7,7 +7,9 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GPropertyContextMenuPopup {
@@ -27,6 +29,7 @@ public class GPropertyContextMenuPopup {
 
         final Result<JavaScriptObject> popup = new Result<>();
 
+        List<JavaScriptObject> tippyMenuItems = new ArrayList<>();
         final MenuBar menuBar = new MenuBar(true);
         for (final Map.Entry<String, String> item : contextMenuItems.entrySet()) {
             final String actionSID = item.getKey();
@@ -65,9 +68,10 @@ public class GPropertyContextMenuPopup {
                 });
             }
             menuBar.addItem(menuItem);
+            tippyMenuItems.add(GwtClientUtils.getProperty(menuItem.getElement(), "_tippy"));
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(popupOwner, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(popupOwner, menuBar, () -> tippyMenuItems.forEach(GwtClientUtils::clearTippyDelay));
     }
     
     private static String ensureMenuItemCaption(String caption) {

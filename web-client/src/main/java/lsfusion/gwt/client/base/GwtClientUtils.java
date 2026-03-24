@@ -900,6 +900,10 @@ public class GwtClientUtils {
     public static native void destroyTippy(JavaScriptObject tippy)/*-{
         tippy.destroy();
     }-*/;
+    public static native void clearTippyDelay(JavaScriptObject tippy)/*-{
+        if (tippy != null && tippy.clearDelayTimeouts != null)
+            tippy.clearDelayTimeouts();
+    }-*/;
     public static native Element getPopup(JavaScriptObject tippy)/*-{
         return tippy.popper;
     }-*/;
@@ -2011,6 +2015,10 @@ public class GwtClientUtils {
 
     public static native boolean hasProperty(JavaScriptObject object, String property)/*-{
         return !!object[property];
+    }-*/;
+
+    public static native JavaScriptObject getProperty(JavaScriptObject object, String property)/*-{
+        return object[property];
     }-*/;
 
     public static native void setAttributeOrStyle(Element element, String attribute, String value)/*-{
