@@ -908,17 +908,28 @@ public class GFormController implements EditManager {
     }
 
     private final NativeHashMap<GGroupObjectValue, PValue> delayedChangeSelectionRows = new NativeHashMap<>();
+    private final NativeSIDMap<GGroupObject, GChangeSelection> delayedChangeSelections = new NativeSIDMap<>();
 
     // has to be called setCurrentKey before
     public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
+        GChangeSelection delayedChangeSelection = delayedChangeSelections.get(group);
+        if (delayedChangeSelection == GChangeSelection.MOVE && changeSelection == GChangeSelection.MOVEEND) {
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        }
+
         // we need to pend at once until we'll get the real request index
         pendingChangeGroupObject(group, changeSelectionRows, Long.MAX_VALUE);
         if(changeSelectionRows != null)
             delayedChangeSelectionRows.putAll(changeSelectionRows);
+        if(changeSelection != null)
+            delayedChangeSelections.put(group, changeSelection);
+        else
+            delayedChangeSelections.remove(group);
 
         DeferredRunner.get().scheduleGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
+                delayedChangeSelections.remove(group);
                 changeGroupObject(group, key, changeSelection, delayedChangeSelectionRows);
                 delayedChangeSelectionRows.clear();
             }
