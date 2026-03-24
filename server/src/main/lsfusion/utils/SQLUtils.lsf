@@ -6,6 +6,8 @@ runSQL '{sql.utils.run.sql}'  INTERNAL  'lsfusion.server.physics.admin.interpret
 
 runJDBC '{sql.utils.run.jdbc}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunJDBCStatementAction' (STRING[100], TEXT);
 
+setAutoCommit INTERNAL 'lsfusion.server.physics.dev.integration.external.to.SetAutoCommitAction' (STRING[100], BOOLEAN);
+
 vacuumTableAction '{sql.utils.vacuum.table.action}'(Table table)  { 
     runSQL('VACUUM FULL ' + sid(table));
 }

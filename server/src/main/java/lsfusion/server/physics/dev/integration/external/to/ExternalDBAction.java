@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ExternalDBAction extends CallDBAction {
@@ -30,19 +29,7 @@ public class ExternalDBAction extends CallDBAction {
             throw new UnsupportedOperationException("EXTERNAL SQL 'LOCAL' is not supported, Use INTERNAL DB instead");
 
         SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
-
-        Connection conn = null;
-        ConnectionService connectionService = context.getConnectionService();
-        if(connectionService != null)
-            conn = connectionService.getSQLConnection(connectionString);
-        else if (connectionString.isEmpty())
-            throw new UnsupportedOperationException("Empty connection string is supported only inside of NEWCONNECTION operator");
-
-        if (conn == null) {
-            conn = DriverManager.getConnection(connectionString);
-            if (connectionService != null)
-                connectionService.putSQLConnection(connectionString, conn);
-        }
+        Connection conn = getSQLConnection(context, connectionString, true);
         conn.setReadOnly(false);
 
         try {
@@ -50,8 +37,24 @@ public class ExternalDBAction extends CallDBAction {
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         } finally {
-            if (connectionService == null)
+            if (context.getConnectionService() == null)
                 conn.close();
         }
+    }
+
+    public static Connection getSQLConnection(ExecutionContext<?> context, String connectionString, boolean createIfAbsent) throws SQLException {
+        Connection conn = null;
+        ConnectionService connectionService = context.getConnectionService();
+        if (connectionService != null)
+            conn = connectionService.getSQLConnection(connectionString);
+        else if (connectionString.isEmpty())
+            throw new UnsupportedOperationException("Empty connection string is supported only inside of NEWCONNECTION operator");
+
+        if (conn == null && createIfAbsent) {
+            conn = DriverManager.getConnection(connectionString);
+            if (connectionService != null)
+                connectionService.putSQLConnection(connectionString, conn);
+        }
+        return conn;
     }
 }
