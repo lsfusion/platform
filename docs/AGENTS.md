@@ -73,7 +73,14 @@ Language syntax notation convention:
   as part of that construction
   and any separate subrule
   MUST be presented
-  in its own syntax block
+  in its own syntax block;
+  if that subrule
+  has alternative variants,
+  they MUST be shown
+  as one rule
+  with explicit alternation
+  or described in prose
+  as alternative variants
 - the assistant MUST NOT move
   syntax constructions
   into the description;
