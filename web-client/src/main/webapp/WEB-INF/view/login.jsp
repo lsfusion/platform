@@ -49,7 +49,7 @@
                           action="login_check<%=queryString%>" >
                         <fieldset>
                             <div class="label-and-field">
-                                <label for="username"><%= ServerMessages.getString(request, "login.or.email") %></label>
+                                <label for="username"><%= ServerMessages.getString(request, "login") %></label>
                                 <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
                             </div>
                             <div class="label-and-field">
