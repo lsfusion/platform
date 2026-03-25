@@ -16,18 +16,25 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.Date;
+import java.util.function.Supplier;
 
 public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static JavaScriptObject initTooltip(Widget widget, final TooltipHelper tooltipHelper) {
-        return initTooltip(new PopupOwner(widget), tooltipHelper);
+        return initTooltip(new PopupOwner(widget), tooltipHelper, null);
     }
+
     public static JavaScriptObject initTooltip(PopupOwner popupOwner, final TooltipHelper tooltipHelper) {
+        return initTooltip(popupOwner, tooltipHelper, null);
+    }
+
+    public static JavaScriptObject initTooltip(PopupOwner popupOwner, final TooltipHelper tooltipHelper, Supplier<Element> referenceElementSupplier) {
         if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
             // assert that element is "new" and have no tippy (two mouseenter tippies will look odd, however manual tippy can be added)
             assert !GwtClientUtils.hasProperty(popupOwner.element, "_tippy");
-            JavaScriptObject tippy = GwtClientUtils.initTippy(popupOwner, MainFrame.showDetailedInfoDelay, "mouseenter", null, null, null);
+            JavaScriptObject tippy = GwtClientUtils.initTippy(popupOwner, MainFrame.showDetailedInfoDelay, "mouseenter",
+                    null, null, referenceElementSupplier);
             updateContent(tippy, tooltipHelper, null);
             return tippy;
         }
