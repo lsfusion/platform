@@ -316,7 +316,27 @@ public class SwingUtils {
     }
 
     public static String toHtml(String value) {
-        return "<pre>" + value.replace("\n", "<br>") + "</pre>";
+        return "<div style='white-space: pre-wrap;'>" + preserveWhitespace(value) + "</div>";
+    }
+
+    private static String preserveWhitespace(String value) {
+        StringBuilder result = new StringBuilder();
+        boolean previousWasSpace = false;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '\n') {
+                result.append("<br>");
+                previousWasSpace = false;
+            } else if (c == ' ') {
+                result.append(previousWasSpace ? "&nbsp;" : " ");
+                previousWasSpace = true;
+            } else {
+                result.append(c);
+                previousWasSpace = false;
+            }
+        }
+
+        return result.toString();
     }
 
     public static String toMultilineHtml(Component c, String text, Font font) {
