@@ -59,6 +59,23 @@ Language syntax notation convention:
   used in the documentation
   (for example, optional fragments
   are written in square brackets `[...]`)
+- the assistant MUST make sure
+  that the syntax block
+  reflects the full real grammar,
+  including all relevant variants
+- the assistant MUST NOT move
+  syntax constructions
+  into the description;
+  the description MUST explain
+  semantics, behavior, and usage
+- the assistant MUST NOT split
+  one syntax construction
+  into several separate syntax definitions
+  when the differences are semantic;
+  all semantic features,
+  special cases, and behavior differences
+  MUST be described
+  in the description of that syntax
 
 ### 2. Paradigm
 
