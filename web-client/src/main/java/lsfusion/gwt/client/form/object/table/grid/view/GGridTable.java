@@ -93,6 +93,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private long setRequestIndex;
 
+    private int getSelectedRowCount() {
+        Result<Integer> selectedRows = new Result<>(0);
+        rowSelectValues.foreachValue(value -> {
+            if (GridDataRecord.isRowSelect(value)) {
+                selectedRows.set(selectedRows.result + 1);
+            }
+        });
+        return selectedRows.result;
+    }
+
     public GGridTable(GFormController iform, GGridController igroupController, TableContainer tableContainer, GGridUserPreferences[] iuserPreferences) {
         super(iform, igroupController.groupObject, tableContainer, null);
 
@@ -1194,7 +1204,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     protected boolean hasSelection() {
-        return !rowSelectValues.isEmpty() && startSelectColumn >= 0;
+        return getSelectedRowCount() > 0 && startSelectColumn >= 0;
     }
 
     @Override
