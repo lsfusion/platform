@@ -58,6 +58,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP useLDAP;
     public LP useDefaultAuthentication;
+    public LP useEmailLoginFallback;
     public LP allowOnlyBaseDNUsers;
     public LP useServiceUser;
     public LP serviceUser;
@@ -177,6 +178,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         useLDAP = findProperty("useLDAP[]");
         useDefaultAuthentication = findProperty("useDefaultAuthentication[]");
+        useEmailLoginFallback = findProperty("useEmailLoginFallback[]");
         allowOnlyBaseDNUsers = findProperty("allowOnlyBaseDNUsers[]");
         useServiceUser = findProperty("useServiceUser[]");
         serviceUser = findProperty("serviceUser[]");
