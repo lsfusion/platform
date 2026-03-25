@@ -63,15 +63,17 @@ Language syntax notation convention:
   that the syntax block
   reflects the full real grammar,
   including all relevant variants
-- when the syntax section
-  introduces a named subrule
-  or syntax fragment,
-  the assistant MUST also
-  explain it in prose:
-  where it appears
-  and what it may contain;
-  it MUST NOT be left
-  only as a syntax line
+- each syntax block
+  MUST contain one
+  syntax construction;
+  any named subrule
+  or syntax fragment
+  introduced for it
+  MUST be explained in prose
+  as part of that construction
+  and any separate subrule
+  MUST be presented
+  in its own syntax block
 - the assistant MUST NOT move
   syntax constructions
   into the description;
