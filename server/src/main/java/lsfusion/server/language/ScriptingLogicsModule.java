@@ -1703,9 +1703,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
 
             LA<?> mainAction = findLAByPropertyUsage(pUsage, paramProps, params, true);
+            Pair<ValueClass, ImList<ValueClass>> resultClasses = mainAction.getResultClasses();
 
-            if(actions != null) {
-                LP<?> returnDataProp = PropertyFact.createReturnDataProp(mainAction.getResultClasses());
+            if(actions != null && resultClasses != null) {
+                LP<?> returnDataProp = PropertyFact.createReturnDataProp(resultClasses);
 
                 result = addScriptedJProp(user, returnDataProp, extendParamProps);
 
