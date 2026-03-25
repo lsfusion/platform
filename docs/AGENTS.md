@@ -66,21 +66,18 @@ Language syntax notation convention:
 - each syntax block
   MUST contain one
   syntax construction;
-  any named subrule
-  or syntax fragment
-  introduced for it
+  named subrules
+  and syntax fragments
   MUST be explained in prose
-  as part of that construction
-  and any separate subrule
-  MUST be presented
-  in its own syntax block;
-  if that subrule
-  has alternative variants,
-  they MUST be shown
-  as one rule
+  and, if separate,
+  given in their own
+  syntax blocks;
+  alternative variants
+  MUST be shown
   with explicit alternation
-  or described in prose
-  as alternative variants
+  or described in prose,
+  with common parts
+  factored out
 - the assistant MUST NOT move
   syntax constructions
   into the description;
@@ -88,12 +85,13 @@ Language syntax notation convention:
   semantics, behavior, and usage
 - the assistant MUST NOT split
   one syntax construction
-  into several separate syntax definitions
-  when the differences are semantic;
-  all semantic features,
-  special cases, and behavior differences
+  into separate syntax definitions
+  for semantic differences;
+  semantic features,
+  special cases,
+  and behavior differences
   MUST be described
-  in the description of that syntax
+  in its description
 
 ### 2. Paradigm
 
