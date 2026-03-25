@@ -227,6 +227,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             conditionView.onAdd(focusOnValue);
 
             if (keyEvent != null) {
+                enableApplyButton();
                 conditionView.startEditing(keyEvent);
             }
         }

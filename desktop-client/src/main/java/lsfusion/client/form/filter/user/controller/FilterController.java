@@ -236,6 +236,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         logicsSupplier.getFormController().getLayout().autoShowHideContainers();
 
         if (keyEvent != null) {
+            enableApplyButton();
             conditionView.startEditing(keyEvent);
         }
     }
