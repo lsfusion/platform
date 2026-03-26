@@ -673,9 +673,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private int shiftIndexOnRemove(int index, int removeIndex) {
         if (index == -1)
             return -1;
-        if (removeIndex == index)
+        if (removeIndex == index && !columns.isEmpty())
             return index == 0 ? 0 : index - 1;
-        if (removeIndex < index)
+        if (removeIndex <= index)
             return index - 1;
         return index;
     }
@@ -722,21 +722,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headers.remove(index);
         footers.remove(index);
 
-        if (columns.isEmpty()) {
-            startSelectColumn = -1;
-            endSelectColumn = -1;
-            setSelectedColumn(-1);
-            return;
-        }
-
         startSelectColumn = shiftIndexOnRemove(startSelectColumn, index);
         endSelectColumn = shiftIndexOnRemove(endSelectColumn, index);
 
         int selectedColumn = getSelectedColumn();
-        if(index == selectedColumn) {
+        if(index == selectedColumn && !columns.isEmpty()) {
             int column = selectedColumn == 0 ? 0 : selectedColumn - 1;
             changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
-        } else if (index < selectedColumn)
+        } else if (index <= selectedColumn)
             setSelectedColumn(selectedColumn - 1);
     }
 
