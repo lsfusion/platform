@@ -28,10 +28,17 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
 
             List<FileItem> items = fileUpload.parseRequest(request);
 
+            String sid = request.getParameter("sid");
+            if(sid != null && sid.contains("..")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Illegal characters in sid parameter: '..'");
+                return;
+            }
+
             // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
             for (FileItem item : items) {
                 if (!item.isFormField())
-                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, request.getParameter("sid") + "_" + item.getName(), fos -> {
+                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, sid + "_" + item.getName(), fos -> {
                         fos.write(item.get());
                     });
             }
