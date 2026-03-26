@@ -1265,8 +1265,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
             NodeList<TableCellElement> cells = tableWidget.getDataRows().getItem(0).getCells();
-            if (colToShow >= cells.getLength())
-                return;
             TableCellElement td = cells.getItem(colToShow);
 
             int columnLeft = td.getOffsetLeft() - getPrevStickyCellsOffsetWidth(cells, colToShow);
