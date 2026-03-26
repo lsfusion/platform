@@ -68,6 +68,8 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
@@ -775,5 +777,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public SQLSyntax getDbSyntax() {
         return getDbManager().getSyntax();
+    }
+
+    public Connection getSQLConnection(ExecutionContext<?> context, String connectionString) throws SQLException {
+        Connection conn = null;
+        ConnectionService connectionService = context.getConnectionService();
+        if (connectionService != null)
+            conn = connectionService.getSQLConnection(connectionString);
+        else if (connectionString.isEmpty())
+            throw new UnsupportedOperationException("Empty connection string is supported only inside of NEWCONNECTION operator");
+
+        if (conn == null) {
+            conn = DriverManager.getConnection(connectionString);
+            if (connectionService != null)
+                connectionService.putSQLConnection(connectionString, conn);
+        }
+        conn.setReadOnly(false);
+        return conn;
     }
 }
