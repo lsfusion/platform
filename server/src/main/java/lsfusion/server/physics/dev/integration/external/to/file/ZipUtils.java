@@ -79,32 +79,33 @@ public class ZipUtils {
                             dirSet.add(dir);
                     } else {
                         String filePath = ze.getName();
+                        if(!filePath.contains("../")) { //ignore files that can be unpacked outside the temp dir
+                            String[] splitted = filePath.split("/");
 
-                        String[] splitted = filePath.split("/");
-
-                        String fileName;
-                        if (splitted.length > 1) {
-                            StringBuilder path = new StringBuilder();
-                            for (int i = 0; i < splitted.length - 1; i++) {
-                                path.append("/").append(splitted[i]);
-                                File dir = new File(outputDirectory.getPath() + path);
-                                if (dir.mkdirs())
-                                    dirSet.add(dir);
+                            String fileName;
+                            if (splitted.length > 1) {
+                                StringBuilder path = new StringBuilder();
+                                for (int i = 0; i < splitted.length - 1; i++) {
+                                    path.append("/").append(splitted[i]);
+                                    File dir = new File(outputDirectory.getPath() + path);
+                                    if (dir.mkdirs())
+                                        dirSet.add(dir);
+                                }
+                                fileName = splitted[splitted.length - 1];
+                            } else {
+                                fileName = filePath;
                             }
-                            fileName = splitted[splitted.length - 1];
-                        } else {
-                            fileName = filePath;
-                        }
 
-                        outputFile = new File(outputDirectory.getPath() + "/" + filePath);
-                        FileOutputStream outputStream = new FileOutputStream(outputFile);
-                        int len;
-                        while ((len = inputStream.read(buffer)) > 0) {
-                            outputStream.write(buffer, 0, len);
+                            outputFile = new File(outputDirectory.getPath() + "/" + filePath);
+                            FileOutputStream outputStream = new FileOutputStream(outputFile);
+                            int len;
+                            while ((len = inputStream.read(buffer)) > 0) {
+                                outputStream.write(buffer, 0, len);
+                            }
+                            outputStream.close();
+                            result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
+                            BaseUtils.safeDelete(outputFile);
                         }
-                        outputStream.close();
-                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                        BaseUtils.safeDelete(outputFile);
                     }
                     ze = inputStream.getNextEntry();
                 }
