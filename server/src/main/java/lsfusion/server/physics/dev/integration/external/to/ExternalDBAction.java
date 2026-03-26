@@ -25,7 +25,7 @@ public class ExternalDBAction extends CallDBAction {
         if (connectionString.equals("LOCAL"))
             throw new UnsupportedOperationException("EXTERNAL SQL 'LOCAL' is not supported, Use INTERNAL DB instead");
 
-        try (ExecutionContext.ManagedConnection managedConn = context.getManagedSQLConnection(connectionString)) {
+        try (ExecutionContext.ManagedConnection managedConn = context.getSQLConnection(connectionString)) {
             Connection conn = managedConn.getConnection();
             conn.setReadOnly(false);
             readJDBC(context, conn, DefaultSQLSyntax.getSyntax(connectionString), OperationOwner.unknown);

@@ -483,10 +483,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    public ManagedConnection getManagedSQLConnection(String connectionString) throws SQLException {
-        return new ManagedConnection(getSQLConnection(connectionString), getConnectionService() == null);
-    }
-
     public static class ManagedConnection implements AutoCloseable {
         private final Connection connection;
         private final boolean shouldClose;
@@ -804,7 +800,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getDbManager().getSyntax();
     }
 
-    public Connection getSQLConnection(String connectionString) throws SQLException {
+    public ManagedConnection getSQLConnection(String connectionString) throws SQLException {
         Connection conn = null;
         ConnectionService connectionService = getConnectionService();
         if (connectionService != null)
@@ -817,6 +813,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             if (connectionService != null)
                 connectionService.putSQLConnection(connectionString, conn);
         }
-        return conn;
+        return new ManagedConnection(conn, connectionService == null);
     }
 }
