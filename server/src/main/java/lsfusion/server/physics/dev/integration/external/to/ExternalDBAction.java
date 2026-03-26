@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
-import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -26,8 +25,7 @@ public class ExternalDBAction extends CallDBAction {
         if (connectionString.equals("LOCAL"))
             throw new UnsupportedOperationException("EXTERNAL SQL 'LOCAL' is not supported, Use INTERNAL DB instead");
 
-        boolean shouldClose = context.getConnectionService() == null;
-        try (ManagedConnection managedConn = new ManagedConnection(context.getSQLConnection(connectionString), shouldClose)) {
+        try (ExecutionContext.ManagedConnection managedConn = context.getManagedSQLConnection(connectionString)) {
             Connection conn = managedConn.getConnection();
             conn.setReadOnly(false);
             readJDBC(context, conn, DefaultSQLSyntax.getSyntax(connectionString), OperationOwner.unknown);

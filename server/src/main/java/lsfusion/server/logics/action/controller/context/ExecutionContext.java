@@ -482,6 +482,31 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             ((DataSession)getEnv()).close();
         }
     }
+
+    public ManagedConnection getManagedSQLConnection(String connectionString) throws SQLException {
+        return new ManagedConnection(getSQLConnection(connectionString), getConnectionService() == null);
+    }
+
+    public static class ManagedConnection implements AutoCloseable {
+        private final Connection connection;
+        private final boolean shouldClose;
+
+        public ManagedConnection(Connection connection, boolean shouldClose) {
+            this.connection = connection;
+            this.shouldClose = shouldClose;
+        }
+
+        public Connection getConnection() {
+            return connection;
+        }
+
+        @Override
+        public void close() throws SQLException {
+            if (shouldClose)
+                connection.close();
+        }
+    }
+
     public NewSession<P> newSession() throws SQLException {
         return newSession(null);
     }
