@@ -44,9 +44,10 @@ public class DeferredRunner {
     }
 
     public void executeNow(String sid) {
-        Command command = commands.get(sid);
-        if (command != null) {
+        Command command = commands.remove(sid);
+        if (command != null && !command.isCanceled()) {
             command.execute();
+            command.cancel();
         }
     }
 
