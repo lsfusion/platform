@@ -307,6 +307,18 @@ The assistant SHOULD try to describe
 all significant details of the language
 and usage variants.
 
+When completing or extending
+existing documentation,
+the assistant SHOULD preserve
+as much of the current text
+as possible
+and prefer extending it
+over rewriting it,
+unless the current text
+is incorrect, unclear,
+or conflicts
+with the required structure.
+
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
 
