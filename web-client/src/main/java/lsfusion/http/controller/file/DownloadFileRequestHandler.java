@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.controller.MainController;
 import lsfusion.interop.session.ExternalUtils;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,8 +41,14 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String displayName = BaseUtils.getFileName(fileName);
 
         String version = request.getParameter("version");
-        if(version != null)
+        if (version != null) {
+            if (version.contains("..")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Illegal characters in version parameter: '..'");
+                return;
+            }
             fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
+        }
 
         Charset charset = ExternalUtils.downloadCharset;
         response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
