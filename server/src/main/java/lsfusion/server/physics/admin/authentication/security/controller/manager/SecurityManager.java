@@ -226,8 +226,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         if(userObject != null)
             return new Pair<>(userObject, login);
 
-        boolean useEmailLoginFallback = authenticationLM.useEmailLoginFallback.read(session) != null;
-        if(useEmailLoginFallback && email != null) {
+        boolean disableEmailLoginFallback = authenticationLM.disableEmailLoginFallback.read(session) != null;
+        if(email != null && !disableEmailLoginFallback) {
             ObjectValue readUser = authenticationLM.customUserEmail.readClasses(session, new DataObject(email));
             if(!readUser.isNull()) {
                 userObject = (DataObject) readUser;
