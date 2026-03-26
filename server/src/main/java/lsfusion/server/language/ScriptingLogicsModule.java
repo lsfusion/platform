@@ -3351,7 +3351,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
         LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), SelectTop.NULL(), false,
-                () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
+                () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint, false), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
         ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 
         // RESOLVING
@@ -3367,10 +3367,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<LP> optResDeleteConds = useOptResolve ? ListFact.singleton(addJProp(whereLP.getChanged(IncrementType.DROP, (deleteEvent != null ? deleteEvent : aggrEvent.onlyScope()).getScope()), prevGroupProps)) : null;
 
 //        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // new
-        addScriptedFollows(whereLP, new LPWithParams(aggrObjectLP, whereExpr), resolveNew, optResNewConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.new}", aggClass, whereLP, aggrDebugPoint).noUseDebugPoint());
+        addScriptedFollows(whereLP, new LPWithParams(aggrObjectLP, whereExpr), resolveNew, optResNewConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.new}", aggClass, whereLP, aggrDebugPoint, true));
 
 //        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // delete
-        addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.delete}", aggClass, whereLP, aggrDebugPoint).noUseDebugPoint());
+        addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.delete}", aggClass, whereLP, aggrDebugPoint, true));
 
         return new LPContextIndependent(aggrObjectLP, resultSignature, Collections.emptyList());
     }
@@ -5090,7 +5090,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         properties = checkSingleParams(properties);
         ImList<PropertyMapImplement<?, T>> mapImplements = (ImList<PropertyMapImplement<?, T>>) (ImList<?>) readCalcImplements(property.listInterfaces, getParamsPlainList(properties).toArray());
-        addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, this, debugPoint);
+        addConstraint(property, messageProperty, mapImplements, type, checkedProps, event, debugPoint, false);
     }
 
     private PrevScope prevScope = null;
