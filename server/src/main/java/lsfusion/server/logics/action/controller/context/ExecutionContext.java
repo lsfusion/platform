@@ -779,9 +779,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getDbManager().getSyntax();
     }
 
-    public Connection getSQLConnection(ExecutionContext<?> context, String connectionString) throws SQLException {
+    public Connection getSQLConnection(String connectionString) throws SQLException {
         Connection conn = null;
-        ConnectionService connectionService = context.getConnectionService();
+        ConnectionService connectionService = getConnectionService();
         if (connectionService != null)
             conn = connectionService.getSQLConnection(connectionString);
         else if (connectionString.isEmpty())

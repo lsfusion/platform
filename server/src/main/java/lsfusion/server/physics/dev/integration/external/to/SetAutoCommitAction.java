@@ -26,7 +26,10 @@ public class SetAutoCommitAction extends InternalAction {
         String connectionString = (String) context.getKeyValue(connectionStringInterface).getValue();
         boolean autoCommit = context.getKeyValue(autoCommitInterface).getValue() != null;
         if (connectionString != null) {
-            context.getSQLConnection(context, connectionString).setAutoCommit(autoCommit);
+            boolean shouldClose = context.getConnectionService() == null;
+            try (ManagedConnection managedConn = new ManagedConnection(context.getSQLConnection(connectionString), shouldClose)) {
+                managedConn.getConnection().setAutoCommit(autoCommit);
+            }
         }
     }
 

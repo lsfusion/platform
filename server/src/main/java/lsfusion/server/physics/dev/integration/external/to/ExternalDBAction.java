@@ -13,7 +13,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 
@@ -26,16 +25,11 @@ public class ExternalDBAction extends CallDBAction {
         if (connectionString.equals("LOCAL"))
             throw new UnsupportedOperationException("EXTERNAL SQL 'LOCAL' is not supported, Use INTERNAL DB instead");
 
-        SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
-        Connection conn = context.getSQLConnection(context, connectionString);
-
-        try {
-            readJDBC(context, conn, syntax, OperationOwner.unknown);
+        boolean shouldClose = context.getConnectionService() == null;
+        try (ManagedConnection managedConn = new ManagedConnection(context.getSQLConnection(connectionString), shouldClose)) {
+            readJDBC(context, managedConn.getConnection(), DefaultSQLSyntax.getSyntax(connectionString), OperationOwner.unknown);
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
-        } finally {
-            if (context.getConnectionService() == null)
-                conn.close();
         }
     }
 }
