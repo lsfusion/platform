@@ -13,6 +13,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 
@@ -27,7 +28,9 @@ public class ExternalDBAction extends CallDBAction {
 
         boolean shouldClose = context.getConnectionService() == null;
         try (ManagedConnection managedConn = new ManagedConnection(context.getSQLConnection(connectionString), shouldClose)) {
-            readJDBC(context, managedConn.getConnection(), DefaultSQLSyntax.getSyntax(connectionString), OperationOwner.unknown);
+            Connection conn = managedConn.getConnection();
+            conn.setReadOnly(false);
+            readJDBC(context, conn, DefaultSQLSyntax.getSyntax(connectionString), OperationOwner.unknown);
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         }

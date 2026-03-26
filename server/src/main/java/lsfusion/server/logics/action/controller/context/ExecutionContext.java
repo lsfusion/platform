@@ -792,7 +792,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             if (connectionService != null)
                 connectionService.putSQLConnection(connectionString, conn);
         }
-        conn.setReadOnly(false);
         return conn;
     }
 }
