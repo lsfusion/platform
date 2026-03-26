@@ -135,7 +135,7 @@ allowOnlyBaseDNUsers '{authentication.allow.only.base.dn.users}' = DATA BOOLEAN 
 allowOnlyGroupUsers '{authentication.allow.only.group.users}' = DATA STRING[200] ();
 
 useDefaultAuthentication '{authentication.use.default.authentication}' = DATA BOOLEAN() LAZY;
-useEmailLoginFallback '{authentication.use.email.login.fallback}' = DATA BOOLEAN() LAZY;
+disableEmailLoginFallback '{authentication.disable.email.login.fallback}' = DATA BOOLEAN() LAZY;
 useServiceUser '{authentication.use.service.user}' = DATA BOOLEAN();
 serviceUser '{authentication.service.user}' = DATA STRING();
 serviceUserPassword '{authentication.service.user.password}' = DATA STRING() ECHO;
@@ -603,7 +603,7 @@ FORM customUsers '{authentication.users}'
     PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart, defaultUserDateFormat, defaultUserTimeFormat
     PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart, serverDateFormat, serverTimeFormat
 
-    PROPERTIES() useLDAP, allowOnlyBaseDNUsers, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, allowOnlyGroupUsers, useDefaultAuthentication, useEmailLoginFallback, useServiceUser, serviceUser , serviceUserPassword
+    PROPERTIES() useLDAP, allowOnlyBaseDNUsers, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, allowOnlyGroupUsers, useDefaultAuthentication, disableEmailLoginFallback, useServiceUser, serviceUser , serviceUserPassword
     
     OBJECTS auth = OAuth2 
     PROPERTIES(auth)  NEW, DELETE,
@@ -628,8 +628,8 @@ DESIGN customUsers {
             tabbed = TRUE;
             fill = 1;
             NEW users {
-                MOVE PROPERTY(useEmailLoginFallback()) {
-                    tooltip = 'If enabled, login lookup may fallback to user email when login is not found';
+                MOVE PROPERTY(disableEmailLoginFallback()) {
+                    tooltip = 'If enabled, disables email fallback during login lookup (login-only identification)';
                 };
                 caption = '{authentication.users}';
                 MOVE BOX(u);
