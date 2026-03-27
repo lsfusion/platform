@@ -68,6 +68,8 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
@@ -480,6 +482,27 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             ((DataSession)getEnv()).close();
         }
     }
+
+    public static class ManagedConnection implements AutoCloseable {
+        private final Connection connection;
+        private final boolean shouldClose;
+
+        public ManagedConnection(Connection connection, boolean shouldClose) {
+            this.connection = connection;
+            this.shouldClose = shouldClose;
+        }
+
+        public Connection getConnection() {
+            return connection;
+        }
+
+        @Override
+        public void close() throws SQLException {
+            if (shouldClose)
+                connection.close();
+        }
+    }
+
     public NewSession<P> newSession() throws SQLException {
         return newSession(null);
     }
@@ -775,5 +798,21 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public SQLSyntax getDbSyntax() {
         return getDbManager().getSyntax();
+    }
+
+    public ManagedConnection getSQLConnection(String connectionString) throws SQLException {
+        Connection conn = null;
+        ConnectionService connectionService = getConnectionService();
+        if (connectionService != null)
+            conn = connectionService.getSQLConnection(connectionString);
+        else if (connectionString.isEmpty())
+            throw new UnsupportedOperationException("Empty connection string is supported only inside of NEWCONNECTION operator");
+
+        if (conn == null) {
+            conn = DriverManager.getConnection(connectionString);
+            if (connectionService != null)
+                connectionService.putSQLConnection(connectionString, conn);
+        }
+        return new ManagedConnection(conn, connectionService == null);
     }
 }
