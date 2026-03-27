@@ -323,6 +323,49 @@ systemctl start lsfusion6-client
 - Сервер приложений (Server) - `stdout`
 - Веб-сервера (Client) - `catalina.out` (так как веб-сервер запускается на базе Tomcat).
 
+### HTTPS (Let's Encrypt)
+
+Для настройки HTTPS с использованием [Let's Encrypt](https://letsencrypt.org/):
+
+<Tabs groupId="operating-systems" defaultValue="linux" values={[{label: 'Linux', value: 'linux'}]}>
+<TabItem value="linux">
+
+1.  Перенаправить порт `443` на `8443`:
+    ```shell script
+    sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 8443
+    ```
+2.  Установить [Certbot](https://certbot.eff.org/) и сгенерировать сертификат:
+    ```shell script
+    apt install certbot
+    certbot certonly --standalone -d myaddress.com
+    ```
+3.  Дать права на чтение сертификатов:
+    ```shell script
+    chmod -R +r /etc/letsencrypt
+    chmod +x /etc/letsencrypt/archive
+    chmod +x /etc/letsencrypt/live
+    ```
+4.  Обновить `/etc/lsfusion6-client/server.xml`:
+    ```xml
+    <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol" 
+               maxThreads="150" SSLEnabled="true" >
+        <SSLHostConfig>
+            <Certificate certificateKeyFile="/etc/letsencrypt/live/myaddress.com/privkey.pem" 
+                         certificateFile="/etc/letsencrypt/live/myaddress.com/cert.pem" 
+                         certificateChainFile="/etc/letsencrypt/live/myaddress.com/chain.pem" 
+                         type="RSA" />
+        </SSLHostConfig>
+    </Connector>
+    ```
+5.  Перезапустить веб-сервер (Client):
+    ```shell script
+    systemctl stop lsfusion6-client
+    systemctl start lsfusion6-client
+    ```
+
+</TabItem>
+</Tabs>
+
 ### [Локаль](Internationalization.md)
 
 Локаль, используемая платформой, определяется на основе локали, установленной в операционной системе. При 
