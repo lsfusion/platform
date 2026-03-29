@@ -1168,7 +1168,7 @@ public abstract class LogicsModule {
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction,
                                                              boolean notNull, FormSelector form) {
         // adding reset action
-        if (!notNull && targetProp != null) {
+        if (!notNull && targetProp != null && targetProp.listInterfaces.isEmpty()) {
             contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
         }
 

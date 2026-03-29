@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
@@ -777,7 +778,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                                 break;
                             }
                 }
-                notification.run(env, stack, new PushAsyncInput(new InputResult(ObjectValue.getValue(result, StringClass.text), contextAction)));
+                notification.run(env, stack, new PushAsyncInput(InputResult.singleValue(result, StringClass.text, contextAction)));
             }
 //                else
 //                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // can be broken when notification is sent several times

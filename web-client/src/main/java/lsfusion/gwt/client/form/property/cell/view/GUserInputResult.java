@@ -3,40 +3,44 @@ package lsfusion.gwt.client.form.property.cell.view;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class GUserInputResult implements Serializable {
-    public static final GUserInputResult canceled = new GUserInputResult(true, null, null);
+    private static final PValue[] EMPTY_PVALUES = new PValue[0];
+
+    public static final GUserInputResult canceled = new GUserInputResult(true, EMPTY_PVALUES, null);
 
     private boolean editCanceled;
-    private Serializable value;
+    private Serializable[] values;
     private Integer contextAction;
 
     @SuppressWarnings("UnusedDeclaration")
-    public GUserInputResult() {}
-
-//    paste / custom
-    public GUserInputResult(PValue value) {
-        this(value, null);
+    public GUserInputResult() {
+        this(false, new PValue[] {null}, null);
     }
 
-    // editor + context (value = null) + paste / custom
-    public GUserInputResult(PValue value, Integer contextAction) {
-        this(false, value, contextAction);
-    }
-    public GUserInputResult(boolean canceled, PValue value, Integer contextAction) {
+    private GUserInputResult(boolean canceled, PValue[] values, Integer contextAction) {
         this.editCanceled = canceled;
-        this.value = PValue.convertFileValueBack(value);
+        assert values != null;
+        this.values = PValue.convertFileValuesBack(values);
         this.contextAction = contextAction;
+        this.pValue = values.length > 0 ? values[0] : null;
+    }
 
-        this.pValue = value;
+    public static GUserInputResult singleValue(PValue value, Integer contextAction) {
+        return new GUserInputResult(false, new PValue[]{value}, contextAction);
+    }
+
+    public static GUserInputResult singleValue(PValue value) {
+        return singleValue(value, null);
     }
 
     public boolean isCanceled() {
         return editCanceled;
     }
 
-    public Serializable getValue() {
-        return value;
+    public Serializable[] getValues() {
+        return values;
     }
 
     private transient PValue pValue;
@@ -50,9 +54,7 @@ public class GUserInputResult implements Serializable {
 
     @Override
     public String toString() {
-        return "UserInputResult[editCanceled=" + editCanceled + ", value=" + value + "]";
+        return "UserInputResult[editCanceled=" + editCanceled + ", values=" + Arrays.toString(values) + "]";
     }
-
-
 
 }

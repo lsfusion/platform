@@ -1147,7 +1147,7 @@ public class GFormController implements EditManager {
         for (int i = 0; i < length; i++) {
             eventSources[i] = GEventSource.CUSTOM;
             PValue newValue = newValues[i];
-            pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
+            pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(GUserInputResult.singleValue(newValue));
         }
         String actionSID = GEditBindingMap.changeOrGroupChange();
         if(length == 1 && pushAsyncResults[0] == null) // execute action / event
@@ -1371,14 +1371,14 @@ public class GFormController implements EditManager {
         // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
         // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
         String actionSID = forceGroupChange ? GEditBindingMap.GROUP_CHANGE : GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
-        executePropertyEventAction(null, editContext, actionSID, eventSource, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
+        executePropertyEventAction(null, editContext, actionSID, eventSource, changeValue == PValue.UNDEFINED ? null : GUserInputResult.singleValue(changeValue), requestIndex -> {
             setRemoteValue(editContext, changedRenderValue, requestIndex);
         });
     }
 
     // for quick access actions (in toolbar and keypress)
     public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GEventSource eventSource, int contextAction) {
-        executePropertyEventAction(handler, editContext, actionSID, eventSource, new GUserInputResult(null, contextAction), requestIndex -> {});
+        executePropertyEventAction(handler, editContext, actionSID, eventSource, GUserInputResult.singleValue(null, contextAction), requestIndex -> {});
     }
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)

@@ -10,10 +10,6 @@ public class ClientPushAsyncInput extends ClientPushAsyncResult {
     
     public final UserInputResult result;
 
-    public ClientPushAsyncInput(Object value, Integer contextAction) {
-        this(new UserInputResult(value, contextAction));
-    }
-
     public ClientPushAsyncInput(UserInputResult result) {
         this.result = result;
     }

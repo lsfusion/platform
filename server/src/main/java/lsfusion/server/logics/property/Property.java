@@ -81,7 +81,6 @@ import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.action.session.table.NoPropertyWhereTableUsage;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.StringFileBasedClass;

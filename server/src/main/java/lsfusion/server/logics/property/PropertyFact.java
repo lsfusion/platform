@@ -736,8 +736,8 @@ public class PropertyFact {
         return PropertyFact.createXUnion(innerInterfaces, (PropertyInterfaceImplement<L>) ifTrue, ifFalse);
     }
 
-    public static SessionDataProperty createInputDataProp(ValueClass valueClass) {
-        return SessionDataProperty.createChange(LocalizedString.NONAME, valueClass, LocalNestedType.REQUESTED);
+    public static SessionDataProperty createInputDataProp(ValueClass valueClass, ImList<ValueClass> paramClasses) {
+        return SessionDataProperty.createChange(LocalizedString.NONAME, paramClasses.toArray(new ValueClass[paramClasses.size()]), valueClass, false, LocalNestedType.REQUESTED);
     }
 
     public static SessionDataProperty createImportDataProp(ValueClass valueClass, ImList<ValueClass> paramClasses) {

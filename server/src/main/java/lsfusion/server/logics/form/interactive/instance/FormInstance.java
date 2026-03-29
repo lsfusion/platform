@@ -23,6 +23,7 @@ import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.ChangeSelection;
+import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.form.interactive.event.*;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
@@ -1152,6 +1153,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
+    private static InputResult getPasteResult(Object value, ConcreteClass concreteClass) {
+        return InputResult.singleValue(value, concreteClass);
+    }
+
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> pasteRows, boolean forceGroupChange, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
             String actionSID = forceGroupChange ? GROUP_CHANGE : CHANGE;
@@ -1163,18 +1168,21 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
                 Type propType = property.isProperty(context) ? property.entity.getPasteType(context) : null;
                 executeEventAction(property, actionSID, key, EventSource.PASTE, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
-                        new PushAsyncInput(new InputResult(ObjectValue.getValue(value.first, ((AsyncInput) asyncEventExec).changeType), null)) :
+                        new PushAsyncInput(getPasteResult(value.first, ((AsyncInput) asyncEventExec).changeType)) :
                         new PushExternalInput(type -> {
+                            Object paste;
                             if(propType != null && type.getCompatible(propType) != null)
-                                return value.first;
-
-                            try {
-                                // actually this method is used only when INPUT type does not coincide with the render type (otherwise parsing is made on the client)
-                                // so we won't use any pattern here
-                                return type.parseUI(value.second);
-                            } catch (ParseException e) {
-                                return null;
+                                paste = value.first;
+                            else {
+                                try {
+                                    // actually this method is used only when INPUT type does not coincide with the render type (otherwise parsing is made on the client)
+                                    // so we won't use any pattern here
+                                    paste = type.parseUI(value.second);
+                                } catch (ParseException e) {
+                                    paste = null;
+                                }
                             }
+                            return getPasteResult(paste, type);
                         }), stack, context);
             }
         }

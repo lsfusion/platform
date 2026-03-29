@@ -740,7 +740,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         try {
             return requestUser(dataClass, () -> {
                 InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null, null);
-                return inputResult != null ? inputResult.value : null;
+                return inputResult != null ? inputResult.getSingleValue() : null;
             });
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
@@ -751,7 +751,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         if(pushedAsyncResult instanceof PushAsyncInput)
             return ((PushAsyncInput) dropPushedAsyncResult(drop)).value;
         if(pushedAsyncResult instanceof PushExternalInput)
-            return new InputResult(ObjectValue.getValue(((PushExternalInput) dropPushedAsyncResult(drop)).value.apply(dataClass), dataClass), null);
+            return ((PushExternalInput) dropPushedAsyncResult(drop)).value.apply(dataClass);
         return null;
     }
 

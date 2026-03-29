@@ -50,6 +50,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.async.PushExternalInput;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -1268,7 +1269,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         if(propertyDraw.isProperty(context)) {
             asyncResult = new PushExternalInput(type -> {
                 try {
-                    return type.parseJSON(value);
+                    return InputResult.singleValue(type.parseJSON(value), type);
                 } catch (ParseException e) {
                     throw Throwables.propagate(e);
                 }

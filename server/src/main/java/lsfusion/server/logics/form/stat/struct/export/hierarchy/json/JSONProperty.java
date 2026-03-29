@@ -287,7 +287,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             context.dropRequestCanceled(); // need this because in group change push request there is a request canceled check
             if(pushedInput != null) {
                 // later maybe it makes sense to use simple new JSONObject() (since toString is used in getAsyncValues)
-                JSONObject rootObject = JSONReader.toJSONObject(InternalAction.readJSON(pushedInput.value, null), true);
+                JSONObject rootObject = JSONReader.toJSONObject(InternalAction.readJSON(pushedInput.getSingleValue(), null), true);
                 if(rootObject != null)
                     change(rootObject, context);
             }

@@ -1,28 +1,17 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
 import lsfusion.server.base.AppServerImage;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.infer.ClassType;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-
-import java.util.function.Function;
-
-import static lsfusion.server.logics.property.oraction.PropertyInterface.getIdentityMap;
 
 // pretty similar to ContextFilterEntity
 public abstract class InputListEntity<P extends PropertyInterface, V extends PropertyInterface, T extends ActionOrProperty<P>> {

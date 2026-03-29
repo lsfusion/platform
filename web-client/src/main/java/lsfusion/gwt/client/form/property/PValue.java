@@ -315,4 +315,12 @@ public interface PValue {
             return ((DisplayString) value).rawString;
         return getValue(value);
     }
+
+    static Serializable[] convertFileValuesBack(PValue[] values) {
+        Serializable[] result = new Serializable[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = convertFileValueBack(values[i]);
+        }
+        return result;
+    }
 }

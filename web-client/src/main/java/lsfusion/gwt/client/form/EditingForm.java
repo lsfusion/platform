@@ -112,7 +112,7 @@ public abstract class EditingForm extends FormContainer {
             form.checkCommitEditing(); // we need to check commit editing, otherwise form will be in editing mode, and for example ClosePressed won't be flushed
 
         if(editFormCloseReason instanceof CommitReason)
-            contextForm.commitEditing(new GUserInputResult(), (CommitReason) editFormCloseReason);
+            contextForm.commitEditing(GUserInputResult.singleValue(null), (CommitReason) editFormCloseReason);
         else
             contextForm.cancelEditing((CancelReason) editFormCloseReason);
 

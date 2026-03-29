@@ -82,7 +82,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             else if (showConfirmDialog(property, actionSID)) return true;
 
             editPerformed = true;
-            ServerResponse response = form.executeEventAction(property, columnKey, actionSID, isBinding, contextAction != null ? new ClientPushAsyncInput(null, contextAction) : null);
+            ServerResponse response = form.executeEventAction(property, columnKey, actionSID, isBinding, contextAction != null ? new ClientPushAsyncInput(UserInputResult.singleValue(null, contextAction)) : null);
             try {
                 return internalDispatchServerResponse(response);
             } finally {
@@ -153,14 +153,15 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 try {
+                    Object value = inputResult.getValues()[0];
                     //только в этом случае можно асинхронно посланное значение использовать в качестве текущего
                     if (simpleChangeProperty.canUseChangeValueForRendering()) {
-                        handler.updateEditValue(inputResult.getValue());
+                        handler.updateEditValue(value);
                         if (updateEditValueCallback != null) {
-                            updateEditValueCallback.done(inputResult.getValue());
+                            updateEditValueCallback.done(value);
                         }
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, inputResult.getValue(), inputResult.getContextAction(), oldValueRequested, this);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, actionSID, value, inputResult.getContextAction(), oldValueRequested, this);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }
@@ -176,7 +177,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     }
 
     public void commitValue(Object value, Integer contextAction) {
-        internalCommitValue(new UserInputResult(value, contextAction));
+        internalCommitValue(UserInputResult.singleValue(value, contextAction));
     }
 
     public void cancelEdit() {

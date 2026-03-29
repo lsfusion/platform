@@ -3719,7 +3719,7 @@ noCancelClause returns [boolean result]
 
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext] returns [LAWithParams action, LAWithParams elseAction]
         // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionDefinitionBody to get right DelegationType
-    :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, true] { $action = $dDB.action; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseAction = $eDB.action; } )?)
+    :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, true] { $action = $dDB.action; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[oldContext, false] { $elseAction = $eDB.action; } )?)
 	|	';'
 ;
 
@@ -4448,6 +4448,7 @@ inputActionDefinitionBody[List<TypedParameter> context, ActionStatementContext a
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
+	boolean multipleInput = false;
 	boolean constraintFilter = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
@@ -4461,15 +4462,16 @@ inputActionDefinitionBody[List<TypedParameter> context, ActionStatementContext a
     List<List<QuickAccess>> quickAccesses = new ArrayList<>();
     List<LAWithParams> contextActions = new ArrayList<>();
     String customEditorFunction = null;
+    List<TypedParameter> doContext = newContext;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
+		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, doContext, multipleInput,
 		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, contextActions, assignDebugPoint,
 		 $fs.result, customEditorFunction);
 	}
 }
-	:	'INPUT'
+	:	'INPUT' ('MULTI' { multipleInput = true; })?
 	    in=mappedInput[newContext, actions]
         ( { assignDebugPoint = getCurrentDebugPoint(); }// copy paste of 'CHANGE' in formActionProps
             'CHANGE' { assign = true; constraintFilter = true; }
@@ -4486,6 +4488,12 @@ inputActionDefinitionBody[List<TypedParameter> context, ActionStatementContext a
             } else {
                 newListContext = newContext;
                 listDynamic = false;
+            }
+            // it's tricky here, we need row before input values (IMPORT does the same way), but we can't add it in MULTI because we need newListContext / newActionsContext without this row
+            if(multipleInput && inMainParseState()) {
+                doContext = new ArrayList<TypedParameter>(context);
+                self.getParamIndex(self.new TypedParameter("INTEGER", "row"), doContext, true, insideRecursion);
+                doContext.addAll(newContext.subList(context.size(), newContext.size()));
             }
 
             List<TypedParameter> newActionsContext = new ArrayList<TypedParameter>(newContext);
@@ -4510,7 +4518,7 @@ inputActionDefinitionBody[List<TypedParameter> context, ActionStatementContext a
         (acts = contextActions[newActionsContext] { actionImages = $acts.actionImages; keyPresses = $acts.keyPresses; quickAccesses = $acts.quickAccesses; contextActions = $acts.actions; })?
         fs=formSessionScopeClause?
 		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
-        dDB=doInputBody[context, newContext]
+        dDB=doInputBody[context, doContext]
 	;
 
 contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<String> keyPresses = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]

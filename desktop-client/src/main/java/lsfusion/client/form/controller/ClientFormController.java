@@ -75,6 +75,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.EventSource;
+import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
@@ -1054,7 +1055,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, new ClientPushAsyncInput(newValue, contextAction));
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, new ClientPushAsyncInput(UserInputResult.singleValue(newValue, contextAction)));
             }
 
             @Override

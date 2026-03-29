@@ -44,6 +44,6 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
 
     @Override
     public Object execute(RequestUserInputClientAction action) {
-        return new UserInputResult(value);
+        return UserInputResult.singleValue(value);
     }
 }

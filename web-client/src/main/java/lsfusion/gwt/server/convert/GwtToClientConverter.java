@@ -132,7 +132,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GUserInputResult.class)
     public UserInputResult convertInputResult(GUserInputResult gInputResult) {
-        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()), gInputResult.getContextAction());
+        return new UserInputResult(gInputResult.isCanceled(), convertInputValues(gInputResult.getValues()), gInputResult.getContextAction());
     }
 
     @Converter(from = GClassViewType.class)
@@ -220,6 +220,14 @@ public class GwtToClientConverter extends ObjectConverter {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    private Object[] convertInputValues(Object[] values) {
+        Object[] result = new Object[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = convertOrCast(values[i]);
+        }
+        return result;
     }
 
     @Converter(from = GFormUserPreferences.class)

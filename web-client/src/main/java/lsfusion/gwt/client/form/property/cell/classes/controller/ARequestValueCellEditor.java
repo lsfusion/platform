@@ -45,7 +45,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     protected void commitFinish(PValue value, Integer contextAction, CommitReason commitReason) {
-        editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
+        editManager.commitEditing(GUserInputResult.singleValue(value, contextAction), commitReason);
     }
 
     protected boolean isThisCellEditor() {

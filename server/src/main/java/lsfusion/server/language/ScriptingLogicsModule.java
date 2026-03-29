@@ -2448,7 +2448,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
-                                              List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
+                                              List<TypedParameter> oldContext, List<TypedParameter> doContext, boolean multipleInput, boolean assign, boolean constraintFilter, LPWithParams changeProp,
                                               LAPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -2456,7 +2456,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             listScope = FormSessionScope.OLDSESSION;
 
 //        assert targetProp == null;
-        LP<?> tprop = getInputProp(targetProp, requestValueClass, null);
+        LP<?> tprop = getInputProp(targetProp, requestValueClass, null, multipleInput ? ListFact.singleton(IntegerClass.instance) : ListFact.EMPTY());
 
         if (changeProp == null)
             changeProp = oldValue;
@@ -2510,7 +2510,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         else
             inputAction = new LAWithParams(action, Collections.emptyList());
 
-        return proceedInputDoClause(doAction, elseAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
+        return proceedInputDoClause(multipleInput, doAction, elseAction, oldContext, doContext, ListFact.singleton(tprop), inputAction,
                 ListFact.singleton(assign ? new Pair<>(changeProp, assignDebugPoint) : null));
     }
 
@@ -2598,7 +2598,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAWithParams inputAction = new LAWithParams(addConfirmAProp(headerProp != null, yesNo, targetProp,
                 getParamsPlainList(properties).toArray()), mergeAllParams(properties));
 
-        return proceedInputDoClause(doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.EMPTY(), inputAction, yesNo ? ListFact.singleton(null) : ListFact.EMPTY());
+        return proceedInputDoClause(false, doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.EMPTY(), inputAction, yesNo ? ListFact.singleton(null) : ListFact.EMPTY());
     }
 
     public LAWithParams addScriptedMessageProp(LPWithParams messageProp, LPWithParams headerProp, boolean noWait, MessageClientType type) {
@@ -4021,19 +4021,25 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LP<?> getInputProp(NamedPropertyUsage targetProp, ValueClass valueClass, Set<Property> usedProps) throws ScriptingErrorLog.SemanticErrorException {
+        return getInputProp(targetProp, valueClass, usedProps, ListFact.EMPTY());
+    }
+
+    private LP<?> getInputProp(NamedPropertyUsage targetProp, ValueClass valueClass, Set<Property> usedProps, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
         if(targetProp != null) {
-            LP<?> result = findLPNoParamsByPropertyUsage(targetProp);
+            LP<?> result = findLPParamByPropertyUsage(targetProp, paramClasses);
             if(usedProps != null)
                 usedProps.add(result.property);
             return result;
         }
 
-        // having the same property for different objects, we make implicit links between DIALOG / INPUT operators in the ACTIONS and INPUT operator itself (so DIALOG in ACTIONS will automatically transfer result to INPUT)
-        LP requested = getRequestedValueProperty(valueClass);
-        if(usedProps == null || usedProps.add(requested.property))
-            return requested;
+        if(paramClasses.isEmpty()) {
+            // having the same property for different objects, we make implicit links between DIALOG / INPUT operators in the ACTIONS and INPUT operator itself (so DIALOG in ACTIONS will automatically transfer result to INPUT)
+            LP requested = getRequestedValueProperty(valueClass);
+            if (usedProps == null || usedProps.add(requested.property))
+                return requested;
+        }
 
-        return new LP<>(PropertyFact.createInputDataProp(valueClass));
+        return new LP<>(PropertyFact.createInputDataProp(valueClass, paramClasses));
     }
 
     public <O extends ObjectSelector> List<TypedParameter> getTypedObjectsNames(MappedForm<O> mapped) {
@@ -4249,12 +4255,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             formAction = new LAWithParams(action, Collections.emptyList());
         }
 
-        return proceedInputDoClause(doAction, elseAction, oldContext, newContext, inputProps, formAction, changeProps);
+        return proceedInputDoClause(false, doAction, elseAction, oldContext, newContext, inputProps, formAction, changeProps);
     }
 
-    private LAWithParams proceedInputDoClause(LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LP> inputParamProps, LAWithParams proceedAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LAWithParams proceedInputDoClause(boolean multipleInput, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> doContext, ImList<LP> inputParamProps, LAWithParams proceedAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps) throws ScriptingErrorLog.SemanticErrorException {
         if (doAction != null)
-            doAction = extendDoParams(doAction, newContext, oldContext.size(), false, inputParamProps, null, changeProps);
+            doAction = extendDoAction(doAction, oldContext, doContext,
+                    oldContext.size() + (multipleInput ? 1 : 0), multipleInput, inputParamProps, null, changeProps,
+                    multipleInput ? inputParamProps.single() : null, null);
         return addScriptedRequestAProp(proceedAction, doAction, elseAction);
     }
 
@@ -4275,7 +4283,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 actions.add(fillNullsAction);
 
             if(doAction != null)
-                actions.add(extendImportDoAction(noParams, paramOld, oldContext, newContext, doAction, elseAction, whereLCP, importParamProps, nulls));
+                actions.add(extendDoAction(doAction, oldContext, newContext, paramOld, !noParams, importParamProps,
+                        nulls, ListFact.toList(importParamProps.size(), i -> null), whereLCP, elseAction));
 
             LAWithParams listAction = addScriptedListAProp(actions);
             // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах
@@ -4284,13 +4293,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedAction;
     }
 
-    private LAWithParams extendImportDoAction(boolean noParams, int paramOld, List<TypedParameter> oldContext, List<TypedParameter> newContext, LAWithParams doAction, LAWithParams elseAction, LP<?> whereLCP, ImList<LP> importParamProps, ImList<Boolean> nulls) throws ScriptingErrorLog.SemanticErrorException {
-        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = ListFact.toList(importParamProps.size(), i -> null);
-        doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, changeProps); // row parameter consider to be external (it will be proceeded separately)
-        if(!noParams) { // adding row parameter
-            modifyContextFlowActionDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext);
+    private LAWithParams extendDoAction(LAWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> doContext, int paramOld, boolean hasRow, ImList<LP> resultProps, ImList<Boolean> nulls, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps, LP<?> rowWhereProp, LAWithParams elseAction) throws ScriptingErrorLog.SemanticErrorException {
+        doAction = extendDoParams(doAction, doContext, paramOld, hasRow, resultProps, nulls, changeProps);
+        if(hasRow) {
+            modifyContextFlowActionDefinitionBodyCreated(doAction, doContext.subList(0, paramOld), oldContext);
 
-            doAction = addScriptedForAProp(oldContext, new LPWithParams(whereLCP, oldContext.size()), Collections.singletonList(new LPWithParams(oldContext.size())), doAction,
+            int rowParam = oldContext.size();
+            doAction = addScriptedForAProp(oldContext, new LPWithParams(rowWhereProp, rowParam), Collections.singletonList(new LPWithParams(rowParam)), doAction,
                     elseAction, null, null, false, false, false, Collections.emptyList(), false);
         }
         return doAction;

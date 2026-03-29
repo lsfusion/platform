@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action.input;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.file.AppImage;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -37,7 +38,7 @@ public class InputAction extends SystemExplicitAction {
     
     private final ValueClass valueClass;
     private final LP<?> targetProp;
-            
+
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
 //    public ImMap<Property, Boolean> aspectChangeExtProps() {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
@@ -63,7 +64,6 @@ public class InputAction extends SystemExplicitAction {
 
         this.valueClass = valueClass;
         this.targetProp = targetProp;
-        assert targetProp != null && targetProp.listInterfaces.isEmpty();
         this.customChangeFunction = customChangeFunction;
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
@@ -127,17 +127,10 @@ public class InputAction extends SystemExplicitAction {
         InputResult userValue = context.inputUserData(getInputClass(), oldValue, hasOldValue, getFullContextList(), customChangeFunction, getInputList(), getInputListActions(context.getRemoteContext()));
 
         Integer contextAction;
-        if(userValue != null && (contextAction = userValue.contextAction) != null)
-            contextActions.get(contextAction).execute(context, userValue.value);
-        else {
-            ImList<RequestResult> requestResults = null;
-            if(userValue != null) {
-                ObjectValue value = userValue.value;
-                if (!(valueClass instanceof DataClass))
-                    value = ((InputContextPropertyListEntity<?, ClassPropertyInterface>) getFullContextList()).readObject(context, value);
-                requestResults = RequestResult.get(value, valueClass.getType(), targetProp);
-            }
-            context.writeRequested(requestResults);
+        if(userValue != null && (contextAction = userValue.contextAction) != null) {
+            contextActions.get(contextAction).execute(context, userValue.getSingleValue());
+        } else {
+            context.writeRequested(RequestResult.get(resolveValues(context, userValue), getInputClass(), targetProp));
         }
     }
 
@@ -208,4 +201,23 @@ public class InputAction extends SystemExplicitAction {
             return true;
         return super.hasFlow(type, recursiveAbstracts);
     }
+
+    private ObjectValue resolveValue(ExecutionContext<ClassPropertyInterface> context, ObjectValue value) throws SQLException, SQLHandledException {
+        if (!(valueClass instanceof DataClass))
+            value = ((InputContextPropertyListEntity<?, ClassPropertyInterface>) getFullContextList()).readObject(context, value);
+        return value;
+    }
+
+    private ImList<ObjectValue> resolveValues(ExecutionContext<ClassPropertyInterface> context, InputResult userValue) throws SQLException, SQLHandledException {
+        if(userValue == null) // cancel
+            return null;
+
+        ImList<ObjectValue> userValues = userValue.getValues();
+        MList<ObjectValue> mValues = ListFact.mList(userValues.size());
+        for (int i = 0; i < userValues.size(); i++) {
+            mValues.add(resolveValue(context, userValues.get(i)));
+        }
+        return mValues.immutableList();
+    }
+
 }

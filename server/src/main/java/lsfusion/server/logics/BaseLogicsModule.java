@@ -78,6 +78,7 @@ import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -1312,8 +1313,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             requestCanceledProperty.change(true, env);
         } else {
             requestCanceledProperty.change((Object)null, env);
-            for(RequestResult requestResult : requestResults)
-                requestResult.targetProp.change(requestResult.chosenValue, env);
+            for(RequestResult requestResult : requestResults) {
+                LP targetProp = requestResult.targetProp;
+                ImList<ObjectValue> chosenValues = requestResult.chosenValues;
+                if(targetProp.listInterfaces.isEmpty())
+                    targetProp.change(chosenValues.single(), env);
+                else {
+                    env.getSession().dropChanges((DataProperty) targetProp.property);
+                    targetProp.change(env.getSession(), env, chosenValues.toIndexedMap());
+                }
+            }
         }
     }
 
