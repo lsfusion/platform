@@ -553,13 +553,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return objectsFieldName;
     }
 
-    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end, boolean isDateTimeFilter) {
-
-        PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
-        PValue rightBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(end) : GDateType.instance.fromJsDate(end);
-
+    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
+
+        boolean isDateTimeFilter = !(startColumn.property.getCellType() instanceof GDateType);
+        PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
+        PValue rightBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(end) : GDateType.instance.fromJsDate(end);
 
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(endColumn.property), grid.groupObject, endColumn.columnKey, leftBorder, GCompare.GREATER_EQUALS),
                 new GPropertyFilter(new GFilter(startColumn.property), grid.groupObject, startColumn.columnKey, rightBorder, GCompare.LESS_EQUALS));
@@ -865,8 +865,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     elementClicked = null;
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
-            setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, start, end, isDateTimeFilter) {
-                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, start, end, isDateTimeFilter);
+            setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, start, end) {
+                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, start, end);
             },
             setBooleanViewFilter: function (property, pageSize) {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);

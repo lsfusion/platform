@@ -139,13 +139,16 @@ public class GGridController extends GAbstractTableController {
         updateViewButtonsBackground(false, false, true, false, false);
     }
 
-    private String getCalendarDateType() {
+    private CalendarDateBinding getCalendarDateType() {
+        if (groupObject.isCalendarDate) {
+            return !groupObject.isCalendarPeriod ? CalendarDateBinding.date("date", null)
+                    : CalendarDateBinding.date("dateFrom", "dateTo");
+        }
 
-        if (groupObject.isCalendarDate)
-            return !groupObject.isCalendarPeriod ? "date" : "dateFrom";
-
-        if (groupObject.isCalendarDateTime)
-            return !groupObject.isCalendarPeriod ? "dateTime" : "dateTimeFrom";
+        if (groupObject.isCalendarDateTime) {
+            return !groupObject.isCalendarPeriod ? CalendarDateBinding.dateTime("dateTime", null)
+                    : CalendarDateBinding.dateTime("dateTimeFrom", "dateTimeTo");
+        }
 
         return null;
     }
