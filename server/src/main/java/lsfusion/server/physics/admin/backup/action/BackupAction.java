@@ -24,6 +24,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -88,7 +89,7 @@ public class BackupAction extends InternalAction {
                 excludeTables.addAll(extraExcludeTables);
                 dbManager.backupDB(context, backupFileName, threadCount, excludeTables);
 
-                findProperty("log[Backup]").change(IOUtils.readFileToString(backupFileLogPath, ExternalUtils.resourceCharset.name()), newContext, backupObject);
+                findProperty("log[Backup]").change(readBackupLog(backupFileLogPath), newContext, backupObject);
                 newContext.apply();
             } catch (Exception e) {
                 throw Throwables.propagate(e);
@@ -118,6 +119,12 @@ public class BackupAction extends InternalAction {
 
     private String getExtraExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         return (String) findProperty("extraExclude[]").read(context);
+    }
+
+    private String readBackupLog(String backupFileLogPath) throws IOException {
+        String log = IOUtils.readFileToString(backupFileLogPath, ExternalUtils.resourceCharset.name());
+        // Windows pg_dump output may contain NUL bytes, which PostgreSQL text parameters cannot accept.
+        return log.replace("\u0000", "");
     }
 
     @Override
