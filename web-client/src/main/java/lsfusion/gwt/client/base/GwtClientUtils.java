@@ -1011,73 +1011,76 @@ public class GwtClientUtils {
         List<List<String>> table = new ArrayList<>();
         List<String> row = new ArrayList<>();
 
-        char[] charline = line.toCharArray();
+        StringBuilder cell = new StringBuilder();
+        boolean inQuotes = false;
+        boolean cellStarted = false;
+        boolean quotedCell = false;
+        boolean quotedCellClosed = false;
+        boolean separatorInsideQuotes = false;
+        boolean escapedQuote = false;
 
-        int quotesCount = 0;
-        boolean quotesOpened = false;
-        boolean hasSeparator = false;
-        boolean isFirst = true;
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
 
-        int start = 0;
-
-        for (int i = 0; i <= charline.length; i++) {
-            boolean isCellEnd, isRowEnd, isQuote = false, isSeparator;
-
-            boolean isLast = i >= charline.length;
-            if (!isLast) {
-                isCellEnd = charline[i] == '\t';
-                isRowEnd = charline[i] == '\n';
-                isQuote = charline[i] == '"';
-                isSeparator = isCellEnd || isRowEnd;
-            } else {
-                if (isFirst)
-                    break;
-                isRowEnd = true;
-                isSeparator = true;
-            }
-
-            if (quotesOpened) {
-                if (isQuote) {
-                    quotesCount++;
-                } else {
-                    if (isSeparator) {
-                        if (quotesCount % 2 == 0 || isLast) {
-                            String cell = line.substring(hasSeparator ? (start + 1) : start, hasSeparator ? (i - 1) : i);
-                            row.add(GwtSharedUtils.nullEmpty(cell));
-                            if (isRowEnd) {
-                                table.add(row);
-                                row = new ArrayList<>();
-                            }
-
-                            start = i;
-                            quotesOpened = false;
-                            isFirst = true;
-                            hasSeparator = false;
-                        } else {
-                            hasSeparator = true;
-                        }
+            if (inQuotes) {
+                if (ch == '"') {
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                        cell.append('"');
+                        escapedQuote = true;
+                        i++;
+                    } else {
+                        inQuotes = false;
+                        quotedCellClosed = true;
                     }
+                } else {
+                    if (ch == '\t' || ch == '\n' || ch == '\r') {
+                        separatorInsideQuotes = true;
+                    }
+                    cell.append(ch);
                 }
-            } else if (isSeparator) {
-                row.add(GwtSharedUtils.nullEmpty(line.substring(start, i)));
-                if (isRowEnd) {
-                    table.add(row);
-                    row = new ArrayList<>();
+                cellStarted = true;
+            } else if (!cellStarted && ch == '"') {
+                inQuotes = true;
+                cellStarted = true;
+                quotedCell = true;
+            } else if (ch == '\t') {
+                addClipboardCell(row, cell, quotedCell, quotedCellClosed, separatorInsideQuotes, escapedQuote);
+                cellStarted = false;
+                quotedCell = false;
+                quotedCellClosed = false;
+                separatorInsideQuotes = false;
+                escapedQuote = false;
+            } else if (ch == '\n') {
+                addClipboardCell(row, cell, quotedCell, quotedCellClosed, separatorInsideQuotes, escapedQuote);
+                table.add(row);
+                row = new ArrayList<>();
+                cellStarted = false;
+                quotedCell = false;
+                quotedCellClosed = false;
+                separatorInsideQuotes = false;
+                escapedQuote = false;
+            } else if (ch == '\r') {
+                addClipboardCell(row, cell, quotedCell, quotedCellClosed, separatorInsideQuotes, escapedQuote);
+                table.add(row);
+                row = new ArrayList<>();
+                cellStarted = false;
+                quotedCell = false;
+                quotedCellClosed = false;
+                separatorInsideQuotes = false;
+                escapedQuote = false;
+                if (i + 1 < line.length() && line.charAt(i + 1) == '\n') {
+                    i++;
                 }
-
-                start = i;
-                isFirst = true;
-            } else if (isFirst) {
-                if (isQuote) {
-                    quotesOpened = true;
-                    quotesCount = 1;
-                }
-                start = i;
-                isFirst = false;
+            } else {
+                cell.append(ch);
+                cellStarted = true;
             }
         }
 
-        if (table.isEmpty()) {
+        if (cellStarted || !row.isEmpty()) {
+            addClipboardCell(row, cell, quotedCell, quotedCellClosed, separatorInsideQuotes, escapedQuote);
+            table.add(row);
+        } else if (table.isEmpty()) {
             row.add(null);
             table.add(row);
         }
@@ -1085,8 +1088,26 @@ public class GwtClientUtils {
         return table;
     }
 
+    private static void addClipboardCell(List<String> row, StringBuilder cell, boolean quotedCell, boolean quotedCellClosed,
+                                         boolean separatorInsideQuotes, boolean escapedQuote) {
+        row.add(GwtSharedUtils.nullEmpty(getClipboardCellValue(cell, quotedCell, quotedCellClosed, separatorInsideQuotes, escapedQuote)));
+        cell.setLength(0);
+    }
+
+    private static String getClipboardCellValue(StringBuilder cell, boolean quotedCell, boolean quotedCellClosed,
+                                                boolean separatorInsideQuotes, boolean escapedQuote) {
+        String value = cell.toString();
+        if (!quotedCell) {
+            return value;
+        }
+        if (quotedCellClosed && (separatorInsideQuotes || escapedQuote)) {
+            return value;
+        }
+        return quotedCellClosed ? "\"" + value + "\"" : "\"" + value;
+    }
+
     /**
-     * Converts table to clipboard string format (inverse of getClipboardTable)
+     * Converts table to tab/newline separated clipboard string with Excel-style quoting for multiline cells.
      */
     public static String getClipboardTable(List<List<String>> table) {
         if (table == null || table.isEmpty()) {
@@ -1100,21 +1121,17 @@ public class GwtClientUtils {
                 for (int j = 0; j < row.size(); j++) {
                     String cell = row.get(j);
                     if (cell != null) {
-                        // Escape cell if it contains tab, newline, or quotes
-                        if (cell.contains("\t") || cell.contains("\n") || cell.contains("\"")) {
-                            // Wrap in quotes and escape internal quotes by doubling them
+                        if (cell.contains("\t") || cell.contains("\n") || cell.contains("\r")) {
                             result.append("\"").append(cell.replace("\"", "\"\"")).append("\"");
                         } else {
                             result.append(cell);
                         }
                     }
-                    // Add tab separator between cells (but not after last cell)
                     if (j < row.size() - 1) {
                         result.append("\t");
                     }
                 }
             }
-            // Add newline separator between rows (but not after last row)
             if (i < table.size() - 1) {
                 result.append("\n");
             }
