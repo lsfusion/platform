@@ -24,12 +24,12 @@ import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_
 
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
 
-    private final String calendarDateType;
+    private final CalendarDateBinding calendarDateBinding;
     private JavaScriptObject calendar;
 
-    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, String calendarDateType) {
+    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, CalendarDateBinding calendarDateBinding) {
         super(form, grid, tableContainer);
-        this.calendarDateType = calendarDateType;
+        this.calendarDateBinding = calendarDateBinding;
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -49,7 +49,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, calendarDateType, locale);
+            calendar = createCalendar(element, controller, calendarDateBinding.startFieldName, calendarDateBinding.endFieldName, calendarDateBinding.isDateTime(), locale);
         }
         updateEvents(list);
     }
@@ -68,18 +68,18 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         FocusUtils.focusOut(element, FocusUtils.Reason.MOUSENAVIGATE);
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String startFieldName, String endFieldName, boolean isDateTime, String locale)/*-{
         var thisObj = this;
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
             locale: locale,
             firstDay: 1,
-            initialDate: controller.getValue(calendarDateType),
+            initialDate: controller.getValue(startFieldName),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: calendarDateType.includes('dateTime') ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
+                right: isDateTime ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
             },
             dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
@@ -97,8 +97,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 };
             },
             datesSet: function () {
-                controller.setDateIntervalViewFilter(calendarDateType, @GCalendar::getEndEventFieldName(*)(calendarDateType), 1000,
-                    calendar.view.activeStart, calendar.view.activeEnd, calendarDateType.toLowerCase().includes('time'));
+                controller.setDateIntervalViewFilter(startFieldName, endFieldName, 1000, calendar.view.activeStart, calendar.view.activeEnd);
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
@@ -151,10 +150,6 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         }
     }-*/;
 
-    private static String getEndEventFieldName(String calendarDateType) {
-        return calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
-    }
-
     private final NativeHashMap<GGroupObjectValue, Event> events = new NativeHashMap<>();
     private class Event {
 
@@ -175,17 +170,18 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public final String foregroundColor;
 
         public Event(JavaScriptObject object, int index) {
-            String endEventFieldName = getEndEventFieldName(calendarDateType);
+            String startEventFieldName = calendarDateBinding.startFieldName;
+            String endEventFieldName = calendarDateBinding.endFieldName;
 
             title = getTitle(object);
             caption = getCaption(object, GCalendar.this::getTitle);
             image = getImage(object, () -> null);
-            start = getStart(object, calendarDateType);
-            allDay = calendarDateType.equals("date") || calendarDateType.equals("dateFrom");
+            start = getStart(object, startEventFieldName);
+            allDay = calendarDateBinding.isAllDay();
             end = endEventFieldName != null ? getEnd(object, endEventFieldName, allDay): null;
-            editable = isEditable(object, controller, calendarDateType, endEventFieldName);
+            editable = isEditable(object, controller, startEventFieldName, endEventFieldName);
             durationEditable = isDurationEditable(object, controller, endEventFieldName);
-            startFieldName = calendarDateType;
+            startFieldName = startEventFieldName;
             endFieldName = endEventFieldName;
             this.index = index;
             this.key = getObjects(object);
