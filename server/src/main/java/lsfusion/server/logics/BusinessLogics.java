@@ -2251,7 +2251,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             } catch (Exception e) {
                 logger.error(String.format("ChangeCurrentDateTime error: %s", e), e);
             }
-        }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current dateTime");
+        }, true, Settings.get().getCheckCurrentDataDateTime(), false, "Changing current dateTime");
     }
 
 
