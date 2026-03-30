@@ -794,7 +794,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getDbManager().getSyntax();
     }
 
-    public ManagedConnection getSQLConnection(String connectionString) throws SQLException {
+    public ManagedConnection getSQLConnection(String connectionString, boolean clearReadonly) throws SQLException {
         Connection conn = null;
         ConnectionService connectionService = getConnectionService();
         if (connectionService != null)
@@ -806,6 +806,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             conn = DriverManager.getConnection(connectionString);
             if (connectionService != null)
                 connectionService.putSQLConnection(connectionString, conn);
+            if (clearReadonly)
+                conn.setReadOnly(false);
         }
         return new ManagedConnection(conn, connectionService == null);
     }
