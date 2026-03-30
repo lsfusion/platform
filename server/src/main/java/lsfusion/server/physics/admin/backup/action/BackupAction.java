@@ -123,7 +123,7 @@ public class BackupAction extends InternalAction {
 
     private String readBackupLog(String backupFileLogPath) throws IOException {
         String log = IOUtils.readFileToString(backupFileLogPath, ExternalUtils.resourceCharset.name());
-        // Windows pg_dump output may contain NUL bytes, which PostgreSQL text parameters cannot accept.
+        //pgsql doesn't support string with 0x00
         return log.replace("\u0000", "");
     }
 
