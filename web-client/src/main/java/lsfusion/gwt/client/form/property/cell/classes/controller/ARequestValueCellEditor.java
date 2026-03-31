@@ -45,7 +45,11 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     protected void commitFinish(PValue value, Integer contextAction, CommitReason commitReason) {
-        editManager.commitEditing(GUserInputResult.singleValue(value, contextAction), commitReason);
+        commitFinish(GUserInputResult.singleValue(value, contextAction), commitReason);
+    }
+
+    protected void commitFinish(GUserInputResult result, CommitReason commitReason) {
+        editManager.commitEditing(result, commitReason);
     }
 
     protected boolean isThisCellEditor() {
@@ -69,11 +73,11 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         SmartScheduler.getInstance().scheduleDeferred(blurred && isDeferredCommitOnBlur(), () -> {
             if (editManager.isThisCellEditing(this)) {
                 try {
-                    PValue value = getCommitValue(parent, contextAction);
-                    if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
+                    GUserInputResult result = getCommitResult(parent, contextAction);
+                    if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && result.getValues().length == 1 && GwtClientUtils.nullEquals(result.getPValue(), cancelTheSameValueOnBlurOldValue)) {
                         cancel(commitReason.cancel());
                     } else
-                        commitFinish(value, contextAction, commitReason);
+                        commitFinish(result, commitReason);
                 } catch (InvalidEditException e) {
                     if (commitReason.isCancelIfInvalid())
                         cancel(commitReason.cancel());

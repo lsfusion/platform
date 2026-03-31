@@ -72,7 +72,7 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new NumericCellEditor(this, editManager, editProperty);
     }
 

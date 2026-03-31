@@ -25,7 +25,7 @@ public class GHTMLStringType extends GAStringType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new HTMLStringCellEditor(editManager, editProperty, inputList, inputListActions);
     }
 }

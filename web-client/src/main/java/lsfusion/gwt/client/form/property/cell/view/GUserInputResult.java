@@ -19,7 +19,7 @@ public class GUserInputResult implements Serializable {
         this(false, new PValue[] {null}, null);
     }
 
-    private GUserInputResult(boolean canceled, PValue[] values, Integer contextAction) {
+    public GUserInputResult(boolean canceled, PValue[] values, Integer contextAction) {
         this.editCanceled = canceled;
         assert values != null;
         this.values = PValue.convertFileValuesBack(values);

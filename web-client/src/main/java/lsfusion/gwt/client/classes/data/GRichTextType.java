@@ -22,7 +22,7 @@ public class GRichTextType extends GTextType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new RichTextCellEditor(editManager, editProperty);
     }
 }

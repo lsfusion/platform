@@ -245,8 +245,8 @@ public class ThreadLocalContext {
     public static void unlockInputContext() {
         get().unlockInputContext();
     }
-    public static InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
-        return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
+    public static InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, boolean multipleInput, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
+        return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, multipleInput, inputContext, customChangeFunction, inputList, actions);
     }
 
     public static void pushLogMessage(AbstractContext.LogMessageProcessor processor) {

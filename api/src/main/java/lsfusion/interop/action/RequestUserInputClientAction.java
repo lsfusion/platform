@@ -4,17 +4,19 @@ public class RequestUserInputClientAction implements ClientAction {
     public final byte[] readType;
     public final byte[] oldValue;
     public final boolean hasOldValue;
+    public final boolean multipleInput;
 
     public final String customChangeFunction;
     
     public final byte[] inputList;
     public final byte[] inputListActions;
 
-    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue, String customChangeFunction,
+    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue, boolean multipleInput, String customChangeFunction,
                                         byte[] inputList, byte[] inputListActions) {
         this.readType = readType;
         this.oldValue = oldValue;
         this.hasOldValue = hasOldValue;
+        this.multipleInput = multipleInput;
 
         this.customChangeFunction = customChangeFunction;
 

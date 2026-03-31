@@ -35,18 +35,20 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     public final ImList<AsyncMapInputListAction<T>> actions;
     public final boolean strict;
+    public final boolean multipleInput;
 
     public final boolean hasDrawOldValue;
     public final PropertyInterfaceImplement<T> oldValue;
 
     public final String customEditorFunction;
 
-    public AsyncMapInput(DataClass type, InputContextListEntity<?, T> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean hasDrawOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
+    public AsyncMapInput(DataClass type, InputContextListEntity<?, T> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean multipleInput, boolean hasDrawOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
         super(type);
 
         this.list = list;
         this.actions = actions;
         this.strict = strict;
+        this.multipleInput = multipleInput;
 
         this.hasDrawOldValue = hasDrawOldValue;
         this.oldValue = oldValue;
@@ -55,11 +57,11 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, hasDrawOldValue, oldValue, customEditorFunction);
+        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, multipleInput, hasDrawOldValue, oldValue, customEditorFunction);
     }
 
     private <P extends PropertyInterface> AsyncMapInput<P> override(InputContextListEntity<?, P> list, ImList<AsyncMapInputListAction<P>> actions, PropertyInterfaceImplement<P> oldValue) {
-        return new AsyncMapInput<>(type, list, actions, strict, hasDrawOldValue, oldValue, customEditorFunction);
+        return new AsyncMapInput<>(type, list, actions, strict, multipleInput, hasDrawOldValue, oldValue, customEditorFunction);
     }
 
     public AsyncMapInput<T> newSession() {
@@ -87,7 +89,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
                 oldValue instanceof PropertyMapImplement && drawProperty != null && context instanceof FormInstanceContext && drawProperty.isProperty((FormInstanceContext) context) &&
                 ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty.getAssertCellProperty((FormInstanceContext) context))))
             return null;
-        return new AsyncInput(type, list != null ? new InputList(strict) : null,
+        return new AsyncInput(type, multipleInput, list != null ? new InputList(strict) : null,
                 filter(((FormInstanceContext) context).securityPolicy, securityProperty, actions != null ? actions.mapListValues(action -> action.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]) : null), customEditorFunction);
     }
 
@@ -117,7 +119,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
         if(compatibleType != null)
-            return new AsyncMapInput<>(compatibleType, null, null, false, hasDrawOldValue || dataInput.hasDrawOldValue,
+            return new AsyncMapInput<>(compatibleType, null, null, false, multipleInput || dataInput.multipleInput, hasDrawOldValue || dataInput.hasDrawOldValue,
                     oldValue == null || dataInput.oldValue == null || oldValue.equals(dataInput.oldValue) ? BaseUtils.nvl(oldValue, dataInput.oldValue) : null, customEditorFunction);
         return null;
     }

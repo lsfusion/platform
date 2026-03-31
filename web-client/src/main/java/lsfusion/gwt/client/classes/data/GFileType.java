@@ -51,8 +51,8 @@ public abstract class GFileType extends GFileBasedType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new FileCellEditor(editManager, storeName, validExtensions, named);
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
+        return new FileCellEditor(editManager, multipleInput, storeName, validExtensions, named);
     }
 
     @Override

@@ -209,8 +209,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         uiContext.unlockInputContext();
     }
 
-    public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
-        return uiContext.inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
+    public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, boolean multipleInput, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
+        return uiContext.inputUserData(securityProperty, dataClass, oldValue, hasOldValue, multipleInput, inputContext, customChangeFunction, inputList, actions);
     }
 
     @Override

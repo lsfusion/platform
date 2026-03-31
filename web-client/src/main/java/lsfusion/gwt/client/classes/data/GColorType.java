@@ -22,7 +22,7 @@ public class GColorType extends GDataType {
     public static GColorType instance = new GColorType();
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new ColorCellEditor(editManager, editProperty);
     }
 

@@ -143,7 +143,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         return executeAsyncResult(onResult -> {
             // we'll be optimists and assume that this value will stay
             long dispatchingIndex = getDispatchingIndex();
-            form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.convertFileValue(action.oldValue), action.inputList, action.inputListActions,
+            form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.convertFileValue(action.oldValue), action.multipleInput, action.inputList, action.inputListActions,
                     (value, onExec) -> {
                         onExec.accept(dispatchingIndex);
 

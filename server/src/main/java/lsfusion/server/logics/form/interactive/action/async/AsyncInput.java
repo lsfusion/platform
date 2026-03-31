@@ -10,14 +10,16 @@ import java.io.*;
 
 public class AsyncInput extends AsyncFormExec {
     public final DataClass changeType;
+    public final boolean multipleInput;
 
     public final InputList inputList;
     public final InputListAction[] inputListActions;
 
     public final String customEditorFunction;
 
-    public AsyncInput(DataClass changeType, InputList inputList, InputListAction[] inputListActions, String customEditorFunction) {
+    public AsyncInput(DataClass changeType, boolean multipleInput, InputList inputList, InputListAction[] inputListActions, String customEditorFunction) {
         this.changeType = changeType;
+        this.multipleInput = multipleInput;
         this.inputList = inputList;
         this.inputListActions = inputListActions;
         this.customEditorFunction = customEditorFunction;
@@ -33,6 +35,7 @@ public class AsyncInput extends AsyncFormExec {
         super.serialize(context, dataOutputStream);
 
         TypeSerializer.serializeType(dataOutputStream, changeType);
+        dataOutputStream.writeBoolean(multipleInput);
         dataOutputStream.writeBoolean(inputList != null);
         if(inputList != null)
             AsyncSerializer.serializeInputList(inputList, dataOutputStream);

@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 public class GAsyncInput extends GAsyncFormExec {
     public GType changeType;
+    public boolean multipleInput;
 
     public GInputList inputList;
     public GInputListAction[] inputListActions;
@@ -21,8 +22,9 @@ public class GAsyncInput extends GAsyncFormExec {
     public GAsyncInput() {
     }
 
-    public GAsyncInput(GType changeType, GInputList inputList, GInputListAction[] inputListActions, String customEditFunction) {
+    public GAsyncInput(GType changeType, boolean multipleInput, GInputList inputList, GInputListAction[] inputListActions, String customEditFunction) {
         this.changeType = changeType;
+        this.multipleInput = multipleInput;
         this.inputList = inputList;
         this.inputListActions = inputListActions;
         this.customEditFunction = customEditFunction;

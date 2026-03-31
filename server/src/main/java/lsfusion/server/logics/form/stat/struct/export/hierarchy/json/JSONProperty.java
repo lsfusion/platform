@@ -252,7 +252,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
             @Override
             public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?, ?> drawProperty, GroupObjectEntity toDraw) {
-                return new AsyncInput(type, null, null, null);
+                return new AsyncInput(type, false, null, null, null);
             }
 
             @Override

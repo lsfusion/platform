@@ -1251,7 +1251,7 @@ public class GFormController implements EditManager {
     public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
         GInputListAction[] inputListActions = asyncChange.inputListActions;
-        edit(asyncChange.changeType, handler, false, null, inputList, inputListActions, (value, onRequestExec) ->
+        edit(asyncChange.changeType, handler, false, null, asyncChange.multipleInput, inputList, inputListActions, (value, onRequestExec) ->
             executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, eventSource, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
 
@@ -2416,15 +2416,24 @@ public class GFormController implements EditManager {
     }
 
     public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
+        edit(type, handler, hasOldValue, setOldValue, false, inputList, inputListActions, afterCommit, cancel, editContext, actionSID, customChangeFunction);
+    }
+
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, boolean multipleInput, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
         assert type != null;
         lsfusion.gwt.client.base.Result<ChangedRenderValue> changedRenderValue = new lsfusion.gwt.client.base.Result<>();
-        edit(type, handler, hasOldValue, setOldValue, inputList, inputListActions, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
+        edit(type, handler, hasOldValue, setOldValue, multipleInput, inputList, inputListActions, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> changedRenderValue.set(setLocalValue(editContext, type, inputResult.getPValue(), null)),
                 (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, changedRenderValue.result, requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
     public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
+                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
+        edit(type, handler, hasOldValue, oldValue, false, inputList, inputListActions, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, customChangeFunction);
+    }
+
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, boolean multipleInput, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         GPropertyDraw property = editContext.getProperty();
 
@@ -2436,7 +2445,7 @@ public class GFormController implements EditManager {
             if(property.echoSymbols) // disabling dropdown if echo
                 inputList = null;
 
-            cellEditor = type.createCellEditor(this, property, inputList, inputListActions, editContext);
+            cellEditor = type.createCellEditor(this, property, inputList, inputListActions, editContext, multipleInput);
         }
 
         if (cellEditor != null) {

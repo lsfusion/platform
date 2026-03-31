@@ -31,7 +31,7 @@ public abstract class GType implements Serializable {
 
     public abstract CellRenderer createCellRenderer(GPropertyDraw property);
 
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return null;
     }
 

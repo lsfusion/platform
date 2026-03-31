@@ -1,14 +1,8 @@
 package lsfusion.gwt.client.classes.data.link;
 
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.classes.data.GAStringType;
-import lsfusion.gwt.client.classes.data.GDataType;
-import lsfusion.gwt.client.classes.data.GStringType;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LinkCellEditor;
@@ -37,7 +31,7 @@ public abstract class GLinkType extends GAStringType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new LinkCellEditor(editManager, editProperty);
     }
 

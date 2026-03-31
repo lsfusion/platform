@@ -124,7 +124,7 @@ public class InputAction extends SystemExplicitAction {
         boolean hasOldValue = hasDrawOldValue;
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
-        InputResult userValue = context.inputUserData(getInputClass(), oldValue, hasOldValue, getFullContextList(), customChangeFunction, getInputList(), getInputListActions(context.getRemoteContext()));
+        InputResult userValue = context.inputUserData(getInputClass(), oldValue, hasOldValue, isMultipleInput(), getFullContextList(), customChangeFunction, getInputList(), getInputListActions(context.getRemoteContext()));
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null) {
@@ -139,6 +139,10 @@ public class InputAction extends SystemExplicitAction {
         return new InputList(isStrict());
     }
 
+    private boolean isMultipleInput() {
+        return !targetProp.listInterfaces.isEmpty();
+    }
+
     private InputListAction[] getInputListActions(ConnectionContext context) {
         ImList<AsyncMapInputListAction<ClassPropertyInterface>> actions = getActions();
         return actions.mapListValues(action -> action.map(context)).toArray(new InputListAction[actions.size()]);
@@ -146,7 +150,7 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
-        return new AsyncMapInput<>(getInputClass(), getFullContextList(), getActions(), isStrict(), hasDrawOldValue && !optimistic, oldValueInterface, customChangeFunction);
+        return new AsyncMapInput<>(getInputClass(), getFullContextList(), getActions(), isStrict(), isMultipleInput(), hasDrawOldValue && !optimistic, oldValueInterface, customChangeFunction);
     }
 
 //    FormInteractiveAction doesn't include contextFilters, so not sure that InputAction should

@@ -17,7 +17,7 @@ import java.text.ParseException;
 public abstract class GStringFileBasedType extends GFileBasedType {
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new TextCellEditor(editManager, editProperty, inputList, editContext);
     }
 

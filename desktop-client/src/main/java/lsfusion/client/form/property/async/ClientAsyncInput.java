@@ -12,6 +12,7 @@ import java.io.IOException;
 
 public class ClientAsyncInput extends ClientAsyncFormExec {
     public ClientType changeType;
+    public boolean multipleInput;
 
     public ClientInputList inputList;
     public ClientInputListAction[] inputListActions;
@@ -26,6 +27,7 @@ public class ClientAsyncInput extends ClientAsyncFormExec {
         super(inStream);
 
         this.changeType = ClientTypeSerializer.deserializeClientType(inStream);
+        this.multipleInput = inStream.readBoolean();
         if(inStream.readBoolean())
             this.inputList = ClientAsyncSerializer.deserializeInputList(inStream);
         if(inStream.readBoolean())

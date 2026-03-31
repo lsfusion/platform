@@ -78,7 +78,7 @@ public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
     @Cached
     @Converter(from = ClientAsyncInput.class)
     public GAsyncInput convertAsyncInput(ClientAsyncInput clientAsyncInput) {
-        return new GAsyncInput(typeConverter.convertOrCast(clientAsyncInput.changeType), convertOrCast(clientAsyncInput.inputList), convertOrCast(clientAsyncInput.inputListActions), clientAsyncInput.customEditorFunction);
+        return new GAsyncInput(typeConverter.convertOrCast(clientAsyncInput.changeType), clientAsyncInput.multipleInput, convertOrCast(clientAsyncInput.inputList), convertOrCast(clientAsyncInput.inputListActions), clientAsyncInput.customEditorFunction);
     }
 
     @Cached

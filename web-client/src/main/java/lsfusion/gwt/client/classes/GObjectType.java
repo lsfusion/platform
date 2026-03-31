@@ -55,7 +55,7 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         // to be able to filter objects if key0 is known. If return null, the filter input field will be read-only
         return new LongCellEditor(editManager, editProperty);
     }

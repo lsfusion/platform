@@ -10,6 +10,7 @@ public class GRequestUserInputAction implements GAction {
     public GType readType;
     public Serializable oldValue;
     public boolean hasOldValue; // assert !hasOldValue => oldValue = null
+    public boolean multipleInput;
 
     public String customChangeFunction;
 
@@ -20,10 +21,11 @@ public class GRequestUserInputAction implements GAction {
     @SuppressWarnings("UnusedDeclaration")
     public GRequestUserInputAction() {}
 
-    public GRequestUserInputAction(GType readType, Object oldValue, boolean hasOldValue, String customChangeFunction, GInputList inputList, GInputListAction[] inputListActions) {
+    public GRequestUserInputAction(GType readType, Object oldValue, boolean hasOldValue, boolean multipleInput, String customChangeFunction, GInputList inputList, GInputListAction[] inputListActions) {
         this.readType = readType;
         this.oldValue = (Serializable) oldValue;
         this.hasOldValue = hasOldValue;
+        this.multipleInput = multipleInput;
         this.customChangeFunction = customChangeFunction;
         this.inputList = inputList;
         this.inputListActions = inputListActions;

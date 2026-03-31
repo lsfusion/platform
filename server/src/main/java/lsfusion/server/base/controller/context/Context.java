@@ -43,7 +43,7 @@ public interface Context {
 
     InputContext lockInputContext();
     void unlockInputContext();
-    InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
+    InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, boolean multipleInput, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
 
     void pushLogMessage(AbstractContext.LogMessageProcessor processor);
     void popLogMessage();

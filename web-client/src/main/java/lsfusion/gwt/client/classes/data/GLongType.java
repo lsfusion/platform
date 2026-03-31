@@ -14,7 +14,7 @@ public class GLongType extends GIntegralType {
     public static GLongType instance = new GLongType();
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
         return new LongCellEditor(editManager, editProperty);
     }
 

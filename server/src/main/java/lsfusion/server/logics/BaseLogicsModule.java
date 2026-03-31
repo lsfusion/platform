@@ -114,6 +114,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.base.BaseUtils.consecutiveList;
@@ -1320,7 +1321,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                     targetProp.change(chosenValues.single(), env);
                 else {
                     env.getSession().dropChanges((DataProperty) targetProp.property);
-                    targetProp.change(env.getSession(), env, chosenValues.toIndexedMap());
+                    targetProp.change(env.getSession(), env, chosenValues.mapListKeyValues((IntFunction<Integer>)(i -> i), ObjectValue::getValue));
                 }
             }
         }

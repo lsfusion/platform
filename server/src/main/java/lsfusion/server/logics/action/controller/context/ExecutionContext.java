@@ -739,7 +739,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try {
             return requestUser(dataClass, () -> {
-                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null, null);
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, false, null, null, null, null);
                 return inputResult != null ? inputResult.getSingleValue() : null;
             });
         } catch (SQLException | SQLHandledException e) {
@@ -755,7 +755,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return null;
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContextListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, boolean multipleInput, InputContextListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         assertNotUserInteractionInTransaction();
 
         InputResult pushedInput = getPushedInput(dataClass, true);
@@ -765,7 +765,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         InputContext<T> inputContext = null;
         if(list != null)
             inputContext = new InputContext<>(list.map(this), list.isNewSession(), this, inputList.strict);
-        return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
+        return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, multipleInput, inputContext, customChangeFunction, inputList, actions);
     }
 
     // when we want to expose value outside but with file access on the web server
