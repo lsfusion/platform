@@ -42,6 +42,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public void executeVoidAction(long requestIndex) {
+        form.executeVoidAction();
+    }
+
+    @Override
     public boolean canShowDockedModal() {
         return !form.isWindow();
     }

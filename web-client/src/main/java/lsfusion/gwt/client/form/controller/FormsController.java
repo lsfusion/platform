@@ -522,7 +522,7 @@ public abstract class FormsController {
                 if(captionWidget != null)
                     BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, ImageHtmlOrTextType.FORM);
 
-                formContainer.setContentLoading(asyncFormController.getEditRequestIndex());
+                formContainer.setContentLoading(asyncFormController);
                 formContainer.show(asyncFormController);
                 asyncFormController.putAsyncForm(formContainer);
             };
