@@ -156,20 +156,22 @@ public class ExecutorFactory {
 
         ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-        return wrapInnerService(executorService, type, new TaskInnerAspect() {
+        return wrapInnerService(executorService, type, new TaskInnerAspect<AbstractContext.MessageLogger>() {
             @Override
-            public Object aspectSubmit() {
+            public AbstractContext.MessageLogger aspectSubmit() {
                 ThreadLocalContext.assureRmi(object);
-                return null;
+                return captureSubmitLogMessage();
             }
 
             @Override
-            public void aspectBeforeRun(Object submit) {
+            public void aspectBeforeRun(AbstractContext.MessageLogger submit) {
                 ThreadLocalContext.aspectBeforeRmi(object, true, ExecutorFactoryThreadInfo.instance, type);
+                pushSubmitLogMessage(submit);
             }
 
             @Override
-            public void aspectAfterRun(Object submit) {
+            public void aspectAfterRun(AbstractContext.MessageLogger submit) {
+                popSubmitLogMessage(submit);
                 ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -205,20 +207,22 @@ public class ExecutorFactory {
 
         ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-        return wrapInnerService(executorService, type, new TaskInnerAspect() {
+        return wrapInnerService(executorService, type, new TaskInnerAspect<AbstractContext.MessageLogger>() {
             @Override
-            public Object aspectSubmit() {
+            public AbstractContext.MessageLogger aspectSubmit() {
                 ThreadLocalContext.assureMonitor(monitor);
-                return null;
+                return captureSubmitLogMessage();
             }
 
             @Override
-            public void aspectBeforeRun(Object submit) {
+            public void aspectBeforeRun(AbstractContext.MessageLogger submit) {
                 ThreadLocalContext.aspectBeforeMonitor(monitor, ExecutorFactoryThreadInfo.instance, type);
+                pushSubmitLogMessage(submit);
             }
 
             @Override
-            public void aspectAfterRun(Object submit) {
+            public void aspectAfterRun(AbstractContext.MessageLogger submit) {
+                popSubmitLogMessage(submit);
                 ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -233,20 +237,22 @@ public class ExecutorFactory {
 
         ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-        return wrapInnerService(executorService, type, new TaskInnerAspect() {
+        return wrapInnerService(executorService, type, new TaskInnerAspect<AbstractContext.MessageLogger>() {
             @Override
-            public Object aspectSubmit() {
+            public AbstractContext.MessageLogger aspectSubmit() {
                 ThreadLocalContext.assureLifecycle(logicsInstance);
-                return null;
+                return captureSubmitLogMessage();
             }
 
             @Override
-            public void aspectBeforeRun(Object submit) {
+            public void aspectBeforeRun(AbstractContext.MessageLogger submit) {
                 ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ExecutorFactoryThreadInfo.instance, type);
+                pushSubmitLogMessage(submit);
             }
 
             @Override
-            public void aspectAfterRun(Object submit) {
+            public void aspectAfterRun(AbstractContext.MessageLogger submit) {
+                popSubmitLogMessage(submit);
                 ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
             }
         });
@@ -535,6 +541,25 @@ public class ExecutorFactory {
                 return ExecutorFactory.wrapInnerTask(callable, aspect, type);
             }
         };
+    }
+
+    private static AbstractContext.MessageLogger captureSubmitLogMessage() {
+        Context context = ThreadLocalContext.get();
+        return context != null ? context.getLogMessage() : null;
+    }
+
+    private static void pushSubmitLogMessage(AbstractContext.MessageLogger submitLogMessage) {
+        if(submitLogMessage != null)
+            ThreadLocalContext.pushLogMessage((message) -> {
+                synchronized (submitLogMessage) {
+                    submitLogMessage.add(message);
+                }
+            });
+    }
+
+    private static void popSubmitLogMessage(AbstractContext.MessageLogger submitLogMessage) {
+        if(submitLogMessage != null)
+            ThreadLocalContext.popLogMessage();
     }
 
     private static TaskInnerAspect createContextAspect(final ExecutionContext<PropertyInterface> context, final SyncType type) {
