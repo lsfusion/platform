@@ -232,6 +232,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     protected abstract void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
 
+    public abstract void executeVoidAction(long requestIndex);
+
     // synchronization is guaranteed pretty tricky
     // in RemoteDispatchAsync there is a linked list q of all executing actions, where all responses are queued, and all continue invoications are put into it's beginning
     protected final void pauseDispatching() {

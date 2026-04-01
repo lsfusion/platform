@@ -37,6 +37,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public void executeVoidAction(long requestIndex) {
+        formsController.executeVoidAction(requestIndex);
+    }
+
+    @Override
     protected FormsController getFormsController() {
         return formsController;
     }

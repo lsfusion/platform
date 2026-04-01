@@ -150,7 +150,7 @@ public abstract class FormContainer {
         return form;
     }
 
-    public void setContentLoading(long requestIndex) {
+    public void setContentLoading(GAsyncFormController asyncFormController) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -163,12 +163,7 @@ public abstract class FormContainer {
 
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
         GwtClientUtils.addClassName(image, "loading-async-icon");
-        image.addClickHandler(clickEvent -> {
-            if(contextForm != null) {
-                contextForm.executeVoidAction();
-            }
-            formsController.executeVoidAction(requestIndex);
-        });
+        image.addClickHandler(e -> asyncFormController.getDispatcher().executeVoidAction(asyncFormController.getEditRequestIndex()));
 
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));
