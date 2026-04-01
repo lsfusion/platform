@@ -59,6 +59,17 @@ Language syntax notation convention:
   used in the documentation
   (for example, optional fragments
   are written in square brackets `[...]`)
+- when extending or finishing
+  syntax documentation,
+  the assistant MUST search
+  for analogous syntax constructions
+  in other articles;
+  equivalent fragments and behavior
+  MUST be documented consistently:
+  either described in the same way,
+  or linked to an existing section,
+  or extracted into a separate section
+  and referenced from the relevant articles
 - the assistant MUST make sure
   that the syntax block
   reflects the full real grammar,
