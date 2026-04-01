@@ -17,7 +17,7 @@ public class GZDateTimeType extends GDateTimeType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
-        return new ZDateTimeCellEditor(this, editManager, editProperty);
+        return new ZDateTimeCellEditor(this, editManager, editProperty, editContext);
     }
 
     // we want to have string width independent of the timezone

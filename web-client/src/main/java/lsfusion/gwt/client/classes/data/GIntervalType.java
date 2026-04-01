@@ -43,7 +43,7 @@ public abstract class GIntervalType extends GFormatType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
-        return new IntervalCellEditor(editManager, editProperty, getIntervalType(), this);
+        return new IntervalCellEditor(editManager, editProperty, getIntervalType(), this, editContext);
     }
 
     @Override

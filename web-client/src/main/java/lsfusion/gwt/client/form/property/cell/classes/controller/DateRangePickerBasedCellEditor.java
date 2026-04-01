@@ -6,9 +6,12 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.data.GJSONType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
@@ -16,8 +19,8 @@ import java.text.ParseException;
 
 public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
 
-    public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(editManager, property);
+    public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property, EditContext editContext) {
+        super(editManager, property, null, null, editContext);
     }
 
     @Override
@@ -26,7 +29,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         if (started && !isNative()) {
             createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null,
                     getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor(),
-                    !explicitValue && oldValue == null);
+                    !explicitValue && oldValue == null, getTimePickerIncrement());
             openPicker(); // date range picker is opened only on click
 
             GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
@@ -100,7 +103,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern,
-                                       boolean singleDatePicker, boolean time, boolean date, boolean autoUpdateInput)/*-{
+                                       boolean singleDatePicker, boolean time, boolean date, boolean autoUpdateInput, int timePickerIncrement)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
@@ -139,6 +142,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             },
             timePicker: !date,
             timePicker24Hour: true,
+            timePickerIncrement: timePickerIncrement,
             showDropdowns: true,
             autoApply: true,
             ranges: !time && !@lsfusion.gwt.client.view.MainFrame::mobile ? $wnd[singleDatePicker ? 'getSingleRanges' : 'getRanges']($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
@@ -200,6 +204,15 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         editElement.on('apply.daterangepicker', function () {
             thisObj.@DateRangePickerBasedCellEditor::pickerApply(*)(parent);
         });
+    }-*/;
+
+    private int getTimePickerIncrement() {
+        return getTimePickerIncrement(GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, editContext.getUpdateContext().getPropertyCustomOptions()));
+    }
+
+    private static native int getTimePickerIncrement(JavaScriptObject customOptions)/*-{
+        var increment = parseInt(customOptions && customOptions.timePickerIncrement);
+        return increment > 0 ? increment : 1;
     }-*/;
 
     // this all needed only for handling 2-year digit dates

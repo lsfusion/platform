@@ -5,6 +5,7 @@ import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntervalType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
@@ -12,8 +13,8 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
     private final String intervalType;
     private final GIntervalType type;
 
-    public IntervalCellEditor(EditManager editManager, GPropertyDraw property, String intervalType, GIntervalType type) {
-        super(editManager, property);
+    public IntervalCellEditor(EditManager editManager, GPropertyDraw property, String intervalType, GIntervalType type, EditContext editContext) {
+        super(editManager, property, editContext);
         this.intervalType = intervalType;
         this.type = type;
     }

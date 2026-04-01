@@ -29,7 +29,7 @@ public class GDateType extends GADateType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
-        return new DateCellEditor(this, editManager, editProperty);
+        return new DateCellEditor(this, editManager, editProperty, editContext);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GADateType;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
@@ -14,8 +14,8 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     protected GADateType type;
 
-    public DateCellEditor(GADateType type, EditManager editManager, GPropertyDraw property) {
-        super(editManager, property);
+    public DateCellEditor(GADateType type, EditManager editManager, GPropertyDraw property, EditContext editContext) {
+        super(editManager, property, editContext);
         this.type = type;
     }
 

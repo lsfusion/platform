@@ -26,7 +26,7 @@ public class GDateTimeType extends GADateType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
-        return new DateTimeCellEditor(this, editManager, editProperty);
+        return new DateTimeCellEditor(this, editManager, editProperty, editContext);
     }
 
     @Override
