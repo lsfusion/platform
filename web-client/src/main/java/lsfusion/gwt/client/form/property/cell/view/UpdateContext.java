@@ -1,13 +1,15 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.property.PValue;
 
 public interface UpdateContext {
@@ -60,6 +62,9 @@ public interface UpdateContext {
     default String getValueTooltip() { return null; }
 
     default PValue getPropertyCustomOptions() { return null; }
+    default JavaScriptObject getPropertyCustomOptionsAsJSObject() {
+        return GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, getPropertyCustomOptions());
+    }
 
     default String getGridElementClass() {
         return null;
