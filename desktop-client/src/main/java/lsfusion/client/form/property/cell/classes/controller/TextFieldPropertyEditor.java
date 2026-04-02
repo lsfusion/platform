@@ -106,28 +106,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             });
         }
 
-        getKeymap().setDefaultAction(new DefaultEditorKit.DefaultKeyTypedAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //copy of default method, but allowed 0x1D (GS - group separator character)
-                JTextComponent target = getTextComponent(e);
-                if ((target != null) && (e != null)) {
-                    if ((! target.isEditable()) || (! target.isEnabled())) {
-                        return;
-                    }
-                    String content = e.getActionCommand();
-                    int mod = e.getModifiers();
-                    if ((content != null) && (!content.isEmpty())) {
-                        boolean isPrintableMask = isPrintableCharacterModifiersMask(mod);
-                        char c = content.charAt(0);
-                        if ((isPrintableMask && (c == 0x1D || (c >= 0x20) && (c != 0x7F))) ||
-                                (!isPrintableMask && (c >= 0x200C) && (c <= 0x200D))) {
-                            target.replaceSelection(content);
-                        }
-                    }
-                }
-            }
-        });
+        installGSKeyTypedAction(this);
 
         setComponentPopupMenu(new EditorContextMenu(this));
 
@@ -177,6 +156,35 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     public boolean isPrintableCharacterModifiersMask(int mods) {
         return ((mods & InputEvent.ALT_MASK) == (mods & InputEvent.CTRL_MASK));
+    }
+
+    private void installGSKeyTypedAction(JTextComponent textComponent) {
+        Keymap keymap = textComponent.getKeymap();
+        if (keymap == null) {
+            return;
+        }
+        keymap.setDefaultAction(new DefaultEditorKit.DefaultKeyTypedAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //copy of default method, but allowed 0x1D (GS - group separator character)
+                JTextComponent target = getTextComponent(e);
+                if ((target != null) && (e != null)) {
+                    if ((! target.isEditable()) || (! target.isEnabled())) {
+                        return;
+                    }
+                    String content = e.getActionCommand();
+                    int mod = e.getModifiers();
+                    if ((content != null) && (!content.isEmpty())) {
+                        boolean isPrintableMask = isPrintableCharacterModifiersMask(mod);
+                        char c = content.charAt(0);
+                        if ((isPrintableMask && (c == 0x1D || (c >= 0x20) && (c != 0x7F))) ||
+                                (!isPrintableMask && (c >= 0x200C) && (c <= 0x200D))) {
+                            target.replaceSelection(content);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private boolean isScannerEventProperty() {
@@ -576,6 +584,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 //            });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
+            installGSKeyTypedAction(comboBoxEditorComponent);
             comboBoxEditorComponent.setDocument(new PlainDocument() {
                 @Override
                 public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
