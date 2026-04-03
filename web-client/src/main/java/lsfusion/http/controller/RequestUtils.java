@@ -1,5 +1,6 @@
 package lsfusion.http.controller;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ServerUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.connection.ComputerInfo;
@@ -52,6 +53,21 @@ public class RequestUtils {
         return cookiesMap;
     }
 
+    public static String getHostAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (!BaseUtils.isRedundantString(xForwardedFor)){
+            String first = xForwardedFor.split(",")[0].trim();
+            if (!first.isEmpty() && !"unknown".equalsIgnoreCase(first))
+                return first;
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (!BaseUtils.isRedundantString(xRealIp) && !"unknown".equalsIgnoreCase(xRealIp.trim()))
+            return xRealIp.trim();
+
+        return request.getRemoteAddr();
+    }
+
     public static ConnectionInfo getConnectionInfo(HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
 
@@ -65,7 +81,7 @@ public class RequestUtils {
 
         Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
 
-        return new ConnectionInfo(new ComputerInfo(hostName, request.getRemoteAddr()), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
+        return new ConnectionInfo(new ComputerInfo(hostName, getHostAddress(request)), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
     }
 
     public static class RequestInfo {

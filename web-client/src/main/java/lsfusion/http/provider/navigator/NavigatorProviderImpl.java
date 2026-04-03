@@ -45,9 +45,15 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     public String servSID = GwtSharedUtils.randomString(25);
 
-    public static ConnectionInfo getConnectionInfo(Authentication auth) {
+    public static ConnectionInfo getConnectionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
-        return new ConnectionInfo(new ComputerInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress()), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null));
+        String hostName = request != null ? request.getRemoteHost() : SystemUtils.getLocalHostName();
+        String remoteAddress = request != null ? RequestUtils.getHostAddress(request) : ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress();
+
+        return new ConnectionInfo(new ComputerInfo(hostName, remoteAddress),
+                new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), LocaleContextHolder.getTimeZone(),
+                        BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null)
+        );
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
