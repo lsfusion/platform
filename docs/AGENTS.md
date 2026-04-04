@@ -28,6 +28,15 @@ inside `docusaurus`
 except `docusaurus/sidebars.js`;
 all documentation content changes
 MUST be made in `platform/docs`.
+The assistant MUST make
+all documentation content changes
+in both language versions.
+The versions in different languages
+MUST contain the same information
+and structure;
+they are translations
+of the same documentation,
+not separate documents.
 
 The required order is:
 1) Language
@@ -98,7 +107,7 @@ Language syntax notation convention:
   or described in prose,
   with common parts
   factored out
-  - the assistant MUST NOT
+- the assistant MUST NOT
   explain syntax
   or semantics
   by referring
