@@ -98,6 +98,15 @@ Language syntax notation convention:
   or described in prose,
   with common parts
   factored out
+  - the assistant MUST NOT
+  explain syntax
+  or semantics
+  by referring
+  to internal grammar rule names
+  or parser nonterminals;
+  it MUST describe
+  reader-visible syntax
+  and behavior instead
 - the assistant MUST NOT move
   syntax constructions
   into the description;
