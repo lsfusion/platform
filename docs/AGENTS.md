@@ -58,7 +58,16 @@ Language syntax notation convention:
   the current syntax-description style
   used in the documentation
   (for example, optional fragments
-  are written in square brackets `[...]`)
+  are written in square brackets `[...]`);
+  to do that,
+  before extending
+  or finishing
+  syntax documentation,
+  the assistant MUST read
+  analogous articles
+  and inspect
+  how the corresponding material
+  is documented there
 - when extending or finishing
   syntax documentation,
   the assistant MUST search
