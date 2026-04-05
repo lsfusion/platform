@@ -138,7 +138,13 @@ public class LRUUtil {
                                 lastGCCollectionThresholdHit = GCCollectionThresholdHit;
 
                                 long used = tenuredGenPool.getCollectionUsage().getUsed();
-                                double cleanMem = 1.0 - ((double) averageMem.get() / (double) used);
+                                long criticalMemValue = criticalMem.get();
+                                if (used <= criticalMemValue) {
+                                    logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, BUT USED IS ALREADY BELOW CRITICAL, USED : " + used + ", CRITICAL : " + criticalMemValue);
+                                    return;
+                                }
+
+                                double cleanMem = getBoundedCleanMem(averageMem.get(), used);
                                 logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
 
                                 if (multiplier > LRUMinCoeff.get()) {
@@ -213,6 +219,12 @@ public class LRUUtil {
         } catch (NumberFormatException e) {
         }
         return cmsFractionValue;
+    }
+
+    private static double getBoundedCleanMem(long averageMem, long used) {
+        if (used <= 0)
+            return 0.0;
+        return Math.max(0.0, Math.min(1.0, 1.0 - ((double) averageMem / (double) used)));
     }
 
     public enum Value {NULL}
