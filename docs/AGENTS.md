@@ -104,6 +104,7 @@ Language syntax notation convention:
   alternative variants
   MUST be shown
   with explicit alternation
+  without using `|`
   or described in prose,
   with common parts
   factored out
@@ -359,6 +360,21 @@ with the required structure.
 
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
+
+When documenting
+any language construction
+or other element,
+the assistant MUST describe
+only what is specific
+to the current section;
+general rules,
+resolution rules,
+and special cases
+that are already described
+in other sections
+MUST be reused
+or referenced,
+not duplicated.
 
 When adding code examples,
 the assistant MUST validate them in the IDE
