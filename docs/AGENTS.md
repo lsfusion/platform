@@ -361,6 +361,25 @@ with the required structure.
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
 
+When describing
+rules, restrictions,
+or requirements,
+the assistant SHOULD prefer
+declarative wording:
+- what can be done
+- what cannot be done
+- what must be done
+- what must not be done
+
+Platform errors,
+warnings,
+or other reactions
+SHOULD be described
+as secondary consequences
+or clarifications,
+not as the primary way
+to formulate the rule.
+
 When documenting
 any language construction
 or other element,
@@ -375,6 +394,13 @@ in other sections
 MUST be reused
 or referenced,
 not duplicated.
+The assistant MUST NOT
+add clarifications
+for particular cases
+if they are only
+variants of general rules
+and follow directly
+from those rules.
 
 When adding code examples,
 the assistant MUST validate them in the IDE
