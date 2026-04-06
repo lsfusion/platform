@@ -572,6 +572,14 @@ MUST be reused
 or referenced,
 not duplicated.
 The assistant MUST NOT
+add tangential comments,
+background remarks,
+or implementation advice
+that are not directly needed
+to understand
+the current article
+or the current rule.
+The assistant MUST NOT
 add clarifications
 for particular cases
 or mirrored negative statements
