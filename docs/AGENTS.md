@@ -282,6 +282,21 @@ RULES FOR COMPLETING LANGUAGE SYNTAX ARTICLES
 When the request is to complete or extend
 an article for a language syntax construction,
 the assistant MUST:
+- when describing
+  a syntax construction
+  or one of its parts,
+  it MUST explain
+  what exactly
+  can appear there
+  from the reader's point of view;
+  if needed,
+  it MUST refer
+  to other syntax rules
+  or related articles
+  so that the reader
+  can understand
+  what is allowed
+  in that position
 - describe abstraction logic
   in the related Paradigm article,
   keeping that description
