@@ -405,6 +405,13 @@ from already stated behavior,
 including obvious special cases
 such as empty variants
 of an already described form.
+Minor technical details
+MAY be omitted,
+especially if they are hard
+to explain clearly
+and do not add
+useful understanding
+for the reader.
 
 When adding code examples,
 the assistant MUST validate them in the IDE
