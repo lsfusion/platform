@@ -58,6 +58,19 @@ It MUST contain:
 - a basic explanation
   assuming that the reader already more or less understands
   the paradigm
+- intermediate syntax rules
+  and helper fragments,
+  if needed,
+  in the syntax
+  and in its description
+- reader-visible syntax elements
+  in `Parameters`;
+  for each such element,
+  the article MUST make clear
+  what can appear there,
+  with references
+  to other rules or articles
+  when needed
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -297,6 +310,14 @@ the assistant MUST:
   can understand
   what is allowed
   in that position
+- use `Parameters`
+  only for syntax elements
+  that the reader
+  actually writes or chooses;
+  helper syntax fragments
+  belong in `Syntax`
+  and the syntax description,
+  not there
 - describe abstraction logic
   in the related Paradigm article,
   keeping that description
