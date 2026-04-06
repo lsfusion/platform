@@ -397,10 +397,14 @@ not duplicated.
 The assistant MUST NOT
 add clarifications
 for particular cases
+or mirrored negative statements
 if they are only
 variants of general rules
-and follow directly
-from those rules.
+or follow directly
+from already stated behavior,
+including obvious special cases
+such as empty variants
+of an already described form.
 
 When adding code examples,
 the assistant MUST validate them in the IDE
