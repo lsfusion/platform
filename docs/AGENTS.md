@@ -58,19 +58,31 @@ It MUST contain:
 - a basic explanation
   assuming that the reader already more or less understands
   the paradigm
+
+Language article structure convention:
+- a Language article SHOULD begin
+  with a short definition
+  of what the construction does,
+  creates,
+  or describes,
+  with a link
+  to the main abstraction
+  when relevant
+- when the corresponding sections
+  are needed,
+  they SHOULD usually go
+  in this order:
+  `Syntax`,
+  `Description`,
+  `Parameters`,
+  `Examples`
 - intermediate syntax rules
-  and helper fragments,
-  if needed,
-  in the syntax
-  and in its description
-- reader-visible syntax elements
-  in `Parameters`;
-  for each such element,
-  the article MUST make clear
-  what can appear there,
-  with references
-  to other rules or articles
-  when needed
+  and helper fragments
+  belong in `Syntax`
+  and in the syntax description
+- `Parameters`
+  SHOULD describe
+  only reader-visible syntax elements
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -113,7 +125,10 @@ Language syntax notation convention:
   MUST be explained in prose
   and, if separate,
   given in their own
-  syntax blocks;
+  syntax blocks,
+  usually introduced
+  in the style
+  `Where ... is defined as:`;
   alternative variants
   MUST be shown
   with explicit alternation
@@ -163,6 +178,27 @@ It MUST:
   assuming that the language
   could be different
   and the syntax could change
+
+Paradigm article structure convention:
+- a Paradigm article
+  SHOULD begin
+  with a short definition
+  of the abstraction
+- it SHOULD organize material
+  by semantic aspects
+  of the abstraction,
+  not by grammar fragments
+  or syntax parameters
+- if the abstraction
+  has corresponding syntax,
+  syntax-specific details
+  SHOULD stay
+  in Language articles,
+  and the Paradigm article
+  SHOULD contain
+  a `Language` section
+  linking to the relevant
+  Language articles
 
 ### 3. Guide
 
@@ -310,14 +346,20 @@ the assistant MUST:
   can understand
   what is allowed
   in that position
-- use `Parameters`
-  only for syntax elements
+- keep `Parameters`
+  focused and concise:
+  use them only
+  for syntax elements
   that the reader
   actually writes or chooses;
-  helper syntax fragments
-  belong in `Syntax`
-  and the syntax description,
-  not there
+  for IDs,
+  literals,
+  selectors,
+  options,
+  and other reusable element kinds,
+  it SHOULD link
+  to the canonical article
+  instead of redefining them locally
 - describe abstraction logic
   in the related Paradigm article,
   keeping that description
