@@ -15,28 +15,64 @@ These parts define:
 1) the order in which documentation should be written
 2) the order in which language capabilities should be understood
 
-The documentation structure / hierarchy
-for navigation is defined in `docusaurus/sidebars.js`.
-The assistant MUST treat that file
-as the source of truth for section placement
-and parent-child relationships in the docs,
-while treating the `docusaurus` subproject
-as a derived copy of the documentation
-from `platform/docs`.
-The assistant MUST NOT edit files
-inside `docusaurus`
-except `docusaurus/sidebars.js`;
-all documentation content changes
-MUST be made in `platform/docs`.
-The assistant MUST make
-all documentation content changes
-in both language versions.
-The versions in different languages
-MUST contain the same information
-and structure;
-they are translations
-of the same documentation,
-not separate documents.
+Common structure rules:
+- the documentation structure / hierarchy
+  for navigation
+  is defined in `docusaurus/sidebars.js`
+- the assistant MUST treat
+  `docusaurus/sidebars.js`
+  as the source of truth
+  for section placement
+  and parent-child relationships
+  in the docs,
+  while treating
+  the `docusaurus` subproject
+  as a derived copy
+  of the documentation
+  from `platform/docs`
+- the assistant MUST NOT edit
+  files inside `docusaurus`
+  except `docusaurus/sidebars.js`;
+  all documentation content changes
+  MUST be made in `platform/docs`
+- the assistant MUST make
+  all documentation content changes
+  in both language versions
+- the versions in different languages
+  MUST contain
+  the same information
+  and structure;
+  they are translations
+  of the same documentation,
+  not separate documents
+- if a new block
+  or section is created,
+  the parent
+  or higher-level section
+  SHOULD contain
+  a link
+  to that new section
+  and a brief description
+  of what that section covers
+- in that case,
+  the assistant SHOULD also
+  update `docusaurus/sidebars.js`
+  so that the new block
+  or section is included
+  in the documentation hierarchy
+  and navigation
+- the documentation
+  SHOULD preserve
+  clear links between sections
+  so that its hierarchy
+  and navigation
+  remain explicit
+- if a section
+  becomes too large
+  and can be split
+  into logically complete blocks,
+  the assistant SHOULD do that
+  or suggest doing that
 
 The required order is:
 1) Language
@@ -86,79 +122,6 @@ Language article structure convention:
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
-
-Language syntax notation convention:
-- the assistant MUST preserve
-  the current syntax-description style
-  used in the documentation
-  (for example, optional fragments
-  are written in square brackets `[...]`);
-  to do that,
-  before extending
-  or finishing
-  syntax documentation,
-  the assistant MUST read
-  analogous articles
-  and inspect
-  how the corresponding material
-  is documented there
-- when extending or finishing
-  syntax documentation,
-  the assistant MUST search
-  for analogous syntax constructions
-  in other articles;
-  equivalent fragments and behavior
-  MUST be documented consistently:
-  either described in the same way,
-  or linked to an existing section,
-  or extracted into a separate section
-  and referenced from the relevant articles
-- the assistant MUST make sure
-  that the syntax block
-  reflects the full real grammar,
-  including all relevant variants
-- each syntax block
-  MUST contain one
-  syntax construction;
-  named subrules
-  and syntax fragments
-  MUST be explained in prose
-  and, if separate,
-  given in their own
-  syntax blocks,
-  usually introduced
-  in the style
-  `Where ... is defined as:`;
-  alternative variants
-  MUST be shown
-  with explicit alternation
-  without using `|`
-  or described in prose,
-  with common parts
-  factored out
-- the assistant MUST NOT
-  explain syntax
-  or semantics
-  by referring
-  to internal grammar rule names
-  or parser nonterminals;
-  it MUST describe
-  reader-visible syntax
-  and behavior instead
-- the assistant MUST NOT move
-  syntax constructions
-  into the description;
-  the description MUST explain
-  semantics, behavior, and usage
-- the assistant MUST NOT split
-  one syntax construction
-  into separate syntax definitions
-  for semantic differences;
-  semantic features,
-  special cases,
-  and behavior differences
-  MUST be described
-  in its description
 
 ### 2. Paradigm
 
@@ -225,6 +188,22 @@ whenever possible,
 although several different `.md` files
 may be combined into one.
 
+Guide article structure convention:
+- a Guide article
+  SHOULD be organized
+  as a set of recommendations
+  and anti-recommendations,
+  not as a syntax reference
+- recommendations
+  SHOULD be grouped
+  by practical topic
+  or aspect of usage
+- examples may be used
+  to support recommendations,
+  but examples
+  are secondary
+  to the recommendations
+
 ### 4. How-to
 
 How-to documentation describes usage variants
@@ -236,6 +215,24 @@ How-to file naming convention:
 - file names contain `How-to`
 - most often `How-to` is a prefix
 
+How-to article structure convention:
+- a How-to article
+  SHOULD be organized
+  around concrete tasks
+  and their solutions
+- when several cases
+  are present,
+  they SHOULD usually appear
+  as separate examples
+  with a task
+  and a solution
+- explanations
+  SHOULD stay focused
+  on how to achieve
+  the target result,
+  not on full reference-style
+  coverage of the syntax
+
 ----------------------------------------------------------------
 
 GENERAL GUIDE
@@ -243,38 +240,33 @@ GENERAL GUIDE
 There is also a general guide: `mcp/brief.md`.
 
 It is assumed to exist.
-It should contain important / key information
+It SHOULD contain important / key information
 from all documentation parts,
-and this information should always be available
+and this information SHOULD always be available
 in the context for the AI assistant.
 
 ----------------------------------------------------------------
 
 RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
 
-1. SOURCE PRIORITY
-   The assistant MUST try to inspect functionality
+1. RESEARCH PRIORITY
+   The assistant MUST inspect functionality
    and implementation details in both:
    - the platform project
    - the plugin project
 
    The platform implementation has higher priority.
 
-2. REQUIRED UNDERSTANDING ORDER
-   The assistant MUST first try to understand
-   which syntax constructions are needed.
+2. RESEARCH FLOW
+   The assistant MUST first determine
+   which syntax constructions are relevant.
 
    After that it MUST:
-   - inspect the platform / plugin source code
+   - inspect the primary platform / plugin sources
    - inspect examples in existing lsFusion code
-   - try to find relevant community and history information
-     (tutorials, articles, discussions,
-     GitHub issues, commits, and GitHub issues
-     referenced from those commits)
-     using the available tools or in
-     `rag-fill/src/main/resources/docs`
+   - inspect supplementary materials
 
-3. PLATFORM SOURCE REVIEW
+3. PRIMARY SOURCE REVIEW
    In the platform project, the preferred direction is:
    `LsfLogics.g` ->
    `ScriptingLogicsModule` ->
@@ -286,7 +278,6 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    - `platform/server/src/main/java/lsfusion/server/language/ScriptingLogicsModule.java`
    - `platform/server/src/main/java/lsfusion/server/logics/LogicsModule.java`
 
-4. PLUGIN SOURCE REVIEW
    In the plugin project, the preferred direction is:
    `LSF.bnf` ->
    mixin / implements classes ->
@@ -297,40 +288,80 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    - `plugin-idea/src/com/lsfusion/lang/LSF.bnf`
    - `plugin-idea/src/com/lsfusion/lang/psi/LSFPsiImplUtil.java`
 
-5. EXAMPLES IN EXISTING LSF CODE
+4. SUPPLEMENTARY SOURCES
    The assistant MUST search for examples
-   in existing lsFusion code in order to understand:
+   in existing lsFusion code
+   in order to understand:
    - how it is used
    - how it can be used
 
-6. ATTENTION TO IMPLEMENTATION DETAILS
+   The assistant SHOULD also look for
+   relevant community and history materials
+   (tutorials, articles, discussions,
+   GitHub issues, commits,
+   and GitHub issues referenced
+   from those commits)
+   using the available tools.
+
+   In this repository
+   it SHOULD also inspect:
+   - `rag-fill/src/main/resources/docs`
+
+5. ATTENTION TO IMPLEMENTATION DETAILS
    The assistant MUST inspect the source code
    as carefully as possible
    so as not to miss non-obvious behavior.
 
-7. GUIDE / HOW-TO WRITING
+6. GUIDE / HOW-TO WRITING
    When writing Guide / How-to,
    the assistant MUST also use examples
    from existing code.
 
-8. COMMUNITY SOURCES
-   The assistant SHOULD also look for
-   relevant community and history materials
-   (tutorials, articles, discussions,
-   GitHub issues, commits, and GitHub issues
-   referenced from those commits)
-   using the available tools.
-
-   In this repository it SHOULD also inspect:
-   - `rag-fill/src/main/resources/docs`
-
 ----------------------------------------------------------------
 
-RULES FOR COMPLETING LANGUAGE SYNTAX ARTICLES
+RULES FOR DESCRIBING LANGUAGE SYNTAX ARTICLES
 
-When the request is to complete or extend
+When writing,
+completing,
+or extending
 an article for a language syntax construction,
 the assistant MUST:
+
+Consistency with existing documentation:
+- preserve
+  the current syntax-description style
+  used in the documentation
+  (for example,
+  optional fragments
+  are written
+  in square brackets `[...]`);
+  before extending
+  or finishing
+  syntax documentation,
+  it MUST read
+  analogous articles
+  and inspect
+  how the corresponding material
+  is documented there
+- when extending
+  or finishing
+  syntax documentation,
+  it MUST search
+  for analogous syntax constructions
+  in other articles;
+  equivalent fragments
+  and behavior
+  MUST be documented consistently:
+  either described
+  in the same way,
+  or linked
+  to an existing section,
+  or extracted
+  into a separate section
+  and referenced
+  from the relevant articles
+
+Reader-facing explanation:
 - when describing
   a syntax construction
   or one of its parts,
@@ -360,6 +391,66 @@ the assistant MUST:
   it SHOULD link
   to the canonical article
   instead of redefining them locally
+
+Syntax block rules:
+- make sure
+  that each syntax block
+  reflects the full real grammar,
+  including all relevant variants
+- make sure
+  that each syntax block
+  contains one
+  syntax construction;
+  named subrules
+  SHOULD have names
+  that make it clear
+  what they contain
+  (for example,
+  expressions
+  SHOULD use `expr`
+  in the name),
+  while remaining
+  reasonably concise;
+  named subrules
+  and syntax fragments
+  MUST be explained in prose
+  and, if separate,
+  given in their own
+  syntax blocks,
+  usually introduced
+  in the style
+  `Where ... is defined as:`
+- show alternative variants
+  with explicit alternation
+  without using `|`
+  or describe them in prose,
+  with common parts
+  factored out
+- describe
+  reader-visible syntax
+  and behavior,
+  not internal
+  grammar rule names
+  or parser nonterminals
+- keep syntax constructions
+  in syntax blocks,
+  not in the description;
+  the description
+  MUST explain
+  semantics,
+  behavior,
+  and usage
+- keep one syntax construction
+  in one syntax definition;
+  semantic features,
+  special cases,
+  and behavior differences
+  MUST be described
+  in its description,
+  not split
+  into separate syntax definitions
+
+Coordination with Paradigm:
 - describe abstraction logic
   in the related Paradigm article,
   keeping that description
@@ -375,6 +466,8 @@ the assistant MUST:
   the assistant MUST first complete
   the Paradigm article
   or explicitly propose completing it
+
+Completeness of research:
 - inspect and describe
   the ENTIRE grammar
   of that syntax construction
@@ -403,6 +496,8 @@ This documentation will be used by a human
 and by an AI assistant
 to write code, explain code, and similar tasks.
 
+General writing goals:
+
 The documentation MUST be written so that
 the reader can understand exactly:
 - how the written code will work
@@ -424,6 +519,8 @@ The assistant SHOULD try to describe
 all significant details of the language
 and usage variants.
 
+Preserving existing material:
+
 When completing or extending
 existing documentation,
 the assistant SHOULD preserve
@@ -438,6 +535,8 @@ with the required structure.
 
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
+
+Wording and scope:
 
 When describing
 rules, restrictions,
@@ -491,6 +590,8 @@ and do not add
 useful understanding
 for the reader.
 
+Examples:
+
 When adding code examples,
 the assistant MUST validate them in the IDE
 if such access or tools are available,
@@ -499,36 +600,17 @@ If IDE validation is not available,
 the assistant MUST use a syntax-checking tool,
 if such a tool exists.
 
-If a new block or section is created,
-the assistant SHOULD make sure that
-the parent or higher-level section
-contains:
-- a link to that new section
-- a brief description of what that section covers
-
-In that case, the assistant SHOULD also
-update `docusaurus/sidebars.js`
-so that the new block or section
-is included in the documentation hierarchy
-and navigation.
-
-The documentation SHOULD preserve
-clear links between sections
-so that its hierarchy and navigation
-remain explicit.
-
-If a section becomes too large
-and can be split into logically complete blocks,
-the assistant SHOULD do that
-or suggest doing that.
-
 ----------------------------------------------------------------
 
 RULES FOR ERRORS, PROHIBITIONS, AND RECOMMENDATIONS
 
+Restriction priority:
+
 When describing or implementing restrictions,
-the assistant MUST reason in the following order,
-from the strictest level to the least strict level:
+the assistant MUST reason
+in the following order,
+from the strictest level
+to the least strict level:
 
 1. plugin errors / warnings
 2. platform (application server) errors / warnings at startup
@@ -537,6 +619,8 @@ from the strictest level to the least strict level:
    for the corresponding element
 5. warning in the Language or Paradigm documentation
    for the corresponding element
+
+Application rules:
 
 The assistant SHOULD try to add support
 at all applicable levels.
@@ -547,6 +631,8 @@ at the strictest level possible.
 If that is not possible,
 the assistant SHOULD explicitly propose doing so
 in the response to the requester.
+
+Assessing available levels:
 
 To check or assess the available error level
 in the platform and plugin,
