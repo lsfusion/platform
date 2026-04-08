@@ -25,8 +25,8 @@ additionalAddress '{geo.additional.address.poi}' = ABSTRACT ISTRING[150] (POI) M
 
 address '{geo.address.poi}' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
-latitude '{geo.latitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
-longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[11,6] (POI);
+latitude '{geo.latitude.poi}' = ABSTRACT DOUBLE (POI);
+longitude '{geo.longitude.poi}' = ABSTRACT DOUBLE (POI);
 
 //Get coordinates
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
