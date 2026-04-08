@@ -29,8 +29,8 @@ latitude '{geo.latitude.poi}' = ABSTRACT DOUBLE (POI);
 longitude '{geo.longitude.poi}' = ABSTRACT DOUBLE (POI);
 
 //Get coordinates
-readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
-readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[11,6] ();
+readLatitude '{geo.latitude.poi}' = DATA LOCAL DOUBLE ();
+readLongitude '{geo.longitude.poi}' = DATA LOCAL DOUBLE ();
 
 //Get address
 readAddress '{geo.address.poi}' = DATA LOCAL STRING();
@@ -73,8 +73,8 @@ getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.
 getCoordinates (STRING address)  { getCoordinatesAddress(address, showMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
 
-getAddressCoordinates  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetAddressCoordinatesAction' (NUMERIC[11,6], NUMERIC[11,6], MapProvider, STRING);
-getAddress(NUMERIC[11,6] latitude, NUMERIC[11,6] longitude) { getAddressCoordinates(latitude, longitude, showMapProvider(), lsfParams('googleGeocodingLanguage')); }
+getAddressCoordinates  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetAddressCoordinatesAction' (DOUBLE , DOUBLE, MapProvider, STRING);
+getAddress(DOUBLE latitude, DOUBLE longitude) { getAddressCoordinates(latitude, longitude, showMapProvider(), lsfParams('googleGeocodingLanguage')); }
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
 

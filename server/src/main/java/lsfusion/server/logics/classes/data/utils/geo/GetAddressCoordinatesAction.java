@@ -43,8 +43,8 @@ public class GetAddressCoordinatesAction extends GeoAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLHandledException {
         try {
             DataSession session = context.getSession();
-            BigDecimal latitude = (BigDecimal) context.getDataKeyValue(latitudeInterface).object;
-            BigDecimal longitude = (BigDecimal) context.getDataKeyValue(longitudeInterface).object;
+            Double latitude = (Double) context.getDataKeyValue(latitudeInterface).object;
+            Double longitude = (Double) context.getDataKeyValue(longitudeInterface).object;
             DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
             String language = (String) context.getDataKeyValue(languageInterface).object;
 
