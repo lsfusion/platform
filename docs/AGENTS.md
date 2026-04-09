@@ -501,6 +501,21 @@ Syntax block rules:
   or a shared subrule,
   rather than repeated
   in each variant
+- keep syntax blocks
+  compact and structural;
+  the assistant MUST NOT
+  replace structure
+  with a long enumeration
+  of all keyword combinations
+  when common parts
+  can be factored out;
+  intermediate rules
+  SHOULD be extracted,
+  and semantic restrictions
+  or allowed combinations
+  SHOULD be described
+  in prose
+  when that is clearer
 - show alternative variants
   with explicit alternation
   without using `|`
