@@ -136,7 +136,11 @@ Language article structure convention:
   with those keyword values,
   just like
   other reader-visible
-  syntax elements
+  syntax elements,
+  and MUST NOT
+  be given
+  a separate rule
+  in `Syntax`
 - `Description`
   SHOULD contain
   everything else:
@@ -418,7 +422,11 @@ Reader-facing explanation:
   there
   as a parameter
   or option
-  with those keyword values;
+  with those keyword values
+  and MUST NOT
+  be documented
+  as a separate rule
+  in `Syntax`;
   for IDs,
   literals,
   selectors,
