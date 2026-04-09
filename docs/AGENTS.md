@@ -126,23 +126,25 @@ Language article structure convention:
   and options
   corresponding
   to a single
-  reader-visible choice
-- if an intermediate rule
+  reader-visible choice;
+  container helper rules
+  used only
+  to group other syntax parts
+  MUST NOT be described
+  there as parameter items;
+  if an intermediate rule
   is only a choice
   among keywords,
   it MUST be documented
   in `Parameters`
   as a parameter
   or option
-  with those keyword values,
-  just like
-  other reader-visible
-  syntax elements,
+  with those keyword values
   and MUST NOT
   be given
   a separate rule
-  in `Syntax`
-- if several keyword choices
+  in `Syntax`;
+  if several keyword choices
   are independent
   syntax positions,
   they MUST be described
@@ -435,7 +437,10 @@ Reader-facing explanation:
   use them only
   for syntax elements
   that the reader
-  actually writes or chooses;
+  actually writes or chooses,
+  not for container helper rules
+  that only group
+  other syntax elements;
   if a reader-visible
   part of the syntax
   is a choice
