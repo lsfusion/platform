@@ -129,10 +129,14 @@ Language article structure convention:
 - if an intermediate rule
   is only a choice
   among keywords,
-  it SHOULD be treated
+  it MUST be documented
+  in `Parameters`
   as a parameter
   or option
-  in `Parameters`
+  with those keyword values,
+  just like
+  other reader-visible
+  syntax elements
 - `Description`
   SHOULD contain
   everything else:
@@ -406,6 +410,15 @@ Reader-facing explanation:
   for syntax elements
   that the reader
   actually writes or chooses;
+  if a reader-visible
+  part of the syntax
+  is a choice
+  among keywords,
+  it MUST be described
+  there
+  as a parameter
+  or option
+  with those keyword values;
   for IDs,
   literals,
   selectors,
