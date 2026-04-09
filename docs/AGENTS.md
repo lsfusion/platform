@@ -112,13 +112,36 @@ Language article structure convention:
   `Description`,
   `Parameters`,
   `Examples`
-- intermediate syntax rules
-  and helper fragments
-  belong in `Syntax`
-  and in the syntax description
+- `Syntax`
+  SHOULD contain
+  only the syntax itself
+  and helper syntax rules
+  needed to read it
 - `Parameters`
-  SHOULD describe
-  only reader-visible syntax elements
+  SHOULD contain
+  only reader-visible
+  node-level elements:
+  non-keyword placeholders,
+  keywords,
+  and options
+  expressed by one
+  or several keywords
+- if an intermediate rule
+  is only a choice
+  among keywords,
+  it SHOULD be treated
+  as a parameter
+  or option
+  in `Parameters`
+- `Description`
+  SHOULD contain
+  everything else:
+  semantics,
+  behavior,
+  defaults,
+  restrictions,
+  interactions,
+  and usage notes
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -420,6 +443,18 @@ Syntax block rules:
   usually introduced
   in the style
   `Where ... is defined as:`
+- check
+  the documented syntax
+  for presentational redundancy;
+  if several variants
+  differ only
+  in one fragment,
+  common parts
+  SHOULD be factored out
+  into the main rule
+  or a shared subrule,
+  rather than repeated
+  in each variant
 - show alternative variants
   with explicit alternation
   without using `|`
@@ -532,6 +567,17 @@ unless the current text
 is incorrect, unclear,
 or conflicts
 with the required structure.
+
+The assistant MUST respect
+the documentation structure:
+it MUST place material
+in the part and section
+where it belongs,
+and MUST NOT move
+Language, Paradigm,
+Guide, or How-to content
+into a different part
+without a clear structural reason.
 
 The assistant SHOULD try to preserve
 the existing style, size, and level of detail.
