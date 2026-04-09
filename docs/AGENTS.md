@@ -500,7 +500,20 @@ Syntax block rules:
   into the main rule
   or a shared subrule,
   rather than repeated
-  in each variant
+  in each variant;
+  after factoring out
+  common parts,
+  the assistant MUST check
+  that alternatives
+  still read as alternatives,
+  not as a sequence
+  of simultaneously allowed
+  fragments;
+  factorization MUST NOT
+  turn `OR`
+  into implicit `AND`
+  or introduce
+  invalid combinations
 - keep syntax blocks
   compact and structural;
   the assistant MUST NOT
