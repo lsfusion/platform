@@ -507,12 +507,21 @@ Syntax block rules:
   replace structure
   with a long enumeration
   of all keyword combinations
+  or expand
+  an intermediate rule
+  into near-identical variants
+  just to encode
+  option compatibility
+  or semantic constraints
   when common parts
   can be factored out;
   intermediate rules
   SHOULD be extracted,
-  and semantic restrictions
-  or allowed combinations
+  shared syntax
+  MUST stay factored,
+  and semantic restrictions,
+  allowed combinations,
+  and option compatibility
   SHOULD be described
   in prose
   when that is clearer
