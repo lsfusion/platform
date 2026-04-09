@@ -141,6 +141,19 @@ Language article structure convention:
   be given
   a separate rule
   in `Syntax`
+- `Syntax`,
+  `Parameters`,
+  and intermediate rules
+  SHOULD be mutually consistent:
+  everything used
+  in `Syntax`
+  MUST be covered
+  either as an intermediate rule
+  or in `Parameters`,
+  and everything described
+  there
+  MUST appear
+  in `Syntax`
 - `Description`
   SHOULD contain
   everything else:
@@ -441,6 +454,18 @@ Syntax block rules:
   that each syntax block
   reflects the full real grammar,
   including all relevant variants
+- check consistency
+  between `Syntax`,
+  `Parameters`,
+  and intermediate rules:
+  everything used
+  in `Syntax`
+  MUST be covered
+  there,
+  and nothing
+  described there
+  SHOULD be absent
+  from `Syntax`
 - make sure
   that each syntax block
   contains one
