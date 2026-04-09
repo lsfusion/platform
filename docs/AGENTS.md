@@ -124,8 +124,9 @@ Language article structure convention:
   non-keyword placeholders,
   keywords,
   and options
-  expressed by one
-  or several keywords
+  corresponding
+  to a single
+  reader-visible choice
 - if an intermediate rule
   is only a choice
   among keywords,
@@ -141,6 +142,14 @@ Language article structure convention:
   be given
   a separate rule
   in `Syntax`
+- if several keyword choices
+  are independent
+  syntax positions,
+  they MUST be described
+  as separate parameters
+  or options,
+  not bundled
+  into one combined value
 - `Syntax`,
   `Parameters`,
   and intermediate rules
@@ -440,6 +449,13 @@ Reader-facing explanation:
   be documented
   as a separate rule
   in `Syntax`;
+  if several keyword choices
+  are independent,
+  they MUST be described
+  as separate parameters
+  or options,
+  not as one
+  combined keyword value;
   for IDs,
   literals,
   selectors,
