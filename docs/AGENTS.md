@@ -151,7 +151,14 @@ Language article structure convention:
   as separate parameters
   or options,
   not bundled
-  into one combined value
+  into one combined value;
+  when a construction
+  varies along several
+  such dimensions,
+  this factored presentation
+  SHOULD be preferred
+  over enumerating
+  all combined forms
 - `Syntax`,
   `Parameters`,
   and intermediate rules
@@ -475,7 +482,8 @@ Syntax block rules:
   that each syntax block
   reflects the full real grammar,
   including all relevant variants;
-  all grammatical branches,
+  all code-valid
+  grammatical branches,
   optional syntactic continuations,
   and other real syntax variants
   MUST appear
@@ -544,10 +552,22 @@ Syntax block rules:
   of simultaneously allowed
   fragments;
   factorization MUST NOT
-  turn `OR`
-  into implicit `AND`
-  or introduce
-  invalid combinations
+  accidentally turn `OR`
+  into implicit `AND`;
+  if a more compact
+  factored syntax
+  is clearer,
+  it MAY be used
+  even if it is
+  a controlled superset
+  of the code-valid forms,
+  but it MUST still cover
+  all code-valid forms,
+  and the extra
+  semantic restrictions
+  MUST then be stated
+  in `Parameters`
+  or `Description`
 - keep syntax blocks
   compact and structural;
   the assistant MUST NOT
