@@ -159,6 +159,11 @@ Language article structure convention:
   that belong
   to one specific
   parameter
+  or option;
+  such details
+  SHOULD be described
+  only
+  in that parameter item
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -430,9 +435,10 @@ Reader-facing explanation:
   that apply
   to one parameter
   or option
-  SHOULD be described
+  MUST be described
   in that parameter item,
-  not only
+  and MUST NOT
+  be repeated
   in the general
   `Description`;
   container helper rules
