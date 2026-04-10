@@ -474,7 +474,20 @@ Syntax block rules:
 - make sure
   that each syntax block
   reflects the full real grammar,
-  including all relevant variants
+  including all relevant variants;
+  all grammatical branches,
+  optional syntactic continuations,
+  and other real syntax variants
+  MUST appear
+  in syntax blocks,
+  not be left only
+  to prose;
+  there MUST NOT
+  be syntax
+  that is valid
+  in the code
+  but invalid
+  in the documentation
 - check consistency
   between `Syntax`,
   `Parameters`,
@@ -561,10 +574,16 @@ Syntax block rules:
   when that is clearer
 - show alternative variants
   with explicit alternation
-  without using `|`
-  or describe them in prose,
+  without using `|`,
   with common parts
-  factored out
+  factored out;
+  prose MAY clarify
+  defaults,
+  semantic restrictions,
+  invalid combinations,
+  or other non-grammatical points,
+  but MUST NOT replace
+  missing syntax variants
 - describe
   reader-visible syntax
   and behavior,
@@ -578,7 +597,11 @@ Syntax block rules:
   MUST explain
   semantics,
   behavior,
-  and usage
+  and usage,
+  and MUST NOT
+  introduce grammar
+  that is absent
+  from `Syntax`
 - keep one syntax construction
   in one syntax definition;
   semantic features,
