@@ -466,9 +466,13 @@ Reader-facing explanation:
   of the syntax notation
   that already follow
   directly from the syntax,
-  such as saying
-  that an empty list
-  uses `()`;
+  such as explaining
+  how an empty list
+  is written;
+  it is enough
+  to say
+  that the list
+  may be empty;
   for IDs,
   literals,
   selectors,
