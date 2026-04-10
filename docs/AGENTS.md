@@ -807,6 +807,18 @@ to understand
 the current article
 or the current rule.
 The assistant MUST NOT
+add abstract,
+empty,
+or low-information
+bridge sentences
+that only restate
+the documentation structure
+without adding
+syntax,
+semantics,
+behavior,
+or usage details.
+The assistant MUST NOT
 add clarifications
 for particular cases
 or mirrored negative statements
