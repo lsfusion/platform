@@ -469,10 +469,11 @@ Reader-facing explanation:
   such as explaining
   how an empty list
   is written;
-  it is enough
-  to say
-  that the list
-  may be empty;
+  however,
+  it MUST still say
+  whether the list
+  may be empty
+  or not;
   for IDs,
   literals,
   selectors,
