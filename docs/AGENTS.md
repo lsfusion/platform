@@ -591,7 +591,19 @@ Syntax block rules:
   or options
   SHOULD be preferred
   over enumerating
-  all combined forms;
+  all combined forms
+  or using
+  a looser syntax
+  plus prose
+  when the dependency
+  or restriction
+  can be expressed
+  compactly
+  in the syntax itself
+  without harming
+  readability
+  or forcing
+  near-identical variants;
   if a more compact
   factored syntax
   is clearer,
