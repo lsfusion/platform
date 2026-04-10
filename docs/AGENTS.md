@@ -125,7 +125,12 @@ Language article structure convention:
   keywords,
   and options
   corresponding
-  to reader-visible choices
+  to reader-visible choices;
+  details that are localized
+  to one parameter
+  or option
+  SHOULD be described
+  in that parameter item
 - `Syntax`,
   `Parameters`,
   and intermediate rules
@@ -149,7 +154,11 @@ Language article structure convention:
   defaults,
   restrictions,
   interactions,
-  and usage notes
+  and usage notes,
+  except details
+  that belong
+  to one specific
+  parameter
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -414,6 +423,18 @@ Reader-facing explanation:
   for syntax elements
   that the reader
   actually writes or chooses;
+  defaults,
+  restrictions,
+  interactions,
+  and behavior notes
+  that apply
+  to one parameter
+  or option
+  SHOULD be described
+  in that parameter item,
+  not only
+  in the general
+  `Description`;
   container helper rules
   that only group
   other syntax parts
@@ -439,6 +460,15 @@ Reader-facing explanation:
   or options,
   not as one
   combined keyword value;
+  the assistant MUST NOT
+  spell out
+  trivial consequences
+  of the syntax notation
+  that already follow
+  directly from the syntax,
+  such as saying
+  that an empty list
+  uses `()`;
   for IDs,
   literals,
   selectors,
