@@ -119,9 +119,6 @@ fieldset {
     margin-bottom: 1.1em;
 }
 
-.desktop-link {
-    display: none;
-}
 
 .error-block {
     color: #ff0000;
@@ -170,7 +167,7 @@ details summary::-webkit-details-marker {
     margin: 0 1em;
 }
 
-.main-page-link {
+.main-page-link, .desktop-link {
     align-self: center;
     margin: 1em ;
 }

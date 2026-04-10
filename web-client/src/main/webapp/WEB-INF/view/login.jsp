@@ -110,7 +110,7 @@
             <div class="footer">
                 <c:if test="${empty sessionScope['2fa_user']}">
                     <div class="desktop-link link">
-                        ${jnlpUrls}
+                        ${appUrls}
                     </div>
                 </c:if>
                 <c:if test="${not empty sessionScope['2fa_user']}">

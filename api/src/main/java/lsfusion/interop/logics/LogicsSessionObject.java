@@ -194,7 +194,6 @@ public class LogicsSessionObject {
             boolean inDevMode = json.optBoolean("inDevMode");
             int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
-            String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSON(json.opt("lsfParams")) : null;
@@ -205,7 +204,7 @@ public class LogicsSessionObject {
             Integer twoFaMaxAttempts = !json.has("twoFaMaxAttempts") ? null : json.optInt("twoFaMaxAttempts");
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, PWAIcon, platformVersion, apiVersion, inDevMode,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem,
+                    sessionConfigTimeout, anonymousUI, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem,
                     twoFaMaxAttempts);
         }
         return serverSettings;

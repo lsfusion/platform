@@ -90,6 +90,7 @@
         <com.ibm.icu.icu4j.version>77.1</com.ibm.icu.icu4j.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
         <scrimage.version>4.0.42</scrimage.version>
+        <browsercap.version>1.5.1</browsercap.version>
         <httpcomponents.client5.httpclient5.version>5.3.1</httpcomponents.client5.httpclient5.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
@@ -573,6 +574,11 @@
                         <artifactId>logback-classic</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.blueconic</groupId>
+                <artifactId>browscap-java</artifactId>
+                <version>${browsercap.version}</version>
             </dependency>
 
             <dependency>

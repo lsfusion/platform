@@ -392,5 +392,9 @@
             <artifactId>serializer</artifactId>
             <version>2.7.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.blueconic</groupId>
+            <artifactId>browscap-java</artifactId>
+        </dependency>
     </dependencies>
 </project>

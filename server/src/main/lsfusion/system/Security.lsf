@@ -492,8 +492,6 @@ minHeapFreeRatio '{security.client.min.heap.free.ratio}' = DATA STRING[100]();
 maxHeapFreeRatio '{security.client.max.heap.free.ratio}' = DATA STRING[100]();
 vmargs '{security.client.vm.args}' = DATA STRING[100]();
 
-generateJnlp INTERNAL 'lsfusion.server.logics.navigator.GenerateJNLPAction' (STRING[10], STRING[1000]) NULL @@noauth;
-
 // ------------------ Memory limits ---------------- //
 CLASS MemoryLimit '{security.memory.limit}';
 TABLE memoryLimit (MemoryLimit);
@@ -501,27 +499,6 @@ TABLE memoryLimit (MemoryLimit);
 name '{security.name.memory.limit}' = DATA STRING[100] (MemoryLimit);
 maxHeapSize '{security.max.heap.size.memory.limit}' = DATA STRING[10] (MemoryLimit);
 vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
-
-generateJnlpUrls () {
-
-    LOCAL execURL = STRING();
-    execURL() <- '\{runDesktopQuery\}';
-
-    FOR MemoryLimit ml IS MemoryLimit DO {
-        exportText() <- CONCAT '', exportText(), '<a href="', execURL(), '&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';
-        IF vmargs(ml) THEN {
-            urlEncode(vmargs(ml), 'UTF-8');
-            exportText() <- CONCAT '', exportText(), '&p=', urlEncoded();
-        }
-        exportText() <- CONCAT '', exportText(), '">\{run.desktop.client\} ', name(ml), '</a><br/>';   
-    }
-    
-   IF(exportText()) THEN {  
-        exportText() <- CONCAT '', '<details><summary>', '<a href="', execURL(), '">\{run.desktop.client\}</a>', '</summary>', exportText(), '</details>';
-   } ELSE {
-        exportText() <- CONCAT '', '<a href="', execURL(), '">\{run.desktop.client\}</a>';     
-   }
-}
 
 // find forms
 

@@ -455,12 +455,9 @@ getServerSettings() + WHEN TRUE THEN {
         }
     }
 
-    IF NOT valueSettingBoolean('hideDesktopClientLink') THEN
-        generateJnlpUrls();
     EXPORT JSON FROM logicsName(), displayName(), logicsLogo = encodeBytesBase64(FILE(logicsLogo())), logicsIcon = encodeBytesBase64(FILE(logicsIcon())),
     PWAIcon = encodeBytesBase64(FILE(PWAIcon())), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-    jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
     lsfParams = (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
     noAuthResourcesBeforeSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) < 0 ORDER noAuthResourcesOrder(s)),

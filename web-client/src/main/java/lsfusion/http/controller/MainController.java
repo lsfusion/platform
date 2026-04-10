@@ -1,5 +1,9 @@
 package lsfusion.http.controller;
 
+import com.blueconic.browscap.Capabilities;
+import com.blueconic.browscap.ParseException;
+import com.blueconic.browscap.UserAgentParser;
+import com.blueconic.browscap.UserAgentService;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
@@ -54,6 +58,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static lsfusion.base.ServerMessages.getString;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -63,12 +68,20 @@ public class MainController {
     private final LSFRemoteAuthenticationProvider authenticationProvider;
     private final LSFClientRegistrationRepository clientRegistrationRepository;
     private final NavigatorProvider navigatorProvider;
+    private final UserAgentParser userAgentParser;
 
     public MainController(LogicsProvider logicsProvider, LSFRemoteAuthenticationProvider authenticationProvider, LSFClientRegistrationRepository clientRegistrationRepository, NavigatorProvider navigatorProvider) {
         this.logicsProvider = logicsProvider;
         this.authenticationProvider = authenticationProvider;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.navigatorProvider = navigatorProvider;
+        UserAgentParser parser;
+        try {
+            parser = new UserAgentService().loadParser();
+        } catch (IOException | ParseException e) {
+            parser = null;
+        }
+        this.userAgentParser = parser;
     }
 
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
@@ -463,7 +476,7 @@ public class MainController {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
         }
 
-        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        model.addAttribute("appUrls", getAppUrls(request, serverSettings));
         addUserDataAttributes(model, request);
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
@@ -531,14 +544,37 @@ public class MainController {
         return "main";
     }
 
-    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String directUrl = getDirectUrl("/exec", "action=Security.generateJnlp", request); //we use generateJnlp without params because linux mint cut from url '%5'
-        String localizedString = ServerMessages.getString(request, "run.desktop.client");
-        return serverSettings != null ? serverSettings.jnlpUrls == null ? "" :
-                serverSettings.jnlpUrls
-                        .replaceAll("\\{runDesktopQuery}", directUrl)
-                        .replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + directUrl + ">" + localizedString + "</a>";
+    private String getAppUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String platform = "Unknown";
+        String userAgentString = request.getHeader("User-Agent");
+        if (userAgentString != null && userAgentParser != null) {
+            try {
+                Capabilities capabilities = userAgentParser.parse(userAgentString);
+                platform = capabilities.getPlatform();
+            } catch (Exception ignored) {
+            }
+        }
+
+        String p = platform.toLowerCase();
+        if (p.contains("windows") || p.contains("win")) {
+            return "<a href=\"https://download.lsfusion.org/flutter/windows/lsfusion-client.appinstaller\">" + getString(request, "run.desktop.client") + "</a>";
+        } else if (p.contains("android")) {
+            return "<a href=\"https://download.lsfusion.org/flutter/android/lsfusion-client-1.0.0.apk\">" + getString(request, "download.android") + "</a>";
+        } else if (p.contains("linux")) {
+            return getString(request, "download.linux") + " " +
+                    "<a href=\"https://download.lsfusion.org/flutter/linux/lsfusion-client-1.0.0.deb\">DEB (Ubuntu/Debian)</a> | " +
+                    "<a href=\"https://download.lsfusion.org/flutter/linux/lsfusion-client-1.0.0.rpm\">RPM (Fedora/RHEL)</a> | " +
+                    "<a href=\"https://download.lsfusion.org/flutter/linux/lsfusion-client-1.0.0-x86_64.pkg.tar.zst\">PKG (Arch)</a>";
+        }
+        /*
+        else if (p.contains("mac os x") || p.contains("macos") || p.contains("macosx")) {
+            return "<a href=\"https://download.lsfusion.org/flutter/macos/lsfusion_client-macos.dmg\">" + ServerMessages.getString(request, "download.macos") + "</a>";
+        } else if (p.contains("ios")) {
+            return "<a href=\"https://download.lsfusion.org/flutter/ios/\">" + ServerMessages.getString(request, "download.ios") + "</a>";
+        }
+        */
+
+        return "";
     }
 
     public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {
