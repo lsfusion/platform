@@ -125,53 +125,22 @@ Language article structure convention:
   keywords,
   and options
   corresponding
-  to a single
-  reader-visible choice;
-  container helper rules
-  used only
-  to group other syntax parts
-  MUST NOT be described
-  there as parameter items;
-  if an intermediate rule
-  is only a choice
-  among keywords,
-  it MUST be documented
-  in `Parameters`
-  as a parameter
-  or option
-  with those keyword values
-  and MUST NOT
-  be given
-  a separate rule
-  in `Syntax`;
-  if several keyword choices
-  are independent
-  syntax positions,
-  they MUST be described
-  as separate parameters
-  or options,
-  not bundled
-  into one combined value;
-  when a construction
-  varies along several
-  such dimensions,
-  this factored presentation
-  SHOULD be preferred
-  over enumerating
-  all combined forms
+  to reader-visible choices
 - `Syntax`,
   `Parameters`,
   and intermediate rules
   SHOULD be mutually consistent:
-  everything used
+  everything referenced
   in `Syntax`
-  MUST be covered
-  either as an intermediate rule
+  SHOULD be covered
+  either
+  by an intermediate rule
   or in `Parameters`,
   and everything described
-  there
-  MUST appear
-  in `Syntax`
+  in `Parameters`
+  or intermediate rules
+  SHOULD correspond
+  to `Syntax`
 - `Description`
   SHOULD contain
   everything else:
@@ -444,10 +413,12 @@ Reader-facing explanation:
   use them only
   for syntax elements
   that the reader
-  actually writes or chooses,
-  not for container helper rules
+  actually writes or chooses;
+  container helper rules
   that only group
-  other syntax elements;
+  other syntax parts
+  MUST NOT appear there
+  as parameter names;
   if a reader-visible
   part of the syntax
   is a choice
@@ -500,12 +471,18 @@ Syntax block rules:
   between `Syntax`,
   `Parameters`,
   and intermediate rules:
-  everything used
+  every placeholder,
+  keyword choice,
+  and intermediate rule
+  referenced
   in `Syntax`
   MUST be covered
-  there,
-  and nothing
-  described there
+  by `Syntax`,
+  `Parameters`,
+  or intermediate rules,
+  and nothing described
+  in `Parameters`
+  or as an intermediate rule
   SHOULD be absent
   from `Syntax`
 - make sure
@@ -533,7 +510,8 @@ Syntax block rules:
   `Where ... is defined as:`
 - check
   the documented syntax
-  for presentational redundancy;
+  for presentational redundancy
+  and readability;
   if several variants
   differ only
   in one fragment,
@@ -554,6 +532,31 @@ Syntax block rules:
   factorization MUST NOT
   accidentally turn `OR`
   into implicit `AND`;
+  syntax blocks
+  MUST stay compact,
+  structural,
+  and factored;
+  the assistant MUST NOT
+  replace structure
+  with a long enumeration
+  of keyword combinations
+  or expand
+  an intermediate rule
+  into near-identical variants
+  just to encode
+  option compatibility
+  or semantic constraints
+  when common parts
+  can be factored out;
+  when a construction
+  varies along several
+  independent dimensions,
+  the factored presentation
+  with separate parameters
+  or options
+  SHOULD be preferred
+  over enumerating
+  all combined forms;
   if a more compact
   factored syntax
   is clearer,
@@ -564,34 +567,12 @@ Syntax block rules:
   but it MUST still cover
   all code-valid forms,
   and the extra
-  semantic restrictions
+  semantic restrictions,
+  allowed combinations,
+  and option compatibility
   MUST then be stated
   in `Parameters`
   or `Description`
-- keep syntax blocks
-  compact and structural;
-  the assistant MUST NOT
-  replace structure
-  with a long enumeration
-  of all keyword combinations
-  or expand
-  an intermediate rule
-  into near-identical variants
-  just to encode
-  option compatibility
-  or semantic constraints
-  when common parts
-  can be factored out;
-  intermediate rules
-  SHOULD be extracted,
-  shared syntax
-  MUST stay factored,
-  and semantic restrictions,
-  allowed combinations,
-  and option compatibility
-  SHOULD be described
-  in prose
-  when that is clearer
 - show alternative variants
   with explicit alternation
   without using `|`,
