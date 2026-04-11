@@ -748,6 +748,28 @@ unless the current text
 is incorrect, unclear,
 or conflicts
 with the required structure.
+When rewriting
+or tightening text,
+the assistant MUST NOT
+drop informative details
+that are still correct
+and relevant,
+including links
+to related articles,
+semantic qualifiers,
+defaults,
+or other clarifications
+that add understanding.
+Before removing
+or compressing
+such details,
+the assistant MUST compare
+the new wording
+with the original version
+of the article
+and make sure
+that those details
+are still preserved.
 
 The assistant MUST respect
 the documentation structure:
