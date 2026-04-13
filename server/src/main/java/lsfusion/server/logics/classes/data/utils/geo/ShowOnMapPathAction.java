@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -17,9 +16,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -54,8 +50,8 @@ public class ShowOnMapPathAction extends GeoAction {
             int index = 1;
             String firstLatLong = null;
             for (ImMap<Object, Object> values : result.valueIt()) {
-                BigDecimal latitude = (BigDecimal) values.get("latitude");
-                BigDecimal longitude = (BigDecimal) values.get("longitude");
+                Double latitude = (Double) values.get("latitude");
+                Double longitude = (Double) values.get("longitude");
                 String name = (String) values.get("namePOI");
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;

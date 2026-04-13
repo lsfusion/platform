@@ -17,7 +17,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,8 +54,8 @@ public class CalculatePathAction extends DistanceGeoAction {
                 for (int i = 0, size = result.size(); i < size; i++) {
                     ImMap<Object, ObjectValue> values = result.getValue(i);
 
-                    BigDecimal latitude = (BigDecimal) values.get("latitude").getValue();
-                    BigDecimal longitude = (BigDecimal) values.get("longitude").getValue();
+                    Double latitude = (Double) values.get("latitude").getValue();
+                    Double longitude = (Double) values.get("longitude").getValue();
 
                     if (latitude != null && longitude != null) {
                         String latLong = latitude + "," + longitude;

@@ -15,7 +15,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,8 +51,8 @@ public class RecalculateDistancePOIAction extends DistanceGeoAction {
             for (int i = 0, size = result.size(); i < size; i++) {
                 ImMap<Object, ObjectValue> values = result.getValue(i);
 
-                BigDecimal latitude = (BigDecimal) values.get("latitude").getValue();
-                BigDecimal longitude = (BigDecimal) values.get("longitude").getValue();
+                Double latitude = (Double) values.get("latitude").getValue();
+                Double longitude = (Double) values.get("longitude").getValue();
                 String latLong = latitude + "," + longitude;
                 DataObject POI = result.getKey(i).singleValue();
                 points.put(i, latLong);
@@ -62,8 +61,8 @@ public class RecalculateDistancePOIAction extends DistanceGeoAction {
             int size = points.size();
             if (size > 0) {
 
-                BigDecimal latitude = (BigDecimal) findProperty("latitude[POI]").read(context, poiObject);
-                BigDecimal longitude = (BigDecimal) findProperty("longitude[POI]").read(context, poiObject);
+                Double latitude = (Double) findProperty("latitude[POI]").read(context, poiObject);
+                Double longitude = (Double) findProperty("longitude[POI]").read(context, poiObject);
                 String latLong = latitude + "," + longitude;
 
 

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -12,8 +11,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 

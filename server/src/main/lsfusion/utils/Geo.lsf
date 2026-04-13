@@ -39,6 +39,7 @@ isDefault '{geo.api.key.default}' (MapProvider m) = m == showUserMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
 provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
 commercialAPI '{geo.api.key.commercial}' = DATA BOOLEAN(MapProvider); // free or commercial
+serverAPIKey '{geo.server.api.key}' = DATA STRING(MapProvider);
 
 lsfParams(STRING s) += STRING(basicStaticName(showUserMapProvider())) IF s = 'defaultMapProvider';
 
@@ -122,7 +123,7 @@ EXTEND FORM options
 
 FORM mapProvider
     OBJECTS m = MapProvider PANEL
-    PROPERTIES(m) apiKey, commercialAPI SHOWIF m == MapProvider.yandex
+    PROPERTIES(m) apiKey, commercialAPI SHOWIF m == MapProvider.yandex, serverAPIKey SHOWIF m = MapProvider.google
     EDIT MapProvider OBJECT m;
 ;
 DESIGN mapProvider {
@@ -133,6 +134,10 @@ DESIGN mapProvider {
                 charWidth = 40;
             }
             MOVE PROPERTY(commercialAPI(m));
+            MOVE PROPERTY(serverAPIKey(m)) {
+                charWidth = 40;
+                tooltip = 'geocoding, places, etc..';
+            }
             horizontal = TRUE;
         }
 
