@@ -19,7 +19,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -61,6 +60,10 @@ public class GetAddressCoordinatesAction extends GeoAction {
                             .getJSONObject("GeocoderMetaData").getJSONObject("Address").getString("formatted");
 
                 } else {
+                    String serverAPIKey = (String) findProperty("serverAPIKey[MapProvider]").read(context, mapProvider);
+                    if (serverAPIKey != null && !serverAPIKey.trim().isEmpty())
+                        apiKey = serverAPIKey;
+
                     GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
                     GeocodingResult[] results = GeocodingApi.reverseGeocode(geoApiContext,
                             new LatLng(latitude.doubleValue(), longitude.doubleValue())).language(language).await();

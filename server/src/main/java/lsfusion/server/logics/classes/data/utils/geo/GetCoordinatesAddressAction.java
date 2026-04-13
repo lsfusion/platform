@@ -61,6 +61,10 @@ public class GetCoordinatesAddressAction extends GeoAction {
                     longitude = new BigDecimal(position[0]);
                     latitude = new BigDecimal(position[1]);
                 } else {
+                    String serverAPIKey = (String) findProperty("serverAPIKey[MapProvider]").read(context, mapProvider);
+                    if (serverAPIKey != null && !serverAPIKey.trim().isEmpty())
+                        apiKey = serverAPIKey;
+
                     GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
                     GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, address).await();
                     LatLng location = results[0].geometry.location;
@@ -69,8 +73,8 @@ public class GetCoordinatesAddressAction extends GeoAction {
                     latitude = BigDecimal.valueOf(location.lat);
                 }
 
-                findProperty("readLatitude[]").change(latitude, session);
-                findProperty("readLongitude[]").change(longitude, session);
+                findProperty("readLatitude[]").change(latitude.doubleValue(), session);
+                findProperty("readLongitude[]").change(longitude.doubleValue(), session);
             }
         } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException | InterruptedException | ApiException e) {
             throw Throwables.propagate(e);
