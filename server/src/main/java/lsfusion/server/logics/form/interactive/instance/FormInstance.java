@@ -2460,7 +2460,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean hidden = isUserHidden(drawProperty);
                 ComponentView userHidableContainer = drawComponent.getUserHidableContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
 
-                boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
+                boolean isDefinitelyShown = drawProperty.propertyShowIf == null || drawProperty.propertyShowIf.property.isExplicitNotNull();
                 if (!isDefinitelyShown) {
                     ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
                     PropertyDrawInstance.ShowIfReaderInstance showIfReader = drawProperty.showIfReader;
@@ -2538,7 +2538,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector()) { // don't show property if it is always null
+        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector() && drawProperty.propertyShowIf == null) { // allow SHOWIF / SELECTOR to decide visibility dynamically
             return false;
         }
 
