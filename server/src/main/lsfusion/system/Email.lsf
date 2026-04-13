@@ -160,7 +160,7 @@ newFolder '{logics.add}' (Folder parent) {
         account(f) <- account(parent);
         parent(f) <- parent;
         EXPAND DOWN account.f OBJECTS f = parent; 
-        SEEK account.f = f;
+        ACTIVATE account.f = f;
         ACTIVATE PROPERTY account.id(f);
     }
 }

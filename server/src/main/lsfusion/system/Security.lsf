@@ -383,7 +383,7 @@ END
 copy '{security.copy.role}' (UserRole from)  { 
     NEW to = UserRole {
         copy(from, to);
-        SEEK securityPolicy.ur = to;
+        ACTIVATE securityPolicy.ur = to;
     }
 }
 

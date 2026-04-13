@@ -228,8 +228,8 @@ DESIGN schedules{
 }
 
 setDates() {
-    SEEK schedule.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
-    SEEK schedule.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
+    ACTIVATE schedule.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
+    ACTIVATE schedule.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
 
     LOCAL i=INTEGER();
     i()<-1;
@@ -244,7 +244,7 @@ setDates() {
 
 changeDateTimeFrom (DATETIME  dt) + {
     INPUT df = DATETIME DO {
-        SEEK schedule.df = df;
+        ACTIVATE schedule.df = df;
         LOCAL i=INTEGER();
         i()<-1;
         FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
@@ -259,7 +259,7 @@ changeDateTimeFrom (DATETIME  dt) + {
 
 changeDateTimeTo (DATETIME  df) + {
     INPUT dt = DATETIME DO {
-        SEEK schedule.dt = dt; 
+        ACTIVATE schedule.dt = dt; 
         LOCAL i=INTEGER();
         i()<-1;   
         FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
@@ -278,8 +278,8 @@ EXTEND FORM schedule
 ;
 
 setDates2() {
-    SEEK schedules.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
-    SEEK schedules.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
+    ACTIVATE schedules.df = dateTimeToDateTime(firstDayOfMonth(currentDate()),00:00);
+    ACTIVATE schedules.dt = dateTimeToDateTime(lastDayOfMonth(currentDate()),23:59);
 
     LOCAL i=INTEGER();
     i()<-1;
@@ -294,7 +294,7 @@ setDates2() {
 
 changeDateTimeFrom2 (DATETIME  dt) + {
     INPUT df = DATETIME DO {
-        SEEK schedules.df = df;
+        ACTIVATE schedules.df = df;
         LOCAL i=INTEGER();
         i()<-1;
         FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {
@@ -309,7 +309,7 @@ changeDateTimeFrom2 (DATETIME  dt) + {
 
 changeDateTimeTo2 (DATETIME  df) + {
     INPUT dt = DATETIME DO {
-        SEEK schedules.dt = dt; 
+        ACTIVATE schedules.dt = dt; 
         LOCAL i=INTEGER();
         i()<-1;   
         FOR iterate(DATE d,toDate(df),toDate(dt)) ORDER d DO {

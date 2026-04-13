@@ -894,7 +894,7 @@ FORM changes '{system.events.form.changes}'
                     FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8'
     EVENTS 
         ON INIT {
-            SEEK changes.dates OBJECTS from = dateTimeToDateTime(currentDate(), 00:00), to = currentDateTime();
+            ACTIVATE changes.dates OBJECTS from = dateTimeToDateTime(currentDate(), 00:00), to = currentDateTime();
         }
         
 ;

@@ -202,7 +202,7 @@ FORM interpreter '{eval.script.form.interpreter}'
 copyScript '{eval.script.copy.script}' (Script sf)  { 
     NEW s = Script {
         text(s) <- text(sf);
-        SEEK interpreter.s = s;
+        ACTIVATE interpreter.s = s;
     }
     IF NOT PREV(sf IS Script) THEN
         DELETE sf;
@@ -218,12 +218,12 @@ findScript '{eval.script.find.script}' (Script sf)  {
         ASK '{eval.script.find.script.ask}' DO {
             NEW st = Script {
                 text(st) <- text(s);
-                SEEK interpreter.s = st;
+                ACTIVATE interpreter.s = st;
             }
             new () <- TRUE;
         }
         IF NOT new() THEN {
-            SEEK interpreter.s = s;
+            ACTIVATE interpreter.s = s;
         }
     }   
 }
@@ -234,7 +234,7 @@ EXTEND FORM interpreter
     EVENTS  
         ON INIT {
             NEW scr = Script {
-                SEEK interpreter.s = scr; 
+                ACTIVATE interpreter.s = scr; 
             }
         }
 ;

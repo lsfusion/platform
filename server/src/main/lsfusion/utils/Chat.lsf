@@ -476,9 +476,9 @@ EXTEND FORM fullChat
 ;
 
 recentVisible() += ACTIVE TAB fullChat.recent;
-seekChat (Chat chat) + { SEEK fullChat.c = chat; }
+seekChat (Chat chat) + { ACTIVATE fullChat.c = chat; }
 
-seekLastMessage() + { SEEK LAST fullChat.m; }
+seekLastMessage() + { ACTIVATE LAST fullChat.m; }
 
 NAVIGATOR {
     NEW fullChat WINDOW system PARENT AFTER showDesign HEADER '{chat.chat}' IF NOT noSystemToolbarCaptions() IMAGE 'chat.png';
@@ -570,7 +570,7 @@ pushAction (BOOLEAN system, BOOLEAN notificate)  {
         ACTIVE FORM shortChat;
         IF isActiveForm() THEN {
             formRefresh();
-            SEEK LAST shortChat.m;
+            ACTIVATE LAST shortChat.m;
         } 
         ELSE {
             IF system OR notificate THEN {

@@ -227,7 +227,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
     
     OBJECTS std = ScheduledTaskDetail
     PROPERTIES json(std) PANEL CUSTOM 'interpreter' SHOWIF isWeb() AND td IS ScheduledTaskDetail ON CHANGE changeScript(std)
-    EVENTS ON CHANGE td { SEEK scheduledTask.std = td; }
+    EVENTS ON CHANGE td { ACTIVATE scheduledTask.std = td; }
     
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
     PROPERTIES (td) READONLY SHOWIF allTasks() nameScheduledTask, startTime, period
