@@ -86,6 +86,9 @@ public final class ReconnectWorker<T> extends SwingWorker<T, Integer> {
             JPanel messagePanel = new JPanel();
             messagePanel.add(lbMessage);
 
+            JPanel hostPanel = new JPanel();
+            hostPanel.add(new JLabel(MainController.getHostPort()));
+
             JProgressBar progressBar = new JProgressBar();
             progressBar.setIndeterminate(true);
             JPanel progressPanel = new JPanel();
@@ -94,6 +97,7 @@ public final class ReconnectWorker<T> extends SwingWorker<T, Integer> {
             Container contentPane = getContentPane();
             contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
             contentPane.add(messagePanel);
+            contentPane.add(hostPanel);
             contentPane.add(progressPanel);
             contentPane.add(buttonPanel);
 
