@@ -840,13 +840,17 @@ the assistant MUST describe
 only what is specific
 to the current section;
 general rules,
-resolution rules,
+resolving,
+lookup,
+overloading,
+signature rules,
 and special cases
 that are already described
 in other sections
 MUST be reused
 or referenced,
-not duplicated.
+not restated
+or duplicated.
 The assistant MUST NOT
 add tangential comments,
 background remarks,
@@ -877,7 +881,13 @@ or follow directly
 from already stated behavior,
 including obvious special cases
 such as empty variants
-of an already described form.
+of an already described form;
+this also applies
+to local restatements
+of special cases
+that only follow
+from canonical general rules
+described elsewhere.
 Minor technical details
 MAY be omitted,
 especially if they are hard
