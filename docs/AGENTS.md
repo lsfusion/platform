@@ -747,6 +747,20 @@ and coherently,
 not as stitched fragments,
 mechanical paraphrases,
 or isolated remarks.
+The assistant MUST phrase things
+as simply as possible;
+if several correct phrasings
+are available,
+it MUST prefer
+the simplest natural one
+and avoid
+unnecessarily fancy,
+bureaucratic,
+or pseudo-formal wording,
+unless a more technical phrase
+is an established term
+of the platform
+or documentation.
 
 Preserving existing material:
 
