@@ -163,7 +163,12 @@ Language article structure convention:
   such details
   SHOULD be described
   only
-  in that parameter item
+  in that parameter item;
+  the section
+  SHOULD read
+  as a coherent explanation
+  of the construction,
+  not as disconnected notes
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
@@ -734,6 +739,14 @@ but also complete.
 The assistant SHOULD try to describe
 all significant details of the language
 and usage variants.
+The assistant MUST reread
+the resulting text
+and check
+that it reads naturally
+and coherently,
+not as stitched fragments,
+mechanical paraphrases,
+or isolated remarks.
 
 Preserving existing material:
 
