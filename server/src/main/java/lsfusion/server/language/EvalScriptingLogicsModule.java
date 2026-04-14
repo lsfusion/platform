@@ -22,7 +22,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -140,7 +140,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         super.addScriptedGroup(groupName, captionStr, integrationSID, parentName, debugPoint);
     }
 
-    public List<LazyProperty> lazyProps = new ArrayList<>();
+    public Set<LazyProperty> lazyProps = new LinkedHashSet<>();
     @Override
     protected void addPropertyToGroup(ActionOrProperty<?> property, Group group) {
         if (group != null && !property.isLocal()) { 
