@@ -479,7 +479,7 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), request));
-        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
+        model.addAttribute("apiVersion", BaseUtils.getVersion());
     }
 
     public static boolean isPrefetch(HttpServletRequest request) {

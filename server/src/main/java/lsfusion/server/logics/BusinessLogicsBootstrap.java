@@ -38,7 +38,7 @@ public class BusinessLogicsBootstrap {
         startLog("Server is starting...");
 
         String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
-        startLog("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
+        startLog("Current version: " + BaseUtils.getVersion() + (revision != null ? (" " + revision) : ""));
 
         startLog("Java version: " + SystemUtils.getJavaVersion());
         startLog("Class path: " + ResourceUtils.getClassPath());

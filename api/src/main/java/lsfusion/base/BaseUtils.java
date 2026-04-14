@@ -62,8 +62,12 @@ public class BaseUtils {
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
+    public static String getVersion() {
+        return BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")";
+    }
+
     public static Integer getApiVersion() {
-        return 376;
+        return 377;
     }
 
     public static String getPlatformVersion() {
