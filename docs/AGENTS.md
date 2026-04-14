@@ -872,6 +872,18 @@ semantics,
 behavior,
 or usage details.
 The assistant MUST NOT
+add tautological
+cross-reference remarks
+that merely say
+that the linked section
+or article
+contains the corresponding
+general rules
+if that already follows
+from the link itself
+and adds no new
+local information.
+The assistant MUST NOT
 add clarifications
 for particular cases
 or mirrored negative statements
