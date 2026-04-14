@@ -211,7 +211,7 @@ public class LoginDialog extends JDialog {
         Result<String> checkVersionError = new Result<>();
         ServerSettings serverSettings = isValid(serverInfo) ? getAndCheckServerSettings(serverInfo, checkVersionError, false) : null;
 
-        setTitle(MainController.getMainTitle(serverSettings));
+        setTitle(MainController.getMainTitle(serverSettings) + " " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
 
         setIconImages(MainController.getMainIcons(serverSettings));
 
