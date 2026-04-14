@@ -449,7 +449,7 @@ public abstract class MainFrame extends JFrame {
     }
 
     public void updateUser(String userName) {
-        setTitle(MainController.getMainTitle() + " - " + userName + " (" + MainController.serverInfo.host + ":" + MainController.serverInfo.port + ")");
+        setTitle(MainController.getMainTitle() + " - " + userName + " (" + MainController.getHostPort() + ")");
     }
 
     public abstract Integer runReport(List<String> customReportPathList, String formCaption, String formSID, boolean isModal, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified) throws IOException, ClassNotFoundException;

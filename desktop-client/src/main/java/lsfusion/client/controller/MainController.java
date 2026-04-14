@@ -405,6 +405,10 @@ public class MainController {
         serverSettings = getServerSettings(serverInfo, false);
     }
 
+    public static String getHostPort() {
+        return serverInfo.host + ":" + serverInfo.port;
+    }
+
     public static ServerSettings getServerSettings(LogicsConnection serverInfo, boolean noCache) {
         try {
             return LogicsProvider.instance.runRequest(serverInfo, (sessionObject, retry) -> sessionObject.getServerSettings(getSessionInfo(), null, noCache, null));
