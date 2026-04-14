@@ -62,12 +62,13 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
         String osVersion;
-        String architecture = null;
+        String architecture;
         String processor = null;
         String userAgent = request.getHeader("User-Agent");
         if(userAgent != null) {
             Client c = new Parser().parse(userAgent);
             osVersion = c.os.family + (c.os.major != null ? (" " + c.os.major) : "");
+            architecture = getArchitecture(userAgent);
         } else {
             osVersion = System.getProperty("os.name"); //server os
             architecture = System.getProperty("os.arch");
@@ -97,6 +98,40 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+    }
+
+    private static String getArchitecture(String userAgent) {
+        if(userAgent == null)
+            return null;
+        String lowerUserAgent = userAgent.toLowerCase(Locale.ROOT);
+        if(hasAnyArchitectureToken(lowerUserAgent, "x86_64", "x86-64", "amd64", "em64t", "ia64", "wow64", "win64", "x64"))
+            return "x64";
+        if(hasAnyArchitectureToken(lowerUserAgent, "aarch64", "arm64", "arm_64"))
+            return "arm64";
+        if(hasAnyArchitectureToken(lowerUserAgent, "i386", "i486", "i586", "i686", "win32", "x86"))
+            return "x32";
+        if(hasAnyArchitectureToken(lowerUserAgent, "arm", "armv6", "armv6l", "armv7", "armv7l", "armv8", "armv8l"))
+            return "arm";
+        return null;
+    }
+
+    private static boolean hasAnyArchitectureToken(String userAgent, String... tokens) {
+        for(String token : tokens)
+            if(hasArchitectureToken(userAgent, token))
+                return true;
+        return false;
+    }
+
+    private static boolean hasArchitectureToken(String userAgent, String token) {
+        int index = -1;
+        while((index = userAgent.indexOf(token, index + 1)) >= 0) {
+            int previousIndex = index - 1;
+            int nextIndex = index + token.length();
+            if((previousIndex < 0 || !Character.isLetterOrDigit(userAgent.charAt(previousIndex))) &&
+                    (nextIndex >= userAgent.length() || !Character.isLetterOrDigit(userAgent.charAt(nextIndex))))
+                return true;
+        }
+        return false;
     }
 
     // required for correct Jasper report generation
