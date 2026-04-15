@@ -272,6 +272,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
         config = overrideCallbacks(config, getCallbacks());
         config = overrideRendererOptions(config, getRendererOptions(configFunction, getPropertyCaptionsMap()));
+        config = overrideCustomOptions(config, getCustomOptions());
 
         if (!settings)
             GwtClientUtils.addClassName(getDrawElement(), "pivotTable-noSettings");
@@ -525,6 +526,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return Object.assign({}, config, {
             rendererOptions: rendererOptions
         });
+    }-*/;
+
+    private native WrapperObject overrideCustomOptions(WrapperObject config, JavaScriptObject customOptions)/*-{
+        return $wnd.mergeObjects(config, customOptions);
     }-*/;
 
     private native WrapperObject overrideHideColAxisHeadersColumn(WrapperObject config, boolean hide)/*-{

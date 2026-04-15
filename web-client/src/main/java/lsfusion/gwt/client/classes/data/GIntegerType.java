@@ -16,7 +16,7 @@ public class GIntegerType extends GIntegralType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext, boolean multipleInput) {
-        return editProperty.inputType.isYear() ? new YearCellEditor(editManager, editProperty) : new IntegerCellEditor(editManager, editProperty);
+        return editProperty.inputType.isYear() ? new YearCellEditor(editManager, editProperty, editContext) : new IntegerCellEditor(editManager, editProperty);
     }
 
     @Override

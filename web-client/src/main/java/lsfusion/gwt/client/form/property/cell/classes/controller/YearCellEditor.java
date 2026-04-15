@@ -1,18 +1,20 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class YearCellEditor extends IntegralCellEditor {
 
-    public YearCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(GIntegerType.instance, editManager, property);
+    public YearCellEditor(EditManager editManager, GPropertyDraw property, EditContext editContext) {
+        super(GIntegerType.instance, editManager, property, editContext);
     }
 
     @Override
@@ -20,7 +22,8 @@ public class YearCellEditor extends IntegralCellEditor {
         boolean explicitValue = super.startText(handler, parent, renderContext, oldValue);
 
         if (started) {
-            openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue), !explicitValue && oldValue == null);
+            JavaScriptObject customOptions = editContext.getUpdateContext().getPropertyCustomOptionsAsJSObject();
+            openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue), !explicitValue && oldValue == null, customOptions);
 
             GwtClientUtils.addDropDownPartner(parent, getYearPickerContainer(parent));
         }
@@ -39,7 +42,7 @@ public class YearCellEditor extends IntegralCellEditor {
         commit(parent);
     }
 
-    protected native void openYearPicker(Element inputElement, Element parent, Integer initYear, boolean updateInput)/*-{
+    protected native void openYearPicker(Element inputElement, Element parent, Integer initYear, boolean updateInput, JavaScriptObject customOptions)/*-{
         var thisObj = this;
 
         var startDate;
@@ -50,7 +53,7 @@ public class YearCellEditor extends IntegralCellEditor {
             inputElement.value = startDate.getFullYear();
         }
 
-        parent.picker = new $wnd.AirDatepicker(inputElement, {
+        parent.picker = new $wnd.AirDatepicker(inputElement, $wnd.mergeObjects({
             view: 'years', // displaying the years of one decade
             minView: 'years', // The minimum possible representation of the calendar. It is used, for example, when you need to provide only a choice of the year.
             visible: true, // Shows the calendar immediately after initialization.
@@ -67,7 +70,7 @@ public class YearCellEditor extends IntegralCellEditor {
                 if (isFinished)
                     parent.picker.destroy();
             }
-        });
+        }, customOptions));
 
         if (updateInput)
             inputElement.select()

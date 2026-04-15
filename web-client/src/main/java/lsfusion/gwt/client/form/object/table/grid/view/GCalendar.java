@@ -26,6 +26,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     private final CalendarDateBinding calendarDateBinding;
     private JavaScriptObject calendar;
+    private JavaScriptObject calendarCustomOptions;
 
     public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, CalendarDateBinding calendarDateBinding) {
         super(form, grid, tableContainer);
@@ -41,15 +42,22 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
-        if (calendar == null) {
+        JavaScriptObject customOptions = getCustomOptions();
+        if (calendar == null || !deepEquals(calendarCustomOptions, customOptions)) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
 //            element.getParentElement().getStyle().setProperty("overflow", "auto");
-            element.getStyle().setProperty("minHeight", "400px");
-            element.getStyle().setProperty("cursor", "default");
+            if (calendar == null) {
+                element.getStyle().setProperty("minHeight", "400px");
+                element.getStyle().setProperty("cursor", "default");
+            } else {
+                destroyCalendar(calendar);
+                events.clear();
+            }
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, calendarDateBinding.startFieldName, calendarDateBinding.endFieldName, calendarDateBinding.isDateTime(), locale);
+            calendar = createCalendar(element, controller, calendarDateBinding.startFieldName, calendarDateBinding.endFieldName, calendarDateBinding.isDateTime(), locale, customOptions);
+            calendarCustomOptions = customOptions;
         }
         updateEvents(list);
     }
@@ -64,13 +72,21 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         calendar.updateSize();
     }-*/;
 
+    private static native boolean deepEquals(JavaScriptObject first, JavaScriptObject second)/*-{
+        return $wnd.deepEquals(first, second);
+    }-*/;
+
+    private static native void destroyCalendar(JavaScriptObject calendar)/*-{
+        calendar.destroy();
+    }-*/;
+
     private static void mouseDown(Element element) {
         FocusUtils.focusOut(element, FocusUtils.Reason.MOUSENAVIGATE);
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String startFieldName, String endFieldName, boolean isDateTime, String locale)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String startFieldName, String endFieldName, boolean isDateTime, String locale, JavaScriptObject customOptions)/*-{
         var thisObj = this;
-        var calendar = new $wnd.FullCalendar.Calendar(element, {
+        var options = $wnd.mergeObjects({
             initialView: 'dayGridMonth',
             height: 'parent',
             locale: locale,
@@ -102,7 +118,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
             }
-        });
+        }, customOptions);
+        var calendar = new $wnd.FullCalendar.Calendar(element, options);
         calendar.render();
 
         // the problem is that in onPointerDown there is heuristics:
@@ -114,9 +131,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 //        }
         // and this preventDefault prevents focus change, which leads to the problems with the popups for example (no focus out)
         // so we'll just emulate default behaviour
-        element.addEventListener('mousedown', function(e) {
-            @GCalendar::mouseDown(*)(e.target);
-        });
+        if (!element.__lsfusionCalendarMouseDownListenerAdded) {
+            element.addEventListener('mousedown', function(e) {
+                @GCalendar::mouseDown(*)(e.target);
+            });
+            element.__lsfusionCalendarMouseDownListenerAdded = true;
+        }
 
         return calendar;
 
