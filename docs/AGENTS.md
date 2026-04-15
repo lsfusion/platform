@@ -427,6 +427,18 @@ Reader-facing explanation:
   can understand
   what is allowed
   in that position
+- `Examples`
+  SHOULD preferably
+  cover
+  all syntax variants
+  and all parameters
+  or options;
+  when possible,
+  the assistant SHOULD use
+  compact examples
+  that cover
+  several such variants
+  at once
 - keep `Parameters`
   focused and concise:
   use them only
