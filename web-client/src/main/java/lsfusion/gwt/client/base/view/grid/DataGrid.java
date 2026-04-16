@@ -686,6 +686,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headers.remove(index);
         footers.remove(index);
 
+        if (columns.isEmpty()) {
+            setSelectedColumn(-1);
+            return;
+        }
+
         int selectedColumn = getSelectedColumn();
         // Decrement the keyboard selected column.
         if (index <= selectedColumn) {

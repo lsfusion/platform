@@ -1465,6 +1465,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<ComponentView>> getPropertyComponentShowIfs() {
+        return getPropertyComponents().filterFn(component -> component.getShowIf() != null).group(key -> {
+            GroupObjectEntity applyObject = key.getShowIf().getApplyObject(FormEntity.this, SetFact.EMPTY());
+            return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+        });
+    }
+
+    @IdentityLazy
     public ImSet<ComponentView> getBaseComponents() {
         MExclSet<ComponentView> mContainers = SetFact.mExclSet();
         getRichDesign().mainContainer.fillBaseComponents(mContainers, false);
