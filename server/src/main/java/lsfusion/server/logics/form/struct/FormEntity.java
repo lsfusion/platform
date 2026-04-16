@@ -1246,20 +1246,25 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return getField(entity, "longitude", "latitude", "polygon") != null;
     }
 
+    private static List<String> priorityCalendarDateProps = Arrays.asList("date", "dateTime", "dateFrom", "dateTimeFrom");
     @IdentityLazy
     public List<PropertyDrawEntity> getCalendarDateProps(GroupObjectEntity entity) {
-        List<PropertyDrawEntity> result = new ArrayList<>();
+        List<PropertyDrawEntity> priorityProps = new ArrayList<>();
+        List<PropertyDrawEntity> props = new ArrayList<>();
         for (PropertyDrawEntity property : getProperties(entity)) {
             if (property.isProperty(context) && property.isList(this)) {
                 Type type = property.getStaticType();
                 if (type instanceof DateClass || type instanceof DateTimeClass || type instanceof ZDateTimeClass) {
-                    if (property.getIntegrationSID() != null) {
-                        result.add(property);
-                    }
+                    String integrationSID = property.getIntegrationSID();
+                    if (priorityCalendarDateProps.contains(integrationSID))
+                        priorityProps.add(property);
+                    else
+                        props.add(property);
                 }
             }
         }
-        return result;
+        priorityProps.addAll(props);
+        return priorityProps;
     }
 
     @IdentityLazy
