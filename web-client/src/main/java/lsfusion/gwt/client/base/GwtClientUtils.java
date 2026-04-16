@@ -1088,8 +1088,9 @@ public class GwtClientUtils {
     // возвращает новую flexWidth
     private static double reducePrefsToBase(double prevFlexWidth, int column, double[] prefs, double[] flexes, int[] basePrefs) {
         double reduce = prefs[column] - basePrefs[column];
-        assert greaterEquals(reduce, 0.0);
-        if (equals(reduce, 0.0))
+        // Dynamic auto bases can be recalculated above the current user-resized pref.
+        // There is no positive pref part to convert to flex in that case.
+        if (!greater(reduce, 0.0))
             return prevFlexWidth;
 
         double newFlexWidth = prevFlexWidth + reduce;
@@ -1161,8 +1162,7 @@ public class GwtClientUtils {
         double exceedPrefWidth = totalPref - viewWidth;
         if (greaterEquals(exceedPrefWidth, 0.0)) {
             double prefReduceDelta = Math.min(-delta, exceedPrefWidth);
-            delta += prefReduceDelta;
-            reducePrefs(prefReduceDelta, column, prefs, basePrefs, null);
+            delta += prefReduceDelta - reducePrefs(prefReduceDelta, column, prefs, basePrefs, null);
 
             assert greaterEquals(0.0, delta);
 
@@ -1249,7 +1249,7 @@ public class GwtClientUtils {
         for (int i = column; i >= 0; i--) {
             if(filterColumns == null || filterColumns[i]) {
                 double maxReduce = prefs[i] - basePrefs[i];
-                double reduce = Math.min(delta, maxReduce);
+                double reduce = delta > 0.0 ? Math.min(delta, Math.max(maxReduce, 0.0)) : delta;
                 prefs[i] -= reduce;
                 delta -= reduce;
                 if (equals(delta, 0.0))
