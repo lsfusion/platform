@@ -2,16 +2,19 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.classes.data.GDateTimeType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -24,12 +27,15 @@ import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_
 
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
 
-    private final CalendarDateBinding calendarDateBinding;
+    private final List<GPropertyDraw> calendarDateProps;
+    private GPropertyDraw currentDateProp;
     private JavaScriptObject calendar;
+    private JsArray<JavaScriptObject> currentList;
 
-    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, CalendarDateBinding calendarDateBinding) {
+    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, List<GPropertyDraw> calendarDateProps) {
         super(form, grid, tableContainer);
-        this.calendarDateBinding = calendarDateBinding;
+        this.calendarDateProps = calendarDateProps;
+        this.currentDateProp = calendarDateProps.get(0);
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -41,6 +47,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
+        currentList = list;
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
@@ -49,7 +56,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, calendarDateBinding.startFieldName, calendarDateBinding.endFieldName, calendarDateBinding.isDateTime(), locale);
+            calendar = createCalendar(element, controller, getCalendarDateProps(calendarDateProps), currentDateProp.integrationSID, getCalendarDatePropCaptions(calendarDateProps), locale);
         }
         updateEvents(list);
     }
@@ -68,19 +75,72 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         FocusUtils.focusOut(element, FocusUtils.Reason.MOUSENAVIGATE);
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String startFieldName, String endFieldName, boolean isDateTime, String locale)/*-{
+    private static JsArrayString getCalendarDateProps(List<GPropertyDraw> values) {
+        JsArrayString result = JavaScriptObject.createArray().cast();
+        for (GPropertyDraw value : values) {
+            result.push(value.integrationSID);
+        }
+        return result;
+    }
+
+    private static JsArrayString getCalendarDatePropCaptions(List<GPropertyDraw> values) {
+        JsArrayString result = JavaScriptObject.createArray().cast();
+        for (GPropertyDraw value : values) {
+            result.push(value.getNotEmptyCaption());
+        }
+        return result;
+    }
+
+    private GPropertyDraw getCalendarDateProp(String integrationSID) {
+        for (GPropertyDraw property : calendarDateProps) {
+            if (GwtClientUtils.nullEquals(property.integrationSID, integrationSID)) {
+                return property;
+            }
+        }
+        return null;
+    }
+
+    private String getCurrentDatePropSID() {
+        return currentDateProp.integrationSID;
+    }
+
+    private void setCurrentDateProp(String currentDatePropSID) {
+        currentDateProp = getCalendarDateProp(currentDatePropSID);
+    }
+
+    private boolean isDateTimeCurrentDateProp() {
+        return isDateTimeProp(currentDateProp);
+    }
+
+    private boolean isDateTimeProp(GPropertyDraw calendarDateProp) {
+        return calendarDateProp != null && calendarDateProp.getValueType() instanceof GDateTimeType;
+    }
+
+    private void onCalendarDatePropChanged() {
+        if (currentList != null) {
+            updateEvents(currentList);
+        }
+        if (calendar != null) {
+            applyDateIntervalViewFilter(calendar, controller, getCurrentDatePropSID(), isDateTimeCurrentDateProp());
+        }
+    }
+
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, JsArrayString calendarDateProps, String calendarDateProp, JsArrayString calendarDatePropCaptions, String locale)/*-{
         var thisObj = this;
+        var getHeaderToolbar = function() {
+            return {
+                left: 'prev,next today',
+                center: 'title',
+                right: thisObj.@GCalendar::isDateTimeCurrentDateProp()() ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
+            };
+        };
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
             locale: locale,
             firstDay: 1,
-            initialDate: controller.getValue(startFieldName),
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: isDateTime ? 'dayGridMonth,dayGridWeek,timeGridDay' : 'dayGridMonth,dayGridWeek'
-            },
+            initialDate: controller.getValue(calendarDateProp),
+            headerToolbar: getHeaderToolbar(),
             dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00
             nextDayThreshold: '01:00:00',
@@ -97,13 +157,18 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 };
             },
             datesSet: function () {
-                controller.setDateIntervalViewFilter(startFieldName, endFieldName, 1000, calendar.view.activeStart, calendar.view.activeEnd);
+                var currentCalendarDateProp = thisObj.@GCalendar::getCurrentDatePropSID(*)();
+                controller.setDateIntervalViewFilter(currentCalendarDateProp, @GCalendar::getEndEventFieldName(*)(currentCalendarDateProp), 1000,
+                    calendar.view.activeStart, calendar.view.activeEnd, thisObj.@GCalendar::isDateTimeCurrentDateProp()());
             },
             eventClick: function (info) {
                 changeCurrentEvent(info.event, info.el);
             }
         });
+
+        thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(calendarDateProp);
         calendar.render();
+        setupDatePropSelector();
 
         // the problem is that in onPointerDown there is heuristics:
         // prevent links from being visited if there's an eventual drag.
@@ -148,7 +213,46 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             //eventTime can be null due to property dateTo(dateTimeTo) can be null
             return eventTime != null ? eventTime.getTime() : null;
         }
+
+        function setupDatePropSelector() {
+            var toolbarElement = element.querySelector('.fc-toolbar-chunk');
+            var oldDatePropSelect = toolbarElement.querySelector('.fc-calendar-date-prop');
+            if (oldDatePropSelect) {
+                oldDatePropSelect.remove();
+            }
+
+            var datePropSelect = $doc.createElement('select');
+            datePropSelect.className = 'fc-calendar-date-prop';
+
+            for (var i = 0; i < calendarDateProps.length; i++) {
+                var option = $doc.createElement('option');
+                option.value = calendarDateProps[i];
+                option.text = (calendarDatePropCaptions && calendarDatePropCaptions.length > i && calendarDatePropCaptions[i]) ? calendarDatePropCaptions[i] : calendarDateProps[i];
+                datePropSelect.appendChild(option);
+            }
+            datePropSelect.value = thisObj.@GCalendar::getCurrentDatePropSID(*)();
+            datePropSelect.addEventListener('change', function() {
+                var newCalendarDateProp = datePropSelect.value;
+                thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(newCalendarDateProp);
+                calendar.setOption('headerToolbar', getHeaderToolbar());
+                setupDatePropSelector();
+                if (!thisObj.@GCalendar::isDateTimeCurrentDateProp()() && calendar.view.type === 'timeGridDay') {
+                    calendar.changeView('dayGridMonth');
+                }
+                thisObj.@GCalendar::onCalendarDatePropChanged(*)();
+            });
+            toolbarElement.appendChild(datePropSelect);
+        }
     }-*/;
+
+    protected native void applyDateIntervalViewFilter(JavaScriptObject calendar, JavaScriptObject controller, String calendarDateProp, boolean isDateTimeFilter)/*-{
+        controller.setDateIntervalViewFilter(calendarDateProp, @GCalendar::getEndEventFieldName(*)(calendarDateProp), 1000,
+            calendar.view.activeStart, calendar.view.activeEnd, isDateTimeFilter);
+    }-*/;
+
+    private static String getEndEventFieldName(String calendarDateProp) {
+        return calendarDateProp.contains("From") ? calendarDateProp.replace("From", "To") : null;
+    }
 
     private final NativeHashMap<GGroupObjectValue, Event> events = new NativeHashMap<>();
     private class Event {
@@ -170,18 +274,18 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public final String foregroundColor;
 
         public Event(JavaScriptObject object, int index) {
-            String startEventFieldName = calendarDateBinding.startFieldName;
-            String endEventFieldName = calendarDateBinding.endFieldName;
+            String calendarDatePropSID = getCurrentDatePropSID();
+            String endEventFieldName = calendarDatePropSID != null ? getEndEventFieldName(calendarDatePropSID) : null;
 
             title = getTitle(object);
             caption = getCaption(object, GCalendar.this::getTitle);
             image = getImage(object, () -> null);
-            start = getStart(object, startEventFieldName);
-            allDay = calendarDateBinding.isAllDay();
+            start = getStart(object, calendarDatePropSID);
+            allDay = !isDateTimeCurrentDateProp();
             end = endEventFieldName != null ? getEnd(object, endEventFieldName, allDay): null;
-            editable = isEditable(object, controller, startEventFieldName, endEventFieldName);
+            editable = isEditable(object, controller, calendarDatePropSID, endEventFieldName);
             durationEditable = isDurationEditable(object, controller, endEventFieldName);
-            startFieldName = startEventFieldName;
+            startFieldName = calendarDatePropSID;
             endFieldName = endEventFieldName;
             this.index = index;
             this.key = getObjects(object);

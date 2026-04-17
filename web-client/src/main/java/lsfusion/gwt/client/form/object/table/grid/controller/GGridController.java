@@ -139,22 +139,12 @@ public class GGridController extends GAbstractTableController {
         updateViewButtonsBackground(false, false, true, false, false);
     }
 
-    private CalendarDateBinding getCalendarDateType() {
-        if (groupObject.isCalendarDate) {
-            return !groupObject.isCalendarPeriod ? CalendarDateBinding.date("date", null)
-                    : CalendarDateBinding.date("dateFrom", "dateTo");
-        }
-
-        if (groupObject.isCalendarDateTime) {
-            return !groupObject.isCalendarPeriod ? CalendarDateBinding.dateTime("dateTime", null)
-                    : CalendarDateBinding.dateTime("dateTimeFrom", "dateTimeTo");
-        }
-
-        return null;
+    private List<GPropertyDraw> getCalendarDateProps() {
+        return groupObject.calendarDateProps != null ? groupObject.calendarDateProps : new ArrayList<>();
     }
 
     private void setCalendarTableView() {
-        changeTableView(new GCalendar(formController, this, gridView, getCalendarDateType()));
+        changeTableView(new GCalendar(formController, this, gridView, getCalendarDateProps()));
         updateViewButtonsBackground(false, false, false, false, true);
     }
 
@@ -262,7 +252,7 @@ public class GGridController extends GAbstractTableController {
                 viewButtonGroup.add(mapTableButton);
             }
 
-            if (getCalendarDateType() != null) {
+            if (!getCalendarDateProps().isEmpty()) {
                 calendarTableButton = new GToolbarButton(StaticImage.CALENDAR, messages.formGridCalendarView()) {
                     @Override
                     public ClickHandler getClickHandler() {

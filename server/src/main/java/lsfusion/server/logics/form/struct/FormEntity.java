@@ -47,6 +47,9 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.ObjectMapping;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.ZDateTimeClass;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.MappingInterface;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
@@ -1243,14 +1246,25 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return getField(entity, "longitude", "latitude", "polygon") != null;
     }
 
+    private static List<String> priorityCalendarDateProps = Arrays.asList("date", "dateTime", "dateFrom", "dateTimeFrom");
     @IdentityLazy
-    public boolean isCalendarDate(GroupObjectEntity entity) {
-        return getField(entity, "date", "dateFrom") != null;
-    }
-
-    @IdentityLazy
-    public boolean isCalendarDateTime(GroupObjectEntity entity) {
-        return getField(entity, "dateTime", "dateTimeFrom") != null;
+    public List<PropertyDrawEntity> getCalendarDateProps(GroupObjectEntity entity) {
+        List<PropertyDrawEntity> priorityProps = new ArrayList<>();
+        List<PropertyDrawEntity> props = new ArrayList<>();
+        for (PropertyDrawEntity property : getProperties(entity)) {
+            if (property.isProperty(context) && property.isList(this)) {
+                Type type = property.getStaticType();
+                if (type instanceof DateClass || type instanceof DateTimeClass || type instanceof ZDateTimeClass) {
+                    String integrationSID = property.getIntegrationSID();
+                    if (priorityCalendarDateProps.contains(integrationSID))
+                        priorityProps.add(property);
+                    else
+                        props.add(property);
+                }
+            }
+        }
+        priorityProps.addAll(props);
+        return priorityProps;
     }
 
     @IdentityLazy
@@ -1316,7 +1330,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         for(GroupObjectEntity group : getGroupsIt()) {
             if(group.getListViewTypeValue().isCalendar()) {
-                if (!isCalendarDate(group) && !isCalendarDateTime(group))
+                if (getCalendarDateProps(group).isEmpty())
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
                 if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR period propertyDraws found (dateTo or dateTimeTo)");
