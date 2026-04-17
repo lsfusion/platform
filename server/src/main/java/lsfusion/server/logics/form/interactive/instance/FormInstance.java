@@ -766,7 +766,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.reflectionLM.columnFlexPropertyDrawCustomUser.change(columnPreferences.userFlex, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
-        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    
+        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);
         BL.reflectionLM.inGridPropertyDrawCustomUser.change(columnPreferences.inGrid, dataSession, propertyDrawObject, user);
     }
     
