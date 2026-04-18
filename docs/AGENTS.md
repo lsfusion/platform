@@ -787,6 +787,16 @@ such as
 or `that ...`
 when the meaning
 stays equally clear
+and MUST avoid
+awkward noun chains
+and repeated
+generic words,
+especially when
+the repetition
+appears only
+because of
+the surrounding wording
+or a linked term
 and avoid
 unnecessarily fancy,
 bureaucratic,
