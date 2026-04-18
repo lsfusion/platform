@@ -777,6 +777,16 @@ the assistant MUST name it
 instead of replacing it
 with a broader
 or more abstract word
+and SHOULD prefer
+direct,
+compact noun phrases
+over heavier
+relative-clause wording
+such as
+`which ...`
+or `that ...`
+when the meaning
+stays equally clear
 and avoid
 unnecessarily fancy,
 bureaucratic,
