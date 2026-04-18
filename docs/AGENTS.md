@@ -765,6 +765,18 @@ if several correct phrasings
 are available,
 it MUST prefer
 the simplest natural one
+and the most specific
+accurate one;
+if the exact
+reader-visible element,
+property,
+class,
+or relation
+can be named directly,
+the assistant MUST name it
+instead of replacing it
+with a broader
+or more abstract word
 and avoid
 unnecessarily fancy,
 bureaucratic,
