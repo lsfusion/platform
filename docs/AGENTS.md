@@ -810,15 +810,51 @@ Preserving existing material:
 
 When completing or extending
 existing documentation,
-the assistant SHOULD preserve
+the assistant MUST preserve
 as much of the current text
 as possible
-and prefer extending it
-over rewriting it,
+and MUST prefer extending it
+in place
+over rewriting,
+reordering,
+or replacing it,
 unless the current text
 is incorrect, unclear,
+duplicated,
+no longer relevant,
 or conflicts
 with the required structure.
+By default,
+the assistant SHOULD add
+missing information
+next to the existing
+relevant sentence,
+paragraph, list item,
+or example,
+instead of replacing
+a larger block.
+When changing
+existing text,
+the assistant MUST keep
+the scope of the edit
+as small as possible:
+replace a phrase
+before a sentence,
+a sentence
+before a paragraph,
+and a paragraph
+before a section.
+Deletion or compression
+is a last resort.
+The assistant MUST NOT
+remove existing text
+only to simplify wording,
+unify style,
+or make the article shorter
+if that text
+is still correct,
+relevant,
+and structurally valid.
 When rewriting
 or tightening text,
 the assistant MUST NOT
@@ -841,6 +877,15 @@ of the article
 and make sure
 that those details
 are still preserved.
+Every removal
+or replacement
+of existing material
+MUST have
+a concrete reason:
+incorrectness,
+irrelevance,
+duplication,
+or structural conflict.
 
 The assistant MUST respect
 the documentation structure:
