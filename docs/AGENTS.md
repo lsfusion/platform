@@ -455,6 +455,32 @@ Reader-facing explanation:
   and where they
   may be declared
   or used;
+  only parameter behavior
+  that is specific
+  to the current
+  construction
+  or changes
+  the general rules
+  SHOULD be described
+  there;
+  the assistant
+  MUST NOT restate
+  general parameter
+  rules
+  just because
+  they also apply
+  here,
+  such as
+  parameters being local
+  to the construction,
+  being introduced
+  implicitly,
+  repeated names
+  denoting
+  the same parameter,
+  or classes
+  not being specified
+  again;
   if that behavior
   is tied
   to a specific
@@ -586,6 +612,7 @@ Reader-facing explanation:
   or not;
   for IDs,
   expressions,
+  typed parameters,
   literals,
   selectors,
   options,
@@ -593,10 +620,11 @@ Reader-facing explanation:
   it SHOULD link
   to the canonical article
   instead of redefining them locally;
-  only construction-specific
-  parameter behavior
-  SHOULD be described
-  locally
+  standard parameter
+  mechanics
+  SHOULD stay
+  in those canonical
+  articles
 
 Syntax block rules:
 - make sure
