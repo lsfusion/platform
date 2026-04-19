@@ -471,6 +471,14 @@ Reader-facing explanation:
   is not obvious,
   that default
   MUST be made clear
+  there;
+  if the meaning
+  of the absence
+  of a keyword
+  or option
+  is not obvious,
+  that absence
+  MUST be made clear
   there,
   and MUST NOT
   be repeated
