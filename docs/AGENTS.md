@@ -624,7 +624,13 @@ Reader-facing explanation:
   mechanics
   SHOULD stay
   in those canonical
-  articles
+  articles;
+  for typed parameters,
+  the canonical place
+  is currently
+  `ru/IDs.md#paramid`
+  and
+  `en/IDs.md#paramid`
 
 Syntax block rules:
 - make sure
