@@ -478,7 +478,21 @@ Reader-facing explanation:
   there
   as a parameter
   or option
+  with a meaningful
+  name for that choice,
   with those keyword values
+  and references
+  to parameters
+  or options
+  in `Parameters`
+  and `Description`
+  SHOULD use
+  simple reader-facing names,
+  not raw syntax
+  fragments
+  or alternative lists
+  such as
+  ``A | B``
   and MUST NOT
   be documented
   as a separate rule
