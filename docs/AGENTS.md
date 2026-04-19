@@ -438,6 +438,22 @@ Reader-facing explanation:
   can understand
   what is allowed
   in that position
+- if a syntax construction
+  uses parameters
+  in a non-obvious way,
+  the article
+  MUST make clear
+  which parameters
+  are available
+  and where they
+  may be declared
+  or used;
+  if that behavior
+  is complex,
+  the assistant
+  MUST simplify it
+  as much as possible
+  in the description
 - `Examples`
   SHOULD preferably
   cover
