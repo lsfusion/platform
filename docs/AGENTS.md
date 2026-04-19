@@ -130,7 +130,14 @@ Language article structure convention:
   to one parameter
   or option
   SHOULD be described
-  in that parameter item
+  in that parameter item,
+  including,
+  when relevant,
+  rules about
+  how that element
+  may use
+  or introduce
+  parameters
 - `Syntax`,
   `Parameters`,
   and intermediate rules
@@ -449,11 +456,25 @@ Reader-facing explanation:
   may be declared
   or used;
   if that behavior
+  is tied
+  to a specific
+  reader-visible element,
+  it SHOULD be described
+  in that element's
+  parameter item;
+  if that behavior
   is complex,
   the assistant
   MUST simplify it
   as much as possible
   in the description
+  and SHOULD prefer
+  a short
+  declarative
+  reader-facing rule
+  over step-by-step
+  context-building
+  mechanics
 - `Examples`
   SHOULD preferably
   cover
@@ -564,13 +585,18 @@ Reader-facing explanation:
   may be empty
   or not;
   for IDs,
+  expressions,
   literals,
   selectors,
   options,
   and other reusable element kinds,
   it SHOULD link
   to the canonical article
-  instead of redefining them locally
+  instead of redefining them locally;
+  only construction-specific
+  parameter behavior
+  SHOULD be described
+  locally
 
 Syntax block rules:
 - make sure
