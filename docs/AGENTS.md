@@ -963,6 +963,30 @@ to understand
 the current article
 or the current rule.
 The assistant MUST NOT
+invent,
+extrapolate,
+or document
+usage patterns
+or semantic scenarios
+as documented behavior
+unless they are directly supported
+by the grammar,
+platform or plugin code,
+existing lsFusion examples,
+or existing documentation.
+This is especially important
+for Language articles:
+syntax documentation
+MUST describe
+what can be written
+and what it means,
+not speculative usage.
+Pure usage variants
+SHOULD appear
+only in Guide / How-to
+and only when grounded
+in such sources.
+The assistant MUST NOT
 add abstract,
 empty,
 or low-information
