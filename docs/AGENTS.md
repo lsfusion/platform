@@ -767,13 +767,20 @@ not as stitched fragments,
 mechanical paraphrases,
 or isolated remarks.
 The assistant MUST phrase things
-as simply as possible;
+as simply,
+naturally,
+and specifically
+as possible;
 if several correct phrasings
 are available,
 it MUST prefer
-the simplest natural one
-and the most specific
-accurate one;
+the most natural,
+smooth,
+and accurate one,
+not one
+that is merely
+shorter
+or denser;
 if the exact
 reader-visible element,
 property,
