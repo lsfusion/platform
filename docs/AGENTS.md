@@ -145,7 +145,18 @@ Language article structure convention:
   in `Parameters`
   or intermediate rules
   SHOULD correspond
-  to `Syntax`
+  to `Syntax`;
+  local names
+  later used
+  in `Description`
+  or `Parameters`
+  SHOULD be introduced
+  in `Syntax`
+  or intermediate rules
+  first,
+  unless they are
+  already established
+  canonically
 - `Description`
   SHOULD contain
   everything else:
@@ -478,18 +489,28 @@ Reader-facing explanation:
   there
   as a parameter
   or option
-  with a meaningful
-  name for that choice,
-  with those keyword values
-  and references
+  with those keyword values;
+  any local name
+  later used
+  for that choice
+  in `Parameters`
+  or `Description`
+  MUST be introduced
+  in `Syntax`
+  first;
+  references
   to parameters
   or options
   in `Parameters`
   and `Description`
   SHOULD use
-  simple reader-facing names,
-  not raw syntax
-  fragments
+  simple reader-facing names
+  from the visible syntax
+  or established
+  canonical terminology,
+  not invented names
+  and not raw
+  syntax fragments
   or alternative lists
   such as
   ``A | B``
