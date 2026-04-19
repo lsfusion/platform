@@ -453,7 +453,14 @@ Reader-facing explanation:
   to one parameter
   or option
   MUST be described
-  in that parameter item,
+  in that parameter item;
+  if the default value
+  of a parameter
+  or option
+  is not obvious,
+  that default
+  MUST be made clear
+  there,
   and MUST NOT
   be repeated
   in the general
