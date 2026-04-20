@@ -111,6 +111,8 @@ Item.form.object
 
 *Typed parameter* is used to reference a [property (or action) parameter](Properties.md) (action). It consists of an optional parameter class ID and a simple ID representing the parameter's name.
 
+When a syntax construction uses typed parameters, they are interpreted in that construction's parameter context unless the article for that construction says otherwise. Within one such context, identical names denote the same parameter. If the parameter class has already been determined in that context, it is not specified again. Whether a specific construction starts a new local parameter context, allows introducing new parameters, or can infer them implicitly is described in the article for that construction.
+
 #### Examples
 
 ```lsf
