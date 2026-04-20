@@ -51,7 +51,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 element.getStyle().setProperty("minHeight", "400px");
                 element.getStyle().setProperty("cursor", "default");
             } else {
-                destroyCalendar(calendar);
+                destroyCalendar(calendar, element);
                 events.clear();
             }
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
@@ -76,7 +76,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return $wnd.deepEquals(first, second);
     }-*/;
 
-    private static native void destroyCalendar(JavaScriptObject calendar)/*-{
+    private static native void destroyCalendar(JavaScriptObject calendar, Element element)/*-{
+        element.removeEventListener('mousedown', element.calendarMouseDownListener);
+        element.calendarMouseDownListener = null;
         calendar.destroy();
     }-*/;
 
@@ -131,12 +133,10 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 //        }
         // and this preventDefault prevents focus change, which leads to the problems with the popups for example (no focus out)
         // so we'll just emulate default behaviour
-        if (!element.__lsfusionCalendarMouseDownListenerAdded) {
-            element.addEventListener('mousedown', function(e) {
-                @GCalendar::mouseDown(*)(e.target);
-            });
-            element.__lsfusionCalendarMouseDownListenerAdded = true;
-        }
+        element.calendarMouseDownListener = function(e) {
+            @GCalendar::mouseDown(*)(e.target);
+        };
+        element.addEventListener('mousedown', element.calendarMouseDownListener);
 
         return calendar;
 
